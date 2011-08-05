@@ -96,18 +96,12 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public int getStartOffset(Object node) {
-    CommonTree antlrTreeNode = ((Node) node).getAntlrTreeNode();
-
-    int tokenStartIndex = antlrTreeNode.getTokenStartIndex();
-    CommonToken tokenStart = (CommonToken) getTokenStream().get(tokenStartIndex);
+    CommonToken tokenStart = ((CommonToken) node);
     return tokenStart.getStartIndex();
   }
 
   public int getEndOffset(Object node) {
-    CommonTree antlrTreeNode = ((Node) node).getAntlrTreeNode();
-
-    int tokenStopIndex = antlrTreeNode.getTokenStopIndex();
-    CommonToken tokenStop = (CommonToken) getTokenStream().get(tokenStopIndex);
+    CommonToken tokenStop = ((CommonToken) node);
     return tokenStop.getStopIndex();
   }
 
