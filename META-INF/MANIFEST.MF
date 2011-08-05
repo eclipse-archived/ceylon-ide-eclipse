@@ -9,7 +9,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.imp.runtime,
  org.eclipse.ui,
  lpg.runtime.java,
- org.eclipse.jface.text
+ org.eclipse.jface.text,
+ lpg.runtime
 Bundle-Activator: ceylon.CeylonPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: ceylon-ide.jar,

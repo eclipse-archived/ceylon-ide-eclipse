@@ -20,5 +20,12 @@
             language="ceylon">
       </parser>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.tokenColorer">
+      <tokenColorer
+            class="ceylon.imp.tokenColorer.CeylonTokenColorer"
+            language="ceylon">
+      </tokenColorer>
+   </extension>
 
 </plugin>
