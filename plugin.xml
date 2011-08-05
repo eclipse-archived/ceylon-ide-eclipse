@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.imp.runtime.languageDescription">
+      <language
+            url="http://in.relation.to/Tutorials/IntroductionToCeylon"
+            extensions="ceylon"
+            description="The best Java replacement"
+            language="ceylon">
+      </language>
+   </extension>
+   <extension
+         id="ceylon-ide.parser"
+         name="ceylon Parser"
+         point="org.eclipse.imp.runtime.parser">
+      <parser
+            class="ceylon.imp.parser.CeylonParseController"
+            language="ceylon">
+      </parser>
+   </extension>
+
+</plugin>
