@@ -71,6 +71,8 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
       case CeylonParser.NATURAL_LITERAL:
         return numberAttribute;
       case CeylonParser.STRING_LITERAL:
+      case CeylonParser.CHAR_LITERAL:
+      case CeylonParser.QUOTED_LITERAL:
         if ( inAnnotation(controller, token)) {
           return annotationStringAttribute;
         }
@@ -87,10 +89,10 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
     }
   }
 
-private boolean inAnnotation(IParseController controller, Token token) {
-	return ((CeylonParseController) controller).getAnnotations()
-			.contains(token.getTokenIndex());
-}
+  private boolean inAnnotation(IParseController controller, Token token) {
+    return ((CeylonParseController) controller).getAnnotations()
+                    .contains(token.getTokenIndex());
+  }
 
   public IRegion calculateDamageExtent(IRegion seed) {
     return seed;
