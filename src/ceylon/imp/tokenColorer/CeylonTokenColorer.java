@@ -53,11 +53,12 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
       // START_HERE
       case CeylonParser.IDENTIFIER:
         return identifierAttribute;
+      case CeylonParser.FLOAT_LITERAL:
       case CeylonParser.NATURAL_LITERAL:
         return numberAttribute;
       case CeylonParser.STRING_LITERAL:
-      case CeylonParser.STRING_TEMPLATE:
         return stringAttribute;
+      case CeylonParser.MULTI_COMMENT:
       case CeylonParser.LINE_COMMENT:
         return commentAttribute;
       default:
