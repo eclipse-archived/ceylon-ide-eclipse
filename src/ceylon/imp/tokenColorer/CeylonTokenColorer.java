@@ -22,12 +22,10 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
       "in", "out", "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", "this", "outer", "super", "is",
       "exists", "nonempty"));
   
-  protected final TextAttribute doubleAttribute, identifierAttribute, keywordAttribute, numberAttribute, annotationAttribute;
-
-  protected final TextAttribute commentAttribute, stringAttribute;
+  protected final TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
+  		annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute;
 
   public CeylonTokenColorer() {
-    super();
     // TODO Define text attributes for the various token types that will have their text colored
     //
     // NOTE: Colors (i.e., instances of org.eclipse.swt.graphics.Color) are system resources
@@ -36,13 +34,14 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
     // beyond the bounds of your system capacity then your Eclipse invocation may cease to function
     // properly or at all.
     Display display = Display.getDefault();
-    doubleAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GREEN), null, SWT.BOLD);
     identifierAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLACK), null, SWT.NORMAL);
+    typeAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.NORMAL);
     keywordAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_MAGENTA), null, SWT.BOLD);
-    numberAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_YELLOW), null, SWT.BOLD);
-    commentAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_RED), null, SWT.ITALIC);
-    stringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.BOLD);
-    annotationAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.ITALIC);
+    numberAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLUE), null, SWT.NORMAL);
+    commentAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.ITALIC);
+    stringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLUE), null, SWT.NORMAL);
+    annotationStringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.NORMAL);
+    annotationAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_CYAN), null, SWT.NORMAL);
   }
 
   public TextAttribute getColoring(IParseController controller, Object o) {
@@ -52,19 +51,32 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
     if (token.getType() == CeylonParser.EOF)
       return null;
     
-    if ( ((CeylonParseController) controller).getAnnotations().contains(token.getTokenIndex())) {
-      return annotationAttribute;
-    }
-
     switch (token.getType()) {
       // START_HERE
-      case CeylonParser.IDENTIFIER:
-        return identifierAttribute;
+      case CeylonParser.UIDENTIFIER:
+        if ( inAnnotation(controller, token)) {
+          return annotationAttribute;
+        }
+        else {
+          return typeAttribute;
+        }
+      case CeylonParser.LIDENTIFIER:
+        if ( inAnnotation(controller, token)) {
+          return annotationAttribute;
+        }
+        else {
+          return identifierAttribute;
+        }
       case CeylonParser.FLOAT_LITERAL:
       case CeylonParser.NATURAL_LITERAL:
         return numberAttribute;
       case CeylonParser.STRING_LITERAL:
-        return stringAttribute;
+        if ( inAnnotation(controller, token)) {
+          return annotationStringAttribute;
+        }
+        else {
+          return stringAttribute;
+        }
       case CeylonParser.MULTI_COMMENT:
       case CeylonParser.LINE_COMMENT:
         return commentAttribute;
@@ -74,6 +86,11 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
         return super.getColoring(controller, token);
     }
   }
+
+private boolean inAnnotation(IParseController controller, Token token) {
+	return ((CeylonParseController) controller).getAnnotations()
+			.contains(token.getTokenIndex());
+}
 
   public IRegion calculateDamageExtent(IRegion seed) {
     return seed;

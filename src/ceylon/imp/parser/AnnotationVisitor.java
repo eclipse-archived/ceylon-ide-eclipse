@@ -28,4 +28,11 @@ class AnnotationVisitor extends Visitor {
 		}
 	}
 	
+	@Override
+    public void visit(Tree.StringLiteral that) {
+		if (inAnnotation) {
+			annotatations.add(that.getAntlrTreeNode().getToken().getTokenIndex());
+		}
+	}
+	
 }
