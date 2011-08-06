@@ -4,6 +4,8 @@
 
 1.  Start with a clean install of Eclipse Indigo.
     
+    <http://www.eclipse.org/downloads/>
+    
 2.  `Use Help > Install New Software...` to install all 
     components of IMP from the update site at:
     
