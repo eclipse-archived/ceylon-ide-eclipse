@@ -92,6 +92,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
     if (phasedUnit != null)
     {
+      annotations.clear();
       AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
       phasedUnit.getCompilationUnit().visit(annotationVisitor);
       parser = phasedUnit.getParser();
