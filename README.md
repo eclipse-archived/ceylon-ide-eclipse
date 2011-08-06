@@ -1,5 +1,7 @@
 # Eclipse plugin for Ceylon
 
+## Installing
+
 1.  Start with a clean install of Eclipse Indigo.
     
 2.  `Use Help > Install New Software...` to install all 
