@@ -22,6 +22,13 @@ class AnnotationVisitor extends Visitor {
     }
     
 	@Override
+    public void visit(Tree.CompilerAnnotation that) {
+		inAnnotation = true;
+    	super.visit(that);
+		inAnnotation = false;
+    }
+    
+	@Override
     public void visit(Tree.Identifier that) {
 		if (inAnnotation) {
 			annotatations.add(that.getAntlrTreeNode().getToken().getTokenIndex());
