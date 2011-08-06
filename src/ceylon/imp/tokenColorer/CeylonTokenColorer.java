@@ -13,6 +13,8 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 
+import ceylon.imp.parser.CeylonParseController;
+
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
 public class CeylonTokenColorer extends TokenColorerBase implements ITokenColorer {
@@ -20,7 +22,7 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
       "in", "out", "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", "this", "outer", "super", "is",
       "exists", "nonempty"));
   
-  protected final TextAttribute doubleAttribute, identifierAttribute, keywordAttribute, numberAttribute;
+  protected final TextAttribute doubleAttribute, identifierAttribute, keywordAttribute, numberAttribute, annotationAttribute;
 
   protected final TextAttribute commentAttribute, stringAttribute;
 
@@ -40,6 +42,7 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
     numberAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_YELLOW), null, SWT.BOLD);
     commentAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_RED), null, SWT.ITALIC);
     stringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.BOLD);
+    annotationAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.ITALIC);
   }
 
   public TextAttribute getColoring(IParseController controller, Object o) {
@@ -48,6 +51,10 @@ public class CeylonTokenColorer extends TokenColorerBase implements ITokenColore
     Token token = (Token) o;
     if (token.getType() == CeylonParser.EOF)
       return null;
+    
+    if ( ((CeylonParseController) controller).getAnnotations().contains(token.getTokenIndex())) {
+      return annotationAttribute;
+    }
 
     switch (token.getType()) {
       // START_HERE

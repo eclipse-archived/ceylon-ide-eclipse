@@ -1,24 +1,20 @@
 package ceylon.imp.parser;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import lpg.runtime.IPrsStream;
-import lpg.runtime.IToken;
+import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
-import org.eclipse.imp.parser.SimpleLPGParseController;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
@@ -42,6 +38,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   private ISourcePositionLocator sourcePositionLocator;
   private Node currentAst; 
   private CeylonParser parser;
+  private final Set<Integer> annotations = new HashSet<Integer>();
 
   /**
    * @param filePath		Project-relative path of file
@@ -95,6 +92,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
     if (phasedUnit != null)
     {
+      AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
+      phasedUnit.getCompilationUnit().visit(annotationVisitor);
       parser = phasedUnit.getParser();
       currentAst = (Node) phasedUnit.getCompilationUnit();
     }
@@ -133,7 +132,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     int regionLength= region.getLength();
     int regionEnd= regionOffset + regionLength - 1;
 
-    CommonTokenStream stream= (CommonTokenStream) CeylonParseController.this.getParser().getTokenStream();
+    CommonTokenStream stream= (CommonTokenStream) getParser().getTokenStream();
     List tokens = stream.getTokens();
     int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
     // getTokenIndexAtCharacter() answers the negative of the index of the
@@ -151,6 +150,10 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 
   public CeylonParser getParser() {
     return parser;
+  }
+  
+  public Set<Integer> getAnnotations() {
+	return annotations;
   }
 
 }
