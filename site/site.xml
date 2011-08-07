@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<description>To install these features, point Eclipse at this site.</description>
+	<!-- JBoss Tools hibernatetools Nightly Build Update Site -->
+	<category-def label="JBoss Tools hibernatetools Nightly Build Update Site" name="JBoss Tools hibernatetools Nightly Build Update Site">
+		<description>JBoss Tools hibernatetools Nightly Build Update Site: contains all features in this build.</description>
+	</category-def>
+	<feature url="features/org.hibernate.eclipse.feature_0.0.0.jar" id="org.hibernate.eclipse.feature" version="0.0.0">
+		<category name="JBoss Tools hibernatetools Nightly Build Update Site"/>
+	</feature>
+
+</site>
