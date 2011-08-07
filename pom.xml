@@ -1,22 +1,185 @@
-<project
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.redhat.ceylon.eclipse</groupId>
-		<artifactId>com.redhat.ceylon.eclipse.parent.pom</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>parent/pom.xml</relativePath>
-	</parent>
+
+	<prerequisites>
+	  <maven>3.0</maven>
+	</prerequisites>
+
 	<groupId>com.redhat.ceylon.eclipse</groupId>
 	<artifactId>ceylon.all</artifactId>
-	<name>ceylon.all</name>
 	<version>1.0.0-SNAPSHOT</version>
+	<name>Ceylon IDE</name>
 	<packaging>pom</packaging>
+
+	<properties>
+	  <platform-version-name>indigo</platform-version-name>
+	  <tychoVersion>0.12.0</tychoVersion>
+	  <scmBranch>trunk</scmBranch>
+	  <BUILD_ALIAS>M1</BUILD_ALIAS>
+	  <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
+	  <memoryOptions2>-XX:MaxPermSize=256m</memoryOptions2>
+	  <systemProperties></systemProperties>
+	</properties>
+
+	<repositories>
+
+	  <repository>
+	    <id>eclipse</id>
+	    <layout>p2</layout>
+	    <url>http://download.eclipse.org/releases/indigo</url>
+	  </repository>
+
+	  <repository>
+	    <id>imp</id>
+	    <layout>p2</layout>
+	   <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
+            <url>file://Users/max/impmirror</url>
+	  </repository>
+
+	</repositories>
+
 	<modules>
-		<module>features</module>
-		<module>plugins</module>
-		<!-- <module>tests</module> -->
-                <module>site</module>
-       </modules>
-</project>
+	  <module>plugins</module>
+	  <module>features</module>
+	  <module>site</module>
+	</modules>
 	
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tychoVersion}</version>
+				<configuration>
+					<format>'v'yyyyMMdd-HHmm'-${BUILD_ALIAS}'</format>
+					<archiveSite>true</archiveSite>
+					<environments>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tychoVersion}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tychoVersion}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<ignoreTychoRepositories>true</ignoreTychoRepositories>
+					<environments>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-compiler-plugin</artifactId>
+				<version>${tychoVersion}</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+
+					<!-- not strictly needed but this suppresses warnings when compiling 
+						that the default value (1.5) is being overwritten by the value in the MANIFEST.MF. 
+						You can use this in your plugins or their aggregator pom.xml files to set 
+						this for your plugins -->
+
+					<!-- <source>1.6</source> -->
+					<!-- <target>1.6</target> -->
+				</configuration>
+			</plugin>
+			<!-- these two plugins copied in from Chris Aniszczyk's Minerva parent 
+				pom; also need org.eclipse.tycho:tycho-compiler-plugin, above -->
+			<!-- TODO remove workaround when https://issues.sonatype.org/browse/TYCHO-473 
+					is fixed -->
+			<!--plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tychoVersion}</version>
+				<executions>
+					<execution>
+						<id>attach-source</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<encoding>ISO-8859-1</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+		  <id>osx</id>
+		  <activation>
+				<property>
+				  <name>java.vendor.url</name>
+				  <value>http://www.apple.com/</value>
+				</property>
+		  </activation>
+		  <properties>
+		    <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+		    <systemProperties combine.children="append"> -d32 -Dosgi.arch=x86 -XstartOnFirstThread </systemProperties>
+		  </properties>
+		</profile>
+
+	</profiles>
+	
+</project>
