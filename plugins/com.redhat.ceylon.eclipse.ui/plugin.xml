@@ -16,14 +16,14 @@
          name="ceylon Parser"
          point="org.eclipse.imp.runtime.parser">
       <parser
-            class="ceylon.imp.parser.CeylonParseController"
+            class="com.redhat.ceylon.eclipse.imp.parser.CeylonParseController"
             language="ceylon">
       </parser>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
-            class="ceylon.imp.tokenColorer.CeylonTokenColorer"
+            class="com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer"
             language="ceylon">
       </tokenColorer>
    </extension>

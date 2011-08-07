@@ -6,7 +6,6 @@
 		<artifactId>plugins</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<groupId>com.redhat.ceylon.eclipse</groupId>
 	<artifactId>com.redhat.ceylon.eclipse.ui</artifactId> 
 	
 	<packaging>eclipse-plugin</packaging>

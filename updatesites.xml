@@ -1,0 +1,7 @@
+<bookmarks>
+  <site url="http://xam.dk/ceylon"
+	selected="true" name="Ceylon Update Site" />
+  <site url="http://xam.dk/imp/updates"
+	selected="true"
+	name="Mirror of IMP w/p2 metadata"/>
+</bookmarks>
