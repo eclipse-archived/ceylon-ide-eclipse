@@ -27,5 +27,19 @@
             language="ceylon">
       </tokenColorer>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.modelTreeBuilder">
+      <treeBuilder
+            class="com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonTreeModelBuilder"
+            language="ceylon">
+      </treeBuilder>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.labelProvider">
+      <labelProvider
+            class="com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider"
+            language="ceylon">
+      </labelProvider>
+   </extension>
 
 </plugin>

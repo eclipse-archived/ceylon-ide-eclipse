@@ -1,16 +1,21 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import lpg.runtime.IAst;
+
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 /**
@@ -95,15 +100,36 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return fNode[0];
   }
 
-  public int getStartOffset(Object node) {
-    CommonToken tokenStart = ((CommonToken) node);
-    return tokenStart.getStartIndex();
-  }
+  
+	public int getStartOffset(Object node) {
+		CommonToken token = getToken(node);
+		
+		return token==null?0:token.getStartIndex();
+	}
 
-  public int getEndOffset(Object node) {
-    CommonToken tokenStop = ((CommonToken) node);
-    return tokenStop.getStopIndex();
-  }
+	private CommonToken getToken(Object node) {
+		if (node instanceof ModelTreeNode) {
+			ModelTreeNode treeNode = (ModelTreeNode) node;
+			return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
+		} else if (node instanceof CommonToken) {
+			return ((CommonToken) node);
+		} else if (node instanceof Declaration) {
+			Declaration decl = (Declaration) node;
+			return (CommonToken) decl.getIdentifier().getAntlrTreeNode().getToken();
+		}	else if (node instanceof Node) {
+		
+			Node n = (Node) node;
+			return (CommonToken) n.getAntlrTreeNode().getToken();
+		}
+		return null;
+	}
+	
+
+	public int getEndOffset(Object node) {
+		CommonToken token = getToken(node);
+
+		return token == null ? 0 : token.getStopIndex();
+	}
 
   public int getLength(Object node) {
     return getEndOffset(node) - getStartOffset(node);
