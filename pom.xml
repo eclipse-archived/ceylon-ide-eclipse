@@ -34,8 +34,9 @@
 	  <repository>
 	    <id>imp</id>
 	    <layout>p2</layout>
-	   <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
-            <url>file://Users/max/impmirror</url>
+	    <!-- Will have to use the xam.dk mirror until IMP publish an updatesite with p2 metadata -->
+	    <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
+            <url>http://xam.dk/imp/updates</url>
 	  </repository>
 
 	</repositories>
@@ -61,6 +62,11 @@
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
 						</environment>
 						<environment>
 							<os>win32</os>
@@ -96,19 +102,24 @@
 					<resolver>p2</resolver>
 					<ignoreTychoRepositories>true</ignoreTychoRepositories>
 					<environments>
-						<environment>
-							<os>macosx</os>
-							<ws>cocoa</ws>
+					  <environment>
+					    <os>macosx</os>
+					    <ws>cocoa</ws>
+					    <arch>x86_64</arch>
+					  </environment>
+					  <environment>
+					    <os>macosx</os>
+					    <ws>cocoa</ws>
 							<arch>x86</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86</arch>
-						</environment>
-						<environment>
-							<os>linux</os>
-							<ws>gtk</ws>
+					  </environment>
+					  <environment>
+					    <os>win32</os>
+					    <ws>win32</ws>
+					    <arch>x86</arch>
+					  </environment>
+					  <environment>
+					    <os>linux</os>
+					    <ws>gtk</ws>
 							<arch>x86</arch>
 						</environment>
 						<environment>
@@ -126,60 +137,18 @@
 				<version>${tychoVersion}</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-
-					<!-- not strictly needed but this suppresses warnings when compiling 
-						that the default value (1.5) is being overwritten by the value in the MANIFEST.MF. 
-						You can use this in your plugins or their aggregator pom.xml files to set 
-						this for your plugins -->
-
-					<!-- <source>1.6</source> -->
-					<!-- <target>1.6</target> -->
 				</configuration>
 			</plugin>
-			<!-- these two plugins copied in from Chris Aniszczyk's Minerva parent 
-				pom; also need org.eclipse.tycho:tycho-compiler-plugin, above -->
-			<!-- TODO remove workaround when https://issues.sonatype.org/browse/TYCHO-473 
-					is fixed -->
-			<!--plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-source-plugin</artifactId>
-				<version>${tychoVersion}</version>
-				<executions>
-					<execution>
-						<id>attach-source</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>plugin-source</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin-->
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.4.1</version>
 				<configuration>
-					<encoding>ISO-8859-1</encoding>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-		  <id>osx</id>
-		  <activation>
-				<property>
-				  <name>java.vendor.url</name>
-				  <value>http://www.apple.com/</value>
-				</property>
-		  </activation>
-		  <properties>
-		    <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
-		    <systemProperties combine.children="append"> -d32 -Dosgi.arch=x86 -XstartOnFirstThread </systemProperties>
-		  </properties>
-		</profile>
-
-	</profiles>
 	
 </project>
