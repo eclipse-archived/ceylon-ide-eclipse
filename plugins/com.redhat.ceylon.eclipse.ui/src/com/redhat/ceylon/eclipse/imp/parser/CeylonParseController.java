@@ -36,7 +36,6 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 
   private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo= new SimpleAnnotationTypeInfo();
   private ISourcePositionLocator sourcePositionLocator;
-  private Node currentAst; 
   private CeylonParser parser;
   private final Set<Integer> annotations = new HashSet<Integer>();
 
@@ -87,7 +86,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     
     // TODO manage canceling and parsing errors
     if (monitor.isCanceled())
-      return currentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+      return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
     PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
     if (phasedUnit != null)
@@ -96,12 +95,12 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
       phasedUnit.getCompilationUnit().visit(annotationVisitor);
       parser = phasedUnit.getParser();
-      currentAst = (Node) phasedUnit.getCompilationUnit();
+      fCurrentAst = (Node) phasedUnit.getCompilationUnit();
     }
     
     typeChecker.process();
 
-    return currentAst;
+    return fCurrentAst;
   }
 
   //
