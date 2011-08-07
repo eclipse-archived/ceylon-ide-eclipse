@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: LPG Java Runtime
-Bundle-SymbolicName: lpg.runtime.java
-Bundle-Version: 2.0.18
-Bundle-Vendor: pgcharles@hotmail.com
-Export-Package: lpg.runtime
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
