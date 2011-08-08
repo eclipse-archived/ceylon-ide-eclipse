@@ -3,13 +3,12 @@ package com.redhat.ceylon.eclipse.imp.treeModelBuilder;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 
 public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
+	
 	@Override
 	public void visitTree(Object root) {
 		if (root == null)
@@ -26,21 +25,28 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 
 		@Override
 		public void visitAny(Node that) {
-			if(that instanceof Annotation || that instanceof Declaration && 
-					!(that instanceof ParameterList)) {
-				if(that instanceof Block) {
+			if (that instanceof Tree.Declaration && 
+					!(that instanceof Tree.Parameter) &&
+					!(that instanceof Tree.TypeParameterDeclaration) &&
+					!(that instanceof Tree.TypeConstraint) &&
+					!(that instanceof Tree.Variable && 
+							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
+				if (that instanceof Tree.Block) {
 					
-				} else {
+				}
+				else {
 					pushSubItem(that);
 					super.visitAny(that);
 					popSubItem();
 				}
-			} else {
-				if(INCLUDEALL) {
+			} 
+			else {
+				if (INCLUDEALL) {
 					pushSubItem(that,-1);
 					super.visitAny(that);
 					popSubItem();
-				} else {
+				} 
+				else {
 					super.visitAny(that);
 				}
 			}
@@ -48,4 +54,5 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 		}
 		
 	}
+	
 }
