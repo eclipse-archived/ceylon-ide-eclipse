@@ -52,6 +52,7 @@ public class CeylonLabelProvider implements ILabelProvider {
 			.get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
 
 
+	@Override
 	public Image getImage(Object element) {
 		if (element instanceof IFile) {
 			return getImageForFile((IFile) element);
