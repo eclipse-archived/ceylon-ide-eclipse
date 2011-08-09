@@ -10,8 +10,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.imp.language.ILanguageService;
-import com.redhat.celyon.eclipse.ui.CeylonPlugin;
-import com.redhat.celyon.eclipse.ui.ICeylonResources;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
@@ -21,6 +19,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.StaticMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonTreeModelBuilder.CeylonModelVisitor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.resource.ImageRegistry;

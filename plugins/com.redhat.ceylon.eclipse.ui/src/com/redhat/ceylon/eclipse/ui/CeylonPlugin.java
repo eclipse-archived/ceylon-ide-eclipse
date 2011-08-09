@@ -1,11 +1,11 @@
-package com.redhat.celyon.eclipse.ui;
+package com.redhat.ceylon.eclipse.ui;
 
 import org.eclipse.imp.runtime.PluginBase;
 import org.osgi.framework.BundleContext;
 
 public class CeylonPlugin extends PluginBase {
 
-	public static final String kPluginID = "com.redhat.ceylon.eclipse-ui";
+	public static final String kPluginID = "com.redhat.ceylon.eclipse.ui";
 	public static final String kLanguageID = "ceylon";
 
 	/**

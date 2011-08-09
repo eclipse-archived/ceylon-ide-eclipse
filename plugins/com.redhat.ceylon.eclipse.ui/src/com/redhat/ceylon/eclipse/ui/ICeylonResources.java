@@ -1,4 +1,4 @@
-package com.redhat.celyon.eclipse.ui;
+package com.redhat.ceylon.eclipse.ui;
 
 public interface ICeylonResources {
 
