@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
-import lpg.runtime.IAst;
-
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.tree.CommonTree;
@@ -11,11 +9,8 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 /**
@@ -113,8 +108,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 			return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
 		} else if (node instanceof CommonToken) {
 			return ((CommonToken) node);
-		} else if (node instanceof Declaration) {
-			Declaration decl = (Declaration) node;
+		} else if (node instanceof Tree.Declaration) {
+			Tree.Declaration decl = (Tree.Declaration) node;
 			return (CommonToken) decl.getIdentifier().getAntlrTreeNode().getToken();
 		}	else if (node instanceof Node) {
 		

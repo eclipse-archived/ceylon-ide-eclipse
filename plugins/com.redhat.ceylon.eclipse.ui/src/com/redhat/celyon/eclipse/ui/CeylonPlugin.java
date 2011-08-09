@@ -23,6 +23,7 @@ public class CeylonPlugin extends PluginBase {
 		sPlugin = this;
 	}
 
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 	}
