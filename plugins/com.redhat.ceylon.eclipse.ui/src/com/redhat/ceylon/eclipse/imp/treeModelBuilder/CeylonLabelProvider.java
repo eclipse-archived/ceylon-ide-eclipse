@@ -22,55 +22,57 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 public class CeylonLabelProvider implements ILabelProvider {
 	private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
 
-	private static ImageRegistry sImageRegistry = CeylonPlugin.getInstance()
+	private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
 			.getImageRegistry();
 
-	private static Image DEFAULT_IMAGE = sImageRegistry
+	private static Image DEFAULT_IMAGE = imageRegistry
 			.get(ICeylonResources.CEYLON_DEFAULT_IMAGE);
-	private static Image FILE_IMAGE = sImageRegistry
+	private static Image FILE_IMAGE = imageRegistry
 			.get(ICeylonResources.CEYLON_FILE);
-	private static Image FILE_WITH_WARNING_IMAGE = sImageRegistry
+	private static Image FILE_WITH_WARNING_IMAGE = imageRegistry
 			.get(ICeylonResources.CEYLON_FILE_WARNING);
-	private static Image FILE_WITH_ERROR_IMAGE = sImageRegistry
+	private static Image FILE_WITH_ERROR_IMAGE = imageRegistry
 			.get(ICeylonResources.CEYLON_FILE_ERROR);
 
-	private static Image CLASS = sImageRegistry
+	private static Image CLASS = imageRegistry
 			.get(ICeylonResources.CEYLON_CLASS);
-	private static Image INTERFACE = sImageRegistry
+	private static Image INTERFACE = imageRegistry
 			.get(ICeylonResources.CEYLON_INTERFACE);
-	private static Image LOCAL_CLASS = sImageRegistry
+	private static Image LOCAL_CLASS = imageRegistry
 			.get(ICeylonResources.CEYLON_LOCAL_CLASS);
-	private static Image LOCAL_INTERFACE = sImageRegistry
+	private static Image LOCAL_INTERFACE = imageRegistry
 			.get(ICeylonResources.CEYLON_LOCAL_INTERFACE);
-	private static Image METHOD = sImageRegistry
+	private static Image METHOD = imageRegistry
 			.get(ICeylonResources.CEYLON_METHOD);
-	private static Image ATTRIBUTE = sImageRegistry
+	private static Image ATTRIBUTE = imageRegistry
 			.get(ICeylonResources.CEYLON_ATTRIBUTE);
-	private static Image LOCAL_METHOD = sImageRegistry
+	private static Image LOCAL_METHOD = imageRegistry
 			.get(ICeylonResources.CEYLON_LOCAL_METHOD);
-	private static Image LOCAL_ATTRIBUTE = sImageRegistry
+	private static Image LOCAL_ATTRIBUTE = imageRegistry
 			.get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
 
 
 	public Image getImage(Object element) {
 		if (element instanceof IFile) {
-			// TODO:  rewrite to provide more appropriate images
-			IFile file = (IFile) element;
-			int sev = MarkerUtils.getMaxProblemMarkerSeverity(file,
-					IResource.DEPTH_ONE);
-
-			switch (sev) {
-			case IMarker.SEVERITY_ERROR:
-				return FILE_WITH_ERROR_IMAGE;
-			case IMarker.SEVERITY_WARNING:
-				return FILE_WITH_WARNING_IMAGE;
-			default:
-				return FILE_IMAGE;
-			}
+			return getImageForFile((IFile) element);
 		}
-		ModelTreeNode n = (ModelTreeNode) element;
-		
-		return getImageFor(n);
+		else {
+			return getImageFor((ModelTreeNode) element);
+		}
+	}
+
+	private Image getImageForFile(IFile file) {
+		int sev = MarkerUtils.getMaxProblemMarkerSeverity(file,
+				IResource.DEPTH_ONE);
+
+		switch (sev) {
+		case IMarker.SEVERITY_ERROR:
+			return FILE_WITH_ERROR_IMAGE;
+		case IMarker.SEVERITY_WARNING:
+			return FILE_WITH_WARNING_IMAGE;
+		default:
+			return FILE_IMAGE;
+		}
 	}
 
 	private Image getImageFor(ModelTreeNode n) {

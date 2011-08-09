@@ -44,12 +44,6 @@ public class CeylonPlugin extends PluginBase {
 	protected void initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry reg) {
 		org.osgi.framework.Bundle bundle = getBundle();
 		
-		reg.put(ICeylonResources.CEYLON_DEFAULT_IMAGE, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_default_image.gif")));
-
-		reg.put(ICeylonResources.CEYLON_DEFAULT_OUTLINE_ITEM, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_default_outline_item.gif")));
-
 		reg.put(ICeylonResources.CEYLON_FILE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("ceylon_file.gif")));
 
@@ -82,7 +76,13 @@ public class CeylonPlugin extends PluginBase {
 
 		reg.put(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("private_co.gif")));
-}
+
+		reg.put(ICeylonResources.CEYLON_DEFAULT_IMAGE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_default_image.gif")));
+
+		reg.put(ICeylonResources.CEYLON_DEFAULT_OUTLINE_ITEM, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_default_outline_item.gif")));
+	}
 
 	public static org.eclipse.jface.resource.ImageDescriptor createImageDescriptor(
 			org.osgi.framework.Bundle bundle,
