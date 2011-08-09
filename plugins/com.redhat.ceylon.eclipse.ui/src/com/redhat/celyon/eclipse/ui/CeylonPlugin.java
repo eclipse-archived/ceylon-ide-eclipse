@@ -20,7 +20,6 @@ public class CeylonPlugin extends PluginBase {
 	}
 
 	public CeylonPlugin() {
-		super();
 		sPlugin = this;
 	}
 
@@ -38,81 +37,63 @@ public class CeylonPlugin extends PluginBase {
 		return kLanguageID;
 	}
 
-	// Definitions for image management
+	public static final org.eclipse.core.runtime.IPath ICONS_PATH = 
+			new org.eclipse.core.runtime.Path("icons/"); //$NON-NLS-1$("icons/"); //$NON-NLS-1$
 
-	public static final org.eclipse.core.runtime.IPath ICONS_PATH = new org.eclipse.core.runtime.Path(
-			"icons/"); //$NON-NLS-1$("icons/"); //$NON-NLS-1$
-
-	protected void initializeImageRegistry(
-			org.eclipse.jface.resource.ImageRegistry reg) {
+	@Override
+	protected void initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry reg) {
 		org.osgi.framework.Bundle bundle = getBundle();
-		org.eclipse.core.runtime.IPath path = ICONS_PATH
-				.append("ceylon_default_image.gif");//$NON-NLS-1$
-		org.eclipse.jface.resource.ImageDescriptor imageDescriptor = createImageDescriptor(
-				bundle, path);
-		reg.put(ICeylonResources.CEYLON_DEFAULT_IMAGE, imageDescriptor);
+		
+		reg.put(ICeylonResources.CEYLON_DEFAULT_IMAGE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_default_image.gif")));
 
-		path = ICONS_PATH.append("ceylon_default_outline_item.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_DEFAULT_OUTLINE_ITEM, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_DEFAULT_OUTLINE_ITEM, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_default_outline_item.gif")));
 
-		path = ICONS_PATH.append("ceylon_file.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_FILE, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_FILE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_file.gif")));
 
-		path = ICONS_PATH.append("ceylon_file_warning.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_FILE_WARNING, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_FILE_WARNING, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_file_warning.gif")));
 
-		path = ICONS_PATH.append("ceylon_file_error.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_FILE_ERROR, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_FILE_ERROR, createImageDescriptor(bundle, 
+				ICONS_PATH.append("ceylon_file_error.gif")));
 
-		path = ICONS_PATH.append("class_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_CLASS, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_CLASS, createImageDescriptor(bundle, 
+				ICONS_PATH.append("class_obj.gif")));
 
-		path = ICONS_PATH.append("int_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_INTERFACE, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_INTERFACE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("int_obj.gif")));
 
-		path = ICONS_PATH.append("innerclass_private_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_LOCAL_CLASS, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_LOCAL_CLASS, createImageDescriptor(bundle, 
+				ICONS_PATH.append("innerclass_private_obj.gif")));
 
-		path = ICONS_PATH.append("innerinterface_private_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_LOCAL_INTERFACE, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_LOCAL_INTERFACE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("innerinterface_private_obj.gif")));
 
-		path = ICONS_PATH.append("public_co.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_METHOD, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_METHOD, createImageDescriptor(bundle, 
+				ICONS_PATH.append("public_co.gif")));
 
-		path = ICONS_PATH.append("public_co.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_ATTRIBUTE, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_ATTRIBUTE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("public_co.gif")));
 
-		path = ICONS_PATH.append("private_co.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_LOCAL_METHOD, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_LOCAL_METHOD, createImageDescriptor(bundle, 
+				ICONS_PATH.append("private_co.gif")));
 
-		path = ICONS_PATH.append("private_co.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE, imageDescriptor);
+		reg.put(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("private_co.gif")));
 }
 
 	public static org.eclipse.jface.resource.ImageDescriptor createImageDescriptor(
 			org.osgi.framework.Bundle bundle,
 			org.eclipse.core.runtime.IPath path) {
-		java.net.URL url = org.eclipse.core.runtime.FileLocator.find(bundle,
-				path, null);
+		java.net.URL url = org.eclipse.core.runtime.FileLocator.find(bundle, path, null);
 		if (url != null) {
-			return org.eclipse.jface.resource.ImageDescriptor
-					.createFromURL(url);
+			return org.eclipse.jface.resource.ImageDescriptor.createFromURL(url);
 		}
-		return null;
+		else {
+			return null;
+		}
 	}
-
-	// Definitions for image management end
 
 }
