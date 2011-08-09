@@ -34,6 +34,24 @@ public class CeylonLabelProvider implements ILabelProvider {
 	private static Image FILE_WITH_ERROR_IMAGE = sImageRegistry
 			.get(ICeylonResources.CEYLON_FILE_ERROR);
 
+	private static Image CLASS = sImageRegistry
+			.get(ICeylonResources.CEYLON_CLASS);
+	private static Image INTERFACE = sImageRegistry
+			.get(ICeylonResources.CEYLON_INTERFACE);
+	private static Image LOCAL_CLASS = sImageRegistry
+			.get(ICeylonResources.CEYLON_LOCAL_CLASS);
+	private static Image LOCAL_INTERFACE = sImageRegistry
+			.get(ICeylonResources.CEYLON_LOCAL_INTERFACE);
+	private static Image METHOD = sImageRegistry
+			.get(ICeylonResources.CEYLON_METHOD);
+	private static Image ATTRIBUTE = sImageRegistry
+			.get(ICeylonResources.CEYLON_ATTRIBUTE);
+	private static Image LOCAL_METHOD = sImageRegistry
+			.get(ICeylonResources.CEYLON_LOCAL_METHOD);
+	private static Image LOCAL_ATTRIBUTE = sImageRegistry
+			.get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
+
+
 	public Image getImage(Object element) {
 		if (element instanceof IFile) {
 			// TODO:  rewrite to provide more appropriate images
@@ -61,9 +79,45 @@ public class CeylonLabelProvider implements ILabelProvider {
 	}
 
 	public static Image getImageFor(Node n) {
-		// TODO:  return specific images for specific node
-		// types, as images are available and appropriate
-		return DEFAULT_IMAGE;
+		if (n instanceof Tree.Declaration) {
+			Tree.Declaration d = (Tree.Declaration) n;
+			boolean shared = d.getDeclarationModel().isShared();
+			if (n instanceof Tree.AnyClass) {
+				if (shared) {
+					return CLASS;
+				}
+				else {
+					return LOCAL_CLASS;
+				}
+			}
+			else if (n instanceof Tree.AnyInterface) {
+				if (shared) {
+					return INTERFACE;
+				}
+				else { 
+					return LOCAL_INTERFACE;
+				}
+			}
+			else if (n instanceof Tree.AnyMethod) {
+				if (shared) {
+					return METHOD;
+				}
+				else {
+					return LOCAL_METHOD;
+				}
+			}
+			else {
+				if (shared) {
+					return ATTRIBUTE;
+				}
+				else {
+					return LOCAL_ATTRIBUTE;
+				}
+			}
+		}
+		else {
+			return DEFAULT_IMAGE;
+		}
 	}
 
 	public String getText(Object element) {
