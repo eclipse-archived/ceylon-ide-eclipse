@@ -41,5 +41,58 @@
             language="ceylon">
       </labelProvider>
    </extension>
+   <extension
+         id="ceylon.imp.builder"
+         name="Ceylon builder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run
+               class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder">
+            <parameter
+                  name="foo"
+                  value="bar">
+            </parameter>
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="imp.nature"
+         name="ceylon Nature"
+         point="org.eclipse.core.resources.natures">
+      <builder
+            id="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder">
+      </builder>
+      <runtime>
+         <run
+               class="com.redhat.ceylon.eclipse.imp.builder.CeylonNature">
+         </run>
+      </runtime>
+   </extension>
+   <extension
+         id="ceylon.imp.builder.problem"
+         name="ceylon Error"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IProject"
+            adaptable="true"
+            nameFilter="*"
+            id="ceylon.imp.projectContextMenu">
+         <action
+               label="Enable ceylon Builder"
+               tooltip="Enable the ceylon builder for this project"
+               class="com.redhat.ceylon.eclipse.imp.actions.EnableCeylonNature"
+               id="ceylon.imp.actions.enableNatureAction">
+         </action>
+      </objectContribution>
+   </extension>
 
 </plugin>
