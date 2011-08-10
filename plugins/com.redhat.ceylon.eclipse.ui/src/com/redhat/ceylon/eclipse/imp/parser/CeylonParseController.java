@@ -20,13 +20,21 @@ import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
+import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.parser.LexError;
+import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonParseController extends ParseControllerBase implements IParseController {
 
@@ -47,8 +55,6 @@ public class CeylonParseController extends ParseControllerBase implements IParse
    */
   public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
     super.initialize(filePath, project, handler);
-
-//    parser.setMessageHandler(handler); // TODO ...
   }
 
 
@@ -98,7 +104,64 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       fCurrentAst = (Node) phasedUnit.getCompilationUnit();
     }
     
+    final IMessageHandler handler = getHandler();
     typeChecker.process();
+    if (handler != null)
+    {
+      Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) fCurrentAst; 
+      compilationUnit.visit(new Visitor() {
+        @Override 
+        public void visitAny(Node node) { 
+          super.visitAny(node);
+          for (Message error : node.getErrors()) 
+          { 
+            String errorMessage = error.getMessage();
+            int startOffset;
+            int endOffset;
+            int startCol;
+            int endCol;
+            int startLine;
+            int endLine;
+            
+            CommonToken token = null;
+            
+            if (error instanceof LexError)
+            {
+              LexError lexError = (LexError) error;
+              token = (CommonToken) lexError.getRecognitionException().token;
+            }
+            if (error instanceof ParseError)
+            {
+              ParseError parseError = (ParseError) error;
+              token = (CommonToken) parseError.getRecognitionException().token;
+            }
+            if (error instanceof AnalysisError)
+            {
+              AnalysisError analysisError = (AnalysisError) error;
+              token = (CommonToken) analysisError.getTreeNode().getAntlrTreeNode().getToken();
+            }
+            if (error instanceof AnalysisWarning)
+            {
+              AnalysisWarning analysisWarning = (AnalysisWarning) error;
+              token = (CommonToken) analysisWarning.getTreeNode().getAntlrTreeNode().getToken();
+            }
+            
+            if (token != null)
+            {
+              startOffset = token.getStartIndex();
+              endOffset = token.getStopIndex();
+              startCol = endCol = token.getCharPositionInLine();
+              startLine = endLine = token.getLine();
+              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, startCol, endCol, startLine, endLine);
+            }
+            else
+            {
+              System.out.println("NO TOKEN !!!!");
+            }
+          }
+        }
+      });      
+    }
 
     return fCurrentAst;
   }
