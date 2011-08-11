@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.tree.CommonTree;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
@@ -29,6 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
+import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -43,7 +46,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
 
   private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo= new SimpleAnnotationTypeInfo();
-  private ISourcePositionLocator sourcePositionLocator;
+  private CeylonSourcePositionLocator sourcePositionLocator;
   private CeylonParser parser;
   private final Set<Integer> annotations = new HashSet<Integer>();
 
@@ -124,31 +127,22 @@ public class CeylonParseController extends ParseControllerBase implements IParse
             int endLine;
             
             CommonToken token = null;
-            
-            if (error instanceof LexError)
+
+            if (error instanceof RecognitionError)
             {
-              LexError lexError = (LexError) error;
-              token = (CommonToken) lexError.getRecognitionException().token;
+              RecognitionError recognitionError = (RecognitionError) error;
+              token = (CommonToken) recognitionError.getRecognitionException().token;
             }
-            if (error instanceof ParseError)
+            if (error instanceof AnalysisMessage)
             {
-              ParseError parseError = (ParseError) error;
-              token = (CommonToken) parseError.getRecognitionException().token;
-            }
-            if (error instanceof AnalysisError)
-            {
-              AnalysisError analysisError = (AnalysisError) error;
-              token = (CommonToken) analysisError.getTreeNode().getAntlrTreeNode().getToken();
-            }
-            if (error instanceof AnalysisWarning)
-            {
-              AnalysisWarning analysisWarning = (AnalysisWarning) error;
-              token = (CommonToken) analysisWarning.getTreeNode().getAntlrTreeNode().getToken();
+              AnalysisMessage analysisMessage = (AnalysisMessage) error;
+              Node errorNode = analysisMessage.getTreeNode();
+              token = (CommonToken) ((CeylonSourcePositionLocator) getSourcePositionLocator()).getToken(errorNode);              
             }
             
             if (token != null)
             {
-              startOffset = token.getStartIndex();
+              startOffset = token.getStartIndex();              
               endOffset = token.getStopIndex();
               startCol = endCol = token.getCharPositionInLine();
               startLine = endLine = token.getLine();

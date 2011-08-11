@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/antlrworks-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/antlrworks-1.3.1.jar" sourcepath="/home/david/GitRepo/ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/libsrc/antlr-runtime-3.2-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.1.jar" sourcepath="/ceylon-spec"/>
 	<classpathentry kind="src" path="src/"/>
 	<classpathentry kind="output" path="target/classes"/>
