@@ -9,6 +9,8 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
+import antlr.debug.ParserController;
+
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -102,7 +104,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 		return token==null?0:token.getStartIndex();
 	}
 
-	private CommonToken getToken(Object node) {
+	CommonToken getToken(Object node) {
 		if (node instanceof ModelTreeNode) {
 			ModelTreeNode treeNode = (ModelTreeNode) node;
 			return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
@@ -111,12 +113,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 		} else if (node instanceof Tree.Declaration) {
 			Tree.Declaration decl = (Tree.Declaration) node;
 			return (CommonToken) decl.getIdentifier().getAntlrTreeNode().getToken();
-		}	else if (node instanceof Node) {
-		
+		}	else if (node instanceof Node) {		
 			Node n = (Node) node;
-			return (CommonToken) n.getAntlrTreeNode().getToken();
+			CommonTokenStream tokenStream = (CommonTokenStream) parseController.getParser().getTokenStream();
+			return (CommonToken) tokenStream.get(n.getAntlrTreeNode().getTokenStartIndex());			
 		}
-		return null;
+		else
+		{
+		  System.out.println("Unknown node type !!!!");
+		  return null;
+		}
 	}
 	
 
