@@ -7,6 +7,13 @@ import org.eclipse.imp.parser.SimpleLPGParseController;
 import org.eclipse.imp.parser.SymbolTable;
 import org.eclipse.imp.services.IReferenceResolver;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
+
 public class CeylonReferenceResolver implements IReferenceResolver {
 
   public CeylonReferenceResolver() {
@@ -17,8 +24,14 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * from (or to) that node
    */
   public String getLinkText(Object node) {
-    // TODO Replace the following with an implementation suitable to your language and reference types
-    return node.toString();
+    if (node instanceof Node)
+    {
+      return ((Node) node).getText();
+    }
+    else
+    {
+      return node.toString(); 
+    }
   }
 
   /**
@@ -26,24 +39,14 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * given Parse Controller.
    */
   public Object getLinkTarget(Object node, IParseController controller) {
-    // START_HERE
-    // TODO Replace the following with an implementation suitable for your language and reference types
-
-    // NOTE:  The code shown in this method body works with the
-    // example grammar used in the IMP language-service templates.
-    // It may be adaptable for use with other languages.  HOWEVER,
-    // this particular code is not essential to reference resolvers
-    // in general, and the user should provide an implementation
-    // that is appropriate to the language and AST structure for
-    // which the service is being defined.
-/*
-    if (node instanceof Iidentifier && controller.getCurrentAst() != null) {
-      identifier id = (identifier) node;
-      CeylonParser parser = (CeylonParser) ((CeylonParseController) controller).getParser();
-      SymbolTable<IAst> symtab = parser.getEnclosingSymbolTable(id);
-      return symtab.findDeclaration(id.toString());
+    if (node instanceof Primary && controller.getCurrentAst() != null) {
+      Primary primaryNode = (Primary) node;
+      Declaration declarationModel = primaryNode.getDeclaration();
+      CompilationUnit compilationUnit = (CompilationUnit) controller.getCurrentAst();
+      FindDeclarationVisitor visitor = new FindDeclarationVisitor(declarationModel);
+      compilationUnit.visit(visitor);
+      return visitor.getDeclarationNode();
     }
-*/
     return null;
   }
 }

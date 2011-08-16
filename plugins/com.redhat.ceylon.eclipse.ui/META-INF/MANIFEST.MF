@@ -6,15 +6,16 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.eclipse.imp.runtime,
+ org.eclipse.imp.runtime;bundle-version="0.2.1",
  org.eclipse.ui,
- lpg.runtime.java,
+ lpg.runtime.java;bundle-version="2.0.18",
  org.eclipse.jface.text,
- lpg.runtime,
+ lpg.runtime;bundle-version="2.0.18",
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
- org.eclipse.imp.smapifier,
- org.eclipse.jdt.core
+ org.eclipse.imp.smapifier;bundle-version="0.2.1",
+ org.eclipse.jdt.core,
+ org.eclipse.imp.runtime
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/antlrworks-1.3.1.jar,
