@@ -15,8 +15,10 @@ import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Util;
 
 
 public class CeylonLabelProvider implements ILabelProvider {
@@ -84,7 +86,7 @@ public class CeylonLabelProvider implements ILabelProvider {
 	public static Image getImageFor(Node n) {
 		if (n instanceof Tree.Declaration) {
 			Tree.Declaration d = (Tree.Declaration) n;
-			boolean shared = d.getDeclarationModel().isShared();
+			boolean shared = Util.hasAnnotation(d.getAnnotationList(), "shared");
 			if (n instanceof Tree.AnyClass) {
 				if (shared) {
 					return CLASS;
@@ -172,7 +174,8 @@ public class CeylonLabelProvider implements ILabelProvider {
 			return "<Unknown>";
 		}
 		else {
-			return type.getTypeModel().getProducedTypeName();
+			ProducedType tm = type.getTypeModel();
+			return tm==null ? "<Unknown>" : tm.getProducedTypeName();
 		}
 	}
 	
