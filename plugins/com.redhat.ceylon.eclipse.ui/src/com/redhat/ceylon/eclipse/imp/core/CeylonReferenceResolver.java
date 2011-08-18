@@ -20,15 +20,15 @@ public class CeylonReferenceResolver implements IReferenceResolver {
   public String getLinkText(Object node) {
     if (node instanceof Node)
     {
-        if (node instanceof Tree.Primary) {
-          return ((Tree.Primary) node).getDeclaration().getName();
-        }
-        else if (node instanceof Tree.SimpleType) {
-          return ((Tree.SimpleType) node).getDeclarationModel().getName();
-        }
-        if (node instanceof Tree.Declaration) {
-          return ((Tree.Declaration) node).getDeclarationModel().getName();
-        }
+      if (node instanceof Tree.Primary) {
+        return ((Tree.Primary) node).getDeclaration().getName();
+      }
+      else if (node instanceof Tree.SimpleType) {
+        return ((Tree.SimpleType) node).getDeclarationModel().getName();
+      }
+      if (node instanceof Tree.Declaration) {
+        return ((Tree.Declaration) node).getDeclarationModel().getName();
+      }
       return ((Node) node).getText();
     }
     else
