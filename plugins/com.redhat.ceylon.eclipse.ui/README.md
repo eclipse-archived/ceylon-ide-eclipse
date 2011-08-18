@@ -9,12 +9,12 @@
 2.  `Use Help > Install New Software...` to install all 
     components of IMP from the update site at:
     
-    <http://download.eclipse.org/technology/imp/updates/>
+    <http://download.eclipse.org/technology/imp/updates/0.2/>
     
 3.  Use `File > Import... > Existing Projects into Workspace` 
     to import the `ceyon-ide-eclipse` project.
     
-4.  Select the `ceyon-ide-eclipse` project and run it using
+4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`
     
 5.  From the new instance of Eclipse, use `File > Open File...` 
