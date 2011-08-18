@@ -11,6 +11,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonDocumentationProvider implements IDocumentationProvider {
 
@@ -27,8 +28,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       // to that entity (such as in the following examples)
 
       // Address node types of interest, which may represent multiple tokens
-      String qualifiedName = decl.getIdentifier().getText();
-      documentation += "<b>" + qualifiedName + "</b>";
+      //String qualifiedName = decl.getIdentifier().getText();
+      documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl) + "</b>";
       
       AnnotationList annotationList = decl.getAnnotationList();
       if (annotationList != null)
