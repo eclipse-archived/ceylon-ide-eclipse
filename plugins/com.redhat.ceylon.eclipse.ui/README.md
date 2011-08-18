@@ -12,9 +12,9 @@
     <http://download.eclipse.org/technology/imp/updates/0.2/>
     
 3.  Use `File > Import... > Existing Projects into Workspace` 
-    to import the project from the root directory: 
+    to import the project from this root directory: 
     
-    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
+        ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
     
 4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`
