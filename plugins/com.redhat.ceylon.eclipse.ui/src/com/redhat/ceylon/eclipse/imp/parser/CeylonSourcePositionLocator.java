@@ -9,8 +9,6 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
-import antlr.debug.ParserController;
-
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
@@ -36,10 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
  */
 public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
-  private final Node[] fNode = new Node[1];
-
-  private int fStartOffset;
-  private int fEndOffset;
   private CeylonParseController parseController;
 
   public CeylonSourcePositionLocator(IParseController parseController) {
@@ -47,9 +41,52 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   private final class NodeVisitor extends Visitor {
+    
+    private NodeVisitor(int fStartOffset, int fEndOffset) {
+    this.fStartOffset = fStartOffset;
+    this.fEndOffset = fEndOffset;
+  }
 
-    public void visitAny(Node element) {
-      CommonTree antlrTreeNode = element.getAntlrTreeNode();
+  private Node node;
+  private int fStartOffset;
+  private int fEndOffset;
+  
+  public Node getNode() {
+    return node;
+  }
+    
+  @Override
+  public void visit(Tree.StaticMemberOrTypeExpression that) {
+    if (inBounds(that.getIdentifier())) {
+        node = that;
+    }
+    else {
+        super.visit(that);
+    }
+  }
+  
+  @Override
+  public void visit(Tree.SimpleType that) {
+    if (inBounds(that.getIdentifier())) {
+        node = that;
+    }
+    else {
+        super.visit(that);
+    }
+  }
+  
+  @Override
+  public void visit(Tree.Declaration that) {
+    if (inBounds(that.getIdentifier())) {
+        node = that;
+    }
+    else {
+        super.visit(that);
+    }
+  }
+  
+    private boolean inBounds(Node that) {
+      CommonTree antlrTreeNode = that.getAntlrTreeNode();
 
       int tokenStartIndex = antlrTreeNode.getTokenStartIndex();
       CommonToken tokenStart = (CommonToken) getTokenStream().get(tokenStartIndex);
@@ -60,14 +97,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       int nodeEndOffset = tokenStop.getStopIndex();
       
       // If this node contains the span of interest then record it and continue visiting the subtrees
-      if (nodeStartOffset <= fStartOffset && nodeEndOffset >= fEndOffset) {       
-        fNode[0] = element;
-        super.visitAny(element);
-      }
+      return nodeStartOffset <= fStartOffset && nodeEndOffset >= fEndOffset;
     }
+    
   }
-
-  private NodeVisitor visitor = new NodeVisitor();
 
   private CommonTokenStream getTokenStream()
   {
@@ -80,9 +113,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public Object findNode(Object ast, int startOffset, int endOffset) {
-    // System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);
-    fStartOffset = startOffset;
-    fEndOffset = endOffset;
+    NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
+    //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);
     
     if (!(ast instanceof Tree.CompilationUnit))
       return ast;
@@ -90,52 +122,46 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
     
     cu.visit(visitor);
-    if (fNode[0] == null) {
-      System.out.println("Selected node:  null");
-    } else {
-      System.out.println("Selected node: " + fNode[0]);
-    }
-    return fNode[0];
+    System.out.println("Selected node: " + visitor.getNode());
+    return visitor.getNode();
   }
 
   
-	public int getStartOffset(Object node) {
-		CommonToken token = getToken(node);
-		
-		return token==null?0:token.getStartIndex();
-	}
+  public int getStartOffset(Object node) {
+    CommonToken token = getToken(node);
+    return token==null?0:token.getStartIndex();
+  }
 
-	CommonToken getToken(Object node) {
-		if (node instanceof ModelTreeNode) {
-			ModelTreeNode treeNode = (ModelTreeNode) node;
-			return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
-		}
-		if (node instanceof CommonToken) {
-			return ((CommonToken) node);
-		}
-		if (node instanceof Tree.Declaration) {
-			Tree.Declaration decl = (Tree.Declaration) node;
-			Identifier identifier = decl.getIdentifier();
-			if (identifier != null)
-			{
-	      return (CommonToken) identifier.getAntlrTreeNode().getToken();
-			}
-		}
-		if (node instanceof Node) {		
-			Node n = (Node) node;
-			CommonTokenStream tokenStream = (CommonTokenStream) parseController.getParser().getTokenStream();
-			return (CommonToken) tokenStream.get(n.getAntlrTreeNode().getTokenStartIndex());			
-		}		
-	  System.out.println("Unknown node type !!!!");
-	  return null;
-	}
-	
+  CommonToken getToken(Object node) {
+    if (node instanceof ModelTreeNode) {
+      ModelTreeNode treeNode = (ModelTreeNode) node;
+      return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
+    }
+    if (node instanceof CommonToken) {
+      return ((CommonToken) node);
+    }
+    if (node instanceof Tree.Declaration) {
+      Tree.Declaration decl = (Tree.Declaration) node;
+      Identifier identifier = decl.getIdentifier();
+      if (identifier != null)
+      {
+        return (CommonToken) identifier.getAntlrTreeNode().getToken();
+      }
+    }
+    if (node instanceof Node) {    
+      Node n = (Node) node;
+      CommonTokenStream tokenStream = (CommonTokenStream) parseController.getParser().getTokenStream();
+      return (CommonToken) tokenStream.get(n.getAntlrTreeNode().getTokenStartIndex());      
+    }    
+    System.out.println("Unknown node type !!!!");
+    return null;
+  }
+  
 
-	public int getEndOffset(Object node) {
-		CommonToken token = getToken(node);
-
-		return token == null ? 0 : token.getStopIndex();
-	}
+  public int getEndOffset(Object node) {
+    CommonToken token = getToken(node);
+    return token == null ? 0 : token.getStopIndex();
+  }
 
   public int getLength(Object node) {
     return getEndOffset(node) - getStartOffset(node);
