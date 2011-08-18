@@ -101,5 +101,12 @@
             language="ceylon">
       </referenceResolver>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.documentationProvider">
+      <docProvider
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider"
+            language="ceylon">
+      </docProvider>
+   </extension>
 
 </plugin>
