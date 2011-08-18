@@ -189,19 +189,27 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     int regionLength= region.getLength();
     int regionEnd= regionOffset + regionLength - 1;
 
-    CommonTokenStream stream= (CommonTokenStream) getParser().getTokenStream();
-    List tokens = stream.getTokens();
-    int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
-    // getTokenIndexAtCharacter() answers the negative of the index of the
-    // preceding token if the given offset is not actually within a token.
-    if (firstTokIdx < 0) {
-      firstTokIdx= -firstTokIdx + 1;
+    CeylonParser parser = getParser();
+    if (parser != null)
+    {
+      CommonTokenStream stream = (CommonTokenStream)  parser.getTokenStream();
+      List tokens = stream.getTokens();
+      int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
+      // getTokenIndexAtCharacter() answers the negative of the index of the
+      // preceding token if the given offset is not actually within a token.
+      if (firstTokIdx < 0) {
+        firstTokIdx= -firstTokIdx + 1;
+      }
+      int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
+      if (lastTokIdx < 0) {
+        lastTokIdx= -lastTokIdx + 1;
+      }      
+      return stream.getTokens(firstTokIdx, lastTokIdx).iterator();
     }
-    int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
-    if (lastTokIdx < 0) {
-      lastTokIdx= -lastTokIdx + 1;
-    }
-    return stream.getTokens(firstTokIdx, lastTokIdx).iterator();
+    else
+    {
+      return null;
+    }  
   }
 
 

@@ -13,6 +13,7 @@ import antlr.debug.ParserController;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 /**
@@ -108,21 +109,25 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 		if (node instanceof ModelTreeNode) {
 			ModelTreeNode treeNode = (ModelTreeNode) node;
 			return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
-		} else if (node instanceof CommonToken) {
+		}
+		if (node instanceof CommonToken) {
 			return ((CommonToken) node);
-		} else if (node instanceof Tree.Declaration) {
+		}
+		if (node instanceof Tree.Declaration) {
 			Tree.Declaration decl = (Tree.Declaration) node;
-			return (CommonToken) decl.getIdentifier().getAntlrTreeNode().getToken();
-		}	else if (node instanceof Node) {		
+			Identifier identifier = decl.getIdentifier();
+			if (identifier != null)
+			{
+	      return (CommonToken) identifier.getAntlrTreeNode().getToken();
+			}
+		}
+		if (node instanceof Node) {		
 			Node n = (Node) node;
 			CommonTokenStream tokenStream = (CommonTokenStream) parseController.getParser().getTokenStream();
 			return (CommonToken) tokenStream.get(n.getAntlrTreeNode().getTokenStartIndex());			
-		}
-		else
-		{
-		  System.out.println("Unknown node type !!!!");
-		  return null;
-		}
+		}		
+	  System.out.println("Unknown node type !!!!");
+	  return null;
 	}
 	
 
