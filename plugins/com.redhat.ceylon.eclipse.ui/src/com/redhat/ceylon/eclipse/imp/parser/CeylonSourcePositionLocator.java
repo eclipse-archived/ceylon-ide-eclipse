@@ -43,9 +43,9 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   private final class NodeVisitor extends Visitor {
     
     private NodeVisitor(int fStartOffset, int fEndOffset) {
-    this.fStartOffset = fStartOffset;
-    this.fEndOffset = fEndOffset;
-  }
+      this.fStartOffset = fStartOffset;
+      this.fEndOffset = fEndOffset;
+    }
 
   private Node node;
   private int fStartOffset;
