@@ -1,13 +1,15 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.tree.CommonTree;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
@@ -20,22 +22,17 @@ import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
-
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.parser.LexError;
-import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -127,17 +124,24 @@ public class CeylonParseController extends ParseControllerBase implements IParse
             int endLine;
             
             CommonToken token = null;
-
+            Map<String, Object> attributes = new HashMap<String, Object>();
             if (error instanceof RecognitionError)
             {
               RecognitionError recognitionError = (RecognitionError) error;
               token = (CommonToken) recognitionError.getRecognitionException().token;
+              attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR+1);
             }
             if (error instanceof AnalysisMessage)
             {
               AnalysisMessage analysisMessage = (AnalysisMessage) error;
               Node errorNode = analysisMessage.getTreeNode();
-              token = (CommonToken) ((CeylonSourcePositionLocator) getSourcePositionLocator()).getToken(errorNode);              
+              token = (CommonToken) ((CeylonSourcePositionLocator) getSourcePositionLocator()).getToken(errorNode);
+              if (error instanceof AnalysisWarning) {
+            	  attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING+1);
+              }
+              else {
+            	  attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR+1);
+              }
             }
             
             if (token != null)
@@ -146,7 +150,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
               endOffset = token.getStopIndex();
               startCol = endCol = token.getCharPositionInLine();
               startLine = endLine = token.getLine();
-              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, startCol, endCol, startLine, endLine);
+              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
+            		  startCol, endCol, startLine, endLine, attributes);
             }
             else
             {
