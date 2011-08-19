@@ -80,11 +80,12 @@ public class CeylonContentProposer implements IContentProposer {
         result.add(new SourceProposal(CeylonLabelProvider.getLabelFor(n), d.getIdentifier().getText(), prefix, offset));
       }*/
       for (final Declaration d: getProposals(node, prefix).values()) {
-        result.add(new SourceProposal(getDescriptionFor(d), getTextFor(d), prefix, offset) { 
+        boolean includeArgs = node instanceof Tree.StaticMemberOrTypeExpression;
+        result.add(new SourceProposal(getDescriptionFor(d, includeArgs), getTextFor(d, includeArgs), prefix, offset) { 
           public Image getImage() {
             return CeylonLabelProvider.getImage(d);
           }; 
-        } ); //TODO: better description!
+        });
       }
     } 
     else {
@@ -109,7 +110,7 @@ public class CeylonContentProposer implements IContentProposer {
     return node.getScope().getMatchingDeclarations(node.getUnit(), prefix);
   }
 
-  public static String getTextFor(Declaration d) {
+  public static String getTextFor(Declaration d, boolean includeArgs) {
     String result = d.getName();
     if (d instanceof Generic) {
       List<TypeParameter> types = ((Generic) d).getTypeParameters();
@@ -121,7 +122,7 @@ public class CeylonContentProposer implements IContentProposer {
         result = result.substring(0, result.length()-2) + ">";
       }
     }
-    if (d instanceof Functional) {
+    if (includeArgs && d instanceof Functional) {
       List<ParameterList> plists = ((Functional) d).getParameterLists();
       if (plists!=null && !plists.isEmpty()) {
         ParameterList params = plists.get(0);
@@ -140,7 +141,7 @@ public class CeylonContentProposer implements IContentProposer {
     return result;
   }
   
-  public static String getDescriptionFor(Declaration d) {
+  public static String getDescriptionFor(Declaration d, boolean includeArgs) {
     String result = d.getName();
     if (d instanceof Generic) {
       List<TypeParameter> types = ((Generic) d).getTypeParameters();
@@ -152,7 +153,7 @@ public class CeylonContentProposer implements IContentProposer {
         result = result.substring(0, result.length()-2) + ">";
       }
     }
-    if (d instanceof Functional) {
+    if (includeArgs && d instanceof Functional) {
       List<ParameterList> plists = ((Functional) d).getParameterLists();
       if (plists!=null && !plists.isEmpty()) {
         ParameterList params = plists.get(0);
