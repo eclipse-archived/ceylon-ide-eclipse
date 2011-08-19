@@ -1,15 +1,12 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
@@ -24,7 +21,6 @@ import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -124,24 +120,24 @@ public class CeylonParseController extends ParseControllerBase implements IParse
             int endLine;
             
             CommonToken token = null;
-            Map<String, Object> attributes = new HashMap<String, Object>();
+            //Map<String, Object> attributes = new HashMap<String, Object>();
             if (error instanceof RecognitionError)
             {
               RecognitionError recognitionError = (RecognitionError) error;
               token = (CommonToken) recognitionError.getRecognitionException().token;
-              attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR+1);
+              //attributes.put(SEVERITY_KEY, ERROR);
             }
             if (error instanceof AnalysisMessage)
             {
               AnalysisMessage analysisMessage = (AnalysisMessage) error;
               Node errorNode = analysisMessage.getTreeNode();
               token = (CommonToken) ((CeylonSourcePositionLocator) getSourcePositionLocator()).getToken(errorNode);
-              if (error instanceof AnalysisWarning) {
-            	  attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING+1);
+              /*if (error instanceof AnalysisWarning) {
+            	  attributes.put(SEVERITY_KEY, WARNING);
               }
               else {
-            	  attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR+1);
-              }
+            	  attributes.put(SEVERITY_KEY, ERROR);
+              }*/
             }
             
             if (token != null)
@@ -151,7 +147,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
               startCol = endCol = token.getCharPositionInLine();
               startLine = endLine = token.getLine();
               handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
-            		  startCol, endCol, startLine, endLine, attributes);
+            		  startCol, endCol, startLine, endLine/*, attributes*/);
             }
             else
             {
