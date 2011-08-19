@@ -30,7 +30,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       // Address node types of interest, which may represent multiple tokens
       //String qualifiedName = decl.getIdentifier().getText();
       documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
-    		  .replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;") + "</b>";
+    		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
       
       AnnotationList annotationList = decl.getAnnotationList();
       if (annotationList != null)
