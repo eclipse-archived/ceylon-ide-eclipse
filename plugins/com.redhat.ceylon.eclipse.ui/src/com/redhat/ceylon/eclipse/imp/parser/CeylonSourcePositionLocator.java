@@ -97,7 +97,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       int nodeEndOffset = tokenStop.getStopIndex();
       
       // If this node contains the span of interest then record it and continue visiting the subtrees
-      return nodeStartOffset <= fStartOffset && nodeEndOffset >= fEndOffset;
+      return nodeStartOffset <= fStartOffset && nodeEndOffset+1 >= fEndOffset;
     }
     
   }
@@ -108,16 +108,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   }
   
-  public Object findNode(Object ast, int offset) {
+  public Node findNode(Object ast, int offset) {
     return findNode(ast, offset, offset);
   }
 
-  public Object findNode(Object ast, int startOffset, int endOffset) {
+  public Node findNode(Object ast, int startOffset, int endOffset) {
     NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
     //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);
     
-    if (!(ast instanceof Tree.CompilationUnit))
-      return ast;
+    /*if (!(ast instanceof Tree.CompilationUnit))
+      return ast;*/
   
     Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
     
@@ -132,13 +132,13 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return token==null?0:token.getStartIndex();
   }
 
-  CommonToken getToken(Object node) {
+  public CommonToken getToken(Object node) {
     if (node instanceof ModelTreeNode) {
       ModelTreeNode treeNode = (ModelTreeNode) node;
       return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
     }
     else if (node instanceof CommonToken) {
-      return ((CommonToken) node);
+      return (CommonToken) node;
     }
     else if (node instanceof Tree.Declaration) {
       Tree.Declaration decl = (Tree.Declaration) node;

@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
@@ -54,7 +53,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
 
 
-  public ISourcePositionLocator getSourcePositionLocator() {
+  public CeylonSourcePositionLocator getSourcePositionLocator() {
     if (sourcePositionLocator == null) {
         sourcePositionLocator= new CeylonSourcePositionLocator(this);
     }
