@@ -108,5 +108,12 @@
             language="ceylon">
       </docProvider>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.contentProposer">
+      <proposer
+            class="ceylon.imp.contentProposer.CeylonContentProposer"
+            language="ceylon">
+      </proposer>
+   </extension>
 
 </plugin>
