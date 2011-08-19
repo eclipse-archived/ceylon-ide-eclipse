@@ -53,6 +53,9 @@ public class CeylonContentProposer implements IContentProposer {
       String prefix;
       Node node = locator.findNode(ctlr.getCurrentAst(), offset);
       if (node==null) {
+        //TODO: need to do something much better here:
+        //      search for a surrounding scope
+        //      search for a token, and treat it as a base expression or type
         prefix = "";
         node = (Tree.CompilationUnit) ctlr.getCurrentAst();
       }
