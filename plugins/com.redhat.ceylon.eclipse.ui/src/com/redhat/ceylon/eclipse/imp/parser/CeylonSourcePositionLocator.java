@@ -137,10 +137,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       ModelTreeNode treeNode = (ModelTreeNode) node;
       return (CommonToken) ((Node) treeNode.getASTNode()).getAntlrTreeNode().getToken();
     }
-    if (node instanceof CommonToken) {
+    else if (node instanceof CommonToken) {
       return ((CommonToken) node);
     }
-    if (node instanceof Tree.Declaration) {
+    else if (node instanceof Tree.Declaration) {
       Tree.Declaration decl = (Tree.Declaration) node;
       Identifier identifier = decl.getIdentifier();
       if (identifier != null)
@@ -148,12 +148,27 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return (CommonToken) identifier.getAntlrTreeNode().getToken();
       }
     }
-    if (node instanceof Node) {    
+    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+      Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
+      Identifier identifier = decl.getIdentifier();
+      if (identifier != null)
+      {
+        return (CommonToken) identifier.getAntlrTreeNode().getToken();
+      }
+    }
+    else if (node instanceof Tree.SimpleType) {
+      Tree.SimpleType decl = (Tree.SimpleType) node;
+      Identifier identifier = decl.getIdentifier();
+      if (identifier != null)
+      {
+        return (CommonToken) identifier.getAntlrTreeNode().getToken();
+      }
+    }
+    else if (node instanceof Node) {    
       Node n = (Node) node;
       CommonTokenStream tokenStream = (CommonTokenStream) parseController.getParser().getTokenStream();
       return (CommonToken) tokenStream.get(n.getAntlrTreeNode().getTokenStartIndex());      
-    }    
-    System.out.println("Unknown node type !!!!");
+    }
     return null;
   }
   
