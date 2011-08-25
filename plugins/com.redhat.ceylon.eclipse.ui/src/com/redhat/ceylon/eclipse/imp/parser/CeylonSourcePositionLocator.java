@@ -83,6 +83,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
   }
   
+  @Override
+  public void visit(Tree.NamedArgument that) {
+    if (inBounds(that.getIdentifier())) {
+        node = that;
+    }
+    else {
+        super.visit(that);
+    }
+  }
+  
     private boolean inBounds(Tree.Identifier that) {
       if (that==null) return false;
       int tokenStartIndex = ((CommonToken) that.getToken()).getStartIndex();;
@@ -128,6 +138,14 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return (CommonToken) identifier.getToken();
       }
     }
+    else if (node instanceof Tree.NamedArgument) {
+        Tree.NamedArgument decl = (Tree.NamedArgument) node;
+        Identifier identifier = decl.getIdentifier();
+        if (identifier != null)
+        {
+          return (CommonToken) identifier.getToken();
+        }
+      }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
       Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
       Identifier identifier = decl.getIdentifier();
