@@ -29,6 +29,9 @@ public class CeylonReferenceResolver implements IReferenceResolver {
       if (node instanceof Tree.Declaration) {
         return ((Tree.Declaration) node).getDeclarationModel().getName();
       }
+      else if (node instanceof Tree.NamedArgument) {
+        return ((Tree.NamedArgument) node).getParameter().getName();
+      }
       return ((Node) node).getText();
     }
     else
@@ -51,6 +54,9 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     }
     else if (node instanceof Tree.Declaration) {
       dec = ((Tree.Declaration) node).getDeclarationModel();
+    }
+    else if (node instanceof Tree.NamedArgument) {
+      dec = ((Tree.NamedArgument) node).getParameter();
     }
     if (dec!=null && controller.getCurrentAst() != null) {
       Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) controller.getCurrentAst();
