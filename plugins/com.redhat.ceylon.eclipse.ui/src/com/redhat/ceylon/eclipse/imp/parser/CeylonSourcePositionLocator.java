@@ -84,6 +84,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
   
     private boolean inBounds(Tree.Identifier that) {
+      if (that==null) return false;
       int tokenStartIndex = ((CommonToken) that.getToken()).getStartIndex();;
       int tokenStopIndex = ((CommonToken) that.getToken()).getStopIndex();;
       // If this node contains the span of interest then record it and continue visiting the subtrees
