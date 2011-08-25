@@ -20,7 +20,13 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       return null;
 
     if (entity instanceof Declaration) {
-      String documentation = "";
+      return getDocumentation(entity);
+    }
+    return null;
+  }
+
+  public static String getDocumentation(Object entity) {
+	  String documentation = "";
       Declaration decl = (Declaration) entity; 
       // START_HERE
       // Create a case for each kind of node or token for which you
@@ -58,7 +64,5 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       }
       
       return documentation;
-    }
-    return null;
   }
 }
