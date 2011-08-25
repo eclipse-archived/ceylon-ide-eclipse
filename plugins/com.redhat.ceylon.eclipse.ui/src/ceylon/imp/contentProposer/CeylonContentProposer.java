@@ -1,6 +1,7 @@
 package ceylon.imp.contentProposer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -9,17 +10,23 @@ import org.eclipse.imp.editor.ErrorProposal;
 import org.eclipse.imp.editor.SourceProposal;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IContentProposer;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -44,13 +51,13 @@ public class CeylonContentProposer implements IContentProposer {
    *             parse controller at the given position
    */
   public ICompletionProposal[] getContentProposals(IParseController ctlr,
-      int offset, ITextViewer viewer) {
+      final int offset, ITextViewer viewer) {
     CeylonParseController parseController = (CeylonParseController) ctlr;
     List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
 
     if (ctlr.getCurrentAst() != null) {
       CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
-      String prefix;
+      final String prefix;
       Node node = locator.findNode(ctlr.getCurrentAst(), offset);
       if (node==null) {
         //TODO: need to do something much better here:
@@ -83,12 +90,12 @@ public class CeylonContentProposer implements IContentProposer {
         result.add(new SourceProposal(CeylonLabelProvider.getLabelFor(n), d.getIdentifier().getText(), prefix, offset));
       }*/
       for (final Declaration d: getProposals(node, prefix).values()) {
-        boolean includeArgs = node instanceof Tree.StaticMemberOrTypeExpression;
-        result.add(new SourceProposal(getDescriptionFor(d, includeArgs), getTextFor(d, includeArgs), prefix, offset) { 
-          public Image getImage() {
-            return CeylonLabelProvider.getImage(d);
-          }; 
-        });
+        if (d instanceof TypeDeclaration) {
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), getTextFor(d, false)));
+        }
+        if (d instanceof TypedDeclaration || d instanceof Class) {
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), getTextFor(d, true)));
+        }
       }
     } 
     else {
@@ -96,6 +103,33 @@ public class CeylonContentProposer implements IContentProposer {
           "No proposals available due to syntax errors", offset));
     }
     return result.toArray(new ICompletionProposal[result.size()]);
+  }
+
+  private SourceProposal sourceProposal(final int offset, final String prefix,
+		final Declaration d, String desc, final String text) {
+	return new SourceProposal(desc, text, prefix, 
+			                  new Region(offset, 0), 
+			                  offset + text.length() - prefix.length()
+			                  /*,CeylonDocumentationProvider.getDocumentation(d)*/) { 
+	  public Image getImage() {
+	    return CeylonLabelProvider.getImage(d);
+	  };
+	  @Override
+	    public Point getSelection(IDocument document) {
+	      int loc = text.indexOf('(');
+	      int start;
+	      int length;
+	      if (loc<0||text.contains("()")) {
+	    	start = offset+text.length()-prefix.length();
+	    	length = 0;
+	      }
+	      else {
+		    start = offset-prefix.length()+loc+1;
+		    length = text.length()-loc-2;
+	      }
+	      return new Point(start, length);
+	    }
+	};
   }
 
   private Map<String, Declaration> getProposals(Node node, final String prefix) {
@@ -110,6 +144,13 @@ public class CeylonContentProposer implements IContentProposer {
       ProducedType type = ((Tree.QualifiedTypeExpression) node).getPrimary().getTypeModel();
       return type.getDeclaration().getMatchingMemberDeclarations(prefix);
     }
+    else if (node instanceof Tree.NamedArgument) {
+    	//TODO: this case is really problematic because the
+    	//      model doesn't have anything about named args
+    	//      and the tree can't be walked upward
+        Declaration p = ((Tree.NamedArgument) node).getParameter();
+        return Collections.singletonMap(p.getName(), p);
+      }
     return node.getScope().getMatchingDeclarations(node.getUnit(), prefix);
   }
 
