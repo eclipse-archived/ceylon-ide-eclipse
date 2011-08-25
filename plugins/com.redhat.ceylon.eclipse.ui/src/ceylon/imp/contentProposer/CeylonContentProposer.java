@@ -191,6 +191,6 @@ public class CeylonContentProposer implements IContentProposer {
 
   private String getPrefix(int offset, Tree.Identifier id) {
     if (id==null) return "";
-    return id.getText().substring(0, offset-((CommonToken) id.getAntlrTreeNode().getToken()).getStartIndex());
+    return id.getText().substring(0, offset-((CommonToken) id.getToken()).getStartIndex());
   }
 }
