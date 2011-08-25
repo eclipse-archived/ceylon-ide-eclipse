@@ -10,6 +10,7 @@ import org.eclipse.imp.parser.ISourcePositionLocator;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 /**
@@ -52,7 +53,17 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   public Node getNode() {
     return node;
   }
-    
+  
+  @Override
+  public void visit(QualifiedMemberOrTypeExpression that) {
+	if (inBounds(that.getMemberOperator(), that.getIdentifier())) {
+		node=that;
+	}
+	else {
+		super.visit(that);
+	}
+  }
+  
   @Override
   public void visit(Tree.StaticMemberOrTypeExpression that) {
     if (inBounds(that.getIdentifier())) {
@@ -93,10 +104,15 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
   }
   
-    private boolean inBounds(Tree.Identifier that) {
-      if (that==null) return false;
-      int tokenStartIndex = ((CommonToken) that.getToken()).getStartIndex();;
-      int tokenStopIndex = ((CommonToken) that.getToken()).getStopIndex();;
+    private boolean inBounds(Node that) {
+      return inBounds(that, that);
+    }
+    
+    private boolean inBounds(Node left, Node right) {
+      if (left==null) return false;
+      if (right==null) left=right;
+      int tokenStartIndex = ((CommonToken) left.getToken()).getStartIndex();
+      int tokenStopIndex = ((CommonToken) right.getToken()).getStopIndex();
       // If this node contains the span of interest then record it and continue visiting the subtrees
       return tokenStartIndex <= fStartOffset && tokenStopIndex+1 >= fEndOffset;
     }
