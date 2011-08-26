@@ -20,14 +20,13 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       return null;
 
     if (entity instanceof Declaration) {
-      return getDocumentation(entity);
+      return getDocumentation((Declaration) entity);
     }
     return null;
   }
 
-  public static String getDocumentation(Object entity) {
+  public static String getDocumentation(Declaration decl) {
 	  String documentation = "";
-      Declaration decl = (Declaration) entity; 
       // START_HERE
       // Create a case for each kind of node or token for which you
       // want to provide help text and return the text corresponding
