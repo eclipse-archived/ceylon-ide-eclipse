@@ -56,6 +56,8 @@ public class CeylonLabelProvider implements ILabelProvider {
       .get(ICeylonResources.CEYLON_LOCAL_METHOD);
   private static Image LOCAL_ATTRIBUTE = imageRegistry
       .get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
+  private static Image PACKAGE = imageRegistry
+	      .get(ICeylonResources.CEYLON_PACKAGE);
 
 
   @Override
@@ -88,7 +90,13 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   public static Image getImageFor(Node n) {
-    if (n instanceof Tree.Declaration) {
+    if (n instanceof PackageNode) {
+      return PACKAGE;
+    }
+    else if (n instanceof Tree.CompilationUnit) {
+      return FILE_IMAGE;
+    }
+    else if (n instanceof Tree.Declaration) {
       Tree.Declaration d = (Tree.Declaration) n;
       boolean shared = Util.hasAnnotation(d.getAnnotationList(), "shared");
       return getImage(n, shared);
@@ -213,6 +221,14 @@ public class CeylonLabelProvider implements ILabelProvider {
         			parameters(am.getParameterLists().get(0)));
       }
       return label;
+    }
+    else if (n instanceof Tree.CompilationUnit) {
+      Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
+      return ai.getUnit().getFilename();
+    }
+    else if (n instanceof PackageNode) {
+      PackageNode pn = (PackageNode) n;
+      return pn.getPackageName();
     }
         
     return "<something>";
