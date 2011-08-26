@@ -115,5 +115,12 @@
             language="ceylon">
       </proposer>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.markOccurrences">
+      <occurrenceMarker
+            class="ceylon.imp.occurrenceMarker.CeylonOccurrenceMarker"
+            language="ceylon">
+      </occurrenceMarker>
+   </extension>
 
 </plugin>
