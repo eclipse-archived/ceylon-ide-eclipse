@@ -16,17 +16,17 @@ import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 public class CeylonDocumentationProvider implements IDocumentationProvider {
 
   public String getDocumentation(Object entity, IParseController ctlr) {
-    if (entity == null)
-      return null;
-
     if (entity instanceof Declaration) {
       return getDocumentation((Declaration) entity);
     }
-    return null;
+    else {
+      return null;
+    }
   }
 
   public static String getDocumentation(Declaration decl) {
 	  String documentation = "";
+	  if (decl!=null) {
       // START_HERE
       // Create a case for each kind of node or token for which you
       // want to provide help text and return the text corresponding
@@ -61,7 +61,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
           }
         }
       }
-      
+	  }
       return documentation;
   }
 }

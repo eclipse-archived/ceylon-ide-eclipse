@@ -44,7 +44,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * Get the target for the given source node in the AST produced by the
    * given Parse Controller.
    */
-  public Object getLinkTarget(Object node, IParseController controller) {
+  public Tree.Declaration getLinkTarget(Object node, IParseController controller) {
     Declaration dec = null;
     if (node instanceof Tree.Primary) {
       dec = ((Tree.Primary) node).getDeclaration();
@@ -58,7 +58,11 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     else if (node instanceof Tree.NamedArgument) {
       dec = ((Tree.NamedArgument) node).getParameter();
     }
-    if (dec!=null && controller.getCurrentAst() != null) {
+    return getDeclarationNode(controller, dec);
+  }
+
+  public static Tree.Declaration getDeclarationNode(IParseController controller, Declaration dec) {
+	if (dec!=null && controller.getCurrentAst() != null) {
       Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) controller.getCurrentAst();
       FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
       compilationUnit.visit(visitor);
