@@ -1,5 +1,8 @@
 package ceylon.imp.contentProposer;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
+import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -91,10 +94,12 @@ public class CeylonContentProposer implements IContentProposer {
       }*/
       for (final Declaration d: getProposals(node, prefix).values()) {
         if (d instanceof TypeDeclaration) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), getTextFor(d, false)));
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
+        		  getTextFor(d, false), parseController));
         }
         if (d instanceof TypedDeclaration || d instanceof Class) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), getTextFor(d, true)));
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), 
+        		  getTextFor(d, true), parseController));
         }
       }
     } 
@@ -106,14 +111,14 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private SourceProposal sourceProposal(final int offset, final String prefix,
-		final Declaration d, String desc, final String text) {
-	return new SourceProposal(desc, text, prefix, 
-			                  new Region(offset, 0), 
-			                  offset + text.length() - prefix.length()
-			                  /*,CeylonDocumentationProvider.getDocumentation(d)*/) { 
-	  public Image getImage() {
+		final Declaration d, String desc, final String text, CeylonParseController ctlr) {
+	return new SourceProposal(desc, text, prefix, new Region(offset, 0), 
+			                  offset + text.length() - prefix.length(),
+			                  getDocumentation(getDeclarationNode(ctlr, d))) { 
+      @Override
+      public Image getImage() {
 	    return CeylonLabelProvider.getImage(d);
-	  };
+	  }
 	  @Override
 	    public Point getSelection(IDocument document) {
 	      int loc = text.indexOf('(');
