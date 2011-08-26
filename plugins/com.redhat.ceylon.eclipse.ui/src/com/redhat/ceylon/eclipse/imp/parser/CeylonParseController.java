@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
@@ -166,7 +167,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   // not exist, it returns the negation of the index of the 
   // element immediately preceding the offset.
   //
-  private int getTokenIndexAtCharacter(List tokens, int offset) {
+  private int getTokenIndexAtCharacter(List<Token> tokens, int offset) {
     int low = 0,
         high = tokens.size();
     while (high > low)
@@ -184,7 +185,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     return -(low - 1);
   }
 
-  public Iterator getTokenIterator(IRegion region) {
+  public Iterator<Token> getTokenIterator(IRegion region) {
     int regionOffset= region.getOffset();
     int regionLength= region.getLength();
     int regionEnd= regionOffset + regionLength - 1;
@@ -193,7 +194,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     if (parser != null)
     {
       CommonTokenStream stream = (CommonTokenStream)  parser.getTokenStream();
-      List tokens = stream.getTokens();
+      if (stream!=null) {
+      List<Token> tokens = stream.getTokens();
       int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
       // getTokenIndexAtCharacter() answers the negative of the index of the
       // preceding token if the given offset is not actually within a token.
@@ -204,12 +206,11 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       if (lastTokIdx < 0) {
         lastTokIdx= -lastTokIdx + 1;
       }      
-      return stream.getTokens(firstTokIdx, lastTokIdx).iterator();
+      List<Token> tokensToIterate = stream.getTokens(firstTokIdx, lastTokIdx);
+      if (tokensToIterate!=null) return tokensToIterate.iterator();
+      }
     }
-    else
-    {
-      return null;
-    }  
+    return null;
   }
 
 
