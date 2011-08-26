@@ -122,5 +122,12 @@
             language="ceylon">
       </occurrenceMarker>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.foldingUpdater">
+      <foldingUpdater
+            class="ceylon.imp.foldingUpdater.CeylonFoldingUpdater"
+            language="ceylon">
+      </foldingUpdater>
+   </extension>
 
 </plugin>
