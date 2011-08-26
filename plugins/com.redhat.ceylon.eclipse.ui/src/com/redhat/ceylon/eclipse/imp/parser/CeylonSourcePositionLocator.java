@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.imp.parser;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
@@ -138,12 +137,21 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return token==null?0:token.getStartIndex();
   }
 
+  public int getEndOffset(Object node) {
+	CommonToken token=getEndToken(node);
+    return token == null ? 0 : token.getStopIndex();
+  }
+
+  public int getLength(Object node) {
+    return getEndOffset(node) - getStartOffset(node);
+  }
+
   public CommonToken getToken(Object node) {
-    if (node instanceof ModelTreeNode) {
+    /*if (node instanceof ModelTreeNode) {
       ModelTreeNode treeNode = (ModelTreeNode) node;
       return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
-    }
-    else if (node instanceof CommonToken) {
+    }*/
+    if (node instanceof CommonToken) {
       return (CommonToken) node;
     }
     else if (node instanceof Tree.Declaration) {
@@ -186,14 +194,54 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
   
 
-  public int getEndOffset(Object node) {
-    CommonToken token = getToken(node);
-    return token == null ? 0 : token.getStopIndex();
-  }
-
-  public int getLength(Object node) {
-    return getEndOffset(node) - getStartOffset(node);
-  }
+  public CommonToken getEndToken(Object node) {
+	  //TODO: fix horrible copy/paste!
+	    /*if (node instanceof ModelTreeNode) {
+	      ModelTreeNode treeNode = (ModelTreeNode) node;
+	      return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
+	    }*/
+	    if (node instanceof CommonToken) {
+	      return (CommonToken) node;
+	    }
+	    else if (node instanceof Tree.Declaration) {
+	      Tree.Declaration decl = (Tree.Declaration) node;
+	      Identifier identifier = decl.getIdentifier();
+	      if (identifier != null)
+	      {
+	        return (CommonToken) identifier.getToken();
+	      }
+	    }
+	    else if (node instanceof Tree.NamedArgument) {
+	        Tree.NamedArgument decl = (Tree.NamedArgument) node;
+	        Identifier identifier = decl.getIdentifier();
+	        if (identifier != null)
+	        {
+	          return (CommonToken) identifier.getToken();
+	        }
+	      }
+	    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+	      Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
+	      Identifier identifier = decl.getIdentifier();
+	      if (identifier != null)
+	      {
+	        return (CommonToken) identifier.getToken();
+	      }
+	    }
+	    else if (node instanceof Tree.SimpleType) {
+	      Tree.SimpleType decl = (Tree.SimpleType) node;
+	      Identifier identifier = decl.getIdentifier();
+	      if (identifier != null)
+	      {
+	        return (CommonToken) identifier.getToken();
+	      }
+	    }
+	    else if (node instanceof Node) {    
+	      Node n = (Node) node;
+	      return (CommonToken) n.getEndToken();      
+	    }
+	    return null;
+	  }
+	  
 
   public IPath getPath(Object node) {
     if (parseController.getPath() != null) {
