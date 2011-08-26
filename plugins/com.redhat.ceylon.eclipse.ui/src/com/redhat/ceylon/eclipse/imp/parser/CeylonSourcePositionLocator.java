@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.imp.parser;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
@@ -147,10 +148,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public CommonToken getToken(Object node) {
-    /*if (node instanceof ModelTreeNode) {
+    if (node instanceof ModelTreeNode) {
       ModelTreeNode treeNode = (ModelTreeNode) node;
       return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
-    }*/
+    }
     if (node instanceof CommonToken) {
       return (CommonToken) node;
     }
@@ -196,10 +197,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public CommonToken getEndToken(Object node) {
 	  //TODO: fix horrible copy/paste!
-	    /*if (node instanceof ModelTreeNode) {
+	    if (node instanceof ModelTreeNode) {
 	      ModelTreeNode treeNode = (ModelTreeNode) node;
 	      return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
-	    }*/
+	    }
 	    if (node instanceof CommonToken) {
 	      return (CommonToken) node;
 	    }

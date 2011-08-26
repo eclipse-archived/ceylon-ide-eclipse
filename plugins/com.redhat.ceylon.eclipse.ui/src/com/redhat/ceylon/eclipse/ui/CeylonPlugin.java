@@ -45,6 +45,9 @@ public class CeylonPlugin extends PluginBase {
 	protected void initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry reg) {
 		org.osgi.framework.Bundle bundle = getBundle();
 		
+		reg.put(ICeylonResources.CEYLON_PACKAGE, createImageDescriptor(bundle, 
+				ICONS_PATH.append("package_obj.gif")));
+
 		reg.put(ICeylonResources.CEYLON_FILE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("ceylon_file.gif")));
 

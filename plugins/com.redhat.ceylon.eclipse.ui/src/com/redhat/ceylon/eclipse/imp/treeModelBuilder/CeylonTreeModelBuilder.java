@@ -14,15 +14,18 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 		if (root == null)
 			return;
 		Node rootNode = (Node) root;
- 		CeylonModelVisitor visitor = new CeylonModelVisitor();
- 		
-		rootNode.visitChildren(visitor);
+		PackageNode pn = new PackageNode(null);
+		pn.setPackageName(rootNode.getUnit().getPackage().getQualifiedNameString());
+		createSubItem(pn);
+		//createSubItem(rootNode);
+ 		CeylonModelVisitor visitor = new CeylonModelVisitor(); 		
+		rootNode.visit(visitor);
 	}
 
 	public class CeylonModelVisitor extends Visitor {
 		// set to true to get nodes for everything in the outline
 		private static final boolean INCLUDEALL = false;
-
+		
 		@Override
 		public void visitAny(Node that) {
 			if (that instanceof Tree.Declaration && 
