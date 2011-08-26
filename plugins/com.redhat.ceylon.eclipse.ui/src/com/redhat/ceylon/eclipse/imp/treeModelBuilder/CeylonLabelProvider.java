@@ -209,7 +209,8 @@ public class CeylonLabelProvider implements ILabelProvider {
       if (n instanceof Tree.AnyMethod) {
         Tree.AnyMethod am = (Tree.AnyMethod) n;
         label += parameters(am.getTypeParameterList()) +
-            parameters(am.getParameterLists().get(0));
+        		(am.getParameterLists().isEmpty() ? "" : 
+        			parameters(am.getParameterLists().get(0)));
       }
       return label;
     }
