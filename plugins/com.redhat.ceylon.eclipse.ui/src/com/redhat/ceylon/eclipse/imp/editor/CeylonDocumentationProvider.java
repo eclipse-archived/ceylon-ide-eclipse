@@ -47,6 +47,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
           if (annotPrim != null)
           {
             com.redhat.ceylon.compiler.typechecker.model.Declaration annotDecl = annotPrim.getDeclaration(); 
+            if (annotDecl!=null) {
             String name = annotDecl.getName();
             if ("doc".equals(name))
             {
@@ -57,7 +58,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                 String docLine = args.get(0).getExpression().getTerm().getText();
                 documentation += "<br/>" + docLine;
               }
-            }            
+            }
+            }
           }
         }
       }
