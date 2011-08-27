@@ -48,6 +48,12 @@ public class CeylonPlugin extends PluginBase {
 		reg.put(ICeylonResources.CEYLON_PACKAGE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("package_obj.gif")));
 
+		reg.put(ICeylonResources.CEYLON_IMPORT_LIST, createImageDescriptor(bundle, 
+				ICONS_PATH.append("impc_obj.gif")));
+
+		reg.put(ICeylonResources.CEYLON_IMPORT, createImageDescriptor(bundle, 
+				ICONS_PATH.append("imp_obj.gif")));
+
 		reg.put(ICeylonResources.CEYLON_FILE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("ceylon_file.gif")));
 

@@ -13,11 +13,16 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 	public void visitTree(Object root) {
 		if (root == null)
 			return;
-		Node rootNode = (Node) root;
+		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
 		PackageNode pn = new PackageNode(null);
 		pn.setPackageName(rootNode.getUnit().getPackage().getQualifiedNameString());
 		createSubItem(pn);
 		//createSubItem(rootNode);
+		pushSubItem(rootNode.getImportList());
+		for (Tree.Import i: rootNode.getImportList().getImports()) {
+			createSubItem(i);
+		}
+		popSubItem();
  		CeylonModelVisitor visitor = new CeylonModelVisitor(); 		
 		rootNode.visit(visitor);
 	}
