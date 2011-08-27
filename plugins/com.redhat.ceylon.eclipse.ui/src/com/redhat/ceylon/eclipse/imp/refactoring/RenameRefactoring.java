@@ -59,7 +59,7 @@ public class RenameRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Rename...";
+		return "Rename";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
