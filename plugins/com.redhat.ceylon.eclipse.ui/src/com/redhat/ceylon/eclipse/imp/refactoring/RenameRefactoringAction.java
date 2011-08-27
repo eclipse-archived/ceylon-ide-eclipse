@@ -10,14 +10,10 @@ public class RenameRefactoringAction extends TextEditorAction {
 	}
 
 	public void run() {
-		final RenameRefactoring refactoring = new RenameRefactoring(
-				getTextEditor());
-
-		if (refactoring != null) {
-			new RefactoringStarter()
-					.activate(refactoring, new RenameWizard(refactoring),
-							getTextEditor().getSite().getShell(),
-							refactoring.getName(), false);
-		}
+		final RenameRefactoring refactoring = new RenameRefactoring(getTextEditor());
+		new RefactoringStarter()
+				.activate(refactoring, new RenameWizard(refactoring),
+						getTextEditor().getSite().getShell(),
+						refactoring.getName(), false);
 	}
 }

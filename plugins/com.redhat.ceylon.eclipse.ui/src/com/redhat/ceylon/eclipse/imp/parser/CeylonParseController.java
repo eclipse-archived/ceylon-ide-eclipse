@@ -193,29 +193,34 @@ public class CeylonParseController extends ParseControllerBase implements IParse
         @Override 
         public void visitAny(Node node) { 
           super.visitAny(node);
-          for (Message error : node.getErrors()) 
+          for (Message error: node.getErrors()) 
           { 
             String errorMessage = error.getMessage();
-            int startOffset;
-            int endOffset;
-            int startCol;
-            int endCol;
-            int startLine;
-            int endLine;
+            int startOffset=0;
+            int endOffset=0;
+            int startCol=0;
+            int startLine=0;
             
-            CommonToken token = null;
             //Map<String, Object> attributes = new HashMap<String, Object>();
             if (error instanceof RecognitionError)
             {
               RecognitionError recognitionError = (RecognitionError) error;
-              token = (CommonToken) recognitionError.getRecognitionException().token;
+              CommonToken token = (CommonToken) recognitionError.getRecognitionException().token;
+              startOffset = token.getStartIndex();              
+              endOffset = token.getStopIndex();
+              startCol = token.getCharPositionInLine();
+              startLine = token.getLine();
               //attributes.put(SEVERITY_KEY, ERROR);
             }
             if (error instanceof AnalysisMessage)
             {
               AnalysisMessage analysisMessage = (AnalysisMessage) error;
-              Node errorNode = analysisMessage.getTreeNode();
-              token = (CommonToken) ((CeylonSourcePositionLocator) getSourcePositionLocator()).getToken(errorNode);
+              Node errorNode = CeylonSourcePositionLocator.getIdentifyingNode(analysisMessage.getTreeNode());
+              Token token = errorNode.getToken();
+              startOffset = errorNode.getStartIndex();              
+              endOffset = errorNode.getStopIndex();
+              startCol = token.getCharPositionInLine();
+              startLine = token.getLine();
               /*if (error instanceof AnalysisWarning) {
             	  attributes.put(SEVERITY_KEY, WARNING);
               }
@@ -224,19 +229,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
               }*/
             }
             
-            if (token != null)
-            {
-              startOffset = token.getStartIndex();              
-              endOffset = token.getStopIndex();
-              startCol = endCol = token.getCharPositionInLine();
-              startLine = endLine = token.getLine();
               handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
-            		  startCol, endCol, startLine, endLine/*, attributes*/);
-            }
-            else
-            {
-              System.out.println("NO TOKEN !!!!");
-            }
+            		  startCol, startCol, startLine, startLine/*, attributes*/);
           }
         }
       });      

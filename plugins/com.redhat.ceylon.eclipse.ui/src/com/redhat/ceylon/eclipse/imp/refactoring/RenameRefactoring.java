@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -15,7 +14,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -46,7 +44,8 @@ public class RenameRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
-		} else {
+		} 
+		else {
 			fSourceFile = null;
 			fNode = null;
 			dec = null;
@@ -55,7 +54,8 @@ public class RenameRefactoring extends Refactoring {
 
 	private Node findNode(IASTFindReplaceTarget frt) {
 		return parseController.getSourcePositionLocator()
-				.findNode(getRootNode(), frt.getSelection().x);
+				.findNode(getRootNode(), frt.getSelection().x, 
+						frt.getSelection().x+frt.getSelection().y);
 	}
 
 	public String getName() {
@@ -96,12 +96,9 @@ public class RenameRefactoring extends Refactoring {
 	}
 
 	private void renameNode(TextFileChange tfc, Node node) {
-		CommonToken token = CeylonSourcePositionLocator.getToken(node);
-		if (token!=null) {
-		tfc.addEdit(new ReplaceEdit(token.getStartIndex(), token.getText().length(),
-				name));
-		System.out.println(token.getStartIndex() + " to " + token.getStopIndex());
-		}
+		node = CeylonSourcePositionLocator.getIdentifyingNode(node);
+		tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
+				node.getText().length(), name));
 	}
 
 	public void setName(String text) {
