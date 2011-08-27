@@ -58,6 +58,10 @@ public class CeylonLabelProvider implements ILabelProvider {
       .get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
   private static Image PACKAGE = imageRegistry
 	      .get(ICeylonResources.CEYLON_PACKAGE);
+  private static Image IMPORT = imageRegistry
+	      .get(ICeylonResources.CEYLON_IMPORT);
+  private static Image IMPORT_LIST = imageRegistry
+	      .get(ICeylonResources.CEYLON_IMPORT_LIST);
 
 
   @Override
@@ -96,6 +100,12 @@ public class CeylonLabelProvider implements ILabelProvider {
     else if (n instanceof Tree.CompilationUnit) {
       return FILE_IMAGE;
     }
+    else if (n instanceof Tree.ImportList) {
+        return IMPORT_LIST;
+      }
+    else if (n instanceof Tree.Import) {
+        return IMPORT;
+      }
     else if (n instanceof Tree.Declaration) {
       Tree.Declaration d = (Tree.Declaration) n;
       boolean shared = Util.hasAnnotation(d.getAnnotationList(), "shared");
@@ -226,9 +236,22 @@ public class CeylonLabelProvider implements ILabelProvider {
       Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
       return ai.getUnit().getFilename();
     }
+    else if (n instanceof Tree.ImportList) {
+        return "import list";
+      }
+    else if (n instanceof Tree.Import) {
+        Tree.Import ai = (Tree.Import) n;
+        String path="";
+        for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
+          path+="." + id.getText();
+        }
+        return path.substring(1);
+      }
     else if (n instanceof PackageNode) {
       PackageNode pn = (PackageNode) n;
-      return pn.getPackageName();
+      return pn.getPackageName().isEmpty() ? 
+               "default package" : 
+               pn.getPackageName();
     }
         
     return "<something>";
