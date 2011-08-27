@@ -13,7 +13,7 @@ public class RenameWizard extends RefactoringWizard {
 		addPage(new RenameInputPage(getRefactoring().getName()));
 	}
 
-	public RenameRefactoring getInsertCrudRefactoring() {
+	public RenameRefactoring getRenameRefactoring() {
 		return (RenameRefactoring) getRefactoring();
 	}
 }

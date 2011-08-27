@@ -6,6 +6,9 @@ import org.eclipse.jface.action.IAction;
 
 public class RefactoringContributor implements IRefactoringContributor {
 	public IAction[] getEditorRefactoringActions(UniversalEditor editor) {
-		return new IAction[] { new RenameRefactoringAction(editor) };
+		return new IAction[] { 
+				new RenameRefactoringAction(editor),
+				new ExtractLocalRefactoringAction(editor)
+			};
 	}
 }

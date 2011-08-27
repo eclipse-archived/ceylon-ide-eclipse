@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonReferenceResolver implements IReferenceResolver {
 
@@ -64,12 +65,12 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     else if (node instanceof Tree.NamedArgument) {
       dec = ((Tree.NamedArgument) node).getParameter();
     }
-    return getDeclarationNode(controller, dec);
+    return getDeclarationNode((CeylonParseController) controller, dec);
   }
 
-  public static Tree.Declaration getDeclarationNode(IParseController controller, Declaration dec) {
-	if (dec!=null && controller.getCurrentAst() != null) {
-      Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) controller.getCurrentAst();
+  public static Tree.Declaration getDeclarationNode(CeylonParseController controller, Declaration dec) {
+	if (dec!=null && controller.getRootNode() != null) {
+      Tree.CompilationUnit compilationUnit = controller.getRootNode();
       FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
       compilationUnit.visit(visitor);
       System.out.println("referenced node: " + visitor.getDeclarationNode());

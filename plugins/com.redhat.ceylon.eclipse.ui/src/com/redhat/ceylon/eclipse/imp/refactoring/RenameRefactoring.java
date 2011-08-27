@@ -44,6 +44,7 @@ public class RenameRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
+			name = dec.getName();
 		} 
 		else {
 			fSourceFile = null;
@@ -54,7 +55,7 @@ public class RenameRefactoring extends Refactoring {
 
 	private Node findNode(IASTFindReplaceTarget frt) {
 		return parseController.getSourcePositionLocator()
-				.findNode(getRootNode(), frt.getSelection().x, 
+				.findNode(parseController.getRootNode(), frt.getSelection().x, 
 						frt.getSelection().x+frt.getSelection().y);
 	}
 
@@ -79,20 +80,16 @@ public class RenameRefactoring extends Refactoring {
 		tfc.setEdit(new MultiTextEdit());
 		if (dec!=null) {
 		FindReferenceVisitor frv = new FindReferenceVisitor(dec);
-		getRootNode().visit(frv);
+		parseController.getRootNode().visit(frv);
 		for (Node node: frv.getNodes()) {
             renameNode(tfc, node);
 
 		}
 		FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
-		getRootNode().visit(fdv);
+		parseController.getRootNode().visit(fdv);
 		renameNode(tfc, fdv.getDeclarationNode());
 		}
 		return tfc;
-	}
-
-	private Node getRootNode() {
-		return (Node) parseController.getCurrentAst();
 	}
 
 	private void renameNode(TextFileChange tfc, Node node) {

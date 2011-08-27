@@ -58,16 +58,16 @@ public class CeylonContentProposer implements IContentProposer {
     CeylonParseController parseController = (CeylonParseController) ctlr;
     List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
 
-    if (ctlr.getCurrentAst() != null) {
+    if (parseController.getRootNode() != null) {
       CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
       final String prefix;
-      Node node = locator.findNode(ctlr.getCurrentAst(), offset);
+      Node node = locator.findNode(parseController.getRootNode(), offset);
       if (node==null) {
         //TODO: need to do something much better here:
         //      search for a surrounding scope
         //      search for a token, and treat it as a base expression or type
         prefix = "";
-        node = (Tree.CompilationUnit) ctlr.getCurrentAst();
+        node = parseController.getRootNode();
       }
       else {
         prefix = getPrefix(node, offset);
