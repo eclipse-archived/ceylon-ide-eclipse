@@ -8,7 +8,8 @@ public class RefactoringContributor implements IRefactoringContributor {
 	public IAction[] getEditorRefactoringActions(UniversalEditor editor) {
 		return new IAction[] { 
 				new RenameRefactoringAction(editor),
-				new ExtractLocalRefactoringAction(editor)
+				new InlineRefactoringAction(editor),
+				new ExtractLocalRefactoringAction(editor),
 			};
 	}
 }

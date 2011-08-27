@@ -86,7 +86,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Extract local";
+		return "Extract value";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -102,7 +102,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Extract local", fSourceFile);
+		TextFileChange tfc = new TextFileChange("Extract value", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
 		Tree.Term term = (Tree.Term) fNode;
 		Integer start = fNode.getStartIndex();
