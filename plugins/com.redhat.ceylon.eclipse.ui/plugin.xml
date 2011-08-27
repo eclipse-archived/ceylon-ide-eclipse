@@ -129,5 +129,12 @@
             language="ceylon">
       </foldingUpdater>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.refactoringContributions">
+      <refactoringContributor
+            class="imp.ceylon.refactoring.RefactoringContributor"
+            language="ceylon">
+      </refactoringContributor>
+   </extension>
 
 </plugin>

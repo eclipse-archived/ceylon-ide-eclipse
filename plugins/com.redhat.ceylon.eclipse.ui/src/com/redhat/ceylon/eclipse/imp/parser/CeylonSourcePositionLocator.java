@@ -157,7 +157,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return getEndOffset(node) - getStartOffset(node);
   }
 
-  public CommonToken getToken(Object node) {
+  public static CommonToken getToken(Object node) {
     if (node instanceof ModelTreeNode) {
       ModelTreeNode treeNode = (ModelTreeNode) node;
       return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
