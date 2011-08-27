@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -11,10 +9,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
-public class ExtractLocalInputPage extends UserInputWizardPage {
-	public ExtractLocalInputPage(String name) {
+public class InlineInputPage extends UserInputWizardPage {
+	public InlineInputPage(String name) {
 		super(name);
 	}
 
@@ -27,30 +24,27 @@ public class ExtractLocalInputPage extends UserInputWizardPage {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		result.setLayout(layout);
-		Label label = new Label(result, SWT.RIGHT);  
-		label.setText("Local name: ");
-		final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
-		text.setText("temp");
-		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-		text.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent event) {
-				getExtractLocalRefactoring().setName(text.getText());
-			}
-		});
+		Label title = new Label(result, SWT.RIGHT);  
+		title.setText("Inline " + getInlineRefactoring().getCount() + 
+				" occurrences of declaration '" + 
+				getInlineRefactoring().getDeclaration().getName() + "'");
+		GridData gd = new GridData();
+		gd.horizontalSpan=2;
+		title.setLayoutData(gd);
 		final Button checkbox = new Button(result, SWT.CHECK);
-		checkbox.setText("Use explicit type declaration");
+		checkbox.setText("Delete declaration");
+		checkbox.setSelection(true);
 		checkbox.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				getExtractLocalRefactoring().setExplicitType();
+				getInlineRefactoring().setDelete();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
 		});		
 	}
 
-	private ExtractLocalRefactoring getExtractLocalRefactoring() {
-		return (ExtractLocalRefactoring) getRefactoring();
+	private InlineRefactoring getInlineRefactoring() {
+		return (InlineRefactoring) getRefactoring();
 	}
 }
