@@ -9,7 +9,6 @@ import org.eclipse.imp.parser.ISourcePositionLocator;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -52,6 +51,31 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   
   public Node getNode() {
     return node;
+  }
+  
+  @Override
+  public void visitAny(Node that) {
+	  super.visitAny(that);
+	  if (node==null && inBounds(that)) {
+		  node=that;
+	  }
+  }
+  
+  @Override
+  public void visit(Tree.BinaryOperatorExpression that) {
+	  super.visit(that);
+	  if (node==null && inBounds(that.getLeftTerm(), that.getRightTerm())) {
+		  node=that;
+	  }
+  }
+  
+  @Override
+  public void visit(Tree.UnaryOperatorExpression that) {
+	  super.visit(that);
+	  if (node==null && (inBounds(that, that.getTerm())
+			           ||inBounds(that.getTerm(),that))) {
+		  node=that;
+	  }
   }
   
   @Override
@@ -121,10 +145,11 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     private boolean inBounds(Node left, Node right) {
       if (left==null) return false;
       if (right==null) left=right;
-      int tokenStartIndex = ((CommonToken) left.getToken()).getStartIndex();
-      int tokenStopIndex = ((CommonToken) right.getToken()).getStopIndex();
-      // If this node contains the span of interest then record it and continue visiting the subtrees
-      return tokenStartIndex <= fStartOffset && tokenStopIndex+1 >= fEndOffset;
+      Integer tokenStartIndex = left.getStartIndex();
+      Integer tokenStopIndex = right.getStopIndex();
+      return tokenStartIndex!=null && tokenStopIndex!=null &&
+    		  tokenStartIndex <= fStartOffset && 
+    		  tokenStopIndex+1 >= fEndOffset;
     }
     
   }
@@ -135,7 +160,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public Node findNode(Object ast, int startOffset, int endOffset) {
     NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
-    //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+    System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
     Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
     cu.visit(visitor);
     System.out.println("selected node: " + visitor.getNode());
@@ -144,123 +169,75 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   
   public int getStartOffset(Object node) {
-    CommonToken token = getToken(node);
-    return token==null?0:token.getStartIndex();
+	if (node instanceof CommonToken) {
+		return ((CommonToken) node).getStartIndex();
+	}
+    Node in = toNode(node);
+    if (in==null) {
+    	return 0;
+    }
+    else {
+    	Integer index = in.getStartIndex();
+    	return index==null?0:index;
+    }
   }
 
   public int getEndOffset(Object node) {
-	CommonToken token=getEndToken(node);
-    return token == null ? 0 : token.getStopIndex();
+		if (node instanceof CommonToken) {
+			return ((CommonToken) node).getStopIndex();
+		}
+		Node in = toNode(node);
+	    if (in==null) {
+	    	return 0;
+	    }
+	    else {
+	    	Integer index = in.getStopIndex();
+	    	return index==null?0:index;
+	    }
+	  }
+
+  private Node toNode(Object node) {
+	if (node instanceof ModelTreeNode) {
+	    ModelTreeNode treeNode = (ModelTreeNode) node;
+	    return (Node) treeNode.getASTNode();
+	}
+	else if (node instanceof Node) {
+		return getIdentifyingNode((Node) node);
+	}
+	else {
+	  return null;
+	}
   }
 
   public int getLength(Object node) {
     return getEndOffset(node) - getStartOffset(node);
   }
 
-  public static CommonToken getToken(Object node) {
-    if (node instanceof ModelTreeNode) {
-      ModelTreeNode treeNode = (ModelTreeNode) node;
-      return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
-    }
-    if (node instanceof CommonToken) {
-      return (CommonToken) node;
-    }
-    else if (node instanceof Tree.Declaration) {
+  public static Node getIdentifyingNode(Node node) {
+    if (node instanceof Tree.Declaration) {
       Tree.Declaration decl = (Tree.Declaration) node;
-      Identifier identifier = decl.getIdentifier();
-      if (identifier != null)
-      {
-        return (CommonToken) identifier.getToken();
-      }
+      return decl.getIdentifier();
     }
     else if (node instanceof Tree.NamedArgument) {
         Tree.NamedArgument decl = (Tree.NamedArgument) node;
-        Identifier identifier = decl.getIdentifier();
-        if (identifier != null)
-        {
-          return (CommonToken) identifier.getToken();
-        }
+        return decl.getIdentifier();
       }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
       Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
-      Identifier identifier = decl.getIdentifier();
-      if (identifier != null)
-      {
-        return (CommonToken) identifier.getToken();
-      }
+      return decl.getIdentifier();
     }
     else if (node instanceof Tree.SimpleType) {
       Tree.SimpleType decl = (Tree.SimpleType) node;
-      Identifier identifier = decl.getIdentifier();
-      if (identifier != null)
-      {
-        return (CommonToken) identifier.getToken();
-      }
+      return decl.getIdentifier();
     }
     else if (node instanceof Tree.ImportMemberOrType) {
         Tree.ImportMemberOrType decl = (Tree.ImportMemberOrType) node;
-        Identifier identifier = decl.getIdentifier();
-        if (identifier != null)
-        {
-          return (CommonToken) identifier.getToken();
-        }
-      }
-    else if (node instanceof Node) {    
-      Node n = (Node) node;
-      return (CommonToken) n.getToken();      
+        return decl.getIdentifier();
     }
-    return null;
-  }
-  
-
-  public CommonToken getEndToken(Object node) {
-	  //TODO: fix horrible copy/paste!
-	    if (node instanceof ModelTreeNode) {
-	      ModelTreeNode treeNode = (ModelTreeNode) node;
-	      return (CommonToken) ((Node) treeNode.getASTNode()).getToken();
-	    }
-	    if (node instanceof CommonToken) {
-	      return (CommonToken) node;
-	    }
-	    else if (node instanceof Tree.Declaration) {
-	      Tree.Declaration decl = (Tree.Declaration) node;
-	      Identifier identifier = decl.getIdentifier();
-	      if (identifier != null)
-	      {
-	        return (CommonToken) identifier.getToken();
-	      }
-	    }
-	    else if (node instanceof Tree.NamedArgument) {
-	        Tree.NamedArgument decl = (Tree.NamedArgument) node;
-	        Identifier identifier = decl.getIdentifier();
-	        if (identifier != null)
-	        {
-	          return (CommonToken) identifier.getToken();
-	        }
-	      }
-	    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-	      Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
-	      Identifier identifier = decl.getIdentifier();
-	      if (identifier != null)
-	      {
-	        return (CommonToken) identifier.getToken();
-	      }
-	    }
-	    else if (node instanceof Tree.SimpleType) {
-	      Tree.SimpleType decl = (Tree.SimpleType) node;
-	      Identifier identifier = decl.getIdentifier();
-	      if (identifier != null)
-	      {
-	        return (CommonToken) identifier.getToken();
-	      }
-	    }
-	    else if (node instanceof Node) {    
-	      Node n = (Node) node;
-	      return (CommonToken) n.getEndToken();      
-	    }
-	    return null;
-	  }
-	  
+    else {    
+      return node;
+    }
+  }  
 
   public IPath getPath(Object node) {
     if (parseController.getPath() != null) {

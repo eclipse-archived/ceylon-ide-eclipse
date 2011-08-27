@@ -10,10 +10,7 @@ public class RenameWizard extends RefactoringWizard {
 	}
 
 	protected void addUserInputPages() {
-		RenameInputPage page = new RenameInputPage(getRefactoring()
-				.getName());
-
-		addPage(page);
+		addPage(new RenameInputPage(getRefactoring().getName()));
 	}
 
 	public RenameRefactoring getInsertCrudRefactoring() {
