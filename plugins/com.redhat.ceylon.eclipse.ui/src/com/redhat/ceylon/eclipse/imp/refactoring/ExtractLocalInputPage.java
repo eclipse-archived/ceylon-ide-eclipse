@@ -1,11 +1,16 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import java.awt.Checkbox;
+
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -35,6 +40,19 @@ public class ExtractLocalInputPage extends UserInputWizardPage {
 				getExtractLocalRefactoring().setName(text.getText());
 			}
 		});
+		final Button checkbox = new Button(result, SWT.CHECK);
+		checkbox.setText("Use explicit type declaration");
+		checkbox.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				getExtractLocalRefactoring().setExplicitType();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent event) {}
+		});
+		
 	}
 
 	private ExtractLocalRefactoring getExtractLocalRefactoring() {
