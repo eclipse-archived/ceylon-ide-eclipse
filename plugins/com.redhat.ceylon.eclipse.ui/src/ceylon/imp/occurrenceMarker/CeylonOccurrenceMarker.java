@@ -35,16 +35,7 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		}
 
 		fOccurrences = new ArrayList<Object>();
-		Declaration declaration=null;
-		if (astNode instanceof Tree.Declaration) {
-			declaration = ((Tree.Declaration) astNode).getDeclarationModel();
-		}
-		else if (astNode instanceof Tree.MemberOrTypeExpression) {
-			declaration = ((Tree.MemberOrTypeExpression) astNode).getDeclaration();
-		}
-		else if (astNode instanceof Tree.SimpleType) {
-			declaration = ((Tree.SimpleType) astNode).getDeclarationModel();
-		}
+		Declaration declaration = getDeclaration(astNode);
 		if (declaration!=null) {
 			FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
 			root.visit(frv);
@@ -55,5 +46,20 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		}
 		return fOccurrences;
 
+	}
+
+	public static Declaration getDeclaration(Object astNode) {
+		if (astNode instanceof Tree.Declaration) {
+			return ((Tree.Declaration) astNode).getDeclarationModel();
+		}
+		else if (astNode instanceof Tree.MemberOrTypeExpression) {
+			return ((Tree.MemberOrTypeExpression) astNode).getDeclaration();
+		}
+		else if (astNode instanceof Tree.SimpleType) {
+			return ((Tree.SimpleType) astNode).getDeclarationModel();
+		}
+		else {
+		    return null;
+		}
 	}
 }
