@@ -85,7 +85,7 @@
             objectClass="org.eclipse.core.resources.IProject"
             adaptable="true"
             nameFilter="*"
-            id="ceylon.imp.projectContextMenu">
+            id="com.redhat.ceylon.eclipse.imp.projectContextMenu">
          <action
                label="Enable ceylon Builder"
                tooltip="Enable the ceylon builder for this project"
@@ -111,28 +111,28 @@
    <extension
          point="org.eclipse.imp.runtime.contentProposer">
       <proposer
-            class="ceylon.imp.contentProposer.CeylonContentProposer"
+            class="com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer"
             language="ceylon">
       </proposer>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.markOccurrences">
       <occurrenceMarker
-            class="ceylon.imp.occurrenceMarker.CeylonOccurrenceMarker"
+            class="com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker"
             language="ceylon">
       </occurrenceMarker>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.foldingUpdater">
       <foldingUpdater
-            class="ceylon.imp.foldingUpdater.CeylonFoldingUpdater"
+            class="com.redhat.ceylon.eclipse.imp.foldingUpdater.CeylonFoldingUpdater"
             language="ceylon">
       </foldingUpdater>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.refactoringContributions">
       <refactoringContributor
-            class="imp.ceylon.refactoring.RefactoringContributor"
+            class="com.redhat.ceylon.eclipse.imp.refactoring.RefactoringContributor"
             language="ceylon">
       </refactoringContributor>
    </extension>

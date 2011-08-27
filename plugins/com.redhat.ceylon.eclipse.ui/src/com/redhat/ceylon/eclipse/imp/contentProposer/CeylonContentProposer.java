@@ -1,4 +1,4 @@
-package ceylon.imp.contentProposer;
+package com.redhat.ceylon.eclipse.imp.contentProposer;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;

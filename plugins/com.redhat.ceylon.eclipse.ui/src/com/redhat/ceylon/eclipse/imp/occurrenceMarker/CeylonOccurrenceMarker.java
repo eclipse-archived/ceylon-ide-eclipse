@@ -1,4 +1,4 @@
-package ceylon.imp.occurrenceMarker;
+package com.redhat.ceylon.eclipse.imp.occurrenceMarker;
 
 import java.util.ArrayList;
 import java.util.Collections;
