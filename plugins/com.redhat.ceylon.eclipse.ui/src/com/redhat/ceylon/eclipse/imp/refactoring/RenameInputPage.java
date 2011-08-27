@@ -39,7 +39,7 @@ public class RenameInputPage extends UserInputWizardPage {
 		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		text.addModifyListener(new ModifyListener() {
 			@Override
-			public void modifyText(ModifyEvent arg0) {
+			public void modifyText(ModifyEvent event) {
 				getRenameRefactoring().setName(text.getText());
 			}
 		});

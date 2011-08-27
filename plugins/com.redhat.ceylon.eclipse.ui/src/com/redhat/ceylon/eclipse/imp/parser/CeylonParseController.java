@@ -35,7 +35,59 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonParseController extends ParseControllerBase implements IParseController {
 
-  public CeylonParseController() {
+  private static final class ErrorVisitor extends Visitor {
+		private final IMessageHandler handler;
+
+		private ErrorVisitor(IMessageHandler handler) {
+			this.handler = handler;
+		}
+
+		@Override 
+        public void visitAny(Node node) { 
+          super.visitAny(node);
+          for (Message error: node.getErrors()) 
+          { 
+            String errorMessage = error.getMessage();
+            int startOffset=0;
+            int endOffset=0;
+            int startCol=0;
+            int startLine=0;
+            
+            //Map<String, Object> attributes = new HashMap<String, Object>();
+            if (error instanceof RecognitionError)
+            {
+              RecognitionError recognitionError = (RecognitionError) error;
+              CommonToken token = (CommonToken) recognitionError.getRecognitionException().token;
+              startOffset = token.getStartIndex();              
+              endOffset = token.getStopIndex();
+              startCol = token.getCharPositionInLine();
+              startLine = token.getLine();
+              //attributes.put(SEVERITY_KEY, ERROR);
+            }
+            if (error instanceof AnalysisMessage)
+            {
+              AnalysisMessage analysisMessage = (AnalysisMessage) error;
+              Node errorNode = CeylonSourcePositionLocator.getIdentifyingNode(analysisMessage.getTreeNode());
+              Token token = errorNode.getToken();
+              startOffset = errorNode.getStartIndex();              
+              endOffset = errorNode.getStopIndex();
+              startCol = token.getCharPositionInLine();
+              startLine = token.getLine();
+              /*if (error instanceof AnalysisWarning) {
+            	  attributes.put(SEVERITY_KEY, WARNING);
+              }
+              else {
+            	  attributes.put(SEVERITY_KEY, ERROR);
+              }*/
+            }
+            
+              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
+            		  startCol, startCol, startLine, startLine/*, attributes*/);
+          }
+        }
+	}
+
+public CeylonParseController() {
     super(CeylonPlugin.kLanguageID);
   }
 
@@ -189,51 +241,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     if (handler != null)
     {
       Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) fCurrentAst; 
-      compilationUnit.visit(new Visitor() {
-        @Override 
-        public void visitAny(Node node) { 
-          super.visitAny(node);
-          for (Message error: node.getErrors()) 
-          { 
-            String errorMessage = error.getMessage();
-            int startOffset=0;
-            int endOffset=0;
-            int startCol=0;
-            int startLine=0;
-            
-            //Map<String, Object> attributes = new HashMap<String, Object>();
-            if (error instanceof RecognitionError)
-            {
-              RecognitionError recognitionError = (RecognitionError) error;
-              CommonToken token = (CommonToken) recognitionError.getRecognitionException().token;
-              startOffset = token.getStartIndex();              
-              endOffset = token.getStopIndex();
-              startCol = token.getCharPositionInLine();
-              startLine = token.getLine();
-              //attributes.put(SEVERITY_KEY, ERROR);
-            }
-            if (error instanceof AnalysisMessage)
-            {
-              AnalysisMessage analysisMessage = (AnalysisMessage) error;
-              Node errorNode = CeylonSourcePositionLocator.getIdentifyingNode(analysisMessage.getTreeNode());
-              Token token = errorNode.getToken();
-              startOffset = errorNode.getStartIndex();              
-              endOffset = errorNode.getStopIndex();
-              startCol = token.getCharPositionInLine();
-              startLine = token.getLine();
-              /*if (error instanceof AnalysisWarning) {
-            	  attributes.put(SEVERITY_KEY, WARNING);
-              }
-              else {
-            	  attributes.put(SEVERITY_KEY, ERROR);
-              }*/
-            }
-            
-              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
-            		  startCol, startCol, startLine, startLine/*, attributes*/);
-          }
-        }
-      });      
+      compilationUnit.visit(new ErrorVisitor(handler));      
     }
 
     return fCurrentAst;
@@ -268,10 +276,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     int regionLength= region.getLength();
     int regionEnd= regionOffset + regionLength - 1;
 
-    CeylonParser parser = getParser();
-    if (parser != null)
     {
-      CommonTokenStream stream = (CommonTokenStream) parser.getTokenStream();
+      CommonTokenStream stream = getTokenStream();
       if (stream!=null) {
       List<Token> tokens = stream.getTokens();
       int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
@@ -292,12 +298,23 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
 
 
+  public CommonTokenStream getTokenStream() {
+	CeylonParser parser = getParser();
+	if (parser==null) return null;
+	return (CommonTokenStream) parser.getTokenStream();
+  }
+
+
   public CeylonParser getParser() {
     return parser;
   }
   
   public Set<Integer> getAnnotations() {
 	return annotations;
+  }
+  
+  public Tree.CompilationUnit getRootNode() {
+	  return (Tree.CompilationUnit) getCurrentAst();
   }
 
 }
