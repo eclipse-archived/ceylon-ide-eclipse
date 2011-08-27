@@ -36,6 +36,8 @@ public class InlineRefactoring extends Refactoring {
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
 	private final Declaration dec;
+	private boolean delete = true;
+	private final int count;
 
 	public InlineRefactoring(ITextEditor editor) {
 
@@ -50,12 +52,21 @@ public class InlineRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
+			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
+			parseController.getRootNode().visit(frv);
+			count = frv.getNodes().size();
+			
 		} 
 		else {
 			fSourceFile = null;
 			fNode = null;
 			dec = null;
+			count = 0;
 		}
+	}
+	
+	public int getCount() {
+		return count;
 	}
 
 	private Node findNode(IASTFindReplaceTarget frt) {
@@ -102,24 +113,30 @@ public class InlineRefactoring extends Refactoring {
 				tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
 						node.getText().length(), exp));	
 			}
-			CommonToken from = (CommonToken) att.getToken();
-			Tree.AnnotationList anns = att.getAnnotationList();
-			if (!anns.getAnnotations().isEmpty()) {
-				from = (CommonToken) anns.getAnnotations().get(0).getToken();
-			}
-			int prevIndex = from.getTokenIndex()-1;
-			if (prevIndex>=0) {
-				CommonToken tok = (CommonToken) parseController.getTokenStream().get(prevIndex);
-				if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
-					from=tok;
+			if (delete) {
+				CommonToken from = (CommonToken) att.getToken();
+				Tree.AnnotationList anns = att.getAnnotationList();
+				if (!anns.getAnnotations().isEmpty()) {
+					from = (CommonToken) anns.getAnnotations().get(0).getToken();
 				}
+				int prevIndex = from.getTokenIndex()-1;
+				if (prevIndex>=0) {
+					CommonToken tok = (CommonToken) parseController.getTokenStream().get(prevIndex);
+					if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
+						from=tok;
+					}
+				}
+				tfc.addEdit(new DeleteEdit(from.getStartIndex(), att.getStopIndex()-from.getStartIndex()+1));
 			}
-			tfc.addEdit(new DeleteEdit(from.getStartIndex(), att.getStopIndex()-from.getStartIndex()+1));
 		}
 		return tfc;
 	}
 
 	public Declaration getDeclaration() {
 		return dec;
+	}
+	
+	public void setDelete() {
+		this.delete = !delete;
 	}
 }

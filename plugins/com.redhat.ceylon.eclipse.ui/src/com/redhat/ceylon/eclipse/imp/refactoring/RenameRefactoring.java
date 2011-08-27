@@ -30,6 +30,7 @@ public class RenameRefactoring extends Refactoring {
 	private final CeylonParseController parseController;
 	private String name;
 	private final Declaration dec;
+	private final int count;
 
 	public RenameRefactoring(ITextEditor editor) {
 
@@ -45,12 +46,20 @@ public class RenameRefactoring extends Refactoring {
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
 			name = dec.getName();
+			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
+			parseController.getRootNode().visit(frv);
+			count = frv.getNodes().size();
 		} 
 		else {
 			fSourceFile = null;
 			fNode = null;
 			dec = null;
+			count = 0;
 		}
+	}
+	
+	public int getCount() {
+		return count;
 	}
 
 	private Node findNode(IASTFindReplaceTarget frt) {

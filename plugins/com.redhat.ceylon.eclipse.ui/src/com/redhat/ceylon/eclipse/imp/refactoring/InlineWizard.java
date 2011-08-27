@@ -10,7 +10,7 @@ public class InlineWizard extends RefactoringWizard {
 	}
 
 	protected void addUserInputPages() {
-		//addPage(new InlineInputPage(getRefactoring().getName()));
+		addPage(new InlineInputPage(getRefactoring().getName()));
 	}
 
 	public InlineRefactoring getRenameRefactoring() {
