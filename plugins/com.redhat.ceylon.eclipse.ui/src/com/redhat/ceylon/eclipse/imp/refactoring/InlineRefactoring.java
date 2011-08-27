@@ -1,14 +1,20 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import java.util.Iterator;
+
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.imp.services.IASTFindReplaceTarget;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
@@ -17,21 +23,21 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
-public class RenameRefactoring extends Refactoring {
+public class InlineRefactoring extends Refactoring {
 	private final IFile fSourceFile;
 	private final Node fNode;
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
-	private String name;
 	private final Declaration dec;
 
-	public RenameRefactoring(ITextEditor editor) {
+	public InlineRefactoring(ITextEditor editor) {
 
 		fEditor = editor;
 
@@ -44,7 +50,6 @@ public class RenameRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
-			name = dec.getName();
 		} 
 		else {
 			fSourceFile = null;
@@ -60,7 +65,7 @@ public class RenameRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Rename";
+		return "Inline value";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -76,31 +81,44 @@ public class RenameRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Rename", fSourceFile);
+		TextFileChange tfc = new TextFileChange("Inline value", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
 		if (dec!=null) {
+			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+			parseController.getRootNode().visit(fdv);
+			Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) fdv.getDeclarationNode();
+			Tree.Term t = att.getSpecifierOrInitializerExpression().getExpression().getTerm();
+			Integer start = t.getStartIndex();
+			int length = t.getStopIndex()-start+1;
+			Region region = new Region(start, length);
+			String exp = "";
+			for (Iterator<Token> ti = parseController.getTokenIterator(region); ti.hasNext();) {
+				exp+=ti.next().getText();
+			}
 			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
 			parseController.getRootNode().visit(frv);
 			for (Node node: frv.getNodes()) {
-	            renameNode(tfc, node);
+				node = CeylonSourcePositionLocator.getIdentifyingNode(node);
+				tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
+						node.getText().length(), exp));	
 			}
-			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
-			parseController.getRootNode().visit(fdv);
-			renameNode(tfc, fdv.getDeclarationNode());
+			CommonToken from = (CommonToken) att.getToken();
+			Tree.AnnotationList anns = att.getAnnotationList();
+			if (!anns.getAnnotations().isEmpty()) {
+				from = (CommonToken) anns.getAnnotations().get(0).getToken();
+			}
+			int prevIndex = from.getTokenIndex()-1;
+			if (prevIndex>=0) {
+				CommonToken tok = (CommonToken) parseController.getTokenStream().get(prevIndex);
+				if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
+					from=tok;
+				}
+			}
+			tfc.addEdit(new DeleteEdit(from.getStartIndex(), att.getStopIndex()-from.getStartIndex()+1));
 		}
 		return tfc;
 	}
 
-	private void renameNode(TextFileChange tfc, Node node) {
-		node = CeylonSourcePositionLocator.getIdentifyingNode(node);
-		tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-				node.getText().length(), name));
-	}
-
-	public void setName(String text) {
-		name = text;
-	}
-	
 	public Declaration getDeclaration() {
 		return dec;
 	}
