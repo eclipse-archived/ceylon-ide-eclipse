@@ -1,4 +1,4 @@
-package ceylon.imp.foldingUpdater;
+package com.redhat.ceylon.eclipse.imp.foldingUpdater;
 
 import java.util.HashMap;
 import java.util.List;

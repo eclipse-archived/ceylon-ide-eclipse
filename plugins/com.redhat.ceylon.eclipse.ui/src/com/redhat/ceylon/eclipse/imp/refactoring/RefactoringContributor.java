@@ -1,4 +1,4 @@
-package imp.ceylon.refactoring;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.services.IRefactoringContributor;

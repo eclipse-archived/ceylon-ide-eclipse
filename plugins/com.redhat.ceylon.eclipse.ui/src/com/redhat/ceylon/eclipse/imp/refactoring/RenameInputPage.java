@@ -1,4 +1,4 @@
-package imp.ceylon.refactoring;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;

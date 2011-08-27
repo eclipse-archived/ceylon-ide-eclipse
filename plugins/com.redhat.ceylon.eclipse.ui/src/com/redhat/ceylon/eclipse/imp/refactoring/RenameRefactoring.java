@@ -1,4 +1,4 @@
-package imp.ceylon.refactoring;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
@@ -16,12 +16,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import ceylon.imp.occurrenceMarker.CeylonOccurrenceMarker;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
