@@ -85,6 +85,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
   
   @Override
+  public void visit(Tree.ImportMemberOrType that) {
+    if (inBounds(that.getIdentifier())) {
+        node = that;
+    }
+    else {
+        super.visit(that);
+    }
+  }
+  
+  @Override
   public void visit(Tree.Declaration that) {
     if (inBounds(that.getIdentifier())) {
         node = that;
@@ -187,6 +197,14 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return (CommonToken) identifier.getToken();
       }
     }
+    else if (node instanceof Tree.ImportMemberOrType) {
+        Tree.ImportMemberOrType decl = (Tree.ImportMemberOrType) node;
+        Identifier identifier = decl.getIdentifier();
+        if (identifier != null)
+        {
+          return (CommonToken) identifier.getToken();
+        }
+      }
     else if (node instanceof Node) {    
       Node n = (Node) node;
       return (CommonToken) n.getToken();      
