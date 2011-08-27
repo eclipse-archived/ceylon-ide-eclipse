@@ -58,6 +58,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
 	private String name;
+	private boolean explicitType;
 
 	public ExtractLocalRefactoring(ITextEditor editor) {
 
@@ -122,9 +123,9 @@ public class ExtractLocalRefactoring extends Refactoring {
 			}
 		}
 		String indent = getIndent(node);
-		tfc.addEdit(new InsertEdit(node.getStartIndex(), 
-				/*term.getTypeModel().getProducedTypeName() +*/ 
-				"value " + name + " = " + exp + ";" + indent));
+		tfc.addEdit(new InsertEdit(node.getStartIndex(),
+				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + 
+				" " + name + " = " + exp + ";" + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, name));
 		return tfc;
 	}
@@ -142,6 +143,10 @@ public class ExtractLocalRefactoring extends Refactoring {
 
 	public void setName(String text) {
 		name = text;
+	}
+	
+	public void setExplicitType() {
+		this.explicitType = !explicitType;
 	}
 	
 }
