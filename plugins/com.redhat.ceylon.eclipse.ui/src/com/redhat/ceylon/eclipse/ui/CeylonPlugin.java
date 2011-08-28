@@ -55,13 +55,13 @@ public class CeylonPlugin extends PluginBase {
 				ICONS_PATH.append("imp_obj.gif")));
 
 		reg.put(ICeylonResources.CEYLON_FILE, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_file.gif")));
+				ICONS_PATH.append("template_obj.gif")));
 
 		reg.put(ICeylonResources.CEYLON_FILE_WARNING, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_file_warning.gif")));
+				ICONS_PATH.append("file_obj.gif")));
 
 		reg.put(ICeylonResources.CEYLON_FILE_ERROR, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_file_error.gif")));
+				ICONS_PATH.append("file_obj.gif")));
 
 		reg.put(ICeylonResources.CEYLON_CLASS, createImageDescriptor(bundle, 
 				ICONS_PATH.append("class_obj.gif")));
@@ -87,11 +87,6 @@ public class CeylonPlugin extends PluginBase {
 		reg.put(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("private_co.gif")));
 
-		reg.put(ICeylonResources.CEYLON_DEFAULT_IMAGE, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_default_image.gif")));
-
-		reg.put(ICeylonResources.CEYLON_DEFAULT_OUTLINE_ITEM, createImageDescriptor(bundle, 
-				ICONS_PATH.append("ceylon_default_outline_item.gif")));
 	}
 
 	public static org.eclipse.jface.resource.ImageDescriptor createImageDescriptor(
