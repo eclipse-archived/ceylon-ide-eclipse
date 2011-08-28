@@ -61,6 +61,9 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		else if (astNode instanceof Tree.NamedArgument) {
 			return ((Tree.NamedArgument) astNode).getParameter();
 		}
+		else if (astNode instanceof Tree.ImportMemberOrType) {
+			return ((Tree.ImportMemberOrType) astNode).getDeclarationModel();
+		}
 		else {
 		    return null;
 		}
