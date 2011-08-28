@@ -28,8 +28,8 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 public class ExtractLocalRefactoring extends Refactoring {
 	private static final class FindStatementVisitor extends Visitor {
 		Tree.Term term;
-		boolean found = false;
 		Tree.Statement statement;
+		Tree.Statement currentStatement;
 		public Tree.Statement getStatement() {
 			return statement;
 		}
@@ -38,17 +38,19 @@ public class ExtractLocalRefactoring extends Refactoring {
 		}
 		@Override
 		public void visit(Tree.Term that) {
-			super.visit(that);
 			if (that==term) {
-				found=true;
+				statement=currentStatement;
 			}
+			super.visit(that);
 		}
 		@Override
 		public void visit(Tree.Statement that) {
+			currentStatement = that;
 			super.visit(that);
-			if (found) {
-				found=false;
-				statement = that;
+		}
+		public void visitAny(Node node) {
+			if (statement==null) {
+				super.visitAny(node);
 			}
 		}
 	}
@@ -57,7 +59,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 	private final Node fNode;
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
-	private String name;
+	private String newName;
 	private boolean explicitType;
 
 	public ExtractLocalRefactoring(ITextEditor editor) {
@@ -72,7 +74,21 @@ public class ExtractLocalRefactoring extends Refactoring {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
-			name = "temp";
+			Node node = fNode;
+			if (node instanceof Tree.Expression) {
+				node = ((Tree.Expression) node).getTerm();
+			}
+			if (node instanceof Tree.InvocationExpression) {
+				node = ((Tree.InvocationExpression) node).getPrimary();
+			}
+			if (node instanceof Tree.StaticMemberOrTypeExpression) {
+				newName = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier().getText();
+				newName = Character.toLowerCase(newName.charAt(0)) + 
+						newName.substring(1);
+			}
+			else {
+				newName = "temp";
+			}
 		} 
 		else {
 			fSourceFile = null;
@@ -125,8 +141,8 @@ public class ExtractLocalRefactoring extends Refactoring {
 		String indent = getIndent(node);
 		tfc.addEdit(new InsertEdit(node.getStartIndex(),
 				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + 
-				" " + name + " = " + exp + ";" + indent));
-		tfc.addEdit(new ReplaceEdit(start, length, name));
+				" " + newName + " = " + exp + ";" + indent));
+		tfc.addEdit(new ReplaceEdit(start, length, newName));
 		return tfc;
 	}
 
@@ -141,8 +157,12 @@ public class ExtractLocalRefactoring extends Refactoring {
 		return "";
 	}
 
-	public void setName(String text) {
-		name = text;
+	public void setNewName(String text) {
+		newName = text;
+	}
+	
+	public String getNewName() {
+		return newName;
 	}
 	
 	public void setExplicitType() {

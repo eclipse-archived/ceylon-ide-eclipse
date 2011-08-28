@@ -28,7 +28,7 @@ public class RenameRefactoring extends Refactoring {
 	private final Node fNode;
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
-	private String name;
+	private String newName;
 	private final Declaration dec;
 	private final int count;
 
@@ -45,7 +45,7 @@ public class RenameRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
-			name = dec.getName();
+			newName = dec.getName();
 			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
 			parseController.getRootNode().visit(frv);
 			count = frv.getNodes().size();
@@ -103,11 +103,11 @@ public class RenameRefactoring extends Refactoring {
 	private void renameNode(TextFileChange tfc, Node node) {
 		node = CeylonSourcePositionLocator.getIdentifyingNode(node);
 		tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-				node.getText().length(), name));
+				node.getText().length(), newName));
 	}
 
-	public void setName(String text) {
-		name = text;
+	public void setNewName(String text) {
+		newName = text;
 	}
 	
 	public Declaration getDeclaration() {

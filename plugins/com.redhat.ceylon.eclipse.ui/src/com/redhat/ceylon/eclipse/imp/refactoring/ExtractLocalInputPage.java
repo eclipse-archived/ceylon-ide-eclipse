@@ -30,12 +30,12 @@ public class ExtractLocalInputPage extends UserInputWizardPage {
 		Label label = new Label(result, SWT.RIGHT);  
 		label.setText("Local name: ");
 		final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
-		text.setText("temp");
+		text.setText(getExtractLocalRefactoring().getNewName());
 		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				getExtractLocalRefactoring().setName(text.getText());
+				getExtractLocalRefactoring().setNewName(text.getText());
 			}
 		});
 		final Button checkbox = new Button(result, SWT.CHECK);

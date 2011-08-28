@@ -42,7 +42,7 @@ public class RenameInputPage extends UserInputWizardPage {
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				getRenameRefactoring().setName(text.getText());
+				getRenameRefactoring().setNewName(text.getText());
 			}
 		});
 	}
