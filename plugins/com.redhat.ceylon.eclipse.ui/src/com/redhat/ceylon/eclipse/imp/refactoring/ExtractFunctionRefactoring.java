@@ -50,28 +50,38 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		}
 		@Override
 		public void visit(Tree.ObjectDefinition that) {
+			Tree.Declaration d = currentDeclaration;
 			currentDeclaration = that;
 			super.visit(that);
+			currentDeclaration = d;
 		}
 		@Override
 		public void visit(Tree.AttributeGetterDefinition that) {
+			Tree.Declaration d = currentDeclaration;
 			currentDeclaration = that;
 			super.visit(that);
+			currentDeclaration = d;
 		}
 		@Override
 		public void visit(Tree.MethodDefinition that) {
+			Tree.Declaration d = currentDeclaration;
 			currentDeclaration = that;
 			super.visit(that);
+			currentDeclaration = d;
 		}
 		@Override
 		public void visit(Tree.ClassDefinition that) {
+			Tree.Declaration d = currentDeclaration;
 			currentDeclaration = that;
 			super.visit(that);
+			currentDeclaration = d;
 		}
 		@Override
 		public void visit(Tree.InterfaceDefinition that) {
+			Tree.Declaration d = currentDeclaration;
 			currentDeclaration = that;
 			super.visit(that);
+			currentDeclaration = d;
 		}
 		public void visitAny(Node node) {
 			if (declaration==null) {
