@@ -137,5 +137,16 @@
             language="ceylon">
       </refactoringContributor>
    </extension>
-
+   <extension
+	         point="org.eclipse.core.runtime.contentTypes">
+	      <content-type
+	            file-extensions="ceylon"
+	            default-charset="UTF-8"
+	            base-type="org.eclipse.core.runtime.text"
+	            name="Ceylon Content-type"
+	            priority="high"
+	            describer="org.eclipse.core.internal.content.TextContentDescriber"
+	            id="ceylon-content">
+	      </content-type>
+	 </extension>
 </plugin>
