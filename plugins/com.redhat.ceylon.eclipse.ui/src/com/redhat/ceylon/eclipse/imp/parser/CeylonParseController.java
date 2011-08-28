@@ -87,7 +87,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
         }
 	}
 
-public CeylonParseController() {
+  public CeylonParseController() {
     super(CeylonPlugin.kLanguageID);
   }
 
