@@ -49,10 +49,6 @@
       <builder>
          <run
                class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder">
-            <parameter
-                  name="foo"
-                  value="bar">
-            </parameter>
          </run>
       </builder>
    </extension>
