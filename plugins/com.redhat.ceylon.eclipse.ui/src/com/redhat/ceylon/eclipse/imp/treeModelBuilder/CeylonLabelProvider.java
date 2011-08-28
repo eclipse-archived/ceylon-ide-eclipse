@@ -31,8 +31,6 @@ public class CeylonLabelProvider implements ILabelProvider {
   private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
       .getImageRegistry();
 
-  private static Image DEFAULT_IMAGE = imageRegistry
-      .get(ICeylonResources.CEYLON_DEFAULT_IMAGE);
   private static Image FILE_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE);
   private static Image FILE_WITH_WARNING_IMAGE = imageRegistry
@@ -112,7 +110,7 @@ public class CeylonLabelProvider implements ILabelProvider {
       return getImage(n, shared);
     }
     else {
-      return DEFAULT_IMAGE;
+      return null;
     }
   }
 
