@@ -202,19 +202,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		term.visit(flrv);
 		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
 		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-			TypeDeclaration td = bme.getTypeModel().getDeclaration();
-			if (td.getContainer()==dec) {
-				boolean found=false;
-				for (TypeDeclaration typeDeclaration: localTypes) {
-					if (typeDeclaration==td) {
-						found=true; 
-						break;
-					}
-				}
-				if (!found) {
-					localTypes.add(td);
-				}
-			}
+			addLocalType(dec, bme.getTypeModel(), localTypes);
 		}
 		
 		String params = "";
@@ -256,6 +244,29 @@ public class ExtractFunctionRefactoring extends Refactoring {
 				" { " + (isVoid?"":"return ") + exp + "; }" + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
 		return tfc;
+	}
+
+	private void addLocalType(Declaration dec, ProducedType type,
+			List<TypeDeclaration> localTypes) {
+		TypeDeclaration td = type.getDeclaration();
+		if (td.getContainer()==dec) {
+			boolean found=false;
+			for (TypeDeclaration typeDeclaration: localTypes) {
+				if (typeDeclaration==td) {
+					found=true; 
+					break;
+				}
+			}
+			if (!found) {
+				localTypes.add(td);
+			}
+		}
+		for (ProducedType pt: td.getSatisfiedTypes()) {
+			addLocalType(dec, pt, localTypes);
+		}
+		for (ProducedType pt: type.getTypeArgumentList()) {
+			addLocalType(dec, pt, localTypes);
+		}
 	}
 
 	private String getIndent(Node node) {
