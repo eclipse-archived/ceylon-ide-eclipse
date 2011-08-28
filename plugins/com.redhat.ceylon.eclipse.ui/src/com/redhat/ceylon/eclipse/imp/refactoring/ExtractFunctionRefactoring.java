@@ -23,6 +23,8 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -92,6 +94,11 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			super.visit(that);
 			//TODO: things nested inside control structures
 			if (that.getDeclaration().getContainer()==declaration) {
+				for (Tree.BaseMemberExpression bme: localReferences) {
+					if (bme.getDeclaration()==that.getDeclaration()) {
+						return;
+					}
+				}
 				localReferences.add(that);
 			}
 		}
@@ -180,8 +187,26 @@ public class ExtractFunctionRefactoring extends Refactoring {
 				node = anns.getAnnotations().get(0);
 			}
 		}
-		FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(fsv.getDeclaration().getDeclarationModel());
+		Declaration dec = fsv.getDeclaration().getDeclarationModel();
+		FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
 		term.visit(flrv);
+		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+			TypeDeclaration td = bme.getTypeModel().getDeclaration();
+			if (td.getContainer()==dec) {
+				boolean found=false;
+				for (TypeDeclaration typeDeclaration: localTypes) {
+					if (typeDeclaration==td) {
+						found=true; 
+						break;
+					}
+				}
+				if (!found) {
+					localTypes.add(td);
+				}
+			}
+		}
+		
 		String params = "";
 		String args = "";
 		if (!flrv.getLocalReferences().isEmpty()) {
@@ -193,10 +218,32 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			params = params.substring(0, params.length()-2);
 			args = args.substring(0, args.length()-2);
 		}
+		
 		String indent = getIndent(node);
+
+		String typeParams = "";
+		String constraints = "";
+		if (!localTypes.isEmpty()) {
+			for (TypeDeclaration t: localTypes) {
+				typeParams += t.getName() + ", ";
+				if (!t.getSatisfiedTypes().isEmpty()) {
+					constraints += (indent.isEmpty() ? "\n" : indent) + 
+							"given " + t.getName() + " satisfies ";
+					for (ProducedType pt: t.getSatisfiedTypes()) {
+						constraints += pt.getProducedTypeName() + "&";
+					}
+					constraints = constraints.substring(0, constraints.length()-1);
+				}
+			}
+			typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
+		}
+		
+		boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
+		
 		tfc.addEdit(new InsertEdit(node.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : "function") + 
-				" " + newName + "(" + params + ") { return " + exp + "; }" + indent));
+				( explicitType ? term.getTypeModel().getProducedTypeName() : (isVoid?"void":"function")) + 
+				" " + newName + typeParams + "(" + params + ")" + constraints + 
+				" { " + (isVoid?"":"return ") + exp + "; }" + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
 		return tfc;
 	}
