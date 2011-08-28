@@ -9,7 +9,8 @@ public class RefactoringContributor implements IRefactoringContributor {
 		return new IAction[] { 
 				new RenameRefactoringAction(editor),
 				new InlineRefactoringAction(editor),
-				new ExtractLocalRefactoringAction(editor),
+				new ExtractValueRefactoringAction(editor),
+				new ExtractFunctionRefactoringAction(editor)
 			};
 	}
 }

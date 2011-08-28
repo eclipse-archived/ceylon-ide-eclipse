@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-public class ExtractLocalInputPage extends UserInputWizardPage {
-	public ExtractLocalInputPage(String name) {
+public class ExtractFunctionInputPage extends UserInputWizardPage {
+	public ExtractFunctionInputPage(String name) {
 		super(name);
 	}
 
@@ -28,14 +28,14 @@ public class ExtractLocalInputPage extends UserInputWizardPage {
 		layout.numColumns = 2;
 		result.setLayout(layout);
 		Label label = new Label(result, SWT.RIGHT);  
-		label.setText("Local name: ");
+		label.setText("Function name: ");
 		final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
-		text.setText(getExtractLocalRefactoring().getNewName());
+		text.setText(getExtractFunctionRefactoring().getNewName());
 		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				getExtractLocalRefactoring().setNewName(text.getText());
+				getExtractFunctionRefactoring().setNewName(text.getText());
 			}
 		});
 		final Button checkbox = new Button(result, SWT.CHECK);
@@ -43,14 +43,14 @@ public class ExtractLocalInputPage extends UserInputWizardPage {
 		checkbox.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				getExtractLocalRefactoring().setExplicitType();
+				getExtractFunctionRefactoring().setExplicitType();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
 		});		
 	}
 
-	private ExtractLocalRefactoring getExtractLocalRefactoring() {
-		return (ExtractLocalRefactoring) getRefactoring();
+	private ExtractFunctionRefactoring getExtractFunctionRefactoring() {
+		return (ExtractFunctionRefactoring) getRefactoring();
 	}
 }

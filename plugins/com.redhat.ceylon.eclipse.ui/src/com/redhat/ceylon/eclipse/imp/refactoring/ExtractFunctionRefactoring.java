@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
@@ -20,37 +22,77 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
-public class ExtractLocalRefactoring extends Refactoring {
-	private static final class FindStatementVisitor extends Visitor {
+public class ExtractFunctionRefactoring extends Refactoring {
+	private static final class FindContainerVisitor extends Visitor {
 		Tree.Term term;
-		Tree.Statement statement;
-		Tree.Statement currentStatement;
-		public Tree.Statement getStatement() {
-			return statement;
+		Tree.Declaration declaration;
+		Tree.Declaration currentDeclaration;
+		public Tree.Declaration getDeclaration() {
+			return declaration;
 		}
-		FindStatementVisitor(Tree.Term term) {
+		FindContainerVisitor(Tree.Term term) {
 			this.term=term;
 		}
 		@Override
 		public void visit(Tree.Term that) {
 			if (that==term) {
-				statement=currentStatement;
+				declaration=currentDeclaration;
 			}
 			super.visit(that);
 		}
 		@Override
-		public void visit(Tree.Statement that) {
-			currentStatement = that;
+		public void visit(Tree.ObjectDefinition that) {
+			currentDeclaration = that;
+			super.visit(that);
+		}
+		@Override
+		public void visit(Tree.AttributeGetterDefinition that) {
+			currentDeclaration = that;
+			super.visit(that);
+		}
+		@Override
+		public void visit(Tree.MethodDefinition that) {
+			currentDeclaration = that;
+			super.visit(that);
+		}
+		@Override
+		public void visit(Tree.ClassDefinition that) {
+			currentDeclaration = that;
+			super.visit(that);
+		}
+		@Override
+		public void visit(Tree.InterfaceDefinition that) {
+			currentDeclaration = that;
 			super.visit(that);
 		}
 		public void visitAny(Node node) {
-			if (statement==null) {
+			if (declaration==null) {
 				super.visitAny(node);
+			}
+		}
+	}
+	
+	public static final class FindLocalReferencesVisitor extends Visitor {
+		List<Tree.BaseMemberExpression> localReferences = new ArrayList<Tree.BaseMemberExpression>();
+		Declaration declaration;
+		FindLocalReferencesVisitor(Declaration declaration) {
+			this.declaration = declaration;
+		}
+		public List<Tree.BaseMemberExpression> getLocalReferences() {
+			return localReferences;
+		}
+		@Override
+		public void visit(Tree.BaseMemberExpression that) {
+			super.visit(that);
+			//TODO: things nested inside control structures
+			if (that.getDeclaration().getContainer()==declaration) {
+				localReferences.add(that);
 			}
 		}
 	}
@@ -62,7 +104,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 	private String newName;
 	private boolean explicitType;
 
-	public ExtractLocalRefactoring(ITextEditor editor) {
+	public ExtractFunctionRefactoring(ITextEditor editor) {
 
 		fEditor = editor;
 
@@ -103,7 +145,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Extract value";
+		return "Extract function";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -119,7 +161,7 @@ public class ExtractLocalRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Extract value", fSourceFile);
+		TextFileChange tfc = new TextFileChange("Extract function", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
 		Tree.Term term = (Tree.Term) fNode;
 		Integer start = fNode.getStartIndex();
@@ -129,20 +171,33 @@ public class ExtractLocalRefactoring extends Refactoring {
 		for (Iterator<Token> ti = parseController.getTokenIterator(region); ti.hasNext();) {
 			exp+=ti.next().getText();
 		}
-		FindStatementVisitor fsv = new FindStatementVisitor(term);
+		FindContainerVisitor fsv = new FindContainerVisitor(term);
 		parseController.getRootNode().visit(fsv);
-		Node node = fsv.getStatement();
+		Node node = fsv.getDeclaration();
 		if (node instanceof Tree.Declaration) {
 			Tree.AnnotationList anns = ((Tree.Declaration) node).getAnnotationList();
 			if (!anns.getAnnotations().isEmpty()) {
 				node = anns.getAnnotations().get(0);
 			}
 		}
+		FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(fsv.getDeclaration().getDeclarationModel());
+		term.visit(flrv);
+		String params = "";
+		String args = "";
+		if (!flrv.getLocalReferences().isEmpty()) {
+			for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+				params += bme.getTypeModel().getProducedTypeName() + 
+						" " + bme.getIdentifier().getText() + ", ";
+				args += bme.getIdentifier().getText() + ", ";
+			}
+			params = params.substring(0, params.length()-2);
+			args = args.substring(0, args.length()-2);
+		}
 		String indent = getIndent(node);
 		tfc.addEdit(new InsertEdit(node.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + 
-				" " + newName + " = " + exp + ";" + indent));
-		tfc.addEdit(new ReplaceEdit(start, length, newName));
+				( explicitType ? term.getTypeModel().getProducedTypeName() : "function") + 
+				" " + newName + "(" + params + ") { return " + exp + "; }" + indent));
+		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
 		return tfc;
 	}
 
