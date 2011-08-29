@@ -152,6 +152,7 @@ public class InlineRefactoring extends Refactoring {
 					public void visit(final Tree.InvocationExpression that) {
 						super.visit(that);
 						if (that.getPrimary().getDeclaration()==dec) {
+							//TODO: breaks for invocations like f(f(x, y),z)
 							final StringBuilder result = new StringBuilder();
 							class InterpolateVisitor extends Visitor {
 								int start = 0;
@@ -168,10 +169,13 @@ public class InlineRefactoring extends Refactoring {
 										}
 									}
 								}
+								void finish() {
+									result.append(template.substring(start, template.length()));
+								}
 							}
 							InterpolateVisitor iv = new InterpolateVisitor();
 							iv.visit(t);
-							result.append(template.substring(iv.start, template.length()));
+							iv.finish();
 							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
 									that.getStopIndex()-that.getStartIndex()+1, 
 									result.toString()));
