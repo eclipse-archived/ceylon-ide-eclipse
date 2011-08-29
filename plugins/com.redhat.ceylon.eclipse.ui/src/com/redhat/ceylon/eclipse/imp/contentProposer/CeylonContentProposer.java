@@ -2,11 +2,15 @@ package com.redhat.ceylon.eclipse.imp.contentProposer;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.imp.editor.ErrorProposal;
@@ -24,6 +28,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -73,26 +79,25 @@ public class CeylonContentProposer implements IContentProposer {
         prefix = getPrefix(node, offset);
       }
 
-      /*SearchVisitor sv = new SearchVisitor( new SearchVisitor.Matcher() {
-        @Override
-        public boolean matches(String string) {
-          return string.startsWith(prefix);
-        }
-        @Override
-        public boolean includeReferences() {
-          return false;
-        }
-        @Override
-        public boolean includeDeclarations() {
-          return true;
+      Map<String, Declaration> proposals = getProposals(node, prefix, parseController);
+      TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
+        public int compare(String x, String y) {
+        	int lowers = prefix.length()==0 || isLowerCase(prefix.charAt(0)) ? -1 : 1;
+        	if (isLowerCase(x.charAt(0)) && 
+        			isUpperCase(y.charAt(0))) {
+        		return lowers;
+        	}
+        	else if (isUpperCase(x.charAt(0)) && 
+        			isLowerCase(y.charAt(0))) {
+        		return -lowers;
+        	}
+        	else {
+        		return x.compareTo(y);
+        	}
         }
       });
-      ((Node) parseController.getCurrentAst()).visit(sv);
-      for (Node n: sv.getNodes()) {
-        Declaration d = (Declaration) n;
-        result.add(new SourceProposal(CeylonLabelProvider.getLabelFor(n), d.getIdentifier().getText(), prefix, offset));
-      }*/
-      for (final Declaration d: getProposals(node, prefix).values()) {
+      map.putAll(proposals);
+      for (final Declaration d: map.values()) {
         if (d instanceof TypeDeclaration) {
           result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
         		  getTextFor(d, false), parseController));
@@ -104,8 +109,8 @@ public class CeylonContentProposer implements IContentProposer {
       }
     } 
     else {
-      result.add(new ErrorProposal(
-          "No proposals available due to syntax errors", offset));
+      result.add(new ErrorProposal("No proposals available due to syntax errors", 
+                 offset));
     }
     return result.toArray(new ICompletionProposal[result.size()]);
   }
@@ -137,26 +142,45 @@ public class CeylonContentProposer implements IContentProposer {
 	};
   }
 
-  private Map<String, Declaration> getProposals(Node node, final String prefix) {
+  private Map<String, Declaration> getProposals(Node node, final String prefix,
+		  CeylonParseController parseController) {
     //TODO: substitute type arguments to receiving type
     if (node instanceof Tree.QualifiedMemberExpression) {
       ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
       if (type!=null) {
         return type.getDeclaration().getMatchingMemberDeclarations(prefix);
       }
+      else {
+        return Collections.emptyMap();
+      }
     }
     else if (node instanceof Tree.QualifiedTypeExpression) {
       ProducedType type = ((Tree.QualifiedTypeExpression) node).getPrimary().getTypeModel();
-      return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+      if (type!=null) {
+        return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+      }
+      else {
+        return Collections.emptyMap();
+      }
     }
     else if (node instanceof Tree.NamedArgument) {
-    	//TODO: this case is really problematic because the
-    	//      model doesn't have anything about named args
-    	//      and the tree can't be walked upward
-        Declaration p = ((Tree.NamedArgument) node).getParameter();
-        return Collections.singletonMap(p.getName(), p);
+      //TODO: this case is really problematic because the
+      //      model doesn't have anything about named args
+      //      and the tree can't be walked upward
+      Declaration p = ((Tree.NamedArgument) node).getParameter();
+      return Collections.singletonMap(p.getName(), p);
+    }
+    else {
+      Map<String, Declaration> result = new TreeMap<String, Declaration>(); 
+      Module languageModule = parseController.getContext().getModules().getLanguageModule();
+      if (languageModule!=null) {
+        for (Package languageScope: languageModule.getPackages() ) {
+          result.putAll(languageScope.getMatchingDeclarations(null, prefix));
+        }
       }
-    return node.getScope().getMatchingDeclarations(node.getUnit(), prefix);
+      result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix));
+      return result;
+    }
   }
 
   public static String getTextFor(Declaration d, boolean includeArgs) {

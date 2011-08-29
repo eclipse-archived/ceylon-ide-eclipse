@@ -23,6 +23,7 @@ import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -97,6 +98,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   private CeylonSourcePositionLocator sourcePositionLocator;
   private CeylonParser parser;
   private final Set<Integer> annotations = new HashSet<Integer>();
+  private Context context;
 
   /**
    * @param filePath		Project-relative path of file
@@ -267,6 +269,8 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) fCurrentAst; 
       compilationUnit.visit(new ErrorVisitor(handler));      
     }
+    
+    context = typeChecker.getContext();
 
     return fCurrentAst;
   }
@@ -323,14 +327,18 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 
 
   public CommonTokenStream getTokenStream() {
-	CeylonParser parser = getParser();
-	if (parser==null) return null;
-	return (CommonTokenStream) parser.getTokenStream();
+    CeylonParser parser = getParser();
+    if (parser==null) return null;
+    return (CommonTokenStream) parser.getTokenStream();
   }
 
 
   public CeylonParser getParser() {
     return parser;
+  }
+  
+  public Context getContext() {
+    return context;
   }
   
   public Set<Integer> getAnnotations() {
