@@ -38,12 +38,22 @@ public class ExtractValueInputPage extends UserInputWizardPage {
 				getExtractLocalRefactoring().setNewName(text.getText());
 			}
 		});
-		final Button checkbox = new Button(result, SWT.CHECK);
-		checkbox.setText("Use explicit type declaration");
-		checkbox.addSelectionListener(new SelectionListener() {
+		final Button et = new Button(result, SWT.CHECK);
+		et.setText("Use explicit type declaration");
+		et.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				getExtractLocalRefactoring().setExplicitType();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent event) {}
+		});		
+		final Button gs = new Button(result, SWT.CHECK);
+		gs.setText("Create a getter");
+		gs.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				getExtractLocalRefactoring().setGetter();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
