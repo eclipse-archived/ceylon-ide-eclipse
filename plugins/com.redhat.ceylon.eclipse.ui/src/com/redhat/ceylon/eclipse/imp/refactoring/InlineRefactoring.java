@@ -24,6 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
@@ -76,7 +77,7 @@ public class InlineRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Inline value";
+		return "Inline";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -92,41 +93,95 @@ public class InlineRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Inline value", fSourceFile);
+		final TextFileChange tfc = new TextFileChange("Inline", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
 		if (dec!=null) {
 			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
 			parseController.getRootNode().visit(fdv);
-			Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) fdv.getDeclarationNode();
-			Tree.Term t = att.getSpecifierOrInitializerExpression().getExpression().getTerm();
+			Tree.Term t;
+			Tree.Declaration declarationNode = fdv.getDeclarationNode();
+			if (declarationNode instanceof Tree.AttributeDeclaration) {
+				Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) declarationNode;
+				t = att.getSpecifierOrInitializerExpression().getExpression().getTerm();
+			}
+			else if (declarationNode instanceof Tree.MethodDefinition) {
+				Tree.MethodDefinition meth = (Tree.MethodDefinition) declarationNode;
+				if (meth.getBlock().getStatements().size()!=1) {
+					throw new RuntimeException("method has multiple statements");
+				}
+				if (meth.getType() instanceof Tree.VoidModifier) {
+					Tree.ExpressionStatement e = (Tree.ExpressionStatement) meth.getBlock()
+							.getStatements().get(0);
+					t = e.getExpression().getTerm();
+					
+				}
+				else {
+					Tree.Return r = (Tree.Return) meth.getBlock().getStatements().get(0);
+					t = r.getExpression().getTerm();
+				}
+			}
+			else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
+				Tree.AttributeGetterDefinition att = (Tree.AttributeGetterDefinition) declarationNode;
+				if (att.getBlock().getStatements().size()!=1) {
+					throw new RuntimeException("getter has multiple statements");
+				}
+				Tree.Return r = (Tree.Return) att.getBlock().getStatements().get(0);
+				t = r.getExpression().getTerm();
+			}
+			else {
+				throw new RuntimeException("not a value or function");
+			}
 			Integer start = t.getStartIndex();
 			int length = t.getStopIndex()-start+1;
 			Region region = new Region(start, length);
 			String exp = "";
-			for (Iterator<Token> ti = parseController.getTokenIterator(region); ti.hasNext();) {
+			for (Iterator<Token> ti = parseController.getTokenIterator(region); 
+					ti.hasNext();) {
 				exp+=ti.next().getText();
 			}
-			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
-			parseController.getRootNode().visit(frv);
-			for (Node node: frv.getNodes()) {
-				node = CeylonSourcePositionLocator.getIdentifyingNode(node);
-				tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-						node.getText().length(), exp));	
+			final String template = exp;
+			if (declarationNode instanceof Tree.AnyAttribute) {
+				new Visitor() {
+					@Override
+					public void visit(Tree.BaseMemberExpression that) {
+						super.visit(that);
+						if (that.getDeclaration()==dec) {
+							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
+									that.getStopIndex()-that.getStartIndex()+1, 
+									template));	
+						}
+					}
+				}.visit(parseController.getRootNode());
+			}
+			else {
+				new Visitor() {
+					@Override
+					public void visit(Tree.InvocationExpression that) {
+						super.visit(that);
+						if (that.getPrimary().getDeclaration()==dec) {
+							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
+									that.getStopIndex()-that.getStartIndex()+1, 
+									template));	
+						}
+					}
+				}.visit(parseController.getRootNode());
 			}
 			if (delete) {
-				CommonToken from = (CommonToken) att.getToken();
-				Tree.AnnotationList anns = att.getAnnotationList();
+				CommonToken from = (CommonToken) declarationNode.getToken();
+				Tree.AnnotationList anns = declarationNode.getAnnotationList();
 				if (!anns.getAnnotations().isEmpty()) {
 					from = (CommonToken) anns.getAnnotations().get(0).getToken();
 				}
 				int prevIndex = from.getTokenIndex()-1;
 				if (prevIndex>=0) {
-					CommonToken tok = (CommonToken) parseController.getTokenStream().get(prevIndex);
+					CommonToken tok = (CommonToken) parseController.getTokenStream()
+							.get(prevIndex);
 					if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
 						from=tok;
 					}
 				}
-				tfc.addEdit(new DeleteEdit(from.getStartIndex(), att.getStopIndex()-from.getStartIndex()+1));
+				tfc.addEdit(new DeleteEdit(from.getStartIndex(), 
+						declarationNode.getStopIndex()-from.getStartIndex()+1));
 			}
 		}
 		return tfc;
