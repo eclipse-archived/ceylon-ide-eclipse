@@ -68,6 +68,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
             {
               AnalysisMessage analysisMessage = (AnalysisMessage) error;
               Node errorNode = CeylonSourcePositionLocator.getIdentifyingNode(analysisMessage.getTreeNode());
+              if (errorNode==null) errorNode=analysisMessage.getTreeNode();
               Token token = errorNode.getToken();
               startOffset = errorNode.getStartIndex();              
               endOffset = errorNode.getStopIndex();
