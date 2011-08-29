@@ -202,7 +202,8 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		term.visit(flrv);
 		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
 		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-			addLocalType(dec, bme.getTypeModel(), localTypes);
+			addLocalType(dec, bme.getTypeModel(), localTypes, 
+					new ArrayList<ProducedType>());
 		}
 		
 		String params = "";
@@ -247,7 +248,13 @@ public class ExtractFunctionRefactoring extends Refactoring {
 	}
 
 	private void addLocalType(Declaration dec, ProducedType type,
-			List<TypeDeclaration> localTypes) {
+			List<TypeDeclaration> localTypes, List<ProducedType> visited) {
+		if (visited.contains(type)) {
+			return;
+		}
+		else {
+			visited.add(type);
+		}
 		TypeDeclaration td = type.getDeclaration();
 		if (td.getContainer()==dec) {
 			boolean found=false;
@@ -262,10 +269,10 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			}
 		}
 		for (ProducedType pt: td.getSatisfiedTypes()) {
-			addLocalType(dec, pt, localTypes);
+			addLocalType(dec, pt, localTypes, visited);
 		}
 		for (ProducedType pt: type.getTypeArgumentList()) {
-			addLocalType(dec, pt, localTypes);
+			addLocalType(dec, pt, localTypes, visited);
 		}
 	}
 
