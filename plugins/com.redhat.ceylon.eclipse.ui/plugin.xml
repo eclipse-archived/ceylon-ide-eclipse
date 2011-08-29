@@ -6,8 +6,9 @@
          point="org.eclipse.imp.runtime.languageDescription">
       <language
             url="http://in.relation.to/Tutorials/IntroductionToCeylon"
+            icon="icons/template_obj.gif"
             extensions="ceylon"
-            description="The best Java replacement"
+            description="Say more, more clearly"
             language="ceylon">
       </language>
    </extension>
@@ -48,10 +49,6 @@
       <builder>
          <run
                class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder">
-            <parameter
-                  name="foo"
-                  value="bar">
-            </parameter>
          </run>
       </builder>
    </extension>
@@ -87,7 +84,7 @@
             nameFilter="*"
             id="ceylon.imp.projectContextMenu">
          <action
-               label="Enable ceylon Builder"
+               label="Enable Ceylon Builder"
                tooltip="Enable the ceylon builder for this project"
                class="com.redhat.ceylon.eclipse.imp.actions.EnableCeylonNature"
                id="ceylon.imp.actions.enableNatureAction">
@@ -107,6 +104,41 @@
             class="com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider"
             language="ceylon">
       </docProvider>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.contentProposer">
+      <proposer
+            class="com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer"
+            language="ceylon">
+      </proposer>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.markOccurrences">
+      <occurrenceIdentifier
+            class="com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker"
+            language="ceylon">
+      </occurrenceIdentifier>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.foldingUpdater">
+      <foldingUpdater
+            class="com.redhat.ceylon.eclipse.imp.foldingUpdater.CeylonFoldingUpdater"
+            language="ceylon">
+      </foldingUpdater>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.refactoringContributions">
+      <refactoringContributor
+            class="com.redhat.ceylon.eclipse.imp.refactoring.RefactoringContributor"
+            language="ceylon">
+      </refactoringContributor>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.editorActionContributions">
+      <editorActionContributor
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonEditorActionContributions"
+            language="ceylon">
+      </editorActionContributor>
    </extension>
 
 </plugin>

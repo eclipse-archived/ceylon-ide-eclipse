@@ -11,24 +11,31 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonDocumentationProvider implements IDocumentationProvider {
 
   public String getDocumentation(Object entity, IParseController ctlr) {
-    if (entity == null)
-      return null;
-
     if (entity instanceof Declaration) {
-      String documentation = "";
-      Declaration decl = (Declaration) entity; 
+      return getDocumentation((Declaration) entity);
+    }
+    else {
+      return null;
+    }
+  }
+
+  public static String getDocumentation(Declaration decl) {
+	  String documentation = "";
+	  if (decl!=null) {
       // START_HERE
       // Create a case for each kind of node or token for which you
       // want to provide help text and return the text corresponding
       // to that entity (such as in the following examples)
 
       // Address node types of interest, which may represent multiple tokens
-      String qualifiedName = decl.getIdentifier().getText();
-      documentation += "<b>" + qualifiedName + "</b>";
+      //String qualifiedName = decl.getIdentifier().getText();
+      documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
+    		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
       
       AnnotationList annotationList = decl.getAnnotationList();
       if (annotationList != null)
@@ -40,6 +47,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
           if (annotPrim != null)
           {
             com.redhat.ceylon.compiler.typechecker.model.Declaration annotDecl = annotPrim.getDeclaration(); 
+            if (annotDecl!=null) {
             String name = annotDecl.getName();
             if ("doc".equals(name))
             {
@@ -50,13 +58,12 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                 String docLine = args.get(0).getExpression().getTerm().getText();
                 documentation += "<br/>" + docLine;
               }
-            }            
+            }
+            }
           }
         }
       }
-      
+	  }
       return documentation;
-    }
-    return null;
   }
 }

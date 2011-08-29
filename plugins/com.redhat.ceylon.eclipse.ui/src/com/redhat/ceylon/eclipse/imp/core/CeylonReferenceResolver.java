@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonReferenceResolver implements IReferenceResolver {
 
@@ -20,15 +21,21 @@ public class CeylonReferenceResolver implements IReferenceResolver {
   public String getLinkText(Object node) {
     if (node instanceof Node)
     {
-        if (node instanceof Tree.Primary) {
-          return ((Tree.Primary) node).getDeclaration().getName();
+      if (node instanceof Tree.Primary) {
+        return ((Tree.Primary) node).getDeclaration().getName();
+      }
+      else if (node instanceof Tree.SimpleType) {
+        return ((Tree.SimpleType) node).getDeclarationModel().getName();
+      }
+      else if (node instanceof Tree.ImportMemberOrType) {
+          return ((Tree.ImportMemberOrType) node).getDeclarationModel().getName();
         }
-        else if (node instanceof Tree.SimpleType) {
-          return ((Tree.SimpleType) node).getDeclarationModel().getName();
-        }
-        if (node instanceof Tree.Declaration) {
-          return ((Tree.Declaration) node).getDeclarationModel().getName();
-        }
+      if (node instanceof Tree.Declaration) {
+        return ((Tree.Declaration) node).getDeclarationModel().getName();
+      }
+      else if (node instanceof Tree.NamedArgument) {
+        return ((Tree.NamedArgument) node).getParameter().getName();
+      }
       return ((Node) node).getText();
     }
     else
@@ -41,7 +48,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * Get the target for the given source node in the AST produced by the
    * given Parse Controller.
    */
-  public Object getLinkTarget(Object node, IParseController controller) {
+  public Tree.Declaration getLinkTarget(Object node, IParseController controller) {
     Declaration dec = null;
     if (node instanceof Tree.Primary) {
       dec = ((Tree.Primary) node).getDeclaration();
@@ -49,11 +56,21 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     else if (node instanceof Tree.SimpleType) {
       dec = ((Tree.SimpleType) node).getDeclarationModel();
     }
+    else if (node instanceof Tree.ImportMemberOrType) {
+        dec = ((Tree.ImportMemberOrType) node).getDeclarationModel();
+      }
     else if (node instanceof Tree.Declaration) {
       dec = ((Tree.Declaration) node).getDeclarationModel();
     }
-    if (dec!=null && controller.getCurrentAst() != null) {
-      Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) controller.getCurrentAst();
+    else if (node instanceof Tree.NamedArgument) {
+      dec = ((Tree.NamedArgument) node).getParameter();
+    }
+    return getDeclarationNode((CeylonParseController) controller, dec);
+  }
+
+  public static Tree.Declaration getDeclarationNode(CeylonParseController controller, Declaration dec) {
+	if (dec!=null && controller.getRootNode() != null) {
+      Tree.CompilationUnit compilationUnit = controller.getRootNode();
       FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
       compilationUnit.visit(visitor);
       System.out.println("referenced node: " + visitor.getDeclarationNode());
