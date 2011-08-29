@@ -11,6 +11,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
@@ -208,10 +209,12 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 
   public Object parse(String contents, IProgressMonitor monitor) {
     VirtualFile file;
-//    VirtualFile srcDir;
+    VirtualFile srcDir = null;
 // TODO : manage the case of a file along with the corresponding source directory    
     
-    if (getPath() != null)
+    IPath path = getPath();
+    ISourceProject project = getProject();
+    if (path != null)
     {
       file = new SourceCodeVirtualFile(contents, getPath());      
     }
@@ -219,9 +222,29 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     {
       file = new SourceCodeVirtualFile(contents);
     }
+    if (project != null)
+    {
+      List<IPathEntry> buildPath = project.getBuildPath();
+      for (IPathEntry buildPathEntry : buildPath)
+      {
+        
+        if (buildPathEntry.getPath().isPrefixOf(path))
+        {
+          srcDir = new SourceDirectoryVirtualFile(buildPathEntry.getPath());
+        }
+      }
+    }
         
     TypeChecker typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-    typeChecker.getPhasedUnits().parseUnit(file);
+
+    if (srcDir == null)
+    {
+      typeChecker.getPhasedUnits().parseUnit(file);
+    }
+    else
+    {
+      typeChecker.getPhasedUnits().parseUnit(file, srcDir);
+    }
     
     // TODO manage canceling and parsing errors
     if (monitor.isCanceled())
