@@ -53,7 +53,10 @@ public class InlineRefactoring extends Refactoring {
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
 			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
-			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
+			FindReferenceVisitor frv = new FindReferenceVisitor(dec) {
+				@Override
+				public void visit(Tree.ExtendedTypeExpression that) {}
+			};
 			parseController.getRootNode().visit(frv);
 			count = frv.getNodes().size();
 			
