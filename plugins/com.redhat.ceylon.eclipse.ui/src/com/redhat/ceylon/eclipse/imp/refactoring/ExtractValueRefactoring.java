@@ -20,13 +20,15 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class ExtractValueRefactoring extends Refactoring {
-	private static final class FindStatementVisitor extends Visitor {
+	private static final class FindStatementVisitor extends Visitor 
+			implements NaturalVisitor {
 		Tree.Term term;
 		Tree.Statement statement;
 		Tree.Statement currentStatement;
