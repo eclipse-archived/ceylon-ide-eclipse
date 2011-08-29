@@ -24,6 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -91,7 +92,8 @@ public class ExtractFunctionRefactoring extends Refactoring {
 	}
 	
 	public static final class FindLocalReferencesVisitor extends Visitor {
-		List<Tree.BaseMemberExpression> localReferences = new ArrayList<Tree.BaseMemberExpression>();
+		List<Tree.BaseMemberExpression> localReferences = 
+				new ArrayList<Tree.BaseMemberExpression>();
 		Declaration declaration;
 		FindLocalReferencesVisitor(Declaration declaration) {
 			this.declaration = declaration;
@@ -103,13 +105,17 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		public void visit(Tree.BaseMemberExpression that) {
 			super.visit(that);
 			//TODO: things nested inside control structures
-			if (that.getDeclaration().getContainer()==declaration) {
-				for (Tree.BaseMemberExpression bme: localReferences) {
-					if (bme.getDeclaration()==that.getDeclaration()) {
-						return;
+			Scope scope = that.getDeclaration().getContainer();
+			while (scope!=null) {
+				if (scope==declaration) {
+					for (Tree.BaseMemberExpression bme: localReferences) {
+						if (bme.getDeclaration()==that.getDeclaration()) {
+							return;
+						}
 					}
+					localReferences.add(that);
 				}
-				localReferences.add(that);
+				scope = scope.getContainer();
 			}
 		}
 	}
@@ -185,7 +191,8 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		int length = fNode.getStopIndex()-start+1;
 		Region region = new Region(start, length);
 		String exp = "";
-		for (Iterator<Token> ti = parseController.getTokenIterator(region); ti.hasNext();) {
+		for (Iterator<Token> ti = parseController.getTokenIterator(region); 
+				ti.hasNext();) {
 			exp+=ti.next().getText();
 		}
 		FindContainerVisitor fsv = new FindContainerVisitor(term);
