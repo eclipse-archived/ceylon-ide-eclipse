@@ -17,6 +17,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
@@ -88,7 +89,10 @@ public class RenameRefactoring extends Refactoring {
 		TextFileChange tfc = new TextFileChange("Rename", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
 		if (dec!=null) {
-			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
+			FindReferenceVisitor frv = new FindReferenceVisitor(dec) {
+				@Override
+				public void visit(Tree.ExtendedTypeExpression that) {}
+			};
 			parseController.getRootNode().visit(frv);
 			for (Node node: frv.getNodes()) {
 	            renameNode(tfc, node);
