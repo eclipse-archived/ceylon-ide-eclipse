@@ -24,7 +24,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
@@ -162,13 +161,27 @@ public class InlineRefactoring extends Refactoring {
 								@Override
 								public void visit(Tree.BaseMemberExpression it) {
 									super.visit(it);
-									for (PositionalArgument arg: that.getPositionalArgumentList()
-											.getPositionalArguments()) {
-										if (it.getDeclaration()==arg.getParameter()) {
-											result.append(template.substring(start,it.getStartIndex()-templateStart))
-												.append(InlineRefactoring.this.
-														toString(arg.getExpression().getTerm()));
-											start = it.getStopIndex()-templateStart+1;
+									if (that.getPositionalArgumentList()!=null) {
+										for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
+												.getPositionalArguments()) {
+											if (it.getDeclaration()==arg.getParameter()) {
+												result.append(template.substring(start,it.getStartIndex()-templateStart))
+													.append(InlineRefactoring.this.
+															toString(arg.getExpression().getTerm()));
+												start = it.getStopIndex()-templateStart+1;
+											}
+										}
+									}
+									if (that.getNamedArgumentList()!=null) {
+										for (Tree.NamedArgument arg: that.getNamedArgumentList()
+												.getNamedArguments()) {
+											if (it.getDeclaration()==arg.getParameter()) {
+												result.append(template.substring(start,it.getStartIndex()-templateStart))
+													.append(InlineRefactoring.this.
+															toString( ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
+																	.getExpression().getTerm()) );
+												start = it.getStopIndex()-templateStart+1;
+											}
 										}
 									}
 								}
