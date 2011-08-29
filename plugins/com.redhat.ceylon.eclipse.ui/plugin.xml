@@ -114,10 +114,10 @@
    </extension>
    <extension
          point="org.eclipse.imp.runtime.markOccurrences">
-      <occurrenceMarker
+      <occurrenceIdentifier
             class="com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker"
             language="ceylon">
-      </occurrenceMarker>
+      </occurrenceIdentifier>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.foldingUpdater">
