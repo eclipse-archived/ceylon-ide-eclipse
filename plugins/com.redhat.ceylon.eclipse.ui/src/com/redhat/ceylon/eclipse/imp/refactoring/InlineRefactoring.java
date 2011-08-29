@@ -24,12 +24,12 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class InlineRefactoring extends Refactoring {
 	private final IFile fSourceFile;
@@ -98,7 +98,7 @@ public class InlineRefactoring extends Refactoring {
 		if (dec!=null) {
 			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
 			parseController.getRootNode().visit(fdv);
-			Tree.Term t;
+			final Tree.Term t;
 			Tree.Declaration declarationNode = fdv.getDeclarationNode();
 			if (declarationNode instanceof Tree.AttributeDeclaration) {
 				Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) declarationNode;
@@ -131,15 +131,8 @@ public class InlineRefactoring extends Refactoring {
 			else {
 				throw new RuntimeException("not a value or function");
 			}
-			Integer start = t.getStartIndex();
-			int length = t.getStopIndex()-start+1;
-			Region region = new Region(start, length);
-			String exp = "";
-			for (Iterator<Token> ti = parseController.getTokenIterator(region); 
-					ti.hasNext();) {
-				exp+=ti.next().getText();
-			}
-			final String template = exp;
+			final String template = toString(t);
+			final int templateStart = t.getStartIndex();
 			if (declarationNode instanceof Tree.AnyAttribute) {
 				new Visitor() {
 					@Override
@@ -156,12 +149,32 @@ public class InlineRefactoring extends Refactoring {
 			else {
 				new Visitor() {
 					@Override
-					public void visit(Tree.InvocationExpression that) {
+					public void visit(final Tree.InvocationExpression that) {
 						super.visit(that);
 						if (that.getPrimary().getDeclaration()==dec) {
+							final StringBuilder result = new StringBuilder();
+							class InterpolateVisitor extends Visitor {
+								int start = 0;
+								@Override
+								public void visit(Tree.BaseMemberExpression it) {
+									super.visit(it);
+									for (PositionalArgument arg: that.getPositionalArgumentList()
+											.getPositionalArguments()) {
+										if (it.getDeclaration()==arg.getParameter()) {
+											result.append(template.substring(start,it.getStartIndex()-templateStart))
+												.append(InlineRefactoring.this.
+														toString(arg.getExpression().getTerm()));
+											start = it.getStopIndex()-templateStart+1;
+										}
+									}
+								}
+							}
+							InterpolateVisitor iv = new InterpolateVisitor();
+							iv.visit(t);
+							result.append(template.substring(iv.start, template.length()));
 							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
 									that.getStopIndex()-that.getStartIndex()+1, 
-									template));	
+									result.toString()));
 						}
 					}
 				}.visit(parseController.getRootNode());
@@ -185,6 +198,18 @@ public class InlineRefactoring extends Refactoring {
 			}
 		}
 		return tfc;
+	}
+
+	private String toString(final Tree.Term t) {
+		Integer start = t.getStartIndex();
+		int length = t.getStopIndex()-start+1;
+		Region region = new Region(start, length);
+		StringBuilder exp = new StringBuilder();
+		for (Iterator<Token> ti = parseController.getTokenIterator(region); 
+				ti.hasNext();) {
+			exp.append(ti.next().getText());
+		}
+		return exp.toString();
 	}
 
 	public Declaration getDeclaration() {
