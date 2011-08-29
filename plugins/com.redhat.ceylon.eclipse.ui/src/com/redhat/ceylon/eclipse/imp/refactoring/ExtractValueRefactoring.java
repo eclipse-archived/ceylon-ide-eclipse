@@ -63,6 +63,7 @@ public class ExtractValueRefactoring extends Refactoring {
 	private final CeylonParseController parseController;
 	private String newName;
 	private boolean explicitType;
+	private boolean getter;
 
 	public ExtractValueRefactoring(ITextEditor editor) {
 
@@ -142,8 +143,9 @@ public class ExtractValueRefactoring extends Refactoring {
 		}
 		String indent = getIndent(node);
 		tfc.addEdit(new InsertEdit(node.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + 
-				" " + newName + " = " + exp + ";" + indent));
+				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + " " + 
+				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
+				indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
 		return tfc;
 	}
@@ -169,6 +171,10 @@ public class ExtractValueRefactoring extends Refactoring {
 	
 	public void setExplicitType() {
 		this.explicitType = !explicitType;
+	}
+	
+	public void setGetter() {
+		this.getter = !getter;
 	}
 	
 }
