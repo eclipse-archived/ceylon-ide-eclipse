@@ -133,5 +133,12 @@
             language="ceylon">
       </refactoringContributor>
    </extension>
-   
+   <extension
+         point="org.eclipse.imp.runtime.editorActionContributions">
+      <editorActionContributor
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonEditorActionContributions"
+            language="ceylon">
+      </editorActionContributor>
+   </extension>
+
 </plugin>

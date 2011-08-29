@@ -5,7 +5,12 @@ import org.eclipse.imp.services.IRefactoringContributor;
 import org.eclipse.jface.action.IAction;
 
 public class RefactoringContributor implements IRefactoringContributor {
+	
 	public IAction[] getEditorRefactoringActions(UniversalEditor editor) {
+		return getActions(editor);
+	}
+
+	public static IAction[] getActions(UniversalEditor editor) {
 		return new IAction[] { 
 				new RenameRefactoringAction(editor),
 				new InlineRefactoringAction(editor),
@@ -13,4 +18,5 @@ public class RefactoringContributor implements IRefactoringContributor {
 				new ExtractFunctionRefactoringAction(editor)
 			};
 	}
+	
 }
