@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.contentProposer;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
 import static java.lang.Character.isLowerCase;
@@ -65,19 +68,39 @@ public class CeylonContentProposer implements IContentProposer {
     CeylonParseController parseController = (CeylonParseController) ctlr;
     List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
     String p="";
-    CommonToken tok=null;
+    int start=0;
+    int end=0;
     CommonToken prev = null;
     for (CommonToken t: (List<CommonToken>) parseController.getTokenStream().getTokens()) {
-    	if (t.getStartIndex()<=offset && t.getStopIndex()+1>=offset) {
-    		p = t.getText().substring(0, offset-t.getStartIndex());
-    		tok = t;
-    		if (t.getType()==CeylonLexer.MEMBER_OP) {
+    	if (/*t.getStartIndex()<=offset &&*/ t.getStopIndex()+1>=offset) {
+			char charAtOffset = viewer.getDocument().get().charAt(offset-1);
+    		if (t.getType()==MEMBER_OP) {
     			p = "";
+    			start = offset;
+    			end = offset;
     		}
-    		else if (t.getType()!=CeylonLexer.LIDENTIFIER && 
-    				t.getType()!=CeylonLexer.UIDENTIFIER) {
-    			p = prev.getText();
-    			tok = prev;
+    		else if (t.getType()==LIDENTIFIER || t.getType()==UIDENTIFIER) {
+    			start = t.getStartIndex();
+    			end = t.getStopIndex();
+    			p = t.getText().substring(0, offset-t.getStartIndex());
+    		}
+    		else if (prev!=null && prev.getType()==MEMBER_OP &&
+    				Character.isJavaIdentifierPart(charAtOffset)) {
+    			p = Character.toString(charAtOffset);
+    			start = prev.getStartIndex();
+    			end = prev.getStopIndex();
+    		}
+    		else if (prev!=null &&
+    				(prev.getType()==LIDENTIFIER || prev.getType()==UIDENTIFIER) &&
+    				Character.isJavaIdentifierPart(charAtOffset)) {
+				p = prev.getText()+charAtOffset;
+    			start = prev.getStartIndex();
+    			end = prev.getStopIndex();
+    		}
+    		else {
+        		p = Character.isJavaIdentifierPart(charAtOffset) ? Character.toString(charAtOffset) : "";
+        		start = offset;
+        		end = offset;
     		}
     		break;
     	}
@@ -86,7 +109,7 @@ public class CeylonContentProposer implements IContentProposer {
     final String prefix=p;
     if (parseController.getRootNode() != null) {
       CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
-      Node node = locator.findNode(parseController.getRootNode(), tok.getStartIndex(), tok.getStopIndex());
+      Node node = locator.findNode(parseController.getRootNode(), start, end);
       if (node==null) {
         node = parseController.getRootNode();
       }
