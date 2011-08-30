@@ -214,62 +214,50 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     
     IPath path = getPath();
     ISourceProject project = getProject();
-    if (path != null)
-    {
+    if (path != null) {
       file = new SourceCodeVirtualFile(contents, getPath());      
     }
-    else
-    {
+    else {
       file = new SourceCodeVirtualFile(contents);
     }
-    if (project != null)
-    {
+    if (project != null) {
       List<IPathEntry> buildPath = project.getBuildPath();
-      for (IPathEntry buildPathEntry : buildPath)
-      {
-        
-        if (buildPathEntry.getPath().isPrefixOf(path))
-        {
+      for (IPathEntry buildPathEntry : buildPath) {
+        if (buildPathEntry.getPath().isPrefixOf(path)) {
           srcDir = new SourceDirectoryVirtualFile(buildPathEntry.getPath());
         }
       }
     }
         
     TypeChecker typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-
-    if (srcDir == null)
-    {
+    if (srcDir==null) {
       typeChecker.getPhasedUnits().parseUnit(file);
     }
-    else
-    {
+    else {
       typeChecker.getPhasedUnits().parseUnit(file, srcDir);
     }
-    
-    // TODO manage canceling and parsing errors
-    if (monitor.isCanceled())
-      return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
-
     PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
-    if (phasedUnit != null)
-    {
+    
+    if (phasedUnit!=null) {
       annotations.clear();
-      AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
-      phasedUnit.getCompilationUnit().visit(annotationVisitor);
+      phasedUnit.getCompilationUnit().visit(new AnnotationVisitor(annotations));
       parser = phasedUnit.getParser();
-      fCurrentAst = (Node) phasedUnit.getCompilationUnit();
-    }
     
-    final IMessageHandler handler = getHandler();
-    typeChecker.process();
-    if (handler != null)
-    {
-      Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) fCurrentAst; 
-      compilationUnit.visit(new ErrorVisitor(handler));      
-    }
-    
-    context = typeChecker.getContext();
+      // TODO manage canceling and parsing errors
+      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
+      typeChecker.process();
+      fCurrentAst = phasedUnit.getCompilationUnit();
+      context = typeChecker.getContext();
+
+      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+
+      final IMessageHandler handler = getHandler();
+      if (handler!=null) {
+        phasedUnit.getCompilationUnit().visit(new ErrorVisitor(handler));      
+      }
+    }
+    
     return fCurrentAst;
   }
 
