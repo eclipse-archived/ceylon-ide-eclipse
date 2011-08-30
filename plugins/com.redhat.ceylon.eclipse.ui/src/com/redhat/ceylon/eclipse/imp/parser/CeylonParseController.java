@@ -257,7 +257,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     {
       annotations.clear();
       AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
-      //phasedUnit.getCompilationUnit().visit(annotationVisitor);
+      phasedUnit.getCompilationUnit().visit(annotationVisitor);
       parser = phasedUnit.getParser();
       fCurrentAst = (Node) phasedUnit.getCompilationUnit();
     }
@@ -288,11 +288,11 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     while (high > low)
     {
         int mid = (high + low) / 2;
-        CommonToken mid_element = (CommonToken) tokens.get(mid);
-        if (offset >= mid_element.getStartIndex() &&
-            offset <= mid_element.getStopIndex())
+        CommonToken midElement = (CommonToken) tokens.get(mid);
+        if (offset >= midElement.getStartIndex() &&
+            offset <= midElement.getStopIndex())
              return mid;
-        else if (offset < mid_element.getStartIndex())
+        else if (offset < midElement.getStartIndex())
              high = mid;
         else low = mid + 1;
     }
@@ -301,27 +301,25 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
 
   public Iterator<Token> getTokenIterator(IRegion region) {
-    int regionOffset= region.getOffset();
-    int regionLength= region.getLength();
-    int regionEnd= regionOffset + regionLength - 1;
-
-    {
-      CommonTokenStream stream = getTokenStream();
-      if (stream!=null) {
-        List<Token> tokens = stream.getTokens();
-        int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
-        // getTokenIndexAtCharacter() answers the negative of the index of the
-        // preceding token if the given offset is not actually within a token.
-        if (firstTokIdx < 0) {
-          firstTokIdx= -firstTokIdx + 1;
-        }
-        int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
-        if (lastTokIdx < 0) {
-          lastTokIdx= -lastTokIdx + 1;
-        }
-        List<Token> tokensToIterate = tokens.subList(firstTokIdx, lastTokIdx);
-        if (tokensToIterate!=null) return tokensToIterate.iterator();
+    int regionOffset = region.getOffset();
+    int regionLength = region.getLength();
+    int regionEnd = regionOffset + regionLength - 1;
+    CommonTokenStream stream = getTokenStream();
+    if (stream!=null) {
+      List<Token> tokens = stream.getTokens();
+      int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
+      // getTokenIndexAtCharacter() answers the negative of the index of the
+      // preceding token if the given offset is not actually within a token.
+      if (firstTokIdx < 0) {
+        firstTokIdx= -firstTokIdx + 1;
       }
+      int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
+      if (lastTokIdx < 0) {
+        lastTokIdx= -lastTokIdx + 1;
+      }
+      if (lastTokIdx>=tokens.size()) lastTokIdx=tokens.size()-1;
+      List<Token> tokensToIterate = tokens.subList(firstTokIdx, lastTokIdx+1);
+      if (tokensToIterate!=null) return tokensToIterate.iterator();
     }
     return null;
   }
