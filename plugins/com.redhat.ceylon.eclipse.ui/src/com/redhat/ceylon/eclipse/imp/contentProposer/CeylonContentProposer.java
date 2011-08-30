@@ -187,8 +187,9 @@ public class CeylonContentProposer implements IContentProposer {
   private SourceProposal sourceProposal(final int offset, final String prefix,
 		final Declaration d, String desc, final String text, 
 		CeylonParseController cpc) {
-	return new SourceProposal(desc, text, prefix, new Region(offset, 0), 
-			                  offset + text.length() - prefix.length(),
+	return new SourceProposal(desc, text, "", 
+			                  new Region(offset - prefix.length(), prefix.length()), 
+			                  offset + text.length(),
 			                  getDocumentation(getDeclarationNode(cpc, d))) { 
       @Override
       public Image getImage() {
