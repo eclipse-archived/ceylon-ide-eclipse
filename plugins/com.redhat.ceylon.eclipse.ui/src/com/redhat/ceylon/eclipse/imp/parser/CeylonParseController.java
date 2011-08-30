@@ -166,10 +166,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 		
 		@Override
 		public String[][] getFences() {
-			return new String[][] { { "'", "'" }, 
-					{ "\"", "\"" }, { "`", "`" }, 
-					{ "(", ")" }, { "[", "]" }, 
-					{ "{", "}" }, { "/*", "*/" } };
+			return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" }, };
 		}
 		
 		@Override
