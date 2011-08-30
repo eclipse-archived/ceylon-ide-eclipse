@@ -36,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -63,22 +64,33 @@ public class CeylonContentProposer implements IContentProposer {
       final int offset, ITextViewer viewer) {
     CeylonParseController parseController = (CeylonParseController) ctlr;
     List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-
+    String p="";
+    CommonToken tok=null;
+    CommonToken prev = null;
+    for (CommonToken t: (List<CommonToken>) parseController.getTokenStream().getTokens()) {
+    	if (t.getStartIndex()<=offset && t.getStopIndex()+1>=offset) {
+    		p = t.getText().substring(0, offset-t.getStartIndex());
+    		tok = t;
+    		if (t.getType()==CeylonLexer.MEMBER_OP) {
+    			p = "";
+    		}
+    		else if (t.getType()!=CeylonLexer.LIDENTIFIER && 
+    				t.getType()!=CeylonLexer.UIDENTIFIER) {
+    			p = prev.getText();
+    			tok = prev;
+    		}
+    		break;
+    	}
+    	prev = t;
+    }
+    final String prefix=p;
     if (parseController.getRootNode() != null) {
       CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
-      final String prefix;
-      Node node = locator.findNode(parseController.getRootNode(), offset);
+      Node node = locator.findNode(parseController.getRootNode(), tok.getStartIndex(), tok.getStopIndex());
       if (node==null) {
-        //TODO: need to do something much better here:
-        //      search for a surrounding scope
-        //      search for a token, and treat it as a base expression or type
-        prefix = "";
         node = parseController.getRootNode();
       }
-      else {
-        prefix = getPrefix(node, offset);
-      }
-
+            
       Map<String, Declaration> proposals = getProposals(node, prefix, parseController);
       TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
         public int compare(String x, String y) {
@@ -251,9 +263,17 @@ public class CeylonContentProposer implements IContentProposer {
       return getPrefix(offset, id);
     }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-      Tree.Identifier id = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        Tree.Identifier id = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        return getPrefix(offset, id);
+      }
+    else if (node instanceof Tree.Declaration) {
+      Tree.Identifier id = ((Tree.Declaration) node).getIdentifier();
       return getPrefix(offset, id);
     }
+    else if (node instanceof Tree.NamedArgument) {
+        Tree.Identifier id = ((Tree.NamedArgument) node).getIdentifier();
+        return getPrefix(offset, id);
+      }
     else {
       return "";
     }
@@ -261,6 +281,7 @@ public class CeylonContentProposer implements IContentProposer {
 
   private String getPrefix(int offset, Tree.Identifier id) {
     if (id==null||id.getText().equals("")) return "";
+    if (offset<0) return id.getText(); 
     int index = offset-((CommonToken) id.getToken()).getStartIndex();
     if (index<=0) return "";
 	return id.getText().substring(0, index);
