@@ -217,24 +217,19 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public static Node getIdentifyingNode(Node node) {
     if (node instanceof Tree.Declaration) {
-      Tree.Declaration decl = (Tree.Declaration) node;
-      return decl.getIdentifier();
+      return ((Tree.Declaration) node).getIdentifier();
     }
     else if (node instanceof Tree.NamedArgument) {
-        Tree.NamedArgument decl = (Tree.NamedArgument) node;
-        return decl.getIdentifier();
-      }
+      return ((Tree.NamedArgument) node).getIdentifier();
+    }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-      Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
-      return decl.getIdentifier();
+      return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
     }
     else if (node instanceof Tree.SimpleType) {
-      Tree.SimpleType decl = (Tree.SimpleType) node;
-      return decl.getIdentifier();
+      return ((Tree.SimpleType) node).getIdentifier();
     }
     else if (node instanceof Tree.ImportMemberOrType) {
-        Tree.ImportMemberOrType decl = (Tree.ImportMemberOrType) node;
-        return decl.getIdentifier();
+      return ((Tree.ImportMemberOrType) node).getIdentifier();
     }
     else {    
       return node;

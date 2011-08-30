@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 
 public class CeylonOccurrenceMarker implements ILanguageService,
 		IOccurrenceMarker {
@@ -35,7 +36,7 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		}
 
 		fOccurrences = new ArrayList<Object>();
-		Declaration declaration = getDeclaration(astNode);
+		Declaration declaration = CeylonReferenceResolver.getReferencedDeclaration(astNode);
 		if (declaration!=null) {
 			FindReferenceVisitor frv = new FindReferenceVisitor(declaration) {
 				@Override
@@ -51,24 +52,4 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 
 	}
 
-	public static Declaration getDeclaration(Object astNode) {
-		if (astNode instanceof Tree.Declaration) {
-			return ((Tree.Declaration) astNode).getDeclarationModel();
-		}
-		else if (astNode instanceof Tree.MemberOrTypeExpression) {
-			return ((Tree.MemberOrTypeExpression) astNode).getDeclaration();
-		}
-		else if (astNode instanceof Tree.SimpleType) {
-			return ((Tree.SimpleType) astNode).getDeclarationModel();
-		}
-		else if (astNode instanceof Tree.NamedArgument) {
-			return ((Tree.NamedArgument) astNode).getParameter();
-		}
-		else if (astNode instanceof Tree.ImportMemberOrType) {
-			return ((Tree.ImportMemberOrType) astNode).getDeclarationModel();
-		}
-		else {
-		    return null;
-		}
-	}
 }
