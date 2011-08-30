@@ -81,34 +81,42 @@ public class CeylonContentProposer implements IContentProposer {
     for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
     	if (/*t.getStartIndex()<=offset &&*/ token.getStopIndex()+1>=offset) {
 			char charAtOffset = viewer.getDocument().get().charAt(offset-1);
-    		if (token.getType()==MEMBER_OP) {
-    			prefix = "";
-    			start = offset;
-    			end = offset;
-    		}
-    		else if (isIdentifier(token)) {
-    			start = token.getStartIndex();
-    			end = token.getStopIndex();
-    			prefix = token.getText().substring(0, offset-token.getStartIndex());
-    		}
-    		else if (previousToken!=null && previousToken.getType()==MEMBER_OP &&
-    				isJavaIdentifierPart(charAtOffset)) {
-    			prefix = Character.toString(charAtOffset);
-    			start = previousToken.getStartIndex();
-    			end = previousToken.getStopIndex();
-    		}
-    		else if (previousToken!=null && isIdentifier(previousToken) &&
-    				isJavaIdentifierPart(charAtOffset)) {
-				prefix = previousToken.getText()+charAtOffset;
-    			start = previousToken.getStartIndex();
-    			end = previousToken.getStopIndex();
-    		}
-    		else {
-    			prefix = isJavaIdentifierPart(charAtOffset) ? 
-        				Character.toString(charAtOffset) : "";
-        		start = offset;
-        		end = offset;
-    		}
+			char charInTokenAtOffset = token.getText().charAt(offset-token.getStartIndex()-1);
+			if (charAtOffset==charInTokenAtOffset) {
+				if (isIdentifier(token)) {
+	    			start = token.getStartIndex();
+	    			end = token.getStopIndex();
+	    			prefix = token.getText().substring(0, offset-token.getStartIndex());
+	    		}
+	    		else {
+	    			prefix = "";
+	    			start = offset;
+	    			end = offset;
+	    		}
+			} 
+			else {
+				boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
+				if (previousToken!=null) {
+					start = previousToken.getStartIndex();
+					end = previousToken.getStopIndex();    				
+					if (previousToken.getType()==MEMBER_OP && isIdentifierChar) {
+						prefix = Character.toString(charAtOffset);
+					}
+					else if (isIdentifier(previousToken) && isIdentifierChar) {
+						prefix = previousToken.getText()+charAtOffset;
+					}
+					else {
+						prefix = isIdentifierChar ? 
+								Character.toString(charAtOffset) : "";
+					}
+				}
+				else {
+					prefix = isIdentifierChar ? 
+							Character.toString(charAtOffset) : "";
+					start = offset;
+					end = offset;
+				}
+			}
     		break;
     	}
     	previousToken = token;
@@ -116,13 +124,14 @@ public class CeylonContentProposer implements IContentProposer {
     //END BUG WORKAROUND
     
     if (cpc.getRootNode() != null) {
-      CeylonSourcePositionLocator locator = cpc.getSourcePositionLocator();
-      Node node = locator.findNode(cpc.getRootNode(), start, end);
+      Node node = cpc.getSourcePositionLocator()
+    		  .findNode(cpc.getRootNode(), start, end);
       if (node==null) {
         node = cpc.getRootNode();
       }
             
-      return constructCompletions(offset, prefix, sortProposals(prefix, getProposals(node, prefix, cpc)), 
+      return constructCompletions(offset, prefix, 
+    		  sortProposals(prefix, getProposals(node, prefix, cpc)),
     		  cpc);
     } 
     else {
