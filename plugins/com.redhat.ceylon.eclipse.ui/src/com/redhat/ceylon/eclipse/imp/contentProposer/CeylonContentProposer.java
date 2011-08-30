@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_O
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
+import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.imp.editor.ErrorProposal;
+import org.antlr.runtime.Token;
 import org.eclipse.imp.editor.SourceProposal;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IContentProposer;
@@ -39,7 +40,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -63,59 +63,99 @@ public class CeylonContentProposer implements IContentProposer {
    * @return        An array of completion proposals applicable relative to the AST of the given
    *             parse controller at the given position
    */
-  public ICompletionProposal[] getContentProposals(IParseController ctlr,
+  public ICompletionProposal[] getContentProposals(IParseController controller,
       final int offset, ITextViewer viewer) {
-    CeylonParseController parseController = (CeylonParseController) ctlr;
-    List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-    String p="";
+    CeylonParseController cpc = (CeylonParseController) controller;
+    
+    //BEGIN HUGE BUG WORKAROUND
+    //What is going on here is that when I have a list of proposals open
+    //and then I type a character, IMP sends us the old syntax tree and
+    //doesn't bother to even send us the character I just typed, except
+    //in the ITextViewer. So we need to do some guessing to figure out
+    //that there is a missing character in the token stream and take
+    //corrective action. This should be fixed in IMP!
+    String prefix="";
     int start=0;
     int end=0;
-    CommonToken prev = null;
-    for (CommonToken t: (List<CommonToken>) parseController.getTokenStream().getTokens()) {
-    	if (/*t.getStartIndex()<=offset &&*/ t.getStopIndex()+1>=offset) {
+    CommonToken previousToken = null;
+    for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
+    	if (/*t.getStartIndex()<=offset &&*/ token.getStopIndex()+1>=offset) {
 			char charAtOffset = viewer.getDocument().get().charAt(offset-1);
-    		if (t.getType()==MEMBER_OP) {
-    			p = "";
+    		if (token.getType()==MEMBER_OP) {
+    			prefix = "";
     			start = offset;
     			end = offset;
     		}
-    		else if (t.getType()==LIDENTIFIER || t.getType()==UIDENTIFIER) {
-    			start = t.getStartIndex();
-    			end = t.getStopIndex();
-    			p = t.getText().substring(0, offset-t.getStartIndex());
+    		else if (isIdentifier(token)) {
+    			start = token.getStartIndex();
+    			end = token.getStopIndex();
+    			prefix = token.getText().substring(0, offset-token.getStartIndex());
     		}
-    		else if (prev!=null && prev.getType()==MEMBER_OP &&
-    				Character.isJavaIdentifierPart(charAtOffset)) {
-    			p = Character.toString(charAtOffset);
-    			start = prev.getStartIndex();
-    			end = prev.getStopIndex();
+    		else if (previousToken!=null && previousToken.getType()==MEMBER_OP &&
+    				isJavaIdentifierPart(charAtOffset)) {
+    			prefix = Character.toString(charAtOffset);
+    			start = previousToken.getStartIndex();
+    			end = previousToken.getStopIndex();
     		}
-    		else if (prev!=null &&
-    				(prev.getType()==LIDENTIFIER || prev.getType()==UIDENTIFIER) &&
-    				Character.isJavaIdentifierPart(charAtOffset)) {
-				p = prev.getText()+charAtOffset;
-    			start = prev.getStartIndex();
-    			end = prev.getStopIndex();
+    		else if (previousToken!=null && isIdentifier(previousToken) &&
+    				isJavaIdentifierPart(charAtOffset)) {
+				prefix = previousToken.getText()+charAtOffset;
+    			start = previousToken.getStartIndex();
+    			end = previousToken.getStopIndex();
     		}
     		else {
-        		p = Character.isJavaIdentifierPart(charAtOffset) ? Character.toString(charAtOffset) : "";
+    			prefix = isJavaIdentifierPart(charAtOffset) ? 
+        				Character.toString(charAtOffset) : "";
         		start = offset;
         		end = offset;
     		}
     		break;
     	}
-    	prev = t;
+    	previousToken = token;
     }
-    final String prefix=p;
-    if (parseController.getRootNode() != null) {
-      CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
-      Node node = locator.findNode(parseController.getRootNode(), start, end);
+    //END BUG WORKAROUND
+    
+    if (cpc.getRootNode() != null) {
+      CeylonSourcePositionLocator locator = cpc.getSourcePositionLocator();
+      Node node = locator.findNode(cpc.getRootNode(), start, end);
       if (node==null) {
-        node = parseController.getRootNode();
+        node = cpc.getRootNode();
       }
             
-      Map<String, Declaration> proposals = getProposals(node, prefix, parseController);
-      TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
+      return constructCompletions(offset, prefix, sortProposals(prefix, getProposals(node, prefix, cpc)), 
+    		  cpc);
+    } 
+    else {
+      /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
+                 offset));*/
+      return null;
+    }
+  }
+  
+  private static boolean isIdentifier(Token token) {
+	  return token.getType()==LIDENTIFIER || 
+			  token.getType()==UIDENTIFIER;
+  }
+
+  public ICompletionProposal[] constructCompletions(int offset, String prefix, 
+        TreeMap<String, Declaration> map, CeylonParseController cpc) {
+      List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+      for (final Declaration d: map.values()) {
+        if (d instanceof TypeDeclaration) {
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
+        		  getTextFor(d, false), cpc));
+        }
+        if (d instanceof TypedDeclaration || d instanceof Class) {
+          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), 
+        		  getTextFor(d, true), cpc));
+        }
+      }
+      return result.toArray(new ICompletionProposal[result.size()]);
+  }
+
+  public TreeMap<String, Declaration> sortProposals(final String prefix,
+		Map<String, Declaration> proposals) {
+	TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
         public int compare(String x, String y) {
         	int lowers = prefix.length()==0 || isLowerCase(prefix.charAt(0)) ? -1 : 1;
         	if (isLowerCase(x.charAt(0)) && 
@@ -131,30 +171,16 @@ public class CeylonContentProposer implements IContentProposer {
         	}
         }
       });
-      map.putAll(proposals);
-      for (final Declaration d: map.values()) {
-        if (d instanceof TypeDeclaration) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
-        		  getTextFor(d, false), parseController));
-        }
-        if (d instanceof TypedDeclaration || d instanceof Class) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), 
-        		  getTextFor(d, true), parseController));
-        }
-      }
-    } 
-    else {
-      result.add(new ErrorProposal("No proposals available due to syntax errors", 
-                 offset));
-    }
-    return result.toArray(new ICompletionProposal[result.size()]);
+    map.putAll(proposals);
+	return map;
   }
 
   private SourceProposal sourceProposal(final int offset, final String prefix,
-		final Declaration d, String desc, final String text, CeylonParseController ctlr) {
+		final Declaration d, String desc, final String text, 
+		CeylonParseController cpc) {
 	return new SourceProposal(desc, text, prefix, new Region(offset, 0), 
 			                  offset + text.length() - prefix.length(),
-			                  getDocumentation(getDeclarationNode(ctlr, d))) { 
+			                  getDocumentation(getDeclarationNode(cpc, d))) { 
       @Override
       public Image getImage() {
 	    return CeylonLabelProvider.getImage(d);
@@ -177,8 +203,8 @@ public class CeylonContentProposer implements IContentProposer {
 	};
   }
 
-  private Map<String, Declaration> getProposals(Node node, final String prefix,
-		  CeylonParseController parseController) {
+  private Map<String, Declaration> getProposals(Node node, String prefix,
+		  CeylonParseController cpc) {
     //TODO: substitute type arguments to receiving type
     if (node instanceof Tree.QualifiedMemberExpression) {
       ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
@@ -207,7 +233,7 @@ public class CeylonContentProposer implements IContentProposer {
     }
     else {
       Map<String, Declaration> result = new TreeMap<String, Declaration>(); 
-      Module languageModule = parseController.getContext().getModules().getLanguageModule();
+      Module languageModule = cpc.getContext().getModules().getLanguageModule();
       if (languageModule!=null) {
         for (Package languageScope: languageModule.getPackages() ) {
           result.putAll(languageScope.getMatchingDeclarations(null, prefix));
@@ -280,7 +306,7 @@ public class CeylonContentProposer implements IContentProposer {
     return result;
   }
   
-  private String getPrefix(Node node, int offset) {
+  /*private String getPrefix(Node node, int offset) {
     if (node instanceof Tree.SimpleType) {
       Tree.Identifier id = ((Tree.SimpleType) node).getIdentifier();
       return getPrefix(offset, id);
@@ -308,5 +334,6 @@ public class CeylonContentProposer implements IContentProposer {
     int index = offset-((CommonToken) id.getToken()).getStartIndex();
     if (index<=0) return "";
 	return id.getText().substring(0, index);
-  }
+  }*/
+  
 }
