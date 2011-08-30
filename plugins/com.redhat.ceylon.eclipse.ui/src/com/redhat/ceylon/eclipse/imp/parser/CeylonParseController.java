@@ -116,7 +116,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
         sourcePositionLocator= new CeylonSourcePositionLocator(this);
     }
     return sourcePositionLocator;
-}
+  }
 
   public ILanguageSyntaxProperties getSyntaxProperties() {
     return new ILanguageSyntaxProperties() {

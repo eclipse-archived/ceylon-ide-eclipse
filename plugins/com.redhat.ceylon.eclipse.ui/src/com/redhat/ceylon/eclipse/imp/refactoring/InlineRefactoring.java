@@ -27,7 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
-import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class InlineRefactoring extends Refactoring {
@@ -51,7 +51,7 @@ public class InlineRefactoring extends Refactoring {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
-			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
+			dec = CeylonReferenceResolver.getReferencedDeclaration(fNode);
 			FindReferenceVisitor frv = new FindReferenceVisitor(dec) {
 				@Override
 				public void visit(Tree.ExtendedTypeExpression that) {}
