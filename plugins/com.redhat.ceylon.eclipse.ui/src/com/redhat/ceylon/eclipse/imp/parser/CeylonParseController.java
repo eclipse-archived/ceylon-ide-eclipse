@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -300,9 +301,15 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   public Iterator<Token> getTokenIterator(IRegion region) {
     int regionOffset = region.getOffset();
     int regionLength = region.getLength();
+    if (regionLength<=0) {
+    	return Collections.<Token>emptyList().iterator();
+    }
     int regionEnd = regionOffset + regionLength - 1;
     CommonTokenStream stream = getTokenStream();
-    if (stream!=null) {
+    if (stream==null) {
+      return null;
+    }
+    else {
       List<Token> tokens = stream.getTokens();
       int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
       // getTokenIndexAtCharacter() answers the negative of the index of the
@@ -312,20 +319,21 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       }
       int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
       if (lastTokIdx < 0) {
-        lastTokIdx= -lastTokIdx + 1;
+        lastTokIdx= -lastTokIdx;
       }
-      if (lastTokIdx>=tokens.size()) lastTokIdx=tokens.size()-1;
-      List<Token> tokensToIterate = tokens.subList(firstTokIdx, lastTokIdx+1);
-      if (tokensToIterate!=null) return tokensToIterate.iterator();
+      return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
     }
-    return null;
   }
 
 
   public CommonTokenStream getTokenStream() {
     CeylonParser parser = getParser();
-    if (parser==null) return null;
-    return (CommonTokenStream) parser.getTokenStream();
+    if (parser==null) {
+      return null;
+    }
+    else {
+      return (CommonTokenStream) parser.getTokenStream();
+    }
   }
 
 
