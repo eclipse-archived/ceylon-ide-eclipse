@@ -183,6 +183,20 @@ public class InlineRefactoring extends Refactoring {
 												start = it.getStopIndex()-templateStart+1;
 											}
 										}
+										if (it.getDeclaration()==that.getNamedArgumentList()
+													.getSequencedArgument().getParameter()) {
+											result.append(template.substring(start,it.getStartIndex()-templateStart))
+											    .append("{ ");
+											boolean first=true;
+											for (Tree.Expression e: that.getNamedArgumentList().getSequencedArgument()
+														.getExpressionList().getExpressions()) {
+												if (!first) result.append(", ");
+												first=false;
+												result.append(InlineRefactoring.this.toString(e.getTerm()));
+											}
+											result.append(" }");
+											start = it.getStopIndex()-templateStart+1;;
+										}
 									}
 								}
 								void finish() {
