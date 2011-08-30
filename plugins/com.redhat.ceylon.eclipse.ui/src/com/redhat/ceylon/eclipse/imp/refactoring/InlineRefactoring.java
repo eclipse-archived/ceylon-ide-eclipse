@@ -162,14 +162,32 @@ public class InlineRefactoring extends Refactoring {
 								public void visit(Tree.BaseMemberExpression it) {
 									super.visit(it);
 									if (that.getPositionalArgumentList()!=null) {
+										boolean first = true;
+										boolean sequenced = false;
 										for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
 												.getPositionalArguments()) {
 											if (it.getDeclaration()==arg.getParameter()) {
-												result.append(template.substring(start,it.getStartIndex()-templateStart))
-													.append(InlineRefactoring.this.
-															toString(arg.getExpression().getTerm()));
-												start = it.getStopIndex()-templateStart+1;
+												if (first) {
+													result.append(template.substring(start,it.getStartIndex()-templateStart));
+													start = it.getStopIndex()-templateStart+1;
+												}
+												first = false;
+												if (arg.getParameter().isSequenced() && 
+														that.getPositionalArgumentList().getEllipsis()==null) {
+													if (!sequenced) {
+														result.append("{ ");
+													}
+													else {
+														result.append(", ");
+													}
+													sequenced = true;
+												}
+												result.append(InlineRefactoring.this.
+														toString(arg.getExpression().getTerm()));
 											}
+										}
+										if (sequenced) {
+											result.append(" }");
 										}
 									}
 									if (that.getNamedArgumentList()!=null) {
