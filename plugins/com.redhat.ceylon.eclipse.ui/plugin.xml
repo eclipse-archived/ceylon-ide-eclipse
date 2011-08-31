@@ -149,5 +149,16 @@
 		searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
 		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage">
 	</viewPage>
-</extension>
+   </extension>
+   <extension point="org.eclipse.search.searchPages">
+   <page id="org.redhat.ceylon.ui.searchPage"
+		label="Ceylon Search"
+		sizeHint="460,160"
+		extensions="ceylon:90"
+		showScopeSection="true"
+		canSearchEnclosingProjects="true"
+		enabled="true"
+		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage">
+	</page>
+   </extension>
 </plugin>
