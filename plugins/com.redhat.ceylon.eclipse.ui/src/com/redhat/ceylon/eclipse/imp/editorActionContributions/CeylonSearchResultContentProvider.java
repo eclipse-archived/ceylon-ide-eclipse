@@ -9,7 +9,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.Match;
 
 class CeylonSearchResultContentProvider implements
-		IStructuredContentProvider/*, IFileSearchContentProvider*/ {
+		IStructuredContentProvider {
+	
 	private final TableViewer viewer;
 	private CeylonSearchResult result;
 
@@ -36,7 +37,7 @@ class CeylonSearchResultContentProvider implements
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (newInput instanceof CeylonSearchResult) {
-			result= (CeylonSearchResult) newInput;
+			result = (CeylonSearchResult) newInput;
 		}
 	}
 	
@@ -46,14 +47,18 @@ class CeylonSearchResultContentProvider implements
 		boolean tableLimited= elementLimit != -1;
 		for (int i= 0; i < updatedElements.length; i++) {
 			if (result.getMatchCount(updatedElements[i]) > 0) {
-				if (viewer.testFindItem(updatedElements[i]) != null)
+				if (viewer.testFindItem(updatedElements[i]) != null) {
 					viewer.update(updatedElements[i], null);
-				else {
-					if (!tableLimited || viewer.getTable().getItemCount() < elementLimit)
-						viewer.add(updatedElements[i]);
 				}
-			} else
+				else {
+					if (!tableLimited || viewer.getTable().getItemCount() < elementLimit) {
+						viewer.add(updatedElements[i]);
+					}
+				}
+			} 
+			else {
 				viewer.remove(updatedElements[i]);
+			}
 		}
 	}
 

@@ -8,12 +8,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
-import org.eclipse.search.ui.text.Match;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.refactoring.FindContainerVisitor;
 
 class FindReferencesSearchQuery implements ISearchQuery {
 	
@@ -22,7 +22,7 @@ class FindReferencesSearchQuery implements ISearchQuery {
 	private final Node node;
 	private final IFile file;
 	private final FindReferenceVisitor frv;
-	AbstractTextSearchResult result = new CeylonSearchResult(this);
+	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 
 	FindReferencesSearchQuery(CeylonParseController cpc, Declaration d, Node node, IFile file) {
 		this.cpc = cpc;
@@ -37,8 +37,11 @@ class FindReferencesSearchQuery implements ISearchQuery {
 		frv.visit(cpc.getRootNode());
 		//TODO: should really add these as we find them:
 		for (Node n: frv.getNodes()) {
-			result.addMatch(new Match(file, n.getStartIndex(), 
-					n.getStopIndex()-n.getStartIndex()+1));
+			FindContainerVisitor fcv = new FindContainerVisitor(n);
+			cpc.getRootNode().visit(fcv);
+			result.addMatch(new CeylonSearchMatch(file, n.getStartIndex(), 
+					n.getStopIndex()-n.getStartIndex()+1, n.getLocation(),
+					fcv.getDeclaration()));
 		}
 		return Status.OK_STATUS;
 	}
@@ -50,7 +53,7 @@ class FindReferencesSearchQuery implements ISearchQuery {
 
 	@Override
 	public String getLabel() {
-		return frv.getNodes().size() + " references to " + d.getName();
+		return "Displaying " + frv.getNodes().size() + " references to '" + d.getName() + "'";
 	}
 
 	@Override
