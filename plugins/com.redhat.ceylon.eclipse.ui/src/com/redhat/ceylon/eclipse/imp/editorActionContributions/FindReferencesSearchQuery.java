@@ -18,30 +18,28 @@ import com.redhat.ceylon.eclipse.imp.refactoring.FindContainerVisitor;
 class FindReferencesSearchQuery implements ISearchQuery {
 	
 	private final CeylonParseController cpc;
-	private final Declaration d;
-	private final Node node;
+	private final Declaration referencedDeclaration;
 	private final IFile file;
 	private final FindReferenceVisitor frv;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 
-	FindReferencesSearchQuery(CeylonParseController cpc, Declaration d, Node node, IFile file) {
+	FindReferencesSearchQuery(CeylonParseController cpc, Declaration referencedDeclaration, IFile file) {
 		this.cpc = cpc;
-		this.d = d;
-		this.node = node;
+		this.referencedDeclaration = referencedDeclaration;
 		this.file = file;
-		frv = new FindReferenceVisitor(d);
+		frv = new FindReferenceVisitor(referencedDeclaration);
 	}
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 		frv.visit(cpc.getRootNode());
 		//TODO: should really add these as we find them:
-		for (Node n: frv.getNodes()) {
-			FindContainerVisitor fcv = new FindContainerVisitor(n);
+		for (Node node: frv.getNodes()) {
+			FindContainerVisitor fcv = new FindContainerVisitor(node);
 			cpc.getRootNode().visit(fcv);
-			result.addMatch(new CeylonSearchMatch(file, n.getStartIndex(), 
-					n.getStopIndex()-n.getStartIndex()+1, n.getLocation(),
-					fcv.getDeclaration()));
+			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), file, 
+					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+					node.getToken()));
 		}
 		return Status.OK_STATUS;
 	}
@@ -53,7 +51,8 @@ class FindReferencesSearchQuery implements ISearchQuery {
 
 	@Override
 	public String getLabel() {
-		return "Displaying " + frv.getNodes().size() + " references to '" + d.getName() + "'";
+		return "Displaying " + frv.getNodes().size() + 
+				" references to '" + referencedDeclaration.getName() + "'";
 	}
 
 	@Override

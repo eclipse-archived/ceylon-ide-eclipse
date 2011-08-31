@@ -12,7 +12,6 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.search.ui.text.Match;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -23,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
-import com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchMatch;
+import com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -70,8 +69,8 @@ public class CeylonLabelProvider implements ILabelProvider {
     if (element instanceof IFile) {
       return getImageForFile((IFile) element);
     }
-    else if (element instanceof Match) {
-      return getImageFor(((CeylonSearchMatch) element).getDeclarationNode());
+    else if (element instanceof CeylonElement) {
+      return getImageFor(((CeylonElement) element).getNode());
     }
     else {
       return getImageFor((ModelTreeNode) element);
@@ -196,11 +195,11 @@ public class CeylonLabelProvider implements ILabelProvider {
     else if (element instanceof IFile) {
       return getLabelForFile((IFile) element);
     }
-    else if (element instanceof Match) {
-      CeylonSearchMatch m = (CeylonSearchMatch) element;
-      return getLabelFor(m.getDeclarationNode()) +
-    		  " in " + ((IFile) m.getElement()).getName() + 
-    		  " at " + m.getLocation();
+    else if (element instanceof CeylonElement) {
+      CeylonElement ce = (CeylonElement) element;
+      return getLabelFor(ce.getNode()) +
+    		  " in " + ce.getFile().getName() + 
+    		  " at " + ce.getLocation();
     }
     else {
       return getLabelFor((Node) element);

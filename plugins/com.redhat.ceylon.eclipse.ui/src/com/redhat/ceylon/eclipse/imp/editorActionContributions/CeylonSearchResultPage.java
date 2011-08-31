@@ -1,8 +1,12 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
+import org.eclipse.search.ui.text.Match;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
@@ -39,5 +43,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		getViewer().refresh();
 	}
 	
-
+	@Override
+	protected void showMatch(Match match, int offset, int length, boolean activate)
+			throws PartInitException {
+        IFile file = ((CeylonElement) match.getElement()).getFile();
+        IWorkbenchPage page = getSite().getPage();
+        if (offset >= 0 && length != 0) {
+            openAndSelect(page, file, offset, length, activate);
+        } 
+        else {
+            open(page, file, activate);
+        }
+    }
 }

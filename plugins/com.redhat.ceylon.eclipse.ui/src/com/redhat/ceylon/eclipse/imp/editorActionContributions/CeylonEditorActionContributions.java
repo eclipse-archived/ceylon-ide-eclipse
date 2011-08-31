@@ -28,8 +28,8 @@ public class CeylonEditorActionContributions implements
 				CeylonParseController cpc = (CeylonParseController) editor.getParseController();
 				Node node = cpc.getSourcePositionLocator().findNode(cpc.getRootNode(), 
 						editor.getSelection().x, editor.getSelection().x+editor.getSelection().y);
-				Declaration d = CeylonReferenceResolver.getReferencedDeclaration(node);
-				NewSearchUI.runQueryInBackground(new FindReferencesSearchQuery(cpc, d, node, 
+				Declaration referencedDeclaration = CeylonReferenceResolver.getReferencedDeclaration(node);
+				NewSearchUI.runQueryInBackground(new FindReferencesSearchQuery(cpc, referencedDeclaration, 
 						((IFileEditorInput) editor.getEditorInput()).getFile()));
 			}
 		});
