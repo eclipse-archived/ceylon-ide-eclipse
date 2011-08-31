@@ -197,9 +197,11 @@ public class CeylonLabelProvider implements ILabelProvider {
     }
     else if (element instanceof CeylonElement) {
       CeylonElement ce = (CeylonElement) element;
+      String pkg = ce.getNode().getUnit().getPackage().getQualifiedNameString();
+      if (pkg.isEmpty()) pkg="defaut package";
       return getLabelFor(ce.getNode()) +
-    		  //" @ " + ce.getNode().getUnit().getPackage().getQualifiedNameString() +
-    		  " - " + ce.getFile().getName() + 
+    		  " [" + pkg +
+    		  "] - " + ce.getFile().getFullPath().toString() + 
     		  ":" + ce.getLocation();
     }
     else {
