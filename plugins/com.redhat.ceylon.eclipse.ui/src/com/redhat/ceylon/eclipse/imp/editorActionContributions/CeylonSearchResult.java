@@ -86,7 +86,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			IFileEditorInput fi= (IFileEditorInput) ei;
-			return match.getElement().equals(fi.getFile());
+			return ((CeylonElement) match.getElement()).getFile().equals(fi.getFile());
 		}
 		else {
 			return false;
