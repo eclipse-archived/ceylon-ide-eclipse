@@ -6,6 +6,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.imp.utils.MarkerUtils;
@@ -67,9 +68,17 @@ public class CeylonLabelProvider implements ILabelProvider {
     if (element instanceof IFile) {
       return getImageForFile((IFile) element);
     }
+    if (element instanceof org.eclipse.core.runtime.Path)
+    {
+      return getImageForPath((IPath) element);
+    }
     else {
       return getImageFor((ModelTreeNode) element);
     }
+  }
+
+  private Image getImageForPath(IPath element) {
+    return FILE_IMAGE;
   }
 
   private Image getImageForFile(IFile file) {
