@@ -23,13 +23,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	protected void configureTableViewer(final TableViewer viewer) {
 		contentProvider = new CeylonSearchResultContentProvider(viewer);
 		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new CeylonLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				// TODO Auto-generated method stub
-				return super.getText(element);
-			}
-		});
+		viewer.setLabelProvider(new CeylonLabelProvider());
 	}
 
 	@Override

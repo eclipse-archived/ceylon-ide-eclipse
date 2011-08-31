@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.treeModelBuilder;
 
+import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,7 +10,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
-import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.search.ui.text.Match;
@@ -22,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
+import com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -69,7 +71,7 @@ public class CeylonLabelProvider implements ILabelProvider {
       return getImageForFile((IFile) element);
     }
     else if (element instanceof Match) {
-      return FILE_IMAGE;
+      return getImageFor(((CeylonSearchMatch) element).getDeclarationNode());
     }
     else {
       return getImageFor((ModelTreeNode) element);
@@ -77,9 +79,7 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   private Image getImageForFile(IFile file) {
-    int sev = MarkerUtils.getMaxProblemMarkerSeverity(file,
-        IResource.DEPTH_ONE);
-
+    int sev = getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
     switch (sev) {
     case IMarker.SEVERITY_ERROR:
       return FILE_WITH_ERROR_IMAGE;
@@ -197,9 +197,10 @@ public class CeylonLabelProvider implements ILabelProvider {
       return getLabelForFile((IFile) element);
     }
     else if (element instanceof Match) {
-      Match m = (Match) element;
-      return ((IFile) m.getElement()).getName() + " (" + m.getOffset() + 
-    		  ":" + (m.getOffset()+m.getLength()-1) + ")";
+      CeylonSearchMatch m = (CeylonSearchMatch) element;
+      return getLabelFor(m.getDeclarationNode()) +
+    		  " in " + ((IFile) m.getElement()).getName() + 
+    		  " at " + m.getLocation();
     }
     else {
       return getLabelFor((Node) element);

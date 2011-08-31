@@ -32,65 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class ExtractFunctionRefactoring extends Refactoring {
-	private static final class FindContainerVisitor extends Visitor {
-		Tree.Term term;
-		Tree.Declaration declaration;
-		Tree.Declaration currentDeclaration;
-		public Tree.Declaration getDeclaration() {
-			return declaration;
-		}
-		FindContainerVisitor(Tree.Term term) {
-			this.term=term;
-		}
-		@Override
-		public void visit(Tree.Term that) {
-			if (that==term) {
-				declaration=currentDeclaration;
-			}
-			super.visit(that);
-		}
-		@Override
-		public void visit(Tree.ObjectDefinition that) {
-			Tree.Declaration d = currentDeclaration;
-			currentDeclaration = that;
-			super.visit(that);
-			currentDeclaration = d;
-		}
-		@Override
-		public void visit(Tree.AttributeGetterDefinition that) {
-			Tree.Declaration d = currentDeclaration;
-			currentDeclaration = that;
-			super.visit(that);
-			currentDeclaration = d;
-		}
-		@Override
-		public void visit(Tree.MethodDefinition that) {
-			Tree.Declaration d = currentDeclaration;
-			currentDeclaration = that;
-			super.visit(that);
-			currentDeclaration = d;
-		}
-		@Override
-		public void visit(Tree.ClassDefinition that) {
-			Tree.Declaration d = currentDeclaration;
-			currentDeclaration = that;
-			super.visit(that);
-			currentDeclaration = d;
-		}
-		@Override
-		public void visit(Tree.InterfaceDefinition that) {
-			Tree.Declaration d = currentDeclaration;
-			currentDeclaration = that;
-			super.visit(that);
-			currentDeclaration = d;
-		}
-		public void visitAny(Node node) {
-			if (declaration==null) {
-				super.visitAny(node);
-			}
-		}
-	}
-	
 	public static final class FindLocalReferencesVisitor extends Visitor {
 		List<Tree.BaseMemberExpression> localReferences = 
 				new ArrayList<Tree.BaseMemberExpression>();
