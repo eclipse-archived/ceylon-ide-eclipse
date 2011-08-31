@@ -12,8 +12,6 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.java.hosted.ProjectUtils;
-import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
@@ -37,7 +35,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonParseController extends ParseControllerBase implements IParseController {
@@ -261,13 +258,13 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       parser = phasedUnit.getParser();
     
       // TODO manage canceling and parsing errors
-      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+      if (monitor!=null && monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
       typeChecker.process();
       fCurrentAst = phasedUnit.getCompilationUnit();
       context = typeChecker.getContext();
 
-      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+      if (monitor!=null && monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
       final IMessageHandler handler = getHandler();
       if (handler!=null) {
