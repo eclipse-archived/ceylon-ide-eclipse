@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,14 +14,17 @@ import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.builder.BuilderBase;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
+import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
+import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.runtime.PluginBase;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.SourceDirectoryVirtualFile;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it
@@ -73,17 +79,31 @@ public class CeylonBuilder extends BuilderBase {
    * @return true iff an arbitrary file is a ceylon source file.
    */
   protected boolean isSourceFile(IFile file) {
-    IPath path = file.getRawLocation();
-    if (path == null)
+    IPath path = file.getFullPath();
+    if (path == null)      
       return false;
-
-    String pathString = path.toString();
-    if (pathString.indexOf("/target/") != -1)
+    
+    if (! LANGUAGE.hasExtension(path.getFileExtension()))
       return false;
-    if (pathString.indexOf("/bin/") != -1)
-      return false;
-
-    return LANGUAGE.hasExtension(path.getFileExtension());
+    
+    IProject project = file.getProject();
+    try {
+      ISourceProject sourceProject = ModelFactory.open(project);
+      IPath resolvedPath = sourceProject.resolvePath(path);
+      List<IPathEntry> buildPath = sourceProject.getBuildPath();
+      for (IPathEntry buildPathEntry : buildPath)
+      {
+        
+        if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && buildPathEntry.getPath().isPrefixOf(resolvedPath))
+        {
+          return true;
+        }
+      }
+    } catch (ModelException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return false;
   }
 
   /**

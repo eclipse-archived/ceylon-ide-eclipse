@@ -11,7 +11,10 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.imp.java.hosted.ProjectUtils;
+import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.IPathEntry;
+import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
@@ -32,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonParseController extends ParseControllerBase implements IParseController {
@@ -214,9 +218,15 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     
     IPath path = getPath();
     ISourceProject project = getProject();
+    IPath resolvedPath = path;    
     if (path != null)
     {
-      file = new SourceCodeVirtualFile(contents, getPath());      
+      if (project != null)
+      {
+        resolvedPath = project.resolvePath(path);
+      } 
+
+      file = new SourceCodeVirtualFile(contents, resolvedPath);      
     }
     else
     {
@@ -228,9 +238,10 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       for (IPathEntry buildPathEntry : buildPath)
       {
         
-        if (buildPathEntry.getPath().isPrefixOf(path))
+        if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && buildPathEntry.getPath().isPrefixOf(resolvedPath))
         {
           srcDir = new SourceDirectoryVirtualFile(buildPathEntry.getPath());
+          break;
         }
       }
     }
