@@ -12,7 +12,7 @@ public class CeylonSearchMatch extends Match {
 	
 	public CeylonSearchMatch(Tree.Declaration declarationNode, IFile file, int offset, 
 			int length, Token location) {
-		super( new CeylonElement(declarationNode, file, location), offset, length);
+		super(new CeylonElement(declarationNode, file, location), offset, length);
 		this.declarationNode=declarationNode;
 	}
 		

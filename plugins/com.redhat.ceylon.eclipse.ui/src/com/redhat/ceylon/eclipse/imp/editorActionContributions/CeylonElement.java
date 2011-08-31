@@ -17,9 +17,8 @@ public class CeylonElement {
 		this.location = location;
 	}
 	
-	public String getLocation() {
-		return location.getLine() + ":" + 
-				location.getCharPositionInLine();
+	public int getLocation() {
+		return location.getLine();
 	}
 
 	public Tree.Declaration getNode() {
@@ -34,7 +33,7 @@ public class CeylonElement {
 	public boolean equals(Object obj) {
 		if (obj instanceof CeylonElement) {
 			CeylonElement that = (CeylonElement) obj;
-			return node==that.node && 
+			return getLocation()==that.getLocation() && 
 					file.equals(that.file);
 		}
 		else {
@@ -44,7 +43,7 @@ public class CeylonElement {
 	
 	@Override
 	public int hashCode() {
-		return node.hashCode();
+		return getLocation() ^ file.getName().hashCode();
 	}
 	
 }

@@ -199,7 +199,7 @@ public class CeylonLabelProvider implements ILabelProvider {
       CeylonElement ce = (CeylonElement) element;
       return getLabelFor(ce.getNode()) +
     		  " in " + ce.getFile().getName() + 
-    		  " at " + ce.getLocation();
+    		  " at line " + ce.getLocation();
     }
     else {
       return getLabelFor((Node) element);
