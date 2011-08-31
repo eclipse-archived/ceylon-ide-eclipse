@@ -20,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
-import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
@@ -45,7 +45,7 @@ public class RenameRefactoring extends Refactoring {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
-			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
+			dec = CeylonReferenceResolver.getReferencedDeclaration(fNode);
 			newName = dec.getName();
 			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
 			parseController.getRootNode().visit(frv);

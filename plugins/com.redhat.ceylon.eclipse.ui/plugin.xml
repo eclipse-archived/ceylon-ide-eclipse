@@ -141,5 +141,13 @@
             language="ceylon">
       </editorActionContributor>
    </extension>
-
+   <extension
+	id="com.redhat.ceylon.ui.searchResults"
+	point="org.eclipse.search.searchResultViewPages">
+	<viewPage
+		id="org.eclipse.search.searchResultViewPage"
+		searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
+		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage">
+	</viewPage>
+</extension>
 </plugin>

@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.imp.treeModelBuilder;
 
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -11,11 +13,22 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 	
 	@Override
 	public void visitTree(Object root) {
-		if (root == null)
-			return;
+		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
 		PackageNode pn = new PackageNode(null);
-		pn.setPackageName(rootNode.getUnit().getPackage().getQualifiedNameString());
+		Unit unit = rootNode.getUnit();
+		if (unit==null) {
+			//This was necessary because sometimes IMP
+			//was sending us the AST before we had
+			//finished properly parsing it ... but I
+			//think I've fixed that by changes to
+			//CeylonParseController
+			return;
+		}
+		else {
+			Package pkg = unit.getPackage();
+			pn.setPackageName(pkg.getQualifiedNameString());
+		}
 		createSubItem(pn);
 		//createSubItem(rootNode);
 		pushSubItem(rootNode.getImportList());

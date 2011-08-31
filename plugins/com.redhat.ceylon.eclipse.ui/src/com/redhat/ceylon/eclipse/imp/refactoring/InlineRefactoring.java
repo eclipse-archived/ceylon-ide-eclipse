@@ -22,13 +22,14 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
-import com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class InlineRefactoring extends Refactoring {
@@ -52,7 +53,7 @@ public class InlineRefactoring extends Refactoring {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
-			dec = CeylonOccurrenceMarker.getDeclaration(fNode);
+			dec = CeylonReferenceResolver.getReferencedDeclaration(fNode);
 			FindReferenceVisitor frv = new FindReferenceVisitor(dec) {
 				@Override
 				public void visit(Tree.ExtendedTypeExpression that) {}
@@ -162,14 +163,84 @@ public class InlineRefactoring extends Refactoring {
 								@Override
 								public void visit(Tree.BaseMemberExpression it) {
 									super.visit(it);
-									for (PositionalArgument arg: that.getPositionalArgumentList()
+									if (it.getDeclaration() instanceof Parameter) {
+										Parameter param = (Parameter) it.getDeclaration();
+										if ( param.getDeclaration()==dec ) {
+											result.append(template.substring(start,it.getStartIndex()-templateStart));
+											start = it.getStopIndex()-templateStart+1;
+											boolean sequenced = param.isSequenced();
+											if (that.getPositionalArgumentList()!=null) {
+												interpolatePositionalArguments(result, that, it, sequenced);
+											}
+											if (that.getNamedArgumentList()!=null) {
+												interpolateNamedArguments(result, that, it, sequenced);
+											}
+										}
+									}
+								}
+								private void interpolatePositionalArguments(StringBuilder result, 
+										Tree.InvocationExpression that, Tree.BaseMemberExpression it,
+										boolean sequenced) {
+									boolean first = true;
+									boolean found = false;
+									if (sequenced) {
+										result.append("{");
+									}
+									for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
 											.getPositionalArguments()) {
 										if (it.getDeclaration()==arg.getParameter()) {
-											result.append(template.substring(start,it.getStartIndex()-templateStart))
-												.append(InlineRefactoring.this.
-														toString(arg.getExpression().getTerm()));
-											start = it.getStopIndex()-templateStart+1;
+											if (arg.getParameter().isSequenced() && 
+													that.getPositionalArgumentList().getEllipsis()==null) {
+												if (first) result.append(" ");
+												if (!first) result.append(", ");
+												first = false;
+											}
+											result.append(InlineRefactoring.this.
+													toString(arg.getExpression().getTerm()));
+											found = true;
 										}
+									}
+									if (sequenced) {
+										if (!first) result.append(" ");
+										result.append("}");
+									}
+									if (!found) {} //TODO: use default value!
+								}
+								private void interpolateNamedArguments(StringBuilder result,
+										Tree.InvocationExpression that, Tree.BaseMemberExpression it,
+										boolean sequenced) {
+									boolean found = false;
+									for (Tree.NamedArgument arg: that.getNamedArgumentList().getNamedArguments()) {
+										if (it.getDeclaration()==arg.getParameter()) {
+											result//.append(template.substring(start,it.getStartIndex()-templateStart))
+												.append(InlineRefactoring.this.
+														toString( ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
+																.getExpression().getTerm()) );
+											//start = it.getStopIndex()-templateStart+1;
+											found=true;
+										}
+									}
+									SequencedArgument seqArg = that.getNamedArgumentList().getSequencedArgument();
+									if (seqArg!=null && it.getDeclaration()==seqArg.getParameter()) {
+										result//.append(template.substring(start,it.getStartIndex()-templateStart))
+										    .append("{");
+										//start = it.getStopIndex()-templateStart+1;;
+										boolean first=true;
+										for (Tree.Expression e: seqArg.getExpressionList().getExpressions()) {
+											if (first) result.append(" ");
+											if (!first) result.append(", ");
+											first=false;
+											result.append(InlineRefactoring.this.toString(e.getTerm()));
+										}
+										if (!first) result.append(" ");
+										result.append("}");
+										found=true;
+									}
+									if (!found) {
+										if (sequenced) {
+											result.append("{}");
+										}
+										else {} //TODO: use default value!
 									}
 								}
 								void finish() {

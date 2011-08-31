@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.treeModelBuilder;
 
+import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,7 +11,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
-import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
@@ -22,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
+import com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -29,10 +31,10 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 public class CeylonLabelProvider implements ILabelProvider {
   private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
 
-  private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
+  public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
       .getImageRegistry();
 
-  private static Image FILE_IMAGE = imageRegistry
+  public static Image FILE_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE);
   private static Image FILE_WITH_WARNING_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE_WARNING);
@@ -68,13 +70,16 @@ public class CeylonLabelProvider implements ILabelProvider {
     if (element instanceof IFile) {
       return getImageForFile((IFile) element);
     }
-    if (element instanceof org.eclipse.core.runtime.Path)
-    {
+    if (element instanceof org.eclipse.core.runtime.Path) {
       return getImageForPath((IPath) element);
     }
-    else {
+    if (element instanceof CeylonElement) {
+      return getImageFor(((CeylonElement) element).getNode());
+    }
+    if (element instanceof ModelTreeNode) {
       return getImageFor((ModelTreeNode) element);
     }
+    return FILE_IMAGE;
   }
 
   private Image getImageForPath(IPath element) {
@@ -82,9 +87,7 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   private Image getImageForFile(IFile file) {
-    int sev = MarkerUtils.getMaxProblemMarkerSeverity(file,
-        IResource.DEPTH_ONE);
-
+    int sev = getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
     switch (sev) {
     case IMarker.SEVERITY_ERROR:
       return FILE_WITH_ERROR_IMAGE;
@@ -195,11 +198,28 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   public String getText(Object element) {
-    return getLabelFor( (ModelTreeNode) element );
+    if (element instanceof ModelTreeNode) {
+      return getLabelFor((Node) ((ModelTreeNode) element).getASTNode());
+    }
+    else if (element instanceof IFile) {
+      return getLabelForFile((IFile) element);
+    }
+    else if (element instanceof CeylonElement) {
+      CeylonElement ce = (CeylonElement) element;
+      String pkg = ce.getNode().getUnit().getPackage().getQualifiedNameString();
+      if (pkg.isEmpty()) pkg="defaut package";
+      return getLabelFor(ce.getNode()) +
+    		  " [" + pkg +
+    		  "] - " + ce.getFile().getFullPath().toString() + 
+    		  ":" + ce.getLocation();
+    }
+    else {
+      return getLabelFor((Node) element);
+    }
   }
 
-  private String getLabelFor(ModelTreeNode n) {
-    return getLabelFor((Node) n.getASTNode());
+  private String getLabelForFile(IFile file) {
+	return file.getName();
   }
 
   public static String getLabelFor(Node n) {

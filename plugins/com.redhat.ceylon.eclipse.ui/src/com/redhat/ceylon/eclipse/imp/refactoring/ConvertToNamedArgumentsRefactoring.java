@@ -13,7 +13,6 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
@@ -24,16 +23,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
-public class ExtractValueRefactoring extends Refactoring {
+public class ConvertToNamedArgumentsRefactoring extends Refactoring {
+
 	private final IFile fSourceFile;
 	private final Node fNode;
 	private final ITextEditor fEditor;
 	private final CeylonParseController parseController;
-	private String newName;
-	private boolean explicitType;
-	private boolean getter;
 
-	public ExtractValueRefactoring(ITextEditor editor) {
+	public ConvertToNamedArgumentsRefactoring(ITextEditor editor) {
 
 		fEditor = editor;
 
@@ -45,21 +42,6 @@ public class ExtractValueRefactoring extends Refactoring {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
 			fNode = findNode(frt);
-			Node node = fNode;
-			if (node instanceof Tree.Expression) {
-				node = ((Tree.Expression) node).getTerm();
-			}
-			if (node instanceof Tree.InvocationExpression) {
-				node = ((Tree.InvocationExpression) node).getPrimary();
-			}
-			if (node instanceof Tree.StaticMemberOrTypeExpression) {
-				newName = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier().getText();
-				newName = Character.toLowerCase(newName.charAt(0)) + 
-						newName.substring(1);
-			}
-			else {
-				newName = "temp";
-			}
 		} 
 		else {
 			fSourceFile = null;
@@ -74,7 +56,7 @@ public class ExtractValueRefactoring extends Refactoring {
 	}
 
 	public String getName() {
-		return "Extract value";
+		return "Convert to named arguments";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -90,59 +72,39 @@ public class ExtractValueRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Extract value", fSourceFile);
+		TextFileChange tfc = new TextFileChange("Convert to named arguments", fSourceFile);
 		tfc.setEdit(new MultiTextEdit());
-		Tree.Term term = (Tree.Term) fNode;
+		Tree.PositionalArgumentList argList = (Tree.PositionalArgumentList) fNode;
 		Integer start = fNode.getStartIndex();
 		int length = fNode.getStopIndex()-start+1;
-		Region region = new Region(start, length);
-		String exp = "";
-		for (Iterator<Token> ti = parseController.getTokenIterator(region); ti.hasNext();) {
-			exp+=ti.next().getText();
-		}
-		FindStatementVisitor fsv = new FindStatementVisitor(term);
-		parseController.getRootNode().visit(fsv);
-		Node node = fsv.getStatement();
-		if (node instanceof Tree.Declaration) {
-			Tree.AnnotationList anns = ((Tree.Declaration) node).getAnnotationList();
-			if (!anns.getAnnotations().isEmpty()) {
-				node = anns.getAnnotations().get(0);
+		StringBuilder result = new StringBuilder().append(" {");
+		boolean sequencedArgs = false;
+		for (Tree.PositionalArgument arg: argList.getPositionalArguments()) {
+			if (arg.getParameter().isSequenced() && argList.getEllipsis()==null) {
+				if (sequencedArgs) result.append(",");
+				sequencedArgs=true;
+				result.append(" " + toString(arg.getExpression().getTerm()));
+			}
+			else {
+				result.append(" " + arg.getParameter().getName() + "=" + 
+						toString(arg.getExpression().getTerm()) + ";");
 			}
 		}
-		String indent = getIndent(node);
-		tfc.addEdit(new InsertEdit(node.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + " " + 
-				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
-				indent));
-		tfc.addEdit(new ReplaceEdit(start, length, newName));
+		result.append(" }");
+		tfc.addEdit(new ReplaceEdit(start, length, result.toString()));			
 		return tfc;
 	}
 
-	private String getIndent(Node node) {
-		int prevIndex = node.getToken().getTokenIndex()-1;
-		if (prevIndex>=0) {
-			Token prevToken = parseController.getTokenStream().get(prevIndex);
-			if (prevToken.getChannel()==Token.HIDDEN_CHANNEL) {
-				return prevToken.getText();
-			}
+	private String toString(final Tree.Term t) {
+		Integer start = t.getStartIndex();
+		int length = t.getStopIndex()-start+1;
+		Region region = new Region(start, length);
+		StringBuilder exp = new StringBuilder();
+		for (Iterator<Token> ti = parseController.getTokenIterator(region); 
+				ti.hasNext();) {
+			exp.append(ti.next().getText());
 		}
-		return "";
-	}
-
-	public void setNewName(String text) {
-		newName = text;
-	}
-	
-	public String getNewName() {
-		return newName;
-	}
-	
-	public void setExplicitType() {
-		this.explicitType = !explicitType;
-	}
-	
-	public void setGetter() {
-		this.getter = !getter;
+		return exp.toString();
 	}
 	
 }

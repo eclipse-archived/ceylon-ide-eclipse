@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -101,6 +103,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   private CeylonSourcePositionLocator sourcePositionLocator;
   private CeylonParser parser;
   private final Set<Integer> annotations = new HashSet<Integer>();
+  private Context context;
 
   /**
    * @param filePath		Project-relative path of file
@@ -118,7 +121,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
         sourcePositionLocator= new CeylonSourcePositionLocator(this);
     }
     return sourcePositionLocator;
-}
+  }
 
   public ILanguageSyntaxProperties getSyntaxProperties() {
     return new ILanguageSyntaxProperties() {
@@ -168,10 +171,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 		
 		@Override
 		public String[][] getFences() {
-			return new String[][] { { "'", "'" }, 
-					{ "\"", "\"" }, { "`", "`" }, 
-					{ "(", ")" }, { "[", "]" }, 
-					{ "{", "}" }, { "/*", "*/" } };
+			return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" }, };
 		}
 		
 		@Override
@@ -218,6 +218,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     
     IPath path = getPath();
     ISourceProject project = getProject();
+    
     IPath resolvedPath = path;    
     if (path != null)
     {
@@ -228,13 +229,12 @@ public class CeylonParseController extends ParseControllerBase implements IParse
 
       file = new SourceCodeVirtualFile(contents, resolvedPath);      
     }
-    else
-    {
+    else {
       file = new SourceCodeVirtualFile(contents);
     }
-    if (project != null)
-    {
+    if (project != null) {
       List<IPathEntry> buildPath = project.getBuildPath();
+
       for (IPathEntry buildPathEntry : buildPath)
       {
         
@@ -247,38 +247,34 @@ public class CeylonParseController extends ParseControllerBase implements IParse
     }
         
     TypeChecker typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-
-    if (srcDir == null)
-    {
+    if (srcDir==null) {
       typeChecker.getPhasedUnits().parseUnit(file);
     }
-    else
-    {
+    else {
       typeChecker.getPhasedUnits().parseUnit(file, srcDir);
     }
-    
-    // TODO manage canceling and parsing errors
-    if (monitor.isCanceled())
-      return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
-
     PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
-    if (phasedUnit != null)
-    {
+    
+    if (phasedUnit!=null) {
       annotations.clear();
-      AnnotationVisitor annotationVisitor = new AnnotationVisitor(annotations);
-      phasedUnit.getCompilationUnit().visit(annotationVisitor);
+      phasedUnit.getCompilationUnit().visit(new AnnotationVisitor(annotations));
       parser = phasedUnit.getParser();
-      fCurrentAst = (Node) phasedUnit.getCompilationUnit();
+    
+      // TODO manage canceling and parsing errors
+      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+
+      typeChecker.process();
+      fCurrentAst = phasedUnit.getCompilationUnit();
+      context = typeChecker.getContext();
+
+      if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+
+      final IMessageHandler handler = getHandler();
+      if (handler!=null) {
+        phasedUnit.getCompilationUnit().visit(new ErrorVisitor(handler));      
+      }
     }
     
-    final IMessageHandler handler = getHandler();
-    typeChecker.process();
-    if (handler != null)
-    {
-      Tree.CompilationUnit compilationUnit = (Tree.CompilationUnit) fCurrentAst; 
-      compilationUnit.visit(new ErrorVisitor(handler));      
-    }
-
     return fCurrentAst;
   }
 
@@ -289,16 +285,17 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   // element immediately preceding the offset.
   //
   private int getTokenIndexAtCharacter(List<Token> tokens, int offset) {
+    //search using bisection
     int low = 0,
         high = tokens.size();
     while (high > low)
     {
         int mid = (high + low) / 2;
-        CommonToken mid_element = (CommonToken) tokens.get(mid);
-        if (offset >= mid_element.getStartIndex() &&
-            offset <= mid_element.getStopIndex())
+        CommonToken midElement = (CommonToken) tokens.get(mid);
+        if (offset >= midElement.getStartIndex() &&
+            offset <= midElement.getStopIndex())
              return mid;
-        else if (offset < mid_element.getStartIndex())
+        else if (offset < midElement.getStartIndex())
              high = mid;
         else low = mid + 1;
     }
@@ -307,15 +304,19 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
 
   public Iterator<Token> getTokenIterator(IRegion region) {
-    int regionOffset= region.getOffset();
-    int regionLength= region.getLength();
-    int regionEnd= regionOffset + regionLength - 1;
-
-    {
-      CommonTokenStream stream = getTokenStream();
-      if (stream!=null) {
+    int regionOffset = region.getOffset();
+    int regionLength = region.getLength();
+    if (regionLength<=0) {
+    	return Collections.<Token>emptyList().iterator();
+    }
+    int regionEnd = regionOffset + regionLength - 1;
+    CommonTokenStream stream = getTokenStream();
+    if (stream==null) {
+      return null;
+    }
+    else {
       List<Token> tokens = stream.getTokens();
-      int firstTokIdx= getTokenIndexAtCharacter(tokens, regionOffset);
+      int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
       // getTokenIndexAtCharacter() answers the negative of the index of the
       // preceding token if the given offset is not actually within a token.
       if (firstTokIdx < 0) {
@@ -323,25 +324,30 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       }
       int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
       if (lastTokIdx < 0) {
-        lastTokIdx= -lastTokIdx + 1;
-      }      
-      List<Token> tokensToIterate = stream.getTokens(firstTokIdx, lastTokIdx);
-      if (tokensToIterate!=null) return tokensToIterate.iterator();
+        lastTokIdx= -lastTokIdx;
       }
+      return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
     }
-    return null;
   }
 
 
   public CommonTokenStream getTokenStream() {
-	CeylonParser parser = getParser();
-	if (parser==null) return null;
-	return (CommonTokenStream) parser.getTokenStream();
+    CeylonParser parser = getParser();
+    if (parser==null) {
+      return null;
+    }
+    else {
+      return (CommonTokenStream) parser.getTokenStream();
+    }
   }
 
 
   public CeylonParser getParser() {
     return parser;
+  }
+  
+  public Context getContext() {
+    return context;
   }
   
   public Set<Integer> getAnnotations() {

@@ -7,11 +7,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-
-import org.eclipse.imp.builder.BuilderUtils;
-import org.eclipse.imp.builder.MarkerCreator;
-import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.builder.BuilderBase;
+import org.eclipse.imp.builder.BuilderUtils;
+import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.IPathEntry;
@@ -22,9 +20,8 @@ import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.runtime.PluginBase;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.SourceDirectoryVirtualFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it
@@ -125,7 +122,7 @@ public class CeylonBuilder extends BuilderBase {
    * them via calls to <code>fDependency.addDependency()</code>.
    */
   protected void collectDependencies(IFile file) {
-    String fromPath = file.getFullPath().toString();
+    //String fromPath = file.getFullPath().toString();
 
     getPlugin().writeInfoMsg("Collecting dependencies from ceylon file: " + file.getName());
 
