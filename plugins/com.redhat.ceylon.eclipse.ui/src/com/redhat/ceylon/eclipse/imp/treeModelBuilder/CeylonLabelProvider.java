@@ -198,8 +198,9 @@ public class CeylonLabelProvider implements ILabelProvider {
     else if (element instanceof CeylonElement) {
       CeylonElement ce = (CeylonElement) element;
       return getLabelFor(ce.getNode()) +
-    		  " in " + ce.getFile().getName() + 
-    		  " at line " + ce.getLocation();
+    		  //" @ " + ce.getNode().getUnit().getPackage().getQualifiedNameString() +
+    		  " - " + ce.getFile().getName() + 
+    		  ":" + ce.getLocation();
     }
     else {
       return getLabelFor((Node) element);
