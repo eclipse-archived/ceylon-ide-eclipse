@@ -1,25 +1,21 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.search.ui.text.Match;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class CeylonSearchMatch extends Match {
 	
-	private String location; 
 	private Tree.Declaration declarationNode;
 	
-	public CeylonSearchMatch(Object element, int offset, int length, 
-			String location, Tree.Declaration declarationNode) {
-		super(element, offset, length);
-		this.location=location;
+	public CeylonSearchMatch(Tree.Declaration declarationNode, IFile file, int offset, 
+			int length, Token location) {
+		super( new CeylonElement(declarationNode, file, location), offset, length);
 		this.declarationNode=declarationNode;
 	}
-	
-	public String getLocation() {
-		return location;
-	}
-	
+		
 	public Tree.Declaration getDeclarationNode() {
 		return declarationNode;
 	}

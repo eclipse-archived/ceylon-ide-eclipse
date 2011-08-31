@@ -1,12 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.search.ui.text.Match;
 
 class CeylonSearchResultContentProvider implements
 		IStructuredContentProvider {
@@ -23,15 +19,8 @@ class CeylonSearchResultContentProvider implements
 
 	@Override
 	public Object[] getElements(Object input) {
-		List<Object> result = new ArrayList<Object>();
 		CeylonSearchResult csr = (CeylonSearchResult) input;
-		Object[] elements = csr.getElements();
-		for (Object e: elements) {
-			for (Match m: csr.getMatches(e)) {
-				result.add(m);
-			}
-		}
-		return result.toArray();
+		return csr.getElements();
 	}
 
 	@Override
@@ -41,7 +30,6 @@ class CeylonSearchResultContentProvider implements
 		}
 	}
 	
-	//@Override
 	public void elementsChanged(Object[] updatedElements) {
 		int elementLimit= -1;
 		boolean tableLimited= elementLimit != -1;
@@ -62,9 +50,4 @@ class CeylonSearchResultContentProvider implements
 		}
 	}
 
-	/*@Override
-	public void clear() {
-		viewer.refresh();
-	}
-	*/
 }

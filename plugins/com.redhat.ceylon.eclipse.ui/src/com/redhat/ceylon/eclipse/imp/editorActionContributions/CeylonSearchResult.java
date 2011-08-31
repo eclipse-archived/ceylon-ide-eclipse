@@ -62,7 +62,10 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 	public IFile getFile(Object element) {
 		if (element instanceof IFile)
 			return (IFile) element;
-		throw new RuntimeException();
+		else if (element instanceof CeylonElement)
+			return ((CeylonElement) element).getFile();
+		else 
+			throw new RuntimeException();
 	}
 
 	@Override
