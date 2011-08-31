@@ -27,6 +27,9 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
   public static String getDocumentation(Declaration decl) {
 	  String documentation = "";
 	  if (decl!=null) {
+	  String pkg = decl.getUnit().getPackage().getQualifiedNameString();
+	  if (pkg.isEmpty()) pkg="default package";
+	  documentation += "[" + pkg + "]<br/>";
       documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
     		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
       
