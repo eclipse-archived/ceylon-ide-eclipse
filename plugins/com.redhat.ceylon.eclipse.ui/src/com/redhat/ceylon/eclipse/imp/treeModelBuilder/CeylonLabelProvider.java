@@ -11,6 +11,7 @@ import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.search.ui.text.Match;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -28,10 +29,10 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 public class CeylonLabelProvider implements ILabelProvider {
   private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
 
-  private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
+  public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
       .getImageRegistry();
 
-  private static Image FILE_IMAGE = imageRegistry
+  public static Image FILE_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE);
   private static Image FILE_WITH_WARNING_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE_WARNING);
@@ -66,6 +67,9 @@ public class CeylonLabelProvider implements ILabelProvider {
   public Image getImage(Object element) {
     if (element instanceof IFile) {
       return getImageForFile((IFile) element);
+    }
+    else if (element instanceof Match) {
+      return FILE_IMAGE;
     }
     else {
       return getImageFor((ModelTreeNode) element);
@@ -186,11 +190,24 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   public String getText(Object element) {
-    return getLabelFor( (ModelTreeNode) element );
+    if (element instanceof ModelTreeNode) {
+      return getLabelFor((Node) ((ModelTreeNode) element).getASTNode());
+    }
+    else if (element instanceof IFile) {
+      return getLabelForFile((IFile) element);
+    }
+    else if (element instanceof Match) {
+      Match m = (Match) element;
+      return ((IFile) m.getElement()).getName() + " (" + m.getOffset() + 
+    		  ":" + (m.getOffset()+m.getLength()-1) + ")";
+    }
+    else {
+      return getLabelFor((Node) element);
+    }
   }
 
-  private String getLabelFor(ModelTreeNode n) {
-    return getLabelFor((Node) n.getASTNode());
+  private String getLabelForFile(IFile file) {
+	return file.getName();
   }
 
   public static String getLabelFor(Node n) {
