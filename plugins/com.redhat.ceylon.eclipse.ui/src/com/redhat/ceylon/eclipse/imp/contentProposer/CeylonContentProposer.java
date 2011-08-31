@@ -1,15 +1,23 @@
 package com.redhat.ceylon.eclipse.imp.contentProposer;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
+import static java.lang.Character.isJavaIdentifierPart;
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.imp.editor.ErrorProposal;
+import org.antlr.runtime.Token;
 import org.eclipse.imp.editor.SourceProposal;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IContentProposer;
@@ -24,6 +32,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -33,7 +43,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonContentProposer implements IContentProposer {
@@ -53,68 +62,134 @@ public class CeylonContentProposer implements IContentProposer {
    * @return        An array of completion proposals applicable relative to the AST of the given
    *             parse controller at the given position
    */
-  public ICompletionProposal[] getContentProposals(IParseController ctlr,
+  public ICompletionProposal[] getContentProposals(IParseController controller,
       final int offset, ITextViewer viewer) {
-    CeylonParseController parseController = (CeylonParseController) ctlr;
-    List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-
-    if (parseController.getRootNode() != null) {
-      CeylonSourcePositionLocator locator = parseController.getSourcePositionLocator();
-      final String prefix;
-      Node node = locator.findNode(parseController.getRootNode(), offset);
+    CeylonParseController cpc = (CeylonParseController) controller;
+    
+    //BEGIN HUGE BUG WORKAROUND
+    //What is going on here is that when I have a list of proposals open
+    //and then I type a character, IMP sends us the old syntax tree and
+    //doesn't bother to even send us the character I just typed, except
+    //in the ITextViewer. So we need to do some guessing to figure out
+    //that there is a missing character in the token stream and take
+    //corrective action. This should be fixed in IMP!
+    String prefix="";
+    int start=0;
+    int end=0;
+    CommonToken previousToken = null;
+    for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
+    	if (/*t.getStartIndex()<=offset &&*/ token.getStopIndex()+1>=offset) {
+			char charAtOffset = viewer.getDocument().get().charAt(offset-1);
+			char charInTokenAtOffset = token.getText().charAt(offset-token.getStartIndex()-1);
+			if (charAtOffset==charInTokenAtOffset) {
+				if (isIdentifier(token)) {
+	    			start = token.getStartIndex();
+	    			end = token.getStopIndex();
+	    			prefix = token.getText().substring(0, offset-token.getStartIndex());
+	    		}
+	    		else {
+	    			prefix = "";
+	    			start = offset;
+	    			end = offset;
+	    		}
+			} 
+			else {
+				boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
+				if (previousToken!=null) {
+					start = previousToken.getStartIndex();
+					end = previousToken.getStopIndex();    				
+					if (previousToken.getType()==MEMBER_OP && isIdentifierChar) {
+						prefix = Character.toString(charAtOffset);
+					}
+					else if (isIdentifier(previousToken) && isIdentifierChar) {
+						prefix = previousToken.getText()+charAtOffset;
+					}
+					else {
+						prefix = isIdentifierChar ? 
+								Character.toString(charAtOffset) : "";
+					}
+				}
+				else {
+					prefix = isIdentifierChar ? 
+							Character.toString(charAtOffset) : "";
+					start = offset;
+					end = offset;
+				}
+			}
+    		break;
+    	}
+    	previousToken = token;
+    }
+    //END BUG WORKAROUND
+    
+    if (cpc.getRootNode() != null) {
+      Node node = cpc.getSourcePositionLocator()
+    		  .findNode(cpc.getRootNode(), start, end);
       if (node==null) {
-        //TODO: need to do something much better here:
-        //      search for a surrounding scope
-        //      search for a token, and treat it as a base expression or type
-        prefix = "";
-        node = parseController.getRootNode();
+        node = cpc.getRootNode();
       }
-      else {
-        prefix = getPrefix(node, offset);
-      }
+            
+      return constructCompletions(offset, prefix, 
+    		  sortProposals(prefix, getProposals(node, prefix, cpc)),
+    		  cpc);
+    } 
+    else {
+      /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
+                 offset));*/
+      return null;
+    }
+  }
+  
+  private static boolean isIdentifier(Token token) {
+	  return token.getType()==LIDENTIFIER || 
+			  token.getType()==UIDENTIFIER;
+  }
 
-      /*SearchVisitor sv = new SearchVisitor( new SearchVisitor.Matcher() {
-        @Override
-        public boolean matches(String string) {
-          return string.startsWith(prefix);
-        }
-        @Override
-        public boolean includeReferences() {
-          return false;
-        }
-        @Override
-        public boolean includeDeclarations() {
-          return true;
-        }
-      });
-      ((Node) parseController.getCurrentAst()).visit(sv);
-      for (Node n: sv.getNodes()) {
-        Declaration d = (Declaration) n;
-        result.add(new SourceProposal(CeylonLabelProvider.getLabelFor(n), d.getIdentifier().getText(), prefix, offset));
-      }*/
-      for (final Declaration d: getProposals(node, prefix).values()) {
+  public ICompletionProposal[] constructCompletions(int offset, String prefix, 
+        TreeMap<String, Declaration> map, CeylonParseController cpc) {
+      List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+      for (final Declaration d: map.values()) {
         if (d instanceof TypeDeclaration) {
           result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
-        		  getTextFor(d, false), parseController));
+        		  getTextFor(d, false), cpc));
         }
         if (d instanceof TypedDeclaration || d instanceof Class) {
           result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), 
-        		  getTextFor(d, true), parseController));
+        		  getTextFor(d, true), cpc));
         }
       }
-    } 
-    else {
-      result.add(new ErrorProposal(
-          "No proposals available due to syntax errors", offset));
-    }
-    return result.toArray(new ICompletionProposal[result.size()]);
+      return result.toArray(new ICompletionProposal[result.size()]);
+  }
+
+  public TreeMap<String, Declaration> sortProposals(final String prefix,
+		Map<String, Declaration> proposals) {
+	TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
+        public int compare(String x, String y) {
+        	int lowers = prefix.length()==0 || isLowerCase(prefix.charAt(0)) ? -1 : 1;
+        	if (isLowerCase(x.charAt(0)) && 
+        			isUpperCase(y.charAt(0))) {
+        		return lowers;
+        	}
+        	else if (isUpperCase(x.charAt(0)) && 
+        			isLowerCase(y.charAt(0))) {
+        		return -lowers;
+        	}
+        	else {
+        		return x.compareTo(y);
+        	}
+        }
+      });
+    map.putAll(proposals);
+	return map;
   }
 
   private SourceProposal sourceProposal(final int offset, final String prefix,
-		final Declaration d, String desc, final String text, CeylonParseController ctlr) {
-	return new SourceProposal(desc, text, prefix, new Region(offset, 0), 
-			                  offset + text.length() - prefix.length(),
-			                  getDocumentation(getDeclarationNode(ctlr, d))) { 
+		final Declaration d, String desc, final String text, 
+		CeylonParseController cpc) {
+	return new SourceProposal(desc, text, "", 
+			                  new Region(offset - prefix.length(), prefix.length()), 
+			                  offset + text.length(),
+			                  getDocumentation(getDeclarationNode(cpc, d))) { 
       @Override
       public Image getImage() {
 	    return CeylonLabelProvider.getImage(d);
@@ -137,26 +212,45 @@ public class CeylonContentProposer implements IContentProposer {
 	};
   }
 
-  private Map<String, Declaration> getProposals(Node node, final String prefix) {
+  private Map<String, Declaration> getProposals(Node node, String prefix,
+		  CeylonParseController cpc) {
     //TODO: substitute type arguments to receiving type
     if (node instanceof Tree.QualifiedMemberExpression) {
       ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
       if (type!=null) {
         return type.getDeclaration().getMatchingMemberDeclarations(prefix);
       }
+      else {
+        return Collections.emptyMap();
+      }
     }
     else if (node instanceof Tree.QualifiedTypeExpression) {
       ProducedType type = ((Tree.QualifiedTypeExpression) node).getPrimary().getTypeModel();
-      return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+      if (type!=null) {
+        return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+      }
+      else {
+        return Collections.emptyMap();
+      }
     }
     else if (node instanceof Tree.NamedArgument) {
-    	//TODO: this case is really problematic because the
-    	//      model doesn't have anything about named args
-    	//      and the tree can't be walked upward
-        Declaration p = ((Tree.NamedArgument) node).getParameter();
-        return Collections.singletonMap(p.getName(), p);
+      //TODO: this case is really problematic because the
+      //      model doesn't have anything about named args
+      //      and the tree can't be walked upward
+      Declaration p = ((Tree.NamedArgument) node).getParameter();
+      return Collections.singletonMap(p.getName(), p);
+    }
+    else {
+      Map<String, Declaration> result = new TreeMap<String, Declaration>(); 
+      Module languageModule = cpc.getContext().getModules().getLanguageModule();
+      if (languageModule!=null) {
+        for (Package languageScope: languageModule.getPackages() ) {
+          result.putAll(languageScope.getMatchingDeclarations(null, prefix));
+        }
       }
-    return node.getScope().getMatchingDeclarations(node.getUnit(), prefix);
+      result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix));
+      return result;
+    }
   }
 
   public static String getTextFor(Declaration d, boolean includeArgs) {
@@ -221,15 +315,23 @@ public class CeylonContentProposer implements IContentProposer {
     return result;
   }
   
-  private String getPrefix(Node node, int offset) {
+  /*private String getPrefix(Node node, int offset) {
     if (node instanceof Tree.SimpleType) {
       Tree.Identifier id = ((Tree.SimpleType) node).getIdentifier();
       return getPrefix(offset, id);
     }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-      Tree.Identifier id = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        Tree.Identifier id = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        return getPrefix(offset, id);
+      }
+    else if (node instanceof Tree.Declaration) {
+      Tree.Identifier id = ((Tree.Declaration) node).getIdentifier();
       return getPrefix(offset, id);
     }
+    else if (node instanceof Tree.NamedArgument) {
+        Tree.Identifier id = ((Tree.NamedArgument) node).getIdentifier();
+        return getPrefix(offset, id);
+      }
     else {
       return "";
     }
@@ -237,8 +339,10 @@ public class CeylonContentProposer implements IContentProposer {
 
   private String getPrefix(int offset, Tree.Identifier id) {
     if (id==null||id.getText().equals("")) return "";
+    if (offset<0) return id.getText(); 
     int index = offset-((CommonToken) id.getToken()).getStartIndex();
     if (index<=0) return "";
 	return id.getText().substring(0, index);
-  }
+  }*/
+  
 }

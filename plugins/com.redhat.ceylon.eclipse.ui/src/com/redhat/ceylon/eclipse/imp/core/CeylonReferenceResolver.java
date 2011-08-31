@@ -19,8 +19,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * from (or to) that node
    */
   public String getLinkText(Object node) {
-    if (node instanceof Node)
-    {
+    if (node instanceof Node) {
       if (node instanceof Tree.Primary) {
         return ((Tree.Primary) node).getDeclaration().getName();
       }
@@ -29,7 +28,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
       }
       else if (node instanceof Tree.ImportMemberOrType) {
           return ((Tree.ImportMemberOrType) node).getDeclarationModel().getName();
-        }
+      }
       if (node instanceof Tree.Declaration) {
         return ((Tree.Declaration) node).getDeclarationModel().getName();
       }
@@ -38,8 +37,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
       }
       return ((Node) node).getText();
     }
-    else
-    {
+    else {
       return null; //node.toString(); 
     }
   }
@@ -49,23 +47,29 @@ public class CeylonReferenceResolver implements IReferenceResolver {
    * given Parse Controller.
    */
   public Tree.Declaration getLinkTarget(Object node, IParseController controller) {
-    Declaration dec = null;
-    if (node instanceof Tree.Primary) {
-      dec = ((Tree.Primary) node).getDeclaration();
+    return getDeclarationNode((CeylonParseController) controller, 
+    		getReferencedDeclaration(node));
+  }
+
+  public static Declaration getReferencedDeclaration(Object node) {
+	if (node instanceof Tree.Primary) {
+      return ((Tree.Primary) node).getDeclaration();
     }
     else if (node instanceof Tree.SimpleType) {
-      dec = ((Tree.SimpleType) node).getDeclarationModel();
+      return ((Tree.SimpleType) node).getDeclarationModel();
     }
     else if (node instanceof Tree.ImportMemberOrType) {
-        dec = ((Tree.ImportMemberOrType) node).getDeclarationModel();
-      }
+      return ((Tree.ImportMemberOrType) node).getDeclarationModel();
+    }
     else if (node instanceof Tree.Declaration) {
-      dec = ((Tree.Declaration) node).getDeclarationModel();
+      return ((Tree.Declaration) node).getDeclarationModel();
     }
     else if (node instanceof Tree.NamedArgument) {
-      dec = ((Tree.NamedArgument) node).getParameter();
+      return ((Tree.NamedArgument) node).getParameter();
     }
-    return getDeclarationNode((CeylonParseController) controller, dec);
+    else {
+      return null;
+    }
   }
 
   public static Tree.Declaration getDeclarationNode(CeylonParseController controller, Declaration dec) {

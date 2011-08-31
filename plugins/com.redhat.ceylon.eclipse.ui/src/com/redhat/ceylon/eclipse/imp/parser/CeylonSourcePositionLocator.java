@@ -7,6 +7,7 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
@@ -38,7 +39,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     this.parseController= (CeylonParseController) parseController;
   }
 
-  private final class NodeVisitor extends Visitor {
+  private final class NodeVisitor extends Visitor
+      implements NaturalVisitor {
     
     private NodeVisitor(int fStartOffset, int fEndOffset) {
       this.fStartOffset = fStartOffset;
@@ -155,7 +157,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public Node findNode(Object ast, int offset) {
-    return findNode(ast, offset, offset);
+    return findNode(ast, offset, offset+1);
   }
 
   public Node findNode(Object ast, int startOffset, int endOffset) {
@@ -215,24 +217,19 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public static Node getIdentifyingNode(Node node) {
     if (node instanceof Tree.Declaration) {
-      Tree.Declaration decl = (Tree.Declaration) node;
-      return decl.getIdentifier();
+      return ((Tree.Declaration) node).getIdentifier();
     }
     else if (node instanceof Tree.NamedArgument) {
-        Tree.NamedArgument decl = (Tree.NamedArgument) node;
-        return decl.getIdentifier();
-      }
+      return ((Tree.NamedArgument) node).getIdentifier();
+    }
     else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-      Tree.StaticMemberOrTypeExpression decl = (Tree.StaticMemberOrTypeExpression) node;
-      return decl.getIdentifier();
+      return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
     }
     else if (node instanceof Tree.SimpleType) {
-      Tree.SimpleType decl = (Tree.SimpleType) node;
-      return decl.getIdentifier();
+      return ((Tree.SimpleType) node).getIdentifier();
     }
     else if (node instanceof Tree.ImportMemberOrType) {
-        Tree.ImportMemberOrType decl = (Tree.ImportMemberOrType) node;
-        return decl.getIdentifier();
+      return ((Tree.ImportMemberOrType) node).getIdentifier();
     }
     else {    
       return node;

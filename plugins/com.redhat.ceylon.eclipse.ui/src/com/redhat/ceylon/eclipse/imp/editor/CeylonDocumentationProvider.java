@@ -27,13 +27,6 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
   public static String getDocumentation(Declaration decl) {
 	  String documentation = "";
 	  if (decl!=null) {
-      // START_HERE
-      // Create a case for each kind of node or token for which you
-      // want to provide help text and return the text corresponding
-      // to that entity (such as in the following examples)
-
-      // Address node types of interest, which may represent multiple tokens
-      //String qualifiedName = decl.getIdentifier().getText();
       documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
     		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
       

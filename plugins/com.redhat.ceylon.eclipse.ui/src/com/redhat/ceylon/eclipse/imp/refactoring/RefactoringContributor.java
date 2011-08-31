@@ -32,7 +32,8 @@ public class RefactoringContributor implements IRefactoringContributor {
 					{
 						setAccelerator(SWT.CONTROL | SWT.ALT | 'F');
 					}
-				}
+				},
+				new ConvertToNamedArgumentsRefactoringAction(editor)
 			};
 	}
 	
