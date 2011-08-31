@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IWorkbenchPage;
@@ -28,6 +30,20 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		contentProvider = new CeylonSearchResultContentProvider(viewer);
 		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new CeylonLabelProvider());
+		viewer.setComparator( new ViewerComparator() {
+			@Override
+			public int compare(Viewer viewer, Object e1, Object e2) {
+				CeylonElement ce1 = (CeylonElement) e1;
+				CeylonElement ce2 = (CeylonElement) e2;
+				int result = ce1.file.getFullPath().toString().compareTo(ce2.file.getFullPath().toString());
+				if (result==0) {
+					return new Integer(ce1.getLocation()).compareTo(ce2.getLocation());
+				}
+				else {
+					return result;
+				}
+			}
+		});
 	}
 
 	@Override
