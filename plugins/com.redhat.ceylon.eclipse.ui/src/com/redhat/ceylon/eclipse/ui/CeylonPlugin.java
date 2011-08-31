@@ -1,7 +1,11 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import org.eclipse.imp.java.hosted.ProjectUtils;
+import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.runtime.PluginBase;
 import org.osgi.framework.BundleContext;
+
+import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
 public class CeylonPlugin extends PluginBase {
 
@@ -25,7 +29,8 @@ public class CeylonPlugin extends PluginBase {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
+	  super.start(context);
+    new ProjectUtils().addExtenderForJavaHostedProjects(LanguageRegistry.findLanguageByNature(CeylonNature.k_natureID));
 	}
 
 	@Override

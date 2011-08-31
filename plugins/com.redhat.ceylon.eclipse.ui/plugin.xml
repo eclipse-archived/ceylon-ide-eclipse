@@ -9,6 +9,7 @@
             icon="icons/template_obj.gif"
             extensions="ceylon"
             description="Say more, more clearly"
+            natureID="com.redhat.ceylon.eclipse.ui.imp.nature"
             language="ceylon">
       </language>
    </extension>
@@ -79,7 +80,7 @@
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
-            objectClass="org.eclipse.core.resources.IProject"
+            objectClass="org.eclipse.jdt.core.IJavaProject"
             adaptable="true"
             nameFilter="*"
             id="ceylon.imp.projectContextMenu">
