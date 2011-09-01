@@ -102,17 +102,6 @@ public class CeylonParseController extends ParseControllerBase {
   private final Set<Integer> annotations = new HashSet<Integer>();
   private Context context;
 
-  /**
-   * @param filePath		Project-relative path of file
-   * @param project		Project that contains the file
-   * @param handler		A message handler to receive error messages (or any others)
-   * 						from the parser
-   */
-  public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
-    super.initialize(filePath, project, handler);
-  }
-
-
   public CeylonSourcePositionLocator getSourcePositionLocator() {
     if (sourcePositionLocator == null) {
         sourcePositionLocator= new CeylonSourcePositionLocator(this);
