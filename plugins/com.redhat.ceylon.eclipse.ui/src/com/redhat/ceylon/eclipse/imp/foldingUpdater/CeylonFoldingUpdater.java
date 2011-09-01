@@ -19,17 +19,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
  */
 public class CeylonFoldingUpdater extends FolderBase {
 
-	// When instantiated will provide a concrete implementation of an abstract method
-	// defined in FolderBase
 	@Override
-	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, List<Annotation> annotations,
-			Object ast) {
-		Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
+	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
+	        List<Annotation> annotations, Object ast) {
 		new Visitor() {
 			@Override 
 			public void visit(Tree.Body body) {
 				makeAnnotation(body);
 			}
-		}.visit(cu);
+		}.visit((Tree.CompilationUnit) ast);
 	}
+	
 }
