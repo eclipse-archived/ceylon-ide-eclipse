@@ -37,7 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class CeylonParseController extends ParseControllerBase implements IParseController {
+public class CeylonParseController extends ParseControllerBase {
 
   private static final class ErrorVisitor extends Visitor {
 		private final IMessageHandler handler;
