@@ -142,23 +142,33 @@
       </editorActionContributor>
    </extension>
    <extension
-	id="com.redhat.ceylon.ui.searchResults"
-	point="org.eclipse.search.searchResultViewPages">
-	<viewPage
-		id="org.eclipse.search.searchResultViewPage"
-		searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
-		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage">
-	</viewPage>
+         id="com.redhat.ceylon.ui.searchResults"
+         point="org.eclipse.search.searchResultViewPages">
+      <viewPage
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage"
+            searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
+            id="org.eclipse.search.searchResultViewPage">
+      </viewPage>
    </extension>
-   <extension point="org.eclipse.search.searchPages">
-   <page id="org.redhat.ceylon.ui.searchPage"
-		label="Ceylon Search"
-		sizeHint="460,160"
-		extensions="ceylon:90"
-		showScopeSection="true"
-		canSearchEnclosingProjects="true"
-		enabled="true"
-		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage">
-	</page>
+   <extension
+         point="org.eclipse.search.searchPages">
+      <page
+            showScopeSection="true"
+            canSearchEnclosingProjects="true"
+            label="Ceylon Search"
+            enabled="true"
+            extensions="ceylon:90"
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage"
+            sizeHint="460,160"
+            id="org.redhat.ceylon.ui.searchPage">
+      </page>
    </extension>
+   <extension
+         point="org.eclipse.imp.runtime.autoEditStrategy">
+      <autoEditStrategy
+            class="com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy"
+            language="ceylon">
+      </autoEditStrategy>
+   </extension>
+
 </plugin>
