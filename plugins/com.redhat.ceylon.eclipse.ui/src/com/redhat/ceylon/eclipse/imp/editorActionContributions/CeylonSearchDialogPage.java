@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.search.ui.IReplacePage;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
 import org.eclipse.search.ui.NewSearchUI;
@@ -22,7 +21,7 @@ import org.eclipse.swt.widgets.Label;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonSearchDialogPage extends DialogPage 
-		implements ISearchPage, IReplacePage {
+		implements ISearchPage/*, IReplacePage*/ {
 
 	private String searchString="";
 	private boolean caseSensitive = false;
@@ -109,11 +108,11 @@ public class CeylonSearchDialogPage extends DialogPage
 		return true;
 	}
 
-	@Override
+	/*@Override
 	public boolean performReplace() {
 		// TODO Auto-generated method stub
 		return true;
-	}
+	}*/
 	
 	@Override
 	public void setContainer(ISearchPageContainer container) {
