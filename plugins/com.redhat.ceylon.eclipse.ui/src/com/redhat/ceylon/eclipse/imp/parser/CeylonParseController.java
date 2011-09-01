@@ -157,7 +157,7 @@ public class CeylonParseController extends ParseControllerBase {
 		
 		@Override
 		public String[][] getFences() {
-			return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" }, };
+			return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 		}
 		
 		@Override
