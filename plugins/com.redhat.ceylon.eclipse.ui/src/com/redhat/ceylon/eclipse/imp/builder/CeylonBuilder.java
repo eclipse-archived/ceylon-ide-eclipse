@@ -200,19 +200,16 @@ public class CeylonBuilder extends BuilderBase {
       // TODO:  Pick a version of the marker creator (or just go with this one)
       // MarkerCreator markerCreator = new MarkerCreator(file, parseController, PROBLEM_MARKER_ID);
       MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(file, parseController, this);
-
       parseController.getAnnotationTypeInfo().addProblemMarkerType(getErrorMarkerID());
-
+      
       ISourceProject sourceProject = ModelFactory.open(file.getProject());
       parseController.initialize(file.getProjectRelativePath(), sourceProject, markerCreator);
+      parseController.parse(BuilderUtils.getFileContents(file), monitor);
+      
+      markerCreator.flush(monitor);
 
-      String contents = BuilderUtils.getFileContents(file);
-      parseController.parse(contents, monitor);
-
-      if (markerCreator instanceof MarkerCreatorWithBatching) {
-        ((MarkerCreatorWithBatching) markerCreator).flush(monitor);
-      }
-    } catch (ModelException e) {
+    } 
+    catch (ModelException e) {
       getPlugin().logException("Example builder returns without parsing due to a ModelException", e);
     }
   }
