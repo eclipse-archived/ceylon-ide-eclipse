@@ -19,15 +19,26 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
  */
 public class CeylonFoldingUpdater extends FolderBase {
 
-	@Override
+    @Override
 	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
 	        List<Annotation> annotations, Object ast) {
 		new Visitor() {
 			@Override 
 			public void visit(Tree.Body body) {
+                super.visit(body);
 				makeAnnotation(body);
 			}
+            //TODO: we should also allow multiline comments 
+			//      to be folded, but currently there is no
+			//      treenode for them!
 		}.visit((Tree.CompilationUnit) ast);
 	}
 	
+    /*public void makeRangeAnnotation(Object n) {
+        ISourcePositionLocator nodeLocator = parseController.getSourcePositionLocator();
+        DefaultRangeIndicator annotation= new DefaultRangeIndicator();
+        newAnnotations.put(annotation, 
+                new Position(nodeLocator.getStartOffset(n), nodeLocator.getEndOffset(n)));
+        annotations.add(annotation);
+    }*/
 }
