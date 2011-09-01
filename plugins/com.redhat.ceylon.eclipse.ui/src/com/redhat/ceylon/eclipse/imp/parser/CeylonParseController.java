@@ -235,7 +235,8 @@ public class CeylonParseController extends ParseControllerBase {
       for (IPathEntry buildPathEntry : buildPath)
       {
         
-        if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && buildPathEntry.getPath().isPrefixOf(resolvedPath))
+        if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && 
+                buildPathEntry.getPath().isPrefixOf(resolvedPath))
         {
           srcDir = new SourceDirectoryVirtualFile(buildPathEntry.getPath());
           break;
