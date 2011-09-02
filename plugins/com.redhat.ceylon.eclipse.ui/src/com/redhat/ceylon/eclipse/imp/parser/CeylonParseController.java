@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Set;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.java.hosted.ProjectUtils;
@@ -29,71 +31,14 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
-import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonParseController extends ParseControllerBase implements IParseController {
-
-  private static final class ErrorVisitor extends Visitor {
-		private final IMessageHandler handler;
-
-		private ErrorVisitor(IMessageHandler handler) {
-			this.handler = handler;
-		}
-
-		@Override 
-        public void visitAny(Node node) { 
-          super.visitAny(node);
-          for (Message error: node.getErrors()) 
-          { 
-            String errorMessage = error.getMessage();
-            int startOffset=0;
-            int endOffset=0;
-            int startCol=0;
-            int startLine=0;
-            
-            //Map<String, Object> attributes = new HashMap<String, Object>();
-            if (error instanceof RecognitionError)
-            {
-              RecognitionError recognitionError = (RecognitionError) error;
-              CommonToken token = (CommonToken) recognitionError.getRecognitionException().token;
-              startOffset = token.getStartIndex();              
-              endOffset = token.getStopIndex();
-              startCol = token.getCharPositionInLine();
-              startLine = token.getLine();
-              //attributes.put(SEVERITY_KEY, ERROR);
-            }
-            if (error instanceof AnalysisMessage)
-            {
-              AnalysisMessage analysisMessage = (AnalysisMessage) error;
-              Node errorNode = CeylonSourcePositionLocator.getIdentifyingNode(analysisMessage.getTreeNode());
-              if (errorNode==null) errorNode=analysisMessage.getTreeNode();
-              Token token = errorNode.getToken();
-              startOffset = errorNode.getStartIndex();              
-              endOffset = errorNode.getStopIndex();
-              startCol = token.getCharPositionInLine();
-              startLine = token.getLine();
-              /*if (error instanceof AnalysisWarning) {
-            	  attributes.put(SEVERITY_KEY, WARNING);
-              }
-              else {
-            	  attributes.put(SEVERITY_KEY, ERROR);
-              }*/
-            }
-            
-              handler.handleSimpleMessage(errorMessage, startOffset, endOffset, 
-            		  startCol, startCol, startLine, startLine/*, attributes*/);
-          }
-        }
-	}
 
   public CeylonParseController() {
     super(CeylonPlugin.kLanguageID);
@@ -103,7 +48,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   private CeylonSourcePositionLocator sourcePositionLocator;
   private CeylonParser parser;
   private final Set<Integer> annotations = new HashSet<Integer>();
-  private Context context;
+  private TypeChecker typeChecker;
 
   /**
    * @param filePath		Project-relative path of file
@@ -113,6 +58,7 @@ public class CeylonParseController extends ParseControllerBase implements IParse
    */
   public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
     super.initialize(filePath, project, handler);
+    simpleAnnotationTypeInfo.addProblemMarkerType(CeylonBuilder.PROBLEM_MARKER_ID);
   }
 
 
@@ -214,46 +160,55 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   public Object parse(String contents, IProgressMonitor monitor) {
     VirtualFile file;
     VirtualFile srcDir = null;
-// TODO : manage the case of a file along with the corresponding source directory    
-    
+
     IPath path = getPath();
-    ISourceProject project = getProject();
+    ISourceProject sourceProject = getProject();
+    IProject project = sourceProject.getRawProject();
     
     IPath resolvedPath = path;    
     if (path != null)
     {
-      if (project != null)
+      if (sourceProject != null)
       {
-        resolvedPath = project.resolvePath(path);
+        resolvedPath = sourceProject.resolvePath(path);
       } 
 
-      file = new SourceCodeVirtualFile(contents, resolvedPath);      
+      file = new SourceCodeVirtualFile(contents, path);      
     }
     else {
       file = new SourceCodeVirtualFile(contents);
     }
-    if (project != null) {
-      List<IPathEntry> buildPath = project.getBuildPath();
+    if (sourceProject != null) {
+      List<IPathEntry> buildPath = sourceProject.getBuildPath();
 
       for (IPathEntry buildPathEntry : buildPath)
       {
         
         if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && buildPathEntry.getPath().isPrefixOf(resolvedPath))
         {
-          srcDir = new SourceDirectoryVirtualFile(buildPathEntry.getPath());
+          srcDir = new IFolderVirtualFile(sourceProject.getRawProject(), buildPathEntry.getPath().removeFirstSegments(1));
           break;
         }
       }
     }
         
-    TypeChecker typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-    if (srcDir==null) {
-      typeChecker.getPhasedUnits().parseUnit(file);
+    typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+    PhasedUnit phasedUnit = null;
+    PhasedUnits temporaryPhasedUnits = null;
+    
+    boolean newTypeCheckerCreated = false;
+    if (srcDir==null || typeChecker == null) {
+      typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
+      typeChecker.getPhasedUnits().parseUnit(file);      
+      phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
+      newTypeCheckerCreated = true;
     }
-    else {
-      typeChecker.getPhasedUnits().parseUnit(file, srcDir);
+    else {        
+        temporaryPhasedUnits = new PhasedUnits(typeChecker.getContext(), typeChecker.getPhasedUnits().getModuleBuilder());
+        temporaryPhasedUnits.parseUnit(file, srcDir);         
+        phasedUnit = temporaryPhasedUnits.getPhasedUnit(file);
+        
     }
-    PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
     
     if (phasedUnit!=null) {
       annotations.clear();
@@ -263,9 +218,32 @@ public class CeylonParseController extends ParseControllerBase implements IParse
       // TODO manage canceling and parsing errors
       if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
-      typeChecker.process();
+      if (newTypeCheckerCreated) {
+          typeChecker.process();
+      }
+      else {
+          List<PhasedUnit> listOfUnits = temporaryPhasedUnits.getPhasedUnits();
+          for (PhasedUnit pu : listOfUnits) {
+              pu.validateTree();
+              pu.scanDeclarations();
+          }
+          for (PhasedUnit pu : listOfUnits) {
+              pu.scanTypeDeclarations();
+          }
+          for (PhasedUnit pu: listOfUnits) {
+              pu.validateRefinement();
+          }
+          for (PhasedUnit pu : listOfUnits) {
+              pu.analyseTypes();
+          }
+          for (PhasedUnit pu: listOfUnits) {
+              pu.analyseFlow();
+          }
+          for (PhasedUnit pu: listOfUnits) {
+              pu.display();
+          }
+      }
       fCurrentAst = phasedUnit.getCompilationUnit();
-      context = typeChecker.getContext();
 
       if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
@@ -347,7 +325,11 @@ public class CeylonParseController extends ParseControllerBase implements IParse
   }
   
   public Context getContext() {
-    return context;
+    return typeChecker.getContext();
+  }
+  
+  public PhasedUnits getPhasedUnits() {
+      return typeChecker.getPhasedUnits();
   }
   
   public Set<Integer> getAnnotations() {

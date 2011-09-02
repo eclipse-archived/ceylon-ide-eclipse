@@ -1,13 +1,102 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.java.hosted.ProjectUtils;
+import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
+import org.eclipse.imp.model.ICompilationUnit;
+import org.eclipse.imp.model.IPathEntry;
+import org.eclipse.imp.model.ISourceProject;
+import org.eclipse.imp.model.ModelFactory;
+import org.eclipse.imp.model.IPathEntry.PathEntryType;
+import org.eclipse.imp.model.ModelFactory.IFactoryExtender;
 import org.eclipse.imp.runtime.PluginBase;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.osgi.framework.BundleContext;
 
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
 public class CeylonPlugin extends PluginBase {
+
+	private static final class CeylonFactoryExtender implements
+	    IFactoryExtender {
+	public void extend(ISourceProject project) {
+            initializeBuildPathFromJavaProject(project);
+        }
+
+	public void extend(ICompilationUnit unit) { }
+
+	/**
+         * Read the IJavaProject classpath configuration and populate the ISourceProject's
+         * build path accordingly.
+         */
+        public void initializeBuildPathFromJavaProject(ISourceProject project) {
+            IJavaProject javaProject= JavaCore.create(project.getRawProject());
+            if (javaProject.exists()) {
+                try {
+                    IClasspathEntry[] cpEntries= javaProject.getResolvedClasspath(true);
+                    List<IPathEntry> buildPath= new ArrayList<IPathEntry>(cpEntries.length);
+                    for(int i= 0; i < cpEntries.length; i++) {
+                        IClasspathEntry entry= cpEntries[i];
+                        IPathEntry.PathEntryType type;
+                        IPath path= entry.getPath();
+
+                        switch (entry.getEntryKind()) {
+                        case IClasspathEntry.CPE_CONTAINER:
+                            type= PathEntryType.CONTAINER;
+                            break;
+                        case IClasspathEntry.CPE_LIBRARY:
+                            type= PathEntryType.ARCHIVE;
+                            break;
+                        case IClasspathEntry.CPE_PROJECT:
+                            type= PathEntryType.PROJECT;
+                            break;
+                        case IClasspathEntry.CPE_SOURCE:
+                            type= PathEntryType.SOURCE_FOLDER;
+                            break;
+                        default:
+                     // case IClasspathEntry.CPE_VARIABLE:
+                            throw new IllegalArgumentException("Encountered variable class-path entry: " + entry.getPath().toPortableString());
+                        }
+                        if (type.equals(PathEntryType.SOURCE_FOLDER))
+                        {
+                            boolean ceylonSourceFolder = false;
+                            IPath[] inclusionPatterns = entry.getInclusionPatterns(); 
+                            for (int p=0; p<inclusionPatterns.length; p++)
+                            {
+                                if (inclusionPatterns[p].lastSegment().endsWith(".ceylon"))
+                                {
+                                    ceylonSourceFolder = true;
+                                    break;
+                                }                            
+                            }
+                            if (ceylonSourceFolder)
+                            {
+                                IPathEntry pathEntry= ModelFactory.createPathEntry(type, path);
+                                buildPath.add(pathEntry);
+                            }
+                        }
+                        else
+                        {
+                            IPathEntry pathEntry= ModelFactory.createPathEntry(type, path);
+                            buildPath.add(pathEntry);
+                        }
+                    }
+                    project.setBuildPath(buildPath);
+                } catch (JavaModelException e) {
+                    ErrorHandler.reportError(e.getMessage(), e);
+                }
+            }
+        }
+    }
 
 	public static final String kPluginID = "com.redhat.ceylon.eclipse.ui";
 	public static final String kLanguageID = "ceylon";
@@ -29,8 +118,9 @@ public class CeylonPlugin extends PluginBase {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-	  super.start(context);
-    new ProjectUtils().addExtenderForJavaHostedProjects(LanguageRegistry.findLanguageByNature(CeylonNature.k_natureID));
+	  super.start(context);	  
+          ModelFactory.getInstance().installExtender(new CeylonFactoryExtender(), CeylonBuilder.LANGUAGE);
+
 	}
 
 	@Override
