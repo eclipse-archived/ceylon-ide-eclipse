@@ -4,6 +4,7 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.ModelTreeNode;
+import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
@@ -236,9 +237,14 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
   }  
 
-  public IPath getPath(Object node) {
-    if (parseController.getPath() != null) {
-      return parseController.getPath();
+  public IPath getPath(Object entity) {
+    if (entity instanceof Node) {
+      Node node= (Node) entity;
+      return parseController.getProject().getRawProject().getFile("ceylon-spec/languagesrc/current/ceylon/language/" + node.getUnit().getFilename()).getProjectRelativePath();
+    }
+    if (entity instanceof ICompilationUnit) {
+      ICompilationUnit cu= (ICompilationUnit) entity;
+      return cu.getPath();
     }
     return new Path("");
   }
