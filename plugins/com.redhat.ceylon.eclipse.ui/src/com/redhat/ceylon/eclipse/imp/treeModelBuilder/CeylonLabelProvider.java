@@ -272,13 +272,13 @@ public class CeylonLabelProvider implements ILabelProvider {
         for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
           path+="." + id.getText();
         }
-        return path.substring(1);
+        return "[" + path.substring(1) + "]";
       }
     else if (n instanceof PackageNode) {
       PackageNode pn = (PackageNode) n;
       return pn.getPackageName().isEmpty() ? 
-               "default package" : 
-               pn.getPackageName();
+               "[default package]" : 
+               "[" + pn.getPackageName() + "]";
     }
         
     return "<something>";
