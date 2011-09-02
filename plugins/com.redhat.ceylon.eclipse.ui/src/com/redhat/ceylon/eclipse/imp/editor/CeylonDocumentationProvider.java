@@ -39,7 +39,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
               Declaration refined = decl.getDeclarationModel().getRefinedDeclaration();
               TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
               String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
-              if (spkg.isEmpty()) spkg="defaut package";
+              if (spkg.isEmpty()) spkg="default package";
               documentation += "<br/>refines " + refined.getName() + " declared by " + 
                           supertype.getName() + " [" + pkg + "]";
           }
