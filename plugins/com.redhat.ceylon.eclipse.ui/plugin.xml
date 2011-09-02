@@ -187,9 +187,8 @@
   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
-            symbolicIcon="bookmark"
             presentationLayer="0"
-            contributesToHeader="false"
+            contributesToHeader="true"
             includeOnPreferencePage="true"
             label="Ceylon Refinement Indicators"
             textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
@@ -207,5 +206,17 @@
             icon="icons/over_co.gif"
             />
   </extension>
- 
+  <extension point="org.eclipse.ui.editorActions">
+        <editorContribution
+            targetID="org.eclipse.imp.runtime.impEditor"
+            id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ruler">
+                <action
+                    label="Select Ruler"
+                    class="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction"
+                    actionID="RulerClick"
+                    id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction">
+         </action>
+        </editorContribution>
+  </extension>
+  
 </plugin>
