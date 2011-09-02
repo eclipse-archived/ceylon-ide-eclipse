@@ -7,8 +7,6 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -33,10 +31,10 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
                 super.visit(that);
                 if (that.getDeclarationModel()!=null) {
                     if (that.getDeclarationModel().isActual()) {
-                        Declaration refined = that.getDeclarationModel().getRefinedDeclaration();
+                        /*Declaration refined = that.getDeclarationModel().getRefinedDeclaration();
                         TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
                         String pkg = supertype.getUnit().getPackage().getQualifiedNameString();
-                        if (pkg.isEmpty()) pkg="defaut package";
+                        if (pkg.isEmpty()) pkg="default package";*/
                         model.addAnnotation(new Annotation("com.redhat.ceylon.eclipse.ui.refinement", 
                                     false, null/*"refines " + refined.getName() + " declared by " + 
                                     supertype.getName() + " [" + pkg + "]"*/), 
