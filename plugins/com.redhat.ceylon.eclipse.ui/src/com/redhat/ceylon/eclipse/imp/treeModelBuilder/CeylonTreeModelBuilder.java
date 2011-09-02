@@ -31,11 +31,11 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 		}
 		createSubItem(pn);
 		//createSubItem(rootNode);
-		pushSubItem(rootNode.getImportList());
+		/*pushSubItem(rootNode.getImportList());
 		for (Tree.Import i: rootNode.getImportList().getImports()) {
 			createSubItem(i);
 		}
-		popSubItem();
+		popSubItem();*/
  		CeylonModelVisitor visitor = new CeylonModelVisitor(); 		
 		rootNode.visit(visitor);
 	}
@@ -52,15 +52,16 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 					!(that instanceof Tree.TypeConstraint) &&
 					!(that instanceof Tree.Variable && 
 							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
-				if (that instanceof Tree.Block) {
-					
-				}
-				else {
-					pushSubItem(that);
-					super.visitAny(that);
-					popSubItem();
-				}
-			} 
+				pushSubItem(that);
+				super.visitAny(that);
+				popSubItem();
+			}
+			else if (that instanceof Tree.ImportList || 
+			        that instanceof Tree.Import) {
+                pushSubItem(that);
+                super.visitAny(that);
+                popSubItem();
+			}
 			else {
 				if (INCLUDEALL) {
 					pushSubItem(that,-1);
