@@ -26,19 +26,14 @@ public class CeylonFoldingUpdater extends FolderBase {
 			@Override 
 			public void visit(Tree.Body body) {
                 super.visit(body);
-				makeAnnotation(body);
+                if (body.getEndToken().getLine()-body.getToken().getLine()>1) {
+                    makeAnnotation(body);
+                }
 			}
             //TODO: we should also allow multiline comments 
 			//      to be folded, but currently there is no
 			//      treenode for them!
 		}.visit((Tree.CompilationUnit) ast);
 	}
-	
-    /*public void makeRangeAnnotation(Object n) {
-        ISourcePositionLocator nodeLocator = parseController.getSourcePositionLocator();
-        DefaultRangeIndicator annotation= new DefaultRangeIndicator();
-        newAnnotations.put(annotation, 
-                new Position(nodeLocator.getStartOffset(n), nodeLocator.getEndOffset(n)));
-        annotations.add(annotation);
-    }*/
+
 }
