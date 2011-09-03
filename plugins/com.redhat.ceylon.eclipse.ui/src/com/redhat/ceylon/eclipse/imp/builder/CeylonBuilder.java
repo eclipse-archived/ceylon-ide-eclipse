@@ -10,7 +10,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
@@ -19,22 +18,18 @@ import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.IPathEntry;
+import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.runtime.PluginBase;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.imp.parser.ErrorVisitor;
+import com.redhat.ceylon.eclipse.imp.parser.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.imp.parser.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -226,14 +221,9 @@ public class CeylonBuilder extends BuilderBase {
                 MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(
                         file, null, this);
                                 
-                final IMessageHandler handler = markerCreator;
-                if (handler!=null) {
-                  phasedUnit.getCompilationUnit().visit(new ErrorVisitor(handler));      
-                }
+                phasedUnit.getCompilationUnit().visit(new ErrorVisitor(markerCreator));      
 
-                if (markerCreator instanceof MarkerCreatorWithBatching) {
-                    ((MarkerCreatorWithBatching) markerCreator).flush(monitor);
-                }
+                markerCreator.flush(monitor);
             }
             break;
         }
@@ -291,35 +281,25 @@ public class CeylonBuilder extends BuilderBase {
     protected void runParserForCompiler(final IFile file,
             IProgressMonitor monitor) {
         try {
-            IParseController parseController = new CeylonParseController();
+            CeylonParseController parseController = new CeylonParseController();
 
-            // TODO: Pick a version of the marker creator (or just go with this
-            // one)
-            // MarkerCreator markerCreator = new MarkerCreator(file,
-            // parseController, PROBLEM_MARKER_ID);
-            MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(
-                    file, parseController, this);
-
+            // Pick a version of the marker creator (or just go with this one)
+            // MarkerCreator markerCreator = new MarkerCreator(file, parseController, PROBLEM_MARKER_ID);
+            MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(file, parseController, this);
+            
             ISourceProject sourceProject = ModelFactory.open(file.getProject());
-            parseController.initialize(file.getProjectRelativePath(),
-                    sourceProject, markerCreator);
+            parseController.initialize(file.getProjectRelativePath(), sourceProject, markerCreator);
+            parseController.parse(BuilderUtils.getFileContents(file), monitor);
+            
+            markerCreator.flush(monitor);
 
-            String contents = BuilderUtils.getFileContents(file);
-            parseController.parse(contents, monitor);
-
-            if (markerCreator instanceof MarkerCreatorWithBatching) {
-                ((MarkerCreatorWithBatching) markerCreator).flush(monitor);
-            }
-        } catch (ModelException e) {
-            getPlugin()
-                    .logException(
-                            "Example builder returns without parsing due to a ModelException",
-                            e);
-        }
+          } 
+          catch (ModelException e) {
+            getPlugin().logException("Example builder returns without parsing due to a ModelException", e);
+          }
     }
     
-    public static TypeChecker getProjectTypeChecker(IProject project)
-    {
+    public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
     }
 }

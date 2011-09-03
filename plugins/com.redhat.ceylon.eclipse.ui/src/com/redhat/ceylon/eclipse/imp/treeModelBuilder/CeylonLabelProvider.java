@@ -207,7 +207,7 @@ public class CeylonLabelProvider implements ILabelProvider {
     else if (element instanceof CeylonElement) {
       CeylonElement ce = (CeylonElement) element;
       String pkg = ce.getNode().getUnit().getPackage().getQualifiedNameString();
-      if (pkg.isEmpty()) pkg="defaut package";
+      if (pkg.isEmpty()) pkg="default package";
       return getLabelFor(ce.getNode()) +
     		  " [" + pkg +
     		  "] - " + ce.getFile().getFullPath().toString() + 
@@ -272,13 +272,13 @@ public class CeylonLabelProvider implements ILabelProvider {
         for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
           path+="." + id.getText();
         }
-        return path.substring(1);
+        return "[" + path.substring(1) + "]";
       }
     else if (n instanceof PackageNode) {
       PackageNode pn = (PackageNode) n;
       return pn.getPackageName().isEmpty() ? 
-               "default package" : 
-               pn.getPackageName();
+               "[default package]" : 
+               "[" + pn.getPackageName() + "]";
     }
         
     return "<something>";
