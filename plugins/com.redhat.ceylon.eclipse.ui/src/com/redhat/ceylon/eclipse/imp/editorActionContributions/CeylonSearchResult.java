@@ -16,9 +16,9 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
 		implements IEditorMatchAdapter, IFileMatchAdapter {
-	FindReferencesSearchQuery query;
+	ISearchQuery query;
 	
-	CeylonSearchResult(FindReferencesSearchQuery query) {
+	CeylonSearchResult(ISearchQuery query) {
 		this.query = query;
 	}
 	

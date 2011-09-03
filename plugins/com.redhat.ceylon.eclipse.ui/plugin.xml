@@ -142,12 +142,81 @@
       </editorActionContributor>
    </extension>
    <extension
-	id="com.redhat.ceylon.ui.searchResults"
-	point="org.eclipse.search.searchResultViewPages">
-	<viewPage
-		id="org.eclipse.search.searchResultViewPage"
-		searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
-		class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage">
-	</viewPage>
-</extension>
+         id="com.redhat.ceylon.ui.searchResults"
+         point="org.eclipse.search.searchResultViewPages">
+      <viewPage
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage"
+            searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
+            id="org.eclipse.search.searchResultViewPage">
+      </viewPage>
+   </extension>
+   <extension
+         point="org.eclipse.search.searchPages">
+      <page
+            showScopeSection="true"
+            canSearchEnclosingProjects="true"
+            label="Ceylon Search"
+            enabled="true"
+            extensions="ceylon:90"
+            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage"
+            sizeHint="460,160"
+            id="org.redhat.ceylon.ui.searchPage">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.autoEditStrategy">
+      <autoEditStrategy
+            class="com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy"
+            language="ceylon">
+      </autoEditStrategy>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.editorService">
+         <editorService
+               language="ceylon"
+               class="com.redhat.ceylon.eclipse.imp.editor.CeylonAnnotationCreator">
+         </editorService>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+         name="com.redhat.ceylon.eclipse.ui.refinement"
+         markerSeverity="1">
+      </type>
+  </extension>
+  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement"
+            presentationLayer="0"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            label="Ceylon Refinement Indicators"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
+            textPreferenceValue="false"
+            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
+            colorPreferenceValue="000,255,000"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
+            overviewRulerPreferenceValue="false"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
+            highlightPreferenceValue="false"
+            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
+            textStylePreferenceValue="BOX"
+            icon="icons/over_co.gif"
+            />
+  </extension>
+  <extension point="org.eclipse.ui.editorActions">
+        <editorContribution
+            targetID="org.eclipse.imp.runtime.impEditor"
+            id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ruler">
+                <action
+                    label="Select Ruler"
+                    class="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction"
+                    actionID="RulerClick"
+                    id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction">
+         </action>
+        </editorContribution>
+  </extension>
+  
 </plugin>

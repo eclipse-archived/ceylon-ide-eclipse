@@ -5,38 +5,53 @@ import java.util.List;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IDocumentationProvider;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonDocumentationProvider implements IDocumentationProvider {
 
   public String getDocumentation(Object entity, IParseController ctlr) {
-    if (entity instanceof Declaration) {
-      return getDocumentation((Declaration) entity);
+    if (entity instanceof Tree.Declaration) {
+      return getDocumentation((Tree.Declaration) entity);
     }
     else {
       return null;
     }
   }
 
-  public static String getDocumentation(Declaration decl) {
+  public static String getDocumentation(Tree.Declaration decl) {
 	  String documentation = "";
 	  if (decl!=null) {
+	  String pkg = decl.getUnit().getPackage().getQualifiedNameString();
+	  if (pkg.isEmpty()) pkg="default package";
+	  documentation += "[" + pkg + "]<br/>";
       documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
     		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
       
-      AnnotationList annotationList = decl.getAnnotationList();
+      if (decl.getDeclarationModel()!=null) {
+          if (decl.getDeclarationModel().isClassOrInterfaceMember()) {
+              TypeDeclaration declaring = (TypeDeclaration) decl.getDeclarationModel().getContainer();
+              documentation += "<br/>declared by " + declaring.getName() + " [" + pkg + "]";
+          }   
+          if (decl.getDeclarationModel().isActual()) {
+              Declaration refined = decl.getDeclarationModel().getRefinedDeclaration();
+              TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
+              String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
+              if (spkg.isEmpty()) spkg="default package";
+              documentation += "<br/>refines " + refined.getName() + " declared by " + 
+                          supertype.getName() + " [" + pkg + "]";
+          }
+      }
+      
+      Tree.AnnotationList annotationList = decl.getAnnotationList();
       if (annotationList != null)
       {
-        List<Annotation> annotations = annotationList.getAnnotations();
-        for (Annotation annotation : annotations)
+        List<Tree.Annotation> annotations = annotationList.getAnnotations();
+        for (Tree.Annotation annotation : annotations)
         {
-          Primary annotPrim = annotation.getPrimary();
+            Tree.Primary annotPrim = annotation.getPrimary();
           if (annotPrim != null)
           {
             com.redhat.ceylon.compiler.typechecker.model.Declaration annotDecl = annotPrim.getDeclaration(); 
@@ -44,8 +59,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             String name = annotDecl.getName();
             if ("doc".equals(name))
             {
-              PositionalArgumentList argList = annotation.getPositionalArgumentList();
-              List<PositionalArgument> args = argList.getPositionalArguments();
+                Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+              List<Tree.PositionalArgument> args = argList.getPositionalArguments();
               if (args.size() > 0)
               {
                 String docLine = args.get(0).getExpression().getTerm().getText();

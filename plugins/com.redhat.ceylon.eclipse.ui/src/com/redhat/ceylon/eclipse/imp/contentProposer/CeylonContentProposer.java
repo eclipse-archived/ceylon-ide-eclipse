@@ -312,6 +312,11 @@ public class CeylonContentProposer implements IContentProposer {
         }
       }
     }
+    if (d.isToplevel()) {
+	  String pkg = d.getUnit().getPackage().getQualifiedNameString();
+	  if (pkg.isEmpty()) pkg="default package";
+	  result += " [" + pkg + "]";
+    }
     return result;
   }
   
