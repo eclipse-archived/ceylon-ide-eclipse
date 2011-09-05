@@ -188,7 +188,7 @@ public class CeylonParseController extends ParseControllerBase {
         }
       }
     }
-        
+    
     typeChecker = CeylonBuilder.getProjectTypeChecker(project);
     PhasedUnit phasedUnit = null;
     PhasedUnits temporaryPhasedUnits = null;
@@ -201,7 +201,8 @@ public class CeylonParseController extends ParseControllerBase {
       newTypeCheckerCreated = true;
     }
     else {        
-        temporaryPhasedUnits = new PhasedUnits(typeChecker.getContext(), typeChecker.getPhasedUnits().getModuleBuilder());
+        temporaryPhasedUnits = new PhasedUnits(typeChecker.getContext(), 
+                typeChecker.getPhasedUnits().getModuleBuilder());
         temporaryPhasedUnits.parseUnit(file, srcDir);         
         phasedUnit = temporaryPhasedUnits.getPhasedUnit(file);
         
