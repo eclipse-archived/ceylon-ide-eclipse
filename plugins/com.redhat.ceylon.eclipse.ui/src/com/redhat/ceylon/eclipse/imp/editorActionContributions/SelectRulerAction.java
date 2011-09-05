@@ -9,7 +9,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class SelectRulerAction extends AbstractRulerActionDelegate {
     @Override
     protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-        System.out.println("why doesn't anymore call me?");
         return new CeylonSelectAnnotationRulerAction(EditorActionMessages.ResBundle, 
                 "CeylonSelectAnnotationRulerAction.", editor, rulerInfo);
     }
