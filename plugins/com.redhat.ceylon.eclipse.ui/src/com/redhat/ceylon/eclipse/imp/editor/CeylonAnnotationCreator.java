@@ -21,6 +21,7 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
     @Override
     public void update(IParseController parseController, IProgressMonitor monitor) {
         final CeylonParseController cpc = (CeylonParseController) parseController;
+        if (cpc.getRootNode()==null) return;
         final IAnnotationModel model = getEditor().getDocumentProvider()
                 .getAnnotationModel(getEditor().getEditorInput());
         /*model.addAnnotation( new DefaultRangeIndicator(), 
