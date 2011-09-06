@@ -1,13 +1,19 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
+import org.eclipse.imp.model.ISourceEntity;
+import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -239,8 +245,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public IPath getPath(Object entity) {
     if (entity instanceof Node) {
-      Node node= (Node) entity;
-      return parseController.getProject().getRawProject().getFile("ceylon-spec/languagesrc/current/ceylon/language/" + node.getUnit().getFilename()).getProjectRelativePath();
+        Node node= (Node) entity;
+        Unit unit = node.getUnit();
+        String fileName = unit.getFilename();
+        String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
+        PhasedUnit phasedUnit = parseController.getPhasedUnits().getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
+        if (phasedUnit != null) {
+            IFileVirtualFile file = (IFileVirtualFile) phasedUnit.getUnitFile();
+            IFile fileResource = (IFile) file.getResource();
+            return fileResource.getFullPath();
+        }
     }
     if (entity instanceof ICompilationUnit) {
       ICompilationUnit cu= (ICompilationUnit) entity;
