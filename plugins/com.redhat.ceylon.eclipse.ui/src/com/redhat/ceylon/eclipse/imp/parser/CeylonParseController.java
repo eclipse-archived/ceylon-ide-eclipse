@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,17 +30,17 @@ import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -54,7 +53,7 @@ public class CeylonParseController extends ParseControllerBase {
 
   private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
   private CeylonSourcePositionLocator sourcePositionLocator;
-  private CeylonParser parser;
+  private CommonTokenStream tokenStream;
   private final Set<Integer> annotations = new HashSet<Integer>();
   private TypeChecker typeChecker;
 
@@ -191,8 +190,10 @@ public class CeylonParseController extends ParseControllerBase {
             List<IPathEntry> buildPath = sourceProject.getBuildPath();
 
             for (IPathEntry buildPathEntry : buildPath) {
-                if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && buildPathEntry.getPath().isPrefixOf(resolvedPath)) {
-                    srcDir = new IFolderVirtualFile(sourceProject.getRawProject(), buildPathEntry.getPath().removeFirstSegments(1));
+                if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && 
+                        buildPathEntry.getPath().isPrefixOf(resolvedPath)) {
+                    srcDir = new IFolderVirtualFile(sourceProject.getRawProject(), 
+                            buildPathEntry.getPath().removeFirstSegments(1));
                     break;
                 }
             }
@@ -202,124 +203,109 @@ public class CeylonParseController extends ParseControllerBase {
         PhasedUnit phasedUnit = null;
         List<PhasedUnit> phasedUnitsToTypeCheck = new ArrayList<PhasedUnit>();
 
-        boolean newTypeCheckerCreated = false;
         if (srcDir==null || typeChecker == null) {
             typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-            typeChecker.getPhasedUnits().parseUnit(file);      
-            phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
-            newTypeCheckerCreated = true;
+            typeChecker.process();
+        }
+
+        Tree.CompilationUnit cu;
+        CeylonLexer lexer;
+        CeylonParser parser;
+        try {
+            lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream()));
+            tokenStream = new CommonTokenStream(lexer);
+            parser = new CeylonParser(tokenStream);
+            cu = parser.compilationUnit();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return fCurrentAst;
+        } catch (RecognitionException e) {
+            e.printStackTrace();
+            return fCurrentAst;
+        }
+
+        List<LexError> lexerErrors = lexer.getErrors();
+        for (LexError le : lexerErrors) {
+            //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
+            cu.addLexError(le);
+        }
+        lexerErrors.clear();
+
+        List<ParseError> parserErrors = parser.getErrors();
+        for (ParseError pe : parserErrors) {
+            //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
+            cu.addParseError(pe);
+        }
+        parserErrors.clear();
+
+        PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
+        Package pkg = null;
+        if (builtPhasedUnit != null) {
+            // Editing an already built file
+            pkg = new TemporaryPackage(builtPhasedUnit.getPackage());
         }
         else {
-            Context context = typeChecker.getContext();
-            PhasedUnits builtPhasedUnits = typeChecker.getPhasedUnits();
-            ModuleBuilder moduleBuilder = builtPhasedUnits.getModuleBuilder(); 
-            Tree.CompilationUnit cu;
-
-            CeylonLexer lexer;
-            CeylonParser parser;
-            try {
-                InputStream is = file.getInputStream();
-                ANTLRInputStream input = new ANTLRInputStream(is);
-                lexer = new CeylonLexer(input);
-
-                CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-                parser = new CeylonParser(tokens);
-                parser.compilationUnit();
-                cu = parser.getCompilationUnit();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return fCurrentAst;
-            } catch (RecognitionException e) {
-                e.printStackTrace();
-                return fCurrentAst;
-            }
-
-            List<LexError> lexerErrors = lexer.getErrors();
-            for (LexError le : lexerErrors) {
-                //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
-                cu.addLexError(le);
-            }
-            lexerErrors.clear();
-
-            List<ParseError> parserErrors = parser.getErrors();
-            for (ParseError pe : parserErrors) {
-                //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
-                cu.addParseError(pe);
-            }
-            parserErrors.clear();
-
-            PhasedUnit builtPhasedUnit = builtPhasedUnits.getPhasedUnit(file);
-            Package pkg = null;
-            if (builtPhasedUnit != null) {
-                // Editing an already built file
-                pkg = new TemporaryPackage(builtPhasedUnit.getPackage());
-            }
-            else {
-                // Editing a new file
-                // Retrieve the target package from the file src-relative path  
-                String packageName = file.getPath().replace(srcDir.getPath() + "/", "").replace("/" + file.getName(), "").replace('/', '.');
-                for (Module module : context.getModules().getListOfModules()) {
-                    for (Package p : module.getPackages()) {
-                        if (p.getQualifiedNameString().equals(packageName)) {
-                            pkg = p;
-                            break;
-                        }
-                        if (pkg != null)
-                            break;
+            // Editing a new file
+            // Retrieve the target package from the file src-relative path  
+            String packageName = file.getPath().replace(srcDir.getPath() + "/", "")
+                    .replace("/" + file.getName(), "").replace('/', '.');
+            Modules modules = typeChecker.getContext().getModules();
+            for (Module module : modules.getListOfModules()) {
+                for (Package p : module.getPackages()) {
+                    if (p.getQualifiedNameString().equals(packageName)) {
+                        pkg = p;
+                        break;
                     }
-                }
-                if (pkg == null) {
-                    // Add the default package
-                    pkg = context.getModules().getDefaultModule().getPackages().get(0);
-
-                    // TODO : iterate through parents to get the sub-package 
-                    // in which the package has been created, until we find the module
-                    // Then the package can be created.
-                    // However this should preferably be done on notification of the 
-                    // resource creation
-                    // A more global/systematic integration between the model element 
-                    // (modules, packages, Units) and the IResourceModel should
-                    // maybe be considered. But for now it is not required.
+                    if (pkg != null)
+                        break;
                 }
             }
-            phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, typeChecker.getPhasedUnits().getModuleBuilder(), typeChecker.getContext());
-            phasedUnit.setParser(parser);
-            phasedUnitsToTypeCheck.add(phasedUnit);
+            if (pkg == null) {
+                // Add the default package
+                pkg = modules.getDefaultModule().getPackages().get(0);
+
+                // TODO : iterate through parents to get the sub-package 
+                // in which the package has been created, until we find the module
+                // Then the package can be created.
+                // However this should preferably be done on notification of the 
+                // resource creation
+                // A more global/systematic integration between the model element 
+                // (modules, packages, Units) and the IResourceModel should
+                // maybe be considered. But for now it is not required.
+            }
         }
+        phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
+                typeChecker.getPhasedUnits().getModuleBuilder(), 
+                typeChecker.getContext());
+        phasedUnitsToTypeCheck.add(phasedUnit);
 
         if (phasedUnit!=null) {
             annotations.clear();
             phasedUnit.getCompilationUnit().visit(new AnnotationVisitor(annotations));
-            parser = phasedUnit.getParser();
 
             // TODO manage canceling and parsing errors
             if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
 
-            if (newTypeCheckerCreated) {
-                typeChecker.process();
+            for (PhasedUnit pu : phasedUnitsToTypeCheck) {
+                pu.validateTree();
+                pu.scanDeclarations(false);
             }
-            else {
-                for (PhasedUnit pu : phasedUnitsToTypeCheck) {
-                    pu.validateTree();
-                    pu.scanDeclarations(false);
-                }
-                for (PhasedUnit pu : phasedUnitsToTypeCheck) {
-                    pu.scanTypeDeclarations();
-                }
-                for (PhasedUnit pu: phasedUnitsToTypeCheck) {
-                    pu.validateRefinement();
-                }
-                for (PhasedUnit pu : phasedUnitsToTypeCheck) {
-                    pu.analyseTypes();
-                }
-                for (PhasedUnit pu: phasedUnitsToTypeCheck) {
-                    pu.analyseFlow();
-                }
-                for (PhasedUnit pu: phasedUnitsToTypeCheck) {
-                    pu.display();
-                }
+            for (PhasedUnit pu : phasedUnitsToTypeCheck) {
+                pu.scanTypeDeclarations();
             }
+            for (PhasedUnit pu: phasedUnitsToTypeCheck) {
+                pu.validateRefinement();
+            }
+            for (PhasedUnit pu : phasedUnitsToTypeCheck) {
+                pu.analyseTypes();
+            }
+            for (PhasedUnit pu: phasedUnitsToTypeCheck) {
+                pu.analyseFlow();
+            }
+            for (PhasedUnit pu: phasedUnitsToTypeCheck) {
+                pu.display();
+            }
+            
             fCurrentAst = phasedUnit.getCompilationUnit();
 
             if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
@@ -388,20 +374,10 @@ public class CeylonParseController extends ParseControllerBase {
 
 
   public CommonTokenStream getTokenStream() {
-    CeylonParser parser = getParser();
-    if (parser==null) {
-      return null;
-    }
-    else {
-      return (CommonTokenStream) parser.getTokenStream();
-    }
+    return tokenStream;
   }
 
 
-  public CeylonParser getParser() {
-    return parser;
-  }
-  
   public Context getContext() {
     return typeChecker.getContext();
   }
