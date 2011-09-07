@@ -42,7 +42,9 @@ public class CeylonFoldingUpdater extends FolderBase {
             @Override 
             public void visit(Tree.ImportList importList) {
                 super.visit(importList);
-                foldIfNecessary(importList);
+                if (!importList.getImports().isEmpty()) {
+                    foldIfNecessary(importList);
+                }
             }
             /*@Override 
             public void visit(Tree.Import that) {
