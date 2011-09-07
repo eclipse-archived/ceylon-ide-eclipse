@@ -11,9 +11,9 @@ import org.eclipse.imp.services.IOccurrenceMarker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
-import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
+import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class CeylonOccurrenceMarker implements ILanguageService,
 		IOccurrenceMarker {

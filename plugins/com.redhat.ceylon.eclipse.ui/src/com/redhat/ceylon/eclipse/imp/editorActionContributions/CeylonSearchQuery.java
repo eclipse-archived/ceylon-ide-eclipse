@@ -10,8 +10,8 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.ui.SearchVisitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.SearchVisitor;
 
 class CeylonSearchQuery implements ISearchQuery {
 	

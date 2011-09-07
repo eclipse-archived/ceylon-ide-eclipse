@@ -18,11 +18,11 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.ui.FindDeclarationVisitor;
-import com.redhat.ceylon.compiler.typechecker.ui.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class RenameRefactoring extends Refactoring {
 	private final IFile fSourceFile;
