@@ -206,7 +206,10 @@ public class CeylonLabelProvider implements ILabelProvider {
     }
     else if (element instanceof CeylonElement) {
       CeylonElement ce = (CeylonElement) element;
-      String pkg = ce.getNode().getUnit().getPackage().getQualifiedNameString();
+      String pkg = ce.getNode()
+              .getUnit()
+              .getPackage()
+              .getQualifiedNameString();
       if (pkg.isEmpty()) pkg="default package";
       return getLabelFor(ce.getNode()) +
     		  " [" + pkg +
