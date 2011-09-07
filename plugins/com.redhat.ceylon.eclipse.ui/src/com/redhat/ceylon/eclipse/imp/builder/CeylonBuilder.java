@@ -64,6 +64,27 @@ public class CeylonBuilder extends BuilderBase {
     private final Collection<IFile> fSourcesToCompileTogether = new HashSet<IFile>();
 
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
+    
+    public static List<PhasedUnit> getUnits(IProject project) {
+        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
+        TypeChecker tc = typeCheckers.get(project);
+        for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
+            result.add(pu);
+        }
+        return result;
+    }
+
+    public static List<PhasedUnit> getUnits(String[] projects) {
+        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
+        for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
+            for (String pname: projects) {
+                if (me.getKey().getName().equals(pname)) {
+                    result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+                }
+            }
+        }
+        return result;
+    }
 
     protected PluginBase getPlugin() {
         return CeylonPlugin.getInstance();
@@ -217,9 +238,8 @@ public class CeylonBuilder extends BuilderBase {
             typeCheckers.put(project, typeChecker);
             for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits())
             {
-                IFile file = (IFile) ((ResourceVirtualFile)(phasedUnit.getUnitFile())).getResource();
                 MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(
-                        file, null, this);
+                        getFile(phasedUnit), null, this);
                                 
                 phasedUnit.getCompilationUnit().visit(new ErrorVisitor(markerCreator));      
 
@@ -228,6 +248,10 @@ public class CeylonBuilder extends BuilderBase {
             break;
         }
         return result;
+    }
+
+    public static IFile getFile(PhasedUnit phasedUnit) {
+        return (IFile) ((ResourceVirtualFile)(phasedUnit.getUnitFile())).getResource();
     }
 
     /**

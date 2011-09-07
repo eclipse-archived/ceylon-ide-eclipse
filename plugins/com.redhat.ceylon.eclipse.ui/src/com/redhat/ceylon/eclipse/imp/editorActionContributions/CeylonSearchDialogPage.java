@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
@@ -17,8 +17,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IFileEditorInput;
 
 public class CeylonSearchDialogPage extends DialogPage 
 		implements ISearchPage/*, IReplacePage*/ {
@@ -97,17 +97,29 @@ public class CeylonSearchDialogPage extends DialogPage
 	@Override
 	public boolean performAction() {
 		int scope = container.getSelectedScope();
-		String[] projectNames = container.getSelectedProjectNames();
-		//CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-		CeylonParseController cpc = new CeylonParseController();
-		IFile file = null;
-		cpc.parse(file.getFullPath().toPortableString(), null);
-		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(cpc, 
-				searchString, file, references, declarations, 
+		String[] projectNames;
+		switch (scope) {
+		    case ISearchPageContainer.WORKSPACE_SCOPE:
+		        throw new RuntimeException();
+		    case ISearchPageContainer.SELECTED_PROJECTS_SCOPE:
+		        projectNames = container.getSelectedProjectNames();
+		        break;
+		    case ISearchPageContainer.SELECTION_SCOPE:
+	            projectNames = new String[] { getProject(container.getActiveEditorInput()).getName() };
+	            break;
+	        default:
+                throw new RuntimeException();
+		}
+		
+		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(
+				searchString, projectNames, references, declarations, 
 				caseSensitive));
 		return true;
 	}
 
+    public static IProject getProject(IEditorInput editor) {
+        return ((IFileEditorInput) editor).getFile().getProject();
+    }
 	/*@Override
 	public boolean performReplace() {
 		// TODO Auto-generated method stub

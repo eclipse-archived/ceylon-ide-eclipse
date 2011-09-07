@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -9,25 +8,24 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.ui.SearchVisitor;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.refactoring.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 class CeylonSearchQuery implements ISearchQuery {
 	
-	private final CeylonParseController cpc;
 	private final String string;
-	private final IFile file;
+    private final String[] projects;
 	private final SearchVisitor sv;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
+    private int count = 0;
 
-	CeylonSearchQuery(CeylonParseController cpc, String string, IFile file,
+	CeylonSearchQuery(String string, String[] projects,
 			final boolean includeReferences, final boolean includeDeclarations,
 			final boolean caseSensitive) {
-		this.cpc = cpc;
 		this.string = string;
-		this.file = file;
+		this.projects = projects;
 		sv = new SearchVisitor( new SearchVisitor.Matcher() {
 			@Override
 			public boolean matches(String string) {
@@ -52,15 +50,20 @@ class CeylonSearchQuery implements ISearchQuery {
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-		sv.visit(cpc.getRootNode());
-		//TODO: should really add these as we find them:
-		for (Node node: sv.getNodes()) {
-			FindContainerVisitor fcv = new FindContainerVisitor(node);
-			cpc.getRootNode().visit(fcv);
-			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), file, 
-					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
-					node.getToken()));
-		}
+	    for (PhasedUnit pu: CeylonBuilder.getUnits(projects)) {
+            pu.getCompilationUnit().visit(sv);
+    		//TODO: should really add these as we find them:
+    		for (Node node: sv.getNodes()) {
+    			FindContainerVisitor fcv = new FindContainerVisitor(node);
+    			pu.getCompilationUnit().visit(fcv);
+    			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
+    			        CeylonBuilder.getFile(pu), 
+    					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+    					node.getToken()));
+    		}
+    		count+=sv.getNodes().size();
+    		sv.getNodes().clear();
+        }
 		return Status.OK_STATUS;
 	}
 
@@ -71,7 +74,7 @@ class CeylonSearchQuery implements ISearchQuery {
 
 	@Override
 	public String getLabel() {
-		return "Displaying " + sv.getNodes().size() + 
+		return "Displaying " + count + 
 				" matches of '" + string + "'";
 	}
 
