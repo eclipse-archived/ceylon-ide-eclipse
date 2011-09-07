@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.refactoring.FindRefactoringReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 class FindReferencesSearchQuery implements ISearchQuery {
@@ -26,20 +27,7 @@ class FindReferencesSearchQuery implements ISearchQuery {
 	FindReferencesSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		this.project = project;
-		frv = new FindReferenceVisitor(referencedDeclaration) {
-		    @Override
-		    protected boolean equals(Declaration x, Declaration y) {
-		        //TODO: surely there's got to be a more robust
-		        //      way to do this:
-		        try {
-		            return x.getQualifiedName().equals(y.getQualifiedName());
-		        }
-		        catch (UnsupportedOperationException uoe) {
-		            //a union or intersection type
-		            return false;
-		        }
-		    }
-		};
+		frv = new FindRefactoringReferenceVisitor(referencedDeclaration);
 	}
 
 	@Override

@@ -37,7 +37,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class InlineRefactoring extends Refactoring {
-	private final IProject fSourceProject;
+	private final IProject fProject;
 	//private final Node fNode;
 	//private final ITextEditor fEditor;
 	//private final CeylonParseController parseController;
@@ -55,34 +55,19 @@ public class InlineRefactoring extends Refactoring {
 
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
-			fSourceProject = fileInput.getFile().getProject();
+			fProject = fileInput.getFile().getProject();
 			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
 			dec = CeylonReferenceResolver.getReferencedDeclaration(node);
-			FindReferenceVisitor frv = new FindReferenceVisitor(dec) {
-				@Override
-				public void visit(Tree.ExtendedTypeExpression that) {}
-	            @Override
-	            protected boolean equals(Declaration x, Declaration y) {
-	                //TODO: surely there's got to be a more robust
-	                //      way to do this:
-	                try {
-	                    return x.getQualifiedName().equals(y.getQualifiedName());
-	                }
-	                catch (UnsupportedOperationException uoe) {
-	                    //a union or intersection type
-	                    return false;
-	                }
-	            }
-			};
+			FindReferenceVisitor frv = new FindRefactoringReferenceVisitor(dec);
 			count = 0;
-	        for (PhasedUnit pu: CeylonBuilder.getUnits(fSourceProject)) {
+	        for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
 	            pu.getCompilationUnit().visit(frv);
 	            count += frv.getNodes().size();
 	            frv.getNodes().clear();
 	        }
 		} 
 		else {
-		    fSourceProject = null;
+		    fProject = null;
 			dec = null;
 			count = 0;
 		}
@@ -121,13 +106,8 @@ public class InlineRefactoring extends Refactoring {
         Tree.Term t=null;
         
         if (dec!=null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(fSourceProject)) {
-    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec) {
-    			    @Override
-    			    protected boolean equals(Declaration x, Declaration y) {
-                        return x.getQualifiedName().equals(y.getQualifiedName());
-    			    }
-    			};
+            for (final PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
+    			FindDeclarationVisitor fdv = new FindRefactoringDeclarationVisitor(dec);
     			pu.getCompilationUnit().visit(fdv);
     			declarationNode = fdv.getDeclarationNode();
     			if (declarationNode!=null) {
@@ -170,7 +150,7 @@ public class InlineRefactoring extends Refactoring {
         final Tree.Term term = t;
 		
         if (declarationNode!=null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(fSourceProject)) {
+            for (final PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
                 final TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
                 tfc.setEdit(new MultiTextEdit());
     			final String template = toString(term, declarationUnit.getTokenStream());
