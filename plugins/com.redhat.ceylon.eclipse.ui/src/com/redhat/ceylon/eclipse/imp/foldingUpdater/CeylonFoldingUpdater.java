@@ -54,7 +54,9 @@ public class CeylonFoldingUpdater extends FolderBase {
 			@Override 
 			public void visit(Tree.Body that) {
                 super.visit(that);
-                foldIfNecessary(that);
+                if (that.getToken()!=null) { //for "else if"
+                    foldIfNecessary(that);
+                }
 			}
             @Override 
             public void visit(Tree.NamedArgumentList that) {
