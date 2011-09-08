@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class ExtractFunctionRefactoring extends Refactoring {
+    
 	public static final class FindLocalReferencesVisitor extends Visitor {
 		List<Tree.BaseMemberExpression> localReferences = 
 				new ArrayList<Tree.BaseMemberExpression>();
