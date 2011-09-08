@@ -1,35 +1,37 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.jface.action.Action;
-import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IFileEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
-class FindReferencesAction extends Action {
-	private final UniversalEditor editor;
+class FindReferencesAction extends FindAction {
 
 	FindReferencesAction(UniversalEditor editor) {
-		super("Find References");
-		this.editor = editor;
+		super("Find References", editor);
 		setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
 	}
-
+	
 	@Override
-	public void run() {
-		CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-		Node node = cpc.getSourcePositionLocator().findNode(cpc.getRootNode(), 
-				editor.getSelection().x, editor.getSelection().x+editor.getSelection().y);
-		NewSearchUI.runQueryInBackground(new FindReferencesSearchQuery(
-		        CeylonReferenceResolver.getReferencedDeclaration(node), getProject(editor)));
+	public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {
+	    return new FindSearchQuery(declaration, project) {
+	        @Override
+	        protected Set<Node> getNodes(PhasedUnit pu) {
+	            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+	            pu.getCompilationUnit().visit(frv);
+	            return frv.getNodes();
+	        }
+	        @Override
+	        protected String labelString() {
+	            return "references to";
+	        }
+        };
 	}
 
-    public static IProject getProject(UniversalEditor editor) {
-        return ((IFileEditorInput) editor.getEditorInput()).getFile().getProject();
-    }
 }

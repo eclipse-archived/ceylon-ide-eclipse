@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -13,16 +15,15 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
-class FindReferencesSearchQuery implements ISearchQuery {
+abstract class FindSearchQuery implements ISearchQuery {
 	
 	private final Declaration referencedDeclaration;
 	private final IProject project;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
 
-	FindReferencesSearchQuery(Declaration referencedDeclaration, IProject project) {
+	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		this.project = project;
 	}
@@ -30,10 +31,9 @@ class FindReferencesSearchQuery implements ISearchQuery {
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 	    for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-	        FindReferenceVisitor frv = new FindReferenceVisitor(referencedDeclaration);
-	        pu.getCompilationUnit().visit(frv);
+	        Set<Node> nodes = getNodes(pu);
 	        //TODO: should really add these as we find them:
-    		for (Node node: frv.getNodes()) {
+            for (Node node: nodes) {
     			FindContainerVisitor fcv = new FindContainerVisitor(node);
     			pu.getCompilationUnit().visit(fcv);
                 if (node.getToken()==null) {
@@ -46,10 +46,14 @@ class FindReferencesSearchQuery implements ISearchQuery {
         					node.getToken()));
                 }
     		}
-    		count+=frv.getNodes().size();
+    		count+=nodes.size();
         }
 		return Status.OK_STATUS;
 	}
+
+    protected abstract Set<Node> getNodes(PhasedUnit pu);
+    
+    protected abstract String labelString();
 
 	@Override
 	public ISearchResult getSearchResult() {
@@ -58,8 +62,8 @@ class FindReferencesSearchQuery implements ISearchQuery {
 
 	@Override
 	public String getLabel() {
-		return "Displaying " + count + " references to '" + 
-		        referencedDeclaration.getName() + "'";
+		return "Displaying " + count + " " + labelString() + 
+		        " '" + referencedDeclaration.getName() + "'";
 	}
 
 	@Override
