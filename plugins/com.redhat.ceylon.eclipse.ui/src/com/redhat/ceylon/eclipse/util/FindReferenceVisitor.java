@@ -22,9 +22,12 @@ public class FindReferenceVisitor extends Visitor {
 	}
 	
 	protected boolean equals(Declaration x, Declaration y) {
-	    return x==y;
+	    return x!=null && y!=null && x.equals(y);
 	}
 	
+    @Override
+    public void visit(Tree.ExtendedTypeExpression that) {}
+    
 	@Override
 	public void visit(Tree.MemberOrTypeExpression that) {
 		//TODO: handle refinement!
@@ -43,7 +46,7 @@ public class FindReferenceVisitor extends Visitor {
 	}
 		
 	@Override
-	public void visit(Tree.Type that) {
+	public void visit(Tree.SimpleType that) {
 		if (equals(that.getTypeModel().getDeclaration(), declaration)) {
 			nodes.add(that);
 		}

@@ -38,10 +38,7 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		fOccurrences = new ArrayList<Object>();
 		Declaration declaration = CeylonReferenceResolver.getReferencedDeclaration(astNode);
 		if (declaration!=null) {
-			FindReferenceVisitor frv = new FindReferenceVisitor(declaration) {
-				@Override
-				public void visit(Tree.ExtendedTypeExpression that) {}
-			};
+			FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
 			root.visit(frv);
 			fOccurrences.addAll(frv.getNodes());
 			FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
