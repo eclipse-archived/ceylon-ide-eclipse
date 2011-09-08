@@ -37,13 +37,13 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class InlineRefactoring extends Refactoring {
-	private final IProject fProject;
+	private final IProject project;
 	//private final Node fNode;
 	//private final ITextEditor fEditor;
 	//private final CeylonParseController parseController;
-	private final Declaration dec;
+	private final Declaration declaration;
 	private boolean delete = true;
-	private int count;
+	private int count = 0;
 
 	public InlineRefactoring(ITextEditor editor) {
 
@@ -55,21 +55,18 @@ public class InlineRefactoring extends Refactoring {
 
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
-			fProject = fileInput.getFile().getProject();
+			project = fileInput.getFile().getProject();
 			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
-			dec = CeylonReferenceResolver.getReferencedDeclaration(node);
-			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
-			count = 0;
-	        for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
+			declaration = CeylonReferenceResolver.getReferencedDeclaration(node);
+	        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+	            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
 	            pu.getCompilationUnit().visit(frv);
 	            count += frv.getNodes().size();
-	            frv.getNodes().clear();
 	        }
 		} 
 		else {
-		    fProject = null;
-			dec = null;
-			count = 0;
+		    project = null;
+			declaration = null;
 		}
 	}
 	
@@ -105,9 +102,9 @@ public class InlineRefactoring extends Refactoring {
         PhasedUnit declarationUnit=null;
         Tree.Term t=null;
         
-        if (dec!=null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
-    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+        if (declaration!=null) {
+            for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
     			pu.getCompilationUnit().visit(fdv);
     			declarationNode = fdv.getDeclarationNode();
     			if (declarationNode!=null) {
@@ -150,7 +147,7 @@ public class InlineRefactoring extends Refactoring {
         final Tree.Term term = t;
 		
         if (declarationNode!=null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
+            for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 final TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
                 tfc.setEdit(new MultiTextEdit());
     			final String template = toString(term, declarationUnit.getTokenStream());
@@ -160,7 +157,7 @@ public class InlineRefactoring extends Refactoring {
     					@Override
     					public void visit(Tree.BaseMemberExpression that) {
     						super.visit(that);
-    						if (that.getDeclaration().equals(dec)) {
+    						if (that.getDeclaration().equals(declaration)) {
     							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
     									that.getStopIndex()-that.getStartIndex()+1, 
     									template));	
@@ -173,7 +170,7 @@ public class InlineRefactoring extends Refactoring {
     					@Override
     					public void visit(final Tree.InvocationExpression that) {
     						super.visit(that);
-    						if (that.getPrimary().getDeclaration().equals(dec)) {
+    						if (that.getPrimary().getDeclaration().equals(declaration)) {
     							//TODO: breaks for invocations like f(f(x, y),z)
     							final StringBuilder result = new StringBuilder();
     							class InterpolateVisitor extends Visitor {
@@ -183,7 +180,7 @@ public class InlineRefactoring extends Refactoring {
     									super.visit(it);
     									if (it.getDeclaration() instanceof Parameter) {
     										Parameter param = (Parameter) it.getDeclaration();
-    										if ( param.getDeclaration().equals(dec) ) {
+    										if ( param.getDeclaration().equals(declaration) ) {
     											result.append(template.substring(start,it.getStartIndex()-templateStart));
     											start = it.getStopIndex()-templateStart+1;
     											boolean sequenced = param.isSequenced();
@@ -313,7 +310,7 @@ public class InlineRefactoring extends Refactoring {
 	}
 
 	public Declaration getDeclaration() {
-		return dec;
+		return declaration;
 	}
 	
 	public void setDelete() {

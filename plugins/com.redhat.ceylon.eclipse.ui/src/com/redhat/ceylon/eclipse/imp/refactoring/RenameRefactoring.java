@@ -19,21 +19,36 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class RenameRefactoring extends Refactoring {
-	private final IProject fProject;
+    
+	private static class FindReferencesVisitor extends FindReferenceVisitor {
+	    private final Declaration declaration;
+        private FindReferencesVisitor(Declaration declaration) {
+            super(declaration);
+            this.declaration = declaration;
+        }
+        @Override
+        protected boolean isReference(Declaration ref) {
+            return super.isReference(ref) ||
+                    ref!=null && ref.refines(declaration);
+        }
+    }
+
+    private final IProject project;
 	//private final Node fNode;
 	//private final ITextEditor fEditor;
 	//private final CeylonParseController parseController;
 	private String newName;
-	private final Declaration dec;
-	private int count;
+	private final Declaration declaration;
+	private int count = 0;
 
 	public RenameRefactoring(ITextEditor editor) {
 
@@ -42,22 +57,21 @@ public class RenameRefactoring extends Refactoring {
 
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
-			fProject = fileInput.getFile().getProject();
+			project = fileInput.getFile().getProject();
 			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
-			dec = CeylonReferenceResolver.getReferencedDeclaration(node);
-			newName = dec.getName();
-            FindReferenceVisitor frv = new FindReferenceVisitor(dec);
-            count = 0;
-            for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
+			declaration = CeylonReferenceResolver.getReferencedDeclaration(node).getRefinedDeclaration();
+			newName = declaration.getName();
+            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+                FindDeclarationsVisitor fdv = new FindDeclarationsVisitor(declaration);
                 pu.getCompilationUnit().visit(frv);
-                count += frv.getNodes().size();
-                frv.getNodes().clear();
+                pu.getCompilationUnit().visit(fdv);
+                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
             }
 		} 
 		else {
-		    fProject = null;
-			dec = null;
-			count = 0;
+		    project = null;
+			declaration = null;
 		}
 	}
 	
@@ -89,19 +103,19 @@ public class RenameRefactoring extends Refactoring {
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
         CompositeChange cc = new CompositeChange("Rename");
-        for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
+        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
     		TextFileChange tfc = new TextFileChange("Rename", CeylonBuilder.getFile(pu));
     		tfc.setEdit(new MultiTextEdit());
-    		if (dec!=null) {
-    			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
+    		if (declaration!=null) {
+    			FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
     			pu.getCompilationUnit().visit(frv);
     			for (Node node: frv.getNodes()) {
     	            renameNode(tfc, node);
     			}
-    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+    			FindDeclarationsVisitor fdv = new FindDeclarationsVisitor(declaration);
     			pu.getCompilationUnit().visit(fdv);
-    			if (fdv.getDeclarationNode()!=null) {
-    			    renameNode(tfc, fdv.getDeclarationNode());
+    			for (Tree.Declaration node: fdv.getDeclarationNodes()) {
+    			    renameNode(tfc, node);
     			}
     		}
     		if (tfc.getEdit().hasChildren()) {
@@ -122,6 +136,6 @@ public class RenameRefactoring extends Refactoring {
 	}
 	
 	public Declaration getDeclaration() {
-		return dec;
+		return declaration;
 	}
 }

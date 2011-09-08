@@ -17,40 +17,45 @@ class CeylonSearchQuery implements ISearchQuery {
 	
 	private final String string;
     private final String[] projects;
-	private final SearchVisitor sv;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
     private int count = 0;
+    private final boolean caseSensitive;
+    private final boolean includeReferences;
+    private final boolean includeDeclarations;
 
 	CeylonSearchQuery(String string, String[] projects,
-			final boolean includeReferences, final boolean includeDeclarations,
-			final boolean caseSensitive) {
+			boolean includeReferences, boolean includeDeclarations,
+			boolean caseSensitive) {
 		this.string = string;
 		this.projects = projects;
-		sv = new SearchVisitor( new SearchVisitor.Matcher() {
-			@Override
-			public boolean matches(String string) {
-				if (caseSensitive) {
-					return string.contains(CeylonSearchQuery.this.string);
-				}
-				else {
-					return string.toLowerCase()
-						.contains(CeylonSearchQuery.this.string.toLowerCase());
-				}
-			}
-			@Override
-			public boolean includeReferences() {
-				return includeReferences;
-			}
-			@Override
-			public boolean includeDeclarations() {
-				return includeDeclarations;
-			}
-		});
+		this.caseSensitive = caseSensitive;
+		this.includeDeclarations = includeDeclarations;
+		this.includeReferences = includeReferences;
 	}
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 	    for (PhasedUnit pu: CeylonBuilder.getUnits(projects)) {
+	        SearchVisitor sv = new SearchVisitor( new SearchVisitor.Matcher() {
+	            @Override
+	            public boolean matches(String string) {
+	                if (caseSensitive) {
+	                    return string.contains(CeylonSearchQuery.this.string);
+	                }
+	                else {
+	                    return string.toLowerCase()
+	                        .contains(CeylonSearchQuery.this.string.toLowerCase());
+	                }
+	            }
+	            @Override
+	            public boolean includeReferences() {
+	                return includeReferences;
+	            }
+	            @Override
+	            public boolean includeDeclarations() {
+	                return includeDeclarations;
+	            }
+	        });
             pu.getCompilationUnit().visit(sv);
     		//TODO: should really add these as we find them:
     		for (Node node: sv.getNodes()) {
@@ -62,7 +67,6 @@ class CeylonSearchQuery implements ISearchQuery {
     					node.getToken()));
     		}
     		count+=sv.getNodes().size();
-    		sv.getNodes().clear();
         }
 		return Status.OK_STATUS;
 	}

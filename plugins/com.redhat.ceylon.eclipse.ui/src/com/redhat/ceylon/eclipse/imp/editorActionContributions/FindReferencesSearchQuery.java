@@ -19,19 +19,18 @@ class FindReferencesSearchQuery implements ISearchQuery {
 	
 	private final Declaration referencedDeclaration;
 	private final IProject project;
-	private final FindReferenceVisitor frv;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
 
 	FindReferencesSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		this.project = project;
-		frv = new FindReferenceVisitor(referencedDeclaration);
 	}
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 	    for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+	        FindReferenceVisitor frv = new FindReferenceVisitor(referencedDeclaration);
 	        pu.getCompilationUnit().visit(frv);
 	        //TODO: should really add these as we find them:
     		for (Node node: frv.getNodes()) {
@@ -48,7 +47,6 @@ class FindReferencesSearchQuery implements ISearchQuery {
                 }
     		}
     		count+=frv.getNodes().size();
-    		frv.getNodes().clear();
         }
 		return Status.OK_STATUS;
 	}

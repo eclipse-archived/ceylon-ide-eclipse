@@ -9,7 +9,7 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IOccurrenceMarker;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
@@ -29,7 +29,7 @@ public class CeylonOccurrenceMarker implements ILanguageService,
 		}
 
 		// Check whether we even have an AST in which to find occurrences
-		CompilationUnit root = (CompilationUnit) parseController.getCurrentAst();
+		Tree.CompilationUnit root = (Tree.CompilationUnit) parseController.getCurrentAst();
 		if (root == null) {
 			return Collections.emptyList();
 		}
