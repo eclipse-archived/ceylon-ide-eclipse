@@ -18,6 +18,7 @@ public class CeylonEditorActionContributions implements
 		//IMenuManager languageMenu = new MenuManager("Search");
 		menuManager.add(new FindReferencesAction(editor));
 		menuManager.add(new FindRefinementsAction(editor));
+        menuManager.add(new FindSubtypesAction(editor));
 	}
 
 	public void contributeToMenuBar(UniversalEditor editor, IMenuManager menu) {
@@ -34,6 +35,7 @@ public class CeylonEditorActionContributions implements
 		search.add(new Separator());
 		search.add(new FindReferencesAction(editor));
         search.add(new FindRefinementsAction(editor));
+        search.add(new FindSubtypesAction(editor));
 	}
 
 	public void contributeToStatusLine(final UniversalEditor editor,
