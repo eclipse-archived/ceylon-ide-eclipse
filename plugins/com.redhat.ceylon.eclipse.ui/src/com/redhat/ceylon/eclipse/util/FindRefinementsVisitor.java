@@ -7,12 +7,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindDeclarationsVisitor extends Visitor {
+public class FindRefinementsVisitor extends Visitor {
 	
 	private final Declaration declaration;
 	private Set<Tree.Declaration> declarationNodes = new HashSet<Tree.Declaration>();
 	
-	public FindDeclarationsVisitor(Declaration declaration) {
+	public FindRefinementsVisitor(Declaration declaration) {
 		this.declaration = declaration;
 	}
 	

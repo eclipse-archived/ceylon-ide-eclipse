@@ -24,7 +24,7 @@ import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.util.FindDeclarationsVisitor;
+import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class RenameRefactoring extends Refactoring {
@@ -63,7 +63,7 @@ public class RenameRefactoring extends Refactoring {
 			newName = declaration.getName();
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindDeclarationsVisitor fdv = new FindDeclarationsVisitor(declaration);
+                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
                 pu.getCompilationUnit().visit(frv);
                 pu.getCompilationUnit().visit(fdv);
                 count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
@@ -112,7 +112,7 @@ public class RenameRefactoring extends Refactoring {
     			for (Node node: frv.getNodes()) {
     	            renameNode(tfc, node);
     			}
-    			FindDeclarationsVisitor fdv = new FindDeclarationsVisitor(declaration);
+    			FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
     			pu.getCompilationUnit().visit(fdv);
     			for (Tree.Declaration node: fdv.getDeclarationNodes()) {
     			    renameNode(tfc, node);
