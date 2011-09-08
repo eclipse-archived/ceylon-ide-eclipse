@@ -50,7 +50,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			while (scope!=null) {
 				if (scope==declaration) {
 					for (Tree.BaseMemberExpression bme: localReferences) {
-						if (bme.getDeclaration()==that.getDeclaration()) {
+						if (bme.getDeclaration().equals(that.getDeclaration())) {
 							return;
 						}
 					}

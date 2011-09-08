@@ -19,7 +19,7 @@ public class FindDeclarationVisitor extends Visitor {
 	}
 	
     protected boolean equals(Declaration x, Declaration y) {
-        return x==y;
+        return x!=null && y!=null && x.equals(y);
     }
     
 	@Override

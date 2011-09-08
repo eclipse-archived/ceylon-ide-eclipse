@@ -46,7 +46,7 @@ public class RenameRefactoring extends Refactoring {
 			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
 			dec = CeylonReferenceResolver.getReferencedDeclaration(node);
 			newName = dec.getName();
-            FindReferenceVisitor frv = new FindRefactoringReferenceVisitor(dec);
+            FindReferenceVisitor frv = new FindReferenceVisitor(dec);
             count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
                 pu.getCompilationUnit().visit(frv);
@@ -93,12 +93,12 @@ public class RenameRefactoring extends Refactoring {
     		TextFileChange tfc = new TextFileChange("Rename", CeylonBuilder.getFile(pu));
     		tfc.setEdit(new MultiTextEdit());
     		if (dec!=null) {
-    			FindReferenceVisitor frv = new FindRefactoringReferenceVisitor(dec);
+    			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
     			pu.getCompilationUnit().visit(frv);
     			for (Node node: frv.getNodes()) {
     	            renameNode(tfc, node);
     			}
-    			FindDeclarationVisitor fdv = new FindRefactoringDeclarationVisitor(dec);
+    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
     			pu.getCompilationUnit().visit(fdv);
     			if (fdv.getDeclarationNode()!=null) {
     			    renameNode(tfc, fdv.getDeclarationNode());

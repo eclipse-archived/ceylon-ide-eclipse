@@ -58,7 +58,7 @@ public class InlineRefactoring extends Refactoring {
 			fProject = fileInput.getFile().getProject();
 			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
 			dec = CeylonReferenceResolver.getReferencedDeclaration(node);
-			FindReferenceVisitor frv = new FindRefactoringReferenceVisitor(dec);
+			FindReferenceVisitor frv = new FindReferenceVisitor(dec);
 			count = 0;
 	        for (PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
 	            pu.getCompilationUnit().visit(frv);
@@ -107,7 +107,7 @@ public class InlineRefactoring extends Refactoring {
         
         if (dec!=null) {
             for (final PhasedUnit pu: CeylonBuilder.getUnits(fProject)) {
-    			FindDeclarationVisitor fdv = new FindRefactoringDeclarationVisitor(dec);
+    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
     			pu.getCompilationUnit().visit(fdv);
     			declarationNode = fdv.getDeclarationNode();
     			if (declarationNode!=null) {
@@ -207,7 +207,7 @@ public class InlineRefactoring extends Refactoring {
     									}
     									for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
     											.getPositionalArguments()) {
-    										if (it.getDeclaration()==arg.getParameter()) {
+    										if (it.getDeclaration().equals(arg.getParameter())) {
     											if (arg.getParameter().isSequenced() && 
     													that.getPositionalArgumentList().getEllipsis()==null) {
     												if (first) result.append(" ");
@@ -230,7 +230,7 @@ public class InlineRefactoring extends Refactoring {
     										boolean sequenced) {
     									boolean found = false;
     									for (Tree.NamedArgument arg: that.getNamedArgumentList().getNamedArguments()) {
-    										if (it.getDeclaration()==arg.getParameter()) {
+    										if (it.getDeclaration().equals(arg.getParameter())) {
     											result//.append(template.substring(start,it.getStartIndex()-templateStart))
     												.append(InlineRefactoring.this.
     														toString( ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
@@ -240,7 +240,7 @@ public class InlineRefactoring extends Refactoring {
     										}
     									}
     									SequencedArgument seqArg = that.getNamedArgumentList().getSequencedArgument();
-    									if (seqArg!=null && it.getDeclaration()==seqArg.getParameter()) {
+    									if (seqArg!=null && it.getDeclaration().equals(seqArg.getParameter())) {
     										result//.append(template.substring(start,it.getStartIndex()-templateStart))
     										    .append("{");
     										//start = it.getStopIndex()-templateStart+1;;

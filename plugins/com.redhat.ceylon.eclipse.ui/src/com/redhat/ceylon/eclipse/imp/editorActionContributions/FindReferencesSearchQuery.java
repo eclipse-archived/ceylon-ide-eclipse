@@ -13,7 +13,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.refactoring.FindRefactoringReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 class FindReferencesSearchQuery implements ISearchQuery {
@@ -27,7 +26,7 @@ class FindReferencesSearchQuery implements ISearchQuery {
 	FindReferencesSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		this.project = project;
-		frv = new FindRefactoringReferenceVisitor(referencedDeclaration);
+		frv = new FindReferenceVisitor(referencedDeclaration);
 	}
 
 	@Override
