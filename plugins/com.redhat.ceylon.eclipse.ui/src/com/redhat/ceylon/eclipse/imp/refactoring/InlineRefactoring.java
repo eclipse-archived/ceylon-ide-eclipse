@@ -160,7 +160,7 @@ public class InlineRefactoring extends Refactoring {
     					@Override
     					public void visit(Tree.BaseMemberExpression that) {
     						super.visit(that);
-    						if (that.getDeclaration().getQualifiedName().equals(dec.getQualifiedName())) {
+    						if (that.getDeclaration().equals(dec)) {
     							tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
     									that.getStopIndex()-that.getStartIndex()+1, 
     									template));	
@@ -173,8 +173,7 @@ public class InlineRefactoring extends Refactoring {
     					@Override
     					public void visit(final Tree.InvocationExpression that) {
     						super.visit(that);
-    						if (that.getPrimary().getDeclaration().getQualifiedName()
-    						        .equals(dec.getQualifiedName())) {
+    						if (that.getPrimary().getDeclaration().equals(dec)) {
     							//TODO: breaks for invocations like f(f(x, y),z)
     							final StringBuilder result = new StringBuilder();
     							class InterpolateVisitor extends Visitor {
@@ -184,7 +183,7 @@ public class InlineRefactoring extends Refactoring {
     									super.visit(it);
     									if (it.getDeclaration() instanceof Parameter) {
     										Parameter param = (Parameter) it.getDeclaration();
-    										if ( param.getDeclaration().getQualifiedName().equals(dec.getQualifiedName()) ) {
+    										if ( param.getDeclaration().equals(dec) ) {
     											result.append(template.substring(start,it.getStartIndex()-templateStart));
     											start = it.getStopIndex()-templateStart+1;
     											boolean sequenced = param.isSequenced();
