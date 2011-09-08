@@ -9,7 +9,6 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IOccurrenceMarker;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
