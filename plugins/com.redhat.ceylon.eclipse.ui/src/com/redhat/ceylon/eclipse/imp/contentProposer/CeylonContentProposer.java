@@ -43,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonContentProposer implements IContentProposer {
@@ -148,14 +149,26 @@ public class CeylonContentProposer implements IContentProposer {
   public ICompletionProposal[] constructCompletions(int offset, String prefix, 
         TreeMap<String, Declaration> map, CeylonParseController cpc) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+      for (String keyword: CeylonTokenColorer.keywords) {
+          if (keyword.startsWith(prefix.toLowerCase())) {
+              result.add(sourceProposal(offset, prefix, null, 
+                      keyword + " keyword", keyword, keyword));
+          }
+      }
       for (final Declaration d: map.values()) {
         if (d instanceof TypeDeclaration) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, false), 
-        		  getTextFor(d, false), cpc));
+          result.add(sourceProposal(offset, prefix, 
+                  CeylonLabelProvider.getImage(d),
+                  getDocumentation(getDeclarationNode(cpc, d)), 
+                  getDescriptionFor(d, false), 
+        		  getTextFor(d, false)));
         }
         if (d instanceof TypedDeclaration || d instanceof Class) {
-          result.add(sourceProposal(offset, prefix, d, getDescriptionFor(d, true), 
-        		  getTextFor(d, true), cpc));
+          result.add(sourceProposal(offset, prefix, 
+                  CeylonLabelProvider.getImage(d),
+                  getDocumentation(getDeclarationNode(cpc, d)), 
+                  getDescriptionFor(d, true), 
+        		  getTextFor(d, true)));
         }
       }
       return result.toArray(new ICompletionProposal[result.size()]);
@@ -184,15 +197,13 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private SourceProposal sourceProposal(final int offset, final String prefix,
-		final Declaration d, String desc, final String text, 
-		CeylonParseController cpc) {
+		final Image image, String doc, String desc, final String text) {
 	return new SourceProposal(desc, text, "", 
 			                  new Region(offset - prefix.length(), prefix.length()), 
-			                  offset + text.length(),
-			                  getDocumentation(getDeclarationNode(cpc, d))) { 
+			                  offset + text.length(), doc) { 
       @Override
       public Image getImage() {
-	    return CeylonLabelProvider.getImage(d);
+	    return image;
 	  }
 	  @Override
 	    public Point getSelection(IDocument document) {

@@ -16,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
-  protected final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
+  public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
 	  "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
 	  "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 
 	  "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
