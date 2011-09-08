@@ -6,12 +6,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
-import org.eclipse.imp.model.ISourceEntity;
-import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;

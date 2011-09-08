@@ -5,14 +5,11 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.java.hosted.ProjectUtils;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.IPathEntry;
+import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ModelFactory.IFactoryExtender;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -22,7 +19,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.osgi.framework.BundleContext;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
 public class CeylonPlugin extends PluginBase {
 
