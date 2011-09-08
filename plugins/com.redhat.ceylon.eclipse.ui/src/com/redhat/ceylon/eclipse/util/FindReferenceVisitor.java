@@ -21,8 +21,8 @@ public class FindReferenceVisitor extends Visitor {
 		return nodes;
 	}
 	
-	protected boolean equals(Declaration x, Declaration y) {
-	    return x!=null && y!=null && x.equals(y);
+	private boolean isReference(Declaration ref, Declaration dec) {
+	    return ref!=null && dec!=null && dec.refines(ref);
 	}
 	
     @Override
@@ -31,7 +31,7 @@ public class FindReferenceVisitor extends Visitor {
 	@Override
 	public void visit(Tree.MemberOrTypeExpression that) {
 		//TODO: handle refinement!
-		if (equals(that.getDeclaration(), declaration)) {
+		if (isReference(that.getDeclaration(), declaration)) {
 			nodes.add(that);
 		}
 		super.visit(that);
@@ -39,7 +39,7 @@ public class FindReferenceVisitor extends Visitor {
 		
 	@Override
 	public void visit(Tree.NamedArgument that) {
-		if (equals(that.getParameter(), declaration)) {
+		if (isReference(that.getParameter(), declaration)) {
 			nodes.add(that);
 		}
 		super.visit(that);
@@ -47,7 +47,7 @@ public class FindReferenceVisitor extends Visitor {
 		
 	@Override
 	public void visit(Tree.SimpleType that) {
-		if (equals(that.getTypeModel().getDeclaration(), declaration)) {
+		if (isReference(that.getTypeModel().getDeclaration(), declaration)) {
 			nodes.add(that);
 		}
 		super.visit(that);
@@ -58,7 +58,7 @@ public class FindReferenceVisitor extends Visitor {
 
 	@Override
 	public void visit(Tree.ImportMemberOrType that) {
-		if (equals(that.getDeclarationModel(), declaration)) {
+		if (isReference(that.getDeclarationModel(), declaration)) {
 			nodes.add(that);
 		}
 		super.visit(that);
