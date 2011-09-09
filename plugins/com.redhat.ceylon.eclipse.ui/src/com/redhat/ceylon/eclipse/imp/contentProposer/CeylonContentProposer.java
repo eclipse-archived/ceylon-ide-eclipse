@@ -150,7 +150,7 @@ public class CeylonContentProposer implements IContentProposer {
         TreeMap<String, Declaration> map, CeylonParseController cpc) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
       for (String keyword: CeylonTokenColorer.keywords) {
-          if (keyword.startsWith(prefix.toLowerCase())) {
+          if (!prefix.isEmpty() && keyword.startsWith(prefix.toLowerCase())) {
               result.add(sourceProposal(offset, prefix, null, 
                       keyword + " keyword", keyword, keyword));
           }
@@ -244,15 +244,8 @@ public class CeylonContentProposer implements IContentProposer {
         return Collections.emptyMap();
       }
     }
-    else if (node instanceof Tree.NamedArgument) {
-      //TODO: this case is really problematic because the
-      //      model doesn't have anything about named args
-      //      and the tree can't be walked upward
-      Declaration p = ((Tree.NamedArgument) node).getParameter();
-      return Collections.singletonMap(p.getName(), p);
-    }
     else {
-      Map<String, Declaration> result = new TreeMap<String, Declaration>(); 
+      Map<String, Declaration> result = new TreeMap<String, Declaration>();
       Module languageModule = cpc.getContext().getModules().getLanguageModule();
       if (languageModule!=null) {
         for (Package languageScope: languageModule.getPackages() ) {
