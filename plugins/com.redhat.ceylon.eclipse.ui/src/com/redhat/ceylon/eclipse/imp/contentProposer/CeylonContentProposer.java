@@ -276,15 +276,16 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   public static String getTextFor(Declaration d, boolean includeArgs) {
-    String result = d.getName();
+    StringBuilder result = new StringBuilder(d.getName());
     if (d instanceof Generic) {
       List<TypeParameter> types = ((Generic) d).getTypeParameters();
       if (!types.isEmpty()) {
-        result += "<";
+        result.append("<");
         for (TypeParameter p: types) {
-          result += p.getName() + ", ";
+          result.append(p.getName()).append(", ");
         }
-        result = result.substring(0, result.length()-2) + ">";
+        result.setLength(result.length()-2);
+        result.append(">");
       }
     }
     if (includeArgs && d instanceof Functional) {
@@ -292,18 +293,19 @@ public class CeylonContentProposer implements IContentProposer {
       if (plists!=null && !plists.isEmpty()) {
         ParameterList params = plists.get(0);
         if (params.getParameters().isEmpty()) {
-          result += "()";
+          result.append("()");
         }
         else {
-          result += "(";
+          result.append("(");
           for (Parameter p: params.getParameters()) {
-            result += p.getName() + ", ";
+            result.append(p.getName()).append(", ");
           }
-          result = result.substring(0, result.length()-2) + ")";
+          result.setLength(result.length()-2);
+          result.append(")");
         }
       }
     }
-    return result;
+    return result.toString();
   }
   
   public static String getRefinementTextFor(Declaration d) {
@@ -315,34 +317,35 @@ public class CeylonContentProposer implements IContentProposer {
     }
 
   public static String getDeclarationTextFor(Declaration d) {
-    String result = "shared actual ";
+    StringBuilder result = new StringBuilder("shared actual ");
     if (d instanceof Class) {
-        result += "class ";
+        result.append("class ");
     }
     else if (d instanceof TypedDeclaration) {
         TypedDeclaration td = (TypedDeclaration) d;
         if (d instanceof Method) {
-            if (td.getType().getProducedTypeName().equals("Void")) {
-                result += "void ";
+            if (td.getType().getProducedTypeName().equals("Void")) { //TODO: fix this!
+                result.append("void ");
             }
             else {
-                result += td.getType().getProducedTypeName() + " ";
+                result.append(td.getType().getProducedTypeName()).append(" ");
             }
         }
     }
-    return result;
+    return result.toString();
 }
   
   public static String getDescriptionFor(Declaration d, boolean includeArgs) {
-      String result = d.getName();
+      StringBuilder result = new StringBuilder(d.getName());
       if (d instanceof Generic) {
         List<TypeParameter> types = ((Generic) d).getTypeParameters();
         if (!types.isEmpty()) {
-          result += "<";
+          result.append("<");
           for (TypeParameter p: types) {
-            result += p.getName() + ", ";
+            result.append(p.getName()).append(", ");
           }
-          result = result.substring(0, result.length()-2) + ">";
+          result.setLength(result.length()-2);
+          result.append(">");
         }
       }
       if (includeArgs && d instanceof Functional) {
@@ -350,23 +353,25 @@ public class CeylonContentProposer implements IContentProposer {
         if (plists!=null && !plists.isEmpty()) {
           ParameterList params = plists.get(0);
           if (params.getParameters().isEmpty()) {
-            result += "()";
+            result.append("()");
           }
           else {
-            result += "(";
+            result.append("(");
             for (Parameter p: params.getParameters()) {
-              result += p.getType().getProducedTypeName() + " " + p.getName() + ", ";
+              result.append(p.getType().getProducedTypeName()).append(" ")
+                  .append(p.getName()).append(", ");
             }
-            result = result.substring(0, result.length()-2) + ")";
+            result.setLength(result.length()-2);
+            result.append(")");
           }
         }
       }
       if (d.isToplevel()) {
         String pkg = d.getUnit().getPackage().getQualifiedNameString();
         if (pkg.isEmpty()) pkg="default package";
-        result += " [" + pkg + "]";
+        result.append(" [").append(pkg).append("]");
       }
-      return result;
+      return result.toString();
     }
     
   /*private String getPrefix(Node node, int offset) {
