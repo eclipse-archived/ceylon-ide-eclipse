@@ -18,4 +18,6 @@ public interface ICeylonResources {
 	public static final String CEYLON_PACKAGE = "ceylon_package";
 	public static final String CEYLON_IMPORT = "ceylon_import";
 	public static final String CEYLON_IMPORT_LIST = "ceylon_import_list";
+
+    public static final String CEYLON_REFINEMENT = "ceylon_refinement";
 }
