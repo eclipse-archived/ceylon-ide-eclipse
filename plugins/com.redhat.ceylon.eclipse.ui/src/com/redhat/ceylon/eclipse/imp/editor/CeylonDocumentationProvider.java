@@ -26,22 +26,23 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
 	  if (decl!=null) {
 	  String pkg = decl.getUnit().getPackage().getQualifiedNameString();
 	  if (pkg.isEmpty()) pkg="default package";
-	  documentation += "[" + pkg + "]<br/>";
-      documentation += "<b>" + CeylonLabelProvider.getLabelFor(decl)
-    		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>";
+	  documentation += "<p>[" + pkg + "]</p>";
+      documentation += "<p><b>" + CeylonLabelProvider.getLabelFor(decl)
+    		  .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b></p>";
       
       if (decl.getDeclarationModel()!=null) {
           if (decl.getDeclarationModel().isClassOrInterfaceMember()) {
               TypeDeclaration declaring = (TypeDeclaration) decl.getDeclarationModel().getContainer();
-              documentation += "<br/><br/>declared by " + declaring.getName() + " [" + pkg + "]";
-          }   
-          if (decl.getDeclarationModel().isActual()) {
-              Declaration refined = decl.getDeclarationModel().getRefinedDeclaration();
-              TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
-              String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
-              if (spkg.isEmpty()) spkg="default package";
-              documentation += "<br/>refines " + refined.getName() + " declared by " + 
-                          supertype.getName() + " [" + pkg + "]";
+              documentation += "<ul><li>declared by " + declaring.getName() + " [" + pkg + "]</li>";
+              if (decl.getDeclarationModel().isActual()) {
+                  Declaration refined = decl.getDeclarationModel().getRefinedDeclaration();
+                  TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
+                  String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
+                  if (spkg.isEmpty()) spkg="default package";
+                  documentation += "<li>refines " + refined.getName() + " declared by " + 
+                              supertype.getName() + " [" + pkg + "]</li>";
+              }
+              documentation +="</ul>";
           }
       }
       
@@ -64,7 +65,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
               if (args.size() > 0)
               {
                 String docLine = args.get(0).getExpression().getTerm().getText();
-                documentation += "<br/><br/>" + docLine;
+                documentation += "<br/><p>" + docLine + "</p>";
               }
             }
             }
