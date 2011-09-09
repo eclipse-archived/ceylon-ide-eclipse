@@ -68,31 +68,47 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         }
     }
 
-    public static Tree.Declaration getDeclarationNode(
-            CeylonParseController controller, Declaration dec) {
-        if (dec != null && controller.getRootNode() != null) {
-            Tree.CompilationUnit compilationUnit = controller.getRootNode();
-            FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
-
-            if (compilationUnit.getUnit().equals(dec.getUnit())) {
-                compilationUnit.visit(visitor);
-            } else {
-                Unit targetUnit = dec.getUnit();
-                String relativePath = targetUnit.getPackage()
-                        .getQualifiedNameString().replace('.', '/')
-                        + "/" + targetUnit.getFilename();
-                PhasedUnit targetPhasedUnit = controller.getPhasedUnits()
-                        .getPhasedUnitFromRelativePath(relativePath);
-                if (targetPhasedUnit != null) {
-                    targetPhasedUnit.getCompilationUnit().visit(visitor);
-                }
-            }
-            System.out.println("referenced node: "
-                    + visitor.getDeclarationNode());
-            return visitor.getDeclarationNode();
-        } else {
+    public static Tree.Declaration getDeclarationNode(CeylonParseController cpc, 
+            Declaration dec) {
+        if (dec==null) {
             return null;
         }
+        else {
+            Tree.CompilationUnit cu = getCompilationUnit(cpc, dec);
+            return cu==null ? null : 
+                getDocumentationString(dec, cu);
+        }
+    }
+
+    public static Tree.Declaration getDocumentationString(Declaration dec,
+            Tree.CompilationUnit compilationUnit) {
+        FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
+        compilationUnit.visit(visitor);
+        System.out.println("referenced node: " + visitor.getDeclarationNode());
+        return visitor.getDeclarationNode();
+    }
+
+    public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
+            Declaration dec) {
+        Tree.CompilationUnit root = cpc.getRootNode();
+        if (root==null) {
+            return null;
+        }
+        else if (root.getUnit().equals(dec.getUnit())) {
+            return root;
+        }
+        else {
+            Unit targetUnit = dec.getUnit();
+            String relativePath = targetUnit.getPackage()
+                    .getQualifiedNameString().replace('.', '/')
+                    + "/" + targetUnit.getFilename();
+            PhasedUnit targetPhasedUnit = cpc.getPhasedUnits()
+                    .getPhasedUnitFromRelativePath(relativePath);
+            if (targetPhasedUnit != null) {
+                return targetPhasedUnit.getCompilationUnit();
+            }
+        }
+        return null;
     }
 
 }
