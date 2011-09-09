@@ -325,20 +325,24 @@ public class CeylonContentProposer implements IContentProposer {
   public static String getDeclarationTextFor(Declaration d) {
     StringBuilder result = new StringBuilder("shared actual ");
     if (d instanceof Class) {
-        result.append("class ");
+        result.append("class");
     }
     else if (d instanceof TypedDeclaration) {
         TypedDeclaration td = (TypedDeclaration) d;
+        String typeName = td.getType().getProducedTypeName();
         if (d instanceof Method) {
-            if (td.getType().getProducedTypeName().equals("Void")) { //TODO: fix this!
-                result.append("void ");
+            if (typeName.equals("Void")) { //TODO: fix this!
+                result.append("void");
             }
             else {
-                result.append(td.getType().getProducedTypeName()).append(" ");
+                result.append(typeName);
             }
         }
+        else {
+            result.append(typeName);
+        }
     }
-    return result.toString();
+    return result.append(" ").toString();
 }
   
   public static String getDescriptionFor(Declaration d, boolean includeArgs) {
