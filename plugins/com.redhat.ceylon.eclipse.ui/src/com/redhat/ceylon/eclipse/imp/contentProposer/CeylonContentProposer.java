@@ -47,8 +47,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 public class CeylonContentProposer implements IContentProposer {
+
+    private static Image REFINEMENT = CeylonPlugin.getInstance()
+            .getImageRegistry().get(ICeylonResources.CEYLON_REFINEMENT);
+    
   /**
    * Returns an array of content proposals applicable relative to the AST of the given
    * parse controller at the given position.
@@ -175,7 +181,7 @@ public class CeylonContentProposer implements IContentProposer {
           if (node.getScope() instanceof ClassOrInterface &&
                   ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
               result.add(sourceProposal(offset, prefix, 
-                      CeylonLabelProvider.getImage(d), 
+                      REFINEMENT, 
                       getDocumentation(getDeclarationNode(cpc, d)), 
                       getRefinementDescriptionFor(d) + " - refine declaration in " + 
                       ((Declaration) d.getContainer()).getName(), 
