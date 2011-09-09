@@ -29,9 +29,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -132,7 +134,7 @@ public class CeylonContentProposer implements IContentProposer {
             
       return constructCompletions(offset, prefix, 
     		  sortProposals(prefix, getProposals(node, prefix, cpc)),
-    		  cpc);
+    		  cpc, node);
     } 
     else {
       /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
@@ -147,28 +149,38 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   public ICompletionProposal[] constructCompletions(int offset, String prefix, 
-        TreeMap<String, Declaration> map, CeylonParseController cpc) {
+        TreeMap<String, Declaration> map, CeylonParseController cpc, Node node) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
       for (String keyword: CeylonTokenColorer.keywords) {
           if (!prefix.isEmpty() && keyword.startsWith(prefix.toLowerCase())) {
               result.add(sourceProposal(offset, prefix, null, 
-                      keyword + " keyword", keyword, keyword));
+                      keyword + " keyword", keyword, keyword, 
+                      false));
           }
       }
       for (final Declaration d: map.values()) {
-        if (d instanceof TypeDeclaration) {
+        if (d instanceof TypeDeclaration || (d instanceof Method && d.isToplevel())) {
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
                   getDescriptionFor(d, false), 
-        		  getTextFor(d, false)));
+        		  getTextFor(d, false), false));
         }
         if (d instanceof TypedDeclaration || d instanceof Class) {
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
                   getDescriptionFor(d, true), 
-        		  getTextFor(d, true)));
+        		  getTextFor(d, true), true));
+          if (node.getScope() instanceof ClassOrInterface &&
+                  ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+              result.add(sourceProposal(offset, prefix, 
+                      CeylonLabelProvider.getImage(d), 
+                      getDocumentation(getDeclarationNode(cpc, d)), 
+                      getRefinementDescriptionFor(d) + " - refine declaration in " + 
+                      ((Declaration) d.getContainer()).getName(), 
+                      getRefinementTextFor(d), false));
+          }
         }
       }
       return result.toArray(new ICompletionProposal[result.size()]);
@@ -197,7 +209,8 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private SourceProposal sourceProposal(final int offset, final String prefix,
-		final Image image, String doc, String desc, final String text) {
+		final Image image, String doc, String desc, final String text, 
+		final boolean selectParams) {
 	return new SourceProposal(desc, text, "", 
 			                  new Region(offset - prefix.length(), prefix.length()), 
 			                  offset + text.length(), doc) { 
@@ -206,20 +219,25 @@ public class CeylonContentProposer implements IContentProposer {
 	    return image;
 	  }
 	  @Override
-	    public Point getSelection(IDocument document) {
-	      int loc = text.indexOf('(');
-	      int start;
-	      int length;
-	      if (loc<0||text.contains("()")) {
-	    	start = offset+text.length()-prefix.length();
-	    	length = 0;
-	      }
+	  public Point getSelection(IDocument document) {
+	      if (selectParams) {
+    	      int loc = text.indexOf('(');
+    	      int start;
+    	      int length;
+    	      if (loc<0||text.contains("()")) {
+    	    	start = offset+text.length()-prefix.length();
+    	    	length = 0;
+    	      }
+    	      else {
+    		    start = offset-prefix.length()+loc+1;
+    		    length = text.length()-loc-2;
+    	      }
+    	      return new Point(start, length);
+          }
 	      else {
-		    start = offset-prefix.length()+loc+1;
-		    length = text.length()-loc-2;
+	          return new Point(offset + text.length()-prefix.length(), 0);
 	      }
-	      return new Point(start, length);
-	    }
+	  }
 	};
   }
 
@@ -288,42 +306,69 @@ public class CeylonContentProposer implements IContentProposer {
     return result;
   }
   
-  public static String getDescriptionFor(Declaration d, boolean includeArgs) {
-    String result = d.getName();
-    if (d instanceof Generic) {
-      List<TypeParameter> types = ((Generic) d).getTypeParameters();
-      if (!types.isEmpty()) {
-        result += "<";
-        for (TypeParameter p: types) {
-          result += p.getName() + ", ";
-        }
-        result = result.substring(0, result.length()-2) + ">";
-      }
+  public static String getRefinementTextFor(Declaration d) {
+    return getDeclarationTextFor(d) + getDescriptionFor(d, true);
+  }
+
+  public static String getRefinementDescriptionFor(Declaration d) {
+      return getDeclarationTextFor(d) + getDescriptionFor(d, true);
     }
-    if (includeArgs && d instanceof Functional) {
-      List<ParameterList> plists = ((Functional) d).getParameterLists();
-      if (plists!=null && !plists.isEmpty()) {
-        ParameterList params = plists.get(0);
-        if (params.getParameters().isEmpty()) {
-          result += "()";
-        }
-        else {
-          result += "(";
-          for (Parameter p: params.getParameters()) {
-            result += p.getType().getProducedTypeName() + " " + p.getName() + ", ";
-          }
-          result = result.substring(0, result.length()-2) + ")";
-        }
-      }
+
+  public static String getDeclarationTextFor(Declaration d) {
+    String result = "shared actual ";
+    if (d instanceof Class) {
+        result += "class ";
     }
-    if (d.isToplevel()) {
-	  String pkg = d.getUnit().getPackage().getQualifiedNameString();
-	  if (pkg.isEmpty()) pkg="default package";
-	  result += " [" + pkg + "]";
+    else if (d instanceof TypedDeclaration) {
+        TypedDeclaration td = (TypedDeclaration) d;
+        if (d instanceof Method) {
+            if (td.getType().getProducedTypeName().equals("Void")) {
+                result += "void ";
+            }
+            else {
+                result += td.getType().getProducedTypeName() + " ";
+            }
+        }
     }
     return result;
-  }
+}
   
+  public static String getDescriptionFor(Declaration d, boolean includeArgs) {
+      String result = d.getName();
+      if (d instanceof Generic) {
+        List<TypeParameter> types = ((Generic) d).getTypeParameters();
+        if (!types.isEmpty()) {
+          result += "<";
+          for (TypeParameter p: types) {
+            result += p.getName() + ", ";
+          }
+          result = result.substring(0, result.length()-2) + ">";
+        }
+      }
+      if (includeArgs && d instanceof Functional) {
+        List<ParameterList> plists = ((Functional) d).getParameterLists();
+        if (plists!=null && !plists.isEmpty()) {
+          ParameterList params = plists.get(0);
+          if (params.getParameters().isEmpty()) {
+            result += "()";
+          }
+          else {
+            result += "(";
+            for (Parameter p: params.getParameters()) {
+              result += p.getType().getProducedTypeName() + " " + p.getName() + ", ";
+            }
+            result = result.substring(0, result.length()-2) + ")";
+          }
+        }
+      }
+      if (d.isToplevel()) {
+        String pkg = d.getUnit().getPackage().getQualifiedNameString();
+        if (pkg.isEmpty()) pkg="default package";
+        result += " [" + pkg + "]";
+      }
+      return result;
+    }
+    
   /*private String getPrefix(Node node, int offset) {
     if (node instanceof Tree.SimpleType) {
       Tree.Identifier id = ((Tree.SimpleType) node).getIdentifier();
