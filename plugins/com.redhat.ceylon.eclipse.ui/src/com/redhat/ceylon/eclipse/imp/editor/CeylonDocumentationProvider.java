@@ -33,7 +33,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
       if (decl.getDeclarationModel()!=null) {
           if (decl.getDeclarationModel().isClassOrInterfaceMember()) {
               TypeDeclaration declaring = (TypeDeclaration) decl.getDeclarationModel().getContainer();
-              documentation += "<br/>declared by " + declaring.getName() + " [" + pkg + "]";
+              documentation += "<br/><br/>declared by " + declaring.getName() + " [" + pkg + "]";
           }   
           if (decl.getDeclarationModel().isActual()) {
               Declaration refined = decl.getDeclarationModel().getRefinedDeclaration();
@@ -64,7 +64,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
               if (args.size() > 0)
               {
                 String docLine = args.get(0).getExpression().getTerm().getText();
-                documentation += "<br/>" + docLine;
+                documentation += "<br/><br/>" + docLine;
               }
             }
             }
