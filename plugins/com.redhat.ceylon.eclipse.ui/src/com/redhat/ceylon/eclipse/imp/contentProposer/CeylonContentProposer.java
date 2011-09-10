@@ -34,12 +34,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -154,7 +154,7 @@ public class CeylonContentProposer implements IContentProposer {
 			  token.getType()==UIDENTIFIER;
   }
 
-  public ICompletionProposal[] constructCompletions(int offset, String prefix, 
+  private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
         TreeMap<String, Declaration> map, CeylonParseController cpc, Node node) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
       for (String keyword: CeylonTokenColorer.keywords) {
@@ -165,34 +165,41 @@ public class CeylonContentProposer implements IContentProposer {
           }
       }
       for (final Declaration d: map.values()) {
-        if (d instanceof TypeDeclaration || (d instanceof Method && d.isToplevel())) {
+        /*if (d instanceof TypeDeclaration || (!(d instanceof Functional)) || 
+                (d instanceof Method && d.isToplevel())) {*/
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
-                  getDescriptionFor(d, false), 
-        		  getTextFor(d, false), false));
+                  getDescriptionFor(d), 
+        		  getTextFor(d), false));
+        //}
+        if (d instanceof Functional) {
+          result.add(sourceProposal(offset, prefix, 
+                  CeylonLabelProvider.getImage(d),
+                  getDocumentation(getDeclarationNode(cpc, d)), 
+                  getPositionalInvocationDescriptionFor(d), 
+        		  getPositionalInvocationTextFor(d), true));
+          result.add(sourceProposal(offset, prefix, 
+                  CeylonLabelProvider.getImage(d),
+                  getDocumentation(getDeclarationNode(cpc, d)), 
+                  getNamedInvocationDescriptionFor(d), 
+                  getNamedInvocationTextFor(d), true));
         }
-        if (d instanceof TypedDeclaration || d instanceof Class) {
-          result.add(sourceProposal(offset, prefix, 
-                  CeylonLabelProvider.getImage(d),
-                  getDocumentation(getDeclarationNode(cpc, d)), 
-                  getDescriptionFor(d, true), 
-        		  getTextFor(d, true), true));
-          if (node.getScope() instanceof ClassOrInterface &&
-                  ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-              result.add(sourceProposal(offset, prefix, 
-                      REFINEMENT, 
-                      getDocumentation(getDeclarationNode(cpc, d)), 
-                      getRefinementDescriptionFor(d) + " - refine declaration in " + 
-                      ((Declaration) d.getContainer()).getName(), 
-                      getRefinementTextFor(d), false));
-          }
+        if (d instanceof MethodOrValue || d instanceof Class) {
+            if (node.getScope() instanceof ClassOrInterface &&
+                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                result.add(sourceProposal(offset, prefix, 
+                        REFINEMENT, 
+                        getDocumentation(getDeclarationNode(cpc, d)), 
+                        getRefinementDescriptionFor(d), 
+                        getRefinementTextFor(d), false));
+            }
         }
       }
       return result.toArray(new ICompletionProposal[result.size()]);
   }
 
-  public TreeMap<String, Declaration> sortProposals(final String prefix,
+  private static TreeMap<String, Declaration> sortProposals(final String prefix,
 		Map<String, Declaration> proposals) {
 	TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
         public int compare(String x, String y) {
@@ -214,7 +221,7 @@ public class CeylonContentProposer implements IContentProposer {
 	return map;
   }
 
-  private SourceProposal sourceProposal(final int offset, final String prefix,
+  private static SourceProposal sourceProposal(final int offset, final String prefix,
 		final Image image, String doc, String desc, final String text, 
 		final boolean selectParams) {
 	return new SourceProposal(desc, text, "", 
@@ -228,9 +235,10 @@ public class CeylonContentProposer implements IContentProposer {
 	  public Point getSelection(IDocument document) {
 	      if (selectParams) {
     	      int loc = text.indexOf('(');
+    	      if (loc<0) loc = text.indexOf('{');
     	      int start;
     	      int length;
-    	      if (loc<0||text.contains("()")) {
+    	      if (loc<0||text.contains("()")||text.contains("{}")) {
     	    	start = offset+text.length()-prefix.length();
     	    	length = 0;
     	      }
@@ -281,20 +289,28 @@ public class CeylonContentProposer implements IContentProposer {
     }
   }
 
-  public static String getTextFor(Declaration d, boolean includeArgs) {
-    StringBuilder result = new StringBuilder(d.getName());
-    if (d instanceof Generic) {
-      List<TypeParameter> types = ((Generic) d).getTypeParameters();
-      if (!types.isEmpty()) {
-        result.append("<");
-        for (TypeParameter p: types) {
-          result.append(p.getName()).append(", ");
-        }
-        result.setLength(result.length()-2);
-        result.append(">");
-      }
+  private static String getTextFor(Declaration d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d, result);
+      return result.toString();
     }
-    if (includeArgs && d instanceof Functional) {
+
+  private static String getPositionalInvocationTextFor(Declaration d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d, result);
+      appendPositionalArgs(d, result);
+      return result.toString();
+    }
+
+  private static String getNamedInvocationTextFor(Declaration d) {
+    StringBuilder result = new StringBuilder(d.getName());
+    appendTypeParameters(d, result);
+    appendNamedArgs(d, result);
+    return result.toString();
+  }
+
+  private static void appendPositionalArgs(Declaration d, StringBuilder result) {
+    if (d instanceof Functional) {
       List<ParameterList> plists = ((Functional) d).getParameterLists();
       if (plists!=null && !plists.isEmpty()) {
         ParameterList params = plists.get(0);
@@ -311,19 +327,62 @@ public class CeylonContentProposer implements IContentProposer {
         }
       }
     }
-    return result.toString();
-  }
-  
-  public static String getRefinementTextFor(Declaration d) {
-    return getDeclarationTextFor(d) + getDescriptionFor(d, true);
   }
 
-  public static String getRefinementDescriptionFor(Declaration d) {
-      return getDeclarationTextFor(d) + getDescriptionFor(d, true);
+  private static void appendNamedArgs(Declaration d, StringBuilder result) {
+      if (d instanceof Functional) {
+        List<ParameterList> plists = ((Functional) d).getParameterLists();
+        if (plists!=null && !plists.isEmpty()) {
+          ParameterList params = plists.get(0);
+          if (params.getParameters().isEmpty()) {
+            result.append(" {}");
+          }
+          else {
+            result.append(" { ");
+            for (Parameter p: params.getParameters()) {
+              result.append(p.getName()).append(" = ")
+                  .append(p.getName()).append("; ");
+            }
+            result.append("}");
+          }
+        }
+      }
     }
 
-  public static String getDeclarationTextFor(Declaration d) {
-    StringBuilder result = new StringBuilder("shared actual ");
+  private static void appendTypeParameters(Declaration d, StringBuilder result) {
+    if (d instanceof Generic) {
+      List<TypeParameter> types = ((Generic) d).getTypeParameters();
+      if (!types.isEmpty()) {
+        result.append("<");
+        for (TypeParameter p: types) {
+          result.append(p.getName()).append(", ");
+        }
+        result.setLength(result.length()-2);
+        result.append(">");
+      }
+    }
+  }
+  
+  private static String getRefinementTextFor(Declaration d) {
+    StringBuilder result = new StringBuilder();
+    appendDeclarationText(d, result);
+    appendTypeParameters(d, result);
+    appendParameters(d, result);
+    return result.toString();
+  }
+
+  private static String getRefinementDescriptionFor(Declaration d) {
+      StringBuilder result = new StringBuilder();
+      appendDeclarationText(d, result);
+      appendTypeParameters(d, result);
+      appendParameters(d, result);
+      /*result.append(" - refine declaration in ") 
+            .append(((Declaration) d.getContainer()).getName());*/
+      return result.toString();
+    }
+
+  private static void appendDeclarationText(Declaration d, StringBuilder result) {
+    result.append("shared actual ");
     if (d instanceof Class) {
         result.append("class");
     }
@@ -342,76 +401,62 @@ public class CeylonContentProposer implements IContentProposer {
             result.append(typeName);
         }
     }
-    return result.append(" ").toString();
-}
+    result.append(" ").append(d.getName());
+  }
   
-  public static String getDescriptionFor(Declaration d, boolean includeArgs) {
+  private static String getDescriptionFor(Declaration d) {
       StringBuilder result = new StringBuilder(d.getName());
-      if (d instanceof Generic) {
-        List<TypeParameter> types = ((Generic) d).getTypeParameters();
-        if (!types.isEmpty()) {
-          result.append("<");
-          for (TypeParameter p: types) {
-            result.append(p.getName()).append(", ");
-          }
-          result.setLength(result.length()-2);
-          result.append(">");
-        }
-      }
-      if (includeArgs && d instanceof Functional) {
-        List<ParameterList> plists = ((Functional) d).getParameterLists();
-        if (plists!=null && !plists.isEmpty()) {
-          ParameterList params = plists.get(0);
-          if (params.getParameters().isEmpty()) {
-            result.append("()");
-          }
-          else {
-            result.append("(");
-            for (Parameter p: params.getParameters()) {
-              result.append(p.getType().getProducedTypeName()).append(" ")
-                  .append(p.getName()).append(", ");
-            }
-            result.setLength(result.length()-2);
-            result.append(")");
-          }
-        }
-      }
-      if (d.isToplevel()) {
+      appendTypeParameters(d, result);
+      return result.toString();
+  }
+
+  private static String getPositionalInvocationDescriptionFor(Declaration d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d, result);
+      appendPositionalArgs(d, result);
+      return result/*.append(" - invoke with positional arguments")*/.toString();
+  }
+
+  private static String getNamedInvocationDescriptionFor(Declaration d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d, result);
+      appendNamedArgs(d, result);
+      return result/*.append(" - invoke with named arguments")*/.toString();
+  }
+
+  /*private static void appendPackage(Declaration d, StringBuilder result) {
+    if (d.isToplevel()) {
         String pkg = d.getUnit().getPackage().getQualifiedNameString();
         if (pkg.isEmpty()) pkg="default package";
         result.append(" [").append(pkg).append("]");
-      }
-      return result.toString();
     }
-    
-  /*private String getPrefix(Node node, int offset) {
-    if (node instanceof Tree.SimpleType) {
-      Tree.Identifier id = ((Tree.SimpleType) node).getIdentifier();
-      return getPrefix(offset, id);
+    if (d.isClassOrInterfaceMember()) {
+        result.append(" - ");
+        ClassOrInterface td = (ClassOrInterface) d.getContainer();
+        result.append( td.getName() );
+        appendPackage(td, result);
     }
-    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-        Tree.Identifier id = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
-        return getPrefix(offset, id);
+  }*/
+
+  private static void appendParameters(Declaration d, StringBuilder result) {
+    if (d instanceof Functional) {
+    List<ParameterList> plists = ((Functional) d).getParameterLists();
+    if (plists!=null && !plists.isEmpty()) {
+      ParameterList params = plists.get(0);
+      if (params.getParameters().isEmpty()) {
+        result.append("()");
       }
-    else if (node instanceof Tree.Declaration) {
-      Tree.Identifier id = ((Tree.Declaration) node).getIdentifier();
-      return getPrefix(offset, id);
+      else {
+        result.append("(");
+        for (Parameter p: params.getParameters()) {
+          result.append(p.getType().getProducedTypeName()).append(" ")
+              .append(p.getName()).append(", ");
+        }
+        result.setLength(result.length()-2);
+        result.append(")");
+      }
     }
-    else if (node instanceof Tree.NamedArgument) {
-        Tree.Identifier id = ((Tree.NamedArgument) node).getIdentifier();
-        return getPrefix(offset, id);
-      }
-    else {
-      return "";
     }
   }
-
-  private String getPrefix(int offset, Tree.Identifier id) {
-    if (id==null||id.getText().equals("")) return "";
-    if (offset<0) return id.getText(); 
-    int index = offset-((CommonToken) id.getToken()).getStartIndex();
-    if (index<=0) return "";
-	return id.getText().substring(0, index);
-  }*/
   
 }
