@@ -254,8 +254,9 @@ public class CeylonParseController extends ParseControllerBase {
         }
         else {
             // Editing a new file
-            // Retrieve the target package from the file src-relative path  
-            String packageName = file.getPath().replace(srcDir.getPath() + "/", "")
+            // Retrieve the target package from the file src-relative path
+            //TODO: this is very fragile!
+            String packageName = file.getPath().replaceFirst(srcDir.getPath() + "/", "")
                     .replace("/" + file.getName(), "").replace('/', '.');
             Modules modules = typeChecker.getContext().getModules();
             for (Module module : modules.getListOfModules()) {
