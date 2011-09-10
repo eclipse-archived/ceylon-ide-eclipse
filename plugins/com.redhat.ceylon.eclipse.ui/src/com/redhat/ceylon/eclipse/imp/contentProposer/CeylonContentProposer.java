@@ -30,13 +30,13 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -48,7 +48,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
@@ -143,10 +142,10 @@ public class CeylonContentProposer implements IContentProposer {
         node = cpc.getRootNode();
       }
       else if (node instanceof Tree.Import) {
-          return constructPackageCompletions(cpc, offset, prefix, null);
+          return constructPackageCompletions(cpc, offset, prefix, null, node);
       }
       else if (node instanceof Tree.ImportPath) {
-          return constructPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node);
+          return constructPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node);
       }
       else {
         return constructCompletions(offset, prefix, 
@@ -161,7 +160,7 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   public ICompletionProposal[] constructPackageCompletions(CeylonParseController cpc, 
-          int offset, String prefix, Tree.ImportPath path) {
+          int offset, String prefix, Tree.ImportPath path, Node node) {
       StringBuilder fullPath = new StringBuilder();
       if (path!=null) {
         for (int i=0; i<path.getIdentifiers().size()-1; i++) {
@@ -170,11 +169,13 @@ public class CeylonContentProposer implements IContentProposer {
       }
       int len = fullPath.length();
       fullPath.append(prefix);
-      TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+      //TODO: someday it would be nice to propose from all packages 
+      //      and auto-add the module dependency!
+      /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
       if (tc!=null) {
-        //TODO: propose only packages available to the current module!
-        for (Module m: tc.getContext().getModules().getListOfModules()) {
+        for (Module m: tc.getContext().getModules().getListOfModules()) {*/
+        for (Module m: node.getUnit().getPackage().getModule().getDependencies()) {
             for (Package p: m.getAllPackages()) {
                 if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
                     result.add(sourceProposal(offset, prefix, CeylonLabelProvider.PACKAGE, 
@@ -183,7 +184,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
             }
         }
-      }
+      //}
       return result.toArray(new ICompletionProposal[result.size()]);
   }
   
@@ -202,18 +203,18 @@ public class CeylonContentProposer implements IContentProposer {
                       true));
           }
       }
+      boolean inImport = node.getScope() instanceof ImportList;
       for (final DeclarationWithProximity dwp: set) {
         Declaration d = dwp.getDeclaration();
-        /*if (d instanceof TypeDeclaration || (!(d instanceof Functional)) || 
-                (d instanceof Method && d.isToplevel())) {*/
-          result.add(sourceProposal(offset, prefix, 
-                  CeylonLabelProvider.getImage(d),
-                  getDocumentation(getDeclarationNode(cpc, d)), 
-                  getDescriptionFor(dwp), 
-        		  getTextFor(dwp), true));
-        //}
+        result.add(sourceProposal(offset, prefix, 
+                CeylonLabelProvider.getImage(d),
+                getDocumentation(getDeclarationNode(cpc, d)), 
+                getDescriptionFor(dwp, !inImport), 
+       	        getTextFor(dwp, !inImport), true));
+        if (!inImport) {
         if (d instanceof Functional) {
-          if ( !( d instanceof Class && ((Class) d).isAbstract() ) ) {
+          boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
+          if (!isAbstractClass) {
             result.add(sourceProposal(offset, prefix, 
                     CeylonLabelProvider.getImage(d),
                     getDocumentation(getDeclarationNode(cpc, d)), 
@@ -240,6 +241,7 @@ public class CeylonContentProposer implements IContentProposer {
                         getRefinementDescriptionFor(d), 
                         getRefinementTextFor(d), false));
             }
+        }
         }
       }
       return result.toArray(new ICompletionProposal[result.size()]);
@@ -339,7 +341,7 @@ public class CeylonContentProposer implements IContentProposer {
     else {
       Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
       Module languageModule = cpc.getContext().getModules().getLanguageModule();
-      if (languageModule!=null) {
+      if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
         for (Package languageScope: languageModule.getPackages() ) {
           result.putAll(languageScope.getMatchingDeclarations(null, prefix, 1000));
         }
@@ -364,9 +366,10 @@ public class CeylonContentProposer implements IContentProposer {
       }
   }
 
-  private static String getTextFor(DeclarationWithProximity d) {
+  private static String getTextFor(DeclarationWithProximity d, 
+          boolean includeTypeArgs) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d.getDeclaration(), result);
+      if (includeTypeArgs) appendTypeParameters(d.getDeclaration(), result);
       return result.toString();
     }
 
@@ -386,9 +389,10 @@ public class CeylonContentProposer implements IContentProposer {
     return result.toString();
   }
 
-  private static String getDescriptionFor(DeclarationWithProximity d) {
+  private static String getDescriptionFor(DeclarationWithProximity d, 
+          boolean includeTypeArgs) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d.getDeclaration(), result);
+      if (includeTypeArgs) appendTypeParameters(d.getDeclaration(), result);
       return result.toString();
   }
 
