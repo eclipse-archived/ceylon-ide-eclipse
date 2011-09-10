@@ -164,7 +164,7 @@ public class CeylonContentProposer implements IContentProposer {
           if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
               result.add(sourceProposal(offset, prefix, null, 
                       keyword + " keyword", keyword, keyword, 
-                      false));
+                      true));
           }
       }
       for (final DeclarationWithProximity dwp: set) {
@@ -175,24 +175,26 @@ public class CeylonContentProposer implements IContentProposer {
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
                   getDescriptionFor(dwp), 
-        		  getTextFor(dwp), false));
+        		  getTextFor(dwp), true));
         //}
         if (d instanceof Functional) {
-          result.add(sourceProposal(offset, prefix, 
-                  CeylonLabelProvider.getImage(d),
-                  getDocumentation(getDeclarationNode(cpc, d)), 
-                  getPositionalInvocationDescriptionFor(dwp), 
-        		  getPositionalInvocationTextFor(dwp), true));
-        List<ParameterList> pls = ((Functional) d).getParameterLists();
-        if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
-              //if there is more than one parameter, 
-              //suggest a named argument invocation 
-              result.add(sourceProposal(offset, prefix, 
-                      CeylonLabelProvider.getImage(d),
-                      getDocumentation(getDeclarationNode(cpc, d)), 
-                      getNamedInvocationDescriptionFor(dwp), 
-                      getNamedInvocationTextFor(dwp), true));
-          }
+          if ( !( d instanceof Class && ((Class) d).isAbstract() ) ) {
+            result.add(sourceProposal(offset, prefix, 
+                    CeylonLabelProvider.getImage(d),
+                    getDocumentation(getDeclarationNode(cpc, d)), 
+                    getPositionalInvocationDescriptionFor(dwp), 
+                    getPositionalInvocationTextFor(dwp), true));
+            List<ParameterList> pls = ((Functional) d).getParameterLists();
+            if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+                  //if there is more than one parameter, 
+                  //suggest a named argument invocation 
+                  result.add(sourceProposal(offset, prefix, 
+                          CeylonLabelProvider.getImage(d),
+                          getDocumentation(getDeclarationNode(cpc, d)), 
+                          getNamedInvocationDescriptionFor(dwp), 
+                          getNamedInvocationTextFor(dwp), true));
+              }
+            }
         }
         if (d instanceof MethodOrValue || d instanceof Class) {
             if (node.getScope() instanceof ClassOrInterface &&
@@ -249,22 +251,27 @@ public class CeylonContentProposer implements IContentProposer {
 	  @Override
 	  public Point getSelection(IDocument document) {
 	      if (selectParams) {
-    	      int loc = text.indexOf('(');
+    	      int locOfTypeArgs = text.indexOf('<');
+    	      int loc = locOfTypeArgs;
+    	      if (loc<0) loc = text.indexOf('(');
     	      if (loc<0) loc = text.indexOf('=')+1;
     	      int start;
     	      int length;
-    	      if (loc<0||text.contains("()")||text.contains("{}")) {
-    	    	start = offset+text.length()-prefix.length();
+    	      if (loc<0 || locOfTypeArgs<0 &&
+    	              (text.contains("()") || text.contains("{}"))) {
+    	    	start = text.length();
     	    	length = 0;
     	      }
     	      else {
+                int endOfTypeArgs = text.indexOf('>'); 
     	        int end = text.indexOf(',');
-    	        if (end<0) end = text.indexOf(';');
-    	        if (end<0) end = text.length()-1;
-    		    start = offset-prefix.length()+loc+1;
+                if (end<0) end = text.indexOf(';');
+                if (end<0) end = text.length()-1;
+    	        if (endOfTypeArgs>0) end = end < endOfTypeArgs ? end : endOfTypeArgs;
+    		    start = loc+1;
     		    length = end-loc-1;
     	      }
-    	      return new Point(start, length);
+    	      return new Point(offset-prefix.length() + start, length);
           }
 	      else {
 	          return new Point(offset + text.length()-prefix.length(), 0);
@@ -306,6 +313,21 @@ public class CeylonContentProposer implements IContentProposer {
       return result;
     }
   }
+  
+  private static boolean forceExplicitTypeArgs(Declaration d) {
+      //TODO: this is a pretty limited implementation 
+      //      for now, but eventually we could do 
+      //      something much more sophisticated to
+      //      guess is explicit type args will be
+      //      necessary (variance, etc)
+      if (d instanceof Functional) {
+        List<ParameterList> pls = ((Functional) d).getParameterLists();
+        return pls.isEmpty() || pls.get(0).getParameters().isEmpty();
+      }
+      else {
+          return false;
+      }
+  }
 
   private static String getTextFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
@@ -315,14 +337,16 @@ public class CeylonContentProposer implements IContentProposer {
 
   private static String getPositionalInvocationTextFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d.getDeclaration(), result);
+      if (forceExplicitTypeArgs(d.getDeclaration()))
+          appendTypeParameters(d.getDeclaration(), result);
       appendPositionalArgs(d.getDeclaration(), result);
       return result.toString();
     }
 
   private static String getNamedInvocationTextFor(DeclarationWithProximity d) {
     StringBuilder result = new StringBuilder(d.getName());
-    appendTypeParameters(d.getDeclaration(), result);
+    if (forceExplicitTypeArgs(d.getDeclaration()))
+        appendTypeParameters(d.getDeclaration(), result);
     appendNamedArgs(d.getDeclaration(), result);
     return result.toString();
   }
@@ -335,14 +359,16 @@ public class CeylonContentProposer implements IContentProposer {
 
   private static String getPositionalInvocationDescriptionFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d.getDeclaration(), result);
+      if (forceExplicitTypeArgs(d.getDeclaration()))
+          appendTypeParameters(d.getDeclaration(), result);
       appendPositionalArgs(d.getDeclaration(), result);
       return result/*.append(" - invoke with positional arguments")*/.toString();
   }
 
   private static String getNamedInvocationDescriptionFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d.getDeclaration(), result);
+      if (forceExplicitTypeArgs(d.getDeclaration()))
+          appendTypeParameters(d.getDeclaration(), result);
       appendNamedArgs(d.getDeclaration(), result);
       return result/*.append(" - invoke with named arguments")*/.toString();
   }
@@ -396,8 +422,10 @@ public class CeylonContentProposer implements IContentProposer {
           else {
             result.append(" { ");
             for (Parameter p: params.getParameters()) {
-              result.append(p.getName()).append(" = ")
-                  .append(p.getName()).append("; ");
+              if (!p.isSequenced()) {
+                result.append(p.getName()).append(" = ")
+                    .append(p.getName()).append("; ");
+              }
             }
             result.append("}");
           }
