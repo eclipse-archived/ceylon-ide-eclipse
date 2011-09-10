@@ -178,9 +178,18 @@ public class CeylonContentProposer implements IContentProposer {
         for (Module m: node.getUnit().getPackage().getModule().getDependencies()) {
             for (Package p: m.getAllPackages()) {
                 if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
+                  boolean already = false;
+                  for (ImportList il: node.getUnit().getImportLists()) {
+                      if (il.getImportedPackage()==p) {
+                          already = true;
+                          break;
+                      }
+                  }
+                  if (!already) {
                     result.add(sourceProposal(offset, prefix, CeylonLabelProvider.PACKAGE, 
                             "[" + p.getQualifiedNameString() + "]", p.getQualifiedNameString(), 
                             p.getQualifiedNameString().substring(len), false));
+                  }
                 }
             }
         }
