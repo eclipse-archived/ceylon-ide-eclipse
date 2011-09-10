@@ -174,20 +174,20 @@ public class CeylonContentProposer implements IContentProposer {
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
-                  getDescriptionFor(d), 
-        		  getTextFor(d), false));
+                  getDescriptionFor(dwp), 
+        		  getTextFor(dwp), false));
         //}
         if (d instanceof Functional) {
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
-                  getPositionalInvocationDescriptionFor(d), 
-        		  getPositionalInvocationTextFor(d), true));
+                  getPositionalInvocationDescriptionFor(dwp), 
+        		  getPositionalInvocationTextFor(dwp), true));
           result.add(sourceProposal(offset, prefix, 
                   CeylonLabelProvider.getImage(d),
                   getDocumentation(getDeclarationNode(cpc, d)), 
-                  getNamedInvocationDescriptionFor(d), 
-                  getNamedInvocationTextFor(d), true));
+                  getNamedInvocationDescriptionFor(dwp), 
+                  getNamedInvocationTextFor(dwp), true));
         }
         if (d instanceof MethodOrValue || d instanceof Class) {
             if (node.getScope() instanceof ClassOrInterface &&
@@ -208,8 +208,8 @@ public class CeylonContentProposer implements IContentProposer {
 	Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
 	  new Comparator<DeclarationWithProximity>() {
         public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
-            String xName = x.getDeclaration().getName();
-            String yName = y.getDeclaration().getName();
+            String xName = x.getName();
+            String yName = y.getName();
             if (prefix.length()!=0) {
                 int lowers =  isLowerCase(prefix.charAt(0)) ? -1 : 1;
                 if (isLowerCase(xName.charAt(0)) && 
@@ -299,24 +299,62 @@ public class CeylonContentProposer implements IContentProposer {
     }
   }
 
-  private static String getTextFor(Declaration d) {
+  private static String getTextFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d, result);
+      appendTypeParameters(d.getDeclaration(), result);
       return result.toString();
     }
 
-  private static String getPositionalInvocationTextFor(Declaration d) {
+  private static String getPositionalInvocationTextFor(DeclarationWithProximity d) {
       StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d, result);
-      appendPositionalArgs(d, result);
+      appendTypeParameters(d.getDeclaration(), result);
+      appendPositionalArgs(d.getDeclaration(), result);
       return result.toString();
     }
 
-  private static String getNamedInvocationTextFor(Declaration d) {
+  private static String getNamedInvocationTextFor(DeclarationWithProximity d) {
     StringBuilder result = new StringBuilder(d.getName());
-    appendTypeParameters(d, result);
-    appendNamedArgs(d, result);
+    appendTypeParameters(d.getDeclaration(), result);
+    appendNamedArgs(d.getDeclaration(), result);
     return result.toString();
+  }
+
+  private static String getDescriptionFor(DeclarationWithProximity d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d.getDeclaration(), result);
+      return result.toString();
+  }
+
+  private static String getPositionalInvocationDescriptionFor(DeclarationWithProximity d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d.getDeclaration(), result);
+      appendPositionalArgs(d.getDeclaration(), result);
+      return result/*.append(" - invoke with positional arguments")*/.toString();
+  }
+
+  private static String getNamedInvocationDescriptionFor(DeclarationWithProximity d) {
+      StringBuilder result = new StringBuilder(d.getName());
+      appendTypeParameters(d.getDeclaration(), result);
+      appendNamedArgs(d.getDeclaration(), result);
+      return result/*.append(" - invoke with named arguments")*/.toString();
+  }
+
+  private static String getRefinementTextFor(Declaration d) {
+    StringBuilder result = new StringBuilder();
+    appendDeclarationText(d, result);
+    appendTypeParameters(d, result);
+    appendParameters(d, result);
+    return result.toString();
+  }
+
+  private static String getRefinementDescriptionFor(Declaration d) {
+      StringBuilder result = new StringBuilder();
+      appendDeclarationText(d, result);
+      appendTypeParameters(d, result);
+      appendParameters(d, result);
+      /*result.append(" - refine declaration in ") 
+            .append(((Declaration) d.getContainer()).getName());*/
+      return result.toString();
   }
 
   private static void appendPositionalArgs(Declaration d, StringBuilder result) {
@@ -373,24 +411,6 @@ public class CeylonContentProposer implements IContentProposer {
     }
   }
   
-  private static String getRefinementTextFor(Declaration d) {
-    StringBuilder result = new StringBuilder();
-    appendDeclarationText(d, result);
-    appendTypeParameters(d, result);
-    appendParameters(d, result);
-    return result.toString();
-  }
-
-  private static String getRefinementDescriptionFor(Declaration d) {
-      StringBuilder result = new StringBuilder();
-      appendDeclarationText(d, result);
-      appendTypeParameters(d, result);
-      appendParameters(d, result);
-      /*result.append(" - refine declaration in ") 
-            .append(((Declaration) d.getContainer()).getName());*/
-      return result.toString();
-    }
-
   private static void appendDeclarationText(Declaration d, StringBuilder result) {
     result.append("shared actual ");
     if (d instanceof Class) {
@@ -414,26 +434,6 @@ public class CeylonContentProposer implements IContentProposer {
     result.append(" ").append(d.getName());
   }
   
-  private static String getDescriptionFor(Declaration d) {
-      StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d, result);
-      return result.toString();
-  }
-
-  private static String getPositionalInvocationDescriptionFor(Declaration d) {
-      StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d, result);
-      appendPositionalArgs(d, result);
-      return result/*.append(" - invoke with positional arguments")*/.toString();
-  }
-
-  private static String getNamedInvocationDescriptionFor(Declaration d) {
-      StringBuilder result = new StringBuilder(d.getName());
-      appendTypeParameters(d, result);
-      appendNamedArgs(d, result);
-      return result/*.append(" - invoke with named arguments")*/.toString();
-  }
-
   /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {
         String pkg = d.getUnit().getPackage().getQualifiedNameString();
