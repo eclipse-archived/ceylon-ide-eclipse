@@ -68,6 +68,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
   
   @Override
+  public void visit(Tree.ImportPath that) {
+      if (inBounds(that)) {
+          node = that;
+      }
+      else {
+          super.visit(that);
+      }
+  }
+  
+  @Override
   public void visit(Tree.BinaryOperatorExpression that) {
 	  super.visit(that);
 	  if (node==null && inBounds(that.getLeftTerm(), that.getRightTerm())) {

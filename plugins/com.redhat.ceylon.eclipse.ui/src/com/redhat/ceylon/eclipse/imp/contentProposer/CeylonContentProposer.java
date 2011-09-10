@@ -30,6 +30,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -47,6 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
@@ -140,16 +142,49 @@ public class CeylonContentProposer implements IContentProposer {
       if (node==null) {
         node = cpc.getRootNode();
       }
-            
-      return constructCompletions(offset, prefix, 
+      else if (node instanceof Tree.Import) {
+          return constructPackageCompletions(cpc, offset, prefix, null);
+      }
+      else if (node instanceof Tree.ImportPath) {
+          return constructPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node);
+      }
+      else {
+        return constructCompletions(offset, prefix, 
     		  sortProposals(prefix, getProposals(node, prefix, cpc)),
     		  cpc, node);
+      }
     } 
-    else {
       /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
                  offset));*/
-      return null;
-    }
+    return null;
+
+  }
+
+  public ICompletionProposal[] constructPackageCompletions(CeylonParseController cpc, 
+          int offset, String prefix, Tree.ImportPath path) {
+      StringBuilder fullPath = new StringBuilder();
+      if (path!=null) {
+        for (int i=0; i<path.getIdentifiers().size()-1; i++) {
+          fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
+        }
+      }
+      int len = fullPath.length();
+      fullPath.append(prefix);
+      TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
+      List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+      if (tc!=null) {
+        //TODO: propose only packages available to the current module!
+        for (Module m: tc.getContext().getModules().getListOfModules()) {
+            for (Package p: m.getAllPackages()) {
+                if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
+                    result.add(sourceProposal(offset, prefix, CeylonLabelProvider.PACKAGE, 
+                            "[" + p.getQualifiedNameString() + "]", p.getQualifiedNameString(), 
+                            p.getQualifiedNameString().substring(len), false));
+                }
+            }
+        }
+      }
+      return result.toArray(new ICompletionProposal[result.size()]);
   }
   
   private static boolean isIdentifier(Token token) {

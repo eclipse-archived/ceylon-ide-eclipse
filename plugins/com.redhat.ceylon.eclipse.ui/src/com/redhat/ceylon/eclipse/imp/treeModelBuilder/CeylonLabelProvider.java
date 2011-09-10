@@ -57,7 +57,7 @@ public class CeylonLabelProvider implements ILabelProvider {
       .get(ICeylonResources.CEYLON_LOCAL_METHOD);
   private static Image LOCAL_ATTRIBUTE = imageRegistry
       .get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
-  private static Image PACKAGE = imageRegistry
+  public static Image PACKAGE = imageRegistry
 	      .get(ICeylonResources.CEYLON_PACKAGE);
   private static Image IMPORT = imageRegistry
 	      .get(ICeylonResources.CEYLON_IMPORT);
