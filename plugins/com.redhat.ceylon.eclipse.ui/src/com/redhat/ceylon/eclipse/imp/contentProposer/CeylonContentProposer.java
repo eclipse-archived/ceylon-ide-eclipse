@@ -183,11 +183,16 @@ public class CeylonContentProposer implements IContentProposer {
                   getDocumentation(getDeclarationNode(cpc, d)), 
                   getPositionalInvocationDescriptionFor(dwp), 
         		  getPositionalInvocationTextFor(dwp), true));
-          result.add(sourceProposal(offset, prefix, 
-                  CeylonLabelProvider.getImage(d),
-                  getDocumentation(getDeclarationNode(cpc, d)), 
-                  getNamedInvocationDescriptionFor(dwp), 
-                  getNamedInvocationTextFor(dwp), true));
+        List<ParameterList> pls = ((Functional) d).getParameterLists();
+        if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+              //if there is more than one parameter, 
+              //suggest a named argument invocation 
+              result.add(sourceProposal(offset, prefix, 
+                      CeylonLabelProvider.getImage(d),
+                      getDocumentation(getDeclarationNode(cpc, d)), 
+                      getNamedInvocationDescriptionFor(dwp), 
+                      getNamedInvocationTextFor(dwp), true));
+          }
         }
         if (d instanceof MethodOrValue || d instanceof Class) {
             if (node.getScope() instanceof ClassOrInterface &&
@@ -245,7 +250,7 @@ public class CeylonContentProposer implements IContentProposer {
 	  public Point getSelection(IDocument document) {
 	      if (selectParams) {
     	      int loc = text.indexOf('(');
-    	      if (loc<0) loc = text.indexOf('{');
+    	      if (loc<0) loc = text.indexOf('=')+1;
     	      int start;
     	      int length;
     	      if (loc<0||text.contains("()")||text.contains("{}")) {
@@ -253,8 +258,11 @@ public class CeylonContentProposer implements IContentProposer {
     	    	length = 0;
     	      }
     	      else {
+    	        int end = text.indexOf(',');
+    	        if (end<0) end = text.indexOf(';');
+    	        if (end<0) end = text.length()-1;
     		    start = offset-prefix.length()+loc+1;
-    		    length = text.length()-loc-2;
+    		    length = end-loc-1;
     	      }
     	      return new Point(start, length);
           }
