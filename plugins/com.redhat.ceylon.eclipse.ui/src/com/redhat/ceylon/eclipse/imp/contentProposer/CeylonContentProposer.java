@@ -14,7 +14,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -31,6 +33,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -155,16 +158,17 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
-        TreeMap<String, Declaration> map, CeylonParseController cpc, Node node) {
+        Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
       for (String keyword: CeylonTokenColorer.keywords) {
-          if (!prefix.isEmpty() && keyword.startsWith(prefix.toLowerCase())) {
+          if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
               result.add(sourceProposal(offset, prefix, null, 
                       keyword + " keyword", keyword, keyword, 
                       false));
           }
       }
-      for (final Declaration d: map.values()) {
+      for (final DeclarationWithProximity dwp: set) {
+        Declaration d = dwp.getDeclaration();
         /*if (d instanceof TypeDeclaration || (!(d instanceof Functional)) || 
                 (d instanceof Method && d.isToplevel())) {*/
           result.add(sourceProposal(offset, prefix, 
@@ -199,26 +203,32 @@ public class CeylonContentProposer implements IContentProposer {
       return result.toArray(new ICompletionProposal[result.size()]);
   }
 
-  private static TreeMap<String, Declaration> sortProposals(final String prefix,
-		Map<String, Declaration> proposals) {
-	TreeMap<String, Declaration> map = new TreeMap<String, Declaration>(new Comparator<String>() {
-        public int compare(String x, String y) {
-        	int lowers = prefix.length()==0 || isLowerCase(prefix.charAt(0)) ? -1 : 1;
-        	if (isLowerCase(x.charAt(0)) && 
-        			isUpperCase(y.charAt(0))) {
-        		return lowers;
-        	}
-        	else if (isUpperCase(x.charAt(0)) && 
-        			isLowerCase(y.charAt(0))) {
-        		return -lowers;
-        	}
-        	else {
-        		return x.compareTo(y);
-        	}
+  private static Set<DeclarationWithProximity> sortProposals(final String prefix,
+		Map<String, DeclarationWithProximity> proposals) {
+	Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
+	  new Comparator<DeclarationWithProximity>() {
+        public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
+            String xName = x.getDeclaration().getName();
+            String yName = y.getDeclaration().getName();
+            if (prefix.length()!=0) {
+                int lowers =  isLowerCase(prefix.charAt(0)) ? -1 : 1;
+                if (isLowerCase(xName.charAt(0)) && 
+                        isUpperCase(yName.charAt(0))) {
+                    return lowers;
+                }
+                else if (isUpperCase(xName.charAt(0)) && 
+                        isLowerCase(yName.charAt(0))) {
+                    return -lowers;
+                }
+            }
+            if (x.getProximity()!=y.getProximity()) {
+                return new Integer(x.getProximity()).compareTo(y.getProximity());
+            }
+            return xName.compareTo(yName);
         }
       });
-    map.putAll(proposals);
-	return map;
+    set.addAll(proposals.values());
+	return set;
   }
 
   private static SourceProposal sourceProposal(final int offset, final String prefix,
@@ -255,13 +265,13 @@ public class CeylonContentProposer implements IContentProposer {
 	};
   }
 
-  private Map<String, Declaration> getProposals(Node node, String prefix,
+  private Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
 		  CeylonParseController cpc) {
     //TODO: substitute type arguments to receiving type
     if (node instanceof Tree.QualifiedMemberExpression) {
       ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
       if (type!=null) {
-        return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+        return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
       }
       else {
         return Collections.emptyMap();
@@ -270,21 +280,21 @@ public class CeylonContentProposer implements IContentProposer {
     else if (node instanceof Tree.QualifiedTypeExpression) {
       ProducedType type = ((Tree.QualifiedTypeExpression) node).getPrimary().getTypeModel();
       if (type!=null) {
-        return type.getDeclaration().getMatchingMemberDeclarations(prefix);
+        return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
       }
       else {
         return Collections.emptyMap();
       }
     }
     else {
-      Map<String, Declaration> result = new TreeMap<String, Declaration>();
+      Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
       Module languageModule = cpc.getContext().getModules().getLanguageModule();
       if (languageModule!=null) {
         for (Package languageScope: languageModule.getPackages() ) {
-          result.putAll(languageScope.getMatchingDeclarations(null, prefix));
+          result.putAll(languageScope.getMatchingDeclarations(null, prefix, 1000));
         }
       }
-      result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix));
+      result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
       return result;
     }
   }
