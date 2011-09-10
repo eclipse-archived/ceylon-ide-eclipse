@@ -8,45 +8,52 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public class FindContainerVisitor extends Visitor 
         implements NaturalVisitor {
 	Node node;
-	Tree.Declaration declaration;
-	Tree.Declaration currentDeclaration;
-	public Tree.Declaration getDeclaration() {
+	Tree.StatementOrArgument declaration;
+	Tree.StatementOrArgument currentDeclaration;
+	public Tree.StatementOrArgument getDeclaration() {
 		return declaration;
 	}
 	public FindContainerVisitor(Node node) {
 		this.node=node;
 	}
+    @Override
+    public void visit(Tree.Import that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
 	@Override
 	public void visit(Tree.ObjectDefinition that) {
-		Tree.Declaration d = currentDeclaration;
+		Tree.StatementOrArgument d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;
 	}
 	@Override
 	public void visit(Tree.AnyAttribute that) {
-		Tree.Declaration d = currentDeclaration;
+		Tree.StatementOrArgument d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;
 	}
 	@Override
 	public void visit(Tree.AnyMethod that) {
-		Tree.Declaration d = currentDeclaration;
+		Tree.StatementOrArgument d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;
 	}
 	@Override
 	public void visit(Tree.AnyClass that) {
-		Tree.Declaration d = currentDeclaration;
+		Tree.StatementOrArgument d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;
 	}
 	@Override
 	public void visit(Tree.AnyInterface that) {
-		Tree.Declaration d = currentDeclaration;
+		Tree.StatementOrArgument d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;

@@ -40,6 +40,9 @@ abstract class FindSearchQuery implements ISearchQuery {
                     //a synthetic node inserted in the tree
                 }
                 else {
+                    if (fcv.getDeclaration()==null) {
+                        fcv.getDeclaration();
+                    }
         			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
         			        CeylonBuilder.getFile(pu), 
         					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,

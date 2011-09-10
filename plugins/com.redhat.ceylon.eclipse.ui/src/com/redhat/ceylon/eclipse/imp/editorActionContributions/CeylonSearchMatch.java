@@ -8,16 +8,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class CeylonSearchMatch extends Match {
 	
-	private Tree.Declaration declarationNode;
-	
-	public CeylonSearchMatch(Tree.Declaration declarationNode, IFile file, int offset, 
+	public CeylonSearchMatch(Tree.StatementOrArgument declarationNode, IFile file, int offset, 
 			int length, Token location) {
 		super(new CeylonElement(declarationNode, file, location), offset, length);
-		this.declarationNode=declarationNode;
-	}
-		
-	public Tree.Declaration getDeclarationNode() {
-		return declarationNode;
 	}
 	
 }

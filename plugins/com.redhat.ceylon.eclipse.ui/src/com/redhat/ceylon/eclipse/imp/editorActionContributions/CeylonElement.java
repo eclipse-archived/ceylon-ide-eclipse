@@ -4,14 +4,13 @@ import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 
 public class CeylonElement {
-	Tree.Declaration node;
+	Tree.StatementOrArgument node;
 	IFile file;
 	Token location;
 	
-	public CeylonElement(Declaration node, IFile file, Token location) {
+	public CeylonElement(Tree.StatementOrArgument node, IFile file, Token location) {
 		this.node = node;
 		this.file = file;
 		this.location = location;
@@ -21,7 +20,7 @@ public class CeylonElement {
 		return location.getLine();
 	}
 
-	public Tree.Declaration getNode() {
+	public Tree.StatementOrArgument getNode() {
 		return node;
 	}
 	
