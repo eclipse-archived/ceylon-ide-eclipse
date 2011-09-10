@@ -257,7 +257,7 @@ public class CeylonContentProposer implements IContentProposer {
     	      if (loc<0) loc = text.indexOf('=')+1;
     	      int start;
     	      int length;
-    	      if (loc<0 || locOfTypeArgs<0 &&
+    	      if (loc<=0 || locOfTypeArgs<0 &&
     	              (text.contains("()") || text.contains("{}"))) {
     	    	start = text.length();
     	    	length = 0;
