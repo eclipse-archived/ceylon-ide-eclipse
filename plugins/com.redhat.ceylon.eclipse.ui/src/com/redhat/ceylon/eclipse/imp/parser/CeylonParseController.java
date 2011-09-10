@@ -294,6 +294,7 @@ public class CeylonParseController extends ParseControllerBase {
         phasedUnit.validateRefinement();
         phasedUnit.analyseTypes();
         phasedUnit.analyseFlow();
+        phasedUnit.display();
                 
         //fCurrentAst = cu;
 
