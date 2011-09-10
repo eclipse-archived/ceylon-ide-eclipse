@@ -68,8 +68,10 @@ public class CeylonBuilder extends BuilderBase {
     public static List<PhasedUnit> getUnits(IProject project) {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         TypeChecker tc = typeCheckers.get(project);
-        for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
-            result.add(pu);
+        if (tc!=null) {
+            for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
+                result.add(pu);
+            }
         }
         return result;
     }
