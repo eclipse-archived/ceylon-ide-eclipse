@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.imp.parser.IMessageHandler;
@@ -10,9 +13,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class ErrorVisitor extends Visitor {
+public abstract class ErrorVisitor extends Visitor {
     private final IMessageHandler handler;
-
+    
     public ErrorVisitor(IMessageHandler handler) {
         this.handler = handler;
     }
@@ -27,7 +30,7 @@ public class ErrorVisitor extends Visitor {
             int startCol = 0;
             int startLine = 0;
 
-            // Map<String, Object> attributes = new HashMap<String, Object>();
+            Map<String, Object> attributes = new HashMap<String, Object>();
             if (error instanceof RecognitionError) {
                 RecognitionError recognitionError = (RecognitionError) error;
                 CommonToken token = (CommonToken) recognitionError
@@ -36,7 +39,6 @@ public class ErrorVisitor extends Visitor {
                 endOffset = token.getStopIndex();
                 startCol = token.getCharPositionInLine();
                 startLine = token.getLine();
-                // attributes.put(SEVERITY_KEY, ERROR);
             }
             if (error instanceof AnalysisMessage) {
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
@@ -49,15 +51,16 @@ public class ErrorVisitor extends Visitor {
                 endOffset = errorNode.getStopIndex();
                 startCol = token.getCharPositionInLine();
                 startLine = token.getLine();
-                /*
-                 * if (error instanceof AnalysisWarning) {
-                 * attributes.put(SEVERITY_KEY, WARNING); } else {
-                 * attributes.put(SEVERITY_KEY, ERROR); }
-                 */
             }
+            attributes.put("CeylonMessageClass", error.getClass().getSimpleName());
+            attributes.put(IMessageHandler.SEVERITY_KEY, getSeverity(error));
+            //TODO: get a real error code from the type checker!
+            attributes.put(IMessageHandler.ERROR_CODE_KEY, 69);
 
             handler.handleSimpleMessage(errorMessage, startOffset, endOffset,
-                    startCol, startCol, startLine, startLine/* , attributes */);
+                    startCol, startCol, startLine, startLine, attributes);
         }
     }
+
+    public abstract int getSeverity(Message error);
 }
