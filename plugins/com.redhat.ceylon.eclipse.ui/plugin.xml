@@ -15,7 +15,7 @@
    </extension>
    <extension
          id="ceylon-ide.parser"
-         name="ceylon Parser"
+         name="Ceylon Parser"
          point="org.eclipse.imp.runtime.parser">
       <parser
             class="com.redhat.ceylon.eclipse.imp.parser.CeylonParseController"
@@ -45,7 +45,7 @@
    </extension>
    <extension
          id="ceylon.imp.builder"
-         name="Ceylon builder"
+         name="Ceylon Builder"
          point="org.eclipse.core.resources.builders">
       <builder>
          <run
@@ -55,7 +55,7 @@
    </extension>
    <extension
          id="imp.nature"
-         name="ceylon Nature"
+         name="Ceylon Nature"
          point="org.eclipse.core.resources.natures">
       <builder
             id="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder">
@@ -68,7 +68,7 @@
    </extension>
    <extension
          id="ceylon.imp.builder.problem"
-         name="ceylon Error"
+         name="Ceylon Error"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -218,5 +218,16 @@
          </action>
         </editorContribution>
   </extension>
-  
+  <extension
+        point="org.eclipse.imp.runtime.quickFixAssistant"
+        id="com.redhat.ceylon.eclipse.imp.quickfix">
+      <quickFixAssistant
+          class="com.redhat.ceylon.eclipse.imp.quickfix.QuickFixAssistant"
+          language="ceylon">
+          <supportedMarkerType
+              markerType="org.eclipse.imp.editor.parseAnnotation.error"/>
+          <supportedMarkerType 
+              markerType="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder.problem"/>
+      </quickFixAssistant>
+  </extension>
 </plugin>
