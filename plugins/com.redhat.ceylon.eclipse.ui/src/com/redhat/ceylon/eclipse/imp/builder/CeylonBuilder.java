@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
 import org.eclipse.imp.builder.BuilderUtils;
+import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
@@ -27,6 +29,7 @@ import org.eclipse.imp.runtime.PluginBase;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.ErrorVisitor;
 import com.redhat.ceylon.eclipse.imp.parser.IFolderVirtualFile;
@@ -240,12 +243,14 @@ public class CeylonBuilder extends BuilderBase {
             typeCheckers.put(project, typeChecker);
             for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits())
             {
-                MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(
-                        getFile(phasedUnit), null, this);
-                                
-                phasedUnit.getCompilationUnit().visit(new ErrorVisitor(markerCreator));      
-
-                markerCreator.flush(monitor);
+                phasedUnit.getCompilationUnit()
+                    .visit(new ErrorVisitor(new MarkerCreator(getFile(phasedUnit), 
+                            PROBLEM_MARKER_ID)) {
+                        @Override
+                        public int getSeverity(Message error) {
+                            return IMarker.SEVERITY_ERROR;
+                        }
+                    });      
             }
             break;
         }

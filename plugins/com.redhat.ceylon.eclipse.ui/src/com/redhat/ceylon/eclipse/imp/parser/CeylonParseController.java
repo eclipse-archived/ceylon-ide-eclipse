@@ -16,6 +16,7 @@ import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
@@ -40,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -302,7 +304,12 @@ public class CeylonParseController extends ParseControllerBase {
 
         final IMessageHandler handler = getHandler();
         if (handler!=null) {
-            cu.visit(new ErrorVisitor(handler));      
+            cu.visit(new ErrorVisitor(handler) {
+                @Override
+                public int getSeverity(Message error) {
+                    return IAnnotation.ERROR;
+                }
+            });      
         }
 
     }
