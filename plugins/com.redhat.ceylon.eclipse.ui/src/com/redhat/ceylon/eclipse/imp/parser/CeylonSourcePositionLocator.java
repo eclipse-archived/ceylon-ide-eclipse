@@ -43,7 +43,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     this.parseController= (CeylonParseController) parseController;
   }
 
-  private final class NodeVisitor extends Visitor
+  private static final class NodeVisitor extends Visitor
       implements NaturalVisitor {
     
     private NodeVisitor(int fStartOffset, int fEndOffset) {
@@ -174,15 +174,22 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return findNode(ast, offset, offset+1);
   }
 
-  public Node findNode(Object ast, int startOffset, int endOffset) {
-    NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
-    System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+  public Node findNode(Object ast, int startOffset, int endOffset) {   
     Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
-    cu.visit(visitor);
-    System.out.println("selected node: " + visitor.getNode());
-    return visitor.getNode();
+    return findNode(cu, startOffset, endOffset);
   }
 
+  public static Node findNode(Tree.CompilationUnit cu, int offset) {
+      return findNode(cu, offset, offset+1);
+  }
+
+  public static Node findNode(Tree.CompilationUnit cu, int startOffset, int endOffset) {
+      NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
+      System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+      cu.visit(visitor);
+      System.out.println("selected node: " + visitor.getNode());
+      return visitor.getNode();
+ }
   
   public int getStartOffset(Object node) {
 	if (node instanceof CommonToken) {
