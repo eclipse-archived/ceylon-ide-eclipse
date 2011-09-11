@@ -13,9 +13,6 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 
 public class CeylonReferenceResolver implements IReferenceResolver {
 
-    public CeylonReferenceResolver() {
-    }
-
     /**
      * Get the text associated with the given node for use in a link from (or
      * to) that node
@@ -75,12 +72,11 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         }
         else {
             Tree.CompilationUnit cu = getCompilationUnit(cpc, dec);
-            return cu==null ? null : 
-                getDocumentationString(dec, cu);
+            return cu==null ? null : getReferencedNode(dec, cu);
         }
     }
 
-    public static Tree.Declaration getDocumentationString(Declaration dec,
+    private static Tree.Declaration getReferencedNode(Declaration dec,
             Tree.CompilationUnit compilationUnit) {
         FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
         compilationUnit.visit(visitor);
@@ -88,13 +84,10 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         return visitor.getDeclarationNode();
     }
 
-    public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
+    private static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
             Declaration dec) {
         Tree.CompilationUnit root = cpc.getRootNode();
-        if (root==null) {
-            return null;
-        }
-        else if (root.getUnit().equals(dec.getUnit())) {
+        if (root!=null && root.getUnit().equals(dec.getUnit())) {
             return root;
         }
         else {
@@ -107,8 +100,10 @@ public class CeylonReferenceResolver implements IReferenceResolver {
             if (targetPhasedUnit != null) {
                 return targetPhasedUnit.getCompilationUnit();
             }
+            else {
+                return null;
+            }
         }
-        return null;
     }
 
 }
