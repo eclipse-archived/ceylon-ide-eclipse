@@ -348,16 +348,28 @@ public class CeylonContentProposer implements IContentProposer {
       }
     }
     else {
-      Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
-      Module languageModule = cpc.getContext().getModules().getLanguageModule();
-      if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
-        for (Package languageScope: languageModule.getPackages() ) {
-          result.putAll(languageScope.getMatchingDeclarations(null, prefix, 1000));
-        }
-      }
+      Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix, cpc);
       result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
       return result;
     }
+  }
+
+  //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
+  private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, String prefix,
+        CeylonParseController cpc) {
+    Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
+      Module languageModule = cpc.getContext().getModules().getLanguageModule();
+      if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
+        for (Package languageScope: languageModule.getPackages() ) {
+          for (Map.Entry<String, DeclarationWithProximity> entry: 
+              languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
+            if (entry.getValue().getDeclaration().isShared()) {
+              result.put(entry.getKey(), entry.getValue());
+            }
+          }
+        }
+      }
+    return result;
   }
   
   private static boolean forceExplicitTypeArgs(Declaration d) {
