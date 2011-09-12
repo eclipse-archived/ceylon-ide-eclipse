@@ -54,8 +54,7 @@ public abstract class ErrorVisitor extends Visitor {
             }
             attributes.put("CeylonMessageClass", error.getClass().getSimpleName());
             attributes.put(IMessageHandler.SEVERITY_KEY, getSeverity(error));
-            //TODO: get a real error code from the type checker!
-            attributes.put(IMessageHandler.ERROR_CODE_KEY, 69);
+            attributes.put(IMessageHandler.ERROR_CODE_KEY, error.getCode());
 
             handler.handleSimpleMessage(errorMessage, startOffset, endOffset,
                     startCol, startCol, startLine, startLine, attributes);

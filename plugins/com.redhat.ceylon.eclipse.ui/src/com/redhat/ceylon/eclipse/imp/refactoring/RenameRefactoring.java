@@ -80,8 +80,7 @@ public class RenameRefactoring extends Refactoring {
 	}
 
 	private Node findNode(CeylonParseController cpc, IASTFindReplaceTarget frt) {
-		return cpc.getSourcePositionLocator()
-				.findNode(cpc.getRootNode(), frt.getSelection().x, 
+		return CeylonSourcePositionLocator.findNode(cpc.getRootNode(), frt.getSelection().x, 
 						frt.getSelection().x+frt.getSelection().y);
 	}
 

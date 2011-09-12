@@ -30,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class ExtractFunctionRefactoring extends Refactoring {
     
@@ -104,8 +105,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 	}
 
 	private Node findNode(IASTFindReplaceTarget frt) {
-		return parseController.getSourcePositionLocator()
-				.findNode(parseController.getRootNode(), frt.getSelection().x, 
+		return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
 						frt.getSelection().x+frt.getSelection().y);
 	}
 

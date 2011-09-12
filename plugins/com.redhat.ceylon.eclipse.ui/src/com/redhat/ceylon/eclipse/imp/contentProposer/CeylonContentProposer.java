@@ -30,6 +30,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -49,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -136,8 +138,7 @@ public class CeylonContentProposer implements IContentProposer {
     //END BUG WORKAROUND
     
     if (cpc.getRootNode() != null) {
-      Node node = cpc.getSourcePositionLocator()
-    		  .findNode(cpc.getRootNode(), start, end);
+      Node node = CeylonSourcePositionLocator.findNode(cpc.getRootNode(), start, end);
       if (node==null) {
         node = cpc.getRootNode();
       }
@@ -149,7 +150,7 @@ public class CeylonContentProposer implements IContentProposer {
       }
       else {
         return constructCompletions(offset, prefix, 
-    		  sortProposals(prefix, getProposals(node, prefix, cpc)),
+    		  sortProposals(prefix, getProposals(node, prefix, cpc.getContext())),
     		  cpc, node);
       }
     } 
@@ -326,8 +327,8 @@ public class CeylonContentProposer implements IContentProposer {
 	};
   }
 
-  private Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
-		  CeylonParseController cpc) {
+  public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
+          Context context) {
     //TODO: substitute type arguments to receiving type
     if (node instanceof Tree.QualifiedMemberExpression) {
       ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
@@ -348,18 +349,18 @@ public class CeylonContentProposer implements IContentProposer {
       }
     }
     else {
-      Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix, cpc);
+      Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix, context);
       result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
       return result;
     }
   }
 
   //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
-  private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, String prefix,
-        CeylonParseController cpc) {
+  private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
+          String prefix, Context context) {
     Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
-      Module languageModule = cpc.getContext().getModules().getLanguageModule();
-      if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
+    Module languageModule = context.getModules().getLanguageModule();
+    if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
         for (Package languageScope: languageModule.getPackages() ) {
           for (Map.Entry<String, DeclarationWithProximity> entry: 
               languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
@@ -368,7 +369,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
           }
         }
-      }
+    }
     return result;
   }
   

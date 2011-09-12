@@ -10,6 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 abstract class FindAction extends Action {
     
@@ -23,7 +24,7 @@ abstract class FindAction extends Action {
     @Override
     public void run() {
         CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-        Node node = cpc.getSourcePositionLocator().findNode(cpc.getRootNode(), 
+        Node node = CeylonSourcePositionLocator.findNode(cpc.getRootNode(), 
                 editor.getSelection().x, editor.getSelection().x+editor.getSelection().y);
         NewSearchUI.runQueryInBackground(createSearchQuery(
                 CeylonReferenceResolver.getReferencedDeclaration(node), getProject(editor)));

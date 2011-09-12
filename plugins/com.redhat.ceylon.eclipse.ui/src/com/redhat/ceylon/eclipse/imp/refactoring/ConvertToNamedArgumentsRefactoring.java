@@ -22,6 +22,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class ConvertToNamedArgumentsRefactoring extends Refactoring {
 
@@ -50,8 +51,7 @@ public class ConvertToNamedArgumentsRefactoring extends Refactoring {
 	}
 
 	private Node findNode(IASTFindReplaceTarget frt) {
-		return parseController.getSourcePositionLocator()
-				.findNode(parseController.getRootNode(), frt.getSelection().x, 
+		return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
 						frt.getSelection().x+frt.getSelection().y);
 	}
 
