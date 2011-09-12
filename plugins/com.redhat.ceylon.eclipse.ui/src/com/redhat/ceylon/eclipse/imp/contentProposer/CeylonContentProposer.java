@@ -58,8 +58,11 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 public class CeylonContentProposer implements IContentProposer {
 
-    private static Image REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(ICeylonResources.CEYLON_REFINEMENT);
+    private static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
+            .getImageRegistry().get(ICeylonResources.CEYLON_DEFAULT_REFINEMENT);
+    private static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
+            .getImageRegistry().get(ICeylonResources.CEYLON_FORMAL_REFINEMENT);
+    
     
   /**
    * Returns an array of content proposals applicable relative to the AST of the given
@@ -246,7 +249,7 @@ public class CeylonContentProposer implements IContentProposer {
             if (node.getScope() instanceof ClassOrInterface &&
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
                 result.add(sourceProposal(offset, prefix, 
-                        REFINEMENT, 
+                        d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                         getDocumentation(getDeclarationNode(cpc, d)), 
                         getRefinementDescriptionFor(d), 
                         getRefinementTextFor(d), false));

@@ -180,13 +180,17 @@
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-         name="com.redhat.ceylon.eclipse.ui.refinement"
-         markerSeverity="1">
+         name="com.redhat.ceylon.eclipse.ui.refinement.formal"
+         markerSeverity="0">
+      </type>
+      <type
+         name="com.redhat.ceylon.eclipse.ui.refinement.default"
+         markerSeverity="0">
       </type>
   </extension>
   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="com.redhat.ceylon.eclipse.ui.refinement"
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement.formal"
             presentationLayer="0"
             contributesToHeader="true"
             includeOnPreferencePage="true"
@@ -203,7 +207,27 @@
             highlightPreferenceValue="false"
             textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
             textStylePreferenceValue="BOX"
-            icon="icons/over_co.gif"
+            icon="icons/implm_co.gif"
+            />
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement.default"
+            presentationLayer="0"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            label="Ceylon Refinement Indicators"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
+            textPreferenceValue="false"
+            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
+            colorPreferenceValue="000,255,000"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
+            overviewRulerPreferenceValue="false"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
+            highlightPreferenceValue="false"
+            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
+            textStylePreferenceValue="BOX"
+            icon="icons/over_co.gif" 
             />
   </extension>
   <extension point="org.eclipse.ui.editorActions">
