@@ -1,10 +1,13 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
@@ -13,12 +16,16 @@ import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.services.IQuickFixAssistant;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.NullMessageHandler;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -182,7 +189,7 @@ public class QuickFixAssistant implements IQuickFixAssistant {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             FindArgumentsVisitor fav = new FindArgumentsVisitor(qmte);
             cu.visit(fav);
-            String def;
+            final String def;
             String desc;
             Image image;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
@@ -254,12 +261,22 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                     unit.getCompilationUnit().visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
-                        TextFileChange change = new TextFileChange("Add Member", 
-                                CeylonBuilder.getFile(unit));
-                        change.setEdit(new InsertEdit(decNode.getStopIndex()-1, def));
+                        final IFile file = CeylonBuilder.getFile(unit);
+                        TextFileChange change = new TextFileChange("Add Member", file);
+                        final int offset = decNode.getStopIndex()-1;
+                        change.setEdit(new InsertEdit(offset, def));
                         proposals.add(new ChangeCorrectionProposal("Create " + 
                                 desc + " in '" + typeDec.getName() + "'", 
-                                change, 50, image));
+                                change, 50, image) {
+                            @Override
+                            public void apply(IDocument document) {
+                                super.apply(document);
+                                int loc = def.indexOf("null;");
+                                if (loc<0) loc = def.indexOf("{}")+1;
+                                gotoChange(file, offset + loc, 4);
+                            }
+
+                        });
                         break;
                     }
                 }
@@ -267,14 +284,14 @@ public class QuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addRenameProposals(Tree.CompilationUnit cu, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
+    private void addRenameProposals(Tree.CompilationUnit cu, final ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, final IFile file, TypeChecker tc) {
           Node node = CeylonSourcePositionLocator.findNode(cu, problem.getOffset(), 
                   problem.getOffset() + problem.getLength());
           String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
-            String name = entry.getKey();
+            final String name = entry.getKey();
             DeclarationWithProximity dwp = entry.getValue();
             int dist = Util.getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
@@ -284,9 +301,32 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
                         brokenName.length(), name)); //TODO: don't use problem.getLength() because it's wrong from the problem list
                 proposals.add(new ChangeCorrectionProposal("Rename to '" + name + "'", 
-                        change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())));
+                        change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())) {
+                    @Override
+                    public void apply(IDocument document) {
+                        // TODO Auto-generated method stub
+                        super.apply(document);
+                        gotoChange(file, problem.getOffset(), name.length());
+                    }
+                });
             }
           }
+    }
+    
+    public static void gotoChange(final IFile file, final int offset, int length) {
+        IWorkbenchPage page = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(IMarker.CHAR_START, offset);
+        map.put(IMarker.CHAR_END, offset+length);
+        map.put(IDE.EDITOR_ID_ATTR, "org.eclipse.imp.runtime.impEditor");
+        try {
+            IMarker marker = file.createMarker(IMarker.TEXT);
+            marker.setAttributes(map);
+            IDE.openEditor(page, marker);
+            marker.delete();
+        }
+        catch (CoreException ce) {} //deliberately swallow it
     }
     
 }
