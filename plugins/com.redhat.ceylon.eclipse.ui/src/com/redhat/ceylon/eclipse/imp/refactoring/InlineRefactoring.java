@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -75,8 +76,7 @@ public class InlineRefactoring extends Refactoring {
 	}
 
 	private static Node findNode(CeylonParseController cpc, IASTFindReplaceTarget frt) {
-		return cpc.getSourcePositionLocator()
-				.findNode(cpc.getRootNode(), frt.getSelection().x, 
+		return CeylonSourcePositionLocator.findNode(cpc.getRootNode(), frt.getSelection().x, 
 						frt.getSelection().x+frt.getSelection().y);
 	}
 
