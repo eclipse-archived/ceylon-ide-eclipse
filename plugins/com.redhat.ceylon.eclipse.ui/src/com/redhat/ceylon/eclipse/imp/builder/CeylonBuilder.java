@@ -258,7 +258,7 @@ public class CeylonBuilder extends BuilderBase {
     }
 
     public static IFile getFile(PhasedUnit phasedUnit) {
-        return (IFile) ((ResourceVirtualFile)(phasedUnit.getUnitFile())).getResource();
+        return (IFile) ((ResourceVirtualFile) phasedUnit.getUnitFile()).getResource();
     }
 
     /**
