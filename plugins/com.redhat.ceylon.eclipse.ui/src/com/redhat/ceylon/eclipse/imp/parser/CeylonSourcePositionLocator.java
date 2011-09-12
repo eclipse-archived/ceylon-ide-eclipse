@@ -1,6 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.List;
+
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -8,6 +12,7 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
+import org.eclipse.imp.services.IASTFindReplaceTarget;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -191,6 +196,11 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       return visitor.getNode();
  }
   
+  public Node findNode(IASTFindReplaceTarget frt) {
+      return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
+                      frt.getSelection().x+frt.getSelection().y);
+  }
+
   public int getStartOffset(Object node) {
 	if (node instanceof CommonToken) {
 		return ((CommonToken) node).getStartIndex();
@@ -275,5 +285,22 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       return cu.getPath();
     }
     return new Path("");
+  }
+
+  public static String getIndent(CommonTokenStream tokens, Node node) {
+    int prevIndex = node.getToken().getTokenIndex()-1;
+    if (node instanceof Tree.Declaration) {
+        List<Tree.Annotation> al = ((Tree.Declaration) node).getAnnotationList().getAnnotations();
+        if (!al.isEmpty()) { 
+            prevIndex = al.get(0).getToken().getTokenIndex()-1;
+        }
+    }
+    if (prevIndex>=0) {
+        Token prevToken = tokens.get(prevIndex);
+        if (prevToken.getChannel()==Token.HIDDEN_CHANNEL) {
+            return prevToken.getText();
+        }
+    }
+    return "";
   }
 }

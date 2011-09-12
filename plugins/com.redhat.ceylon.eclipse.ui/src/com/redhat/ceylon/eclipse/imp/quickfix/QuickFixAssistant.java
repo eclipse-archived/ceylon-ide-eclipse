@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -235,14 +237,14 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                             supertype = " satisfies " + fav.expectedType.getProducedTypeName();
                         }
                     }
-                    def = "\nshared class " + brokenName + params + supertype + " {}";
+                    def = "shared class " + brokenName + params + supertype + " {}";
                     desc = "class '" + brokenName + params + supertype + "'";
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
                     String type = fav.expectedType==null ? "Nothing" : 
                         fav.expectedType.getProducedTypeName();
-                    def = "\nshared " + type + " " + brokenName + params + " { return null; }";
+                    def = "shared " + type + " " + brokenName + params + " { return null; }";
                     desc = "function '" + brokenName + params + "'";
                     image = CeylonLabelProvider.METHOD;
                 }
@@ -250,21 +252,36 @@ public class QuickFixAssistant implements IQuickFixAssistant {
             else {
                 String type = fav.expectedType==null ? "Nothing" : 
                     fav.expectedType.getProducedTypeName();
-                def = "\nshared " + type + " " + brokenName + " = null;";
+                def = "shared " + type + " " + brokenName + " = null;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
             }
             Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
             if (typeDec!=null && typeDec instanceof ClassOrInterface) {
                 for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                    //TODO: "object" declarations?
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
                     unit.getCompilationUnit().visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
-                    if (decNode!=null) {
+                    Tree.Body body=null;
+                    if (decNode instanceof Tree.ClassDefinition) {
+                        body = ((Tree.ClassDefinition) decNode).getClassBody();
+                    }
+                    else if (decNode instanceof Tree.InterfaceDefinition){
+                        body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+                    }
+                    if (body!=null) {
+                        final String indent;
+                        if (!body.getStatements().isEmpty()) {
+                            indent = getIndent(unit.getTokenStream(), body.getStatements().get(0));
+                        }
+                        else {
+                            indent = getIndent(unit.getTokenStream(), decNode);
+                        }
                         final IFile file = CeylonBuilder.getFile(unit);
                         TextFileChange change = new TextFileChange("Add Member", file);
                         final int offset = decNode.getStopIndex()-1;
-                        change.setEdit(new InsertEdit(offset, def));
+                        change.setEdit(new InsertEdit(offset, indent+def));
                         proposals.add(new ChangeCorrectionProposal("Create " + 
                                 desc + " in '" + typeDec.getName() + "'", 
                                 change, 50, image) {
@@ -273,7 +290,7 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                                 super.apply(document);
                                 int loc = def.indexOf("null;");
                                 if (loc<0) loc = def.indexOf("{}")+1;
-                                gotoChange(file, offset + loc, 4);
+                                gotoChange(file, offset + loc + indent.length(), 4);
                             }
 
                         });

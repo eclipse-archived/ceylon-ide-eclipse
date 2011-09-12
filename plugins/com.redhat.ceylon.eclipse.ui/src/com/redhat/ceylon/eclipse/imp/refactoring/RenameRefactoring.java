@@ -58,7 +58,8 @@ public class RenameRefactoring extends Refactoring {
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			project = fileInput.getFile().getProject();
-			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
+			CeylonParseController parseController = (CeylonParseController) frt.getParseController();
+            Node node = parseController.getSourcePositionLocator().findNode(frt);
 			declaration = CeylonReferenceResolver.getReferencedDeclaration(node).getRefinedDeclaration();
 			newName = declaration.getName();
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
@@ -77,11 +78,6 @@ public class RenameRefactoring extends Refactoring {
 	
 	public int getCount() {
 		return count;
-	}
-
-	private Node findNode(CeylonParseController cpc, IASTFindReplaceTarget frt) {
-		return CeylonSourcePositionLocator.findNode(cpc.getRootNode(), frt.getSelection().x, 
-						frt.getSelection().x+frt.getSelection().y);
 	}
 
 	public String getName() {

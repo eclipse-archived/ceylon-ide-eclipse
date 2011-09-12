@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+
 import java.util.Iterator;
 
 import org.antlr.runtime.Token;
@@ -23,7 +25,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class ExtractValueRefactoring extends Refactoring {
 	private final IFile fSourceFile;
@@ -45,7 +46,7 @@ public class ExtractValueRefactoring extends Refactoring {
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
-			fNode = findNode(frt);
+			fNode = parseController.getSourcePositionLocator().findNode(frt);
 			Node node = fNode;
 			if (node instanceof Tree.Expression) {
 				node = ((Tree.Expression) node).getTerm();
@@ -66,11 +67,6 @@ public class ExtractValueRefactoring extends Refactoring {
 			fSourceFile = null;
 			fNode = null;
 		}
-	}
-
-	private Node findNode(IASTFindReplaceTarget frt) {
-		return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
-						frt.getSelection().x+frt.getSelection().y);
 	}
 
 	public String getName() {
@@ -109,24 +105,13 @@ public class ExtractValueRefactoring extends Refactoring {
 				node = anns.getAnnotations().get(0);
 			}
 		}
-		String indent = getIndent(node);
+		String indent = getIndent(parseController.getTokenStream(), node);
 		tfc.addEdit(new InsertEdit(node.getStartIndex(),
 				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + " " + 
 				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
 				indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
 		return tfc;
-	}
-
-	private String getIndent(Node node) {
-		int prevIndex = node.getToken().getTokenIndex()-1;
-		if (prevIndex>=0) {
-			Token prevToken = parseController.getTokenStream().get(prevIndex);
-			if (prevToken.getChannel()==Token.HIDDEN_CHANNEL) {
-				return prevToken.getText();
-			}
-		}
-		return "";
 	}
 
 	public void setNewName(String text) {

@@ -33,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -57,7 +56,8 @@ public class InlineRefactoring extends Refactoring {
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			project = fileInput.getFile().getProject();
-			Node node = findNode((CeylonParseController) frt.getParseController(), frt);
+			CeylonParseController parseController = (CeylonParseController) frt.getParseController();
+            Node node = parseController.getSourcePositionLocator().findNode(frt);
 			declaration = CeylonReferenceResolver.getReferencedDeclaration(node);
 	        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
 	            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
@@ -73,11 +73,6 @@ public class InlineRefactoring extends Refactoring {
 	
 	public int getCount() {
 		return count;
-	}
-
-	private static Node findNode(CeylonParseController cpc, IASTFindReplaceTarget frt) {
-		return CeylonSourcePositionLocator.findNode(cpc.getRootNode(), frt.getSelection().x, 
-						frt.getSelection().x+frt.getSelection().y);
 	}
 
 	public String getName() {
