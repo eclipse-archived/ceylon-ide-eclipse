@@ -16,17 +16,24 @@ import org.eclipse.imp.utils.NullMessageHandler;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.Util;
 
 /**
@@ -65,9 +72,116 @@ public class QuickFixAssistant implements IQuickFixAssistant {
             if (tc!=null) {
                 Tree.CompilationUnit cu = (Tree.CompilationUnit) context.getModel()
                         .getAST(new NullMessageHandler(), new NullProgressMonitor());
+                addCreateMemberProposals(cu, problem, proposals, project);
                 addRenameProposals(cu, problem, proposals, file, tc);
             }
             break;
+        }
+    }
+    
+    static class FindArgumentsVisitor extends Visitor {
+        Tree.StaticMemberOrTypeExpression smte;
+        Tree.NamedArgumentList namedArgs;
+        Tree.PositionalArgumentList positionalArgs;
+        boolean found = false;
+        FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte) {
+            this.smte = smte;
+        }
+        @Override
+        public void visit(Tree.InvocationExpression that) {
+            if (that.getPrimary()==smte) {
+                namedArgs = that.getNamedArgumentList();
+                positionalArgs = that.getPositionalArgumentList();
+                found = true;
+            }
+            else {
+                super.visit(that);
+            }
+        }
+        @Override
+        public void visitAny(Node that) {
+            if (!found) super.visitAny(that);
+        }
+    }
+
+    private void addCreateMemberProposals(Tree.CompilationUnit cu, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project) {
+        Node node = CeylonSourcePositionLocator.findNode(cu, problem.getOffset(), 
+                problem.getOffset() + problem.getLength());
+        String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
+            FindArgumentsVisitor fav = new FindArgumentsVisitor(qmte);
+            cu.visit(fav);
+            String def;
+            String desc;
+            Image image;
+            if (fav.positionalArgs!=null || fav.namedArgs!=null) {
+                StringBuilder params = new StringBuilder();
+                params.append("(");
+                if (fav.positionalArgs!=null)
+                for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
+                    params.append( pa.getExpression().getTypeModel().getProducedTypeName() )
+                        .append(" ");
+                    if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
+                        params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())
+                                .getIdentifier().getText() );
+                    }
+                    else {
+                        int loc = params.length();
+                        params.append( pa.getExpression().getTypeModel().getDeclaration().getName() );
+                        params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
+                    }
+                    params.append(", ");
+                }
+                if (fav.namedArgs!=null)
+                for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
+                    if (a instanceof Tree.SpecifiedArgument) {
+                        Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
+                        params.append( na.getSpecifierExpression().getExpression().getTypeModel()
+                                    .getProducedTypeName() )
+                            .append(" ")
+                            .append(na.getIdentifier().getText());
+                        params.append(", ");
+                    }
+                }
+                if (params.length()>1) {
+                    params.setLength(params.length()-2);
+                }
+                params.append(")");
+                if (Character.isUpperCase(brokenName.charAt(0))) {
+                    def = "\nshared class " + brokenName + params + " {}";
+                    desc = "class '" + brokenName + params + "'";
+                    image = CeylonLabelProvider.CLASS;
+                }
+                else {
+                    def = "\nshared Void " + brokenName + params + " { return null; }";
+                    desc = "function '" + brokenName + params + "'";
+                    image = CeylonLabelProvider.METHOD;
+                }
+            }
+            else {
+                def = "\nshared Void " + brokenName + " = null;";
+                desc = "value '" + brokenName + "'";
+                image = CeylonLabelProvider.ATTRIBUTE;
+            }
+            Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
+            if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+                for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    unit.getCompilationUnit().visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        TextFileChange change = new TextFileChange("Add Member", 
+                                CeylonBuilder.getFile(unit));
+                        change.setEdit(new InsertEdit(decNode.getStopIndex()-1, def));
+                        proposals.add(new ChangeCorrectionProposal("Create " + 
+                                desc + " in '" + typeDec.getName() + "'", 
+                                change, 50, image));
+                        break;
+                    }
+                }
+            }
         }
     }
 
