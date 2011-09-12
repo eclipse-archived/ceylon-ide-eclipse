@@ -41,7 +41,7 @@ public class CeylonLabelProvider implements ILabelProvider {
   private static Image FILE_WITH_ERROR_IMAGE = imageRegistry
       .get(ICeylonResources.CEYLON_FILE_ERROR);
 
-  private static Image CLASS = imageRegistry
+  public static Image CLASS = imageRegistry
       .get(ICeylonResources.CEYLON_CLASS);
   private static Image INTERFACE = imageRegistry
       .get(ICeylonResources.CEYLON_INTERFACE);
@@ -49,9 +49,9 @@ public class CeylonLabelProvider implements ILabelProvider {
       .get(ICeylonResources.CEYLON_LOCAL_CLASS);
   private static Image LOCAL_INTERFACE = imageRegistry
       .get(ICeylonResources.CEYLON_LOCAL_INTERFACE);
-  private static Image METHOD = imageRegistry
+  public static Image METHOD = imageRegistry
       .get(ICeylonResources.CEYLON_METHOD);
-  private static Image ATTRIBUTE = imageRegistry
+  public static Image ATTRIBUTE = imageRegistry
       .get(ICeylonResources.CEYLON_ATTRIBUTE);
   private static Image LOCAL_METHOD = imageRegistry
       .get(ICeylonResources.CEYLON_LOCAL_METHOD);
