@@ -20,7 +20,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -80,14 +79,16 @@ public class QuickFixAssistant implements IQuickFixAssistant {
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
             String name = entry.getKey();
-            Declaration d = entry.getValue().getDeclaration();
-            int dist = Util.getLevenshteinDistance(brokenName, name);
+            DeclarationWithProximity dwp = entry.getValue();
+            int dist = Util.getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
+            //TODO: would it be better to just sort by dist, and
+            //      then select the 3 closest possibilities?
             if (dist<=brokenName.length()/3+3) {
                 TextFileChange change = new TextFileChange("Rename", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
                         brokenName.length(), name)); //TODO: don't use problem.getLength() because it's wrong from the problem list
                 proposals.add(new ChangeCorrectionProposal("Rename to '" + name + "'", 
-                        change, 50, CeylonLabelProvider.getImage(d)));
+                        change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())));
             }
           }
     }
