@@ -178,8 +178,11 @@ public class CeylonPlugin extends PluginBase {
 		reg.put(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE, createImageDescriptor(bundle, 
 				ICONS_PATH.append("private_co.gif")));
 
-	    reg.put(ICeylonResources.CEYLON_REFINEMENT, createImageDescriptor(bundle, 
+	    reg.put(ICeylonResources.CEYLON_DEFAULT_REFINEMENT, createImageDescriptor(bundle, 
 	                ICONS_PATH.append("over_co.gif")));
+
+        reg.put(ICeylonResources.CEYLON_FORMAL_REFINEMENT, createImageDescriptor(bundle, 
+                ICONS_PATH.append("implm_co.gif")));
 
 	}
 
