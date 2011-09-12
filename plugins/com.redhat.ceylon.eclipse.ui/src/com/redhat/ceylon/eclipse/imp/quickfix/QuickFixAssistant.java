@@ -23,9 +23,13 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -79,24 +83,89 @@ public class QuickFixAssistant implements IQuickFixAssistant {
         }
     }
     
-    static class FindArgumentsVisitor extends Visitor {
+    static class FindArgumentsVisitor extends Visitor 
+            implements NaturalVisitor {
         Tree.StaticMemberOrTypeExpression smte;
         Tree.NamedArgumentList namedArgs;
         Tree.PositionalArgumentList positionalArgs;
+        ProducedType currentType;
+        ProducedType expectedType;
         boolean found = false;
         FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte) {
             this.smte = smte;
         }
+        
+        @Override
+        public void visit(Tree.StaticMemberOrTypeExpression that) {
+            super.visit(that);
+            if (that==smte) {
+                expectedType = currentType;
+                found = true;
+            }
+        }
+        
         @Override
         public void visit(Tree.InvocationExpression that) {
+            super.visit(that);
             if (that.getPrimary()==smte) {
                 namedArgs = that.getNamedArgumentList();
                 positionalArgs = that.getPositionalArgumentList();
-                found = true;
             }
-            else {
-                super.visit(that);
+        }
+        @Override
+        public void visit(Tree.NamedArgument that) {
+            currentType = that.getParameter().getType();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.PositionalArgument that) {
+            currentType = that.getParameter().getType();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.AttributeDeclaration that) {
+            currentType = that.getType().getTypeModel();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.Variable that) {
+            currentType = that.getType().getTypeModel();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.ValueIterator that) {
+            currentType = that.getVariable().getType().getTypeModel();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.SpecifierStatement that) {
+            currentType = that.getBaseMemberExpression().getTypeModel();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.AssignmentOp that) {
+            currentType = that.getLeftTerm().getTypeModel();
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.Return that) {
+            if (that.getDeclaration() instanceof TypedDeclaration) {
+                currentType = ((TypedDeclaration) that.getDeclaration()).getType();
             }
+            super.visit(that);
+            currentType = null;
+        }
+        @Override
+        public void visit(Tree.Throw that) {
+            super.visit(that);
+            //set expected type to Exception
         }
         @Override
         public void visitAny(Node that) {
@@ -150,18 +219,31 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                 }
                 params.append(")");
                 if (Character.isUpperCase(brokenName.charAt(0))) {
-                    def = "\nshared class " + brokenName + params + " {}";
-                    desc = "class '" + brokenName + params + "'";
+                    String supertype = "";
+                    if (fav.expectedType!=null) {
+                        if (fav.expectedType.getDeclaration() instanceof Class) {
+                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
+                        }
+                        else {
+                            supertype = " satisfies " + fav.expectedType.getProducedTypeName();
+                        }
+                    }
+                    def = "\nshared class " + brokenName + params + supertype + " {}";
+                    desc = "class '" + brokenName + params + supertype + "'";
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
-                    def = "\nshared Void " + brokenName + params + " { return null; }";
+                    String type = fav.expectedType==null ? "Nothing" : 
+                        fav.expectedType.getProducedTypeName();
+                    def = "\nshared " + type + " " + brokenName + params + " { return null; }";
                     desc = "function '" + brokenName + params + "'";
                     image = CeylonLabelProvider.METHOD;
                 }
             }
             else {
-                def = "\nshared Void " + brokenName + " = null;";
+                String type = fav.expectedType==null ? "Nothing" : 
+                    fav.expectedType.getProducedTypeName();
+                def = "\nshared " + type + " " + brokenName + " = null;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
             }
@@ -197,7 +279,7 @@ public class QuickFixAssistant implements IQuickFixAssistant {
             int dist = Util.getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?
-            if (dist<=brokenName.length()/3+3) {
+            if (dist<=brokenName.length()/3+1) {
                 TextFileChange change = new TextFileChange("Rename", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
                         brokenName.length(), name)); //TODO: don't use problem.getLength() because it's wrong from the problem list
