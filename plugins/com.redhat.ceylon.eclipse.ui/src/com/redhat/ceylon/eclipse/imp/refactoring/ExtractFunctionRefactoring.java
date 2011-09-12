@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class ExtractFunctionRefactoring extends Refactoring {
     
@@ -81,7 +82,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		if (input instanceof IFileEditorInput) {
 			IFileEditorInput fileInput = (IFileEditorInput) input;
 			fSourceFile = fileInput.getFile();
-			fNode = findNode(frt);
+			fNode = parseController.getSourcePositionLocator().findNode(frt);
 			Node node = fNode;
 			if (node instanceof Tree.Expression) {
 				node = ((Tree.Expression) node).getTerm();
@@ -102,11 +103,6 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			fSourceFile = null;
 			fNode = null;
 		}
-	}
-
-	private Node findNode(IASTFindReplaceTarget frt) {
-		return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
-						frt.getSelection().x+frt.getSelection().y);
 	}
 
 	public String getName() {
@@ -167,7 +163,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			args = args.substring(0, args.length()-2);
 		}
 		
-		String indent = getIndent(node);
+		String indent = getIndent(parseController.getTokenStream(), node);
 
 		String typeParams = "";
 		String constraints = "";
@@ -225,16 +221,6 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		}
 	}
 
-	private String getIndent(Node node) {
-		int prevIndex = node.getToken().getTokenIndex()-1;
-		if (prevIndex>=0) {
-			Token prevToken = parseController.getTokenStream().get(prevIndex);
-			if (prevToken.getChannel()==Token.HIDDEN_CHANNEL) {
-				return prevToken.getText();
-			}
-		}
-		return "";
-	}
 
 	public void setNewName(String text) {
 		newName = text;
