@@ -267,64 +267,6 @@ public class CeylonBuilder extends BuilderBase {
 
     // TODO penser à : doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
-
-    /**
-     * This is an example "compiler" implementation that simply uses the parse
-     * controller to parse the given file, adding error markers to the file for
-     * any parse errors that are reported.
-     * 
-     * Error markers are created by a special type of message handler (i.e.,
-     * implementation of IMessageHandler) known as a MarkerCreator. The
-     * MarkerCreator is passed to the parse controller. The parser reports its
-     * error messages to the MarkerCreator, and the MarkerCreator puts
-     * corresponding error markers on the file.
-     * 
-     * This example shows the use of two different types of marker creator: the
-     * MarkerCreator base type and an the MarkerCreatorWithBatching subtype. In
-     * MarkerCreator the error markers are added to the file one at a time, as
-     * error messages are received. In MarkerCreatorWithBatching, the
-     * information from each error message is cached; the corresponding error
-     * markers are not created until the flush(..) method is called, at which
-     * point all markers are created together. MarkerCreatorWithBatching is more
-     * complicated internally and requires proper use of the flush(..) method,
-     * but it may be more efficient at runtime for files that have many errors.
-     * That is because a Workspace operation is required to add the error
-     * markers to the file. There is one of these for each of the error markers
-     * added in MarkerCreator, but only one for all of the markers in
-     * MarkerCreatorWithBatching.
-     * 
-     * In this example we have declared a marker creator of each type but
-     * commented out the batching version. The example should also execute
-     * correctly if you comment out the base version and uncomment the batching
-     * version, so it should be easy to experiment with them.
-     * 
-     * TODO remove or rename this method once an actual compiler is being
-     * called.
-     * 
-     * @param file
-     *            input source file
-     * @param monitor
-     *            progress monitor
-     */
-    protected void runParserForCompiler(final IFile file, IProgressMonitor monitor) {
-        try {
-            CeylonParseController parseController = new CeylonParseController();
-
-            // Pick a version of the marker creator (or just go with this one)
-            // MarkerCreator markerCreator = new MarkerCreator(file, parseController, PROBLEM_MARKER_ID);
-            MarkerCreatorWithBatching markerCreator = new MarkerCreatorWithBatching(file, parseController, this);
-            
-            ISourceProject sourceProject = ModelFactory.open(file.getProject());
-            parseController.initialize(file.getProjectRelativePath(), sourceProject, markerCreator);
-            parseController.parse(BuilderUtils.getFileContents(file), monitor);
-            
-            markerCreator.flush(monitor);
-
-          } 
-          catch (ModelException e) {
-            getPlugin().logException("Example builder returns without parsing due to a ModelException", e);
-          }
-    }
     
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
