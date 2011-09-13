@@ -438,7 +438,7 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private static String getRefinementTextFor(Declaration d) {
-    StringBuilder result = new StringBuilder();
+    StringBuilder result = new StringBuilder("shared actual ");
     appendDeclarationText(d, result);
     appendTypeParameters(d, result);
     appendParameters(d, result);
@@ -446,7 +446,19 @@ public class CeylonContentProposer implements IContentProposer {
   }
 
   private static String getRefinementDescriptionFor(Declaration d) {
+      StringBuilder result = new StringBuilder("shared actual ");
+      appendDeclarationText(d, result);
+      appendTypeParameters(d, result);
+      appendParameters(d, result);
+      /*result.append(" - refine declaration in ") 
+            .append(((Declaration) d.getContainer()).getName());*/
+      return result.toString();
+  }
+
+  public static String getDescriptionFor(Declaration d) {
       StringBuilder result = new StringBuilder();
+      if (d.isFormal()) result.append("formal ");
+      if (d.isDefault()) result.append("default ");
       appendDeclarationText(d, result);
       appendTypeParameters(d, result);
       appendParameters(d, result);
@@ -512,7 +524,6 @@ public class CeylonContentProposer implements IContentProposer {
   }
   
   private static void appendDeclarationText(Declaration d, StringBuilder result) {
-    result.append("shared actual ");
     if (d instanceof Class) {
         result.append("class");
     }
