@@ -10,6 +10,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
@@ -376,7 +377,7 @@ public class QuickFixAssistant implements IQuickFixAssistant {
           }
     }
     
-    public static void gotoChange(final IFile file, final int offset, int length) {
+    public static void gotoChange(final IResource file, final int offset, int length) {
         IWorkbenchPage page = PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage();
         Map<String, Object> map = new HashMap<String, Object>();
