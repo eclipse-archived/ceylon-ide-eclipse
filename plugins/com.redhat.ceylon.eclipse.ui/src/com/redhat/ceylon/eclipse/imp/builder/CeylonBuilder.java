@@ -318,8 +318,7 @@ public class CeylonBuilder extends BuilderBase {
      * @param monitor
      *            progress monitor
      */
-    protected void runParserForCompiler(final IFile file,
-            IProgressMonitor monitor) {
+    protected void runParserForCompiler(final IFile file, IProgressMonitor monitor) {
         try {
             CeylonParseController parseController = new CeylonParseController();
 
