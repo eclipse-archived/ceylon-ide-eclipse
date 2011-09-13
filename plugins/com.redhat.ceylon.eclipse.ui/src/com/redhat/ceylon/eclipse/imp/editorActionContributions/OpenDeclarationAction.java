@@ -40,6 +40,9 @@ class OpenDeclarationAction extends Action {
         dialog.open();
         Object[] types = dialog.getResult();
         if (types != null && types.length > 0) {
+            //TODO: rewrite this to not depend on the CeylonParseController
+            //      or active editor (does CeylonParseController *really*
+            //      need to have this dependency?)
             CeylonParseController cpc = (CeylonParseController) editor.getParseController();
             Tree.Declaration node = CeylonReferenceResolver.getDeclarationNode(cpc, 
                     (Declaration) types[0]);
