@@ -245,7 +245,7 @@
 <extension
     point="org.eclipse.ui.editorActions">
       <editorContribution 
-         id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
+         id="com.redhat.ceylon.eclipse.imp.editorActionContributions" 
          targetID="org.eclipse.imp.runtime.impEditor">        
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
               label="Open Ceylon Declaration..."
@@ -255,6 +255,22 @@
               menubarPath="navigate/open.ext"
               accelerator="COMMAND+SHIFT+C"
               toolbarPath="ceylon"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
+              label="Find References"
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
+              menubarPath="org.eclipse.search.menu/ceylon"
+              accelerator="CTRL+ALT+G"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements" 
+              label="Find Refinements"
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindRefinementsAction2"
+              menubarPath="org.eclipse.search.menu/ceylon"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes" 
+              label="Find Subtypes"
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindSubtypesAction2"
+              menubarPath="org.eclipse.search.menu/ceylon"
               /> 
       </editorContribution>
  </extension>  
