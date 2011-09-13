@@ -17,7 +17,6 @@ import com.redhat.ceylon.eclipse.imp.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.quickfix.QuickFixAssistant;
 
-//TODO: Max look here
 public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
     IVerticalRulerInfo ruler;
     ITextEditor editor;
@@ -30,7 +29,7 @@ public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
     
     @Override
     public void update() {
-        //super.update();
+        //don't let super.update() be called!
     }
     
     @Override
