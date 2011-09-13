@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.search.ui.ISearchQuery;
@@ -55,8 +59,18 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 	@Override
 	public Match[] computeContainedMatches(AbstractTextSearchResult atsr,
 			IFile file) {
-		return getMatches(file);
+	    return getMatchesForFile(file);
 	}
+
+    public Match[] getMatchesForFile(IFile file) {
+        List<Match> matches = new ArrayList<Match>();
+	    for (Object element: this.getElements()) {
+	        if ( getFile(element).equals(file) ) {
+	            matches.addAll(Arrays.asList(getMatches(element)));
+	        }
+	    }
+		return matches.toArray(new Match[matches.size()]);
+    }
 
 	@Override
 	public IFile getFile(Object element) {
@@ -74,7 +88,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			IFileEditorInput fi= (IFileEditorInput) ei;
-			return getMatches(fi.getFile());
+			return getMatchesForFile(fi.getFile());
 		}
 		else {
 			return new Match[0];
@@ -86,7 +100,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			IFileEditorInput fi= (IFileEditorInput) ei;
-			return ((CeylonElement) match.getElement()).getFile().equals(fi.getFile());
+			return getFile(match.getElement()).equals(fi.getFile());
 		}
 		else {
 			return false;
