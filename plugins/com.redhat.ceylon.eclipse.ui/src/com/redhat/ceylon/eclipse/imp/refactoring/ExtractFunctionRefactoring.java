@@ -8,7 +8,6 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
@@ -130,7 +130,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			for (TypeDeclaration t: localTypes) {
 				typeParams += t.getName() + ", ";
 				if (!t.getSatisfiedTypes().isEmpty()) {
-					constraints += (indent.isEmpty() ? "\n" : indent) + 
+					constraints += (indent.isEmpty() ? "\n" : indent) +
+					        CeylonAutoEditStrategy.getDefaultIndent() +
 							"given " + t.getName() + " satisfies ";
 					for (ProducedType pt: t.getSatisfiedTypes()) {
 						constraints += pt.getProducedTypeName() + "&";

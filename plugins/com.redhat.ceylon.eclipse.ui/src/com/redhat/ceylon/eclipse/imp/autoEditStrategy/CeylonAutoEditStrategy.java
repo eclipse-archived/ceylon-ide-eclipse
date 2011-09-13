@@ -88,19 +88,23 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
         else {
             if (prev=='{') {
-                //guess an initial indent level
-                int spaces = getIndentSpaces();
-                if (getIndentWithSpaces()) {
-                    for (int i=1; i<=spaces; i++) {
-                        buf.append(' ');                            
-                    }
-                }
-                else {
-                    buf.append('\t');
-                }
+                initialIndent(buf);
             }
         }
         c.text = buf.toString();
+    }
+
+    private static void initialIndent(StringBuilder buf) {
+        //guess an initial indent level
+        if (getIndentWithSpaces()) {
+            int spaces = getIndentSpaces();
+            for (int i=1; i<=spaces; i++) {
+                buf.append(' ');                            
+            }
+        }
+        else {
+            buf.append('\t');
+        }
     }
 
     private int getStartOfCurrentLine(IDocument d, DocumentCommand c) 
@@ -118,14 +122,20 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return true;
     }
  
-    private int getIndentSpaces() {
+    private static int getIndentSpaces() {
         return Platform.getPreferencesService()
                 .getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
     }
     
-    private boolean getIndentWithSpaces() {
+    private static boolean getIndentWithSpaces() {
         return Platform.getPreferencesService()
                 .getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
+    }
+    
+    public static String getDefaultIndent() {
+        StringBuilder result = new StringBuilder();
+        initialIndent(result);
+        return result.toString();
     }
     
     /**

@@ -42,7 +42,9 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
@@ -304,16 +306,23 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                     }
                     if (body!=null) {
                         final String indent;
+                        final String indentAfter;
+                        final int offset;
                         if (!body.getStatements().isEmpty()) {
-                            indent = getIndent(unit.getTokenStream(), body.getStatements().get(0));
+                            Statement statement = body.getStatements()
+                                    .get(body.getStatements().size()-1);
+                            indent = getIndent(unit.getTokenStream(), statement);
+                            offset = statement.getStopIndex()+1;
+                            indentAfter = "";
                         }
                         else {
-                            indent = getIndent(unit.getTokenStream(), decNode);
+                            indentAfter = getIndent(unit.getTokenStream(), decNode);
+                            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
+                            offset = body.getStartIndex()+1;
                         }
                         final IFile file = CeylonBuilder.getFile(unit);
                         TextFileChange change = new TextFileChange("Add Member", file);
-                        final int offset = decNode.getStopIndex()-1;
-                        change.setEdit(new InsertEdit(offset, indent+def));
+                        change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
                         proposals.add(new ChangeCorrectionProposal("Create " + 
                                 desc + " in '" + typeDec.getName() + "'", 
                                 change, 50, image) {
@@ -321,8 +330,15 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                             public void apply(IDocument document) {
                                 super.apply(document);
                                 int loc = def.indexOf("null;");
-                                if (loc<0) loc = def.indexOf("{}")+1;
-                                gotoChange(file, offset + loc + indent.length(), 4);
+                                int len;
+                                if (loc<0) {
+                                    loc = def.indexOf("{}")+1;
+                                    len=0;
+                                }
+                                else {
+                                    len=4;
+                                }
+                                gotoChange(file, offset + loc + indent.length(), len);
                             }
 
                         });
