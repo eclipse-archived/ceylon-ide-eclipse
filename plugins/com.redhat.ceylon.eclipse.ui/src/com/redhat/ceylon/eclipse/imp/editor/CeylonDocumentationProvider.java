@@ -8,6 +8,7 @@ import org.eclipse.imp.services.IDocumentationProvider;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonDocumentationProvider implements IDocumentationProvider {
@@ -39,8 +40,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                   TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
                   String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
                   if (spkg.isEmpty()) spkg="default package";
-                  documentation += "<li>refines " + refined.getName() + " declared by " + 
-                              supertype.getName() + " [" + pkg + "]</li>";
+                  documentation += "<li>refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
+                          "' declared by " + supertype.getName() + " [" + pkg + "]</li>";
               }
               documentation +="</ul>";
           }
