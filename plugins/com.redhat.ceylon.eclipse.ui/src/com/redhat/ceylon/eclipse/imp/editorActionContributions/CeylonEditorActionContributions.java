@@ -25,13 +25,12 @@ public class CeylonEditorActionContributions implements
 
 	public void contributeToMenuBar(final UniversalEditor editor, IMenuManager menu) {
 		//languageMenu = new MenuManager("ceylon");
-		IMenuManager refactor = /*editor.getEditorSite().getActionBars()
-				.getMenuManager()*/menu.findMenuUsingPath("refactorMenuId");
+		/*IMenuManager refactor = menu.findMenuUsingPath("refactorMenuId");
 		if (refactor.getItems().length==0) {
 			for (IAction action: RefactoringContributor.getActions(editor)) {
 				refactor.add(action);
 			}
-		}
+		}*/
 		/*IMenuManager search = menu.findMenuUsingPath("navigate");
 		search.add(new Separator());
 		search.add(new FindReferencesAction(editor));

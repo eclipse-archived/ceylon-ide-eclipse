@@ -5,7 +5,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -29,7 +28,6 @@ class OpenDeclarationAction extends Action {
         this.editor = editor;
         setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
                 .getDescriptor(ICeylonResources.CEYLON_OPEN_DECLARATION));
-        setAccelerator(SWT.COMMAND | SWT.SHIFT | 'C');
     }
     
     @Override
