@@ -5,11 +5,10 @@ import java.util.List;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IDocumentationProvider;
 
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
