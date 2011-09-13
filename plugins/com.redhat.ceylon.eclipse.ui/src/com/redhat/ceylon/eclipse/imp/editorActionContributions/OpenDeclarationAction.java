@@ -36,6 +36,7 @@ class OpenDeclarationAction extends Action {
                 .getActiveWorkbenchWindow().getShell();
         FilteredTypesSelectionDialog dialog = new FilteredTypesSelectionDialog(shell, editor);
         dialog.setTitle("Open Declaration");
+        dialog.setInitialPattern(editor.getSelectionText());
         dialog.open();
         Object[] types = dialog.getResult();
         if (types != null && types.length > 0) {
