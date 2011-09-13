@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -15,6 +14,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
@@ -27,7 +27,7 @@ import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
-    private UniversalEditor editor;
+    private IEditorPart editor;
     
     private class TypeSelectionHistory extends SelectionHistory {
         protected Object restoreItemFromMemento(IMemento element) {
@@ -55,7 +55,7 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public FilteredTypesSelectionDialog(Shell shell, UniversalEditor editor) {
+    public FilteredTypesSelectionDialog(Shell shell, IEditorPart editor) {
         super(shell);
         this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());

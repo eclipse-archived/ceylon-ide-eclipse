@@ -242,6 +242,36 @@
          </action>
         </editorContribution>
   </extension>
+<extension
+    point="org.eclipse.ui.editorActions">
+      <editorContribution 
+         id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
+         targetID="org.eclipse.imp.runtime.impEditor">        
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
+              label="Open Ceylon Declaration..."
+              icon="icons/opentype.gif" 
+              tooltip="Open Toplevel Ceylon Declaration" 
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"
+              menubarPath="navigate/open.ext"
+              accelerator="COMMAND+SHIFT+C"
+              toolbarPath="ceylon"
+              /> 
+      </editorContribution>
+ </extension>  
+ <!--
+ <extension point="org.eclipse.ui.popupMenus"> 
+  <viewerContribution 
+      id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclarationContext"
+      targetID="org.eclipse.imp.runtime.impEditor"> 
+   <action
+         id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclarationContext" 
+         label="Open Ceylon Declaration..."
+         icon="icons/opentype.gif"
+         menubarPath="additions" 
+         class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"/> 
+   </viewerContribution> 
+  </extension>
+  -->
   <extension
         point="org.eclipse.imp.runtime.quickFixAssistant"
         id="com.redhat.ceylon.eclipse.imp.quickfix">
