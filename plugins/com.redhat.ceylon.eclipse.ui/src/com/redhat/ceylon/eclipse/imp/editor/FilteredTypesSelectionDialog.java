@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -28,9 +29,36 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
     private UniversalEditor editor;
     
+    private class TypeSelectionHistory extends SelectionHistory {
+        protected Object restoreItemFromMemento(IMemento element) {
+            String qualifiedName = element.getString("qualifiedName");
+            String unitFileName = element.getString("unitFileName");
+            String packageName = element.getString("packageName");
+            IFileEditorInput input = (IFileEditorInput) editor.getEditorInput();
+            for (PhasedUnit unit: CeylonBuilder.getUnits(input.getFile().getProject())) {
+                if (unit.getUnit().getFilename().equals(unitFileName)
+                        && unit.getPackage().getQualifiedNameString().equals(packageName)) {
+                    for (Declaration dec: unit.getPackage().getMembers()) {
+                        if (dec.getQualifiedNameString().equals(qualifiedName)) {
+                            return dec;
+                        }
+                    }
+                }
+           }
+           return null; 
+        }
+        protected void storeItemToMemento(Object item, IMemento element) {
+            Declaration dec = (Declaration) item;
+            element.putString("qualifiedName", dec.getQualifiedNameString());
+            element.putString("unitFileName", dec.getUnit().getFilename());
+            element.putString("packageName", dec.getUnit().getPackage().getQualifiedNameString());
+        }
+     }
+    
     public FilteredTypesSelectionDialog(Shell shell, UniversalEditor editor) {
         super(shell);
         this.editor = editor;
+        setSelectionHistory(new TypeSelectionHistory());
         setListLabelProvider(new ILabelProvider() {
             @Override
             public void addListener(ILabelProviderListener listener) {}
