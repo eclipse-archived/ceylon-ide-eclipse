@@ -259,21 +259,50 @@
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
               label="Find References"
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
-              menubarPath="org.eclipse.search.menu/ceylon"
+              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
               accelerator="CTRL+ALT+G"
               /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements" 
               label="Find Refinements"
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindRefinementsAction2"
-              menubarPath="org.eclipse.search.menu/ceylon"
+              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
               /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes" 
               label="Find Subtypes"
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindSubtypesAction2"
-              menubarPath="org.eclipse.search.menu/ceylon"
+              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.rename" 
+              label="Rename..."
+              class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+              menubarPath="org.eclipse.imp.source.menu/convertGroup"
+              accelerator="CTRL+ALT+R"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.inline" 
+              label="Inline..."
+              class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
+              menubarPath="org.eclipse.imp.source.menu/convertGroup"
+              accelerator="CTRL+ALT+I"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.extractFunction" 
+              label="Extract Function..."
+              class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
+              menubarPath="org.eclipse.imp.source.menu/convertGroup"
+              accelerator="CTRL+ALT+F"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue" 
+              label="Extract Value..."
+              class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
+              menubarPath="org.eclipse.imp.source.menu/convertGroup"
+              accelerator="CTRL+ALT+V"
+              /> 
+	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments" 
+              label="Convert To Named Arguments..."
+              class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
+              menubarPath="org.eclipse.imp.source.menu/convertGroup"
               /> 
       </editorContribution>
- </extension>  
+ </extension> 
  <!--
  <extension point="org.eclipse.ui.popupMenus"> 
   <viewerContribution 

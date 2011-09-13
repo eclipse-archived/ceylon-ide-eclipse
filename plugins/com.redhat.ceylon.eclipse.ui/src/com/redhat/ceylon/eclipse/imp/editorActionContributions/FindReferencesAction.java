@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.swt.SWT;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -15,7 +14,6 @@ class FindReferencesAction extends FindAction {
 
 	FindReferencesAction(UniversalEditor editor) {
 		super("Find References", editor);
-		setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
 	}
 	
 	@Override
