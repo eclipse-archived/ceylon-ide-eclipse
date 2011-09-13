@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -13,12 +15,14 @@ import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.services.IASTFindReplaceTarget;
+import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -197,8 +201,12 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
  }
   
   public Node findNode(IASTFindReplaceTarget frt) {
-      return CeylonSourcePositionLocator.findNode(parseController.getRootNode(), frt.getSelection().x, 
-                      frt.getSelection().x+frt.getSelection().y);
+    return findNode(parseController.getRootNode(), frt);
+  }
+
+  public static Node findNode(Tree.CompilationUnit cu, IASTFindReplaceTarget frt) {
+    return findNode(cu, frt.getSelection().x, 
+            frt.getSelection().x+frt.getSelection().y);
   }
 
   public int getStartOffset(Object node) {
@@ -287,12 +295,38 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     return new Path("");
   }
 
+  public static Iterator<Token> getTokenIterator(CommonTokenStream stream, IRegion region) {
+      int regionOffset = region.getOffset();
+      int regionLength = region.getLength();
+      if (regionLength<=0) {
+          return Collections.<Token>emptyList().iterator();
+      }
+      int regionEnd = regionOffset + regionLength - 1;
+      if (stream==null) {
+        return null;
+      }
+      else {
+        List<Token> tokens = stream.getTokens();
+        int firstTokIdx = CeylonParseController.getTokenIndexAtCharacter(tokens, regionOffset);
+        // getTokenIndexAtCharacter() answers the negative of the index of the
+        // preceding token if the given offset is not actually within a token.
+        if (firstTokIdx < 0) {
+          firstTokIdx= -firstTokIdx + 1;
+        }
+        int lastTokIdx = CeylonParseController.getTokenIndexAtCharacter(tokens, regionEnd);
+        if (lastTokIdx < 0) {
+          lastTokIdx= -lastTokIdx;
+        }
+        return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
+      }
+  }
+
   public static String getIndent(CommonTokenStream tokens, Node node) {
     int prevIndex = node.getToken().getTokenIndex()-1;
     if (node instanceof Tree.Declaration) {
-        List<Tree.Annotation> al = ((Tree.Declaration) node).getAnnotationList().getAnnotations();
-        if (!al.isEmpty()) { 
-            prevIndex = al.get(0).getToken().getTokenIndex()-1;
+        AnnotationList anl = ((Tree.Declaration) node).getAnnotationList();
+        if (anl!=null && !anl.getAnnotations().isEmpty()) { 
+            prevIndex = anl.getAnnotations().get(0).getToken().getTokenIndex()-1;
         }
     }
     if (prevIndex>=0) {

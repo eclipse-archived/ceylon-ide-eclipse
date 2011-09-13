@@ -3,25 +3,18 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
-import org.eclipse.jface.text.Region;
+import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -31,9 +24,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
-public class ExtractFunctionRefactoring extends Refactoring {
+public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
 	public static final class FindLocalReferencesVisitor extends Visitor {
 		List<Tree.BaseMemberExpression> localReferences = 
@@ -64,46 +56,18 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		}
 	}
 
-	private final IFile fSourceFile;
-	private final Node fNode;
-	private final ITextEditor fEditor;
-	private final CeylonParseController parseController;
 	private String newName;
 	private boolean explicitType;
 
 	public ExtractFunctionRefactoring(ITextEditor editor) {
-
-		fEditor = editor;
-
-		IASTFindReplaceTarget frt = (IASTFindReplaceTarget) fEditor;
-		IEditorInput input = editor.getEditorInput();
-		parseController = (CeylonParseController) frt.getParseController();
-
-		if (input instanceof IFileEditorInput) {
-			IFileEditorInput fileInput = (IFileEditorInput) input;
-			fSourceFile = fileInput.getFile();
-			fNode = parseController.getSourcePositionLocator().findNode(frt);
-			Node node = fNode;
-			if (node instanceof Tree.Expression) {
-				node = ((Tree.Expression) node).getTerm();
-			}
-			if (node instanceof Tree.InvocationExpression) {
-				node = ((Tree.InvocationExpression) node).getPrimary();
-			}
-			if (node instanceof Tree.StaticMemberOrTypeExpression) {
-				newName = ((Tree.StaticMemberOrTypeExpression) node).getIdentifier().getText();
-				newName = Character.toLowerCase(newName.charAt(0)) + 
-						newName.substring(1);
-			}
-			else {
-				newName = "temp";
-			}
-		} 
-		else {
-			fSourceFile = null;
-			fNode = null;
-		}
+	    super(editor);
+		newName = guessName();
 	}
+
+    /*public ExtractFunctionRefactoring(IQuickFixInvocationContext context) {
+        super(context);
+        newName = guessName();
+    }*/
 
 	public String getName() {
 		return "Extract function";
@@ -122,24 +86,19 @@ public class ExtractFunctionRefactoring extends Refactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Extract function", fSourceFile);
+		TextFileChange tfc = new TextFileChange("Extract function", sourceFile);
 		tfc.setEdit(new MultiTextEdit());
-		Tree.Term term = (Tree.Term) fNode;
-		Integer start = fNode.getStartIndex();
-		int length = fNode.getStopIndex()-start+1;
-		Region region = new Region(start, length);
-		String exp = "";
-		for (Iterator<Token> ti = parseController.getTokenIterator(region); 
-				ti.hasNext();) {
-			exp+=ti.next().getText();
-		}
+		Tree.Term term = (Tree.Term) node;
+        Integer start = term.getStartIndex();
+        int length = term.getStopIndex()-start+1;
+		String exp = toString(term);
 		FindContainerVisitor fsv = new FindContainerVisitor(term);
-		parseController.getRootNode().visit(fsv);
-		Node node = fsv.getDeclaration();
-		if (node instanceof Tree.Declaration) {
-			Tree.AnnotationList anns = ((Tree.Declaration) node).getAnnotationList();
-			if (!anns.getAnnotations().isEmpty()) {
-				node = anns.getAnnotations().get(0);
+		rootNode.visit(fsv);
+		Node decNode = fsv.getDeclaration();
+		if (decNode instanceof Tree.Declaration) {
+			Tree.AnnotationList anns = ((Tree.Declaration) decNode).getAnnotationList();
+			if (anns!=null && !anns.getAnnotations().isEmpty()) {
+				decNode = anns.getAnnotations().get(0);
 			}
 		}
 		Declaration dec = fsv.getDeclaration().getDeclarationModel();
@@ -163,7 +122,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 			args = args.substring(0, args.length()-2);
 		}
 		
-		String indent = getIndent(parseController.getTokenStream(), node);
+		String indent = getIndent(tokenStream, decNode);
 
 		String typeParams = "";
 		String constraints = "";
@@ -184,7 +143,7 @@ public class ExtractFunctionRefactoring extends Refactoring {
 		
 		boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
 		
-		tfc.addEdit(new InsertEdit(node.getStartIndex(),
+		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
 				( explicitType ? term.getTypeModel().getProducedTypeName() : (isVoid?"void":"function")) + 
 				" " + newName + typeParams + "(" + params + ")" + constraints + 
 				" { " + (isVoid?"":"return ") + exp + "; }" + indent));
