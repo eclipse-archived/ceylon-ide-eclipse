@@ -32,13 +32,12 @@ public class CeylonEditorActionContributions implements
 				refactor.add(action);
 			}
 		}
-		IMenuManager search = /*editor.getEditorSite().getActionBars()
-				.getMenuManager()*/menu.findMenuUsingPath("navigate");
+		/*IMenuManager search = menu.findMenuUsingPath("navigate");
 		search.add(new Separator());
 		search.add(new FindReferencesAction(editor));
         search.add(new FindRefinementsAction(editor));
         search.add(new FindSubtypesAction(editor));
-        search.add(new Separator());
+        search.add(new Separator());*/
         //search.add(new OpenDeclarationAction("Open Declaration...", editor));
 	}
 
