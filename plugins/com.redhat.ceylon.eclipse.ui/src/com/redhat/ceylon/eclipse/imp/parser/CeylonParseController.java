@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -13,8 +15,11 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.IPathEntry.PathEntryType;
@@ -238,6 +243,35 @@ public class CeylonParseController extends ParseControllerBase {
                 }
             }
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+            if (typeChecker == null)
+            {
+                final CountDownLatch doneSignal = new CountDownLatch(1);
+                ProgressMonitorWrapper nonCanceling = new ProgressMonitorWrapper(monitor) {
+                    public boolean isCanceled() {
+                        // pass-through request
+                        getWrappedProgressMonitor().isCanceled();
+                        // ignore result
+                        return false;
+                    }
+
+                    @Override
+                    public void done() {
+                        doneSignal.countDown();
+                        super.done();
+                    }
+                };
+
+                try {
+                    project.build(IncrementalProjectBuilder.FULL_BUILD, CeylonBuilder.BUILDER_ID, null, nonCanceling);
+                    doneSignal.await(60, TimeUnit.SECONDS);
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
 
         if (srcDir==null || typeChecker == null) {
