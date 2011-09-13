@@ -39,7 +39,7 @@ public class CeylonEditorActionContributions implements
         search.add(new FindRefinementsAction(editor));
         search.add(new FindSubtypesAction(editor));
         search.add(new Separator());
-        search.add(new OpenDeclarationAction("Open Declaration...", editor));
+        //search.add(new OpenDeclarationAction("Open Declaration...", editor));
 	}
 
 	public void contributeToStatusLine(final UniversalEditor editor,
