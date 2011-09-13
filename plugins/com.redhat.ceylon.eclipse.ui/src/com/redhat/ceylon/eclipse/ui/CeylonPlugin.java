@@ -60,7 +60,8 @@ public class CeylonPlugin extends PluginBase {
                             break;
                         default:
                      // case IClasspathEntry.CPE_VARIABLE:
-                            throw new IllegalArgumentException("Encountered variable class-path entry: " + entry.getPath().toPortableString());
+                            throw new IllegalArgumentException("Encountered variable class-path entry: " + 
+                                    entry.getPath().toPortableString());
                         }
                         if (type.equals(PathEntryType.SOURCE_FOLDER))
                         {
@@ -183,6 +184,9 @@ public class CeylonPlugin extends PluginBase {
 
         reg.put(ICeylonResources.CEYLON_FORMAL_REFINEMENT, createImageDescriptor(bundle, 
                 ICONS_PATH.append("implm_co.gif")));
+
+        reg.put(ICeylonResources.CEYLON_OPEN_DECLARATION, createImageDescriptor(bundle, 
+                ICONS_PATH.append("opentype.gif")));
 
 	}
 

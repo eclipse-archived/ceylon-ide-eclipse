@@ -21,4 +21,6 @@ public interface ICeylonResources {
 
     public static final String CEYLON_DEFAULT_REFINEMENT = "ceylon_default_refinement";
     public static final String CEYLON_FORMAL_REFINEMENT = "ceylon_formal_refinement";
+    
+    public static final String CEYLON_OPEN_DECLARATION = "ceylon_open_declaration";
 }
