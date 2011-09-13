@@ -4,12 +4,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.base.EditorServiceBase;
 import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonAnnotationCreator extends EditorServiceBase {
@@ -34,21 +35,28 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        /*Declaration refined = that.getDeclarationModel().getRefinedDeclaration();
+                        Declaration refined = that.getDeclarationModel().getRefinedDeclaration();
                         TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
                         String pkg = supertype.getUnit().getPackage().getQualifiedNameString();
-                        if (pkg.isEmpty()) pkg="default package";*/
-                        String type = "com.redhat.ceylon.eclipse.ui.refinement." + 
-                                (dec.isFormal() ? "formal" : "default");
-                        model.addAnnotation(new Annotation(type, 
-                                    false, null/*"refines " + refined.getName() + " declared by " + 
-                                    supertype.getName() + " [" + pkg + "]"*/), 
-                                new Position(cpc.getSourcePositionLocator().getStartOffset(that), 
+                        if (pkg.isEmpty()) pkg="default package";
+                        //IFile file = cpc.getProject().getRawProject().getFile(cpc.getPath());
+                        //don't include hover description because it will hide the doc hover
+                        /*String desc = "refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
+                                "' declared by " + supertype.getName() + " [" + pkg + "]";*/
+                        RefinementAnnotation ra = new RefinementAnnotation(getType(refined), 
+                                    null, refined, cpc, that.getIdentifier().getToken().getLine());
+                        model.addAnnotation(ra, new Position(cpc.getSourcePositionLocator().getStartOffset(that), 
                                         cpc.getSourcePositionLocator().getLength(that)+1));
                     }
                 }
             }
+
         }.visit(cpc.getRootNode());
+    }
+    
+    private static String getType(Declaration refined) {
+        return "com.redhat.ceylon.eclipse.ui.refinement." + 
+                (refined.isFormal() ? "formal" : "default");
     }
     
 }
