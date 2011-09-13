@@ -1,19 +1,14 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -22,12 +17,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
-public class RenameRefactoring extends Refactoring {
+public class RenameRefactoring extends AbstractRefactoring {
     
 	private static class FindReferencesVisitor extends FindReferenceVisitor {
 	    private final Declaration declaration;
@@ -42,38 +36,22 @@ public class RenameRefactoring extends Refactoring {
         }
     }
 
-    private final IProject project;
-	//private final Node fNode;
-	//private final ITextEditor fEditor;
-	//private final CeylonParseController parseController;
 	private String newName;
 	private final Declaration declaration;
 	private int count = 0;
 
 	public RenameRefactoring(ITextEditor editor) {
-
-		IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
-		IEditorInput input = editor.getEditorInput();
-
-		if (input instanceof IFileEditorInput) {
-			IFileEditorInput fileInput = (IFileEditorInput) input;
-			project = fileInput.getFile().getProject();
-			CeylonParseController parseController = (CeylonParseController) frt.getParseController();
-            Node node = parseController.getSourcePositionLocator().findNode(frt);
-			declaration = CeylonReferenceResolver.getReferencedDeclaration(node).getRefinedDeclaration();
-			newName = declaration.getName();
-            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
-                pu.getCompilationUnit().visit(frv);
-                pu.getCompilationUnit().visit(fdv);
-                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
-            }
-		} 
-		else {
-		    project = null;
-			declaration = null;
-		}
+	    super(editor);
+	    
+		declaration = CeylonReferenceResolver.getReferencedDeclaration(node).getRefinedDeclaration();
+		newName = declaration.getName();
+        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+            FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+            FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+            pu.getCompilationUnit().visit(frv);
+            pu.getCompilationUnit().visit(fdv);
+            count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+        }
 	}
 	
 	public int getCount() {

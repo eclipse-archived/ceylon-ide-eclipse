@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -323,7 +322,7 @@ public class CeylonParseController extends ParseControllerBase {
   // not exist, it returns the negation of the index of the 
   // element immediately preceding the offset.
   //
-  private static int getTokenIndexAtCharacter(List<Token> tokens, int offset) {
+  static int getTokenIndexAtCharacter(List<Token> tokens, int offset) {
     //search using bisection
     int low = 0,
         high = tokens.size();
@@ -343,34 +342,8 @@ public class CeylonParseController extends ParseControllerBase {
   }
 
   public Iterator<Token> getTokenIterator(IRegion region) {
-    return getTokenIterator(getTokenStream(), region);
+    return CeylonSourcePositionLocator.getTokenIterator(getTokenStream(), region);
   }
-
-  public static Iterator<Token> getTokenIterator(CommonTokenStream stream, IRegion region) {
-      int regionOffset = region.getOffset();
-      int regionLength = region.getLength();
-      if (regionLength<=0) {
-          return Collections.<Token>emptyList().iterator();
-      }
-      int regionEnd = regionOffset + regionLength - 1;
-      if (stream==null) {
-        return null;
-      }
-      else {
-        List<Token> tokens = stream.getTokens();
-        int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
-        // getTokenIndexAtCharacter() answers the negative of the index of the
-        // preceding token if the given offset is not actually within a token.
-        if (firstTokIdx < 0) {
-          firstTokIdx= -firstTokIdx + 1;
-        }
-        int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
-        if (lastTokIdx < 0) {
-          lastTokIdx= -lastTokIdx;
-        }
-        return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
-      }
-    }
 
   public CommonTokenStream getTokenStream() {
     return tokenStream;

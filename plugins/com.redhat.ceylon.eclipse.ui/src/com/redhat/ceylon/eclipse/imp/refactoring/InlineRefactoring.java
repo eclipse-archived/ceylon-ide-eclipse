@@ -1,74 +1,45 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import java.util.Iterator;
-
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
-import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
-public class InlineRefactoring extends Refactoring {
-	private final IProject project;
-	//private final Node fNode;
-	//private final ITextEditor fEditor;
-	//private final CeylonParseController parseController;
+public class InlineRefactoring extends AbstractRefactoring {
 	private final Declaration declaration;
 	private boolean delete = true;
 	private int count = 0;
 
 	public InlineRefactoring(ITextEditor editor) {
+	    super(editor);
 
-		//fEditor = editor;
-
-		IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
-		IEditorInput input = editor.getEditorInput();
-		//parseController = (CeylonParseController) frt.getParseController();
-
-		if (input instanceof IFileEditorInput) {
-			IFileEditorInput fileInput = (IFileEditorInput) input;
-			project = fileInput.getFile().getProject();
-			CeylonParseController parseController = (CeylonParseController) frt.getParseController();
-            Node node = parseController.getSourcePositionLocator().findNode(frt);
-			declaration = CeylonReferenceResolver.getReferencedDeclaration(node);
-	        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-	            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-	            pu.getCompilationUnit().visit(frv);
-	            count += frv.getNodes().size();
-	        }
-		} 
-		else {
-		    project = null;
-			declaration = null;
-		}
+		declaration = CeylonReferenceResolver.getReferencedDeclaration(node);
+        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+            pu.getCompilationUnit().visit(frv);
+            count += frv.getNodes().size();
+        }
 	}
 	
 	public int getCount() {
@@ -205,8 +176,8 @@ public class InlineRefactoring extends Refactoring {
     												if (!first) result.append(", ");
     												first = false;
     											}
-    											result.append(InlineRefactoring.this.
-    													toString(arg.getExpression().getTerm(), pu.getTokenStream()));
+    											result.append(AbstractRefactoring.toString(arg.getExpression().getTerm(), 
+    											        pu.getTokenStream()));
     											found = true;
     										}
     									}
@@ -222,10 +193,10 @@ public class InlineRefactoring extends Refactoring {
     									boolean found = false;
     									for (Tree.NamedArgument arg: that.getNamedArgumentList().getNamedArguments()) {
     										if (it.getDeclaration().equals(arg.getParameter())) {
-    											result//.append(template.substring(start,it.getStartIndex()-templateStart))
-    												.append(InlineRefactoring.this.
-    														toString( ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
-    																.getExpression().getTerm(), pu.getTokenStream()) );
+    											Term argTerm = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
+                                                				.getExpression().getTerm();
+                                                result//.append(template.substring(start,it.getStartIndex()-templateStart))
+    												.append(AbstractRefactoring.toString( argTerm, pu.getTokenStream()) );
     											//start = it.getStopIndex()-templateStart+1;
     											found=true;
     										}
@@ -240,7 +211,7 @@ public class InlineRefactoring extends Refactoring {
     											if (first) result.append(" ");
     											if (!first) result.append(", ");
     											first=false;
-    											result.append(InlineRefactoring.this.toString(e.getTerm(), pu.getTokenStream()));
+    											result.append(AbstractRefactoring.toString(e.getTerm(), pu.getTokenStream()));
     										}
     										if (!first) result.append(" ");
     										result.append("}");
@@ -290,18 +261,6 @@ public class InlineRefactoring extends Refactoring {
     		}
         }
         return cc;
-	}
-
-	private String toString(final Tree.Term t, CommonTokenStream tokenStream) {
-		Integer start = t.getStartIndex();
-		int length = t.getStopIndex()-start+1;
-		Region region = new Region(start, length);
-		StringBuilder exp = new StringBuilder();
-		for (Iterator<Token> ti = CeylonParseController.getTokenIterator(tokenStream, region); 
-				ti.hasNext();) {
-			exp.append(ti.next().getText());
-		}
-		return exp.toString();
 	}
 
 	public Declaration getDeclaration() {

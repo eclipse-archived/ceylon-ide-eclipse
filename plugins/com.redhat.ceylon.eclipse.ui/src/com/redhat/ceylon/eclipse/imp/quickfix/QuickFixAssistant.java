@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 
 import java.util.Collection;
@@ -65,7 +66,13 @@ public class QuickFixAssistant implements IQuickFixAssistant {
     }
 
     @Override
-    public boolean canAssist(IQuickFixInvocationContext invocationContext) {
+    public boolean canAssist(IQuickFixInvocationContext context) {
+        //oops, all this is totally useless, because
+        //this method never gets called by IMP
+        /*Tree.CompilationUnit cu = (CompilationUnit) context.getModel()
+                .getAST(new NullMessageHandler(), new NullProgressMonitor());
+        return CeylonSourcePositionLocator.findNode(cu, context.getOffset(), 
+                context.getOffset()+context.getLength()) instanceof Tree.Term;*/
         return false;
     }
 
@@ -77,20 +84,47 @@ public class QuickFixAssistant implements IQuickFixAssistant {
     @Override
     public void addProposals(IQuickFixInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals) {
-        switch ( problem.getProblemId() ) {
-        case 100:
-            IProject project = context.getModel().getProject().getRawProject();
-            IFile file = context.getModel().getFile();
-            TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
-            if (tc!=null) {
-                Tree.CompilationUnit cu = (Tree.CompilationUnit) context.getModel()
-                        .getAST(new NullMessageHandler(), new NullProgressMonitor());
-                addCreateMemberProposals(cu, problem, proposals, project);
-                addRenameProposals(cu, problem, proposals, file, tc);
+        IProject project = context.getModel().getProject().getRawProject();
+        IFile file = context.getModel().getFile();
+        TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
+        Tree.CompilationUnit cu = (Tree.CompilationUnit) context.getModel()
+                .getAST(new NullMessageHandler(), new NullProgressMonitor());
+        if (problem==null) {
+            //oops, all this is totally useless, because
+            //this method never gets called except when
+            //there is a Problem
+            /*Node node = findNode(cu, context.getOffset(), 
+                    context.getOffset() + context.getLength());
+            addRefactoringProposals(context, proposals, node);*/
+        }
+        else {
+            Node node = findNode(cu, problem.getOffset(), 
+                    problem.getOffset() + problem.getLength());
+            switch ( problem.getProblemId() ) {
+            case 100:
+                addCreateMemberProposals(cu, node, problem, proposals, project);
+                if (tc!=null) {
+                    addRenameProposals(cu, node, problem, proposals, file, tc);
+                }
+                break;
             }
-            break;
         }
     }
+
+    /*public void addRefactoringProposals(IQuickFixInvocationContext context,
+            Collection<ICompletionProposal> proposals, Node node) {
+        try {
+            if (node instanceof Tree.Term) {
+                ExtractFunctionRefactoring efr = new ExtractFunctionRefactoring(context);
+                proposals.add( new ChangeCorrectionProposal("Extract function '" + efr.getNewName() + "'", 
+                        efr.createChange(new NullProgressMonitor()), 20, null));
+                ExtractValueRefactoring evr = new ExtractValueRefactoring(context);
+                proposals.add( new ChangeCorrectionProposal("Extract value '" + evr.getNewName() + "'", 
+                        evr.createChange(new NullProgressMonitor()), 20, null));
+            }
+        }
+        catch (CoreException ce) {}
+    }*/
     
     static class FindArgumentsVisitor extends Visitor 
             implements NaturalVisitor {
@@ -182,10 +216,8 @@ public class QuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addCreateMemberProposals(Tree.CompilationUnit cu, ProblemLocation problem,
+    private void addCreateMemberProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project) {
-        Node node = CeylonSourcePositionLocator.findNode(cu, problem.getOffset(), 
-                problem.getOffset() + problem.getLength());
         String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
@@ -301,10 +333,8 @@ public class QuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addRenameProposals(Tree.CompilationUnit cu, final ProblemLocation problem,
+    private void addRenameProposals(Tree.CompilationUnit cu, Node node, final ProblemLocation problem,
             Collection<ICompletionProposal> proposals, final IFile file, TypeChecker tc) {
-          Node node = CeylonSourcePositionLocator.findNode(cu, problem.getOffset(), 
-                  problem.getOffset() + problem.getLength());
           String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
