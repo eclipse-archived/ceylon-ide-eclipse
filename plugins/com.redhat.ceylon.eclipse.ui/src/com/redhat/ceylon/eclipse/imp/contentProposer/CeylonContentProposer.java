@@ -209,12 +209,14 @@ public class CeylonContentProposer implements IContentProposer {
   private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
         Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-      for (String keyword: CeylonTokenColorer.keywords) {
+      if (!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+        for (String keyword: CeylonTokenColorer.keywords) {
           if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
               result.add(sourceProposal(offset, prefix, null, 
                       keyword + " keyword", keyword, keyword, 
                       true));
           }
+        }
       }
       boolean inImport = node.getScope() instanceof ImportList;
       for (final DeclarationWithProximity dwp: set) {
