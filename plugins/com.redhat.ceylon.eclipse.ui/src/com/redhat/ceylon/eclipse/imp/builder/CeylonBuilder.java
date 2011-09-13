@@ -210,12 +210,6 @@ public class CeylonBuilder extends BuilderBase {
         return resource.getFullPath().lastSegment().equals("target/classes");
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.imp.builder.BuilderBase#build(int, java.util.Map,
-     * org.eclipse.core.runtime.IProgressMonitor)
-     */
     @Override
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
         IProject project = getProject();
@@ -226,12 +220,6 @@ public class CeylonBuilder extends BuilderBase {
 
         fSourcesToCompileTogether.clear();
         IProject[] result = super.build(kind, args, monitor);
-
-        // TODO: Pick a version of the marker creator (or just go with this one)
-        // MarkerCreator markerCreator = new MarkerCreator(file,
-        // parseController, PROBLEM_MARKER_ID);
-        // MarkerCreatorWithBatching markerCreator = new
-        // MarkerCreatorWithBatching(file, parseController, this);
 
         // parseController.getAnnotationTypeInfo().addProblemMarkerType(getErrorMarkerID());
 
