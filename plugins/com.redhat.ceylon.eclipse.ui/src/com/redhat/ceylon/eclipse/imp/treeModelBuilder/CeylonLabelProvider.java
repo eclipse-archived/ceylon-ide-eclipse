@@ -162,6 +162,7 @@ public class CeylonLabelProvider implements ILabelProvider {
   }
 
   public static Image getImage(Declaration d) {
+    if (d==null) return null;
     boolean shared = d.isShared();
     if (d instanceof Class) {
       if (shared) {
