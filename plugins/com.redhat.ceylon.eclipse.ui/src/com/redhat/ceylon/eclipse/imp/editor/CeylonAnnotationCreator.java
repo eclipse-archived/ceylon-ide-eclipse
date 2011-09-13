@@ -35,7 +35,12 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        Declaration refined = that.getDeclarationModel().getRefinedDeclaration();
+                        //TODO: improve this:
+                        Declaration refined = ((TypeDeclaration) dec.getContainer())
+                                .getExtendedTypeDeclaration().getMember(dec.getName());
+                        if (refined==null) {
+                            refined = dec.getRefinedDeclaration();
+                        }
                         TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
                         String pkg = supertype.getUnit().getPackage().getQualifiedNameString();
                         if (pkg.isEmpty()) pkg="default package";
