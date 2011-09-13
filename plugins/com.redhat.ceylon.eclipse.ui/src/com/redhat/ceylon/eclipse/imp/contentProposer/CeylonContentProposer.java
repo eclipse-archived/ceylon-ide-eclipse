@@ -457,13 +457,15 @@ public class CeylonContentProposer implements IContentProposer {
 
   public static String getDescriptionFor(Declaration d) {
       StringBuilder result = new StringBuilder();
-      if (d.isFormal()) result.append("formal ");
-      if (d.isDefault()) result.append("default ");
-      appendDeclarationText(d, result);
-      appendTypeParameters(d, result);
-      appendParameters(d, result);
-      /*result.append(" - refine declaration in ") 
-            .append(((Declaration) d.getContainer()).getName());*/
+      if (d!=null) {
+          if (d.isFormal()) result.append("formal ");
+          if (d.isDefault()) result.append("default ");
+          appendDeclarationText(d, result);
+          appendTypeParameters(d, result);
+          appendParameters(d, result);
+          /*result.append(" - refine declaration in ") 
+                .append(((Declaration) d.getContainer()).getName());*/
+      }
       return result.toString();
   }
 
