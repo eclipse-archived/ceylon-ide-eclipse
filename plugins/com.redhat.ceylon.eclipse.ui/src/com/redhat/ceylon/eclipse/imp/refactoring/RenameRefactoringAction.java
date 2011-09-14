@@ -1,19 +1,21 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.TextEditorAction;
-import org.eclipse.imp.refactoring.RefactoringStarter;
 
-public class RenameRefactoringAction extends TextEditorAction {
+public class RenameRefactoringAction extends AbstractRefactoringAction {
 	public RenameRefactoringAction(ITextEditor editor) {
-		super(RefactoringMessages.ResBundle, "Rename.", editor);
+		super("Rename.", editor);
 	}
-
-	public void run() {
-		final RenameRefactoring refactoring = new RenameRefactoring(getTextEditor());
-		new RefactoringStarter()
-				.activate(refactoring, new RenameWizard(refactoring),
-						getTextEditor().getSite().getShell(),
-						refactoring.getName(), false);
+	
+	@Override
+	public AbstractRefactoring getRefactoring() {
+	    return new RenameRefactoring(getTextEditor());
 	}
+	
+	@Override
+	public RefactoringWizard getWizard(AbstractRefactoring refactoring) {
+	    return new RenameWizard((RenameRefactoring) refactoring);
+	}
+	
 }
