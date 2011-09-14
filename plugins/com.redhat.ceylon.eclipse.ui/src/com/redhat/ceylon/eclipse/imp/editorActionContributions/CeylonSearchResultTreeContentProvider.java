@@ -20,7 +20,7 @@ class CeylonSearchResultTreeContentProvider implements
 	private final TreeViewer viewer;
 	private CeylonSearchResult result;
 	private CeylonSearchResultPage page;
-	private Map childrenMap;
+	private Map<Object, Set<Object>> childrenMap;
 
 	CeylonSearchResultTreeContentProvider(TreeViewer viewer, 
             CeylonSearchResultPage page) {
@@ -53,7 +53,7 @@ class CeylonSearchResultTreeContentProvider implements
     
     private synchronized void initialize(AbstractTextSearchResult result) {
         this.result= (CeylonSearchResult) result;
-        childrenMap= new HashMap();
+        childrenMap= new HashMap<Object, Set<Object>>();
         if (result != null) {
             Object[] elements= result.getElements();
             for (int i= 0; i < elements.length; i++) {
@@ -91,9 +91,9 @@ class CeylonSearchResultTreeContentProvider implements
      * @return Returns <code>trye</code> if the child was added
      */
     private boolean insertChild(Object parent, Object child) {
-        Set children= (Set) childrenMap.get(parent);
+        Set<Object> children= childrenMap.get(parent);
         if (children == null) {
-            children= new HashSet();
+            children= new HashSet<Object>();
             childrenMap.put(parent, children);
         }
         return children.add(child);
@@ -126,14 +126,14 @@ class CeylonSearchResultTreeContentProvider implements
     }
 
     private void removeFromSiblings(Object element, Object parent) {
-        Set siblings= (Set) childrenMap.get(parent);
+        Set<Object> siblings= childrenMap.get(parent);
         if (siblings != null) {
             siblings.remove(element);
         }
     }
 
     public Object[] getChildren(Object parentElement) {
-        Set children= (Set) childrenMap.get(parentElement);
+        Set<Object> children= childrenMap.get(parentElement);
         if (children == null)
             return new Object[0];
         return children.toArray();
