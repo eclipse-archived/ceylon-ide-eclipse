@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.imp.editor;
+package com.redhat.ceylon.eclipse.imp.hover;
 
 import java.util.List;
 

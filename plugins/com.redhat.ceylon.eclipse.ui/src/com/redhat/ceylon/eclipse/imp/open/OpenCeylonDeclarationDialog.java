@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.open;
 
-import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getPackageLabel;
+import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 
 import java.util.Comparator;
