@@ -19,7 +19,9 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
@@ -76,6 +78,12 @@ public class CeylonLabelProvider implements ILabelProvider {
     if (element instanceof CeylonElement) {
       return getImageFor(((CeylonElement) element).getNode());
     }
+    if (element instanceof Package) {
+        return PACKAGE;
+    }
+    if (element instanceof Unit) {
+        return FILE_IMAGE;
+      }
     if (element instanceof ModelTreeNode) {
       return getImageFor((ModelTreeNode) element);
     }
@@ -216,6 +224,14 @@ public class CeylonLabelProvider implements ILabelProvider {
     		  " [" + pkg +
     		  "] - " + ce.getFile().getFullPath().toString() + 
     		  ":" + ce.getLocation();
+    }
+    else if (element instanceof Package) {
+        String pkg = ((Package) element).getQualifiedNameString();
+        if (pkg.isEmpty()) pkg="default package";
+        return "[" + pkg + "]";
+    }
+    else if (element instanceof Unit) {
+        return ((Unit) element).getFilename();
     }
     else {
       return getLabelFor((Node) element);

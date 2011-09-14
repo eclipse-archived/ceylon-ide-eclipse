@@ -1,17 +1,19 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 class CeylonSearchResultContentProvider implements
-		IStructuredContentProvider {
+        CeylonStructuredContentProvider {
 	
 	private final TableViewer viewer;
 	private CeylonSearchResult result;
+    private CeylonSearchResultPage page;
 
-	CeylonSearchResultContentProvider(TableViewer viewer) {
+	CeylonSearchResultContentProvider(TableViewer viewer, 
+	        CeylonSearchResultPage page) {
 		this.viewer = viewer;
+		this.page = page;
 	}
 
 	@Override
@@ -31,7 +33,7 @@ class CeylonSearchResultContentProvider implements
 	}
 	
 	public void elementsChanged(Object[] updatedElements) {
-		int elementLimit= -1;
+		int elementLimit= getElementLimit();
 		boolean tableLimited= elementLimit != -1;
 		for (int i= 0; i < updatedElements.length; i++) {
 			if (result.getMatchCount(updatedElements[i]) > 0) {
@@ -50,4 +52,7 @@ class CeylonSearchResultContentProvider implements
 		}
 	}
 
+    private int getElementLimit() {
+        return page.getElementLimit();
+    }
 }

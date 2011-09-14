@@ -14,10 +14,32 @@ import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
-	private CeylonSearchResultContentProvider contentProvider;
+	static class CeylonViewerComparator extends ViewerComparator {
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            if (e1 instanceof CeylonElement && e2 instanceof CeylonElement) {
+            	CeylonElement ce1 = (CeylonElement) e1;
+            	CeylonElement ce2 = (CeylonElement) e2;
+            	int result = ce1.file.getFullPath().toString().compareTo(ce2.file.getFullPath().toString());
+            	if (result==0) {
+            		return new Integer(ce1.getLocation()).compareTo(ce2.getLocation());
+            	}
+            	else {
+            		return result;
+            	}
+            }
+            else {
+                //TODO: something much better for Units and Packages!
+                return e1.toString().compareTo(e2.toString());
+            }
+        }
+    }
+
+    private CeylonStructuredContentProvider contentProvider;
 	
 	public CeylonSearchResultPage() {
-		super(FLAG_LAYOUT_FLAT);
+		super(FLAG_LAYOUT_FLAT|FLAG_LAYOUT_TREE);
+		setElementLimit(50);
 	}
 	
 	@Override
@@ -27,28 +49,18 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
 	@Override
 	protected void configureTableViewer(final TableViewer viewer) {
-		contentProvider = new CeylonSearchResultContentProvider(viewer);
+		contentProvider = new CeylonSearchResultContentProvider(viewer, this);
 		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new CeylonLabelProvider());
-		viewer.setComparator( new ViewerComparator() {
-			@Override
-			public int compare(Viewer viewer, Object e1, Object e2) {
-				CeylonElement ce1 = (CeylonElement) e1;
-				CeylonElement ce2 = (CeylonElement) e2;
-				int result = ce1.file.getFullPath().toString().compareTo(ce2.file.getFullPath().toString());
-				if (result==0) {
-					return new Integer(ce1.getLocation()).compareTo(ce2.getLocation());
-				}
-				else {
-					return result;
-				}
-			}
-		});
+		viewer.setComparator( new CeylonViewerComparator());
 	}
 
 	@Override
 	protected void configureTreeViewer(TreeViewer viewer) {
-		throw new RuntimeException();
+        contentProvider = new CeylonSearchResultTreeContentProvider(viewer, this);
+        viewer.setContentProvider(contentProvider);
+        viewer.setLabelProvider(new CeylonLabelProvider());
+        viewer.setComparator( new CeylonViewerComparator());
 	}
 
 	@Override
