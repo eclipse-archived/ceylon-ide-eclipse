@@ -11,10 +11,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonNature extends ProjectNatureBase {
 
-  public static final String k_natureID = CeylonPlugin.kPluginID + ".imp.nature";
+  public static final String NATURE_ID = CeylonPlugin.PLUGIN_ID + ".imp.nature";
 
   public String getNatureID() {
-    return k_natureID;
+    return NATURE_ID;
   }
 
   public String getBuilderID() {
@@ -24,7 +24,7 @@ public class CeylonNature extends ProjectNatureBase {
   public void addToProject(IProject project) {
     super.addToProject(project);
     new SmapiProjectNature("ceylon").addToProject(project);
-  };
+  }
 
   protected void refreshPrefs() {
     // TODO implement preferences and hook in here

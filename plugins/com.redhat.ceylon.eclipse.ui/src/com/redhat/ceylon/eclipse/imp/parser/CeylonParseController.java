@@ -53,7 +53,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonParseController extends ParseControllerBase {
 
   public CeylonParseController() {
-    super(CeylonPlugin.kLanguageID);
+    super(CeylonPlugin.LANGUAGE_ID);
   }
 
   private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
