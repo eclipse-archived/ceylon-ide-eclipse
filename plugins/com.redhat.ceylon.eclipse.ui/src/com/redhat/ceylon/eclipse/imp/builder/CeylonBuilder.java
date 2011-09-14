@@ -87,10 +87,12 @@ public class CeylonBuilder extends BuilderBase {
     
     public static List<PhasedUnit> getUnits(String[] projects) {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
-        for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
-            for (String pname: projects) {
-                if (me.getKey().getName().equals(pname)) {
-                    result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+        if (projects!=null) {
+            for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
+                for (String pname: projects) {
+                    if (me.getKey().getName().equals(pname)) {
+                        result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+                    }
                 }
             }
         }
