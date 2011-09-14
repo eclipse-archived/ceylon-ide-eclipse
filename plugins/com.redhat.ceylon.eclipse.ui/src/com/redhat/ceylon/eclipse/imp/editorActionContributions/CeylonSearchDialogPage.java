@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.search.ui.ISearchPage;
@@ -18,13 +17,13 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
+
+import com.redhat.ceylon.eclipse.util.Util;
 
 public class CeylonSearchDialogPage extends DialogPage 
 		implements ISearchPage/*, IReplacePage*/ {
 
-	private String searchString="";
+	private String searchString=""; //TODO: init search string from selection
 	private boolean caseSensitive = false;
 	private boolean references = true;
 	private boolean declarations = true;
@@ -101,16 +100,26 @@ public class CeylonSearchDialogPage extends DialogPage
 		String[] projectNames;
 		switch (scope) {
 		    case ISearchPageContainer.WORKSPACE_SCOPE:
-		        MessageDialog.openError(getShell(), "Ceylon Search Error", "Please select a project to search");
+		        MessageDialog.openError(getShell(), "Ceylon Search Error", 
+		                "Please select a project to search");
 		        return false;
 		    case ISearchPageContainer.SELECTED_PROJECTS_SCOPE:
 		        projectNames = container.getSelectedProjectNames();
 		        break;
 		    case ISearchPageContainer.SELECTION_SCOPE:
-	            projectNames = new String[] { getProject(container.getActiveEditorInput()).getName() };
+	            String project = Util.getProject(container.getActiveEditorInput()).getName();
+	            if (project==null) {
+	                MessageDialog.openError(getShell(), "Ceylon Search Error", 
+	                        "Could not determine project of active editor");
+	                return false;
+	            }
+	            else {
+	                projectNames = new String[] { project };
+	            }
 	            break;
 	        default:
-                MessageDialog.openError(getShell(), "Ceylon Search Error", "Unsupported scope");
+                MessageDialog.openError(getShell(), "Ceylon Search Error", 
+                        "Unsupported scope");
 	            return false;
 		}
 		
@@ -120,9 +129,6 @@ public class CeylonSearchDialogPage extends DialogPage
 		return true;
 	}
 
-    public static IProject getProject(IEditorInput editor) {
-        return ((IFileEditorInput) editor).getFile().getProject();
-    }
 	/*@Override
 	public boolean performReplace() {
 		// TODO Auto-generated method stub

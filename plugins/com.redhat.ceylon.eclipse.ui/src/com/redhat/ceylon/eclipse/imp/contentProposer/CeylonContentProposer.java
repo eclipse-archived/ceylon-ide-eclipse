@@ -3,7 +3,8 @@ package com.redhat.ceylon.eclipse.imp.contentProposer;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
-import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getDeclarationNode;
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getDocumentation;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -210,56 +211,64 @@ public class CeylonContentProposer implements IContentProposer {
         Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
       List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
       if (!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-        for (String keyword: CeylonTokenColorer.keywords) {
-          if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
-              result.add(sourceProposal(offset, prefix, null, 
-                      keyword + " keyword", keyword, keyword, 
-                      true));
-          }
-        }
+        addKeywordProposals(offset, prefix, result);
       }
       boolean inImport = node.getScope() instanceof ImportList;
       for (final DeclarationWithProximity dwp: set) {
         Declaration d = dwp.getDeclaration();
         result.add(sourceProposal(offset, prefix, 
                 CeylonLabelProvider.getImage(d),
-                getDocumentation(getDeclarationNode(cpc, d)), 
+                getDocumentationFor(cpc, d), 
                 getDescriptionFor(dwp, !inImport), 
        	        getTextFor(dwp, !inImport), true));
         if (!inImport) {
-        if (d instanceof Functional) {
-          boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-          if (!isAbstractClass) {
-            result.add(sourceProposal(offset, prefix, 
-                    CeylonLabelProvider.getImage(d),
-                    getDocumentation(getDeclarationNode(cpc, d)), 
-                    getPositionalInvocationDescriptionFor(dwp), 
-                    getPositionalInvocationTextFor(dwp), true));
-            List<ParameterList> pls = ((Functional) d).getParameterLists();
-            if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
-                  //if there is more than one parameter, 
-                  //suggest a named argument invocation 
-                  result.add(sourceProposal(offset, prefix, 
-                          CeylonLabelProvider.getImage(d),
-                          getDocumentation(getDeclarationNode(cpc, d)), 
-                          getNamedInvocationDescriptionFor(dwp), 
-                          getNamedInvocationTextFor(dwp), true));
+            if (d instanceof Functional) {
+              boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
+              if (!isAbstractClass) {
+                result.add(sourceProposal(offset, prefix, 
+                        CeylonLabelProvider.getImage(d),
+                        getDocumentationFor(cpc, d), 
+                        getPositionalInvocationDescriptionFor(dwp), 
+                        getPositionalInvocationTextFor(dwp), true));
+                List<ParameterList> pls = ((Functional) d).getParameterLists();
+                if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+                      //if there is more than one parameter, 
+                      //suggest a named argument invocation 
+                      result.add(sourceProposal(offset, prefix, 
+                              CeylonLabelProvider.getImage(d),
+                              getDocumentationFor(cpc, d), 
+                              getNamedInvocationDescriptionFor(dwp), 
+                              getNamedInvocationTextFor(dwp), true));
+                }
               }
             }
-        }
-        if (d instanceof MethodOrValue || d instanceof Class) {
-            if (node.getScope() instanceof ClassOrInterface &&
-                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                result.add(sourceProposal(offset, prefix, 
-                        d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
-                        getDocumentation(getDeclarationNode(cpc, d)), 
-                        getRefinementDescriptionFor(d), 
-                        getRefinementTextFor(d), false));
+            if (d instanceof MethodOrValue || d instanceof Class) {
+                if (node.getScope() instanceof ClassOrInterface &&
+                        ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                    result.add(sourceProposal(offset, prefix, 
+                            d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
+                            getDocumentationFor(cpc, d), 
+                            getRefinementDescriptionFor(d), 
+                            getRefinementTextFor(d), false));
+                }
             }
-        }
         }
       }
       return result.toArray(new ICompletionProposal[result.size()]);
+  }
+
+  private static void addKeywordProposals(int offset, String prefix, List<ICompletionProposal> result) {
+    for (String keyword: CeylonTokenColorer.keywords) {
+      if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
+          result.add(sourceProposal(offset, prefix, null, 
+                  keyword + " keyword", keyword, keyword, 
+                  true));
+      }
+    }
+  }
+
+  private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
+    return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
   }
 
   private static Set<DeclarationWithProximity> sortProposals(final String prefix,
@@ -565,22 +574,22 @@ public class CeylonContentProposer implements IContentProposer {
 
   private static void appendParameters(Declaration d, StringBuilder result) {
     if (d instanceof Functional) {
-    List<ParameterList> plists = ((Functional) d).getParameterLists();
-    if (plists!=null && !plists.isEmpty()) {
-      ParameterList params = plists.get(0);
-      if (params.getParameters().isEmpty()) {
-        result.append("()");
-      }
-      else {
-        result.append("(");
-        for (Parameter p: params.getParameters()) {
-          result.append(p.getType().getProducedTypeName()).append(" ")
-              .append(p.getName()).append(", ");
+        List<ParameterList> plists = ((Functional) d).getParameterLists();
+        if (plists!=null && !plists.isEmpty()) {
+          ParameterList params = plists.get(0);
+          if (params.getParameters().isEmpty()) {
+            result.append("()");
+          }
+          else {
+            result.append("(");
+            for (Parameter p: params.getParameters()) {
+              result.append(p.getType().getProducedTypeName()).append(" ")
+                  .append(p.getName()).append(", ");
+            }
+            result.setLength(result.length()-2);
+            result.append(")");
+          }
         }
-        result.setLength(result.length()-2);
-        result.append(")");
-      }
-    }
     }
   }
   

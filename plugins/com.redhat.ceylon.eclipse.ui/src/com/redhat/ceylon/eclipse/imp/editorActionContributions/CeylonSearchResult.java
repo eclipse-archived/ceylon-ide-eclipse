@@ -17,6 +17,7 @@ import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.util.Util;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
 		implements IEditorMatchAdapter, IFileMatchAdapter {
@@ -87,8 +88,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 			IEditorPart editor) {
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
-			IFileEditorInput fi= (IFileEditorInput) ei;
-			return getMatchesForFile(fi.getFile());
+			return getMatchesForFile(Util.getFile(ei));
 		}
 		else {
 			return new Match[0];
@@ -99,8 +99,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 	public boolean isShownInEditor(Match match, IEditorPart editor) {
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
-			IFileEditorInput fi= (IFileEditorInput) ei;
-			return getFile(match.getElement()).equals(fi.getFile());
+			return getFile(match.getElement()).equals(Util.getFile(ei));
 		}
 		else {
 			return false;

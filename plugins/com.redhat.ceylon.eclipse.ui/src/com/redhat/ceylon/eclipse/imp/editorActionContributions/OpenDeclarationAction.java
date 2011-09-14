@@ -1,29 +1,37 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.editor.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.imp.editor.FilteredTypesSelectionDialog;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.quickfix.QuickFixAssistant;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.util.Util;
 
 class OpenDeclarationAction extends Action {
-    private final UniversalEditor editor;
+    private final IEditorPart editor;
     
-    OpenDeclarationAction(UniversalEditor editor) {
+    OpenDeclarationAction(IEditorPart editor) {
         this("Open Declaration...", editor);
     }
     
-    OpenDeclarationAction(String text, UniversalEditor editor) {
+    OpenDeclarationAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
         setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
@@ -36,21 +44,35 @@ class OpenDeclarationAction extends Action {
                 .getActiveWorkbenchWindow().getShell();
         FilteredTypesSelectionDialog dialog = new FilteredTypesSelectionDialog(shell, editor);
         dialog.setTitle("Open Declaration");
-        dialog.setInitialPattern(editor.getSelectionText());
+        if (editor instanceof ITextEditor) {
+            dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
+        }
         dialog.open();
         Object[] types = dialog.getResult();
         if (types != null && types.length > 0) {
-            //TODO: rewrite this to not depend on the CeylonParseController
-            //      or active editor (does CeylonReferenceResolver *really*
-            //      need to have this dependency?)
-            CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-            Tree.Declaration node = CeylonReferenceResolver.getDeclarationNode(cpc, 
-                    (Declaration) types[0]);
-            ISourcePositionLocator locator = cpc.getSourcePositionLocator();
-            IPath path = locator.getPath(node).removeFirstSegments(1);
-            int targetOffset = locator.getStartOffset(node);
-            IResource file = cpc.getProject().getRawProject().findMember(path);
-            QuickFixAssistant.gotoChange(file, targetOffset, 0);
+            gotoDeclaration((DeclarationWithProject) types[0]);
         }
     }
+
+    public void gotoDeclaration(DeclarationWithProject dwp) {
+        Tree.Declaration node;
+        PhasedUnits units;
+        IProject project = dwp.getProject();
+        Declaration dec = dwp.getDeclaration();
+        if (editor instanceof UniversalEditor) {
+            CeylonParseController cpc = (CeylonParseController) ((UniversalEditor) editor).getParseController();
+            node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+            units = cpc.getPhasedUnits();
+        }
+        else {
+            node = getReferencedNode(dec, getCompilationUnit(project, dec));
+            units = CeylonBuilder.getProjectTypeChecker(project).getPhasedUnits();
+        }
+        IPath path = CeylonSourcePositionLocator.getNodePath(node, units)
+                .removeFirstSegments(1);
+        int targetOffset = CeylonSourcePositionLocator.getNodeStartOffset(node);
+        IResource file = project.findMember(path);
+        Util.gotoLocation(file, targetOffset, 0);
+    }
+
 }

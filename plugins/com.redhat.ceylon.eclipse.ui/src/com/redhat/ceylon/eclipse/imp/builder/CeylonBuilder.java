@@ -76,6 +76,16 @@ public class CeylonBuilder extends BuilderBase {
         return result;
     }
     
+    public static List<PhasedUnit> getUnits() {
+        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
+        for (TypeChecker tc: typeCheckers.values()) {
+            for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
+                result.add(pu);
+            }
+        }
+        return result;
+    }
+    
     /*public static PhasedUnit getPhasedUnit(IFile file) {
         for (PhasedUnit pu: getUnits(file.getProject())) {
             if (getFile(pu).getFullPath().equals(file.getFullPath())) {
@@ -124,7 +134,6 @@ public class CeylonBuilder extends BuilderBase {
     private Collection<IPath> retrieveSourceFolders(
             ISourceProject sourceProject) {
         List<IPath> result = new ArrayList<IPath>();
-
         List<IPathEntry> buildPath = sourceProject.getBuildPath();
         for (IPathEntry buildPathEntry : buildPath) {
             if (buildPathEntry.getEntryType().equals(
