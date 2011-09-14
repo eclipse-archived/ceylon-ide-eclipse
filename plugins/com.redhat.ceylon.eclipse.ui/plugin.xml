@@ -160,8 +160,8 @@
             extensions="ceylon:90"
             class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage"
             sizeHint="460,160"
-            id="org.redhat.ceylon.ui.searchPage">
-      </page>
+            id="org.redhat.ceylon.ui.searchPage"
+            icon="icons/find_obj.gif"/>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
