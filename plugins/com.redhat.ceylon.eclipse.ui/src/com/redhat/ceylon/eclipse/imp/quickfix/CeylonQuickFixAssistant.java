@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 
@@ -41,7 +42,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.Util;
@@ -214,11 +214,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateMemberProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project) {
-        String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
             if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+                String brokenName = getIdentifyingNode(node).getText();
                 String def;
                 String desc;
                 Image image;
@@ -367,7 +367,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, final ProblemLocation problem,
             Collection<ICompletionProposal> proposals, final IFile file, TypeChecker tc) {
-          String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
+          String brokenName = getIdentifyingNode(node).getText();
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
             String name = entry.getKey();

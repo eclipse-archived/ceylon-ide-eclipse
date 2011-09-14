@@ -25,8 +25,7 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         if (cpc.getRootNode()==null) return;
         final IAnnotationModel model = getEditor().getDocumentProvider()
                 .getAnnotationModel(getEditor().getEditorInput());
-        /*model.addAnnotation( new DefaultRangeIndicator(), 
-                new Position(50, 100));*/
+        //model.addAnnotation(new DefaultRangeIndicator(), new Position(50, 100));
         new Visitor() {
             @Override
             public void visit(Tree.Declaration that) {
@@ -34,23 +33,7 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        //TODO: improve this:
-                        Declaration refined = ((TypeDeclaration) dec.getContainer())
-                                .getExtendedTypeDeclaration().getMember(dec.getName());
-                        if (refined==null) {
-                            refined = dec.getRefinedDeclaration();
-                        }
-                        TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
-                        String pkg = supertype.getUnit().getPackage().getQualifiedNameString();
-                        if (pkg.isEmpty()) pkg="default package";
-                        //IFile file = cpc.getProject().getRawProject().getFile(cpc.getPath());
-                        //don't include hover description because it will hide the doc hover
-                        /*String desc = "refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
-                                "' declared by " + supertype.getName() + " [" + pkg + "]";*/
-                        RefinementAnnotation ra = new RefinementAnnotation(getType(refined), 
-                                    null, refined, cpc, that.getIdentifier().getToken().getLine());
-                        model.addAnnotation(ra, new Position(cpc.getSourcePositionLocator().getStartOffset(that), 
-                                        cpc.getSourcePositionLocator().getLength(that)+1));
+                        addRefinementAnnotation(cpc, model, that, dec);
                     }
                 }
             }
@@ -58,7 +41,26 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         }.visit(cpc.getRootNode());
     }
     
-    private static String getType(Declaration refined) {
+    private void addRefinementAnnotation(CeylonParseController cpc,
+            IAnnotationModel model, Tree.Declaration that, Declaration dec) {
+        //TODO: improve this:
+        Declaration refined = ((TypeDeclaration) dec.getContainer())
+                .getExtendedTypeDeclaration().getMember(dec.getName());
+        if (refined==null) {
+            refined = dec.getRefinedDeclaration();
+        }
+        //IFile file = cpc.getProject().getRawProject().getFile(cpc.getPath());
+        //don't include hover description because it will hide the doc hover
+        /*String desc = "refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
+                "' declared by " + refined.getContainer().getName() + 
+                " [" + getPackageLabel(dec) + "]";*/
+        RefinementAnnotation ra = new RefinementAnnotation(getAnnotationType(refined), 
+                    null, refined, cpc, that.getIdentifier().getToken().getLine());
+        model.addAnnotation(ra, new Position(cpc.getSourcePositionLocator().getStartOffset(that), 
+                        cpc.getSourcePositionLocator().getLength(that)+1));
+    }
+
+    private static String getAnnotationType(Declaration refined) {
         return "com.redhat.ceylon.eclipse.ui.refinement." + 
                 (refined.isFormal() ? "formal" : "default");
     }

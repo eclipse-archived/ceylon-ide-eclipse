@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 
 public abstract class ErrorVisitor extends Visitor {
     private final IMessageHandler handler;
@@ -43,10 +45,10 @@ public abstract class ErrorVisitor extends Visitor {
             }
             if (error instanceof AnalysisMessage) {
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
-                Node errorNode = CeylonSourcePositionLocator
-                        .getIdentifyingNode(analysisMessage.getTreeNode());
-                if (errorNode == null)
+                Node errorNode = getIdentifyingNode(analysisMessage.getTreeNode());
+                if (errorNode == null) {
                     errorNode = analysisMessage.getTreeNode();
+                }
                 Token token = errorNode.getToken();
                 startOffset = errorNode.getStartIndex();
                 endOffset = errorNode.getStopIndex();

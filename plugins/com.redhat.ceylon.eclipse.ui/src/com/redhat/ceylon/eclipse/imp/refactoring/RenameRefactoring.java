@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -17,7 +19,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -99,9 +100,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	}
 
 	private void renameNode(TextFileChange tfc, Node node) {
-		node = CeylonSourcePositionLocator.getIdentifyingNode(node);
 		tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-				node.getText().length(), newName));
+		        getIdentifyingNode(node).getText().length(), newName));
 	}
 
 	public void setNewName(String text) {
