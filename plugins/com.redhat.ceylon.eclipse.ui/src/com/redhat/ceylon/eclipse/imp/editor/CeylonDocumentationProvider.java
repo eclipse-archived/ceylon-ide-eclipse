@@ -24,82 +24,95 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         }
     }
     
-    private static String sanitize(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-    }
-    
     public static String getDocumentation(Tree.Declaration decl) {
-        String documentation = "";
+        StringBuilder documentation = new StringBuilder();
         if (decl!=null) {
-            documentation += "<p>[" + getPackageLabel(decl) + "]</p>";
-            documentation += "<p><b>" + sanitize(CeylonLabelProvider.getLabelFor(decl))
-                    + "</b></p>";
-            
+            appendDescription(decl, documentation);
             Declaration model = decl.getDeclarationModel();
             if (model!=null) {
-                if (model instanceof Class) {
-                    ProducedType extended = ((Class) model).getExtendedType();
-                    if (extended!=null) {
-                        documentation += "<ul><li>extends " + sanitize(extended.getProducedTypeName()) + 
-                                " [" + getPackageLabel(extended.getDeclaration()) + "]</li></ul>";
-                    }
-                }
-                if (model instanceof TypeDeclaration) {
-                    List<ProducedType> types = ((TypeDeclaration) model).getSatisfiedTypes();
-                    if (!types.isEmpty()) {
-                        documentation += "<ul>";
-                        for (ProducedType satisfied : types) {
-                            documentation += "<li>satisfies "+ sanitize(satisfied.getProducedTypeName()) 
-                                    + " [" + getPackageLabel(satisfied.getDeclaration()) + "]</li>";
-                        }
-                        documentation += "</ul>";
-                    }
-                }
-                if (model.isClassOrInterfaceMember()) {
-                    TypeDeclaration declaring = (TypeDeclaration) model.getContainer();
-                    documentation += "<ul><li>declared by " + declaring.getName() + 
-                            " [" + getPackageLabel(declaring) + "]</li>";
-                    if (model.isActual()) {
-                        Declaration refined = model.getRefinedDeclaration();
-                        TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
-                        String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
-                        if (spkg.isEmpty()) spkg="default package";
-                        documentation += "<li>refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
-                                "' declared by " + supertype.getName() + 
-                                " [" + getPackageLabel(refined) + "]</li>";
-                    }
-                    documentation +="</ul>";
-                }
+                appendInheritance(documentation, model);
+                appendDeclaringType(documentation, model);
             }
             
-            Tree.AnnotationList annotationList = decl.getAnnotationList();
-            if (annotationList != null)
+            appendDocAnnotationContent(decl, documentation);
+        }
+        return documentation.toString();
+    }
+
+    private static void appendDescription(Tree.Declaration decl, StringBuilder documentation) {
+        documentation.append("<p>[").append(getPackageLabel(decl)).append("]</p>");
+        documentation.append("<p><b>").append(sanitize(CeylonLabelProvider.getLabelFor(decl)))
+                .append("</b></p>");
+    }
+
+    private static void appendDeclaringType(StringBuilder documentation, Declaration model) {
+        if (model.isClassOrInterfaceMember()) {
+            TypeDeclaration declaring = (TypeDeclaration) model.getContainer();
+            documentation.append("<ul><li>declared by ").append(declaring.getName())
+                    .append(" [" + getPackageLabel(declaring) + "]</li>");
+            if (model.isActual()) {
+                Declaration refined = model.getRefinedDeclaration();
+                TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
+                String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
+                if (spkg.isEmpty()) spkg="default package";
+                documentation.append("<li>refines '" + CeylonContentProposer.getDescriptionFor(refined)) 
+                        .append("' declared by ").append(supertype.getName()) 
+                        .append(" [" + getPackageLabel(refined) + "]</li>");
+            }
+            documentation.append("</ul>");
+        }
+    }
+
+    private static void appendInheritance(StringBuilder documentation, Declaration model) {
+        if (model instanceof Class) {
+            ProducedType extended = ((Class) model).getExtendedType();
+            if (extended!=null) {
+                documentation.append("<ul><li>extends ")
+                        .append(sanitize(extended.getProducedTypeName()))
+                        .append(" [" + getPackageLabel(extended.getDeclaration()) + "]</li></ul>");
+            }
+        }
+        if (model instanceof TypeDeclaration) {
+            List<ProducedType> types = ((TypeDeclaration) model).getSatisfiedTypes();
+            if (!types.isEmpty()) {
+                documentation.append("<ul>");
+                for (ProducedType satisfied : types) {
+                    documentation.append("<li>satisfies ")
+                            .append(sanitize(satisfied.getProducedTypeName()) )
+                            .append(" [" + getPackageLabel(satisfied.getDeclaration()) + "]</li>");
+                }
+                documentation.append("</ul>");
+            }
+        }
+    }
+
+    private static void appendDocAnnotationContent(Tree.Declaration decl,
+            StringBuilder documentation) {
+        Tree.AnnotationList annotationList = decl.getAnnotationList();
+        if (annotationList != null)
+        {
+            for (Tree.Annotation annotation : annotationList.getAnnotations())
             {
-                List<Tree.Annotation> annotations = annotationList.getAnnotations();
-                for (Tree.Annotation annotation : annotations)
+                Tree.Primary annotPrim = annotation.getPrimary();
+                if (annotPrim != null)
                 {
-                    Tree.Primary annotPrim = annotation.getPrimary();
-                    if (annotPrim != null)
-                    {
-                        Declaration annotDecl = annotPrim.getDeclaration(); 
-                        if (annotDecl!=null) {
-                            String name = annotDecl.getName();
-                            if ("doc".equals(name))
+                    Declaration annotDecl = annotPrim.getDeclaration(); 
+                    if (annotDecl!=null) {
+                        String name = annotDecl.getName();
+                        if ("doc".equals(name))
+                        {
+                            Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                            if (!args.isEmpty())
                             {
-                                Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
-                                List<Tree.PositionalArgument> args = argList.getPositionalArguments();
-                                if (!args.isEmpty())
-                                {
-                                    String docLine = args.get(0).getExpression().getTerm().getText();
-                                    documentation += "<br/><p>" + docLine + "</p>";
-                                }
+                                String docLine = args.get(0).getExpression().getTerm().getText();
+                                documentation.append("<br/><p>" + docLine + "</p>");
                             }
                         }
                     }
                 }
             }
         }
-        return documentation;
     }
     
     public static String getPackageLabel(Tree.Declaration decl) {
@@ -112,6 +125,10 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         String pkg = decl.getUnit().getPackage().getQualifiedNameString();
         if (pkg.isEmpty()) pkg="default package";
         return pkg;
+    }
+    
+    private static String sanitize(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
     
 }
