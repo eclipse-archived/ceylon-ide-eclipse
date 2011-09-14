@@ -32,8 +32,13 @@
 4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`
     
-5.  From the new instance of Eclipse, use `File > Open File...` 
-    to open a `.ceylon` file.
+5.  From the new instance of Eclipse, use `File > New > Java Project`, and 
+    click `Next` once to get to the Java Settings page. Select the `src` 
+    directory, click `Configure inclusion and exclusion filters`, and add 
+    the inclusion pattern `**/*.ceylon`. Now select `Finish` create a new 
+    Java project in the workspace.
+    
+6.  Use New > File to create a new file with the extension `.ceylon`.
 
 ## Building with Tycho/Maven
 
