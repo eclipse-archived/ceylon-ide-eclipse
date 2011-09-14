@@ -66,6 +66,16 @@ public class CeylonLabelProvider implements ILabelProvider {
   private static Image IMPORT_LIST = imageRegistry
 	      .get(ICeylonResources.CEYLON_IMPORT_LIST);
 
+  
+  private final boolean includePackage;
+  
+  public CeylonLabelProvider() {
+      this(true);
+  }
+
+  public CeylonLabelProvider(boolean includePackage) {
+    this.includePackage = includePackage;
+  }
 
   @Override
   public Image getImage(Object element) {
@@ -215,14 +225,20 @@ public class CeylonLabelProvider implements ILabelProvider {
     }
     else if (element instanceof CeylonElement) {
       CeylonElement ce = (CeylonElement) element;
-      String pkg = ce.getNode()
+      String pkg;
+      if (includePackage()) {
+          pkg = ce.getNode()
               .getUnit()
               .getPackage()
               .getQualifiedNameString();
-      if (pkg.isEmpty()) pkg="default package";
-      return getLabelFor(ce.getNode()) +
-    		  " [" + pkg +
-    		  "] - " + ce.getFile().getFullPath().toString() + 
+          if (pkg.isEmpty()) pkg="default package";
+          pkg = " [" + pkg + "]";
+      }
+      else {
+          pkg = "";
+      }
+      return getLabelFor(ce.getNode()) + pkg + " - " + 
+              ce.getFile().getFullPath().toString() + 
     		  ":" + ce.getLocation();
     }
     else if (element instanceof Package) {
@@ -236,6 +252,10 @@ public class CeylonLabelProvider implements ILabelProvider {
     else {
       return getLabelFor((Node) element);
     }
+  }
+  
+  protected boolean includePackage() {
+      return includePackage;
   }
 
   private String getLabelForFile(IFile file) {
