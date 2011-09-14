@@ -300,7 +300,15 @@
               label="Convert To Named Arguments..."
               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              /> 
+              />
+       <!--
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ceylonSearch" 
+              label="Ceylon..."
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenCeylonSearchPageAction"
+              menubarPath="org.eclipse.search.menu/dialogGroup"
+              icon="icons/find_obj.gif"
+              />
+       --> 
       </editorContribution>
  </extension> 
  <!--
