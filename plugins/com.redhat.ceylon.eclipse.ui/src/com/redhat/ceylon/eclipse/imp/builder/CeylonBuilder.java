@@ -222,10 +222,11 @@ public class CeylonBuilder extends BuilderBase {
 
         switch (kind) {
         case FULL_BUILD:
+            System.out.println("Starting full build");
             typeCheckers.remove(project);
             Collection<IPath> sourceFolders = retrieveSourceFolders(sourceProject);
             TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
-                    .verbose(true);
+                    .verbose(false);
             for (IPath sourceFolder : sourceFolders) {
                 IFolderVirtualFile srcDir = new IFolderVirtualFile(project,
                         sourceFolder);
@@ -246,6 +247,7 @@ public class CeylonBuilder extends BuilderBase {
                         }
                     });      
             }
+            System.out.println("Finished full build");
             break;
         }
         return result;

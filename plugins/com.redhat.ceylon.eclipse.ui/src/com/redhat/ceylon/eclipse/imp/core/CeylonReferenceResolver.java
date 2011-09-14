@@ -80,7 +80,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
             Tree.CompilationUnit compilationUnit) {
         FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
         compilationUnit.visit(visitor);
-        System.out.println("referenced node: " + visitor.getDeclarationNode());
+        //System.out.println("referenced node: " + visitor.getDeclarationNode());
         return visitor.getDeclarationNode();
     }
 
