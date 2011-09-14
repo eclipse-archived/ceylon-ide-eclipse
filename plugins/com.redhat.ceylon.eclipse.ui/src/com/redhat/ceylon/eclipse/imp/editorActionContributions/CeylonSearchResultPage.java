@@ -59,7 +59,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	protected void configureTreeViewer(TreeViewer viewer) {
         contentProvider = new CeylonSearchResultTreeContentProvider(viewer, this);
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new CeylonLabelProvider());
+        viewer.setLabelProvider(new CeylonLabelProvider(false));
         viewer.setComparator( new CeylonViewerComparator());
 	}
 
