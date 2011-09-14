@@ -38,7 +38,7 @@
     the inclusion pattern `**/*.ceylon`. Now select `Finish` create a new 
     Java project in the workspace.
     
-6.  Use New > File to create a new file with the extension `.ceylon`.
+6.  Use `New > File` to create a new file with the extension `.ceylon`.
 
 ## Building with Tycho/Maven
 
