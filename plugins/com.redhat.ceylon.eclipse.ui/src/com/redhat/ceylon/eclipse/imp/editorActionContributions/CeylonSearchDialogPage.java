@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
 import org.eclipse.search.ui.NewSearchUI;
@@ -100,7 +101,8 @@ public class CeylonSearchDialogPage extends DialogPage
 		String[] projectNames;
 		switch (scope) {
 		    case ISearchPageContainer.WORKSPACE_SCOPE:
-		        throw new RuntimeException();
+		        MessageDialog.openError(getShell(), "Ceylon Search Error", "Please select a project to search");
+		        return false;
 		    case ISearchPageContainer.SELECTED_PROJECTS_SCOPE:
 		        projectNames = container.getSelectedProjectNames();
 		        break;
@@ -108,7 +110,8 @@ public class CeylonSearchDialogPage extends DialogPage
 	            projectNames = new String[] { getProject(container.getActiveEditorInput()).getName() };
 	            break;
 	        default:
-                throw new RuntimeException();
+                MessageDialog.openError(getShell(), "Ceylon Search Error", "Unsupported scope");
+	            return false;
 		}
 		
 		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(
