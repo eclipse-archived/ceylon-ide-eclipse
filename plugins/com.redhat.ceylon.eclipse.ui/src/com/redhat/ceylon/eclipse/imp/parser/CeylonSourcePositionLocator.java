@@ -194,9 +194,9 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
   public static Node findNode(Tree.CompilationUnit cu, int startOffset, int endOffset) {
       NodeVisitor visitor = new NodeVisitor(startOffset, endOffset);
-      System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+      //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
       cu.visit(visitor);
-      System.out.println("selected node: " + visitor.getNode());
+      //System.out.println("selected node: " + visitor.getNode());
       return visitor.getNode();
  }
   

@@ -183,8 +183,10 @@ public class CeylonParseController extends ParseControllerBase {
     else {
       file = new SourceCodeVirtualFile(contents);
     }
-
+    
     if (file.getName().endsWith(".ceylon")) {
+
+        System.out.println("Compiling " + file.getPath());
 
         ANTLRInputStream input;
         try {
@@ -329,7 +331,7 @@ public class CeylonParseController extends ParseControllerBase {
         phasedUnit.validateRefinement();
         phasedUnit.analyseTypes();
         phasedUnit.analyseFlow();
-        phasedUnit.display();
+        //phasedUnit.display();
                 
         //fCurrentAst = cu;
 
@@ -345,6 +347,7 @@ public class CeylonParseController extends ParseControllerBase {
             });      
         }
 
+        System.out.println("Finished compiling " + file.getPath());
     }
     
     return fCurrentAst;
