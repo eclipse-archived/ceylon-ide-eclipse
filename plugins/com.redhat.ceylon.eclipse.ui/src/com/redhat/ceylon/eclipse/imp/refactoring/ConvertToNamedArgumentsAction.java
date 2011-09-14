@@ -1,30 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
 
-public class ConvertToNamedArgumentsAction implements IEditorActionDelegate {
-    private UniversalEditor editor;
-    
-    @Override
-    public void run(IAction action) {
-        if (editor!=null) run();
-    }
-    
-    @Override
-    public void selectionChanged(IAction action, ISelection selection) {}
-    
-    @Override
-    public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-        if (targetEditor instanceof UniversalEditor) {
-            editor = (UniversalEditor) targetEditor;
-        }
-    }
-    
+public class ConvertToNamedArgumentsAction extends RefactoringAction {
     public void run() {
-        new ConvertToNamedArgumentsRefactoringAction(editor).run();
+        new ConvertToNamedArgumentsRefactoringAction(getEditor()).run();
     }
 }

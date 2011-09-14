@@ -1,19 +1,21 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.TextEditorAction;
-import org.eclipse.imp.refactoring.RefactoringStarter;
 
-public class ExtractFunctionRefactoringAction extends TextEditorAction {
-	public ExtractFunctionRefactoringAction(ITextEditor editor) {
-		super(RefactoringMessages.ResBundle, "ExtractFunction.", editor);
-	}
+public class ExtractFunctionRefactoringAction extends AbstractRefactoringAction {
+    public ExtractFunctionRefactoringAction(ITextEditor editor) {
+        super("ExtractFunction.", editor);
+    }
+    
+    @Override
+    public AbstractRefactoring getRefactoring() {
+        return new ExtractFunctionRefactoring(getTextEditor());
+    }
+    
+    @Override
+    public RefactoringWizard getWizard(AbstractRefactoring refactoring) {
+        return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring);
+    }
 
-	public void run() {
-		final ExtractFunctionRefactoring refactoring = new ExtractFunctionRefactoring(getTextEditor());
-		new RefactoringStarter()
-				.activate(refactoring, new ExtractFunctionWizard(refactoring),
-						getTextEditor().getSite().getShell(),
-						refactoring.getName(), false);
-	}
 }
