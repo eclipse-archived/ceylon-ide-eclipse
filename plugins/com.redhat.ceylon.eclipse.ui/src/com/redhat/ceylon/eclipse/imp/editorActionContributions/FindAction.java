@@ -4,13 +4,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.search.ui.NewSearchUI;
-import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.util.Util;
 
 abstract class FindAction extends Action {
     
@@ -27,11 +27,8 @@ abstract class FindAction extends Action {
         Node node = CeylonSourcePositionLocator.findNode(cpc.getRootNode(), 
                 editor.getSelection().x, editor.getSelection().x+editor.getSelection().y);
         NewSearchUI.runQueryInBackground(createSearchQuery(
-                CeylonReferenceResolver.getReferencedDeclaration(node), getProject(editor)));
-    }
-
-    public static IProject getProject(UniversalEditor editor) {
-        return ((IFileEditorInput) editor.getEditorInput()).getFile().getProject();
+                CeylonReferenceResolver.getReferencedDeclaration(node), 
+                Util.getProject(editor.getEditorInput())));
     }
 
     public abstract FindSearchQuery createSearchQuery(Declaration declaration, IProject project);

@@ -1,13 +1,16 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import static com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.imp.editor.CeylonDocumentationProvider.getPackageLabel;
+
 import java.util.Comparator;
-import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
@@ -15,32 +18,32 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
-    private IEditorPart editor;
+    //private IEditorPart editor;
     
     private class TypeSelectionHistory extends SelectionHistory {
         protected Object restoreItemFromMemento(IMemento element) {
             String qualifiedName = element.getString("qualifiedName");
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
-            IFileEditorInput input = (IFileEditorInput) editor.getEditorInput();
-            for (PhasedUnit unit: CeylonBuilder.getUnits(input.getFile().getProject())) {
+            String projectName = element.getString("projectName");
+            //for (PhasedUnit unit: CeylonBuilder.getUnits(Util.getProject(editor.getEditorInput()))) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
                 if (unit.getUnit().getFilename().equals(unitFileName)
                         && unit.getPackage().getQualifiedNameString().equals(packageName)) {
                     for (Declaration dec: unit.getPackage().getMembers()) {
                         if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                            return dec;
+                            return new DeclarationWithProject(dec, 
+                                    CeylonBuilder.getFile(unit).getProject());
                         }
                     }
                 }
@@ -48,16 +51,17 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
            return null; 
         }
         protected void storeItemToMemento(Object item, IMemento element) {
-            Declaration dec = (Declaration) item;
+            Declaration dec = ((DeclarationWithProject) item).getDeclaration();
             element.putString("qualifiedName", dec.getQualifiedNameString());
             element.putString("unitFileName", dec.getUnit().getFilename());
             element.putString("packageName", dec.getUnit().getPackage().getQualifiedNameString());
+            element.putString("projectName", ((DeclarationWithProject) item).getProject().getName());
         }
      }
     
     public FilteredTypesSelectionDialog(Shell shell, IEditorPart editor) {
         super(shell);
-        this.editor = editor;
+        //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());
         setListLabelProvider(new ILabelProvider() {
             @Override
@@ -66,18 +70,19 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
             public void dispose() {}
             @Override
             public boolean isLabelProperty(Object element, String property) {
-                // TODO Auto-generated method stub
                 return false;
             }
             @Override
             public void removeListener(ILabelProviderListener listener) {}
             @Override
             public Image getImage(Object element) {
-                return CeylonLabelProvider.getImage((Declaration) element);
+                DeclarationWithProject dwp = (DeclarationWithProject) element;
+                return dwp==null ? null : CeylonLabelProvider.getImage(dwp.getDeclaration());
             }
             @Override
             public String getText(Object element) {
-                return CeylonContentProposer.getDescriptionFor((Declaration) element);
+                DeclarationWithProject dwp = (DeclarationWithProject) element;
+                return dwp==null ? null : getDescriptionFor(dwp.getDeclaration());
             }            
         });
         setDetailsLabelProvider(new ILabelProvider() {
@@ -93,12 +98,35 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
             public void addListener(ILabelProviderListener listener) {}
             @Override
             public String getText(Object element) {
-                return "[" + CeylonDocumentationProvider.getPackageLabel((Declaration) element) + "]" +
-                        " - " + ((Declaration) element).getUnit().getFilename();
+                DeclarationWithProject dwp = (DeclarationWithProject) element;
+                return "[" + getPackageLabel(dwp.getDeclaration()) + "] - " + 
+                        dwp.getDeclaration().getUnit().getFilename() +
+                        " in project " + dwp.getProject().getName();
             }
             @Override
             public Image getImage(Object element) {
                 return CeylonLabelProvider.PACKAGE;
+            }
+        });
+        setListSelectionLabelDecorator(new ILabelDecorator() {         
+            @Override
+            public void removeListener(ILabelProviderListener listener) {}
+            @Override
+            public boolean isLabelProperty(Object element, String property) {
+                return false;
+            }
+            @Override
+            public void dispose() {}
+            @Override
+            public void addListener(ILabelProviderListener listener) {}
+            @Override
+            public String decorateText(String text, Object element) {
+                DeclarationWithProject dwp = (DeclarationWithProject) element;
+                return text + " [" + getPackageLabel(dwp.getDeclaration()) + "]";
+            }
+            @Override
+            public Image decorateImage(Image image, Object element) {
+                return null;
             }
         });
     }
@@ -137,11 +165,17 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
     }
     
     @Override
-    protected Comparator getItemsComparator() {
+    protected Comparator<Object> getItemsComparator() {
         return new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
-                return ((Declaration) o1).getName().compareTo(((Declaration) o2).getName());
+                //TODO: also sort by project
+                DeclarationWithProject dwp1 = (DeclarationWithProject) o1;
+                DeclarationWithProject dwp2 = (DeclarationWithProject) o2;
+                int dc = dwp1.getDeclaration().getName()
+                        .compareTo(dwp2.getDeclaration().getName());
+                return dc!=0 ? dc : dwp1.getProject().getName()
+                        .compareTo(dwp2.getProject().getName());
             }
         };
     }
@@ -149,21 +183,19 @@ public class FilteredTypesSelectionDialog extends FilteredItemsSelectionDialog {
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProgressMonitor progressMonitor) throws CoreException {
-        IFileEditorInput input = (IFileEditorInput) editor.getEditorInput();
-        for (PhasedUnit unit: CeylonBuilder.getUnits(input.getFile().getProject())) {
+        for (PhasedUnit unit: CeylonBuilder.getUnits()) {
+        //for (PhasedUnit unit: CeylonBuilder.getUnits(Util.getProject(editor.getEditorInput()))) {
             for (Declaration dec: unit.getPackage().getMembers()) {
-                contentProvider.add(dec, itemsFilter);
+                contentProvider.add(new DeclarationWithProject(dec, 
+                        CeylonBuilder.getFile(unit).getProject()),
+                        itemsFilter);
             }
         }
     }
     
     @Override
     public String getElementName(Object item) {
-        return ((Declaration) item).getName();
+        return ((DeclarationWithProject) item).getDeclaration().getName();
     }
     
-    @Override
-    protected void setResult(List newResult) {
-        super.setResult(newResult);
-    }
 }

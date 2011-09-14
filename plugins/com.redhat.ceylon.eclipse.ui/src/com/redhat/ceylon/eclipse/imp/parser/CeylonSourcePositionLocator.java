@@ -18,6 +18,7 @@ import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -210,7 +211,11 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public int getStartOffset(Object node) {
-	if (node instanceof CommonToken) {
+	return getNodeStartOffset(node);
+  }
+
+  public static int getNodeStartOffset(Object node) {
+    if (node instanceof CommonToken) {
 		return ((CommonToken) node).getStartIndex();
 	}
     Node in = toNode(node);
@@ -224,20 +229,24 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }
 
   public int getEndOffset(Object node) {
-		if (node instanceof CommonToken) {
-			return ((CommonToken) node).getStopIndex();
-		}
-		Node in = toNode(node);
-	    if (in==null) {
-	    	return 0;
-	    }
-	    else {
-	    	Integer index = in.getStopIndex();
-	    	return index==null?0:index;
-	    }
-	  }
+	return getNodeEndOffset(node);
+  }
 
-  private Node toNode(Object node) {
+  public static int getNodeEndOffset(Object node) {
+    if (node instanceof CommonToken) {
+		return ((CommonToken) node).getStopIndex();
+	}
+	Node in = toNode(node);
+    if (in==null) {
+    	return 0;
+    }
+    else {
+    	Integer index = in.getStopIndex();
+    	return index==null?0:index;
+    }
+  }
+
+  private static Node toNode(Object node) {
 	if (node instanceof ModelTreeNode) {
 	    ModelTreeNode treeNode = (ModelTreeNode) node;
 	    return (Node) treeNode.getASTNode();
@@ -276,12 +285,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
   }  
 
   public IPath getPath(Object entity) {
+    return getNodePath(entity, parseController.getPhasedUnits());
+  }
+
+  public static IPath getNodePath(Object entity, PhasedUnits units) {
     if (entity instanceof Node) {
         Node node= (Node) entity;
         Unit unit = node.getUnit();
         String fileName = unit.getFilename();
         String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
-        PhasedUnit phasedUnit = parseController.getPhasedUnits().getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
+        PhasedUnit phasedUnit = units.getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
         if (phasedUnit != null) {
             IFileVirtualFile file = (IFileVirtualFile) phasedUnit.getUnitFile();
             IFile fileResource = (IFile) file.getResource();

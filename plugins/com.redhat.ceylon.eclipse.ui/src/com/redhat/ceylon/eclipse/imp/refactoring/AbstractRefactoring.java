@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.util.Util;
 
 public abstract class AbstractRefactoring extends Refactoring {
     
@@ -47,9 +48,8 @@ public abstract class AbstractRefactoring extends Refactoring {
         rootNode = parseController.getRootNode();
 
         if (input instanceof IFileEditorInput) {
-            IFileEditorInput fileInput = (IFileEditorInput) input;
-            sourceFile = fileInput.getFile();
-            project = fileInput.getFile().getProject();
+            sourceFile = Util.getFile(input);
+            project = Util.getProject(input);
             node = CeylonSourcePositionLocator.findNode(rootNode, frt);
         }
         else {

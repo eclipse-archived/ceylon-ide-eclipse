@@ -1,30 +1,40 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-public class OpenDeclarationAction2 implements IEditorActionDelegate {
-    private UniversalEditor editor;
+public class OpenDeclarationAction2 implements IWorkbenchWindowActionDelegate {
+
+    private IWorkbenchWindow window;
+
+    public void init(IWorkbenchWindow window) {
+        this.window = window;
+    }
+
+    public void selectionChanged(IAction action, ISelection selection) {
+        // do nothing since the action isn't selection dependent.
+    }
+
+    public void dispose() {
+        window = null;
+    }
     
-    @Override
     public void run(IAction action) {
-        if (editor!=null) run();
+        new OpenDeclarationAction(getEditor()).run();
     }
-    
-    @Override
-    public void selectionChanged(IAction action, ISelection selection) {}
-    
-    @Override
-    public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-        if (targetEditor instanceof UniversalEditor) {
-            editor = (UniversalEditor) targetEditor;
+
+    private IEditorPart getEditor() {
+        IEditorPart activeEditor;
+        if (window == null || window.getActivePage() == null) {
+            activeEditor = null;
         }
+        else {
+            activeEditor = window.getActivePage().getActiveEditor();
+        }
+        return activeEditor;
     }
     
-    public void run() {
-        new OpenDeclarationAction(editor).run();
-    }
 }

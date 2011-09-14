@@ -4,14 +4,10 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
@@ -27,9 +23,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -224,130 +217,152 @@ public class QuickFixAssistant implements IQuickFixAssistant {
         String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
-            FindArgumentsVisitor fav = new FindArgumentsVisitor(qmte);
-            cu.visit(fav);
-            final String def;
-            String desc;
-            Image image;
-            if (fav.positionalArgs!=null || fav.namedArgs!=null) {
-                StringBuilder params = new StringBuilder();
-                params.append("(");
-                if (fav.positionalArgs!=null)
-                for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
-                    params.append( pa.getExpression().getTypeModel().getProducedTypeName() )
-                        .append(" ");
-                    if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
-                        params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())
-                                .getIdentifier().getText() );
+            Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
+            if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+                String def;
+                String desc;
+                Image image;
+                FindArgumentsVisitor fav = new FindArgumentsVisitor(qmte);
+                cu.visit(fav);
+                if (fav.positionalArgs!=null || fav.namedArgs!=null) {
+                    StringBuilder params = new StringBuilder();
+                    params.append("(");
+                    if (fav.positionalArgs!=null) appendPositionalArgs(fav, params);
+                    if (fav.namedArgs!=null) appendNamedArgs(fav, params);
+                    if (params.length()>1) {
+                        params.setLength(params.length()-2);
+                    }
+                    params.append(")");
+                    if (Character.isUpperCase(brokenName.charAt(0))) {
+                        String supertype = "";
+                        if (fav.expectedType!=null) {
+                            if (fav.expectedType.getDeclaration() instanceof Class) {
+                                supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
+                            }
+                            else {
+                                supertype = " satisfies " + fav.expectedType.getProducedTypeName();
+                            }
+                        }
+                        def = "shared class " + brokenName + params + supertype + " {}";
+                        desc = "class '" + brokenName + params + supertype + "'";
+                        image = CeylonLabelProvider.CLASS;
                     }
                     else {
-                        int loc = params.length();
-                        params.append( pa.getExpression().getTypeModel().getDeclaration().getName() );
-                        params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
+                        String type = fav.expectedType==null ? "Nothing" : 
+                            fav.expectedType.getProducedTypeName();
+                        def = "shared " + type + " " + brokenName + params + " { return null; }";
+                        desc = "function '" + brokenName + params + "'";
+                        image = CeylonLabelProvider.METHOD;
                     }
-                    params.append(", ");
-                }
-                if (fav.namedArgs!=null)
-                for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
-                    if (a instanceof Tree.SpecifiedArgument) {
-                        Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
-                        params.append( na.getSpecifierExpression().getExpression().getTypeModel()
-                                    .getProducedTypeName() )
-                            .append(" ")
-                            .append(na.getIdentifier().getText());
-                        params.append(", ");
-                    }
-                }
-                if (params.length()>1) {
-                    params.setLength(params.length()-2);
-                }
-                params.append(")");
-                if (Character.isUpperCase(brokenName.charAt(0))) {
-                    String supertype = "";
-                    if (fav.expectedType!=null) {
-                        if (fav.expectedType.getDeclaration() instanceof Class) {
-                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
-                        }
-                        else {
-                            supertype = " satisfies " + fav.expectedType.getProducedTypeName();
-                        }
-                    }
-                    def = "shared class " + brokenName + params + supertype + " {}";
-                    desc = "class '" + brokenName + params + supertype + "'";
-                    image = CeylonLabelProvider.CLASS;
                 }
                 else {
                     String type = fav.expectedType==null ? "Nothing" : 
                         fav.expectedType.getProducedTypeName();
-                    def = "shared " + type + " " + brokenName + params + " { return null; }";
-                    desc = "function '" + brokenName + params + "'";
-                    image = CeylonLabelProvider.METHOD;
+                    def = "shared " + type + " " + brokenName + " = null;";
+                    desc = "value '" + brokenName + "'";
+                    image = CeylonLabelProvider.ATTRIBUTE;
                 }
-            }
-            else {
-                String type = fav.expectedType==null ? "Nothing" : 
-                    fav.expectedType.getProducedTypeName();
-                def = "shared " + type + " " + brokenName + " = null;";
-                desc = "value '" + brokenName + "'";
-                image = CeylonLabelProvider.ATTRIBUTE;
-            }
-            Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
-            if (typeDec!=null && typeDec instanceof ClassOrInterface) {
-                for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
-                    //TODO: "object" declarations?
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
-                    unit.getCompilationUnit().visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
-                    Tree.Body body=null;
-                    if (decNode instanceof Tree.ClassDefinition) {
-                        body = ((Tree.ClassDefinition) decNode).getClassBody();
-                    }
-                    else if (decNode instanceof Tree.InterfaceDefinition){
-                        body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
-                    }
-                    if (body!=null) {
-                        final String indent;
-                        final String indentAfter;
-                        final int offset;
-                        if (!body.getStatements().isEmpty()) {
-                            Statement statement = body.getStatements()
-                                    .get(body.getStatements().size()-1);
-                            indent = getIndent(unit.getTokenStream(), statement);
-                            offset = statement.getStopIndex()+1;
-                            indentAfter = "";
-                        }
-                        else {
-                            indentAfter = getIndent(unit.getTokenStream(), decNode);
-                            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
-                            offset = body.getStartIndex()+1;
-                        }
-                        final IFile file = CeylonBuilder.getFile(unit);
-                        TextFileChange change = new TextFileChange("Add Member", file);
-                        change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
-                        proposals.add(new ChangeCorrectionProposal("Create " + 
-                                desc + " in '" + typeDec.getName() + "'", 
-                                change, 50, image) {
-                            @Override
-                            public void apply(IDocument document) {
-                                super.apply(document);
-                                int loc = def.indexOf("null;");
-                                int len;
-                                if (loc<0) {
-                                    loc = def.indexOf("{}")+1;
-                                    len=0;
-                                }
-                                else {
-                                    len=4;
-                                }
-                                gotoChange(file, offset + loc + indent.length(), len);
-                            }
-
-                        });
-                        break;
-                    }
-                }
+                addCreateMemberProposals(proposals, project, def, desc, image, typeDec);
             }
         }
+    }
+
+    private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Image image, Declaration typeDec) {
+        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            //TODO: "object" declarations?
+            FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+            unit.getCompilationUnit().visit(fdv);
+            Tree.Declaration decNode = fdv.getDeclarationNode();
+            Tree.Body body=null;
+            if (decNode instanceof Tree.ClassDefinition) {
+                body = ((Tree.ClassDefinition) decNode).getClassBody();
+            }
+            else if (decNode instanceof Tree.InterfaceDefinition){
+                body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+            }
+            if (body!=null) {
+                addProposal(proposals, def, desc, image, typeDec, unit, decNode, body);
+                break;
+            }
+        }
+    }
+
+    private void appendNamedArgs(FindArgumentsVisitor fav, StringBuilder params) {
+        for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
+            if (a instanceof Tree.SpecifiedArgument) {
+                Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
+                params.append( na.getSpecifierExpression().getExpression().getTypeModel()
+                            .getProducedTypeName() )
+                    .append(" ")
+                    .append(na.getIdentifier().getText());
+                params.append(", ");
+            }
+        }
+    }
+
+    private void appendPositionalArgs(FindArgumentsVisitor fav, StringBuilder params) {
+        for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
+            params.append( pa.getExpression().getTypeModel().getProducedTypeName() )
+                .append(" ");
+            if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
+                params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())
+                        .getIdentifier().getText() );
+            }
+            else {
+                int loc = params.length();
+                params.append( pa.getExpression().getTypeModel().getDeclaration().getName() );
+                params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
+            }
+            params.append(", ");
+        }
+    }
+
+    private void addProposal(Collection<ICompletionProposal> proposals, String def,
+            String desc, Image image, Declaration typeDec, PhasedUnit unit,
+            Tree.Declaration decNode, Tree.Body body) {
+        String indent;
+        String indentAfter;
+        int offset;
+        if (!body.getStatements().isEmpty()) {
+            Statement statement = body.getStatements()
+                    .get(body.getStatements().size()-1);
+            indent = getIndent(unit.getTokenStream(), statement);
+            offset = statement.getStopIndex()+1;
+            indentAfter = "";
+        }
+        else {
+            indentAfter = getIndent(unit.getTokenStream(), decNode);
+            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
+            offset = body.getStartIndex()+1;
+        }
+        IFile file = CeylonBuilder.getFile(unit);
+        TextFileChange change = new TextFileChange("Add Member", file);
+        change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
+        proposals.add(createCreateMemberProposal(def, desc, image, typeDec, indent, offset, file, change));
+    }
+
+    private ChangeCorrectionProposal createCreateMemberProposal(final String def, String desc, Image image,
+            Declaration typeDec, final String indent, final int offset, final IFile file,
+            TextFileChange change) {
+        return new ChangeCorrectionProposal("Create " + 
+                desc + " in '" + typeDec.getName() + "'", 
+                change, 50, image) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                int loc = def.indexOf("null;");
+                int len;
+                if (loc<0) {
+                    loc = def.indexOf("{}")+1;
+                    len=0;
+                }
+                else {
+                    len=4;
+                }
+                Util.gotoLocation(file, offset + loc + indent.length(), len);
+            }
+        };
     }
 
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, final ProblemLocation problem,
@@ -355,7 +370,7 @@ public class QuickFixAssistant implements IQuickFixAssistant {
           String brokenName = CeylonSourcePositionLocator.getIdentifyingNode(node).getText();
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
-            final String name = entry.getKey();
+            String name = entry.getKey();
             DeclarationWithProximity dwp = entry.getValue();
             int dist = Util.getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
@@ -364,33 +379,23 @@ public class QuickFixAssistant implements IQuickFixAssistant {
                 TextFileChange change = new TextFileChange("Rename", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
                         brokenName.length(), name)); //TODO: don't use problem.getLength() because it's wrong from the problem list
-                proposals.add(new ChangeCorrectionProposal("Rename to '" + name + "'", 
-                        change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())) {
-                    @Override
-                    public void apply(IDocument document) {
-                        // TODO Auto-generated method stub
-                        super.apply(document);
-                        gotoChange(file, problem.getOffset(), name.length());
-                    }
-                });
+                proposals.add(createRenameProposal(problem, file, name, dwp, dist, change));
             }
           }
     }
-    
-    public static void gotoChange(final IResource file, final int offset, int length) {
-        IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(IMarker.CHAR_START, offset);
-        map.put(IMarker.CHAR_END, offset+length);
-        map.put(IDE.EDITOR_ID_ATTR, "org.eclipse.imp.runtime.impEditor");
-        try {
-            IMarker marker = file.createMarker(IMarker.TEXT);
-            marker.setAttributes(map);
-            IDE.openEditor(page, marker);
-            marker.delete();
-        }
-        catch (CoreException ce) {} //deliberately swallow it
+
+    private ChangeCorrectionProposal createRenameProposal(final ProblemLocation problem,
+            final IFile file, final String name, DeclarationWithProximity dwp, int dist,
+            TextFileChange change) {
+        return new ChangeCorrectionProposal("Rename to '" + name + "'", 
+                change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())) {
+            @Override
+            public void apply(IDocument document) {
+                // TODO Auto-generated method stub
+                super.apply(document);
+                Util.gotoLocation(file, problem.getOffset(), name.length());
+            }
+        };
     }
     
 }

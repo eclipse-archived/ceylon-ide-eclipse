@@ -247,15 +247,6 @@
       <editorContribution 
          id="com.redhat.ceylon.eclipse.imp.editorActionContributions" 
          targetID="org.eclipse.imp.runtime.impEditor">        
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
-              label="Open Ceylon Declaration..."
-              icon="icons/opentype.gif" 
-              tooltip="Open Toplevel Ceylon Declaration" 
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"
-              menubarPath="navigate/open.ext"
-              accelerator="COMMAND+SHIFT+C"
-              toolbarPath="ceylon"
-              /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
               label="Find References"
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
@@ -309,6 +300,15 @@
     <actionSet 
          id="com.redhat.ceylon.eclipse.imp.actionSet" 
          label="Ceylon Actions">        
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
+              label="Open Ceylon Declaration..."
+              icon="icons/opentype.gif" 
+              tooltip="Open Toplevel Ceylon Declaration" 
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"
+              menubarPath="navigate/open.ext"
+              accelerator="COMMAND+SHIFT+C"
+              toolbarPath="ceylon"
+              /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ceylonSearch" 
               label="Ceylon..."
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenCeylonSearchPageAction"
