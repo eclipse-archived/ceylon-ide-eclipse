@@ -28,10 +28,10 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.eclipse.imp.parser.ErrorVisitor;
-import com.redhat.ceylon.eclipse.imp.parser.IFolderVirtualFile;
-import com.redhat.ceylon.eclipse.imp.parser.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
+import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has

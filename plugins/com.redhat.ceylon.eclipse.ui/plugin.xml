@@ -25,21 +25,21 @@
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
-            class="com.redhat.ceylon.eclipse.imp.tokenColorer.CeylonTokenColorer"
+            class="com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer"
             language="ceylon">
       </tokenColorer>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.modelTreeBuilder">
       <treeBuilder
-            class="com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonTreeModelBuilder"
+            class="com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder"
             language="ceylon">
       </treeBuilder>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
       <labelProvider
-            class="com.redhat.ceylon.eclipse.imp.treeModelBuilder.CeylonLabelProvider"
+            class="com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider"
             language="ceylon">
       </labelProvider>
    </extension>
@@ -87,7 +87,7 @@
          <action
                label="Enable Ceylon Builder"
                tooltip="Enable the ceylon builder for this project"
-               class="com.redhat.ceylon.eclipse.imp.actions.EnableCeylonNature"
+               class="com.redhat.ceylon.eclipse.imp.builder.EnableCeylonNature"
                id="ceylon.imp.actions.enableNatureAction">
          </action>
       </objectContribution>
@@ -109,21 +109,21 @@
    <extension
          point="org.eclipse.imp.runtime.contentProposer">
       <proposer
-            class="com.redhat.ceylon.eclipse.imp.contentProposer.CeylonContentProposer"
+            class="com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer"
             language="ceylon">
       </proposer>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.markOccurrences">
       <occurrenceIdentifier
-            class="com.redhat.ceylon.eclipse.imp.occurrenceMarker.CeylonOccurrenceMarker"
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonOccurrenceMarker"
             language="ceylon">
       </occurrenceIdentifier>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.foldingUpdater">
       <foldingUpdater
-            class="com.redhat.ceylon.eclipse.imp.foldingUpdater.CeylonFoldingUpdater"
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonFoldingUpdater"
             language="ceylon">
       </foldingUpdater>
    </extension>
@@ -137,7 +137,7 @@
    <extension
          point="org.eclipse.imp.runtime.editorActionContributions">
       <editorActionContributor
-            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonEditorActionContributions"
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonEditorActionContributions"
             language="ceylon">
       </editorActionContributor>
    </extension>
@@ -145,8 +145,8 @@
          id="com.redhat.ceylon.ui.searchResults"
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
-            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResultPage"
-            searchResultClass="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchResult"
+            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchResultPage"
+            searchResultClass="com.redhat.ceylon.eclipse.imp.search.CeylonSearchResult"
             id="org.eclipse.search.searchResultViewPage">
       </viewPage>
    </extension>
@@ -158,7 +158,7 @@
             label="Ceylon Search"
             enabled="true"
             extensions="ceylon:90"
-            class="com.redhat.ceylon.eclipse.imp.editorActionContributions.CeylonSearchDialogPage"
+            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchDialogPage"
             sizeHint="460,160"
             id="org.redhat.ceylon.ui.searchPage"
             icon="icons/find_obj.gif"/>
@@ -166,7 +166,7 @@
    <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
       <autoEditStrategy
-            class="com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy"
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy"
             language="ceylon">
       </autoEditStrategy>
    </extension>
@@ -236,7 +236,7 @@
             id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ruler">
                 <action
                     label="Select Ruler"
-                    class="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction"
+                    class="com.redhat.ceylon.eclipse.imp.editor.SelectRulerAction"
                     actionID="RulerClick"
                     id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction">
          </action>
@@ -249,18 +249,18 @@
          targetID="org.eclipse.imp.runtime.impEditor">        
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
               label="Find References"
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
+              class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
               accelerator="CTRL+ALT+G"
               /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements" 
               label="Find Refinements"
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindRefinementsAction2"
+              class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
               /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes" 
               label="Find Subtypes"
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindSubtypesAction2"
+              class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
               /> 
 	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.rename" 
@@ -300,18 +300,18 @@
     <actionSet 
          id="com.redhat.ceylon.eclipse.imp.actionSet" 
          label="Ceylon Actions">        
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclaration" 
+	   <action id="com.redhat.ceylon.eclipse.imp.editor.openDeclaration" 
               label="Open Ceylon Declaration..."
               icon="icons/opentype.gif" 
               tooltip="Open Toplevel Ceylon Declaration" 
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"
+              class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationAction2"
               menubarPath="navigate/open.ext"
               accelerator="COMMAND+SHIFT+C"
               toolbarPath="ceylon"
               /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ceylonSearch" 
+	   <action id="com.redhat.ceylon.eclipse.imp.search.ceylonSearch" 
               label="Ceylon..."
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenCeylonSearchPageAction"
+              class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
               menubarPath="org.eclipse.search.menu/dialogGroup"
               icon="icons/find_obj.gif"
               />
@@ -334,7 +334,7 @@
         point="org.eclipse.imp.runtime.quickFixAssistant"
         id="com.redhat.ceylon.eclipse.imp.quickfix">
       <quickFixAssistant
-          class="com.redhat.ceylon.eclipse.imp.quickfix.QuickFixAssistant"
+          class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
           language="ceylon">
           <supportedMarkerType
               markerType="org.eclipse.imp.editor.parseAnnotation.error"/>
