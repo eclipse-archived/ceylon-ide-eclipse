@@ -23,7 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.autoEditStrategy.CeylonAutoEditStrategy;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     

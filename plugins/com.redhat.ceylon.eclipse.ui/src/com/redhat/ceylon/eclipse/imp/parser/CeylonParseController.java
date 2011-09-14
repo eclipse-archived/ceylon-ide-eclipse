@@ -49,6 +49,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
+import com.redhat.ceylon.eclipse.vfs.SourceCodeVirtualFile;
 
 public class CeylonParseController extends ParseControllerBase {
 
