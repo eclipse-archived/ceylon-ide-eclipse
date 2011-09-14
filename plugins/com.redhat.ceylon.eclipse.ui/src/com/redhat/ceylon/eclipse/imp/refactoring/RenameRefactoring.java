@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,7 +19,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -44,7 +44,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public RenameRefactoring(ITextEditor editor) {
 	    super(editor);
 	    
-		declaration = CeylonReferenceResolver.getReferencedDeclaration(node).getRefinedDeclaration();
+		declaration = getReferencedDeclaration(node).getRefinedDeclaration();
 		newName = declaration.getName();
         for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
             FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
@@ -100,8 +100,9 @@ public class RenameRefactoring extends AbstractRefactoring {
 	}
 
 	private void renameNode(TextFileChange tfc, Node node) {
-		tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-		        getIdentifyingNode(node).getText().length(), newName));
+	    Node identifyingNode = getIdentifyingNode(node);
+		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
+		        identifyingNode.getText().length(), newName));
 	}
 
 	public void setNewName(String text) {

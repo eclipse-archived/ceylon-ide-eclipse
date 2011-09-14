@@ -11,9 +11,8 @@ abstract class AbstractRefactoringAction extends TextEditorAction {
 	}
 
 	public void run() {
-		final RenameRefactoring refactoring = new RenameRefactoring(getTextEditor());
-		new RefactoringStarter()
-				.activate(refactoring, new RenameWizard(refactoring),
+		final AbstractRefactoring refactoring = getRefactoring();
+		new RefactoringStarter().activate(refactoring, getWizard(refactoring),
 						getTextEditor().getSite().getShell(),
 						refactoring.getName(), false);
 	}
