@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.editorActionContributions;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -35,16 +37,21 @@ class CeylonSearchQuery implements ISearchQuery {
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-	    for (PhasedUnit pu: CeylonBuilder.getUnits(projects)) {
+	    List<PhasedUnit> units = projects==null ? 
+	                CeylonBuilder.getUnits() : 
+	                CeylonBuilder.getUnits(projects);
+        for (PhasedUnit pu: units) {
 	        SearchVisitor sv = new SearchVisitor( new SearchVisitor.Matcher() {
 	            @Override
 	            public boolean matches(String string) {
-	                if (caseSensitive) {
-	                    return string.contains(CeylonSearchQuery.this.string);
+	                String pattern = CeylonSearchQuery.this.string;
+	                //TODO: do a proper pattern match!
+                    if (caseSensitive) {
+	                    return string.contains(pattern);
 	                }
 	                else {
 	                    return string.toLowerCase()
-	                        .contains(CeylonSearchQuery.this.string.toLowerCase());
+	                        .contains(pattern.toLowerCase());
 	                }
 	            }
 	            @Override
@@ -78,8 +85,16 @@ class CeylonSearchQuery implements ISearchQuery {
 
 	@Override
 	public String getLabel() {
-		return "Displaying " + count + 
+		String label = "Displaying " + count + 
 				" matches of '" + string + "'";
+		if (projects!=null && projects.length!=0) {
+		    label += " in project ";
+		    for (String project: projects) {
+		        label += project + ", ";
+		    }
+		    label = label.substring(0, label.length()-2);
+		}
+        return label;
 	}
 
 	@Override

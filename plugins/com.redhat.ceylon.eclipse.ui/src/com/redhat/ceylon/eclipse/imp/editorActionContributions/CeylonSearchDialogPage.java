@@ -100,13 +100,42 @@ public class CeylonSearchDialogPage extends DialogPage
 		String[] projectNames;
 		switch (scope) {
 		    case ISearchPageContainer.WORKSPACE_SCOPE:
-		        MessageDialog.openError(getShell(), "Ceylon Search Error", 
-		                "Please select a project to search");
-		        return false;
+		        projectNames = null;
 		    case ISearchPageContainer.SELECTED_PROJECTS_SCOPE:
 		        projectNames = container.getSelectedProjectNames();
 		        break;
 		    case ISearchPageContainer.SELECTION_SCOPE:
+		        /*ISelection selection = container.getSelection();
+		        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+		            IStructuredSelection ss = (IStructuredSelection) selection;
+                    Iterator iter= ((IStructuredSelection) sel).iterator();
+                    while (iter.hasNext()) {
+                        Object curr= iter.next();
+                        if (curr instanceof IWorkingSet) {
+                            IWorkingSet workingSet= (IWorkingSet) curr;
+                            if (workingSet.isAggregateWorkingSet() && workingSet.isEmpty()) {
+                                return FileTextSearchScope.newWorkspaceScope(getExtensions(), fSearchDerived);
+                            }
+                            IAdaptable[] elements= workingSet.getElements();
+                            for (int i= 0; i < elements.length; i++) {
+                                IResource resource= (IResource)elements[i].getAdapter(IResource.class);
+                                if (resource != null && resource.isAccessible()) {
+                                    resources.add(resource);
+                                }
+                            }
+                        } else if (curr instanceof LineElement) {
+                            IResource resource= ((LineElement)curr).getParent();
+                            if (resource != null && resource.isAccessible())
+                                resources.add(resource);
+                        } else if (curr instanceof IAdaptable) {
+                            IResource resource= (IResource) ((IAdaptable)curr).getAdapter(IResource.class);
+                            if (resource != null && resource.isAccessible()) {
+                                resources.add(resource);
+                            }
+                        }
+		            //...
+		        }*/
+		        //TODO: this is wrong!
 	            String project = Util.getProject(container.getActiveEditorInput()).getName();
 	            if (project==null) {
 	                MessageDialog.openError(getShell(), "Ceylon Search Error", 
