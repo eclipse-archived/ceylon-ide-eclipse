@@ -301,16 +301,22 @@
               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
               menubarPath="org.eclipse.imp.source.menu/convertGroup"
               />
-       <!--
+    </editorContribution>
+</extension>
+<extension
+    point="org.eclipse.ui.actionSets"
+    id="com.redhat.ceylon.eclipse.imp.actionSet">
+    <actionSet 
+         id="com.redhat.ceylon.eclipse.imp.actionSet" 
+         label="Ceylon Actions">        
 	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ceylonSearch" 
               label="Ceylon..."
               class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenCeylonSearchPageAction"
               menubarPath="org.eclipse.search.menu/dialogGroup"
               icon="icons/find_obj.gif"
               />
-       --> 
-      </editorContribution>
- </extension> 
+    </actionSet>
+</extension> 
  <!--
  <extension point="org.eclipse.ui.popupMenus"> 
   <viewerContribution 
