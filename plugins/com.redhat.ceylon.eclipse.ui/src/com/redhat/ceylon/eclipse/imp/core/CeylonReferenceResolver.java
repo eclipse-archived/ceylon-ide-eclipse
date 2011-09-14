@@ -20,23 +20,10 @@ public class CeylonReferenceResolver implements IReferenceResolver {
      */
     public String getLinkText(Object node) {
         if (node instanceof Node) {
-            if (node instanceof Tree.Primary) {
-                return ((Tree.Primary) node).getDeclaration().getName();
-            } else if (node instanceof Tree.SimpleType) {
-                return ((Tree.SimpleType) node).getDeclarationModel().getName();
-            } else if (node instanceof Tree.ImportMemberOrType) {
-                return ((Tree.ImportMemberOrType) node).getDeclarationModel()
-                        .getName();
-            }
-            if (node instanceof Tree.Declaration) {
-                return ((Tree.Declaration) node).getDeclarationModel()
-                        .getName();
-            } else if (node instanceof Tree.NamedArgument) {
-                return ((Tree.NamedArgument) node).getParameter().getName();
-            }
-            return ((Node) node).getText();
-        } else {
-            return null; // node.toString();
+            return getNodeDeclarationName((Node) node);
+        } 
+        else {
+            return null;
         }
     }
 
@@ -46,23 +33,77 @@ public class CeylonReferenceResolver implements IReferenceResolver {
      */
     public Tree.Declaration getLinkTarget(Object node,
             IParseController controller) {
-        Declaration dec = getReferencedDeclaration(node);
-        return getReferencedNode(dec, 
+        if (node instanceof Node) {
+            Declaration dec = getReferencedDeclaration((Node) node);
+            return getReferencedNode(dec, 
                 getCompilationUnit((CeylonParseController) controller, dec));
+        }
+        else {
+            return null;
+        }
     }
 
-    public static Declaration getReferencedDeclaration(Object node) {
+    private String getNodeDeclarationName(Node node) {
+        if (node instanceof Tree.Primary) {
+            return ((Tree.Primary) node).getDeclaration().getName();
+        } 
+        else if (node instanceof Tree.SimpleType) {
+            return ((Tree.SimpleType) node).getDeclarationModel().getName();
+        } 
+        else if (node instanceof Tree.ImportMemberOrType) {
+            return ((Tree.ImportMemberOrType) node).getDeclarationModel()
+                    .getName();
+        }
+        if (node instanceof Tree.Declaration) {
+            return ((Tree.Declaration) node).getDeclarationModel()
+                    .getName();
+        } 
+        else if (node instanceof Tree.NamedArgument) {
+            return ((Tree.NamedArgument) node).getParameter().getName();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static Node getIdentifyingNode(Node node) {
+        if (node instanceof Tree.Declaration) {
+            return ((Tree.Declaration) node).getIdentifier();
+        }
+        else if (node instanceof Tree.NamedArgument) {
+            return ((Tree.NamedArgument) node).getIdentifier();
+        }
+        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+            return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        }
+        else if (node instanceof Tree.SimpleType) {
+            return ((Tree.SimpleType) node).getIdentifier();
+        }
+        else if (node instanceof Tree.ImportMemberOrType) {
+            return ((Tree.ImportMemberOrType) node).getIdentifier();
+        }
+        else {    
+            return node;
+        }
+    }
+
+    public static Declaration getReferencedDeclaration(Node node) {
         if (node instanceof Tree.Primary) {
             return ((Tree.Primary) node).getDeclaration();
-        } else if (node instanceof Tree.SimpleType) {
+        } 
+        else if (node instanceof Tree.SimpleType) {
             return ((Tree.SimpleType) node).getDeclarationModel();
-        } else if (node instanceof Tree.ImportMemberOrType) {
+        } 
+        else if (node instanceof Tree.ImportMemberOrType) {
             return ((Tree.ImportMemberOrType) node).getDeclarationModel();
-        } else if (node instanceof Tree.Declaration) {
+        } 
+        else if (node instanceof Tree.Declaration) {
             return ((Tree.Declaration) node).getDeclarationModel();
-        } else if (node instanceof Tree.NamedArgument) {
+        } 
+        else if (node instanceof Tree.NamedArgument) {
             return ((Tree.NamedArgument) node).getParameter();
-        } else {
+        } 
+        else {
             return null;
         }
     }

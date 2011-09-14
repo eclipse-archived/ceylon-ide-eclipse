@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIterator;
 
 import java.util.Iterator;
@@ -18,7 +19,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.Util;
 
 public abstract class AbstractRefactoring extends Refactoring {
@@ -43,14 +43,14 @@ public abstract class AbstractRefactoring extends Refactoring {
 
         IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
         IEditorInput input = editor.getEditorInput();
-        CeylonParseController parseController = (CeylonParseController) frt.getParseController();
-        tokenStream = parseController.getTokenStream();
-        rootNode = parseController.getRootNode();
+        CeylonParseController cpc = (CeylonParseController) frt.getParseController();
+        tokenStream = cpc.getTokenStream();
+        rootNode = cpc.getRootNode();
 
         if (input instanceof IFileEditorInput) {
             sourceFile = Util.getFile(input);
             project = Util.getProject(input);
-            node = CeylonSourcePositionLocator.findNode(rootNode, frt);
+            node = findNode(rootNode, frt);
         }
         else {
             sourceFile = null;
@@ -78,11 +78,11 @@ public abstract class AbstractRefactoring extends Refactoring {
         }
     }
 
-    String toString(final Tree.Term term) {
+    String toString(Tree.Term term) {
         return toString(term, tokenStream);
     }
     
-    public static String toString(final Tree.Term term, CommonTokenStream tokenStream) {
+    static String toString(Tree.Term term, CommonTokenStream tokenStream) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
         Region region = new Region(start, length);

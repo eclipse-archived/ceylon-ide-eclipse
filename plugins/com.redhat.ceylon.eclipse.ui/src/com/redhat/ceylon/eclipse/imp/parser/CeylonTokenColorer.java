@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
 public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
+    
     public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
             "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 

@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -85,36 +86,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return getNodeStartOffset(node);
     }
     
-    public static int getNodeStartOffset(Object node) {
-        if (node instanceof CommonToken) {
-            return ((CommonToken) node).getStartIndex();
-        }
-        Node in = toNode(node);
-        if (in==null) {
-            return 0;
-        }
-        else {
-            Integer index = in.getStartIndex();
-            return index==null?0:index;
-        }
-    }
-    
     public int getEndOffset(Object node) {
         return getNodeEndOffset(node);
     }
     
-    public static int getNodeEndOffset(Object node) {
-        if (node instanceof CommonToken) {
-            return ((CommonToken) node).getStopIndex();
-        }
-        Node in = toNode(node);
-        if (in==null) {
-            return 0;
-        }
-        else {
-            Integer index = in.getStopIndex();
-            return index==null?0:index;
-        }
+    public int getLength(Object node) {
+        return getEndOffset(node) - getStartOffset(node);
+    }
+    
+    public IPath getPath(Object entity) {
+        return getNodePath(entity, parseController.getPhasedUnits());
     }
     
     private static Node toNode(Object node) {
@@ -130,33 +111,32 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         }
     }
     
-    public int getLength(Object node) {
-        return getEndOffset(node) - getStartOffset(node);
+    public static int getNodeStartOffset(Object node) {
+        if (node instanceof CommonToken) {
+            return ((CommonToken) node).getStartIndex();
+        }
+        Node in = toNode(node);
+        if (in==null) {
+            return 0;
+        }
+        else {
+            Integer index = in.getStartIndex();
+            return index==null?0:index;
+        }
     }
     
-    public static Node getIdentifyingNode(Node node) {
-        if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getIdentifier();
+    public static int getNodeEndOffset(Object node) {
+        if (node instanceof CommonToken) {
+            return ((CommonToken) node).getStopIndex();
         }
-        else if (node instanceof Tree.NamedArgument) {
-            return ((Tree.NamedArgument) node).getIdentifier();
+        Node in = toNode(node);
+        if (in==null) {
+            return 0;
         }
-        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-            return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        else {
+            Integer index = in.getStopIndex();
+            return index==null?0:index;
         }
-        else if (node instanceof Tree.SimpleType) {
-            return ((Tree.SimpleType) node).getIdentifier();
-        }
-        else if (node instanceof Tree.ImportMemberOrType) {
-            return ((Tree.ImportMemberOrType) node).getIdentifier();
-        }
-        else {    
-            return node;
-        }
-    }  
-    
-    public IPath getPath(Object entity) {
-        return getNodePath(entity, parseController.getPhasedUnits());
     }
     
     public static IPath getNodePath(Object entity, PhasedUnits units) {
@@ -190,21 +170,45 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             return null;
         }
         else {
-            List<Token> tokens = stream.getTokens();
-            int firstTokIdx = CeylonParseController.getTokenIndexAtCharacter(tokens, regionOffset);
+            int firstTokIdx = getTokenIndexAtCharacter(stream, regionOffset);
             // getTokenIndexAtCharacter() answers the negative of the index of the
             // preceding token if the given offset is not actually within a token.
             if (firstTokIdx < 0) {
                 firstTokIdx= -firstTokIdx + 1;
             }
-            int lastTokIdx = CeylonParseController.getTokenIndexAtCharacter(tokens, regionEnd);
+            int lastTokIdx = getTokenIndexAtCharacter(stream, regionEnd);
             if (lastTokIdx < 0) {
                 lastTokIdx= -lastTokIdx;
             }
-            return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
+            return stream.getTokens().subList(firstTokIdx, lastTokIdx+1).iterator();
         }
     }
     
+    //
+    // This function returns the index of the token element
+    // containing the offset specified. If such a token does
+    // not exist, it returns the negation of the index of the 
+    // element immediately preceding the offset.
+    //
+    private static int getTokenIndexAtCharacter(CommonTokenStream stream, int offset) {
+      //search using bisection
+      int low = 0,
+          high = stream.getTokens().size();
+      while (high > low)
+      {
+          int mid = (high + low) / 2;
+          CommonToken midElement = (CommonToken) stream.getTokens().get(mid);
+          if (offset >= midElement.getStartIndex() &&
+              offset <= midElement.getStopIndex())
+               return mid;
+          else if (offset < midElement.getStartIndex())
+               high = mid;
+          else low = mid + 1;
+      }
+
+      return -(low - 1);
+    }
+
     public static String getIndent(CommonTokenStream tokens, Node node) {
         int prevIndex = node.getToken().getTokenIndex()-1;
         if (node instanceof Tree.Declaration) {
