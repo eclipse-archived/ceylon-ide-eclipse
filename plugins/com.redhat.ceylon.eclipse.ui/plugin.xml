@@ -317,20 +317,19 @@
               />
     </actionSet>
 </extension> 
- <!--
+<!--
  <extension point="org.eclipse.ui.popupMenus"> 
   <viewerContribution 
-      id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclarationContext"
-      targetID="org.eclipse.imp.runtime.impEditor"> 
-   <action
-         id="com.redhat.ceylon.eclipse.imp.editorActionContributions.openDeclarationContext" 
-         label="Open Ceylon Declaration..."
-         icon="icons/opentype.gif"
-         menubarPath="additions" 
-         class="com.redhat.ceylon.eclipse.imp.editorActionContributions.OpenDeclarationAction2"/> 
+      id="com.redhat.ceylon.eclipse.imp.editorActionContributions.popupMenu"
+      targetID="#TextEditorContext"> 
+	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
+              label="Find References"
+              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
+              menubarPath="additions"
+              /> 
    </viewerContribution> 
   </extension>
-  -->
+-->
   <extension
         point="org.eclipse.imp.runtime.quickFixAssistant"
         id="com.redhat.ceylon.eclipse.imp.quickfix">
