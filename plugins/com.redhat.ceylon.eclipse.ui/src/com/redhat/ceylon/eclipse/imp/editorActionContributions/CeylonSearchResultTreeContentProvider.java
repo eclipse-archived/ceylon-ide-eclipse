@@ -153,15 +153,16 @@ class CeylonSearchResultTreeContentProvider implements
     }
 
     public Object getParent(Object element) {
-        if (element instanceof IProject) return null;
-        if (element instanceof IResource) {
-            IResource resource = (IResource) element;
-            return resource.getParent();
+        if (element instanceof IProject) {
+            return null;
         }
-        if(element instanceof Unit) {
+        if (element instanceof IResource) {
+            return ((IResource) element).getParent();
+        }
+        if (element instanceof Unit) {
             return ((Unit) element).getPackage();
         }
-        if(element instanceof CeylonElement) {
+        if (element instanceof CeylonElement) {
             return ((CeylonElement) element).getNode().getUnit();
         }
         return null;
