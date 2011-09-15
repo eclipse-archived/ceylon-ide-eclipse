@@ -19,7 +19,7 @@ public class ConvertToNamedArgumentsRefactoring extends AbstractRefactoring {
 	}
 
 	public String getName() {
-		return "Convert to named arguments";
+		return "Convert To Named Arguments";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)

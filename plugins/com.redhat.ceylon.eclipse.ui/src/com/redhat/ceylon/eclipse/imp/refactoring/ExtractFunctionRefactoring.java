@@ -70,7 +70,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }*/
 
 	public String getName() {
-		return "Extract function";
+		return "Extract Function";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)

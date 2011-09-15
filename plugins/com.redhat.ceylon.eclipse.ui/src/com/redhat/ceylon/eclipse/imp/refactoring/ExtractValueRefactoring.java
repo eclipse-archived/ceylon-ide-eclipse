@@ -32,7 +32,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     }*/
 
     public String getName() {
-		return "Extract value";
+		return "Extract Value";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
