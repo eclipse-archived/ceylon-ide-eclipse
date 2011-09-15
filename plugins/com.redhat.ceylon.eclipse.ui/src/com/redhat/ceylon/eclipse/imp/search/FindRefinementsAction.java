@@ -17,6 +17,7 @@ public class FindRefinementsAction extends FindAction {
     public FindRefinementsAction(UniversalEditor editor) {
 		super("Find Refinements", editor);
 		//setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
+		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findRefinements");
 	}
 
     @Override

@@ -14,6 +14,7 @@ public class FindReferencesAction extends FindAction {
 
     public FindReferencesAction(UniversalEditor editor) {
 		super("Find References", editor);
+		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findReferences");
 	}
 	
 	@Override

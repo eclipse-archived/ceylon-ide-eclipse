@@ -24,12 +24,13 @@ public class OpenDeclarationAction extends Action {
     private final IEditorPart editor;
     
     public OpenDeclarationAction(IEditorPart editor) {
-        this("Open Declaration...", editor);
+        this("Open Ceylon Declaration...", editor);
     }
     
     public OpenDeclarationAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
+        setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.openDeclaration");
         setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
                 .getDescriptor(ICeylonResources.CEYLON_OPEN_DECLARATION));
     }

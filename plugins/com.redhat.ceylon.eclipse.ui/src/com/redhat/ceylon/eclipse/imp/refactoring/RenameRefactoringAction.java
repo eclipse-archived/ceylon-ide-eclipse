@@ -6,6 +6,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class RenameRefactoringAction extends AbstractRefactoringAction {
 	public RenameRefactoringAction(ITextEditor editor) {
 		super("Rename.", editor);
+		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.rename");
 	}
 	
 	@Override

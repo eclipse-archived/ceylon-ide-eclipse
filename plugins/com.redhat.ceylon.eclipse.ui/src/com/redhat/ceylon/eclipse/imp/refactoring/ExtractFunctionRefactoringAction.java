@@ -6,6 +6,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class ExtractFunctionRefactoringAction extends AbstractRefactoringAction {
     public ExtractFunctionRefactoringAction(ITextEditor editor) {
         super("ExtractFunction.", editor);
+        setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.extractFunction");
     }
     
     @Override
