@@ -6,7 +6,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 public class RefinementAnnotation extends Annotation {
 
-    Declaration declaration;
+    private Declaration declaration;
     private int line;
     //CeylonParseController parseController;
     
