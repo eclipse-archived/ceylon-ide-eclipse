@@ -342,6 +342,84 @@
          </action>
       </actionSet>
    </extension>
+   <!--extension 
+         id="com.redhat.ceylon.eclipse.imp.popupMenu"
+         point="org.eclipse.ui.popupMenus">
+       <viewerContribution
+             id="com.redhat.ceylon.eclipse.imp.editorActionContributions.popup" 
+             targetID="#TextEditorContext">
+           <menu
+                   id="com.redhat.ceylon.eclipse.ui.find"
+                   label="Find">
+                   <groupMarker
+                         name="group">
+                   </groupMarker>
+           </menu>
+           <menu
+                   id="com.redhat.ceylon.eclipse.ui.refactor"
+                   label="Refactor">
+                   <groupMarker
+                         name="group">
+                   </groupMarker>
+           </menu>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.find.findReferences.popup"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
+                 label="References"
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.find.findRefinements.popup"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
+                 label="Refinements"
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.find.findSubtypes.popup"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
+                 label="Subtypes"
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.refactoring.rename.popup"
+                 class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+                 label="Rename..."
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.rename"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.refactoring.inline.popup"
+                 class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
+                 label="Inline..."
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.inline"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue.popup"
+                 class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
+                 label="Extract Value..."
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.extractValue"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.refactoring.extractFuntion.popup"
+                 class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
+                 label="Extract Function..."
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
+           </action>
+           <action
+                 id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments.popup"
+                 class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
+                 label="Convert To Named Arguments"
+                 definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
+                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
+           </action>
+       </viewerContribution>
+   </extension-->
    <extension
          point="org.eclipse.ui.commands">
        <command
@@ -394,7 +472,6 @@
             description="Convert selected positional arguments to named arguments"
             name="Convert To Named Arguments">
        </command>
-       
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
