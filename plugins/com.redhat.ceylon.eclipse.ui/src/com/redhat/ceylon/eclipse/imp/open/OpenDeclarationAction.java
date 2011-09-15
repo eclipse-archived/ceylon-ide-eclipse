@@ -2,10 +2,9 @@ package com.redhat.ceylon.eclipse.imp.open;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoNode;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
@@ -17,7 +16,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 import com.redhat.ceylon.eclipse.util.Util;
@@ -53,24 +51,19 @@ public class OpenDeclarationAction extends Action {
     }
 
     public void gotoDeclaration(DeclarationWithProject dwp) {
-        Tree.Declaration node;
-        PhasedUnits units;
         IProject project = dwp.getProject();
         Declaration dec = dwp.getDeclaration();
         if (editor instanceof UniversalEditor) {
             CeylonParseController cpc = (CeylonParseController) ((UniversalEditor) editor).getParseController();
-            node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
-            units = cpc.getPhasedUnits();
+            Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+            PhasedUnits units = cpc.getPhasedUnits();
+            gotoNode(node, units, project);
         }
         else {
-            node = getReferencedNode(dec, getCompilationUnit(project, dec));
-            units = CeylonBuilder.getProjectTypeChecker(project).getPhasedUnits();
+            Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
+            PhasedUnits units = CeylonBuilder.getProjectTypeChecker(project).getPhasedUnits();
+            gotoNode(node, units, project);
         }
-        IPath path = CeylonSourcePositionLocator.getNodePath(node, units)
-                .removeFirstSegments(1);
-        int targetOffset = CeylonSourcePositionLocator.getNodeStartOffset(node);
-        IResource file = project.findMember(path);
-        Util.gotoLocation(file, targetOffset, 0);
     }
 
 }

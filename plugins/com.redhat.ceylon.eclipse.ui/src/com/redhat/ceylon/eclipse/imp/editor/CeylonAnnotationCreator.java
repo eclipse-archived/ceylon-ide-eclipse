@@ -1,9 +1,12 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import java.util.Iterator;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.base.EditorServiceBase;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -11,6 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class CeylonAnnotationCreator extends EditorServiceBase {
     
@@ -25,6 +29,13 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         if (cpc.getRootNode()==null) return;
         final IAnnotationModel model = getEditor().getDocumentProvider()
                 .getAnnotationModel(getEditor().getEditorInput());
+        for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
+                iter.hasNext();) {
+            Annotation a = iter.next();
+            if (a instanceof RefinementAnnotation) {
+                model.removeAnnotation(a);
+            }
+        }
         //model.addAnnotation(new DefaultRangeIndicator(), new Position(50, 100));
         new Visitor() {
             @Override
@@ -33,7 +44,8 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        addRefinementAnnotation(cpc, model, that, dec);
+                        addRefinementAnnotation(cpc.getSourcePositionLocator(), 
+                                model, that, dec);
                     }
                 }
             }
@@ -41,7 +53,7 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         }.visit(cpc.getRootNode());
     }
     
-    private void addRefinementAnnotation(CeylonParseController cpc,
+    private void addRefinementAnnotation(CeylonSourcePositionLocator spl,
             IAnnotationModel model, Tree.Declaration that, Declaration dec) {
         //TODO: improve this:
         Declaration refined = ((TypeDeclaration) dec.getContainer())
@@ -54,15 +66,10 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         /*String desc = "refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
                 "' declared by " + refined.getContainer().getName() + 
                 " [" + getPackageLabel(dec) + "]";*/
-        RefinementAnnotation ra = new RefinementAnnotation(getAnnotationType(refined), 
-                    null, refined, cpc, that.getIdentifier().getToken().getLine());
-        model.addAnnotation(ra, new Position(cpc.getSourcePositionLocator().getStartOffset(that), 
-                        cpc.getSourcePositionLocator().getLength(that)+1));
-    }
-
-    private static String getAnnotationType(Declaration refined) {
-        return "com.redhat.ceylon.eclipse.ui.refinement." + 
-                (refined.isFormal() ? "formal" : "default");
+        RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
+                that.getIdentifier().getToken().getLine());
+        model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
+                        spl.getLength(that)+1));
     }
     
 }
