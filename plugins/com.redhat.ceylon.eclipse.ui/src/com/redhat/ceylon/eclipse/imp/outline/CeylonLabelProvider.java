@@ -1,5 +1,19 @@
 package com.redhat.ceylon.eclipse.imp.outline;
 
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_WARNING;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT_LIST;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_INTERFACE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
 
 import java.util.HashSet;
@@ -27,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.eclipse.imp.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 
 public class CeylonLabelProvider implements ILabelProvider {
@@ -36,35 +49,21 @@ public class CeylonLabelProvider implements ILabelProvider {
     public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
     
-    public static Image FILE_IMAGE = imageRegistry
-            .get(ICeylonResources.CEYLON_FILE);
-    private static Image FILE_WITH_WARNING_IMAGE = imageRegistry
-            .get(ICeylonResources.CEYLON_FILE_WARNING);
-    private static Image FILE_WITH_ERROR_IMAGE = imageRegistry
-            .get(ICeylonResources.CEYLON_FILE_ERROR);
+    public static Image FILE_IMAGE = imageRegistry.get(CEYLON_FILE);
+    private static Image FILE_WITH_WARNING_IMAGE = imageRegistry.get(CEYLON_FILE_WARNING);
+    private static Image FILE_WITH_ERROR_IMAGE = imageRegistry.get(CEYLON_FILE_ERROR);
     
-    public static Image CLASS = imageRegistry
-            .get(ICeylonResources.CEYLON_CLASS);
-    private static Image INTERFACE = imageRegistry
-            .get(ICeylonResources.CEYLON_INTERFACE);
-    private static Image LOCAL_CLASS = imageRegistry
-            .get(ICeylonResources.CEYLON_LOCAL_CLASS);
-    private static Image LOCAL_INTERFACE = imageRegistry
-            .get(ICeylonResources.CEYLON_LOCAL_INTERFACE);
-    public static Image METHOD = imageRegistry
-            .get(ICeylonResources.CEYLON_METHOD);
-    public static Image ATTRIBUTE = imageRegistry
-            .get(ICeylonResources.CEYLON_ATTRIBUTE);
-    private static Image LOCAL_METHOD = imageRegistry
-            .get(ICeylonResources.CEYLON_LOCAL_METHOD);
-    private static Image LOCAL_ATTRIBUTE = imageRegistry
-            .get(ICeylonResources.CEYLON_LOCAL_ATTRIBUTE);
-    public static Image PACKAGE = imageRegistry
-            .get(ICeylonResources.CEYLON_PACKAGE);
-    private static Image IMPORT = imageRegistry
-            .get(ICeylonResources.CEYLON_IMPORT);
-    private static Image IMPORT_LIST = imageRegistry
-            .get(ICeylonResources.CEYLON_IMPORT_LIST);
+    public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
+    private static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
+    private static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
+    private static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
+    public static Image METHOD = imageRegistry.get(CEYLON_METHOD);
+    public static Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
+    private static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
+    private static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
+    public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
+    private static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
+    private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     
     
     private final boolean includePackage;
