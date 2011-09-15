@@ -135,13 +135,13 @@
             language="ceylon">
       </foldingUpdater>
    </extension>
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.refactoringContributions">
       <refactoringContributor
             class="com.redhat.ceylon.eclipse.imp.refactoring.RefactoringContributor"
             language="ceylon">
       </refactoringContributor>
-   </extension>
+   </extension-->
    <extension
          point="org.eclipse.imp.runtime.editorActionContributions">
       <editorActionContributor
