@@ -9,6 +9,8 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.ModelTreeNode;
@@ -24,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
+import com.redhat.ceylon.eclipse.util.Util;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 
 /**
@@ -98,6 +101,23 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return getNodePath(entity, parseController.getPhasedUnits());
     }
     
+    public void gotoNode(Node node) {
+        IPath path = getPath(node).removeFirstSegments(1);
+        int targetOffset = getStartOffset(node);
+        IResource file = parseController.getProject()
+                .getRawProject().findMember(path);
+        Util.gotoLocation(file, targetOffset);
+    }
+
+    public static void gotoNode(Node node, PhasedUnits units, 
+            IProject project) {
+        IPath path = getNodePath(node, units)
+                .removeFirstSegments(1);
+        int targetOffset = getNodeStartOffset(node);
+        IResource file = project.findMember(path);
+        Util.gotoLocation(file, targetOffset, 0);
+    }
+
     private static Node toNode(Object node) {
         if (node instanceof ModelTreeNode) {
             ModelTreeNode treeNode = (ModelTreeNode) node;
