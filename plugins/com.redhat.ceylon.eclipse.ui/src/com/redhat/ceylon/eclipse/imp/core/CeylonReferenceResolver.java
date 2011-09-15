@@ -34,13 +34,17 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     public Tree.Declaration getLinkTarget(Object node,
             IParseController controller) {
         if (node instanceof Node) {
-            Declaration dec = getReferencedDeclaration((Node) node);
-            return getReferencedNode(dec, 
-                getCompilationUnit((CeylonParseController) controller, dec));
+            return getReferencedNode(node, controller);
         }
         else {
             return null;
         }
+    }
+
+    public static Tree.Declaration getReferencedNode(Object node, IParseController controller) {
+        Declaration dec = getReferencedDeclaration((Node) node);
+        return getReferencedNode(dec, 
+            getCompilationUnit((CeylonParseController) controller, dec));
     }
 
     private String getNodeDeclarationName(Node node) {
