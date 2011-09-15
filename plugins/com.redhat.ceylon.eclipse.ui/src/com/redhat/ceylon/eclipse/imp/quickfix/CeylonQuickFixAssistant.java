@@ -5,7 +5,9 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -28,11 +30,17 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -98,6 +106,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addCreateMemberProposals(cu, node, problem, proposals, project);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
+                    addImportProposals(proposals, node, file, tc);
                 }
                 break;
             }
@@ -305,4 +314,33 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         };
     }
     
+    private void addImportProposals(Collection<ICompletionProposal> proposals, Node node, IFile file, TypeChecker tc) {
+        String brokenName = getIdentifyingNode(node).getText();
+
+        for (Declaration decl : findImportCandidates(tc.getContext(), brokenName)) {
+            proposals.add(createImportProposal(file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+        }
+	}
+
+	private static Collection<Declaration> findImportCandidates(Context context, String name) {
+		List<Declaration> result = new ArrayList<Declaration>();
+		for (Module module : context.getModules().getListOfModules()) {
+			for (Package pkg : module.getAllPackages()) {
+				Declaration member = pkg.getMember(name);
+				if (member != null) {
+					result.add(member);
+				}
+			}
+		}
+		return result;
+	}
+
+	private ICompletionProposal createImportProposal(IFile file, String packageName, String declaration) {
+        TextFileChange change = new TextFileChange("Add Import", file);
+
+        change.setEdit(new InsertEdit(0, "import " + packageName + " { " + declaration + " }\n"));
+
+        return new ChangeCorrectionProposal("Import " + packageName + "." + declaration, change, 50, null);
+	}
+
 }
