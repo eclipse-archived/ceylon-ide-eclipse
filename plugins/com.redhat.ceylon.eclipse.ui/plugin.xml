@@ -259,11 +259,11 @@
             targetID="org.eclipse.imp.runtime.impEditor"
             id="com.redhat.ceylon.eclipse.imp.editorActionContributions">
          <action
-               label="Find References"
-               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
+               label="Find Subtypes"
+               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
                menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences">
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
          </action>
          <action
                label="Find Refinements"
@@ -273,25 +273,18 @@
                definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements">
          </action>
          <action
-               label="Find Subtypes"
-               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
+               label="Find References"
+               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
                menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences">
          </action>
          <action
-               label="Rename..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+               label="Convert To Named Arguments..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.rename"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.rename">
-         </action>
-         <action
-               label="Inline..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.inline"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.inline">
+               id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments">
          </action>
          <action
                label="Extract Function..."
@@ -308,11 +301,18 @@
                definitionId="com.redhat.ceylon.eclipse.ui.action.extractValue">
          </action>
          <action
-               label="Convert To Named Arguments..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
+               label="Inline..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments">
+               id="com.redhat.ceylon.eclipse.imp.refactoring.inline"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.inline">
+         </action>
+         <action
+               label="Rename..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.rename"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.rename">
          </action>
       </editorContribution>
    </extension>
@@ -480,7 +480,7 @@
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+G"
+           sequence="CTRL+ALT+R"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
@@ -492,20 +492,24 @@
            commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+R"
+           sequence="CTRL+COMMAND+R"
            commandId="com.redhat.ceylon.eclipse.ui.action.rename"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+I"
+           sequence="CTRL+COMMAND+I"
            commandId="com.redhat.ceylon.eclipse.ui.action.inline"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+V"
+           sequence="CTRL+COMMAND+V"
            commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+F"
+           sequence="CTRL+COMMAND+F"
            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+       <key
+           sequence="CTRL+COMMAND+N"
+           commandId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension
