@@ -21,7 +21,7 @@ public class CeylonOccurrenceMarker implements ILanguageService, IOccurrenceMark
 	private List<Object> fOccurrences = Collections.emptyList();
 
 	public String getKindName() {
-		return "ceylon Occurence Marker";
+		return "Ceylon Occurence Marker";
 	}
 
 	public List<Object> getOccurrencesOf(IParseController parseController,
