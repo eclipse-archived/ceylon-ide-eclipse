@@ -351,15 +351,6 @@
             language="ceylon">
       </annotationHover>
    </extension>
-   <!--
-   <extension
-         point="org.eclipse.imp.runtime.formatter"
-         id="com.redhat.ceylon.eclipse.imp.formatter">
-      <formatter
-            class="com.redhat.ceylon.eclipse.imp.formatter.CeylonFormatter"
-            language="ceylon"/>
-   </extension>
-   -->
    <extension
          point="org.eclipse.imp.runtime.compareNodeIdentifier"
          id="com.redhat.ceylon.eclipse.imp.compare">
