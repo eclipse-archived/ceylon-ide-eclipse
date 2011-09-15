@@ -97,6 +97,9 @@ public class CeylonLabelProvider implements ILabelProvider {
         if (element instanceof ModelTreeNode) {
             return getImageFor((ModelTreeNode) element);
         }
+        if (element instanceof Node) {
+            return getImageFor((Node) element);
+        }
         return FILE_IMAGE;
     }
     
