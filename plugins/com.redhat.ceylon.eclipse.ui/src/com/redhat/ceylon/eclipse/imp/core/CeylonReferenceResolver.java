@@ -92,6 +92,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     }
 
     public static Declaration getReferencedDeclaration(Node node) {
+        //NOTE: this must accept a null node, returning null!
         if (node instanceof Tree.Primary) {
             return ((Tree.Primary) node).getDeclaration();
         } 
