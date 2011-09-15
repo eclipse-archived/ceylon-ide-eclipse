@@ -53,16 +53,21 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             documentation.append("<ul><li>declared by ").append(declaring.getName())
                     .append(" [" + getPackageLabel(declaring) + "]</li>");
             if (model.isActual()) {
-                Declaration refined = model.getRefinedDeclaration();
-                TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
-                String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
-                if (spkg.isEmpty()) spkg="default package";
-                documentation.append("<li>refines '" + CeylonContentProposer.getDescriptionFor(refined)) 
-                        .append("' declared by ").append(supertype.getName()) 
-                        .append(" [" + getPackageLabel(refined) + "]</li>");
+                documentation.append("<li>");
+                appendRefinement(documentation, model.getRefinedDeclaration());
+                documentation.append("</li>");
             }
             documentation.append("</ul>");
         }
+    }
+
+    private static void appendRefinement(StringBuilder documentation, Declaration refined) {
+        TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
+        String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
+        if (spkg.isEmpty()) spkg="default package";
+        documentation.append("refines '" + CeylonContentProposer.getDescriptionFor(refined)) 
+                .append("' declared by ").append(supertype.getName()) 
+                .append(" [" + getPackageLabel(refined) + "]");
     }
 
     private static void appendInheritance(StringBuilder documentation, Declaration model) {
@@ -119,6 +124,12 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
     
     private static String sanitize(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+    
+    static String getRefinementDocumentation(Declaration refined) {
+        StringBuilder result = new StringBuilder();
+        appendRefinement(result, refined);
+        return result.toString();
     }
     
 }

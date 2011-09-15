@@ -153,15 +153,16 @@
    <extension
          point="org.eclipse.search.searchPages">
       <page
-            showScopeSection="true"
+            id="org.redhat.ceylon.ui.searchPage"
+            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchDialogPage"
             canSearchEnclosingProjects="true"
-            label="Ceylon Search"
             enabled="true"
             extensions="ceylon:90"
-            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchDialogPage"
             sizeHint="460,160"
-            id="org.redhat.ceylon.ui.searchPage"
-            icon="icons/find_obj.gif"/>
+            icon="icons/find_obj.gif"
+            showScopeSection="true"
+            label="Ceylon Search">
+      </page>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
@@ -172,174 +173,182 @@
    </extension>
    <extension
          point="org.eclipse.imp.runtime.editorService">
-         <editorService
-               language="ceylon"
-               class="com.redhat.ceylon.eclipse.imp.editor.CeylonAnnotationCreator">
-         </editorService>
+      <editorService
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonAnnotationCreator"
+            language="ceylon">
+      </editorService>
    </extension>
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-         name="com.redhat.ceylon.eclipse.ui.refinement.formal"
-         markerSeverity="0">
+            name="com.redhat.ceylon.eclipse.ui.refinement.formal"
+            markerSeverity="0">
       </type>
       <type
-         name="com.redhat.ceylon.eclipse.ui.refinement.default"
-         markerSeverity="0">
+            name="com.redhat.ceylon.eclipse.ui.refinement.default"
+            markerSeverity="0">
       </type>
-  </extension>
-  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="com.redhat.ceylon.eclipse.ui.refinement.formal"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
             presentationLayer="0"
-            contributesToHeader="true"
+            highlightPreferenceValue="false"
+            textPreferenceValue="false"
             includeOnPreferencePage="true"
             label="Ceylon Formal Refinement Indicators"
-            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
-            textPreferenceValue="false"
             colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
-            colorPreferenceValue="000,255,000"
-            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
-            verticalRulerPreferenceValue="true"
-            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
-            overviewRulerPreferenceValue="false"
-            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
-            highlightPreferenceValue="false"
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement.formal"
             textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
-            textStylePreferenceValue="BOX"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
+            verticalRulerPreferenceValue="true"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
             icon="icons/implm_co.gif"
-            />
-      <specification
-            annotationType="com.redhat.ceylon.eclipse.ui.refinement.default"
-            presentationLayer="0"
+            textStylePreferenceValue="BOX"
             contributesToHeader="true"
+            colorPreferenceValue="000,255,000"
+            overviewRulerPreferenceValue="false">
+      </specification>
+      <specification
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
+            presentationLayer="0"
+            highlightPreferenceValue="false"
+            textPreferenceValue="false"
             includeOnPreferencePage="true"
             label="Ceylon Default Refinement Indicators"
-            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
-            textPreferenceValue="false"
             colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
-            colorPreferenceValue="000,255,000"
-            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
-            verticalRulerPreferenceValue="true"
-            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
-            overviewRulerPreferenceValue="false"
-            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
-            highlightPreferenceValue="false"
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement.default"
             textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
+            verticalRulerPreferenceValue="true"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
+            icon="icons/over_co.gif"
             textStylePreferenceValue="BOX"
-            icon="icons/over_co.gif" 
-            />
-  </extension>
-  <extension point="org.eclipse.ui.editorActions">
-        <editorContribution
+            contributesToHeader="true"
+            colorPreferenceValue="000,255,000"
+            overviewRulerPreferenceValue="false">
+      </specification>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
             targetID="org.eclipse.imp.runtime.impEditor"
             id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ruler">
-                <action
-                    label="Select Ruler"
-                    class="com.redhat.ceylon.eclipse.imp.editor.SelectRulerAction"
-                    actionID="RulerClick"
-                    id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction">
+         <action
+               label="Select Ruler"
+               class="com.redhat.ceylon.eclipse.imp.editor.SelectRulerAction"
+               actionID="RulerClick"
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction">
          </action>
-        </editorContribution>
-  </extension>
-<extension
-    point="org.eclipse.ui.editorActions">
-      <editorContribution 
-         id="com.redhat.ceylon.eclipse.imp.editorActionContributions" 
-         targetID="org.eclipse.imp.runtime.impEditor">        
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
-              label="Find References"
-              class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
-              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-              accelerator="CTRL+ALT+G"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements" 
-              label="Find Refinements"
-              class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
-              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes" 
-              label="Find Subtypes"
-              class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
-              menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.rename" 
-              label="Rename..."
-              class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
-              menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              accelerator="CTRL+ALT+R"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.inline" 
-              label="Inline..."
-              class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
-              menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              accelerator="CTRL+ALT+I"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.extractFunction" 
-              label="Extract Function..."
-              class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
-              menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              accelerator="CTRL+ALT+F"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue" 
-              label="Extract Value..."
-              class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
-              menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              accelerator="CTRL+ALT+V"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments" 
-              label="Convert To Named Arguments..."
-              class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
-              menubarPath="org.eclipse.imp.source.menu/convertGroup"
-              />
-    </editorContribution>
-</extension>
-<extension
-    point="org.eclipse.ui.actionSets"
-    id="com.redhat.ceylon.eclipse.imp.actionSet">
-    <actionSet 
-         id="com.redhat.ceylon.eclipse.imp.actionSet" 
-         label="Ceylon Actions">        
-	   <action id="com.redhat.ceylon.eclipse.imp.editor.openDeclaration" 
-              label="Open Ceylon Declaration..."
-              icon="icons/opentype.gif" 
-              tooltip="Open Toplevel Ceylon Declaration" 
-              class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationAction2"
-              menubarPath="navigate/open.ext"
-              accelerator="COMMAND+SHIFT+C"
-              toolbarPath="ceylon"
-              /> 
-	   <action id="com.redhat.ceylon.eclipse.imp.search.ceylonSearch" 
-              label="Ceylon..."
-              class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
-              menubarPath="org.eclipse.search.menu/dialogGroup"
-              icon="icons/find_obj.gif"
-              />
-    </actionSet>
-</extension> 
-<!--
- <extension point="org.eclipse.ui.popupMenus"> 
-  <viewerContribution 
-      id="com.redhat.ceylon.eclipse.imp.editorActionContributions.popupMenu"
-      targetID="#TextEditorContext"> 
-	   <action id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences" 
-              label="Find References"
-              class="com.redhat.ceylon.eclipse.imp.editorActionContributions.FindReferencesAction2"
-              menubarPath="additions"
-              /> 
-   </viewerContribution> 
-  </extension>
--->
-  <extension
-        point="org.eclipse.imp.runtime.quickFixAssistant"
-        id="com.redhat.ceylon.eclipse.imp.quickfix">
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.eclipse.imp.runtime.impEditor"
+            id="com.redhat.ceylon.eclipse.imp.editorActionContributions">
+         <action
+               accelerator="CTRL+ALT+G"
+               label="Find References"
+               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
+               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences">
+         </action>
+         <action
+               label="Find Refinements"
+               class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
+               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements">
+         </action>
+         <action
+               label="Find Subtypes"
+               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
+               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
+               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes">
+         </action>
+         <action
+               accelerator="CTRL+ALT+R"
+               label="Rename..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.rename">
+         </action>
+         <action
+               accelerator="CTRL+ALT+I"
+               label="Inline..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.inline">
+         </action>
+         <action
+               accelerator="CTRL+ALT+F"
+               label="Extract Function..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.extractFunction">
+         </action>
+         <action
+               accelerator="CTRL+ALT+V"
+               label="Extract Value..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue">
+         </action>
+         <action
+               label="Convert To Named Arguments..."
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
+               menubarPath="org.eclipse.imp.source.menu/convertGroup"
+               id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         id="com.redhat.ceylon.eclipse.imp.actionSet"
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="Ceylon Actions"
+            id="com.redhat.ceylon.eclipse.imp.actionSet">
+         <action
+               accelerator="COMMAND+SHIFT+C"
+               label="Open Ceylon Declaration..."
+               icon="icons/opentype.gif"
+               tooltip="Open Toplevel Ceylon Declaration"
+               class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationAction2"
+               menubarPath="navigate/open.ext"
+               toolbarPath="ceylon"
+               id="com.redhat.ceylon.eclipse.imp.editor.openDeclaration">
+         </action>
+         <action
+               label="Ceylon..."
+               icon="icons/find_obj.gif"
+               class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
+               menubarPath="org.eclipse.search.menu/dialogGroup"
+               id="com.redhat.ceylon.eclipse.imp.search.ceylonSearch">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         id="com.redhat.ceylon.eclipse.imp.quickfix"
+         point="org.eclipse.imp.runtime.quickFixAssistant">
       <quickFixAssistant
-          class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
-          language="ceylon">
-          <supportedMarkerType
-              markerType="org.eclipse.imp.editor.parseAnnotation.error"/>
-          <supportedMarkerType 
-              markerType="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder.problem"/>
+            class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
+            language="ceylon">
+         <supportedMarkerType
+               markerType="org.eclipse.imp.editor.parseAnnotation.error">
+         </supportedMarkerType>
+         <supportedMarkerType
+               markerType="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder.problem">
+         </supportedMarkerType>
       </quickFixAssistant>
-  </extension>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.annotationHover">
+      <annotationHover
+            class="com.redhat.ceylon.eclipse.imp.hover.CeylonAnnotationHover"
+            language="ceylon">
+      </annotationHover>
+   </extension>
 </plugin>
