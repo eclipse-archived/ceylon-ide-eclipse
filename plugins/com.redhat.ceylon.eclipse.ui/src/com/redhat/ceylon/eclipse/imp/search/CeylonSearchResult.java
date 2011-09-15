@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,11 +18,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 import com.redhat.ceylon.eclipse.util.Util;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
 		implements IEditorMatchAdapter, IFileMatchAdapter {
+	
+    private static final ImageDescriptor IMAGE = CeylonLabelProvider.imageRegistry
+                    .getDescriptor(CEYLON_SEARCH_RESULTS);
+    
 	ISearchQuery query;
 	
 	CeylonSearchResult(ISearchQuery query) {
@@ -44,7 +49,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 
 	@Override
 	public ImageDescriptor getImageDescriptor() {
-		return CeylonLabelProvider.imageRegistry.getDescriptor(ICeylonResources.CEYLON_FILE);
+		return IMAGE;
 	}
 
 	@Override

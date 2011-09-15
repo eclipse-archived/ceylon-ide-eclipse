@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -186,6 +187,7 @@ public class CeylonPlugin extends PluginBase {
 	    reg.put(CEYLON_DEFAULT_REFINEMENT, image("over_co.gif"));
         reg.put(CEYLON_FORMAL_REFINEMENT, image("implm_co.gif"));
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
+        reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
 	}
 
 }
