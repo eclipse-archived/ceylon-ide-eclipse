@@ -560,9 +560,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {
-        String pkg = d.getUnit().getPackage().getQualifiedNameString();
-        if (pkg.isEmpty()) pkg="default package";
-        result.append(" [").append(pkg).append("]");
+        result.append(" [").append(getPackageLabel(d)).append("]");
     }
     if (d.isClassOrInterfaceMember()) {
         result.append(" - ");

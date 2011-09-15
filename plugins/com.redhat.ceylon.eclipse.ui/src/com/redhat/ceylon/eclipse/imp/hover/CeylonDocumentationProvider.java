@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.hover;
 
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
+
 import java.util.List;
 
 import org.eclipse.imp.parser.IParseController;
@@ -113,18 +115,6 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                 }
             }
         }
-    }
-    
-    public static String getPackageLabel(Tree.Declaration decl) {
-        String pkg = decl.getUnit().getPackage().getQualifiedNameString();
-        if (pkg.isEmpty()) pkg="default package";
-        return pkg;
-    }
-    
-    public static String getPackageLabel(Declaration decl) {
-        String pkg = decl.getUnit().getPackage().getQualifiedNameString();
-        if (pkg.isEmpty()) pkg="default package";
-        return pkg;
     }
     
     private static String sanitize(String s) {
