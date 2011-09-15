@@ -9,7 +9,8 @@
 2. Use `Help > Install New Software ... > Available Software Sites > Import`
    Select `updatesites.xml`
 
-3. Close the dialog and now choose xam.dk updatesite and install the plugin.
+3. Close the dialog and now choose xam.dk updatesite and install the 
+   plugin.
 
 4. Restart and your Eclipse should now syntax highlight Ceylon files.
 
@@ -19,8 +20,8 @@
     
     <http://www.eclipse.org/downloads/>
     
-2.  `Use Help > Install New Software...` to install all 
-    components of IMP from the update site at:
+2.  `Use Help > Install New Software...` to install all components of 
+    IMP from the update site at:
     
     <http://download.eclipse.org/technology/imp/updates/0.2/>
     
@@ -30,10 +31,20 @@
         ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
     
 4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
-    `Run > Run As > Eclipse Application`
+    `Run > Run As > Eclipse Application`. Now go to the new instance of 
+    Eclipse.
     
-5.  From the new instance of Eclipse, use `File > Open File...` 
-    to open a `.ceylon` file.
+6.  In the Java Perspective, choose `Window > Customize Perspective`, go
+    to `Command Groups Availability`, and enable `Ceylon Actions` in the
+    `Available command groups` list.
+    
+5.  Use `File > New > Java Project`, and click `Next` once to get to the 
+   `Java Settings` page. Select the `src` directory, click `Configure 
+    inclusion and exclusion filters`, and add the inclusion pattern 
+    `**/*.ceylon`. Now select `Finish` create a new Java project in the 
+    workspace.
+    
+7.  Use `New > File` to create a new file with the extension `.ceylon`.
 
 ## Building with Tycho/Maven
 
