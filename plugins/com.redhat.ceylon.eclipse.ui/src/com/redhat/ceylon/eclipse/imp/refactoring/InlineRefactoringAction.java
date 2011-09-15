@@ -6,6 +6,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class InlineRefactoringAction extends AbstractRefactoringAction {
     public InlineRefactoringAction(ITextEditor editor) {
         super("Inline.", editor);
+        setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.inline");
     }
     
     @Override

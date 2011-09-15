@@ -18,6 +18,7 @@ public class FindSubtypesAction extends FindAction {
     public FindSubtypesAction(UniversalEditor editor) {
 		super("Find Subtypes", editor);
 		//setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
+		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findSubtypes");
 	}
 
     @Override

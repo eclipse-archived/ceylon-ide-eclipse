@@ -12,11 +12,13 @@ public class RefactoringContributor implements IRefactoringContributor {
 
 	public static IAction[] getActions(UniversalEditor editor) {
 		return new IAction[] { 
+		        /*
 				new RenameRefactoringAction(editor),
 				new InlineRefactoringAction(editor),
 				new ExtractValueRefactoringAction(editor),
 				new ExtractFunctionRefactoringAction(editor),
 				new ConvertToNamedArgumentsRefactoringAction(editor)
+				*/
 			};
 	}
 	
