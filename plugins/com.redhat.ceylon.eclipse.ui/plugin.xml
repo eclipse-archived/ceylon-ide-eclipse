@@ -422,53 +422,68 @@
    </extension-->
    <extension
          point="org.eclipse.ui.commands">
+       <category
+          description="Ceylon IDE actions"
+          id="com.redhat.ceylon.eclipse.ui"
+          name="Ceylon">
+       </category>    
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open toplevel declaration"
             name="Open Ceylon Declaration">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open search screen"
             name="Ceylon Search">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find references to selected declaration"
             name="Find References">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.findRefinements"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find refinements of selected member"
             name="Find Refinements">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find subtypes of selected type"
             name="Find Subtypes">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Rename selected declaration"
             name="Rename">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.inline"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Inline selected function or value"
             name="Inline">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.extractFunction"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Extract selected expression to function"
             name="Extract Function">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.extractValue"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Extract selected expression to value"
             name="Extract Value">
        </command>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Convert selected positional arguments to named arguments"
             name="Convert To Named Arguments">
        </command>
