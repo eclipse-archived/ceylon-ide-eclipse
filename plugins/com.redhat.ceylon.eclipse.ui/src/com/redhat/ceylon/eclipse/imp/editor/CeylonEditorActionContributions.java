@@ -31,9 +31,9 @@ public class CeylonEditorActionContributions implements
         menuManager.add(new Separator());
         menuManager.add(new RenameRefactoringAction(editor));
         menuManager.add(new InlineRefactoringAction(editor));
-        menuManager.add(new ExtractFunctionRefactoringAction(editor));
         menuManager.add(new ExtractValueRefactoringAction(editor));
-        menuManager.add(new Separator());
+        menuManager.add(new ExtractFunctionRefactoringAction(editor));
+        //menuManager.add(new Separator());
         menuManager.add(new ConvertToNamedArgumentsRefactoringAction(editor));
 	}
 
