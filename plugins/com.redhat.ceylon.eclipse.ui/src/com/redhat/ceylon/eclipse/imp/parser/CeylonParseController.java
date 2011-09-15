@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -211,19 +213,47 @@ public class CeylonParseController extends ParseControllerBase {
         }
         else {
             // Editing a new file
-            // Retrieve the target package from the file src-relative path
-            //TODO: this is very fragile!
-            String packageName = file.getPath().replaceFirst(srcDir.getPath() + "/", "")
-                    .replace("/" + file.getName(), "").replace('/', '.');
             Modules modules = typeChecker.getContext().getModules();
-            for (Module module : modules.getListOfModules()) {
-                for (Package p : module.getPackages()) {
-                    if (p.getQualifiedNameString().equals(packageName)) {
-                        pkg = p;
-                        break;
+            if (srcDir==null) {
+                srcDir = new VirtualFile() {
+                    @Override
+                    public boolean isFolder() {
+                        return true;
                     }
-                    if (pkg != null)
-                        break;
+                    @Override
+                    public String getPath() {
+                        return "";
+                    }
+                    @Override
+                    public String getName() {
+                        return "";
+                    }
+                    
+                    @Override
+                    public InputStream getInputStream() {
+                        return null;
+                    }
+                    
+                    @Override
+                    public List<VirtualFile> getChildren() {
+                        return Collections.emptyList();
+                    }
+                };
+            }
+            else {
+                // Retrieve the target package from the file src-relative path
+                //TODO: this is very fragile!
+                String packageName = file.getPath().replaceFirst(srcDir.getPath() + "/", "")
+                        .replace("/" + file.getName(), "").replace('/', '.');
+                for (Module module : modules.getListOfModules()) {
+                    for (Package p : module.getPackages()) {
+                        if (p.getQualifiedNameString().equals(packageName)) {
+                            pkg = p;
+                            break;
+                        }
+                        if (pkg != null)
+                            break;
+                    }
                 }
             }
             if (pkg == null) {

@@ -351,4 +351,37 @@
             language="ceylon">
       </annotationHover>
    </extension>
+   <!--
+   <extension
+         point="org.eclipse.imp.runtime.formatter"
+         id="com.redhat.ceylon.eclipse.imp.formatter">
+      <formatter
+            class="com.redhat.ceylon.eclipse.imp.formatter.CeylonFormatter"
+            language="ceylon"/>
+   </extension>
+   -->
+   <extension
+         point="org.eclipse.imp.runtime.compareNodeIdentifier"
+         id="com.redhat.ceylon.eclipse.imp.compare">
+      <compareNodeIdentifier 
+            language="ceylon"
+            class="com.redhat.ceylon.eclipse.imp.compare.CeylonCompareNodeIdentifier"/>
+   </extension>
+   <extension
+         point="org.eclipse.compare.structureCreators">
+       <structureCreator
+           extensions="ceylon"
+           class="org.eclipse.imp.compare.ModelStructureCreator"
+           id="com.redhat.ceylon.eclipse.imp.compare">
+       </structureCreator>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions"> 
+        <perspectiveExtension 
+              targetID="org.eclipse.jdt.ui.JavaPerspective">
+            <actionSet id="com.redhat.ceylon.eclipse.imp.actionSet"/>
+        </perspectiveExtension>
+   </extension>
+            
 </plugin>
