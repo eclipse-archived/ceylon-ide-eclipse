@@ -6,7 +6,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-public class OpenDeclarationAction2 implements IWorkbenchWindowActionDelegate {
+public class OpenDeclarationActionWrapper implements IWorkbenchWindowActionDelegate {
 
     private IWorkbenchWindow window;
 

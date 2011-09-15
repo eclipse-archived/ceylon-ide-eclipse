@@ -260,21 +260,21 @@
             id="com.redhat.ceylon.eclipse.imp.editorActionContributions">
          <action
                label="Find Subtypes"
-               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
+               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesActionWrapper"
                menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
                id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes"
                definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
          </action>
          <action
                label="Find Refinements"
-               class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
+               class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsActionWrapper"
                menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
                id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements"
                definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements">
          </action>
          <action
                label="Find References"
-               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
+               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesActionWrapper"
                menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
                id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences"
                definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences">
@@ -326,7 +326,7 @@
                label="Open Ceylon Declaration..."
                icon="icons/opentype.gif"
                tooltip="Open Toplevel Ceylon Declaration"
-               class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationAction2"
+               class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationActionWrapper"
                menubarPath="navigate/open.ext"
                toolbarPath="ceylon"
                id="com.redhat.ceylon.eclipse.imp.editor.openDeclaration"
@@ -364,21 +364,21 @@
            </menu>
            <action
                  id="com.redhat.ceylon.eclipse.imp.find.findReferences.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindReferencesAction2"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindReferencesActionWrapper"
                  label="References"
                  definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences"
                  menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
            </action>
            <action
                  id="com.redhat.ceylon.eclipse.imp.find.findRefinements.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction2"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsActionWrapper"
                  label="Refinements"
                  definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
                  menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
            </action>
            <action
                  id="com.redhat.ceylon.eclipse.imp.find.findSubtypes.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction2"
+                 class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesActionWrapper"
                  label="Subtypes"
                  definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
                  menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
