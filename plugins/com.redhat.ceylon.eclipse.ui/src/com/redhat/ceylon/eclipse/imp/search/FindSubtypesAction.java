@@ -20,6 +20,11 @@ public class FindSubtypesAction extends FindAction {
 		//setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findSubtypes");
 	}
+    
+    @Override
+    boolean isValidSelection(Declaration selectedDeclaration) {
+        return selectedDeclaration instanceof TypeDeclaration;
+    }
 
     @Override
     public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {

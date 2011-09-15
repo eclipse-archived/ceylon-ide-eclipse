@@ -19,6 +19,12 @@ public class FindRefinementsAction extends FindAction {
 		//setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findRefinements");
 	}
+    
+    @Override
+    boolean isValidSelection(Declaration selectedDeclaration) {
+        return selectedDeclaration!=null && 
+                selectedDeclaration.isClassOrInterfaceMember();
+    }
 
     @Override
     public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {

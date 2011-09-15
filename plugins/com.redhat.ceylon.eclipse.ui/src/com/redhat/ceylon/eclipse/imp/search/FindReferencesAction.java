@@ -17,6 +17,11 @@ public class FindReferencesAction extends FindAction {
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findReferences");
 	}
 	
+    @Override
+    boolean isValidSelection(Declaration selectedDeclaration) {
+        return selectedDeclaration!=null;
+    }
+
 	@Override
 	public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {
 	    return new FindSearchQuery(declaration, project) {
