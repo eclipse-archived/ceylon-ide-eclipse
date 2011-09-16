@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -50,6 +51,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
@@ -210,7 +213,10 @@ public class CeylonContentProposer implements IContentProposer {
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        if (!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+        if (node instanceof Tree.TypedDeclaration) {
+            addMemberNameProposal(offset, prefix, node, result);
+        }
+        else if (!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
             addKeywordProposals(offset, prefix, result);
         }
         boolean inImport = node.getScope() instanceof ImportList;
@@ -256,10 +262,30 @@ public class CeylonContentProposer implements IContentProposer {
         }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
+
+    protected static void addMemberNameProposal(int offset, String prefix, Node node,
+            List<ICompletionProposal> result) {
+        Type type = ((Tree.TypedDeclaration) node).getType();
+        if (type instanceof SimpleType) {
+            String suggestedName = ((SimpleType) type).getIdentifier().getText();
+            if (suggestedName!=null) {
+                suggestedName = Character.toLowerCase(suggestedName.charAt(0)) + 
+                        suggestedName.substring(1);
+                if (suggestedName.startsWith(prefix) && 
+                        !suggestedName.equals(prefix) && 
+                        !keywords.contains(suggestedName)) {
+                    result.add(sourceProposal(offset, prefix, null, 
+                            "proposed name for new declaration", 
+                            suggestedName, suggestedName, false));
+                }
+            }
+        }
+    }
     
     private static void addKeywordProposals(int offset, String prefix, List<ICompletionProposal> result) {
-        for (String keyword: CeylonTokenColorer.keywords) {
-            if (!prefix.isEmpty() && keyword.startsWith(prefix)) {
+        for (String keyword: keywords) {
+            if (!prefix.isEmpty() && keyword.startsWith(prefix) 
+                    && !keyword.equals(prefix)) {
                 result.add(sourceProposal(offset, prefix, null, 
                         keyword + " keyword", keyword, keyword, 
                         true));
