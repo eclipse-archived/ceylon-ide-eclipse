@@ -10,7 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
-public class FindReferencesAction extends FindAction {
+public class FindReferencesAction extends AbstractFindAction {
 
     public FindReferencesAction(UniversalEditor editor) {
 		super("Find References", editor);

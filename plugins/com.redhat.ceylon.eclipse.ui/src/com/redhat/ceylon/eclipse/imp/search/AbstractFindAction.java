@@ -16,26 +16,27 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Util;
 
-abstract class FindAction extends Action {
+abstract class AbstractFindAction extends Action {
     
     private final UniversalEditor editor;
-
-    FindAction(String text, UniversalEditor editor) {
+    private Declaration declaration;
+    
+    AbstractFindAction(String text, UniversalEditor editor) {
         super(text);
         this.editor = editor;
         if (editor==null) {
             setEnabled(false);
         }
         else {
-            setEnabled(isValidSelection(getSelectedDeclaration()));
+            declaration = getReferencedDeclaration(getSelectedNode());
+            setEnabled(isValidSelection(declaration));
         }
     }
     
     @Override
     public void run() {
-        Declaration dec = getSelectedDeclaration();
-        if (dec!=null) {
-            NewSearchUI.runQueryInBackground(createSearchQuery(dec, 
+        if (isValidSelection(declaration)) {
+            NewSearchUI.runQueryInBackground(createSearchQuery(declaration, 
                     Util.getProject(editor.getEditorInput())));
             return;
         }
@@ -45,12 +46,6 @@ abstract class FindAction extends Action {
                 "No declaration name selected");
     }
     
-    abstract boolean isValidSelection(Declaration selectedDeclaration);
-
-    private Declaration getSelectedDeclaration() {
-        return getReferencedDeclaration(getSelectedNode());
-    }
-
     private Node getSelectedNode() {
         CeylonParseController cpc = (CeylonParseController) editor.getParseController();
         if (cpc.getRootNode()==null) {
@@ -61,6 +56,8 @@ abstract class FindAction extends Action {
                 editor.getSelection().x+editor.getSelection().y);
         }
     }
+
+    abstract boolean isValidSelection(Declaration selectedDeclaration);
 
     public abstract FindSearchQuery createSearchQuery(Declaration declaration, IProject project);
     
