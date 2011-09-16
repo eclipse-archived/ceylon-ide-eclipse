@@ -64,6 +64,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		newName = guessName();
 	}
 
+    @Override
+    boolean isEnabled() {
+        return node instanceof Tree.Term;
+    }
+
     /*public ExtractFunctionRefactoring(IQuickFixInvocationContext context) {
         super(context);
         newName = guessName();

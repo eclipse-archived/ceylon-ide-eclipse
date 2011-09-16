@@ -30,6 +30,11 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         super(context);
         newName = guessName();
     }*/
+	
+	@Override
+	boolean isEnabled() {
+	    return node instanceof Tree.Term;
+	}
 
     public String getName() {
 		return "Extract Value";

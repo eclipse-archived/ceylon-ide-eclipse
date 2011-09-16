@@ -10,12 +10,12 @@ public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring getRefactoring() {
+    public AbstractRefactoring createRefactoring() {
         return new ExtractValueRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard getWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
         return new ExtractValueWizard((ExtractValueRefactoring) refactoring);
     }
 

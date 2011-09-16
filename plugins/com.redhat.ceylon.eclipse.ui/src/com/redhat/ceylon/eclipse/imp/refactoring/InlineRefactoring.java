@@ -16,7 +16,9 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
@@ -40,6 +42,18 @@ public class InlineRefactoring extends AbstractRefactoring {
             pu.getCompilationUnit().visit(frv);
             count += frv.getNodes().size();
         }
+	}
+	
+	@Override
+	boolean isEnabled() {
+	    return declaration!=null && 
+	            declaration instanceof MethodOrValue &&
+	            !(declaration instanceof Setter) &&
+	            !declaration.isDefault() &&
+	            !declaration.isFormal() &&
+	            !declaration.isShared(); //TODO temporary restriction!
+	            //TODO && !declaration is a value with lazy init
+	            
 	}
 	
 	public int getCount() {

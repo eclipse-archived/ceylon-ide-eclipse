@@ -18,6 +18,11 @@ public class ConvertToNamedArgumentsRefactoring extends AbstractRefactoring {
 	    super(editor);
 	}
 
+    @Override
+    boolean isEnabled() {
+        return node instanceof Tree.PositionalArgumentList;
+    }
+
 	public String getName() {
 		return "Convert To Named Arguments";
 	}
