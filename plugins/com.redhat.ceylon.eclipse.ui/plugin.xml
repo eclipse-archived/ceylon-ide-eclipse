@@ -253,7 +253,7 @@
          </action>
       </editorContribution>
    </extension>
-   <extension
+   <!--extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
             targetID="org.eclipse.imp.runtime.impEditor"
@@ -315,7 +315,7 @@
                definitionId="com.redhat.ceylon.eclipse.ui.action.rename">
          </action>
       </editorContribution>
-   </extension>
+   </extension-->
    <extension
          id="com.redhat.ceylon.eclipse.imp.actionSet"
          point="org.eclipse.ui.actionSets">
@@ -563,13 +563,78 @@
            id="com.redhat.ceylon.eclipse.imp.compare">
        </structureCreator>
    </extension>
-   
    <extension
          point="org.eclipse.ui.perspectiveExtensions"> 
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <actionSet id="com.redhat.ceylon.eclipse.imp.actionSet"/>
         </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+            <menu
+                  label="Find"
+                  id="com.redhat.ceylon.eclipse.ui.menu">
+            </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+            <dynamic id="find"
+                  class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
+            <separator 
+                  visible="true"
+                  name="sep">
+            </separator>
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:com.redhat.ceylon.eclipse.ui.menu">
+            <dynamic id="find"
+                  class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:refactorMenuId">
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.search.FindReferencesHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.rename">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refactoring.InlineHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.inline">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractValue">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments">
+      </handler>
    </extension>
             
 </plugin>

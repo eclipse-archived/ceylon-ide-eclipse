@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.imp.search;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -12,7 +12,7 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
 
-    public FindReferencesAction(UniversalEditor editor) {
+    public FindReferencesAction(IEditorPart editor) {
 		super("Find References", editor);
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findReferences");
 	}

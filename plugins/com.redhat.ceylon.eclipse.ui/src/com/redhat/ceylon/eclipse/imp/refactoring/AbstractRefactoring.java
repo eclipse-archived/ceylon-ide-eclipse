@@ -23,11 +23,11 @@ import com.redhat.ceylon.eclipse.util.Util;
 
 public abstract class AbstractRefactoring extends Refactoring {
     
-    final IProject project;
-    final IFile sourceFile;
-    final Node node;
-    final Tree.CompilationUnit rootNode;
-    final CommonTokenStream tokenStream;
+    IProject project;
+    IFile sourceFile;
+    Node node;
+    Tree.CompilationUnit rootNode;
+    CommonTokenStream tokenStream;
    
     /*public AbstractRefactoring(IQuickFixInvocationContext context) {
         sourceFile = context.getModel().getFile();
@@ -40,23 +40,18 @@ public abstract class AbstractRefactoring extends Refactoring {
     }*/
     
     public AbstractRefactoring(ITextEditor editor) {
-
-        IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
-        IEditorInput input = editor.getEditorInput();
-        CeylonParseController cpc = (CeylonParseController) frt.getParseController();
-        tokenStream = cpc.getTokenStream();
-        rootNode = cpc.getRootNode();
-        if (rootNode!=null && input instanceof IFileEditorInput) {
-            sourceFile = Util.getFile(input);
-            project = Util.getProject(input);
-            node = findNode(rootNode, frt);
+        if (editor instanceof IASTFindReplaceTarget) {
+            IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
+            IEditorInput input = editor.getEditorInput();
+            CeylonParseController cpc = (CeylonParseController) frt.getParseController();
+            tokenStream = cpc.getTokenStream();
+            rootNode = cpc.getRootNode();
+            if (rootNode!=null && input instanceof IFileEditorInput) {
+                sourceFile = Util.getFile(input);
+                project = Util.getProject(input);
+                node = findNode(rootNode, frt);
+            }
         }
-        else {
-            sourceFile = null;
-            project = null;
-            node = null;
-        }
-        
     }
     
     abstract boolean isEnabled();

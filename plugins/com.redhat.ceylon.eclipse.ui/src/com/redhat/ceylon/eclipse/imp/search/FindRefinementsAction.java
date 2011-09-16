@@ -4,26 +4,29 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
 
-    public FindRefinementsAction(UniversalEditor editor) {
+    public FindRefinementsAction(IEditorPart editor) {
 		super("Find Refinements", editor);
-		//setAccelerator(SWT.CONTROL | SWT.ALT | 'G');
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findRefinements");
 	}
     
     @Override
     boolean isValidSelection(Declaration selectedDeclaration) {
         return selectedDeclaration!=null && 
-                selectedDeclaration.isClassOrInterfaceMember();
+                selectedDeclaration.isClassOrInterfaceMember() &&
+                !(selectedDeclaration instanceof TypeParameter) &&
+                !(selectedDeclaration instanceof Parameter);
     }
 
     @Override

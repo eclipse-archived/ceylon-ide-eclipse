@@ -5,17 +5,8 @@ import org.eclipse.imp.services.ILanguageActionsContributor;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 
 import com.redhat.ceylon.eclipse.imp.open.OpenDeclarationAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.InlineRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.RenameRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction;
 
 public class CeylonEditorActionContributions implements
 		ILanguageActionsContributor {
@@ -24,7 +15,7 @@ public class CeylonEditorActionContributions implements
 			IMenuManager menuManager) {
 		//IMenuManager languageMenu = new MenuManager("Search");
         menuManager.add(new OpenDeclarationAction(editor));
-        menuManager.add(new Separator());
+        /*menuManager.add(new Separator());
 		menuManager.add(new FindReferencesAction(editor));
 		menuManager.add(new FindRefinementsAction(editor));
         menuManager.add(new FindSubtypesAction(editor));
@@ -34,10 +25,11 @@ public class CeylonEditorActionContributions implements
         menuManager.add(new ExtractValueRefactoringAction(editor));
         menuManager.add(new ExtractFunctionRefactoringAction(editor));
         //menuManager.add(new Separator());
-        menuManager.add(new ConvertToNamedArgumentsRefactoringAction(editor));
+        menuManager.add(new ConvertToNamedArgumentsRefactoringAction(editor));*/
 	}
 
 	public void contributeToMenuBar(final UniversalEditor editor, IMenuManager menu) {
+	    //menu.findMenuUsingPath("sourceMenuId");
 		//languageMenu = new MenuManager("ceylon");
 		/*IMenuManager refactor = menu.findMenuUsingPath("refactorMenuId");
 		refactor.removeAll();
