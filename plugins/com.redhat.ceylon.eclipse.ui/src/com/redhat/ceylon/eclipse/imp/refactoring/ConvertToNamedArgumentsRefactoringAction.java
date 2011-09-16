@@ -10,12 +10,12 @@ public class ConvertToNamedArgumentsRefactoringAction extends AbstractRefactorin
     }
     
     @Override
-    public AbstractRefactoring getRefactoring() {
+    public AbstractRefactoring createRefactoring() {
         return new ConvertToNamedArgumentsRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard getWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
         return new ConvertToNamedArgumentsWizard((ConvertToNamedArgumentsRefactoring) refactoring);
     }
     

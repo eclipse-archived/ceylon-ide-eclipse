@@ -44,15 +44,26 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public RenameRefactoring(ITextEditor editor) {
 	    super(editor);
 	    
-		declaration = getReferencedDeclaration(node).getRefinedDeclaration();
-		newName = declaration.getName();
-        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-            FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-            FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
-            pu.getCompilationUnit().visit(frv);
-            pu.getCompilationUnit().visit(fdv);
-            count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
-        }
+		Declaration refDec = getReferencedDeclaration(node);
+		if (refDec!=null) {
+            declaration = refDec.getRefinedDeclaration();
+    		newName = declaration.getName();
+            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+                pu.getCompilationUnit().visit(frv);
+                pu.getCompilationUnit().visit(fdv);
+                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+            }
+		}
+		else {
+		    declaration = null;
+		}
+	}
+	
+	@Override
+	boolean isEnabled() {
+	    return declaration!=null;
 	}
 	
 	public int getCount() {

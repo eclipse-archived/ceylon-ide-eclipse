@@ -46,8 +46,7 @@ public abstract class AbstractRefactoring extends Refactoring {
         CeylonParseController cpc = (CeylonParseController) frt.getParseController();
         tokenStream = cpc.getTokenStream();
         rootNode = cpc.getRootNode();
-
-        if (input instanceof IFileEditorInput) {
+        if (rootNode!=null && input instanceof IFileEditorInput) {
             sourceFile = Util.getFile(input);
             project = Util.getProject(input);
             node = findNode(rootNode, frt);
@@ -59,6 +58,8 @@ public abstract class AbstractRefactoring extends Refactoring {
         }
         
     }
+    
+    abstract boolean isEnabled();
     
     String guessName() {
         Node identifyingNode = node;

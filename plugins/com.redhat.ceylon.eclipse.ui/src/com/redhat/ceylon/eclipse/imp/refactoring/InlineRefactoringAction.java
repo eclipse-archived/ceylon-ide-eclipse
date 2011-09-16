@@ -10,12 +10,12 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring getRefactoring() {
+    public AbstractRefactoring createRefactoring() {
         return new InlineRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard getWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
         return new InlineWizard((InlineRefactoring) refactoring);
     }
 }
