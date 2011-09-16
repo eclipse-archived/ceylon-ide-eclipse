@@ -8,12 +8,10 @@ import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.search.ui.NewSearchUI;
-import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Util;
 
 abstract class AbstractFindAction extends Action {
@@ -38,12 +36,11 @@ abstract class AbstractFindAction extends Action {
         if (isValidSelection(declaration)) {
             NewSearchUI.runQueryInBackground(createSearchQuery(declaration, 
                     Util.getProject(editor.getEditorInput())));
-            return;
         }
-        Shell shell= CeylonPlugin.getInstance().getWorkbench()
-                .getActiveWorkbenchWindow().getShell();
-        MessageDialog.openWarning(shell, "Ceylon Find Error", 
-                "No declaration name selected");
+        else {
+            MessageDialog.openWarning(editor.getEditorSite().getShell(), 
+                    "Ceylon Find Error", "No declaration name selected");
+        }
     }
     
     private Node getSelectedNode() {

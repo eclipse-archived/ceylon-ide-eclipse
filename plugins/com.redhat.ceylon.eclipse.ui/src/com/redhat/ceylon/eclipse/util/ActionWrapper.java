@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
@@ -15,7 +16,18 @@ public abstract class ActionWrapper implements IEditorActionDelegate {
     @Override
     public void run(IAction action) {
         //if (delegate!=null) delegate.run();
-        if (editor!=null) createAction(editor).run();
+        if (editor!=null) {
+            Action delegate = createAction(editor);
+            if (delegate.isEnabled()) {
+                delegate.run();
+            }
+            else {
+                MessageDialog.openWarning(editor.getSite().getShell(), 
+                        "Selection Error", "Invalid text selection for action");
+                        //TODO: give more useful message about what should
+                        //      be selected
+            }
+        }
     }
     
     @Override
