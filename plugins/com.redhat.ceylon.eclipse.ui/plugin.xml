@@ -281,35 +281,35 @@
          </action>
          <action
                label="Convert To Named Arguments..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsActionWrapper"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
                id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments"
                definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments">
          </action>
          <action
                label="Extract Function..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionActionWrapper"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
                id="com.redhat.ceylon.eclipse.imp.refactoring.extractFunction"
                definitionId="com.redhat.ceylon.eclipse.ui.action.extractFunction">
          </action>
          <action
                label="Extract Value..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
+               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueActionWrapper"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
                id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue"
                definitionId="com.redhat.ceylon.eclipse.ui.action.extractValue">
          </action>
          <action
                label="Inline..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
+               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineActionWrapper"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
                id="com.redhat.ceylon.eclipse.imp.refactoring.inline"
                definitionId="com.redhat.ceylon.eclipse.ui.action.inline">
          </action>
          <action
                label="Rename..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
+               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameActionWrapper"
                menubarPath="org.eclipse.imp.source.menu/convertGroup"
                id="com.redhat.ceylon.eclipse.imp.refactoring.rename"
                definitionId="com.redhat.ceylon.eclipse.ui.action.rename">
