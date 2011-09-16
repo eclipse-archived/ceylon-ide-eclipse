@@ -40,18 +40,21 @@ public class CeylonEditorActionContributions implements
 	public void contributeToMenuBar(final UniversalEditor editor, IMenuManager menu) {
 		//languageMenu = new MenuManager("ceylon");
 		/*IMenuManager refactor = menu.findMenuUsingPath("refactorMenuId");
-		if (refactor.getItems().length==0) {
-			for (IAction action: RefactoringContributor.getActions(editor)) {
-				refactor.add(action);
-			}
-		}
+		refactor.removeAll();
+		refactor.add(new RenameRefactoringAction(editor));
+		refactor.add(new InlineRefactoringAction(editor));
+		refactor.add(new ExtractValueRefactoringAction(editor));
+		refactor.add(new ExtractFunctionRefactoringAction(editor));
+        refactor.add(new Separator());
+		refactor.add(new ConvertToNamedArgumentsRefactoringAction(editor));
 		IMenuManager search = menu.findMenuUsingPath("navigate");
+		search.removeAll();
+        //search.add(new Separator());
+        //search.add(new OpenDeclarationAction(editor));
 		search.add(new Separator());
 		search.add(new FindReferencesAction(editor));
         search.add(new FindRefinementsAction(editor));
-        search.add(new FindSubtypesAction(editor));
-        search.add(new Separator());
-        search.add(new OpenDeclarationAction("Open Declaration...", editor));*/
+        search.add(new FindSubtypesAction(editor));*/
 	}
 
 	public void contributeToStatusLine(final UniversalEditor editor,
