@@ -135,20 +135,6 @@
             language="ceylon">
       </foldingUpdater>
    </extension>
-   <!--extension
-         point="org.eclipse.imp.runtime.refactoringContributions">
-      <refactoringContributor
-            class="com.redhat.ceylon.eclipse.imp.refactoring.RefactoringContributor"
-            language="ceylon">
-      </refactoringContributor>
-   </extension-->
-   <extension
-         point="org.eclipse.imp.runtime.editorActionContributions">
-      <editorActionContributor
-            class="com.redhat.ceylon.eclipse.imp.editor.CeylonEditorActionContributions"
-            language="ceylon">
-      </editorActionContributor>
-   </extension>
    <extension
          id="com.redhat.ceylon.ui.searchResults"
          point="org.eclipse.search.searchResultViewPages">
@@ -253,85 +239,14 @@
          </action>
       </editorContribution>
    </extension>
-   <!--extension
-         point="org.eclipse.ui.editorActions">
-      <editorContribution
-            targetID="org.eclipse.imp.runtime.impEditor"
-            id="com.redhat.ceylon.eclipse.imp.editorActionContributions">
-         <action
-               label="Find Subtypes"
-               class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesActionWrapper"
-               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findSubtypes"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
-         </action>
-         <action
-               label="Find Refinements"
-               class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsActionWrapper"
-               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findRefinements"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements">
-         </action>
-         <action
-               label="Find References"
-               class="com.redhat.ceylon.eclipse.imp.search.FindReferencesActionWrapper"
-               menubarPath="org.eclipse.search.menu/occurencesActionsGroup"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.findReferences"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences">
-         </action>
-         <action
-               label="Convert To Named Arguments..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsActionWrapper"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments">
-         </action>
-         <action
-               label="Extract Function..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionActionWrapper"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.extractFunction"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.extractFunction">
-         </action>
-         <action
-               label="Extract Value..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueActionWrapper"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.extractValue">
-         </action>
-         <action
-               label="Inline..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.InlineActionWrapper"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.inline"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.inline">
-         </action>
-         <action
-               label="Rename..."
-               class="com.redhat.ceylon.eclipse.imp.refactoring.RenameActionWrapper"
-               menubarPath="org.eclipse.imp.source.menu/convertGroup"
-               id="com.redhat.ceylon.eclipse.imp.refactoring.rename"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.rename">
-         </action>
-      </editorContribution>
-   </extension-->
    <extension
          id="com.redhat.ceylon.eclipse.imp.actionSet"
          point="org.eclipse.ui.actionSets">
+      <!-- We need to use an action set here because the Eclipse search menu doesn't
+           support contributions from the org.eclipse.ui.menus contribution point. -->
       <actionSet
             label="Ceylon Actions"
             id="com.redhat.ceylon.eclipse.imp.actionSet">
-         <action
-               label="Open Ceylon Declaration..."
-               icon="icons/opentype.gif"
-               tooltip="Open Toplevel Ceylon Declaration"
-               class="com.redhat.ceylon.eclipse.imp.open.OpenDeclarationActionWrapper"
-               menubarPath="navigate/open.ext"
-               toolbarPath="ceylon"
-               id="com.redhat.ceylon.eclipse.imp.editor.openDeclaration"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.openDeclaration">
-         </action>
          <action
                label="Ceylon..."
                icon="icons/find_obj.gif"
@@ -342,84 +257,6 @@
          </action>
       </actionSet>
    </extension>
-   <!--extension 
-         id="com.redhat.ceylon.eclipse.imp.popupMenu"
-         point="org.eclipse.ui.popupMenus">
-       <viewerContribution
-             id="com.redhat.ceylon.eclipse.imp.editorActionContributions.popup" 
-             targetID="#TextEditorContext">
-           <menu
-                   id="com.redhat.ceylon.eclipse.ui.find"
-                   label="Find">
-                   <groupMarker
-                         name="group">
-                   </groupMarker>
-           </menu>
-           <menu
-                   id="com.redhat.ceylon.eclipse.ui.refactor"
-                   label="Refactor">
-                   <groupMarker
-                         name="group">
-                   </groupMarker>
-           </menu>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.find.findReferences.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindReferencesActionWrapper"
-                 label="References"
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.find.findRefinements.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsActionWrapper"
-                 label="Refinements"
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.find.findSubtypes.popup"
-                 class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesActionWrapper"
-                 label="Subtypes"
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.find/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.refactoring.rename.popup"
-                 class="com.redhat.ceylon.eclipse.imp.refactoring.RenameAction"
-                 label="Rename..."
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.rename"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.refactoring.inline.popup"
-                 class="com.redhat.ceylon.eclipse.imp.refactoring.InlineAction"
-                 label="Inline..."
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.inline"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.refactoring.extractValue.popup"
-                 class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueAction"
-                 label="Extract Value..."
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.extractValue"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.refactoring.extractFuntion.popup"
-                 class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionAction"
-                 label="Extract Function..."
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
-           </action>
-           <action
-                 id="com.redhat.ceylon.eclipse.imp.refactoring.convertToNamedArguments.popup"
-                 class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsAction"
-                 label="Convert To Named Arguments"
-                 definitionId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
-                 menubarPath="com.redhat.ceylon.eclipse.ui.refactor/group">
-           </action>
-       </viewerContribution>
-   </extension-->
    <extension
          point="org.eclipse.ui.commands">
        <category
@@ -573,10 +410,43 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+            locationURI="menu:navigate?before=open.ext">
+            <separator
+                  visible="true"
+                  name="aboveOpen"/>
+            <command
+                  label="Open Ceylon Declaration..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+                  icon="icons/opentype.gif"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
+            <separator
+                  visible="true"
+                  name="belowOpen"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
+            <command
+                  label="Open Ceylon Declaration..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+                  icon="icons/opentype.gif"
+                  tooltip="Open Ceylon Declaration"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
+            </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:refactorMenuId">
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?before=refactorMenuId">
             <menu
                   label="Find"
-                  id="com.redhat.ceylon.eclipse.ui.menu">
+                  id="com.redhat.ceylon.eclipse.ui.menu.find">
+                <dynamic id="find"
+                      class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
             </menu>
       </menuContribution>
       <menuContribution
@@ -585,24 +455,17 @@
                   class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
             <separator 
                   visible="true"
-                  name="sep">
-            </separator>
-            <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
-      </menuContribution>
-      <menuContribution
-            locationURI="menu:com.redhat.ceylon.eclipse.ui.menu">
-            <dynamic id="find"
-                  class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
-      </menuContribution>
-      <menuContribution
-            locationURI="menu:refactorMenuId">
+                  name="sep"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
       </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.open.OpenCeylonDeclarationHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration">
+      </handler>
       <handler
             class="com.redhat.ceylon.eclipse.imp.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences">
