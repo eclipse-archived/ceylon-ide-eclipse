@@ -14,6 +14,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -131,6 +132,12 @@ public class Util {
         } catch (PartInitException e) {
             RuntimePlugin.getInstance().logException("Unable to open declaration", e);
         }*/
+    }
+    
+    public static IEditorPart getCurrentEditor() {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getActivePage()
+                .getActiveEditor();
     }
     
 }

@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 public class InlineRefactoringAction extends AbstractRefactoringAction {
-    public InlineRefactoringAction(ITextEditor editor) {
+    public InlineRefactoringAction(IEditorPart editor) {
         super("Inline.", editor);
         setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.inline");
     }

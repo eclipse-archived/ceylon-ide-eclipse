@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 public class RenameRefactoringAction extends AbstractRefactoringAction {
-	public RenameRefactoringAction(ITextEditor editor) {
+	public RenameRefactoringAction(IEditorPart editor) {
 		super("Rename.", editor);
 		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.rename");
 	}

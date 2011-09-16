@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 public class ExtractFunctionRefactoringAction extends AbstractRefactoringAction {
-    public ExtractFunctionRefactoringAction(ITextEditor editor) {
+    public ExtractFunctionRefactoringAction(IEditorPart editor) {
         super("ExtractFunction.", editor);
         setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.extractFunction");
     }

@@ -8,6 +8,7 @@ import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.search.ui.NewSearchUI;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -19,15 +20,16 @@ abstract class AbstractFindAction extends Action {
     private final UniversalEditor editor;
     private Declaration declaration;
     
-    AbstractFindAction(String text, UniversalEditor editor) {
+    AbstractFindAction(String text, IEditorPart editor) {
         super(text);
-        this.editor = editor;
-        if (editor==null) {
-            setEnabled(false);
-        }
-        else {
+        if (editor instanceof UniversalEditor) {
+            this.editor = (UniversalEditor) editor;
             declaration = getReferencedDeclaration(getSelectedNode());
             setEnabled(isValidSelection(declaration));
+        }
+        else {
+            this.editor = null;
+            setEnabled(false);
         }
     }
     
