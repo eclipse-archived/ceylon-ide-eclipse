@@ -13,7 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 
-public class FindSubtypesAction extends FindAction {
+public class FindSubtypesAction extends AbstractFindAction {
 
     public FindSubtypesAction(UniversalEditor editor) {
 		super("Find Subtypes", editor);

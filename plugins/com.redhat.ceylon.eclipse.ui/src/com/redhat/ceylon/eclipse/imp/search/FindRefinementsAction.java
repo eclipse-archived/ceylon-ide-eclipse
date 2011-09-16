@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
-public class FindRefinementsAction extends FindAction {
+public class FindRefinementsAction extends AbstractFindAction {
 
     public FindRefinementsAction(UniversalEditor editor) {
 		super("Find Refinements", editor);
