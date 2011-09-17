@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import static com.redhat.ceylon.eclipse.util.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

@@ -14,7 +14,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 
 public abstract class ErrorVisitor extends Visitor {
     private final IMessageHandler handler;

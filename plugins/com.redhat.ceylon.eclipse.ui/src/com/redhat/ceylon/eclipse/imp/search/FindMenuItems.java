@@ -1,15 +1,13 @@
-package com.redhat.ceylon.eclipse.imp.editor;
+package com.redhat.ceylon.eclipse.imp.search;
 
 
-import static com.redhat.ceylon.eclipse.util.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-import com.redhat.ceylon.eclipse.imp.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.imp.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.imp.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 
 public class FindMenuItems extends CompoundContributionItem {
     

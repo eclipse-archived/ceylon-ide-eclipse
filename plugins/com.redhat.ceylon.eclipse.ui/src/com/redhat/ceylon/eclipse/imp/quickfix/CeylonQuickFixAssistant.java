@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.imp.quickfix;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
 
 import java.util.Collection;
 import java.util.Map;
@@ -37,10 +38,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
-import com.redhat.ceylon.eclipse.util.Util;
 
 /**
  * Popup quick fixes for problem annotations displayed in editor
@@ -278,7 +279,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
             String name = entry.getKey();
             DeclarationWithProximity dwp = entry.getValue();
-            int dist = Util.getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
+            int dist = getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?
             if (dist<=brokenName.length()/3+1) {
