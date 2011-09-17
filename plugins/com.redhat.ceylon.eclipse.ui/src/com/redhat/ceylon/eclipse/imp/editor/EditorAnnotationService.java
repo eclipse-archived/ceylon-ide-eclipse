@@ -24,7 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
-public class CeylonAnnotationCreator extends EditorServiceBase {
+public class EditorAnnotationService extends EditorServiceBase {
     
     @Override
     public AnalysisRequired getAnalysisRequired() {
@@ -85,14 +85,10 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
         super.setEditor(editor);
         System.out.println("Adding SelectionListener to editor " + editor);
         ((IPostSelectionProvider) editor.getSelectionProvider())
-            .addPostSelectionChangedListener(new SelectionListener(editor));
+            .addPostSelectionChangedListener(new SelectionListener());
     }
     
-    static class SelectionListener implements ISelectionChangedListener {
-        UniversalEditor editor;
-        SelectionListener(UniversalEditor editor) {
-            this.editor = editor;
-        }
+    class SelectionListener implements ISelectionChangedListener {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
             final CeylonParseController cpc = (CeylonParseController) editor.getParseController();
@@ -107,4 +103,5 @@ public class CeylonAnnotationCreator extends EditorServiceBase {
             }
         }
     }
+    
 }
