@@ -186,7 +186,8 @@ public class CeylonParseController extends ParseControllerBase {
                 };
 
                 try {
-                    project.build(IncrementalProjectBuilder.FULL_BUILD, CeylonBuilder.BUILDER_ID, null, nonCanceling);
+                    project.build(IncrementalProjectBuilder.FULL_BUILD, 
+                            CeylonBuilder.BUILDER_ID, null, nonCanceling);
                     doneSignal.await(60, TimeUnit.SECONDS);
                 } catch (CoreException e) {
                     // TODO Auto-generated catch block
@@ -228,12 +229,10 @@ public class CeylonParseController extends ParseControllerBase {
                     public String getName() {
                         return "";
                     }
-                    
                     @Override
                     public InputStream getInputStream() {
                         return null;
                     }
-                    
                     @Override
                     public List<VirtualFile> getChildren() {
                         return Collections.emptyList();
