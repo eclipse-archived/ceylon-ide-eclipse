@@ -324,6 +324,10 @@
             description="Convert selected positional arguments to named arguments"
             name="Convert To Named Arguments">
        </command>
+       <command
+             id="org.eclipse.imp.runtime.editor.folding.collapseComments"
+             name="Collapse Comments">
+       </command>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
