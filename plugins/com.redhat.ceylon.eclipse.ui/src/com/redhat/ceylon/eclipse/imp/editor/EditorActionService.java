@@ -75,11 +75,20 @@ public class EditorActionService extends EditorServiceBase {
         }
     }
     
+    static Method getSourceViewerMethod;
+    static {
+        try {
+            getSourceViewerMethod = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer", new Class[0]);
+            getSourceViewerMethod.setAccessible(true);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     ISourceViewer getSourceViewer() {
         try {
-            Method m = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer", new Class[0]);
-            m.setAccessible(true);
-            return (ISourceViewer) m.invoke(getEditor());
+            return (ISourceViewer) getSourceViewerMethod.invoke(getEditor());
         }
         catch (Exception e) {
             throw new RuntimeException(e);
