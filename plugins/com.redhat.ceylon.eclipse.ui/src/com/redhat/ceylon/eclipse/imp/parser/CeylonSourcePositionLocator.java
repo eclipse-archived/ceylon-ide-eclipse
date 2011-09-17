@@ -17,7 +17,6 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 
@@ -77,22 +76,25 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return visitor.getNode();
     }
     
-    public Node findNode(IASTFindReplaceTarget frt) {
-        return findNode(parseController.getRootNode(), frt);
+    public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
+        FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
+        //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+        cu.visit(visitor);
+        //System.out.println("selected node: " + visitor.getNode());
+        return visitor.getNode();
     }
     
-    public static Node findNode(Tree.CompilationUnit cu, IASTFindReplaceTarget frt) {
-        return findNode(cu, frt.getSelection().x, 
-                frt.getSelection().x+frt.getSelection().y);
-    }
-    
-    public static Node findNode(Tree.CompilationUnit cu, IRegion region) {
+    /*public static Node findNode(Tree.CompilationUnit cu, IRegion region) {
         return findNode(cu, region.getOffset(), 
                 region.getOffset()+region.getLength());
-    }
+    }*/
     
     public static Node findNode(Tree.CompilationUnit cu, ITextSelection s) {
         return findNode(cu, s.getOffset(), s.getOffset()+s.getLength());
+    }
+    
+    public static Node findScope(Tree.CompilationUnit cu, ITextSelection s) {
+        return findScope(cu, s.getOffset(), s.getOffset()+s.getLength());
     }
     
     public int getStartOffset(Object node) {
