@@ -9,7 +9,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
+import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ui.IEditorInput;
@@ -40,16 +41,17 @@ public abstract class AbstractRefactoring extends Refactoring {
     }*/
     
     public AbstractRefactoring(ITextEditor editor) {
-        if (editor instanceof IASTFindReplaceTarget) {
-            IASTFindReplaceTarget frt = (IASTFindReplaceTarget) editor;
+        if (editor instanceof UniversalEditor) {
+            UniversalEditor ue = (UniversalEditor) editor;
             IEditorInput input = editor.getEditorInput();
-            CeylonParseController cpc = (CeylonParseController) frt.getParseController();
+            CeylonParseController cpc = (CeylonParseController) ue.getParseController();
             tokenStream = cpc.getTokenStream();
             rootNode = cpc.getRootNode();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = Util.getFile(input);
                 project = Util.getProject(input);
-                node = findNode(rootNode, frt);
+                node = findNode(rootNode, 
+                    (ITextSelection) editor.getSelectionProvider().getSelection());
             }
         }
     }

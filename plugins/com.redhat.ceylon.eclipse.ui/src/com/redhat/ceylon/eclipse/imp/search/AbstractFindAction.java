@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.IEditorPart;
 
@@ -47,13 +48,9 @@ abstract class AbstractFindAction extends Action {
     
     private Node getSelectedNode() {
         CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-        if (cpc.getRootNode()==null) {
-            return null;
-        }
-        else {
-            return findNode(cpc.getRootNode(), editor.getSelection().x, 
-                editor.getSelection().x+editor.getSelection().y);
-        }
+        return cpc.getRootNode()==null ? null : 
+            findNode(cpc.getRootNode(), 
+                (ITextSelection) editor.getSelectionProvider().getSelection());
     }
 
     abstract boolean isValidSelection(Declaration selectedDeclaration);
