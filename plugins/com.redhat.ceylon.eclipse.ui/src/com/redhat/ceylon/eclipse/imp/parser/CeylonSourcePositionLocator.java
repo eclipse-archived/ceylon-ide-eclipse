@@ -19,6 +19,7 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -83,6 +84,15 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     public static Node findNode(Tree.CompilationUnit cu, IASTFindReplaceTarget frt) {
         return findNode(cu, frt.getSelection().x, 
                 frt.getSelection().x+frt.getSelection().y);
+    }
+    
+    public static Node findNode(Tree.CompilationUnit cu, IRegion region) {
+        return findNode(cu, region.getOffset(), 
+                region.getOffset()+region.getLength());
+    }
+    
+    public static Node findNode(Tree.CompilationUnit cu, ITextSelection s) {
+        return findNode(cu, s.getOffset(), s.getOffset()+s.getLength());
     }
     
     public int getStartOffset(Object node) {
