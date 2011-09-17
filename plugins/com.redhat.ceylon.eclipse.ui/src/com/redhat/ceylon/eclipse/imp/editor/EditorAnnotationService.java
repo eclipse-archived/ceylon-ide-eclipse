@@ -24,6 +24,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
+/**
+ * Responsible for adding refinement annotations to 
+ * the vertical ruler, and updating the highlight
+ * range in the vertical ruler.
+ * 
+ * @author gavin
+ *
+ */
 public class EditorAnnotationService extends EditorServiceBase {
     
     @Override
