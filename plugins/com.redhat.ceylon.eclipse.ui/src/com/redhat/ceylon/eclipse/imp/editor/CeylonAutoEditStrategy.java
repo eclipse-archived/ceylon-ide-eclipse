@@ -22,8 +22,21 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 isLineEnding(doc, cmd.text)) {
             smartIndentAfterNewline(doc, cmd);
         }
-        else if (cmd.text.length()==1) {
+        else if (cmd.text.length()==1 || 
+                getIndentWithSpaces() && isIndent(cmd.text)) {
             smartIndentOnKeypress(doc, cmd);
+        }
+    }
+    
+    public boolean isIndent(String text) {
+        if (text.length()==getIndentSpaces()) {
+            for (char c: text.toCharArray()) {
+                if (c!=' ') return false;
+            }
+            return true;
+        }
+        else {
+            return false;
         }
     }
     
@@ -38,7 +51,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 indentNewLine(d, c);
             //}
         } 
-        catch (BadLocationException bleid ) {}
+        catch (BadLocationException bleid ) {
+            bleid.printStackTrace();
+        }
     }
 
     private void smartIndentOnKeypress(IDocument d, DocumentCommand c) {
@@ -50,48 +65,69 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         try {
             adjustIndentOfCurrentLine(d, c);
         }
-        catch (BadLocationException ble) {}
+        catch (BadLocationException ble) {
+            ble.printStackTrace();
+        }
     }
 
     private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
 
-       int spaces = getIndentSpaces();
-
        switch (c.text.charAt(0)) {
            case '}':
-                if (endsWithSpaces(d.get(c.offset-spaces, spaces),spaces)) {
-                    c.offset = c.offset-spaces;
-                    c.length = spaces;
-                }
-                else if (d.get(c.offset-1,1).equals("\t")) {
-                    c.offset = c.offset-1;
-                    c.length = 1;
-                }
-                break;
-           case '\t':
-               int start = getStartOfCurrentLine(d, c);
-               int endOfWs = findEndOfWhiteSpace(d, c);
-               if (c.offset<=endOfWs) {
-                   c.offset = getEndOfPreviousLine(d, c);
-                   c.text = "";
-                   indentNewLine(d, c);
-                   if (d.getChar(endOfWs)=='}') {
-                       if (endsWithSpaces(c.text, spaces)) {
-                           c.text = c.text.substring(0, c.text.length()-spaces);
-                       }
-                       else if (c.text.endsWith("\t")) {
-                           c.text = c.text.substring(0, c.text.length()-1);
-                       }
-                   }
-                   c.offset=start;
-                   c.length=endOfWs-start;
-                   /*if (c.text.length()==c.length) {
-                       c.text+='\t';
-                   }*/
-               }
+               reduceIndentOfCurrentLine(d, c);
                break;
+           case '\t':
+               fixIndentOfCurrentLine(d, c);
+               break;
+           default:
+               if (isIndent(c.text)) {
+                   fixIndentOfCurrentLine(d, c);
+               }
        }
+    }
+
+    protected void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
+            throws BadLocationException {
+        int spaces = getIndentSpaces();
+        int start = getStartOfCurrentLine(d, c);
+        int endOfWs = findEndOfWhiteSpace(d, c);
+        if (c.offset<=endOfWs) {
+            if (start==0) {
+                c.text="";
+            }
+            else {
+                c.offset = getEndOfPreviousLine(d, c);
+                c.text = "";
+                indentNewLine(d, c);
+                if (d.getChar(endOfWs)=='}') {
+                    if (endsWithSpaces(c.text, spaces)) {
+                        c.text = c.text.substring(0, c.text.length()-spaces);
+                    }
+                    else if (c.text.endsWith("\t")) {
+                        c.text = c.text.substring(0, c.text.length()-1);
+                    }
+                }
+            }
+            c.offset=start;
+            c.length=endOfWs-start;
+            /*if (c.text.length()==c.length) {
+                c.text+='\t';
+            }*/
+        }
+    }
+
+    protected void reduceIndentOfCurrentLine(IDocument d, DocumentCommand c)
+            throws BadLocationException {
+        int spaces = getIndentSpaces();
+        if (endsWithSpaces(d.get(c.offset-spaces, spaces),spaces)) {
+            c.offset = c.offset-spaces;
+            c.length = spaces;
+        }
+        else if (d.get(c.offset-1,1).equals("\t")) {
+            c.offset = c.offset-1;
+            c.length = 1;
+        }
     }
 
     /*private String getPreviousLineDelimiter(IDocument d, int start) 
@@ -112,15 +148,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         StringBuilder buf = new StringBuilder(c.text);
-        char end = getPreviousNonWhitespaceCharacterInLine(d, getEndOfCurrentLine(d, c)-1);  //TODO: -1 might be -2 depending on delimiter!
-        char prevEnd = getPreviousNonWhitespaceCharacter(d, getEndOfCurrentLine(d, c)-1);  //TODO: -1 might be -2 depending on delimiter!
-        boolean isContinuation = prevEnd!=';' && prevEnd!='}' &&
-                        prevEnd!='\n' && //ahem, ugly "null"
-                        prevEnd!='{';
+        char terminator = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);  //TODO: -1 might be -2 depending on delimiter!
+        boolean isContinuation = terminator!=';' && terminator!='}' && terminator!='{' &&
+                        terminator!='\n'; //ahem, ugly "null"
         String indent = getIndent(d, c);
         if (!indent.isEmpty()) {
             buf.append(indent);
-            if (end=='{') {
+            if (terminator=='{') {
                 //increment the indent level
                 incrementIndent(buf, indent);
             }
@@ -132,7 +166,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
         }
         else {
-            if (end=='{') {
+            if (terminator=='{') {
                 initialIndent(buf);
             }
             else if (isContinuation) {
@@ -148,12 +182,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         int start = getStartOfCurrentLine(d, c);
         int end = getEndOfCurrentLine(d, c);
         while (true) {
-            System.out.println(d.get(start, end-start));
-            int endOfPrev = getEndOfPreviousLine(d, start);
-            char ch = getPreviousNonWhitespaceCharacterInLine(d, endOfPrev-1); //TODO: -1 might be -2 depending on delimiter!
-            if (ch==';' || ch=='{' || ch=='}' || start<=0) break;
-            start = getStartOfPreviousLine(d, start); 
-            end = endOfPrev;
+            //System.out.println(d.get(start, end-start));
+            if (start==0) {
+                return "";
+            }
+            else {
+                int endOfPrev = getEndOfPreviousLine(d, start);
+                char ch = getPreviousNonWhitespaceCharacterInLine(d, endOfPrev-1); //TODO: -1 might be -2 depending on delimiter!
+                if (ch==';' || ch=='{' || ch=='}' || start<=0) break;
+                start = getStartOfPreviousLine(d, start); 
+                end = endOfPrev;
+            }
         }
         int endOfWs = firstEndOfWhitespace(d, start, end);
         return d.get(start, endOfWs-start);
@@ -172,18 +211,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             buf.append('\t');
         }
     }
-
-    private char getPreviousNonWhitespaceCharacter(IDocument d, int offset) 
-            throws BadLocationException {
-        for (; offset>=0; offset--) {
-            String ch = d.get(offset,1);
-            if (!isWhitespace(ch.charAt(0))) {
-                return ch.charAt(0);
-            }
-        }
-        return '\n';
-    }
-
+    
     private char getPreviousNonWhitespaceCharacterInLine(IDocument d, int offset)
             throws BadLocationException {
         for (;offset>=0; offset--) {
