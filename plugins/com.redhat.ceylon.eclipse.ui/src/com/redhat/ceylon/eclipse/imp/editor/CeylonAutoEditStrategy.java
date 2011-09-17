@@ -130,11 +130,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    /*private String getPreviousLineDelimiter(IDocument d, int start) 
-            throws BadLocationException {
-        return d.getLineDelimiter(d.getLineOfOffset(start)-1);
-    }*/
-
     /*private int getStartOfPreviousLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         return getStartOfPreviousLine(d, c.offset);
@@ -148,7 +143,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         StringBuilder buf = new StringBuilder(c.text);
-        char terminator = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);  //TODO: -1 might be -2 depending on delimiter!
+        char terminator = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
         boolean isContinuation = terminator!=';' && terminator!='}' && terminator!='{' &&
                         terminator!='\n'; //ahem, ugly "null"
         String indent = getIndent(d, c);
@@ -187,10 +182,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 return "";
             }
             else {
+                int startOfPrev = getStartOfPreviousLine(d, start); 
                 int endOfPrev = getEndOfPreviousLine(d, start);
-                char ch = getPreviousNonWhitespaceCharacterInLine(d, endOfPrev-1); //TODO: -1 might be -2 depending on delimiter!
-                if (ch==';' || ch=='{' || ch=='}' || start<=0) break;
-                start = getStartOfPreviousLine(d, start); 
+                char ch = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
+                if (ch==';' || ch=='{' || ch=='}') break;
+                start = startOfPrev;
                 end = endOfPrev;
             }
         }
@@ -198,6 +194,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return d.get(start, endOfWs-start);
     }
 
+    private char getLastNonWhitespaceCharacterInLine(IDocument d, int offset, int end) 
+            throws BadLocationException {
+        char result = '\n'; //ahem, ugly null!
+        for (;offset<end; offset++) {
+            char ch = d.getChar(offset);
+            if (!isWhitespace(ch)) result=ch;
+        }
+        return result;
+    }
+    
     private void incrementIndent(StringBuilder buf, String indent) {
         int spaces = getIndentSpaces();
         if (indent.length()>=spaces && 
