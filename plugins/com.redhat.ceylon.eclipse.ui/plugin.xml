@@ -442,7 +442,7 @@
       <menuContribution
             locationURI="menu:refactorMenuId">
             <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?before=refactorMenuId">
@@ -450,18 +450,18 @@
                   label="Find"
                   id="com.redhat.ceylon.eclipse.ui.menu.find">
                 <dynamic id="find"
-                      class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
+                      class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             </menu>
       </menuContribution>
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any?before=additions">
             <dynamic id="find"
-                  class="com.redhat.ceylon.eclipse.imp.editor.FindMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             <separator 
                   visible="true"
                   name="sep"/>
             <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.editor.RefactorMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
       </menuContribution>
    </extension>
    <extension

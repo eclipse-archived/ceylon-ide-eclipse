@@ -17,8 +17,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
+import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.util.Util;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
 		implements IEditorMatchAdapter, IFileMatchAdapter {

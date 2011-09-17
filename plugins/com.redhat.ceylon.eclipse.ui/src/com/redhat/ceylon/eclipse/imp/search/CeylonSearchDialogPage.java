@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-import com.redhat.ceylon.eclipse.util.Util;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
 
 public class CeylonSearchDialogPage extends DialogPage 
 		implements ISearchPage/*, IReplacePage*/ {

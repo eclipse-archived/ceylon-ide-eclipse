@@ -1,18 +1,13 @@
-package com.redhat.ceylon.eclipse.imp.editor;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import static com.redhat.ceylon.eclipse.util.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.InlineRefactoringAction;
-import com.redhat.ceylon.eclipse.imp.refactoring.RenameRefactoringAction;
+import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     

@@ -6,9 +6,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 
-class DynamicMenuItem extends CommandContributionItem {
-    boolean enabled;
-    DynamicMenuItem(String id, String label, boolean enabled) {
+public class DynamicMenuItem extends CommandContributionItem {
+    private boolean enabled;
+    
+    public DynamicMenuItem(String id, String label, boolean enabled) {
         super(new CommandContributionItemParameter(
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow(), 
                 id + ".cci", id, Collections.emptyMap(), null, null, null, 
@@ -21,4 +22,5 @@ class DynamicMenuItem extends CommandContributionItem {
     public boolean isEnabled() { 
         return super.isEnabled() && enabled; 
     }
+    
 }
