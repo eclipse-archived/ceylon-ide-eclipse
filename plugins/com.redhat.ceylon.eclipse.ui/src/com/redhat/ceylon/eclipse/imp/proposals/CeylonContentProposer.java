@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -144,7 +145,7 @@ public class CeylonContentProposer implements IContentProposer {
         //END BUG WORKAROUND
         
         if (cpc.getRootNode() != null) {
-            Node node = CeylonSourcePositionLocator.findNode(cpc.getRootNode(), start, end);
+            Node node = findNode(cpc.getRootNode(), start, end);
             if (node==null) {
                 node = cpc.getRootNode();
             }
