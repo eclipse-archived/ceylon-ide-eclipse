@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
+
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.CoreException;
@@ -24,24 +26,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class InlineRefactoring extends AbstractRefactoring {
 	private final Declaration declaration;
 	private boolean delete = true;
-	private int count = 0;
 
 	public InlineRefactoring(ITextEditor editor) {
 	    super(editor);
-
-		declaration = CeylonReferenceResolver.getReferencedDeclaration(node);
-        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-            pu.getCompilationUnit().visit(frv);
-            count += frv.getNodes().size();
-        }
+		declaration = getReferencedDeclaration(node);
 	}
 	
 	@Override
@@ -57,7 +51,18 @@ public class InlineRefactoring extends AbstractRefactoring {
 	}
 	
 	public int getCount() {
-		return count;
+        if (declaration==null) {
+            return 0; 
+        }
+        else {
+            int count = 0;
+            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+                pu.getCompilationUnit().visit(frv);
+                count += frv.getNodes().size();
+            }
+            return count;
+        }
 	}
 
 	public String getName() {

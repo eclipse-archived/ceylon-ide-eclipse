@@ -39,22 +39,13 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	private String newName;
 	private final Declaration declaration;
-	private int count = 0;
 
 	public RenameRefactoring(ITextEditor editor) {
 	    super(editor);
-	    
 		Declaration refDec = getReferencedDeclaration(node);
 		if (refDec!=null) {
             declaration = refDec.getRefinedDeclaration();
     		newName = declaration.getName();
-            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
-                pu.getCompilationUnit().visit(frv);
-                pu.getCompilationUnit().visit(fdv);
-                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
-            }
 		}
 		else {
 		    declaration = null;
@@ -67,7 +58,20 @@ public class RenameRefactoring extends AbstractRefactoring {
 	}
 	
 	public int getCount() {
-		return count;
+	    if (declaration==null) {
+	        return 0;
+	    }
+	    else {
+            int count = 0;
+            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+                pu.getCompilationUnit().visit(frv);
+                pu.getCompilationUnit().visit(fdv);
+                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+            }
+    		return count;
+	    }
 	}
 
 	public String getName() {
