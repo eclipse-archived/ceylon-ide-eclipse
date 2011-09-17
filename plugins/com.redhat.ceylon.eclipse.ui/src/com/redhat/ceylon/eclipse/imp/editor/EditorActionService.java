@@ -31,6 +31,14 @@ import org.eclipse.ui.texteditor.TextNavigationAction;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
+/**
+ * Responsible for registering actions that handle 
+ * ALT-arrow navigation. This and related classes 
+ * are a massive copy/paste job from JDT.
+ * 
+ * @author gavin
+ *
+ */
 public class EditorActionService extends EditorServiceBase {
     
     @Override
