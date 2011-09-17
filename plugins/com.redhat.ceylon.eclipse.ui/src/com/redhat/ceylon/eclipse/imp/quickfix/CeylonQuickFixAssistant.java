@@ -106,7 +106,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addCreateMemberProposals(cu, node, problem, proposals, project);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
-                    addImportProposals(proposals, node, file, tc);
+                    addImportProposals(cu, node, proposals, file, tc);
                 }
                 break;
             }
@@ -314,33 +314,46 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         };
     }
     
-    private void addImportProposals(Collection<ICompletionProposal> proposals, Node node, IFile file, TypeChecker tc) {
+    private void addImportProposals(Tree.CompilationUnit cu, Node node,
+            Collection<ICompletionProposal> proposals, IFile file,
+            TypeChecker tc) {
         String brokenName = getIdentifyingNode(node).getText();
 
-        for (Declaration decl : findImportCandidates(tc.getContext(), brokenName)) {
-            proposals.add(createImportProposal(file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+        Collection<Declaration> candidates = findImportCandidates(cu, tc.getContext(), brokenName);
+        for (Declaration decl : candidates) {
+            proposals.add(createImportProposal(
+                    file, decl.getContainer().getQualifiedNameString(), decl.getName()));
         }
-	}
+    }
 
-	private static Collection<Declaration> findImportCandidates(Context context, String name) {
-		List<Declaration> result = new ArrayList<Declaration>();
-		for (Module module : context.getModules().getListOfModules()) {
-			for (Package pkg : module.getAllPackages()) {
-				Declaration member = pkg.getMember(name);
-				if (member != null) {
-					result.add(member);
-				}
-			}
-		}
-		return result;
-	}
+    private static Collection<Declaration> findImportCandidates(
+            Tree.CompilationUnit cu, Context context, String name) {
+        List<Declaration> result = new ArrayList<Declaration>();
+        Module currentModule = cu.getUnit().getPackage().getModule();
 
-	private ICompletionProposal createImportProposal(IFile file, String packageName, String declaration) {
+        addImportProposalsForModule(result, currentModule, name);
+        for (Module module : currentModule.getDependencies()) {
+            addImportProposalsForModule(result, module, name);
+        }
+
+        return result;
+    }
+
+    private static void addImportProposalsForModule(List<Declaration> output,
+            Module module, String name) {
+        for (Package pkg : module.getAllPackages()) {
+            Declaration member = pkg.getMember(name);
+            if (member != null) {
+                output.add(member);
+            }
+        }
+    }
+
+    private ICompletionProposal createImportProposal(IFile file,
+            String packageName, String declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
-
         change.setEdit(new InsertEdit(0, "import " + packageName + " { " + declaration + " }\n"));
-
         return new ChangeCorrectionProposal("Import " + packageName + "." + declaration, change, 50, null);
-	}
+    }
 
 }
