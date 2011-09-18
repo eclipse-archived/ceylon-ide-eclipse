@@ -92,13 +92,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
         char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
         char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
-        boolean isOpening = endOfLastLineChar=='{' && startOfNewLineChar!='}';
-        boolean isClosing = startOfNewLineChar=='}' && lastNonWhitespaceChar!='{';
-        boolean isContinuation = startOfNewLineChar!='{' && startOfNewLineChar!='}' &&
-                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'; //TODO: improve this 'cos should check tabs vs spaces
         StringBuilder buf = new StringBuilder(c.text);
-        appendIndent(d, isContinuation, isOpening, isClosing, false,
-                getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), buf);
+        appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
+                startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
+                false, buf);
         c.text = buf.toString();
     }
     
@@ -108,8 +105,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         int end = getEndOfCurrentLine(d, c);
         int endOfWs = firstEndOfWhitespace(d, start, end);
         if (c.offset<endOfWs || 
-                endOfWs==start && c.offset==endOfWs) { //TODO: this is bad, but required for IMP's Correct Indent support
-            if (start==0) {
+                c.offset==start && c.shiftsCaret==false) { //Test for IMP's "Correct Indent"
+            if (start==0) { //Start of file
                 c.text="";
                 c.offset=start;
                 c.length=0;
@@ -121,14 +118,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
                         getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
                 char startOfCurrentLineChar = c.text.equals("{") ? '{' : getNextNonWhitespaceCharacter(d, start);
-                boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
-                        lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
                 boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev; //TODO: improve this 'cos should check tabs vs spaces
-                boolean isBeginning = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
-                boolean isEnding = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
                 StringBuilder buf = new StringBuilder();
-                appendIndent(d, isContinuation, isBeginning, isEnding, correctContinuation, 
-                        startOfPrev, endOfPrev, buf);
+                appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
+                        lastNonWhitespaceChar, correctContinuation, buf);
                 if (c.text.equals("{")) {
                     buf.append("{");
                 }
@@ -137,6 +130,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 c.length=endOfWs-start;
             }
         }
+    }
+
+    private void appendIndent(IDocument d, int startOfPrev, int endOfPrev,
+            char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
+            boolean correctContinuation, StringBuilder buf) throws BadLocationException {
+        boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
+                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
+        boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
+        boolean isClosing = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
+        appendIndent(d, isContinuation, isOpening, isClosing, correctContinuation, 
+                startOfPrev, endOfPrev, buf);
     }
 
     protected void reduceIndent(DocumentCommand c) {
