@@ -104,7 +104,7 @@ public class EditorAnnotationService extends EditorServiceBase {
             Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 
-                        node.getStopIndex()-node.getStartIndex(), false);
+                        node.getStopIndex()-node.getStartIndex()+1, false);
             }
             else {
                 editor.resetHighlightRange();
