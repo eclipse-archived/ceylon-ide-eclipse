@@ -94,11 +94,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
         boolean isOpening = endOfLastLineChar=='{' && startOfNewLineChar!='}';
         boolean isClosing = startOfNewLineChar=='}' && lastNonWhitespaceChar!='{';
+        boolean isContinuation = startOfNewLineChar!='{' && startOfNewLineChar!='}' &&
+                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'; //TODO: improve this 'cos should check tabs vs spaces
         StringBuilder buf = new StringBuilder(c.text);
-        boolean isContinuation = false;
-        //TODO: if the last line is an indented continuation, and the next line is
-        //      also a continuation, pass "true"
-        appendIndent(d, isContinuation, isOpening, isClosing, 
+        appendIndent(d, isContinuation, isOpening, isClosing, false,
                 getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), buf);
         c.text = buf.toString();
     }
@@ -122,13 +121,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
                         getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
                 char startOfCurrentLineChar = c.text.equals("{") ? '{' : getNextNonWhitespaceCharacter(d, start);
-                boolean isContinuation = startOfCurrentLineChar!='{' &&
-                        lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{' &&
-                        endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev; //TODO: improve this 'cos should check tabs vs spaces
+                boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
+                        lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
+                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev; //TODO: improve this 'cos should check tabs vs spaces
                 boolean isBeginning = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
                 boolean isEnding = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
                 StringBuilder buf = new StringBuilder();
-                appendIndent(d, isContinuation, isBeginning, isEnding, startOfPrev, endOfPrev, buf);
+                appendIndent(d, isContinuation, isBeginning, isEnding, correctContinuation, 
+                        startOfPrev, endOfPrev, buf);
                 if (c.text.equals("{")) {
                     buf.append("{");
                 }
@@ -189,16 +189,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }*/
     
     private void appendIndent(IDocument d, boolean isContinuation, boolean isBeginning,
-            boolean isEnding, int start, int end, StringBuilder buf) 
-                    throws BadLocationException {
-        String indent = getIndent(d, start, end );
+            boolean isEnding,  boolean correctContinuation, int start, int end,
+            StringBuilder buf) throws BadLocationException {
+        String indent = getIndent(d, start, end, isContinuation&&!correctContinuation);
         if (!indent.isEmpty()) {
             buf.append(indent);
             if (isBeginning) {
                 //increment the indent level
                 incrementIndent(buf, indent);
             }
-            else if (isContinuation) {
+            else if (isContinuation&&correctContinuation) {
                 incrementIndent(buf, indent);
                 incrementIndent(buf, indent);
             }
@@ -207,7 +207,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             if (isBeginning) {
                 initialIndent(buf);
             }
-            else if (isContinuation) {
+            else if (isContinuation&&correctContinuation) {
                 initialIndent(buf);
                 initialIndent(buf);
             }
@@ -218,9 +218,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    private String getIndent(IDocument d, int start, int end) 
+    private String getIndent(IDocument d, int start, int end, boolean isUncorrectedContinuation) 
             throws BadLocationException {
-        while (true) {
+        if (!isUncorrectedContinuation) while (true) {
             //System.out.println(d.get(start, end-start));
             if (start==0) {
                 return "";
