@@ -300,6 +300,12 @@
             name="Find Subtypes">
        </command>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Clean unused imports from current file"
+            name="Clean Imports">
+       </command>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Rename selected declaration"
@@ -351,6 +357,10 @@
        <key
            sequence="CTRL+ALT+S"
            commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+       <key
+           sequence="CTRL+COMMAND+C"
+           commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
            sequence="CTRL+COMMAND+R"
@@ -448,6 +458,12 @@
             locationURI="menu:refactorMenuId">
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+            <separator 
+                  visible="true"
+                  name="sep"/>
+            <command id="cleanImports"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+                  label="Clean Imports"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?before=refactorMenuId">
@@ -464,9 +480,15 @@
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             <separator 
                   visible="true"
-                  name="sep"/>
+                  name="sepBefore"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+            <separator 
+                  visible="true"
+                  name="sepAfter"/>
+            <command id="cleanImports"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+                  label="Clean Imports"/>
       </menuContribution>
    </extension>
    <extension
@@ -486,6 +508,10 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes">
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports">
       </handler>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
