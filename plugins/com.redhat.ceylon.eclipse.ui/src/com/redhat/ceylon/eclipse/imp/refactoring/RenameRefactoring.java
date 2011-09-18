@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -92,7 +94,10 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
         CompositeChange cc = new CompositeChange("Rename");
-        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+        List<PhasedUnit> units = CeylonBuilder.getUnits(project);
+        pm.beginTask("Rename", units.size());
+        int i=0;
+        for (PhasedUnit pu: units) {
     		TextFileChange tfc = new TextFileChange("Rename", CeylonBuilder.getFile(pu));
     		tfc.setEdit(new MultiTextEdit());
     		if (declaration!=null) {
@@ -110,7 +115,9 @@ public class RenameRefactoring extends AbstractRefactoring {
     		if (tfc.getEdit().hasChildren()) {
     		    cc.add(tfc);
     		}
+    		pm.worked(i++);
         }
+        pm.done();
 		return cc;
 	}
 
