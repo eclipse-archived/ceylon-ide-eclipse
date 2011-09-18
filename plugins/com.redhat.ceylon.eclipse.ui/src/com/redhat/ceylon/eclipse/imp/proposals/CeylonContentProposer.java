@@ -567,17 +567,19 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
-            String typeName = td.getType().getProducedTypeName();
-            if (d instanceof Method) {
-                if (typeName.equals("Void")) { //TODO: fix this!
-                    result.append("void");
+            if (td.getType()!=null) {
+                String typeName = td.getType().getProducedTypeName();
+                if (d instanceof Method) {
+                    if (typeName.equals("Void")) { //TODO: fix this!
+                        result.append("void");
+                    }
+                    else {
+                        result.append(typeName);
+                    }
                 }
                 else {
                     result.append(typeName);
                 }
-            }
-            else {
-                result.append(typeName);
             }
         }
         result.append(" ").append(d.getName());
