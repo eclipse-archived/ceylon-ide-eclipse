@@ -86,24 +86,56 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                }
        }
     }
-
-    protected void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
+    
+    private void indentNewLine(IDocument d, DocumentCommand c)
+            throws BadLocationException {
+        char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
+        char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
+        char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
+        boolean isOpening = endOfLastLineChar=='{' && startOfNewLineChar!='}';
+        boolean isClosing = startOfNewLineChar=='}' && lastNonWhitespaceChar!='{';
+        StringBuilder buf = new StringBuilder(c.text);
+        boolean isContinuation = false;
+        //TODO: if the last line is an indented continuation, and the next line is
+        //      also a continuation, pass "true"
+        appendIndent(d, isContinuation, isOpening, isClosing, 
+                getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), buf);
+        c.text = buf.toString();
+    }
+    
+    private void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         int start = getStartOfCurrentLine(d, c);
-        int endOfWs = findEndOfWhiteSpace(d, c);
-        if (c.offset<=endOfWs) {
+        int end = getEndOfCurrentLine(d, c);
+        int endOfWs = firstEndOfWhitespace(d, start, end);
+        if (c.offset<endOfWs || 
+                endOfWs==start && c.offset==endOfWs) { //TODO: this is bad, but required for IMP's Correct Indent support
             if (start==0) {
                 c.text="";
+                c.offset=start;
+                c.length=0;
             }
             else {
-                c.offset = getEndOfPreviousLine(d, c);
-                indentNewLine(d, c);
-                if (d.getChar(endOfWs)=='}') {
-                    reduceIndent(c);
+                int endOfPrev = getEndOfPreviousLine(d, c);
+                int startOfPrev = getStartOfPreviousLine(d, c);
+                char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
+                char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
+                        getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
+                char startOfCurrentLineChar = c.text.equals("{") ? '{' : getNextNonWhitespaceCharacter(d, start);
+                boolean isContinuation = startOfCurrentLineChar!='{' &&
+                        lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{' &&
+                        endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev; //TODO: improve this 'cos should check tabs vs spaces
+                boolean isBeginning = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
+                boolean isEnding = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
+                StringBuilder buf = new StringBuilder();
+                appendIndent(d, isContinuation, isBeginning, isEnding, startOfPrev, endOfPrev, buf);
+                if (c.text.equals("{")) {
+                    buf.append("{");
                 }
+                c.text = buf.toString();
+                c.offset=start;
+                c.length=endOfWs-start;
             }
-            c.offset=start;
-            c.length=endOfWs-start;
         }
     }
 
@@ -141,10 +173,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    /*private int getStartOfPreviousLine(IDocument d, DocumentCommand c)
+    private int getStartOfPreviousLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         return getStartOfPreviousLine(d, c.offset);
-    }*/
+    }
 
     private int getStartOfPreviousLine(IDocument d, int offset) 
             throws BadLocationException {
@@ -156,26 +188,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return d.getLineOffset(d.getLineOfOffset(offset)+1);
     }*/
     
-    private void indentNewLine(IDocument d, DocumentCommand c)
-            throws BadLocationException {
-        boolean isCorrection = c.text.equals("{")
-                || c.text.equals("\t")
-                || getIndentWithSpaces() && isIndent(c.text);
-        char terminator1 = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
-        char terminator2 = getPreviousNonWhitespaceCharacter(d, c.offset-1);
-        //char terminator2 = getNextNonWhitespaceCharacterInLine(d, getStartOfPreviousLine(d, c.offset));
-        //char terminator2 = getLastNonWhitespaceCharacterInLine(d, getStartOfPreviousLine(d, c.offset), getEndOfPreviousLine(d, c.offset));
-        char initiator1 = getNextNonWhitespaceCharacterInLine(d, c.offset);
-        char initiator2 = isCorrection ? 
-                getNextNonWhitespaceCharacter(d, c.offset) : initiator1;
-        boolean isContinuation = terminator1!=';' && terminator1!='}' && terminator1!='{' &&
-                terminator1!='\n' && //ahem, ugly "null"
-                initiator2!='{' &&
-                !c.text.equals("{");
-        boolean isBeginning = terminator1=='{' && initiator1!='}';
-        boolean isEnding = initiator1=='}' && terminator2!='{';
-        StringBuilder buf = new StringBuilder(isCorrection?"":c.text);
-        String indent = getIndent(d, c);
+    private void appendIndent(IDocument d, boolean isContinuation, boolean isBeginning,
+            boolean isEnding, int start, int end, StringBuilder buf) 
+                    throws BadLocationException {
+        String indent = getIndent(d, start, end );
         if (!indent.isEmpty()) {
             buf.append(indent);
             if (isBeginning) {
@@ -200,14 +216,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             decrementIndent(buf, indent);
             if (isContinuation) decrementIndent(buf, indent);
         }
-        if (c.text.equals("{")) buf.append("{");
-        c.text = buf.toString();
     }
 
-    private String getIndent(IDocument d, DocumentCommand c) 
+    private String getIndent(IDocument d, int start, int end) 
             throws BadLocationException {
-        int start = getStartOfCurrentLine(d, c);
-        int end = getEndOfCurrentLine(d, c);
         while (true) {
             //System.out.println(d.get(start, end-start));
             if (start==0) {
@@ -362,13 +374,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return result.toString();
     }
     
-    private int findEndOfWhiteSpace(IDocument d, DocumentCommand c) 
-            throws BadLocationException {
-        int offset = getStartOfCurrentLine(d, c);
-        int end = getEndOfCurrentLine(d, c);
-        return firstEndOfWhitespace(d, offset, end);
-    }
-
     /**
      * Returns the first offset greater than <code>offset</code> and smaller than
      * <code>end</code> whose character is not a space or tab character. If no such
