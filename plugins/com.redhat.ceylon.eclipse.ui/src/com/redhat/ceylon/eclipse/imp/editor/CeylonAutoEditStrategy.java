@@ -72,11 +72,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-
        switch (c.text.charAt(0)) {
            case '}':
                reduceIndentOfCurrentLine(d, c);
                break;
+           case '{':
            case '\t':
                fixIndentOfCurrentLine(d, c);
                break;
@@ -89,7 +89,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     protected void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-        int spaces = getIndentSpaces();
         int start = getStartOfCurrentLine(d, c);
         int endOfWs = findEndOfWhiteSpace(d, c);
         if (c.offset<=endOfWs) {
@@ -98,26 +97,27 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
             else {
                 c.offset = getEndOfPreviousLine(d, c);
-                c.text = "";
                 indentNewLine(d, c);
                 if (d.getChar(endOfWs)=='}') {
-                    if (endsWithSpaces(c.text, spaces)) {
-                        c.text = c.text.substring(0, c.text.length()-spaces);
-                    }
-                    else if (c.text.endsWith("\t")) {
-                        c.text = c.text.substring(0, c.text.length()-1);
-                    }
+                    reduceIndent(c);
                 }
             }
             c.offset=start;
             c.length=endOfWs-start;
-            /*if (c.text.length()==c.length) {
-                c.text+='\t';
-            }*/
         }
     }
 
-    protected void reduceIndentOfCurrentLine(IDocument d, DocumentCommand c)
+    protected void reduceIndent(DocumentCommand c) {
+        int spaces = getIndentSpaces();
+        if (endsWithSpaces(c.text, spaces)) {
+            c.text = c.text.substring(0, c.text.length()-spaces);
+        }
+        else if (c.text.endsWith("\t")) {
+            c.text = c.text.substring(0, c.text.length()-1);
+        }
+    }
+
+    private void reduceIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         int spaces = getIndentSpaces();
         if (endsWithSpaces(d.get(c.offset-spaces, spaces),spaces)) {
@@ -127,6 +127,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         else if (d.get(c.offset-1,1).equals("\t")) {
             c.offset = c.offset-1;
             c.length = 1;
+        }
+    }
+
+    private void decrementIndent(StringBuilder buf, String indent)
+            throws BadLocationException {
+        int spaces = getIndentSpaces();
+        if (endsWithSpaces(indent,spaces)) {
+            buf.setLength(buf.length()-spaces);
+        }
+        else if (indent.endsWith("\t")) {
+            buf.setLength(buf.length()-1);
         }
     }
 
@@ -140,28 +151,44 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return d.getLineOffset(d.getLineOfOffset(offset)-1);
     }
     
+    /*private int getStartOfNextLine(IDocument d, int offset) 
+            throws BadLocationException {
+        return d.getLineOffset(d.getLineOfOffset(offset)+1);
+    }*/
+    
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-        StringBuilder buf = new StringBuilder(c.text);
-        char terminator = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
-        boolean isContinuation = terminator!=';' && terminator!='}' && terminator!='{' &&
-                        terminator!='\n'; //ahem, ugly "null"
+        boolean isCorrection = c.text.equals("{")
+                || c.text.equals("\t")
+                || getIndentWithSpaces() && isIndent(c.text);
+        char terminator1 = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
+        char terminator2 = getPreviousNonWhitespaceCharacter(d, c.offset-1);
+        //char terminator2 = getNextNonWhitespaceCharacterInLine(d, getStartOfPreviousLine(d, c.offset));
+        //char terminator2 = getLastNonWhitespaceCharacterInLine(d, getStartOfPreviousLine(d, c.offset), getEndOfPreviousLine(d, c.offset));
+        char initiator1 = getNextNonWhitespaceCharacterInLine(d, c.offset);
+        char initiator2 = isCorrection ? 
+                getNextNonWhitespaceCharacter(d, c.offset) : initiator1;
+        boolean isContinuation = terminator1!=';' && terminator1!='}' && terminator1!='{' &&
+                terminator1!='\n' && //ahem, ugly "null"
+                initiator2!='{' &&
+                !c.text.equals("{");
+        boolean isBeginning = terminator1=='{' && initiator1!='}';
+        boolean isEnding = initiator1=='}' && terminator2!='{';
+        StringBuilder buf = new StringBuilder(isCorrection?"":c.text);
         String indent = getIndent(d, c);
         if (!indent.isEmpty()) {
             buf.append(indent);
-            if (terminator=='{') {
+            if (isBeginning) {
                 //increment the indent level
                 incrementIndent(buf, indent);
             }
-            else {
-                if (isContinuation) {
-                    incrementIndent(buf, indent);
-                    incrementIndent(buf, indent);
-                }
+            else if (isContinuation) {
+                incrementIndent(buf, indent);
+                incrementIndent(buf, indent);
             }
         }
         else {
-            if (terminator=='{') {
+            if (isBeginning) {
                 initialIndent(buf);
             }
             else if (isContinuation) {
@@ -169,6 +196,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 initialIndent(buf);
             }
         }
+        if (isEnding) {
+            decrementIndent(buf, indent);
+            if (isContinuation) decrementIndent(buf, indent);
+        }
+        if (c.text.equals("{")) buf.append("{");
         c.text = buf.toString();
     }
 
@@ -182,6 +214,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 return "";
             }
             else {
+                char ch1 = getNextNonWhitespaceCharacterInLine(d, start);
+                if (ch1=='}') break;
                 int startOfPrev = getStartOfPreviousLine(d, start); 
                 int endOfPrev = getEndOfPreviousLine(d, start);
                 char ch = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
@@ -218,12 +252,46 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
     
+    private char getPreviousNonWhitespaceCharacter(IDocument d, int offset)
+            throws BadLocationException {
+        for (;offset>=0; offset--) {
+            String ch = d.get(offset,1);
+            if (!isWhitespace(ch.charAt(0))) {
+                return ch.charAt(0);
+            }
+        }
+        return '\n';
+    }
+
     private char getPreviousNonWhitespaceCharacterInLine(IDocument d, int offset)
             throws BadLocationException {
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) ||
                     isLineEnding(d, ch)) {
+                return ch.charAt(0);
+            }
+        }
+        return '\n';
+    }
+
+    private char getNextNonWhitespaceCharacterInLine(IDocument d, int offset)
+            throws BadLocationException {
+        for (;offset<d.getLength(); offset++) {
+            String ch = d.get(offset,1);
+            if (!isWhitespace(ch.charAt(0)) ||
+                    isLineEnding(d, ch)) {
+                return ch.charAt(0);
+            }
+        }
+        return '\n';
+    }
+
+    private char getNextNonWhitespaceCharacter(IDocument d, int offset)
+            throws BadLocationException {
+        for (;offset<d.getLength(); offset++) {
+            String ch = d.get(offset,1);
+            if (!isWhitespace(ch.charAt(0))) {
                 return ch.charAt(0);
             }
         }
