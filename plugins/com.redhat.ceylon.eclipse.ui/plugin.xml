@@ -236,9 +236,6 @@
       <quickFixAssistant
             class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
             language="ceylon">
-            <!--TODO: actually which one of these is correct? -->
-         <supportedMarkerType
-               markerType="org.eclipse.imp.editor.parseAnnotation.error"/>
          <supportedMarkerType
                markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
       </quickFixAssistant>
