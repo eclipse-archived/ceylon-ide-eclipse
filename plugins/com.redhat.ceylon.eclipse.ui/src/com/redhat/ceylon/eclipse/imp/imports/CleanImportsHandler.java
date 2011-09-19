@@ -38,53 +38,55 @@ public class CleanImportsHandler extends AbstractHandler {
         tfc.setEdit(new MultiTextEdit());
         List<Tree.Import> importList = new ArrayList<Tree.Import>();
         ImportList til = cu.getImportList();
-        importList.addAll(til.getImports());
-        Collections.sort(importList, new Comparator<Tree.Import>() {
-            @Override
-            public int compare(Tree.Import i1, Tree.Import i2) {
-                return packageName(i1).compareTo(packageName(i2));
-            }
-        });
-        StringBuilder builder = new StringBuilder();
-        for (Tree.Import ti: importList) {
-            List<Import> list = new ArrayList<Import>();
-            for (Import i: ti.getImportList().getImports()) {
-                if (!duiv.getResult().contains(i.getDeclaration())) {
-                    list.add(i);
+        if (til!=null && til.getStartIndex()!=null && til.getStopIndex()!=null) {
+            importList.addAll(til.getImports());
+            Collections.sort(importList, new Comparator<Tree.Import>() {
+                @Override
+                public int compare(Tree.Import i1, Tree.Import i2) {
+                    return packageName(i1).compareTo(packageName(i2));
                 }
-            }
-            if (!list.isEmpty()) {
-                builder.append("import ")
-                        .append(packageName(ti))
-                        .append(" { ");
-                for (Import i: list) {
-                    if ( !i.getAlias().equals(i.getDeclaration().getName()) ) {
-                        builder.append(i.getAlias()).append("=");
+            });
+            StringBuilder builder = new StringBuilder();
+            for (Tree.Import ti: importList) {
+                List<Import> list = new ArrayList<Import>();
+                for (Import i: ti.getImportList().getImports()) {
+                    if (!duiv.getResult().contains(i.getDeclaration())) {
+                        list.add(i);
                     }
-                    builder.append(i.getDeclaration().getName())
-                            .append(", ");
                 }
-                /*if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
-                    builder.append(" ... ");
-                }*/
-                builder.setLength(builder.length()-2);
-                builder.append(" }\n");
+                if (!list.isEmpty()) {
+                    builder.append("import ")
+                            .append(packageName(ti))
+                            .append(" { ");
+                    for (Import i: list) {
+                        if ( !i.getAlias().equals(i.getDeclaration().getName()) ) {
+                            builder.append(i.getAlias()).append("=");
+                        }
+                        builder.append(i.getDeclaration().getName())
+                                .append(", ");
+                    }
+                    /*if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
+                        builder.append(" ... ");
+                    }*/
+                    builder.setLength(builder.length()-2);
+                    builder.append(" }\n");
+                }
             }
-        }
-        tfc.addEdit(new ReplaceEdit(til.getStartIndex(), 
-                til.getStopIndex()-til.getStartIndex()+1, 
-                builder.toString()));
-        /*for (ImportMemberOrType imt: duiv.getResult()) {
-            tfc.addEdit( new DeleteEdit(imt.getStartIndex(), 
-                    imt.getStopIndex()-imt.getStartIndex()+1) );
-        }*/
-        tfc.initializeValidationData(null);
-        try {
-            ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tfc), 
-                    new NullProgressMonitor());
-        }
-        catch (CoreException ce) {
-            throw new ExecutionException("Error cleaning imports", ce);
+            tfc.addEdit(new ReplaceEdit(til.getStartIndex(), 
+                    til.getStopIndex()-til.getStartIndex()+1, 
+                    builder.toString()));
+            /*for (ImportMemberOrType imt: duiv.getResult()) {
+                tfc.addEdit( new DeleteEdit(imt.getStartIndex(), 
+                        imt.getStopIndex()-imt.getStartIndex()+1) );
+            }*/
+            tfc.initializeValidationData(null);
+            try {
+                ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tfc), 
+                        new NullProgressMonitor());
+            }
+            catch (CoreException ce) {
+                throw new ExecutionException("Error cleaning imports", ce);
+            }
         }
         return null;
     }
