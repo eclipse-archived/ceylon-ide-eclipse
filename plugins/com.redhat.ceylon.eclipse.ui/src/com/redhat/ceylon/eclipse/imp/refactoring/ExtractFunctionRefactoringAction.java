@@ -18,5 +18,10 @@ public class ExtractFunctionRefactoringAction extends AbstractRefactoringAction 
     public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
         return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring);
     }
+    
+    @Override
+    String message() {
+        return "No expression selected";
+    }
 
 }

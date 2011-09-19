@@ -25,10 +25,13 @@ abstract class AbstractRefactoringAction extends TextEditorAction {
 	    }
 	    else {
             MessageDialog.openWarning(getTextEditor().getEditorSite().getShell(), 
-                    "Ceylon Find Error", "No declaration name selected");
+                    "Ceylon Find Error", message());
 	    }
 	}
 	
 	abstract AbstractRefactoring createRefactoring();
 	abstract RefactoringWizard createWizard(AbstractRefactoring refactoring);
+	
+	abstract String message();
+	
 }
