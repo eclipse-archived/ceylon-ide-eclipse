@@ -25,7 +25,49 @@
    </extension>
    
    <extension
-         id="ceylon-ide.parser"
+         id="ceylonNature"
+         name="Ceylon Nature"
+         point="org.eclipse.core.resources.natures">
+      <builder
+            id="com.redhat.ceylon.eclipse.ui.ceylonBuilder"/>
+      <runtime>
+         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonNature"/>
+      </runtime>
+   </extension>
+   
+   <extension
+         id="ceylonBuilder"
+         name="Ceylon Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder"/>
+      </builder>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.jdt.core.IJavaProject"
+            adaptable="true"
+            nameFilter="*"
+            id="com.redhat.ceylon.eclipse.ui.projectContextMenu">
+         <action
+               label="Enable Ceylon Builder"
+               tooltip="Enable the ceylon builder for this project"
+               class="com.redhat.ceylon.eclipse.imp.builder.EnableCeylonNature"
+               id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"/>
+      </objectContribution>
+   </extension>
+   
+   <extension
+         id="ceylonProblem"
+         name="Ceylon Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
          name="Ceylon Parser"
          point="org.eclipse.imp.runtime.parser">
       <parser
@@ -52,49 +94,6 @@
       <labelProvider
             class="com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider"
             language="ceylon"/>
-   </extension>
-   
-   <extension
-         id="ceylon.imp.builder"
-         name="Ceylon Builder"
-         point="org.eclipse.core.resources.builders">
-      <builder>
-         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder"/>
-      </builder>
-   </extension>
-   
-   <extension
-         id="imp.nature"
-         name="Ceylon Nature"
-         point="org.eclipse.core.resources.natures">
-      <builder
-            id="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder"/>
-      <runtime>
-         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonNature"/>
-      </runtime>
-   </extension>
-   
-   <extension
-         id="ceylon.imp.builder.problem"
-         name="Ceylon Error"
-         point="org.eclipse.core.resources.markers">
-      <super type="org.eclipse.core.resources.problemmarker"/>
-      <persistent value="true"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.jdt.core.IJavaProject"
-            adaptable="true"
-            nameFilter="*"
-            id="ceylon.imp.projectContextMenu">
-         <action
-               label="Enable Ceylon Builder"
-               tooltip="Enable the ceylon builder for this project"
-               class="com.redhat.ceylon.eclipse.imp.builder.EnableCeylonNature"
-               id="ceylon.imp.actions.enableNatureAction"/>
-      </objectContribution>
    </extension>
    
    <extension
@@ -133,7 +132,6 @@
    </extension>
    
    <extension
-         id="com.redhat.ceylon.ui.searchResults"
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
             class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchResultPage"
@@ -144,7 +142,7 @@
    <extension
          point="org.eclipse.search.searchPages">
       <page
-            id="org.redhat.ceylon.ui.searchPage"
+            id="com.redhat.ceylon.eclipse.ui.searchPage"
             class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchDialogPage"
             canSearchEnclosingProjects="true"
             enabled="true"
@@ -234,15 +232,15 @@
    </extension>
    
    <extension
-         id="com.redhat.ceylon.eclipse.imp.quickfix"
          point="org.eclipse.imp.runtime.quickFixAssistant">
       <quickFixAssistant
             class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
             language="ceylon">
+            <!--TODO: actually which one of these is correct? -->
          <supportedMarkerType
                markerType="org.eclipse.imp.editor.parseAnnotation.error"/>
          <supportedMarkerType
-               markerType="com.redhat.ceylon.eclipse.ui.ceylon.imp.builder.problem"/>
+               markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
       </quickFixAssistant>
    </extension>
    
@@ -254,8 +252,7 @@
    </extension>
    
    <extension
-         point="org.eclipse.imp.runtime.compareNodeIdentifier"
-         id="com.redhat.ceylon.eclipse.imp.compare">
+         point="org.eclipse.imp.runtime.compareNodeIdentifier">
       <compareNodeIdentifier 
             language="ceylon"
             class="com.redhat.ceylon.eclipse.imp.compare.CeylonCompareNodeIdentifier"/>
@@ -266,14 +263,14 @@
        <structureCreator
            extensions="ceylon"
            class="org.eclipse.imp.compare.ModelStructureCreator"
-           id="com.redhat.ceylon.eclipse.imp.compare"/>
+           id="com.redhat.ceylon.eclipse.ui.compare"/>
    </extension>
    
    <extension
          point="org.eclipse.ui.perspectiveExtensions"> 
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
-            <actionSet id="com.redhat.ceylon.eclipse.imp.actionSet"/>
+            <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
         </perspectiveExtension>
    </extension>
    
@@ -281,29 +278,28 @@
          point="org.eclipse.ui.editorActions">
       <editorContribution
             targetID="org.eclipse.imp.runtime.impEditor"
-            id="com.redhat.ceylon.eclipse.imp.editorActionContributions.ruler">
+            id="com.redhat.ceylon.eclipse.ui.rulerActions">
          <action
                label="Select Ruler"
                class="com.redhat.ceylon.eclipse.imp.editor.SelectRulerAction"
                actionID="RulerClick"
-               id="com.redhat.ceylon.eclipse.imp.editorActionContributions.SelectRulerAction"/>
+               id="com.redhat.ceylon.eclipse.ui.action.selectRuler"/>
       </editorContribution>
    </extension>
    
    <extension
-         id="com.redhat.ceylon.eclipse.imp.actionSet"
          point="org.eclipse.ui.actionSets">
       <!-- We need to use an action set here because the Eclipse search menu doesn't
            support contributions from the org.eclipse.ui.menus contribution point. -->
       <actionSet
             label="Ceylon Actions"
-            id="com.redhat.ceylon.eclipse.imp.actionSet">
+            id="com.redhat.ceylon.eclipse.ui.actionSet">
          <action
                label="Ceylon..."
                icon="icons/find_obj.gif"
                class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
                menubarPath="org.eclipse.search.menu/dialogGroup"
-               id="com.redhat.ceylon.eclipse.imp.search.ceylonSearch"
+               id="com.redhat.ceylon.eclipse.ui.action.ceylonSearchMenu"
                definitionId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
       </actionSet>
    </extension>
