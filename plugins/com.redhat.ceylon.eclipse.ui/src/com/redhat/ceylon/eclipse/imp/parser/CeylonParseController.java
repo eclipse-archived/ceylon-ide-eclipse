@@ -13,11 +13,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.IPathEntry.PathEntryType;
@@ -165,8 +162,9 @@ public class CeylonParseController extends ParseControllerBase {
                 }
             }
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            if (typeChecker == null)
-            {
+            if (typeChecker == null) return fCurrentAst;
+            //Disable for now, since it causes build to loop sometimes
+            /*{
                 //Note: this is now pretty much obsolete, since
                 //      we now do a full build at at startup
                 try {
@@ -177,7 +175,7 @@ public class CeylonParseController extends ParseControllerBase {
                 catch (CoreException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
         }
 
         if (srcDir==null || typeChecker == null) {
