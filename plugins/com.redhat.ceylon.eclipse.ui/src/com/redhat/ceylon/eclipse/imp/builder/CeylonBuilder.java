@@ -14,9 +14,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.imp.builder.BuilderBase;
 import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.language.Language;
@@ -276,13 +279,7 @@ public class CeylonBuilder extends BuilderBase {
     }
 
     private void addTaskMarkers(IFile file, CommonTokenStream tokens) {
-        //TODO: need our own marker type
-        try {
-            file.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
-        }
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
+        //clearTaskMarkersOnFile(file);
         for (CommonToken token: (List<CommonToken>) tokens.getTokens()) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
                 int priority = priority(token);
@@ -301,6 +298,59 @@ public class CeylonBuilder extends BuilderBase {
         }
     }
 
+    private void clearTaskMarkersOnFile(IFile file) {
+        try {
+            file.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void clearMarkersOn(IFile file) {
+        clearTaskMarkersOnFile(file);
+        super.clearMarkersOn(file);
+    }
+    
+    private class AllSourcesVisitor implements IResourceVisitor {
+        private final Collection<IFile> fResult;
+
+        public AllSourcesVisitor(Collection<IFile> result) {
+            fResult= result;
+        }
+
+        public boolean visit(IResource resource) throws CoreException {
+            if (resource instanceof IFile) {
+                IFile file= (IFile) resource;
+
+                if (file.exists()) {
+                    if (isSourceFile(file) || isNonRootSourceFile(file)) {
+                        fResult.add(file);
+                    }
+                }
+                return false;
+            } 
+            else if (isOutputFolder(resource)) {
+                return false;
+            }
+            return true;
+        }
+    }
+    
+    @Override
+    protected void clean(IProgressMonitor monitor) throws CoreException {
+        super.clean(monitor);
+        Collection<IFile> allSources= new ArrayList<IFile>();
+        try {
+            getProject().accept(new AllSourcesVisitor(allSources));
+        } 
+        catch (CoreException e) {
+            getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
+        }
+        clearMarkersOn(allSources);
+    }
+    
     public static IFile getFile(PhasedUnit phasedUnit) {
         return (IFile) ((ResourceVirtualFile) phasedUnit.getUnitFile()).getResource();
     }
