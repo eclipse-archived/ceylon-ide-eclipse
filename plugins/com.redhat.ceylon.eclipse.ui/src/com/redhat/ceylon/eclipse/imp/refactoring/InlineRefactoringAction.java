@@ -18,4 +18,9 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
         return new InlineWizard((InlineRefactoring) refactoring);
     }
+    
+    @Override
+    String message() {
+        return "No function or value name selected";
+    }
 }

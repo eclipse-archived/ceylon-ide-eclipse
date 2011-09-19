@@ -19,4 +19,9 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
 	    return new RenameWizard((RenameRefactoring) refactoring);
 	}
 	
+	@Override
+	String message() {
+	    return "No declaration name selected";
+	}
+	
 }

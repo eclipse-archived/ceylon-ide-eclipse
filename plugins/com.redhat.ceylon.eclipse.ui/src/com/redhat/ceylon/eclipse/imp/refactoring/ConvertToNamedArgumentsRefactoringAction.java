@@ -19,4 +19,9 @@ public class ConvertToNamedArgumentsRefactoringAction extends AbstractRefactorin
         return new ConvertToNamedArgumentsWizard((ConvertToNamedArgumentsRefactoring) refactoring);
     }
     
+    @Override
+    String message() {
+        return "No positional argument list selected";
+    }
+    
 }
