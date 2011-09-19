@@ -38,6 +38,8 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
  */
 public class EditorAnnotationService extends EditorServiceBase {
     
+    public static final String TODO_ANNOTATION_TYPE = "com.redhat.ceylon.eclipse.ui.todo";
+
     @Override
     public AnalysisRequired getAnalysisRequired() {
         return AnalysisRequired.NONE;
@@ -101,7 +103,7 @@ public class EditorAnnotationService extends EditorServiceBase {
     }
     
     private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
-        model.addAnnotation(new Annotation("com.redhat.ceylon.eclipse.ui.todo", false, null), 
+        model.addAnnotation(new Annotation(TODO_ANNOTATION_TYPE, false, null), 
                 new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
     }
     
