@@ -203,8 +203,8 @@ public class CeylonBuilder extends BuilderBase {
     protected void collectDependencies(IFile file) {
         // String fromPath = file.getFullPath().toString();
 
-        getPlugin().writeInfoMsg(
-                "Collecting dependencies from ceylon file: " + file.getName());
+        /*getPlugin().writeInfoMsg(
+                "Collecting dependencies from ceylon file: " + file.getName());*/
 
         // TODO: implement dependency collector
         // E.g. for each dependency:
