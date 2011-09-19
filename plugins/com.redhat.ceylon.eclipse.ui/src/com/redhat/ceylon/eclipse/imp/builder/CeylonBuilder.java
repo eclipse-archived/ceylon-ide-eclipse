@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -33,7 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
@@ -285,7 +285,7 @@ public class CeylonBuilder extends BuilderBase {
         }
         for (CommonToken token: (List<CommonToken>) tokens.getTokens()) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                int priority = CeylonTokenColorer.priority(token);
+                int priority = priority(token);
                 if (priority>=0) {
                     Map<String, Object> attributes = new HashMap<String, Object>();
                     attributes.put(IMessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
@@ -315,6 +315,19 @@ public class CeylonBuilder extends BuilderBase {
     // TODO penser à : doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
     
+    public static int priority(Token token) {
+        String comment = token.getText().toLowerCase();
+        if (comment.startsWith("//todo")) {
+            return IMarker.PRIORITY_NORMAL;
+        }
+        else if (comment.startsWith("//fix")) {
+            return IMarker.PRIORITY_HIGH;
+        }
+        else {
+            return -1;
+        }
+    }
+
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
     }

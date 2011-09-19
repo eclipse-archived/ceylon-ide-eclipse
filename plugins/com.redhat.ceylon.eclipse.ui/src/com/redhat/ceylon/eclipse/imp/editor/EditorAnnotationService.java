@@ -24,9 +24,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
 
 /**
  * Responsible for adding refinement annotations to 
@@ -76,7 +76,7 @@ public class EditorAnnotationService extends EditorServiceBase {
         
         for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                if (CeylonTokenColorer.priority(token)>=0) {
+                if (CeylonBuilder.priority(token)>=0) {
                     addTodoAnnotation(token, model);
                 }
             }
