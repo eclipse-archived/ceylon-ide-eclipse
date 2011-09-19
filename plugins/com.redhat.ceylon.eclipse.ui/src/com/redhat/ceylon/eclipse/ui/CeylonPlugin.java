@@ -138,11 +138,10 @@ public class CeylonPlugin extends PluginBase {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-	  super.start(context);	  
-          ModelFactory.getInstance()
-              .installExtender(new CeylonFactoryExtender(), 
-                      CeylonBuilder.LANGUAGE);
-
+	    super.start(context);
+        ModelFactory.getInstance()
+                .installExtender(new CeylonFactoryExtender(), 
+                        CeylonBuilder.LANGUAGE);
 	}
 
 	@Override
