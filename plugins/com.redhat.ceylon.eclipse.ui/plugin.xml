@@ -343,43 +343,43 @@
    <extension
          point="org.eclipse.ui.bindings">
        <key
-           sequence="COMMAND+SHIFT+C"
+           sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+R"
+           sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+O"
+           sequence="M3+O"
            commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+ALT+S"
+           sequence="M3+S"
            commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+C"
+           sequence="M3+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+R"
+           sequence="M3+R"
            commandId="com.redhat.ceylon.eclipse.ui.action.rename"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+I"
+           sequence="M3+L"
            commandId="com.redhat.ceylon.eclipse.ui.action.inline"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+V"
+           sequence="M3+V"
            commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+F"
+           sequence="M3+F"
            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
-           sequence="CTRL+COMMAND+N"
+           sequence="M3+A"
            commandId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
