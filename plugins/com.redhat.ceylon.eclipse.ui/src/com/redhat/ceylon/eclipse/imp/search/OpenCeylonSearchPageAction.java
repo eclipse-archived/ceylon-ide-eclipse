@@ -25,7 +25,7 @@ public class OpenCeylonSearchPageAction implements IWorkbenchWindowActionDelegat
             MessageDialog.openError(shell, "Ceylon Search Error", "No active window");
         }
         else {
-            NewSearchUI.openSearchDialog(window, "org.redhat.ceylon.ui.searchPage");
+            NewSearchUI.openSearchDialog(window, "com.redhat.ceylon.eclipse.ui.searchPage");
         }
     }
 
