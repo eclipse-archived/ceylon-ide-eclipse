@@ -91,11 +91,6 @@ public class EditorAnnotationService extends EditorServiceBase {
         if (refined==null) {
             refined = dec.getRefinedDeclaration();
         }
-        //IFile file = cpc.getProject().getRawProject().getFile(cpc.getPath());
-        //don't include hover description because it will hide the doc hover
-        /*String desc = "refines '" + CeylonContentProposer.getDescriptionFor(refined) + 
-                "' declared by " + refined.getContainer().getName() + 
-                " [" + getPackageLabel(dec) + "]";*/
         RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
                 that.getIdentifier().getToken().getLine());
         model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
