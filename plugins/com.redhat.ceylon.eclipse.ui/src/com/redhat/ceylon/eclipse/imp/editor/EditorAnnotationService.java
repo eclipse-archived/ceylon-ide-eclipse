@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.imp.editor;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findScope;
 
 import java.util.Iterator;
+import java.util.List;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.parser.IParseController;
@@ -18,6 +20,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -67,6 +70,15 @@ public class EditorAnnotationService extends EditorServiceBase {
             }
 
         }.visit(cpc.getRootNode());
+        
+        for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
+            if (token.getType()==CeylonLexer.LINE_COMMENT) {
+                String comment = token.getText().toLowerCase();
+                if (comment.startsWith("//todo")||comment.startsWith("//fix")) {
+                    addTodoAnnotation(token, model);
+                }
+            }
+        }
     }
     
     private void addRefinementAnnotation(CeylonSourcePositionLocator spl,
@@ -86,6 +98,11 @@ public class EditorAnnotationService extends EditorServiceBase {
                 that.getIdentifier().getToken().getLine());
         model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
                         spl.getLength(that)+1));
+    }
+    
+    private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
+        model.addAnnotation(new Annotation("com.redhat.ceylon.eclipse.ui.todo", false, null), 
+                new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
     }
     
     @Override
