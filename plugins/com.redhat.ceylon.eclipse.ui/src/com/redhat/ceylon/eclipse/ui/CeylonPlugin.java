@@ -19,12 +19,17 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARAT
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.model.ICompilationUnit;
@@ -38,8 +43,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.BundleContext;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -142,6 +151,7 @@ public class CeylonPlugin extends PluginBase {
         ModelFactory.getInstance()
                 .installExtender(new CeylonFactoryExtender(), 
                         CeylonBuilder.LANGUAGE);
+        runInitialBuild();
 	}
 
 	@Override
@@ -167,6 +177,38 @@ public class CeylonPlugin extends PluginBase {
         }
 	}
 	
+    private void runInitialBuild() {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        workbench.getDisplay().asyncExec(new Runnable() {
+           public void run() {
+             IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+             if (window != null) {
+                 try {
+                    PlatformUI.getWorkbench().getProgressService()
+                     .busyCursorWhile(new IRunnableWithProgress() {
+                        @Override
+                        public void run(IProgressMonitor monitor) 
+                                throws InvocationTargetException, InterruptedException {
+                           try {
+                               ResourcesPlugin.getWorkspace()
+                                   .build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+                           }
+                           catch (CoreException ce) {
+                               throw new InvocationTargetException(ce);
+                           }
+                        }
+                     });
+                }
+                catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+             }
+           }
+        });
+    }
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
 		reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
