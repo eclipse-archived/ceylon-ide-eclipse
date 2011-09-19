@@ -244,6 +244,16 @@ public class CeylonBuilder extends BuilderBase {
         // parseController.getAnnotationTypeInfo().addProblemMarkerType(getErrorMarkerID());
 
         switch (kind) {
+        case AUTO_BUILD:
+        case INCREMENTAL_BUILD: 
+            //Temporary for now!
+            try {
+                clean(monitor);
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+            //now fall through:
         case FULL_BUILD:
             System.out.println("Starting full build");
             
