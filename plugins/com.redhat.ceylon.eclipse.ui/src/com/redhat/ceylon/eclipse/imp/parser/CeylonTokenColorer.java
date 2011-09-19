@@ -10,6 +10,8 @@ import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -22,16 +24,18 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
             "this", "outer", "super", "is", "exists", "nonempty"));
     
-    protected final TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
-    annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute;
+    private static final Display display = Display.getDefault();
+    private static final Color BRIGHT_BLUE = new Color(display, new RGB(0,120,255));
     
-    public CeylonTokenColorer() {
+    private static final TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
+    annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute;
+    
+    static {
         // NOTE: Colors (i.e., instances of org.eclipse.swt.graphics.Color) are system resources
         // and are limited in number.  THEREFORE, it is good practice to reuse existing system Colors
         // or to allocate a fixed set of new Colors and reuse those.  If new Colors are instantiated
         // beyond the bounds of your system capacity then your Eclipse invocation may cease to function
         // properly or at all.
-        Display display = Display.getDefault();
         identifierAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLACK), null, SWT.NORMAL);
         typeAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.NORMAL);
         keywordAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_MAGENTA), null, SWT.BOLD);
@@ -40,6 +44,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         stringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLUE), null, SWT.NORMAL);
         annotationStringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.NORMAL);
         annotationAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_CYAN), null, SWT.NORMAL);
+        todoAttribute = new TextAttribute(BRIGHT_BLUE, null, SWT.ITALIC);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {
@@ -74,7 +79,12 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                 }
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
-                return commentAttribute;
+                if (isTodo(token)) {
+                    return todoAttribute;
+                }
+                else {
+                    return commentAttribute;
+                }
             case CeylonParser.EOF:
             case CeylonParser.WS:
                 return null;
@@ -86,6 +96,11 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                     return null;
                 }
         }
+    }
+    
+    public static boolean isTodo(Token token) {
+        String comment = token.getText().toLowerCase();
+        return comment.startsWith("//todo")||comment.startsWith("//fix");
     }
     
     private boolean inAnnotation(IParseController controller, Token token) {

@@ -224,7 +224,7 @@
             verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.ruler"
             overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.overview"
 
-            colorPreferenceValue="000,191,255"
+            colorPreferenceValue="000,120,255"
             textPreferenceValue="false"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="false"
