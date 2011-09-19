@@ -180,11 +180,7 @@
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-            name="com.redhat.ceylon.eclipse.ui.refinement.formal"
-            markerSeverity="0">
-      </type>
-      <type
-            name="com.redhat.ceylon.eclipse.ui.refinement.default"
+            name="com.redhat.ceylon.eclipse.ui.refinement"
             markerSeverity="0">
       </type>
       <type
@@ -200,40 +196,20 @@
             highlightPreferenceValue="false"
             textPreferenceValue="false"
             includeOnPreferencePage="true"
-            label="Ceylon Formal Refinement Indicators"
+            label="Ceylon Refinement Indicators"
             colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
-            annotationType="com.redhat.ceylon.eclipse.ui.refinement.formal"
+            annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
             overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
             verticalRulerPreferenceValue="true"
             highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
             verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
-            icon="icons/implm_co.gif"
+            annotationImageProvider="com.redhat.ceylon.eclipse.imp.editor.RefinementAnnotationImageProvider"
             textStylePreferenceValue="NONE"
             contributesToHeader="true"
             colorPreferenceValue="000,255,000"
-            overviewRulerPreferenceValue="false">
-      </specification>
-      <specification
-            textPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.text"
-            presentationLayer="0"
-            highlightPreferenceValue="false"
-            textPreferenceValue="false"
-            includeOnPreferencePage="true"
-            label="Ceylon Default Refinement Indicators"
-            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.color"
-            annotationType="com.redhat.ceylon.eclipse.ui.refinement.default"
-            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.textStyle"
-            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
-            verticalRulerPreferenceValue="true"
-            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.highlight"
-            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
-            icon="icons/over_co.gif"
-            textStylePreferenceValue="NONE"
-            contributesToHeader="true"
-            colorPreferenceValue="000,255,000"
-            overviewRulerPreferenceValue="false">
-      </specification>
+            overviewRulerPreferenceValue="false"
+            icon="icons/over_co.gif"/>
       <specification
             textPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.text"
             presentationLayer="0"
@@ -252,8 +228,7 @@
             textStylePreferenceValue="NONE"
             contributesToHeader="true"
             colorPreferenceValue="000,191,255"
-            overviewRulerPreferenceValue="true">
-      </specification>
+            overviewRulerPreferenceValue="true"/>
    </extension>
    <extension
          point="org.eclipse.ui.editorActions">
