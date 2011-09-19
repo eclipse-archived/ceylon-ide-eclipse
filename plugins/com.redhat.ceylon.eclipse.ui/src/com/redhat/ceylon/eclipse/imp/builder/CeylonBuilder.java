@@ -61,6 +61,9 @@ public class CeylonBuilder extends BuilderBase {
      */
     public static final String PROBLEM_MARKER_ID = CeylonPlugin.PLUGIN_ID
             + ".ceylonProblem";
+    
+    /*public static final String TASK_MARKER_ID = CeylonPlugin.PLUGIN_ID
+            + ".ceylonTask";*/
 
     public static final String LANGUAGE_NAME = "ceylon";
 
@@ -287,6 +290,7 @@ public class CeylonBuilder extends BuilderBase {
                     Map<String, Object> attributes = new HashMap<String, Object>();
                     attributes.put(IMessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
                     attributes.put(IMarker.PRIORITY, priority);
+                    attributes.put(IMarker.USER_EDITABLE, false);
                     new MarkerCreator(file, IMarker.TASK)
                         .handleSimpleMessage(token.getText().substring(2), 
                             token.getStartIndex(), token.getStopIndex(), 

@@ -67,6 +67,14 @@
       <persistent value="true"/>
    </extension>
    
+   <!--extension
+         id="ceylonTask"
+         name="Ceylon Task"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.taskmarker"/>
+      <persistent value="true"/>
+   </extension-->
+   
    <extension
          name="Ceylon Parser"
          point="org.eclipse.imp.runtime.parser">
