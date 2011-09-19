@@ -48,13 +48,13 @@ public class CeylonBuilder extends BuilderBase {
      * corresponding extension definition in plugin.xml.
      */
     public static final String BUILDER_ID = CeylonPlugin.PLUGIN_ID
-            + ".ceylon.imp.builder";
+            + ".ceylonBuilder";
 
     /**
      * A marker ID that identifies problems detected by the builder
      */
     public static final String PROBLEM_MARKER_ID = CeylonPlugin.PLUGIN_ID
-            + ".ceylon.imp.builder.problem";
+            + ".ceylonProblem";
 
     public static final String LANGUAGE_NAME = "ceylon";
 

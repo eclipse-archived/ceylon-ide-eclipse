@@ -11,7 +11,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonNature extends ProjectNatureBase {
 
-  public static final String NATURE_ID = CeylonPlugin.PLUGIN_ID + ".imp.nature";
+  public static final String NATURE_ID = CeylonPlugin.PLUGIN_ID + ".ceylonNature";
 
   public String getNatureID() {
     return NATURE_ID;
