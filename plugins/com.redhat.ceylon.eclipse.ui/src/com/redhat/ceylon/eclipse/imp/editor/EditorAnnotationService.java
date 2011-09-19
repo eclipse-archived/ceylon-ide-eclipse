@@ -76,7 +76,7 @@ public class EditorAnnotationService extends EditorServiceBase {
         
         for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                if (CeylonTokenColorer.isTodo(token)) {
+                if (CeylonTokenColorer.priority(token)>=0) {
                     addTodoAnnotation(token, model);
                 }
             }
