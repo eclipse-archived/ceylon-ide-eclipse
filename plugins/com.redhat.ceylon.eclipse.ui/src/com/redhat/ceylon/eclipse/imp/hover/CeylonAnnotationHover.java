@@ -18,9 +18,14 @@ public class CeylonAnnotationHover implements IAnnotationHover {
     @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
         List<Annotation> annotations = getAnnotationsForLine(sourceViewer, lineNumber);
-        if (annotations.size()==1 && annotations.get(0) instanceof RefinementAnnotation) {
-            RefinementAnnotation ra = (RefinementAnnotation) annotations.get(0);
-            return getRefinementDocumentation(ra.getDeclaration());
+        if (annotations.size()==1) {
+            Annotation a = annotations.get(0);
+            if (a instanceof RefinementAnnotation) {
+                return getRefinementDocumentation(((RefinementAnnotation) a).getDeclaration());
+            }
+            /*if (a.getType().equals(EditorAnnotationService.TODO_ANNOTATION_TYPE)) {
+                return "TODO!"; //TODO
+            }*/
         }
         return formatAnnotationList(annotations);
     }
