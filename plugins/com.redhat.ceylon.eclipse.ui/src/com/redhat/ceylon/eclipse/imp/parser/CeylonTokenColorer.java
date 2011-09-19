@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.jface.text.IRegion;
@@ -79,7 +80,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                 }
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
-                if (isTodo(token)) {
+                if (priority(token)>=0) {
                     return todoAttribute;
                 }
                 else {
@@ -98,9 +99,17 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         }
     }
     
-    public static boolean isTodo(Token token) {
+    public static int priority(Token token) {
         String comment = token.getText().toLowerCase();
-        return comment.startsWith("//todo")||comment.startsWith("//fix");
+        if (comment.startsWith("//todo")) {
+            return IMarker.PRIORITY_NORMAL;
+        }
+        else if (comment.startsWith("//fix")) {
+            return IMarker.PRIORITY_HIGH;
+        }
+        else {
+            return -1;
+        }
     }
     
     private boolean inAnnotation(IParseController controller, Token token) {

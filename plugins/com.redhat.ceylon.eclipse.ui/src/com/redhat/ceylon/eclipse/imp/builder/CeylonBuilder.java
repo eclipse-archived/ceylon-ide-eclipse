@@ -25,6 +25,7 @@ import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
+import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.runtime.PluginBase;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -281,12 +282,16 @@ public class CeylonBuilder extends BuilderBase {
         }
         for (CommonToken token: (List<CommonToken>) tokens.getTokens()) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                if (CeylonTokenColorer.isTodo(token)) {
+                int priority = CeylonTokenColorer.priority(token);
+                if (priority>=0) {
+                    Map<String, Object> attributes = new HashMap<String, Object>();
+                    attributes.put(IMessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
+                    attributes.put(IMarker.PRIORITY, priority);
                     new MarkerCreator(file, IMarker.TASK)
                         .handleSimpleMessage(token.getText().substring(2), 
                             token.getStartIndex(), token.getStopIndex(), 
                             token.getCharPositionInLine(), token.getCharPositionInLine(), 
-                            token.getLine(), token.getLine());
+                            token.getLine(), token.getLine(), attributes);
                 }
             }
         }
