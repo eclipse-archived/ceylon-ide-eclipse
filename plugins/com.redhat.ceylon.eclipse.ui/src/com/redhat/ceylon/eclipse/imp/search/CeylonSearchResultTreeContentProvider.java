@@ -167,5 +167,11 @@ class CeylonSearchResultTreeContentProvider implements
         }
         return null;
     }
-
+    
+    @Override
+    public void clear() {
+        initialize(result);
+        viewer.refresh();
+    }
+    
 }

@@ -44,7 +44,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
 	@Override
 	protected void clear() {
-		getViewer().refresh();
+	    if (contentProvider!=null) {
+	        contentProvider.clear();
+	    }
+		//getViewer().refresh();
 	}
 
 	@Override

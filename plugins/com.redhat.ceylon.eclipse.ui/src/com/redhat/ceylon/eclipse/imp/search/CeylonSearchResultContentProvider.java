@@ -56,4 +56,10 @@ class CeylonSearchResultContentProvider implements
     private int getElementLimit() {
         return page.getElementLimit();
     }
+    
+    @Override
+    public void clear() {
+        viewer.refresh();
+    }
+    
 }
