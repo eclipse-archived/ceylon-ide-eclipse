@@ -7,10 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
@@ -27,7 +30,9 @@ import org.eclipse.imp.runtime.PluginBase;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
@@ -249,19 +254,42 @@ public class CeylonBuilder extends BuilderBase {
             typeCheckers.put(project, typeChecker);
             for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits())
             {
+                IFile file = getFile(phasedUnit);
+                CommonTokenStream tokens = phasedUnit.getTokenStream();
                 phasedUnit.getCompilationUnit()
-                    .visit(new ErrorVisitor(new MarkerCreator(getFile(phasedUnit), 
-                            PROBLEM_MARKER_ID)) {
+                    .visit(new ErrorVisitor(new MarkerCreator(file, PROBLEM_MARKER_ID)) {
                         @Override
                         public int getSeverity(Message error) {
                             return IMarker.SEVERITY_ERROR;
                         }
-                    });      
+                    });
+                addTaskMarkers(file, tokens);
             }
             System.out.println("Finished full build");
             break;
         }
         return result;
+    }
+
+    private void addTaskMarkers(IFile file, CommonTokenStream tokens) {
+        //TODO: need our own marker type
+        try {
+            file.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        for (CommonToken token: (List<CommonToken>) tokens.getTokens()) {
+            if (token.getType()==CeylonLexer.LINE_COMMENT) {
+                if (CeylonTokenColorer.isTodo(token)) {
+                    new MarkerCreator(file, IMarker.TASK)
+                        .handleSimpleMessage(token.getText().substring(2), 
+                            token.getStartIndex(), token.getStopIndex(), 
+                            token.getCharPositionInLine(), token.getCharPositionInLine(), 
+                            token.getLine(), token.getLine());
+                }
+            }
+        }
     }
 
     public static IFile getFile(PhasedUnit phasedUnit) {
