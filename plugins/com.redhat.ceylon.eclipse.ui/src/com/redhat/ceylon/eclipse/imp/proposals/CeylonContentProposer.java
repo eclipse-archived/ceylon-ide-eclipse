@@ -286,7 +286,7 @@ public class CeylonContentProposer implements IContentProposer {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
                     && !keyword.equals(prefix)) {
                 result.add(sourceProposal(offset, prefix, null, 
-                        keyword + " keyword", keyword, keyword, 
+                        keyword + " keyword", keyword, keyword + " ", 
                         true));
             }
         }
