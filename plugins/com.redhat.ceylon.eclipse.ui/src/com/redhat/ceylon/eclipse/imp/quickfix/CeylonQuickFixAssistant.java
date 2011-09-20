@@ -5,7 +5,9 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -25,17 +27,32 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.AbstractVisitor;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -98,6 +115,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addCreateMemberProposals(cu, node, problem, proposals, project);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
+                    addImportProposals(cu, node, proposals, file, tc);
                 }
                 break;
             }
@@ -305,4 +323,117 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         };
     }
     
+    private void addImportProposals(Tree.CompilationUnit cu, Node node,
+            Collection<ICompletionProposal> proposals, IFile file,
+            TypeChecker tc) {
+        String brokenName = getIdentifyingNode(node).getText();
+
+        Collection<Declaration> candidates = findImportCandidates(cu, tc.getContext(), brokenName);
+        for (Declaration decl : candidates) {
+            proposals.add(createImportProposal(
+                    cu, file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+        }
+    }
+
+    private static Collection<Declaration> findImportCandidates(
+            Tree.CompilationUnit cu, Context context, String name) {
+        List<Declaration> result = new ArrayList<Declaration>();
+        Module currentModule = cu.getUnit().getPackage().getModule();
+
+        addImportProposalsForModule(result, currentModule, name);
+        for (Module module : currentModule.getDependencies()) {
+            addImportProposalsForModule(result, module, name);
+        }
+
+        return result;
+    }
+
+    private static void addImportProposalsForModule(List<Declaration> output,
+            Module module, String name) {
+        for (Package pkg : module.getAllPackages()) {
+            Declaration member = pkg.getMember(name);
+            if (member != null) {
+                output.add(member);
+            }
+        }
+    }
+
+    private ICompletionProposal createImportProposal(Tree.CompilationUnit cu, IFile file,
+            String packageName, String declaration) {
+        
+        Tree.Import importNode = findImportNode(cu, packageName);
+        
+        TextFileChange change = new TextFileChange("Add Import", file);
+        TextEdit edit;
+
+        if (importNode != null) {
+            int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
+            edit = new InsertEdit(insertPosition, ", " + declaration);
+        } else {
+            int insertPosition = getBestImportInsertPosition(cu);
+            edit = new InsertEdit(insertPosition, "import " + packageName + " { " + declaration + " }\n");
+        }
+        
+        change.setEdit(edit);
+        return new ChangeCorrectionProposal("Import " + packageName + "." + declaration, change, 50, null);
+    }
+    
+    private int getBestImportInsertPosition(CompilationUnit cu) {
+        Integer stopIndex = cu.getImportList().getStopIndex();
+        
+        if (stopIndex == null) return 0;
+        return stopIndex;
+    }
+
+    private static class FindImportNodeVisitor extends Visitor {
+        private final String[] packageNameComponents;
+        private Tree.Import result;
+        
+        public FindImportNodeVisitor(String packageName) {
+            super();
+            this.packageNameComponents = packageName.split("\\.");
+        }
+        
+        public Tree.Import getResult() {
+            return result;
+        }
+
+        public void visit(Tree.Import that) {
+            if (result != null) {
+                return;
+            }
+
+            List<Identifier> identifiers = that.getImportPath().getIdentifiers();
+            if (identifiersEqual(identifiers, packageNameComponents)) {
+                result = that;
+            }
+        }
+
+        private static boolean identifiersEqual(List<Identifier> identifiers,
+                String[] components) {
+            if (identifiers.size() != components.length) {
+                return false;
+            }
+            
+            for (int i = 0; i < components.length; i++) {
+                if (!identifiers.get(i).getText().equals(components[i])) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+    }
+
+    private Import findImportNode(CompilationUnit cu, String packageName) {
+        FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
+        cu.visit(visitor);
+        return visitor.getResult();
+    }
+
+    private int getBestImportMemberInsertPosition(Import importNode,
+            String declaration) {
+        return importNode.getImportMemberOrTypeList().getStopIndex() - 1;
+    }
+
 }
