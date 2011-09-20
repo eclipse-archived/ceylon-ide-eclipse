@@ -46,7 +46,7 @@
     
 7.  Use `New > File` to create a new file with the extension `.ceylon`.
 
-## Building with Tycho/Maven
+## Building with Tycho/Maven 3
 
 1.  mvn clean install
 
