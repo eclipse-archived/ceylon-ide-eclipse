@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.imp.refactoring;
+package com.redhat.ceylon.eclipse.util;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;

@@ -15,6 +15,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
 	private String newName;
