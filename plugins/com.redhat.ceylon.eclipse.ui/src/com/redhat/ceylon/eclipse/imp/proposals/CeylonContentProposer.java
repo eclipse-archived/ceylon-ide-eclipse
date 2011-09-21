@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getComp
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -50,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
@@ -94,67 +96,79 @@ public class CeylonContentProposer implements IContentProposer {
         //in the ITextViewer. So we need to do some guessing to figure out
         //that there is a missing character in the token stream and take
         //corrective action. This should be fixed in IMP!
-        String prefix="";
-        int start=0;
-        int end=0;
-        CommonToken previousToken = null;
-        for (CommonToken token: (List<CommonToken>) cpc.getTokenStream().getTokens()) {
-            if (/*t.getStartIndex()<=offset &&*/ token.getStopIndex()+1>=offset) {
-                char charAtOffset = viewer.getDocument().get().charAt(offset-1);
-                char charInTokenAtOffset = token.getText().charAt(offset-token.getStartIndex()-1);
-                if (charAtOffset==charInTokenAtOffset) {
-                    if (isIdentifier(token)) {
-                        start = token.getStartIndex();
-                        end = token.getStopIndex();
-                        prefix = token.getText().substring(0, offset-token.getStartIndex());
-                    }
-                    else {
-                        prefix = "";
+        CommonToken token;
+        CommonToken previousToken;
+        int index = getTokenIndexAtCharacter(cpc.getTokenStream(), offset-1);
+        if (index<0) {
+            index = -index;
+            previousToken = (CommonToken) cpc.getTokenStream().get(index);
+            token = (CommonToken) cpc.getTokenStream().get(index+1);
+        }
+        else {
+            previousToken = (CommonToken) cpc.getTokenStream().get(index-1);
+            token = (CommonToken) cpc.getTokenStream().get(index);
+        }
+        char charAtOffset = viewer.getDocument().get().charAt(offset-1);
+        char charInTokenAtOffset = token.getText().charAt(offset-token.getStartIndex()-1);
+        String prefix;
+        int start;
+        int end;
+        if (charAtOffset==charInTokenAtOffset) {
+            if (isIdentifier(token)) {
+                start = token.getStartIndex();
+                end = token.getStopIndex();
+                prefix = token.getText().substring(0, offset-token.getStartIndex());
+            }
+            else {
+                prefix = "";
+                start = offset;
+                end = offset;
+            }
+        } 
+        else {
+            boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
+            if (previousToken!=null) {
+                start = previousToken.getStartIndex();
+                end = previousToken.getStopIndex();    				
+                if (previousToken.getType()==MEMBER_OP && isIdentifierChar) {
+                    prefix = Character.toString(charAtOffset);
+                }
+                else if (isIdentifier(previousToken) && isIdentifierChar) {
+                    prefix = previousToken.getText()+charAtOffset;
+                }
+                else {
+                    prefix = isIdentifierChar ? 
+                            Character.toString(charAtOffset) : "";
+                }
+            }
+            else {
+                prefix = isIdentifierChar ? 
+                        Character.toString(charAtOffset) : "";
                         start = offset;
                         end = offset;
-                    }
-                } 
-                else {
-                    boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
-                    if (previousToken!=null) {
-                        start = previousToken.getStartIndex();
-                        end = previousToken.getStopIndex();    				
-                        if (previousToken.getType()==MEMBER_OP && isIdentifierChar) {
-                            prefix = Character.toString(charAtOffset);
-                        }
-                        else if (isIdentifier(previousToken) && isIdentifierChar) {
-                            prefix = previousToken.getText()+charAtOffset;
-                        }
-                        else {
-                            prefix = isIdentifierChar ? 
-                                    Character.toString(charAtOffset) : "";
-                        }
-                    }
-                    else {
-                        prefix = isIdentifierChar ? 
-                                Character.toString(charAtOffset) : "";
-                                start = offset;
-                                end = offset;
-                    }
-                }
-                break;
             }
-            previousToken = token;
         }
         //END BUG WORKAROUND
         
+        //adjust the token to account for unclosed blocks
+        int tokenIndex = getTokenIndexAtCharacter(cpc.getTokenStream(), start);
+        if (tokenIndex<0) tokenIndex = -tokenIndex;
+        int adjustedStart = start;
+        int adjustedEnd = end;
+        Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
+        while (--tokenIndex>=0 && adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+            adjustedToken = cpc.getTokenStream().get(tokenIndex);
+            if (adjustedToken.getType()!=CeylonLexer.SEMICOLON && 
+                    adjustedToken.getType()!=CeylonLexer.RBRACE) {
+                adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
+                adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
+                break;
+            }
+        }
+        
         if (cpc.getRootNode() != null) {
-            Node node = findNode(cpc.getRootNode(), start, end);
-            if (node==null) {
-                node = cpc.getRootNode();
-            }
-            else if (node instanceof Tree.Import) {
-                return constructPackageCompletions(cpc, offset, prefix, null, node);
-            }
-            else if (node instanceof Tree.ImportPath) {
-                return constructPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node);
-            }
-            else {
+            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedEnd);
+            if (node!=null)  {
                 return constructCompletions(offset, prefix, 
                         sortProposals(prefix, getProposals(node, prefix, cpc.getContext())),
                         cpc, node);
@@ -166,8 +180,9 @@ public class CeylonContentProposer implements IContentProposer {
         
     }
     
-    public ICompletionProposal[] constructPackageCompletions(CeylonParseController cpc, 
-            int offset, String prefix, Tree.ImportPath path, Node node) {
+    private static void addPackageCompletions(CeylonParseController cpc, 
+            int offset, String prefix, Tree.ImportPath path, Node node, 
+            List<ICompletionProposal> result) {
         StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
             for (int i=0; i<path.getIdentifiers().size()-1; i++) {
@@ -176,7 +191,6 @@ public class CeylonContentProposer implements IContentProposer {
         }
         int len = fullPath.length();
         fullPath.append(prefix);
-        List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
@@ -200,8 +214,6 @@ public class CeylonContentProposer implements IContentProposer {
                 }
             }
         }
-        //}
-        return result.toArray(new ICompletionProposal[result.size()]);
     }
     
     private static boolean isIdentifier(Token token) {
@@ -212,54 +224,80 @@ public class CeylonContentProposer implements IContentProposer {
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        if (node instanceof Tree.TypedDeclaration) {
+        if (node instanceof Tree.Import) {
+            addPackageCompletions(cpc, offset, prefix, null, node, result);
+        }
+        else if (node instanceof Tree.ImportPath) {
+            addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+        }
+        else if (node instanceof Tree.TypedDeclaration) {
             addMemberNameProposal(offset, prefix, node, result);
         }
-        else if (!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-            addKeywordProposals(offset, prefix, result);
-        }
-        boolean inImport = node.getScope() instanceof ImportList;
-        for (final DeclarationWithProximity dwp: set) {
-            Declaration d = dwp.getDeclaration();
-            result.add(sourceProposal(offset, prefix, 
-                    CeylonLabelProvider.getImage(d),
-                    getDocumentationFor(cpc, d), 
-                    getDescriptionFor(dwp, !inImport), 
-                    getTextFor(dwp, !inImport), true));
-            if (!inImport) {
-                if (d instanceof Functional) {
-                    boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-                    if (!isAbstractClass) {
-                        result.add(sourceProposal(offset, prefix, 
-                                CeylonLabelProvider.getImage(d),
-                                getDocumentationFor(cpc, d), 
-                                getPositionalInvocationDescriptionFor(dwp), 
-                                getPositionalInvocationTextFor(dwp), true));
-                        List<ParameterList> pls = ((Functional) d).getParameterLists();
-                        if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
-                            //if there is more than one parameter, 
-                            //suggest a named argument invocation 
-                            result.add(sourceProposal(offset, prefix, 
-                                    CeylonLabelProvider.getImage(d),
-                                    getDocumentationFor(cpc, d), 
-                                    getNamedInvocationDescriptionFor(dwp), 
-                                    getNamedInvocationTextFor(dwp), true));
-                        }
+        else {
+            boolean inImport = node.getScope() instanceof ImportList;
+            boolean isQualified = node instanceof Tree.QualifiedMemberOrTypeExpression;
+            if (!inImport && !isQualified) {
+                addKeywordProposals(offset, prefix, result);
+            }
+            for (final DeclarationWithProximity dwp: set) {
+                Declaration d = dwp.getDeclaration();
+                addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
+                if (!inImport) {
+                    if (d instanceof Functional) {
+                        addInvocationProposals(offset, prefix, cpc, result, dwp, d);
                     }
-                }
-                if (d instanceof MethodOrValue || d instanceof Class) {
-                    if (node.getScope() instanceof ClassOrInterface &&
-                            ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                        result.add(sourceProposal(offset, prefix, 
-                                d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
-                                        getDocumentationFor(cpc, d), 
-                                        getRefinementDescriptionFor(d), 
-                                        getRefinementTextFor(d), false));
+                    if (d instanceof MethodOrValue || d instanceof Class) {
+                        addRefinementProposal(offset, prefix, cpc, node, result, d);
                     }
                 }
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
+            Node node, List<ICompletionProposal> result, Declaration d) {
+        if (node.getScope() instanceof ClassOrInterface &&
+                ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+            result.add(sourceProposal(offset, prefix, 
+                    d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
+                            getDocumentationFor(cpc, d), 
+                            getRefinementDescriptionFor(d), 
+                            getRefinementTextFor(d), false));
+        }
+    }
+
+    private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
+            List<ICompletionProposal> result, boolean inImport, final DeclarationWithProximity dwp,
+            Declaration d) {
+        result.add(sourceProposal(offset, prefix, 
+                CeylonLabelProvider.getImage(d),
+                getDocumentationFor(cpc, d), 
+                getDescriptionFor(dwp, !inImport), 
+                getTextFor(dwp, !inImport), true));
+    }
+
+    private static void addInvocationProposals(int offset, String prefix,
+            CeylonParseController cpc, List<ICompletionProposal> result,
+            final DeclarationWithProximity dwp, Declaration d) {
+        boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
+        if (!isAbstractClass) {
+            result.add(sourceProposal(offset, prefix, 
+                    CeylonLabelProvider.getImage(d),
+                    getDocumentationFor(cpc, d), 
+                    getPositionalInvocationDescriptionFor(dwp), 
+                    getPositionalInvocationTextFor(dwp), true));
+            List<ParameterList> pls = ((Functional) d).getParameterLists();
+            if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+                //if there is more than one parameter, 
+                //suggest a named argument invocation 
+                result.add(sourceProposal(offset, prefix, 
+                        CeylonLabelProvider.getImage(d),
+                        getDocumentationFor(cpc, d), 
+                        getNamedInvocationDescriptionFor(dwp), 
+                        getNamedInvocationTextFor(dwp), true));
+            }
+        }
     }
 
     protected static void addMemberNameProposal(int offset, String prefix, Node node,
