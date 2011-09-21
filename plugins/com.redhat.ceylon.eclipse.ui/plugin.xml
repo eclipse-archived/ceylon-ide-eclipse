@@ -505,8 +505,9 @@
                       class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             </menu>
       </menuContribution>
+      <!-- locationURI="popup:#TextEditorContext?before=additions" -->
       <menuContribution
-            locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+            locationURI="popup:org.eclipse.imp.runtime.impEditor.EditorContext?before=additions">
             <dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             <separator 
