@@ -89,44 +89,46 @@ public class InlineRefactoring extends AbstractRefactoring {
         
         if (declaration!=null) {
             for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-    			FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
-    			pu.getCompilationUnit().visit(fdv);
-    			declarationNode = fdv.getDeclarationNode();
-    			if (declarationNode!=null) {
-                    declarationUnit = pu;
-        			if (declarationNode instanceof Tree.AttributeDeclaration) {
-        				Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) declarationNode;
-        				t = att.getSpecifierOrInitializerExpression().getExpression().getTerm();
+                if (pu.getUnit().equals(declaration.getUnit())) {
+        			FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+        			pu.getCompilationUnit().visit(fdv);
+        			declarationNode = fdv.getDeclarationNode();
+        			if (declarationNode!=null) {
+                        declarationUnit = pu;
+            			if (declarationNode instanceof Tree.AttributeDeclaration) {
+            				Tree.AttributeDeclaration att = (Tree.AttributeDeclaration) declarationNode;
+            				t = att.getSpecifierOrInitializerExpression().getExpression().getTerm();
+            			}
+            			else if (declarationNode instanceof Tree.MethodDefinition) {
+            				Tree.MethodDefinition meth = (Tree.MethodDefinition) declarationNode;
+            				if (meth.getBlock().getStatements().size()!=1) {
+            					throw new RuntimeException("method has multiple statements");
+            				}
+            				if (meth.getType() instanceof Tree.VoidModifier) {
+            					Tree.ExpressionStatement e = (Tree.ExpressionStatement) meth.getBlock()
+            							.getStatements().get(0);
+            					t = e.getExpression().getTerm();
+            					
+            				}
+            				else {
+            					Tree.Return r = (Tree.Return) meth.getBlock().getStatements().get(0);
+            					t = r.getExpression().getTerm();
+            				}
+            			}
+            			else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
+            				Tree.AttributeGetterDefinition att = (Tree.AttributeGetterDefinition) declarationNode;
+            				if (att.getBlock().getStatements().size()!=1) {
+            					throw new RuntimeException("getter has multiple statements");
+            				}
+            				Tree.Return r = (Tree.Return) att.getBlock().getStatements().get(0);
+            				t = r.getExpression().getTerm();
+            			}
+            			else {
+            				throw new RuntimeException("not a value or function");
+            			}
+                        break;
         			}
-        			else if (declarationNode instanceof Tree.MethodDefinition) {
-        				Tree.MethodDefinition meth = (Tree.MethodDefinition) declarationNode;
-        				if (meth.getBlock().getStatements().size()!=1) {
-        					throw new RuntimeException("method has multiple statements");
-        				}
-        				if (meth.getType() instanceof Tree.VoidModifier) {
-        					Tree.ExpressionStatement e = (Tree.ExpressionStatement) meth.getBlock()
-        							.getStatements().get(0);
-        					t = e.getExpression().getTerm();
-        					
-        				}
-        				else {
-        					Tree.Return r = (Tree.Return) meth.getBlock().getStatements().get(0);
-        					t = r.getExpression().getTerm();
-        				}
-        			}
-        			else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
-        				Tree.AttributeGetterDefinition att = (Tree.AttributeGetterDefinition) declarationNode;
-        				if (att.getBlock().getStatements().size()!=1) {
-        					throw new RuntimeException("getter has multiple statements");
-        				}
-        				Tree.Return r = (Tree.Return) att.getBlock().getStatements().get(0);
-        				t = r.getExpression().getTerm();
-        			}
-        			else {
-        				throw new RuntimeException("not a value or function");
-        			}
-                    break;
-    			}
+                }
     		}
         }
         final Tree.Term term = t;

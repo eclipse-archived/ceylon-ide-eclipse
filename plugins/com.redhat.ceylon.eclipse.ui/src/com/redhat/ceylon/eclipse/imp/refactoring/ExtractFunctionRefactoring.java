@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
+import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     

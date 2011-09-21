@@ -52,6 +52,7 @@ import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
  * Popup quick fixes for problem annotations displayed in editor
@@ -105,7 +106,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     problem.getOffset() + problem.getLength());
             switch ( problem.getProblemId() ) {
             case 100:
-                addCreateMemberProposals(cu, node, problem, proposals, project);
+                addCreateProposals(cu, node, problem, proposals, project);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
                     addImportProposals(cu, node, proposals, file, tc);
@@ -130,78 +131,105 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         catch (CoreException ce) {}
     }*/
     
-    private void addCreateMemberProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
+    private void addCreateProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project) {
-        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
-            Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
-            if (typeDec!=null && typeDec instanceof ClassOrInterface) {
-                String brokenName = getIdentifyingNode(node).getText();
-                if (brokenName.isEmpty()) return;
-                String def;
-                String desc;
-                Image image;
-                FindArgumentsVisitor fav = new FindArgumentsVisitor(qmte);
-                cu.visit(fav);
-                if (fav.positionalArgs!=null || fav.namedArgs!=null) {
-                    StringBuilder params = new StringBuilder();
-                    params.append("(");
-                    if (fav.positionalArgs!=null) appendPositionalArgs(fav, params);
-                    if (fav.namedArgs!=null) appendNamedArgs(fav, params);
-                    if (params.length()>1) {
-                        params.setLength(params.length()-2);
-                    }
-                    params.append(")");
-                    if (Character.isUpperCase(brokenName.charAt(0))) {
-                        String supertype = "";
-                        if (fav.expectedType!=null) {
-                            if (fav.expectedType.getDeclaration() instanceof Class) {
-                                supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
-                            }
-                            else {
-                                supertype = " satisfies " + fav.expectedType.getProducedTypeName();
-                            }
+        if (node instanceof Tree.StaticMemberOrTypeExpression) {
+            Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
+
+            String brokenName = getIdentifyingNode(node).getText();
+            if (brokenName.isEmpty()) return;
+            String def;
+            String desc;
+            Image image;
+            FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
+            cu.visit(fav);
+            if (fav.positionalArgs!=null || fav.namedArgs!=null) {
+                StringBuilder params = new StringBuilder();
+                params.append("(");
+                if (fav.positionalArgs!=null) appendPositionalArgs(fav, params);
+                if (fav.namedArgs!=null) appendNamedArgs(fav, params);
+                if (params.length()>1) {
+                    params.setLength(params.length()-2);
+                }
+                params.append(")");
+                if (Character.isUpperCase(brokenName.charAt(0))) {
+                    String supertype = "";
+                    if (fav.expectedType!=null) {
+                        if (fav.expectedType.getDeclaration() instanceof Class) {
+                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
                         }
-                        def = "shared class " + brokenName + params + supertype + " {}";
-                        desc = "class '" + brokenName + params + supertype + "'";
-                        image = CeylonLabelProvider.CLASS;
+                        else {
+                            supertype = " satisfies " + fav.expectedType.getProducedTypeName();
+                        }
                     }
-                    else {
-                        String type = fav.expectedType==null ? "Nothing" : 
-                            fav.expectedType.getProducedTypeName();
-                        def = "shared " + type + " " + brokenName + params + " { return null; }";
-                        desc = "function '" + brokenName + params + "'";
-                        image = CeylonLabelProvider.METHOD;
-                    }
+                    def = "class " + brokenName + params + supertype + " {}";
+                    desc = "class '" + brokenName + params + supertype + "'";
+                    image = CeylonLabelProvider.CLASS;
                 }
                 else {
                     String type = fav.expectedType==null ? "Nothing" : 
                         fav.expectedType.getProducedTypeName();
-                    def = "shared " + type + " " + brokenName + " = null;";
-                    desc = "value '" + brokenName + "'";
-                    image = CeylonLabelProvider.ATTRIBUTE;
+                    def = type + " " + brokenName + params + " { return null; }";
+                    desc = "function '" + brokenName + params + "'";
+                    image = CeylonLabelProvider.METHOD;
                 }
-                addCreateMemberProposals(proposals, project, def, desc, image, typeDec);
             }
+            else {
+                String type = fav.expectedType==null ? "Nothing" : 
+                    fav.expectedType.getProducedTypeName();
+                def = type + " " + brokenName + " = null;";
+                desc = "value '" + brokenName + "'";
+                image = CeylonLabelProvider.ATTRIBUTE;
+            }
+
+            if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
+                    addCreateMemberProposals(proposals, project, "shared " + def, desc, image, 
+                            (Tree.QualifiedMemberOrTypeExpression) smte);
+            }
+            else {
+                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
+            }
+            
         }
     }
 
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
-            IProject project, String def, String desc, Image image, Declaration typeDec) {
+            IProject project, String def, String desc, Image image, 
+            Tree.QualifiedMemberOrTypeExpression qmte) {
+        Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
+                .getTypeModel().getDeclaration();
+        if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (typeDec.getUnit().equals(unit.getUnit())) {
+                    //TODO: "object" declarations?
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    unit.getCompilationUnit().visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Body body=null;
+                    if (decNode instanceof Tree.ClassDefinition) {
+                        body = ((Tree.ClassDefinition) decNode).getClassBody();
+                    }
+                    else if (decNode instanceof Tree.InterfaceDefinition){
+                        body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+                    }
+                    if (body!=null) {
+                        addProposal(proposals, def, desc, image, typeDec, unit, decNode, body);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Image image, 
+            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
-            //TODO: "object" declarations?
-            FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
-            unit.getCompilationUnit().visit(fdv);
-            Tree.Declaration decNode = fdv.getDeclarationNode();
-            Tree.Body body=null;
-            if (decNode instanceof Tree.ClassDefinition) {
-                body = ((Tree.ClassDefinition) decNode).getClassBody();
-            }
-            else if (decNode instanceof Tree.InterfaceDefinition){
-                body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
-            }
-            if (body!=null) {
-                addProposal(proposals, def, desc, image, typeDec, unit, decNode, body);
+            if (unit.getUnit().equals(cu.getUnit())) {
+                FindStatementVisitor fdv = new FindStatementVisitor(smte);
+                cu.visit(fdv);
+                Tree.Statement statement = fdv.getStatement();
+                addProposal(proposals, def, desc, image, unit, statement);
                 break;
             }
         }
@@ -258,14 +286,26 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Member", file);
         change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
-        proposals.add(createCreateMemberProposal(def, desc, image, typeDec, indent, offset, file, change));
+        proposals.add(createCreateProposal(def, 
+                "Create '" + desc + "' in '" + typeDec.getName() + "'", 
+                image, indent.length(), offset, file, change));
     }
 
-    private ChangeCorrectionProposal createCreateMemberProposal(final String def, String desc, Image image,
-            Declaration typeDec, final String indent, final int offset, final IFile file,
-            TextFileChange change) {
-        return new ChangeCorrectionProposal("Create " + 
-                desc + " in '" + typeDec.getName() + "'", 
+    private void addProposal(Collection<ICompletionProposal> proposals, String def,
+            String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
+        String indent = getIndent(unit.getTokenStream(), statement);
+        int offset = statement.getStartIndex();
+        IFile file = CeylonBuilder.getFile(unit);
+        TextFileChange change = new TextFileChange("Add Local", file);
+        change.setEdit(new InsertEdit(offset, def+indent));
+        proposals.add(createCreateProposal(def, "Create local '" + desc +"'", 
+                image, 0, offset, file, change));
+    }
+
+    private ChangeCorrectionProposal createCreateProposal(final String def, 
+            String desc, Image image, final int indentLength, final int offset, 
+            final IFile file, TextFileChange change) {
+        return new ChangeCorrectionProposal(desc, 
                 change, 50, image) {
             @Override
             public void apply(IDocument document) {
@@ -279,13 +319,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 else {
                     len=4;
                 }
-                Util.gotoLocation(file, offset + loc + indent.length(), len);
+                Util.gotoLocation(file, offset + loc + indentLength, len);
             }
         };
     }
 
-    private void addRenameProposals(Tree.CompilationUnit cu, Node node, final ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, final IFile file, TypeChecker tc) {
+    private void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
           for (Map.Entry<String,DeclarationWithProximity> entry: 
