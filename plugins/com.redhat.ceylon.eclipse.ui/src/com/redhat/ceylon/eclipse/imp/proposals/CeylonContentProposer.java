@@ -269,6 +269,7 @@ public class CeylonContentProposer implements IContentProposer {
             Node node, List<ICompletionProposal> result, Declaration d) {
         if (node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+            //TODO: substitute type arguments of subtype
             result.add(sourceProposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                             getDocumentationFor(cpc, d), 
@@ -416,7 +417,6 @@ public class CeylonContentProposer implements IContentProposer {
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             Context context, Tree.CompilationUnit cu) {
-        //TODO: substitute type arguments to receiving type
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType(context, (Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
