@@ -222,7 +222,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     // not exist, it returns the negation of the index of the 
     // element immediately preceding the offset.
     //
-    private static int getTokenIndexAtCharacter(CommonTokenStream stream, int offset) {
+    public static int getTokenIndexAtCharacter(CommonTokenStream stream, int offset) {
       //search using bisection
       int low = 0,
           high = stream.getTokens().size();
