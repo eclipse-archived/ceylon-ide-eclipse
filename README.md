@@ -34,10 +34,6 @@
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-6.  In the Java Perspective, choose `Window > Customize Perspective`, go
-    to `Command Groups Availability`, and enable `Ceylon Actions` in the
-    `Available command groups` list.
-    
 5.  Use `File > New > Java Project`, and click `Next` once to get to the 
    `Java Settings` page. Select the `src` directory, click `Configure 
     inclusion and exclusion filters`, and add the inclusion pattern 
