@@ -31,7 +31,6 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.AbstractVisitor;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -40,17 +39,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -144,6 +137,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Declaration typeDec = qmte.getPrimary().getTypeModel().getDeclaration();
             if (typeDec!=null && typeDec instanceof ClassOrInterface) {
                 String brokenName = getIdentifyingNode(node).getText();
+                if (brokenName.isEmpty()) return;
                 String def;
                 String desc;
                 Image image;
@@ -293,6 +287,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, final ProblemLocation problem,
             Collection<ICompletionProposal> proposals, final IFile file, TypeChecker tc) {
           String brokenName = getIdentifyingNode(node).getText();
+          if (brokenName.isEmpty()) return;
           for (Map.Entry<String,DeclarationWithProximity> entry: 
               CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
             String name = entry.getKey();
