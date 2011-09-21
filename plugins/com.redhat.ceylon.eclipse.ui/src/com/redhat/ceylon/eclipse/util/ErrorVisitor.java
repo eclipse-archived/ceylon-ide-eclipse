@@ -49,10 +49,12 @@ public abstract class ErrorVisitor extends Visitor {
                     errorNode = analysisMessage.getTreeNode();
                 }
                 Token token = errorNode.getToken();
-                startOffset = errorNode.getStartIndex();
-                endOffset = errorNode.getStopIndex();
-                startCol = token.getCharPositionInLine();
-                startLine = token.getLine();
+                if (token!=null) {
+                    startOffset = errorNode.getStartIndex();
+                    endOffset = errorNode.getStopIndex();
+                    startCol = token.getCharPositionInLine();
+                    startLine = token.getLine();
+                }
             }
             attributes.put("CeylonMessageClass", error.getClass().getSimpleName());
             attributes.put(IMessageHandler.SEVERITY_KEY, getSeverity(error));
