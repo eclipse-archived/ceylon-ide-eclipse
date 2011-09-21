@@ -38,7 +38,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                             new ExtractFunctionRefactoringAction(editor).isEnabled()),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments", 
-                            "Convert To Named Arguments...",
+                            "Convert to Named Arguments...",
                             new ConvertToNamedArgumentsRefactoringAction(editor).isEnabled()),
                 };
         /*}

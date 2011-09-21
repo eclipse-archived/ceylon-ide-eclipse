@@ -370,7 +370,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Convert selected positional arguments to named arguments"
-            name="Convert To Named Arguments"/>
+            name="Convert to Named Arguments"/>
        <command
              id="org.eclipse.imp.runtime.editor.folding.collapseComments"
              name="Collapse Comments"/>
