@@ -334,12 +334,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Tree.CompilationUnit cu, Context context, String name) {
         List<Declaration> result = new ArrayList<Declaration>();
         Module currentModule = cu.getUnit().getPackage().getModule();
-
         addImportProposalsForModule(result, currentModule, name);
-        for (Module module : currentModule.getDependencies()) {
-            addImportProposalsForModule(result, module, name);
-        }
-
         return result;
     }
 
@@ -366,18 +361,25 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             edit = new InsertEdit(insertPosition, ", " + declaration);
         } else {
             int insertPosition = getBestImportInsertPosition(cu);
-            edit = new InsertEdit(insertPosition, "import " + packageName + " { " + declaration + " }\n");
+            String text = "import " + packageName + " { " + declaration + " }";
+            if (insertPosition==0) {
+                text = text + "\n";
+            }
+            else {
+                text = "\n" + text;
+            }
+            edit = new InsertEdit(insertPosition, text);
         }
         
         change.setEdit(edit);
-        return new ChangeCorrectionProposal("Import " + packageName + "." + declaration, change, 50, null);
+        return new ChangeCorrectionProposal("Add import of '" + declaration + "'" + 
+                " in package [" + packageName + "]", change, 50, CeylonLabelProvider.IMPORT);
     }
     
     private int getBestImportInsertPosition(CompilationUnit cu) {
         Integer stopIndex = cu.getImportList().getStopIndex();
-        
         if (stopIndex == null) return 0;
-        return stopIndex;
+        return stopIndex+1;
     }
 
     private static class FindImportNodeVisitor extends Visitor {
