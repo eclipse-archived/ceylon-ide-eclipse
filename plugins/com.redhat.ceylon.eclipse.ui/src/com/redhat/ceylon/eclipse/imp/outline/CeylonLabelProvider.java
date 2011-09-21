@@ -304,10 +304,13 @@ public class CeylonLabelProvider implements ILabelProvider {
         else if (n instanceof Tree.Import) {
             Tree.Import ai = (Tree.Import) n;
             String path="";
-            for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
-                path+="." + id.getText();
+            if (ai.getImportPath()!=null &&
+                    !ai.getImportPath().getIdentifiers().isEmpty()) {
+                for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
+                    path+="." + id.getText();
+                }
+                return "[" + path.substring(1) + "]";
             }
-            return "[" + path.substring(1) + "]";
         }
         else if (n instanceof PackageNode) {
             PackageNode pn = (PackageNode) n;
