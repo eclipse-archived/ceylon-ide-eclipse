@@ -389,7 +389,8 @@ public class CeylonLabelProvider implements ILabelProvider {
     }
     
     public static String getPackageLabel(Node decl) {
-        return getLabel(decl.getUnit().getPackage());
+        return decl.getUnit()==null ? "unknown package" : 
+            getLabel(decl.getUnit().getPackage());
     }
     
     public static String getPackageLabel(Declaration decl) {
