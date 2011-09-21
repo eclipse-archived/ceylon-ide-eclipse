@@ -35,6 +35,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -42,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -176,7 +178,8 @@ public class CeylonContentProposer implements IContentProposer {
             }
             if (node==null) node = cpc.getRootNode(); //we're in whitespace at the end of the file
             return constructCompletions(offset, prefix, 
-                        sortProposals(prefix, getProposals(node, prefix, cpc.getContext())),
+                        sortProposals(prefix, getProposals(node, prefix, 
+                                cpc.getContext(), cpc.getRootNode())),
                         cpc, node);
         } 
         /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
@@ -412,19 +415,10 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
-            Context context) {
+            Context context, Tree.CompilationUnit cu) {
         //TODO: substitute type arguments to receiving type
-        if (node instanceof Tree.QualifiedMemberExpression) {
-            ProducedType type = ((Tree.QualifiedMemberExpression) node).getPrimary().getTypeModel();
-            if (type!=null) {
-                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
-            }
-            else {
-                return Collections.emptyMap();
-            }
-        }
-        else if (node instanceof Tree.QualifiedTypeExpression) {
-            ProducedType type = ((Tree.QualifiedTypeExpression) node).getPrimary().getTypeModel();
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            ProducedType type = getPrimaryType(context, (Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
                 return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
             }
@@ -438,7 +432,38 @@ public class CeylonContentProposer implements IContentProposer {
             return result;
         }
     }
+
+    private static ProducedType getPrimaryType(Context context, Tree.QualifiedMemberOrTypeExpression qme) {
+        ProducedType type = qme.getPrimary().getTypeModel();
+        if (type==null) return null;
+        if (qme.getMemberOperator() instanceof Tree.SafeMemberOp) {
+            Class nothingType = (Class) getLanguageModuleDeclaration("Nothing", context);
+            return type.minus(nothingType);
+        }
+        else if (qme.getMemberOperator() instanceof Tree.SpreadOp) {
+            Interface emptyType = (Interface) getLanguageModuleDeclaration("Empty", context);
+            return type.minus(emptyType).getTypeArgumentList().get(0);
+        }
+        else {
+            return type;
+        }
+    }
     
+    private static Declaration getLanguageModuleDeclaration(String name, Context context) {
+        Module languageModule = context.getModules().getLanguageModule();
+        if ( languageModule != null && languageModule.isAvailable() ) {
+            if ("Bottom".equals(name)) {
+                return new BottomType();
+            }
+            for (Package languageScope : languageModule.getPackages() ) {
+                Declaration d = languageScope.getMember(name);
+                if (d != null) {
+                    return d;
+                }
+            }
+        }
+        return null;
+    }
     //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
     private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
             String prefix, Context context) {

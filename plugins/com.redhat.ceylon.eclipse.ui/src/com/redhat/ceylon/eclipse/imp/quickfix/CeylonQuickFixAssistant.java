@@ -329,7 +329,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
           for (Map.Entry<String,DeclarationWithProximity> entry: 
-              CeylonContentProposer.getProposals(node, "", tc.getContext()).entrySet()) {
+              CeylonContentProposer.getProposals(node, "", tc.getContext(), cu).entrySet()) {
             String name = entry.getKey();
             DeclarationWithProximity dwp = entry.getValue();
             int dist = getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
