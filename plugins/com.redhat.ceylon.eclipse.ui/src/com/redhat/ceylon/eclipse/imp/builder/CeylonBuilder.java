@@ -247,7 +247,8 @@ public class CeylonBuilder extends BuilderBase {
             System.out.println("Starting full build");
             
             monitor.beginTask("Full Ceylon Build", 4);
-            monitor.subTask("collecting source files");
+            monitor.subTask("Collecting Ceylon source files for project " 
+                        + project.getName());
             
             typeCheckers.remove(project);
             TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
@@ -258,18 +259,21 @@ public class CeylonBuilder extends BuilderBase {
             }
             
             monitor.worked(1);
-            monitor.subTask("parsing source files");            
+            monitor.subTask("Parsing source files for project " 
+                        + project.getName());
             
             TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
             
             monitor.worked(1);
-            monitor.subTask("compiling source files");
+            monitor.subTask("Compiling source files for project " 
+                        + project.getName());
             
             // Parsing of ALL units in the source folder should have been done
             typeChecker.process();
             
             monitor.worked(1);
-            monitor.subTask("collecting problems");
+            monitor.subTask("Collecting problems for project " 
+                        + project.getName());
             
             typeCheckers.put(project, typeChecker);
             for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits())
