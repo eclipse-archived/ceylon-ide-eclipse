@@ -16,8 +16,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.model.IPathEntry;
-import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.ParseControllerBase;
@@ -151,16 +149,7 @@ public class CeylonParseController extends ParseControllerBase {
 
         if (sourceProject!=null) {
             IProject project = sourceProject.getRawProject();
-            List<IPathEntry> buildPath = sourceProject.getBuildPath();
-
-            for (IPathEntry buildPathEntry : buildPath) {
-                if (buildPathEntry.getEntryType().equals(PathEntryType.SOURCE_FOLDER) && 
-                        buildPathEntry.getPath().isPrefixOf(resolvedPath)) {
-                    srcDir = new IFolderVirtualFile(sourceProject.getRawProject(), 
-                            buildPathEntry.getPath().removeFirstSegments(1));
-                    break;
-                }
-            }
+            srcDir = getSourceFolder(sourceProject, resolvedPath);
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker == null) return fCurrentAst;
             //Disable for now, since it causes build to loop sometimes
@@ -279,6 +268,16 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     return fCurrentAst;
+  }
+
+  private VirtualFile getSourceFolder(ISourceProject project, IPath resolvedPath) {
+    for (IPath folderPath: CeylonBuilder.getSourceFolders(project)) {
+        if (folderPath.isPrefixOf(resolvedPath)) {
+            return new IFolderVirtualFile(project.getRawProject(), 
+                    folderPath.makeRelativeTo(project.getRawProject().getFullPath()));
+        }
+    }
+    return null;
   }
 
   public Iterator<Token> getTokenIterator(IRegion region) {
