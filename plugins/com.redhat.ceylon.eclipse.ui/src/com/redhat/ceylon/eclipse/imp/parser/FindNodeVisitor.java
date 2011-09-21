@@ -10,13 +10,13 @@ class FindNodeVisitor extends Visitor
         implements NaturalVisitor {
     
     FindNodeVisitor(int fStartOffset, int fEndOffset) {
-        this.fStartOffset = fStartOffset;
-        this.fEndOffset = fEndOffset;
+        this.startOffset = fStartOffset;
+        this.endOffset = fEndOffset;
     }
     
     private Node node;
-    private int fStartOffset;
-    private int fEndOffset;
+    private int startOffset;
+    private int endOffset;
     
     public Node getNode() {
         return node;
@@ -127,8 +127,8 @@ class FindNodeVisitor extends Visitor
         Integer tokenStartIndex = left.getStartIndex();
         Integer tokenStopIndex = right.getStopIndex();
         return tokenStartIndex!=null && tokenStopIndex!=null &&
-                tokenStartIndex <= fStartOffset && 
-                tokenStopIndex+1 >= fEndOffset;
+                tokenStartIndex <= startOffset && 
+                tokenStopIndex+1 >= endOffset;
     }
     
 }
