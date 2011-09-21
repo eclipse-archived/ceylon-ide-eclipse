@@ -113,43 +113,38 @@ public class CeylonContentProposer implements IContentProposer {
         char charAtOffset = viewer.getDocument().get().charAt(offset-1);
         Character charInTokenAtOffset = token==null ? 
                 null : token.getText().charAt(offset-token.getStartIndex()-1);
-        String prefix;
-        int start;
-        int end;
+        String prefix = "";
+        int start = offset;
+        int end = offset;
         if (charInTokenAtOffset!=null && 
                 charAtOffset==charInTokenAtOffset) {
             if (isIdentifier(token)) {
+                prefix = token.getText().substring(0, offset-token.getStartIndex());
                 start = token.getStartIndex();
                 end = token.getStopIndex();
-                prefix = token.getText().substring(0, offset-token.getStartIndex());
-            }
-            else {
-                prefix = "";
-                start = offset;
-                end = offset;
             }
         } 
         else {
             boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
             if (previousToken!=null) {
-                start = previousToken.getStartIndex();
-                end = previousToken.getStopIndex();    				
-                if (previousToken.getType()==MEMBER_OP && isIdentifierChar) {
-                    prefix = Character.toString(charAtOffset);
-                }
-                else if (isIdentifier(previousToken) && isIdentifierChar) {
-                    prefix = previousToken.getText()+charAtOffset;
-                }
-                else {
-                    prefix = isIdentifierChar ? 
-                            Character.toString(charAtOffset) : "";
+                if (isIdentifierChar) {
+                    if (previousToken.getType()==MEMBER_OP) {
+                        prefix = Character.toString(charAtOffset);
+                        start = previousToken.getStartIndex();
+                        end = previousToken.getStopIndex();
+                    }
+                    else if (isIdentifier(previousToken)) {
+                        prefix = previousToken.getText()+charAtOffset;
+                        start = previousToken.getStartIndex();
+                        end = previousToken.getStopIndex();
+                    }
+                    else {
+                        prefix = Character.toString(charAtOffset);
+                    }
                 }
             }
-            else {
-                prefix = isIdentifierChar ? 
-                        Character.toString(charAtOffset) : "";
-                        start = offset;
-                        end = offset;
+            else if (isIdentifierChar) {
+                prefix = Character.toString(charAtOffset);
             }
         }
         //END BUG WORKAROUND
@@ -158,24 +153,27 @@ public class CeylonContentProposer implements IContentProposer {
         int tokenIndex = getTokenIndexAtCharacter(cpc.getTokenStream(), start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         int adjustedStart = start;
-        //int adjustedEnd = end;
+        int adjustedEnd = end;
         Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
         while (--tokenIndex>=0 && adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL) {
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
-            if (adjustedToken.getType()!=CeylonLexer.SEMICOLON && 
+            if (/*adjustedToken.getType()!=CeylonLexer.SEMICOLON &&*/ 
                     adjustedToken.getType()!=CeylonLexer.RBRACE) {
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
-                //adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
+                adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
                 break;
             }
         }
-        
-        //TODO: a remaining problem here is that if you position the caret
-        //      just after the closing brace, we will suggest declarations
-        //      from inside the brace :-/
-        
+                
         if (cpc.getRootNode() != null) {
-            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedStart);
+            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedEnd);
+            if (node!=null) {
+                Token t = node.getEndToken();
+                if (node.getStopIndex()<offset && 
+                        (t.getType()==CeylonLexer.RBRACE /*|| t.getType()==CeylonLexer.SEMICOLON*/)) {
+                    node = findNode(cpc.getRootNode(), adjustedStart, adjustedEnd+1);
+                }
+            }
             if (node==null) node = cpc.getRootNode(); //we're in whitespace at the end of the file
             return constructCompletions(offset, prefix, 
                         sortProposals(prefix, getProposals(node, prefix, cpc.getContext())),
