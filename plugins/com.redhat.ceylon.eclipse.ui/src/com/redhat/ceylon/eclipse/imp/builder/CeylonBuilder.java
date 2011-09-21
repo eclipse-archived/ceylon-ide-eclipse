@@ -259,20 +259,20 @@ public class CeylonBuilder extends BuilderBase {
             }
             
             monitor.worked(1);
-            monitor.subTask("Parsing source files for project " 
+            monitor.subTask("Parsing Ceylon source files for project " 
                         + project.getName());
             
             TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
             
             monitor.worked(1);
-            monitor.subTask("Compiling source files for project " 
+            monitor.subTask("Compiling Ceylon source files for project " 
                         + project.getName());
             
             // Parsing of ALL units in the source folder should have been done
             typeChecker.process();
             
             monitor.worked(1);
-            monitor.subTask("Collecting problems for project " 
+            monitor.subTask("Collecting Ceylon problems for project " 
                         + project.getName());
             
             typeCheckers.put(project, typeChecker);
