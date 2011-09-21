@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.imp.parser;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class FindNodeVisitor extends Visitor
         implements NaturalVisitor {
@@ -126,6 +126,11 @@ class FindNodeVisitor extends Visitor
         if (right==null) left=right;
         Integer tokenStartIndex = left.getStartIndex();
         Integer tokenStopIndex = right.getStopIndex();
+        /*Token endToken = right.getEndToken();
+        if (endToken!=null && (endToken.getType()==CeylonLexer.SEMICOLON ||
+                endToken.getType()==CeylonLexer.RBRACE)) {
+            tokenStopIndex--;
+        }*/
         return tokenStartIndex!=null && tokenStopIndex!=null &&
                 tokenStartIndex <= startOffset && 
                 tokenStopIndex+1 >= endOffset;
