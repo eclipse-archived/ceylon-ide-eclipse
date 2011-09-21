@@ -37,10 +37,12 @@ public abstract class ErrorVisitor extends Visitor {
                 RecognitionError recognitionError = (RecognitionError) error;
                 CommonToken token = (CommonToken) recognitionError
                         .getRecognitionException().token;
-                startOffset = token.getStartIndex();
-                endOffset = token.getStopIndex();
-                startCol = token.getCharPositionInLine();
-                startLine = token.getLine();
+                if (token!=null) {
+                    startOffset = token.getStartIndex();
+                    endOffset = token.getStopIndex();
+                    startCol = token.getCharPositionInLine();
+                    startLine = token.getLine();
+                }
             }
             if (error instanceof AnalysisMessage) {
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
