@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.builder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,15 +23,19 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.imp.builder.BuilderBase;
 import org.eclipse.imp.builder.MarkerCreator;
+import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
-import org.eclipse.imp.model.IPathEntry;
 import org.eclipse.imp.model.IPathEntry.PathEntryType;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.runtime.PluginBase;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -140,22 +145,7 @@ public class CeylonBuilder extends BuilderBase {
     protected String getInfoMarkerID() {
         return PROBLEM_MARKER_ID;
     }
-
-    // returns workspace-relative paths
     
-    private Collection<IPath> retrieveSourceFolders(
-            ISourceProject sourceProject) {
-        List<IPath> result = new ArrayList<IPath>();
-        List<IPathEntry> buildPath = sourceProject.getBuildPath();
-        for (IPathEntry buildPathEntry : buildPath) {
-            if (buildPathEntry.getEntryType().equals(
-                    PathEntryType.SOURCE_FOLDER)) {                
-                result.add(buildPathEntry.getPath().makeRelativeTo(sourceProject.getRawProject().getFullPath()));
-            }
-        }
-        return result;
-    }
-
     private ISourceProject getSourceProject() {
         ISourceProject sourceProject = null;
         try {
@@ -175,7 +165,7 @@ public class CeylonBuilder extends BuilderBase {
      * @return true iff an arbitrary file is a ceylon source file.
      */
     protected boolean isSourceFile(IFile file) {
-        IPath path = file.getProjectRelativePath();
+        IPath path = file.getFullPath(); //getProjectRelativePath();
         if (path == null)
             return false;
 
@@ -184,8 +174,7 @@ public class CeylonBuilder extends BuilderBase {
 
         ISourceProject sourceProject = getSourceProject();
         if (sourceProject != null) {
-            Collection<IPath> sourceFolders = retrieveSourceFolders(sourceProject);
-            for (IPath sourceFolder : sourceFolders) {
+            for (IPath sourceFolder: getSourceFolders(sourceProject)) {
                 if (sourceFolder.isPrefixOf(path)) {
                     return true;
                 }
@@ -261,13 +250,11 @@ public class CeylonBuilder extends BuilderBase {
             monitor.subTask("collecting source files");
             
             typeCheckers.remove(project);
-            Collection<IPath> sourceFolders = retrieveSourceFolders(sourceProject);
             TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
                     .verbose(false);
-            for (IPath sourceFolder : sourceFolders) {
-                IFolderVirtualFile srcDir = new IFolderVirtualFile(project,
-                        sourceFolder);
-                typeCheckerBuilder.addSrcDirectory(srcDir);
+            for (IPath sourceFolder : getSourceFolders(sourceProject)) {
+                typeCheckerBuilder.addSrcDirectory(new IFolderVirtualFile(project,
+                        sourceFolder.makeRelativeTo(project.getFullPath())));
             }
             
             monitor.worked(1);
@@ -411,4 +398,38 @@ public class CeylonBuilder extends BuilderBase {
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
     }
+
+    /**
+     * Read the IJavaProject classpath configuration and populate the ISourceProject's
+     * build path accordingly.
+     */
+    public static List<IPath> getSourceFolders(ISourceProject project) {
+        IJavaProject javaProject = JavaCore.create(project.getRawProject());
+        if (javaProject.exists()) {
+            try {
+                List<IPath> sourceFolders = new ArrayList<IPath>();
+                for (IClasspathEntry entry: javaProject.getResolvedClasspath(true)) {
+                    IPath path = entry.getPath();
+                    if (entry.getEntryKind()==IClasspathEntry.CPE_SOURCE)
+                    {
+                        for (IPath pattern: entry.getInclusionPatterns())
+                        {
+                            if (LANGUAGE.hasExtension(pattern.getFileExtension()))
+                            {
+                                sourceFolders.add(ModelFactory.createPathEntry(PathEntryType.SOURCE_FOLDER, path)
+                                        .getPath());
+                                break;
+                            }                            
+                        }
+                    }
+                }
+                return sourceFolders;
+            } 
+            catch (JavaModelException e) {
+                ErrorHandler.reportError(e.getMessage(), e);
+            }
+        }
+        return Collections.emptyList();
+    }
+
 }

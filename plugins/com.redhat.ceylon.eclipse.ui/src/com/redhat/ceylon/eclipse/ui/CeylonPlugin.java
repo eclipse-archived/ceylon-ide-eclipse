@@ -18,31 +18,18 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.model.ICompilationUnit;
-import org.eclipse.imp.model.IPathEntry;
-import org.eclipse.imp.model.IPathEntry.PathEntryType;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.IFactoryExtender;
 import org.eclipse.imp.runtime.PluginBase;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -51,82 +38,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.BundleContext;
 
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-
 public class CeylonPlugin extends PluginBase {
-
-	private static final class CeylonFactoryExtender implements
-	        IFactoryExtender {
-	    
-	    public void extend(ISourceProject project) {
-            initializeBuildPathFromJavaProject(project);
-        }
-
-	    public void extend(ICompilationUnit unit) { }
-
-	   /**
-         * Read the IJavaProject classpath configuration and populate the ISourceProject's
-         * build path accordingly.
-         */
-        public void initializeBuildPathFromJavaProject(ISourceProject project) {
-            IJavaProject javaProject= JavaCore.create(project.getRawProject());
-            if (javaProject.exists()) {
-                try {
-                    IClasspathEntry[] cpEntries= javaProject.getResolvedClasspath(true);
-                    List<IPathEntry> buildPath= new ArrayList<IPathEntry>(cpEntries.length);
-                    for(int i= 0; i < cpEntries.length; i++) {
-                        IClasspathEntry entry= cpEntries[i];
-                        IPath path= entry.getPath();
-
-                        IPathEntry.PathEntryType type = getType(entry);
-                        if (type.equals(PathEntryType.SOURCE_FOLDER))
-                        {
-                            boolean ceylonSourceFolder = false;
-                            IPath[] inclusionPatterns = entry.getInclusionPatterns(); 
-                            for (int p=0; p<inclusionPatterns.length; p++)
-                            {
-                                if (inclusionPatterns[p].lastSegment().endsWith(".ceylon"))
-                                {
-                                    ceylonSourceFolder = true;
-                                    break;
-                                }                            
-                            }
-                            if (ceylonSourceFolder)
-                            {
-                                IPathEntry pathEntry= ModelFactory.createPathEntry(type, path);
-                                buildPath.add(pathEntry);
-                            }
-                        }
-                        else
-                        {
-                            IPathEntry pathEntry= ModelFactory.createPathEntry(type, path);
-                            buildPath.add(pathEntry);
-                        }
-                    }
-                    project.setBuildPath(buildPath);
-                } catch (JavaModelException e) {
-                    ErrorHandler.reportError(e.getMessage(), e);
-                }
-            }
-        }
-
-        private IPathEntry.PathEntryType getType(IClasspathEntry entry) {
-            switch (entry.getEntryKind()) {
-            case IClasspathEntry.CPE_CONTAINER:
-                return PathEntryType.CONTAINER;
-            case IClasspathEntry.CPE_LIBRARY:
-                return PathEntryType.ARCHIVE;
-            case IClasspathEntry.CPE_PROJECT:
-                return PathEntryType.PROJECT;
-            case IClasspathEntry.CPE_SOURCE:
-                return PathEntryType.SOURCE_FOLDER;
-            default:
-            //case IClasspathEntry.CPE_VARIABLE:
-                throw new IllegalArgumentException("Encountered variable class-path entry: " + 
-                        entry.getPath().toPortableString());
-            }
-        }
-    }
 
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
@@ -148,9 +60,6 @@ public class CeylonPlugin extends PluginBase {
 	@Override
 	public void start(BundleContext context) throws Exception {
 	    super.start(context);
-        ModelFactory.getInstance()
-                .installExtender(new CeylonFactoryExtender(), 
-                        CeylonBuilder.LANGUAGE);
         runInitialBuild();
 	}
 
@@ -190,8 +99,7 @@ public class CeylonPlugin extends PluginBase {
                         public void run(IProgressMonitor monitor) 
                                 throws InvocationTargetException, InterruptedException {
                            try {
-                               ResourcesPlugin.getWorkspace()
-                                   .build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+                               ResourcesPlugin.getWorkspace().build(FULL_BUILD, monitor);
                            }
                            catch (CoreException ce) {
                                throw new InvocationTargetException(ce);
