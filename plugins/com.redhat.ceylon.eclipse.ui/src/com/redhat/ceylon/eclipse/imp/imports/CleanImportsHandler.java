@@ -31,6 +31,7 @@ public class CleanImportsHandler extends AbstractHandler {
         UniversalEditor editor = (UniversalEditor) getCurrentEditor();
         Tree.CompilationUnit cu = (Tree.CompilationUnit) editor
                 .getParseController().getCurrentAst();
+        if (cu==null) return null;
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         cu.visit(duiv);
         TextFileChange tfc = new TextFileChange("Clean Imports", 
