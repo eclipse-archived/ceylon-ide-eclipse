@@ -287,7 +287,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         TextFileChange change = new TextFileChange("Add Member", file);
         change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
         proposals.add(createCreateProposal(def, 
-                "Create '" + desc + "' in '" + typeDec.getName() + "'", 
+                "Create " + desc + " in '" + typeDec.getName() + "'", 
                 image, indent.length(), offset, file, change));
     }
 
@@ -298,7 +298,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Local", file);
         change.setEdit(new InsertEdit(offset, def+indent));
-        proposals.add(createCreateProposal(def, "Create local '" + desc +"'", 
+        proposals.add(createCreateProposal(def, "Create local " + desc, 
                 image, 0, offset, file, change));
     }
 
