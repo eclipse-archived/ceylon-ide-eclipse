@@ -102,18 +102,22 @@ public class CeylonContentProposer implements IContentProposer {
         if (index<0) {
             index = -index;
             previousToken = (CommonToken) cpc.getTokenStream().get(index);
-            token = (CommonToken) cpc.getTokenStream().get(index+1);
+            token = index==cpc.getTokenStream().size()-1 ? 
+                    null : (CommonToken) cpc.getTokenStream().get(index+1);
         }
         else {
-            previousToken = (CommonToken) cpc.getTokenStream().get(index-1);
+            previousToken = index==0 ? 
+                    null : (CommonToken) cpc.getTokenStream().get(index-1);
             token = (CommonToken) cpc.getTokenStream().get(index);
         }
         char charAtOffset = viewer.getDocument().get().charAt(offset-1);
-        char charInTokenAtOffset = token.getText().charAt(offset-token.getStartIndex()-1);
+        Character charInTokenAtOffset = token==null ? 
+                null : token.getText().charAt(offset-token.getStartIndex()-1);
         String prefix;
         int start;
         int end;
-        if (charAtOffset==charInTokenAtOffset) {
+        if (charInTokenAtOffset!=null && 
+                charAtOffset==charInTokenAtOffset) {
             if (isIdentifier(token)) {
                 start = token.getStartIndex();
                 end = token.getStopIndex();
@@ -154,25 +158,28 @@ public class CeylonContentProposer implements IContentProposer {
         int tokenIndex = getTokenIndexAtCharacter(cpc.getTokenStream(), start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         int adjustedStart = start;
-        int adjustedEnd = end;
+        //int adjustedEnd = end;
         Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
         while (--tokenIndex>=0 && adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL) {
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
             if (adjustedToken.getType()!=CeylonLexer.SEMICOLON && 
                     adjustedToken.getType()!=CeylonLexer.RBRACE) {
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
-                adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
+                //adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
                 break;
             }
         }
         
+        //TODO: a remaining problem here is that if you position the caret
+        //      just after the closing brace, we will suggest declarations
+        //      from inside the brace :-/
+        
         if (cpc.getRootNode() != null) {
-            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedEnd);
-            if (node!=null)  {
-                return constructCompletions(offset, prefix, 
+            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedStart);
+            if (node==null) node = cpc.getRootNode(); //we're in whitespace at the end of the file
+            return constructCompletions(offset, prefix, 
                         sortProposals(prefix, getProposals(node, prefix, cpc.getContext())),
                         cpc, node);
-            }
         } 
         /*result.add(new ErrorProposal("No proposals available due to syntax errors", 
                  offset));*/
@@ -185,7 +192,9 @@ public class CeylonContentProposer implements IContentProposer {
             List<ICompletionProposal> result) {
         StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            for (int i=0; i<path.getIdentifiers().size()-1; i++) {
+            int ids = path.getIdentifiers().size();
+            if (!prefix.isEmpty()) ids--; //when the path does not end in a .
+            for (int i=0; i<ids; i++) {
                 fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
             }
         }
