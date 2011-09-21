@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
@@ -137,6 +138,7 @@ public class CeylonPlugin extends PluginBase {
         reg.put(CEYLON_FORMAL_REFINEMENT, image("implm_co.gif"));
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
+        reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
 	}
 
 }

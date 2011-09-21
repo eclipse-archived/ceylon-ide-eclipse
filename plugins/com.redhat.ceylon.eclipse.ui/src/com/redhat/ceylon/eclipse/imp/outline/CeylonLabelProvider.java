@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.outline;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_WARNING;
@@ -62,8 +63,9 @@ public class CeylonLabelProvider implements ILabelProvider {
     private static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
     private static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
-    private static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
+    public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
+    public static  Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
     
     
     private final boolean includePackage;
