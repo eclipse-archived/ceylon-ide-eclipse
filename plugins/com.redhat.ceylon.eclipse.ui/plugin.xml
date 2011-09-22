@@ -290,10 +290,6 @@
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
-            <hiddenMenuItem
-                  id="org.eclipse.imp.source.menu"/>
-            <hiddenMenuItem
-                  id="org.eclipse.imp.runtime.codingActionSet"/>
         </perspectiveExtension>
    </extension>
    
@@ -493,7 +489,8 @@
       </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
-            <toolbar
+            <toolbar 
+                  label="Ceylon"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
             <command
                   label="Open Ceylon Declaration..." 
@@ -504,38 +501,82 @@
             </toolbar>
       </menuContribution>
       <menuContribution
-            locationURI="menu:refactorMenuId">
-            <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
-            <separator 
-                  visible="true"
-                  name="sep"/>
-            <command id="cleanImports"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
-                  label="Clean Imports"/>
-      </menuContribution>
-      <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?before=refactorMenuId">
+            locationURI="menu:org.eclipse.ui.main.menu?after=edit">
             <menu
-                  label="Find"
+                  label="Source"
                   id="com.redhat.ceylon.eclipse.ui.menu.find">
                 <dynamic id="find"
                       class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+                <separator 
+                      name="sep1" 
+                      visible="true"/>
+                <dynamic id="refactor"
+                      class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+                <separator 
+                      visible="true"
+                      name="sep2"/>
+                <command id="cleanImports"
+                      commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+                      label="Clean Imports"/>
+                <separator 
+                      name="sep3" 
+                      visible="true"/>
+                <command
+                      id="shiftRight"
+                      commandId="org.eclipse.ui.edit.text.shiftRight"
+                      label="Shift Right"/>
+                <command
+                      id="shiftLeft"
+                      commandId="org.eclipse.ui.edit.text.shiftLeft"
+                      label="Shift Left"/>
+                <command
+                      id="correctIndentation"
+                      commandId="org.eclipse.imp.runtime.editor.correctIndentation"
+                      label="Correct Indentation"/>
+                <separator 
+                      name="sep4" 
+                      visible="true"/>
+                <command
+                      id="toggleComment"
+                      commandId="org.eclipse.imp.runtime.editor.toggleComment"
+                      label="Toggle Comment"/>
             </menu>
       </menuContribution>
-      <!-- locationURI="popup:#TextEditorContext?before=additions" -->
+      <menuContribution
+            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=ShiftRight">
+            <separator 
+                  name="sep0" 
+                  visible="true"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=ShiftLeft">
+            <command
+                  id="correctIndentation"
+                  commandId="org.eclipse.imp.runtime.editor.correctIndentation"
+                  label="Correct Indentation"/>
+            <separator 
+                  name="sep1" 
+                  visible="true"/>
+            <command
+                  id="toggleComment"
+                  commandId="org.eclipse.imp.runtime.editor.toggleComment"
+                  label="Toggle Comment"/>
+      </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
+            <separator
+                  visible="true"
+                  name="sep2"/>
             <dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
-            <separator 
+            <separator
                   visible="true"
-                  name="sepBefore"/>
+                  name="sep3"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
             <separator 
                   visible="true"
-                  name="sepAfter"/>
+                  name="sep4"/>
             <command id="cleanImports"
                   commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
                   label="Clean Imports"/>
