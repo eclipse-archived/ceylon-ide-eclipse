@@ -56,4 +56,22 @@ public class SourceCodeVirtualFile implements VirtualFile {
       sb.append("SourceCodeVirtualFile");
       return sb.toString();
   }  
+
+  @Override
+  public int hashCode() {
+      return getPath().hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+      if (obj instanceof ResourceVirtualFile) {
+          return ((ResourceVirtualFile) obj).getPath().equals(getPath());
+      }
+      else if (obj instanceof SourceCodeVirtualFile) {
+          return ((SourceCodeVirtualFile) obj).getPath().equals(getPath());
+      }
+      else {
+          return super.equals(obj);
+      }
+  }
 }

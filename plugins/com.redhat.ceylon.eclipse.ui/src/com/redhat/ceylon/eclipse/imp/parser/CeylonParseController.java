@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +42,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.SourceCodeVirtualFile;
+import com.redhat.ceylon.eclipse.vfs.TemporaryFile;
 
 public class CeylonParseController extends ParseControllerBase {
 
@@ -178,48 +177,31 @@ public class CeylonParseController extends ParseControllerBase {
         Package pkg = null;
         if (builtPhasedUnit!=null) {
             // Editing an already built file
-            pkg = new TemporaryPackage(builtPhasedUnit.getPackage());
+            Package sourcePackage = builtPhasedUnit.getPackage();
+            pkg = new Package();
+            pkg.setName(sourcePackage.getName());
+            pkg.setModule(sourcePackage.getModule());
+            pkg.getUnits().addAll(sourcePackage.getUnits());
         }
         else {
             // Editing a new file
             Modules modules = typeChecker.getContext().getModules();
             if (srcDir==null) {
-                srcDir = new VirtualFile() {
-                    @Override
-                    public boolean isFolder() {
-                        return true;
-                    }
-                    @Override
-                    public String getPath() {
-                        return "";
-                    }
-                    @Override
-                    public String getName() {
-                        return "";
-                    }
-                    @Override
-                    public InputStream getInputStream() {
-                        return null;
-                    }
-                    @Override
-                    public List<VirtualFile> getChildren() {
-                        return Collections.emptyList();
-                    }
-                };
+                srcDir = new TemporaryFile();
             }
             else {
                 // Retrieve the target package from the file src-relative path
                 //TODO: this is very fragile!
-                String packageName = file.getPath().replaceFirst(srcDir.getPath() + "/", "")
-                        .replace("/" + file.getName(), "").replace('/', '.');
-                for (Module module : modules.getListOfModules()) {
-                    for (Package p : module.getPackages()) {
+                String packageName = constructPackageName(file, srcDir);
+                for (Module module: modules.getListOfModules()) {
+                    for (Package p: module.getPackages()) {
                         if (p.getQualifiedNameString().equals(packageName)) {
                             pkg = p;
                             break;
                         }
-                        if (pkg != null)
+                        if (pkg != null) {
                             break;
+                        }
                     }
                 }
             }
@@ -268,6 +250,11 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     return fCurrentAst;
+  }
+
+  private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
+    return file.getPath().replaceFirst(srcDir.getPath() + "/", "")
+            .replace("/" + file.getName(), "").replace('/', '.');
   }
 
   private VirtualFile getSourceFolder(ISourceProject project, IPath resolvedPath) {

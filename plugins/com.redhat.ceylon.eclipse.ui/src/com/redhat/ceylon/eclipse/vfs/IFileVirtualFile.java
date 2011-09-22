@@ -48,4 +48,5 @@ public class IFileVirtualFile extends ResourceVirtualFile {
     public List<VirtualFile> getChildren() {
         return new ArrayList<VirtualFile>();
     }
+    
 }
