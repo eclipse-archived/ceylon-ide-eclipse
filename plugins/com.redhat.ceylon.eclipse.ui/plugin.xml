@@ -18,8 +18,8 @@
             icon="icons/template_obj.gif"
             extensions="ceylon" 
             default="true" 
+            class="com.redhat.ceylon.eclipse.imp.editor.CeylonEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
-            class="org.eclipse.imp.editor.UniversalEditor"
             id="com.redhat.ceylon.eclipse.ui.editor">
           <contentTypeBinding
                 contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"/>
@@ -290,6 +290,10 @@
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
+            <hiddenMenuItem
+                  id="org.eclipse.imp.source.menu"/>
+            <hiddenMenuItem
+                  id="org.eclipse.imp.runtime.codingActionSet"/>
         </perspectiveExtension>
    </extension>
    
