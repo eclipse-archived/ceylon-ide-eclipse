@@ -36,6 +36,8 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
  * ALT-arrow navigation. This and related classes 
  * are a massive copy/paste job from JDT.
  * 
+ * TODO: move all this stuff to CeylonEditor
+ * 
  * @author gavin
  *
  */
