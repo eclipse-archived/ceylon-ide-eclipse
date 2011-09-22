@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULT
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,7 +31,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.preferences.PreferenceConstants;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
@@ -43,23 +41,18 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.framework.BundleContext;
-
-import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 
 public class CeylonPlugin extends PluginBase {
 
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
+	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
 
 	/**
 	 * The unique instance of this plugin class
@@ -83,8 +76,8 @@ public class CeylonPlugin extends PluginBase {
            public void run() {
              IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
              if (window != null) {
-                 setIconForOpenWindows(window);
-                 setDefaults(RuntimePlugin.getInstance().getPreferenceStore());
+                 //setIconForOpenWindows(window);
+                 setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
                  runInitialBuild();
              }
            }
@@ -171,7 +164,7 @@ public class CeylonPlugin extends PluginBase {
 	 * editor to the language-specific icon until the editor
 	 * becomes active.
 	 */
-    private void setIconForOpenWindows(IWorkbenchWindow window) {
+    /*private void setIconForOpenWindows(IWorkbenchWindow window) {
         for (IWorkbenchPage page: window.getPages()) {
              for (IEditorReference ref: page.findEditors(null, UniversalEditor.EDITOR_ID, IWorkbenchPage.MATCH_ID)) {
                  try {
@@ -184,7 +177,7 @@ public class CeylonPlugin extends PluginBase {
                  }
              }
          }
-    }
+    }*/
     
     private static final String FLAG = "preferencesInitialized";
 
@@ -194,7 +187,7 @@ public class CeylonPlugin extends PluginBase {
      * to set the defaults in time for already-open editors
      * to detect them.
      */
-    private static void setDefaults(IPreferenceStore store) {
+    private static void setPreferenceDefaults(IPreferenceStore store) {
         if (!store.getBoolean(FLAG)) {
             System.out.println("INITIALIZING PREFERENCES");
             store.setValue(FLAG, true);

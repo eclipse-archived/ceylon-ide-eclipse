@@ -19,6 +19,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 public class Util {
     
     public static IProject getProject(IEditorInput editor) {
@@ -66,7 +68,7 @@ public class Util {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(IMarker.CHAR_START, offset);
         map.put(IMarker.CHAR_END, offset+length);
-        map.put(IDE.EDITOR_ID_ATTR, "org.eclipse.imp.runtime.impEditor");
+        map.put(IDE.EDITOR_ID_ATTR, CeylonPlugin.EDITOR_ID);
         try {
             IMarker marker = file.createMarker(IMarker.TEXT);
             marker.setAttributes(map);
