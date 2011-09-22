@@ -9,18 +9,28 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 
 public class CeylonEditor extends UniversalEditor {
+    static Field refreshContributionsField;
+    static Field generateActionGroupField;
+    static {
+        try {
+            refreshContributionsField = UniversalEditor.class.getDeclaredField("fRefreshContributions");
+            refreshContributionsField.setAccessible(true);
+            generateActionGroupField = UniversalEditor.class.getDeclaredField("fGenerateActionGroup");
+            generateActionGroupField.setAccessible(true);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
         getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
         //getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         try {
-            Field frc = UniversalEditor.class.getDeclaredField("fRefreshContributions");
-            frc.setAccessible(true);
-            Field fgag = UniversalEditor.class.getDeclaredField("fGenerateActionGroup");
-            fgag.setAccessible(true);
-            getSite().getPage().removePartListener((DefaultPartListener) frc.get(this));
-            fgag.set(this, new CeylonGenerateActionGroup(this));
+            getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
+            generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
         }
         catch (Exception e) {
             e.printStackTrace();
