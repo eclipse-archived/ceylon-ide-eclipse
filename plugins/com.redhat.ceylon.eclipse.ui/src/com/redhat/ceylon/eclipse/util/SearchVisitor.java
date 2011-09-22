@@ -1,8 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -16,22 +13,19 @@ public class SearchVisitor extends Visitor {
 	}
 	
 	private final Matcher matcher;
-	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public SearchVisitor(Matcher matcher) {
 		this.matcher = matcher;
 	}
 	
-	public Set<Node> getNodes() {
-		return nodes;
-	}
+	public void matchingNode(Node node) {}
 	
 	@Override
 	public void visit(Tree.StaticMemberOrTypeExpression that) {
 		if (matcher.includeReferences() &&
 				that.getIdentifier()!=null && 
 				matcher.matches(that.getIdentifier().getText())) {
-			nodes.add(that);
+		    matchingNode(that);
 		}
 		super.visit(that);
 	}
@@ -41,7 +35,7 @@ public class SearchVisitor extends Visitor {
 		if (matcher.includeReferences() &&
 				that.getIdentifier()!=null && 
 				matcher.matches(that.getIdentifier().getText())) {
-			nodes.add(that);
+		    matchingNode(that);
 		}
 		super.visit(that);
 	}
@@ -51,7 +45,7 @@ public class SearchVisitor extends Visitor {
 		if (matcher.includeDeclarations() &&
 				that.getIdentifier()!=null && 
 				matcher.matches(that.getIdentifier().getText())) {
-			nodes.add(that);
+		    matchingNode(that);
 		}
 		super.visit(that);
 	}

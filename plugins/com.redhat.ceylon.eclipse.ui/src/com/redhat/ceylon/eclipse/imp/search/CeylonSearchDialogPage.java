@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.search.ui.ISearchPage;
@@ -17,6 +20,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.editors.text.TextEditor;
 
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 
@@ -28,6 +33,7 @@ public class CeylonSearchDialogPage extends DialogPage
 	private boolean references = true;
 	private boolean declarations = true;
 	private ISearchPageContainer container;
+    private static List<String> previousPatterns = new ArrayList<String>();
 	
 	public CeylonSearchDialogPage() {
 		super("Ceylon Search");
@@ -41,12 +47,19 @@ public class CeylonSearchDialogPage extends DialogPage
 		layout.numColumns = 2;
 		result.setLayout(layout);
 		Label title = new Label(result, SWT.RIGHT);  
-		title.setText("Search string");
+		title.setText("Search string (* = any string, ? = any character):");
 		GridData gd = new GridData();
 		gd.horizontalSpan=2;
 		title.setLayoutData(gd);
 		final Combo text = new Combo(result, 0);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+		IEditorPart currentEditor = Util.getCurrentEditor();
+		if (currentEditor instanceof TextEditor) {
+		    searchString = Util.getSelectionText((TextEditor) currentEditor);
+		}
+		if ("".equals(searchString) && !previousPatterns.isEmpty()) {
+		    searchString = previousPatterns.get(0);
+		}
 		text.setText(searchString);
 		text.addModifyListener(new ModifyListener() {
 			@Override
@@ -54,6 +67,9 @@ public class CeylonSearchDialogPage extends DialogPage
 				searchString = text.getText();
 			}
 		});
+		for (String string: previousPatterns) {
+		    text.add(string);
+		}
 		final Button caseSense = new Button(result, SWT.CHECK);
 		caseSense.setText("Case sensitive");
 		caseSense.setSelection(caseSensitive);
@@ -96,6 +112,13 @@ public class CeylonSearchDialogPage extends DialogPage
 
 	@Override
 	public boolean performAction() {
+        if (previousPatterns.isEmpty() || 
+                !previousPatterns.get(0).equals(searchString)) {
+            previousPatterns.add(0, searchString);
+            if (previousPatterns.size()>10) {
+                previousPatterns.remove(10);
+            }
+        }
 		int scope = container.getSelectedScope();
 		String[] projectNames;
 		switch (scope) {
@@ -154,7 +177,7 @@ public class CeylonSearchDialogPage extends DialogPage
 		
 		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(
 				searchString, projectNames, references, declarations, 
-				caseSensitive));
+				caseSensitive, false));
 		return true;
 	}
 

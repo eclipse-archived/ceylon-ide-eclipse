@@ -1,6 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.compile;
+
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -17,22 +21,52 @@ import com.redhat.ceylon.eclipse.util.SearchVisitor;
 
 class CeylonSearchQuery implements ISearchQuery {
 	
-	private final String string;
+	class PatternMatcher implements SearchVisitor.Matcher {
+        Pattern pattern = compile(patternString(), flags());
+        
+        private String patternString() {
+            return regex ? string : string
+                    .replace("*", ".*").replace("?", ".");
+        }
+        
+        private int flags() {
+            return caseSensitive ? 0 : CASE_INSENSITIVE;
+        }
+        
+        @Override
+        public boolean matches(String string) {
+            return pattern.matcher(string).find();
+        }
+        
+        @Override
+        public boolean includeReferences() {
+            return includeReferences;
+        }
+        
+        @Override
+        public boolean includeDeclarations() {
+            return includeDeclarations;
+        }
+    }
+
+    private final String string;
     private final String[] projects;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
     private int count = 0;
     private final boolean caseSensitive;
+    private final boolean regex;
     private final boolean includeReferences;
     private final boolean includeDeclarations;
 
 	CeylonSearchQuery(String string, String[] projects,
 			boolean includeReferences, boolean includeDeclarations,
-			boolean caseSensitive) {
+			boolean caseSensitive, boolean regex) {
 		this.string = string;
 		this.projects = projects;
 		this.caseSensitive = caseSensitive;
 		this.includeDeclarations = includeDeclarations;
 		this.includeReferences = includeReferences;
+		this.regex = regex;
 	}
 
 	@Override
@@ -40,40 +74,20 @@ class CeylonSearchQuery implements ISearchQuery {
 	    List<PhasedUnit> units = projects==null ? 
 	                CeylonBuilder.getUnits() : 
 	                CeylonBuilder.getUnits(projects);
-        for (PhasedUnit pu: units) {
-	        SearchVisitor sv = new SearchVisitor( new SearchVisitor.Matcher() {
+        for (final PhasedUnit pu: units) {
+	        SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
 	            @Override
-	            public boolean matches(String string) {
-	                String pattern = CeylonSearchQuery.this.string;
-	                //TODO: do a proper pattern match!
-                    if (caseSensitive) {
-	                    return string.contains(pattern);
-	                }
-	                else {
-	                    return string.toLowerCase()
-	                        .contains(pattern.toLowerCase());
-	                }
+	            public void matchingNode(Node node) {
+	                FindContainerVisitor fcv = new FindContainerVisitor(node);
+	                pu.getCompilationUnit().visit(fcv);
+	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
+	                        CeylonBuilder.getFile(pu), 
+	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+	                        node.getToken()));
+	                count++;
 	            }
-	            @Override
-	            public boolean includeReferences() {
-	                return includeReferences;
-	            }
-	            @Override
-	            public boolean includeDeclarations() {
-	                return includeDeclarations;
-	            }
-	        });
+	        };
             pu.getCompilationUnit().visit(sv);
-    		//TODO: should really add these as we find them:
-    		for (Node node: sv.getNodes()) {
-    			FindContainerVisitor fcv = new FindContainerVisitor(node);
-    			pu.getCompilationUnit().visit(fcv);
-    			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
-    			        CeylonBuilder.getFile(pu), 
-    					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
-    					node.getToken()));
-    		}
-    		count+=sv.getNodes().size();
         }
 		return Status.OK_STATUS;
 	}
