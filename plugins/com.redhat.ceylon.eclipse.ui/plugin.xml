@@ -2,15 +2,29 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-   <!--extension
+   <extension
          point="org.eclipse.core.contenttype.contentTypes">
        <content-type
-             id="com.redhat.ceylon.eclipse.ui.ceylon"
+             id="com.redhat.ceylon.eclipse.ui.ceylonSource"
              file-extensions="ceylon" 
              name="Ceylon Source File"
-             base-type="org.eclipse.core.runtime.text">
-       </content-type>
-   </extension-->
+             base-type="org.eclipse.core.runtime.text"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Ceylon Editor"
+            icon="icons/template_obj.gif"
+            extensions="ceylon" 
+            default="true" 
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            class="org.eclipse.imp.editor.UniversalEditor"
+            id="com.redhat.ceylon.eclipse.ui.editor">
+          <contentTypeBinding
+                contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"/>
+      </editor>
+   </extension>
    
    <extension
          point="org.eclipse.imp.runtime.languageDescription">
@@ -282,7 +296,7 @@
    <extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
-            targetID="org.eclipse.imp.runtime.impEditor"
+            targetID="com.redhat.ceylon.eclipse.ui.editor"
             id="com.redhat.ceylon.eclipse.ui.rulerActions">
          <action
                label="Select Ruler"
@@ -507,7 +521,7 @@
       </menuContribution>
       <!-- locationURI="popup:#TextEditorContext?before=additions" -->
       <menuContribution
-            locationURI="popup:org.eclipse.imp.runtime.impEditor.EditorContext?before=additions">
+            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
             <dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             <separator 
