@@ -225,7 +225,7 @@ public class CeylonParseController extends ParseControllerBase {
                 typeChecker.getContext(), tokenStream);
 
         phasedUnit.validateTree();
-        phasedUnit.scanDeclarations(false);
+        phasedUnit.scanDeclarations();
         phasedUnit.scanTypeDeclarations();
         phasedUnit.validateRefinement();
         phasedUnit.analyseTypes();
