@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation;
+
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -17,22 +19,28 @@ class FindNodeVisitor extends Visitor
     private Node node;
     private int startOffset;
     private int endOffset;
-    private boolean occursInExtends;
-    //private boolean currentlyInExtends;
+    private OccurrenceLocation occurrence;
     
     public Node getNode() {
         return node;
     }
     
-    boolean isOccursInExtends() {
-        return occursInExtends;
+    OccurrenceLocation getOccurrenceLocation() {
+        return occurrence;
     }
     
     public void visit(Tree.ExtendedType that) {
-        //currentlyInExtends = true;
-        occursInExtends = occursInExtends || inBounds(that);
+        if (inBounds(that)) {
+            occurrence = OccurrenceLocation.EXTENDS;
+        }
         super.visit(that);
-        //currentlyInExtends = false;
+    }
+    
+    public void visit(Tree.SatisfiedTypes that) {
+        if (inBounds(that)) {
+            occurrence = OccurrenceLocation.SATISFIES;
+        }
+        super.visit(that);
     }
     
     @Override
@@ -94,7 +102,6 @@ class FindNodeVisitor extends Visitor
     public void visit(Tree.SimpleType that) {
         if (inBounds(that.getIdentifier())) {
             node = that;
-            //occursInExtends = currentlyInExtends;
         }
         else {
             super.visit(that);
