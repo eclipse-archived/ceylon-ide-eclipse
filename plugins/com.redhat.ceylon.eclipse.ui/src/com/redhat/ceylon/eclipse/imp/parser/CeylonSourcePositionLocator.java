@@ -76,6 +76,14 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return visitor.getNode();
     }
     
+    public static boolean occursInExtends(Tree.CompilationUnit cu, Node node) {
+        FindNodeVisitor visitor = new FindNodeVisitor(node.getStartIndex(), node.getStopIndex()+1);
+        //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
+        cu.visit(visitor);
+        //System.out.println("selected node: " + visitor.getNode());
+        return visitor.isOccursInExtends();
+    }
+    
     public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
         //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
