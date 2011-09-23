@@ -166,7 +166,8 @@ public class CeylonContentProposer implements IContentProposer {
                 || adjustedToken.getType()==CeylonLexer.INTERSECTION_OP //TODO: hacky workaround the fact that the parser 
                 || adjustedToken.getType()==CeylonLexer.UNION_OP)) {    //      truncates the span of extends/satisfies
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
-            if (/*adjustedToken.getType()!=CeylonLexer.SEMICOLON &&*/ 
+            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
+                    /*adjustedToken.getType()!=CeylonLexer.SEMICOLON &&*/ 
                     adjustedToken.getType()!=CeylonLexer.RBRACE &&
                     adjustedToken.getType()!=CeylonLexer.INTERSECTION_OP && //TODO: second part of hacky workaround!
                     adjustedToken.getType()!=CeylonLexer.UNION_OP) {
@@ -260,8 +261,8 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else {
             boolean inImport = node.getScope() instanceof ImportList;
-            if (!inImport && 
-                    !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+            boolean isQualified = node instanceof Tree.QualifiedMemberOrTypeExpression;
+            if (!inImport && !isQualified) {
                 addKeywordProposals(offset, prefix, result);
             }
             for (final DeclarationWithProximity dwp: set) {
@@ -274,7 +275,8 @@ public class CeylonContentProposer implements IContentProposer {
                         if (d instanceof Functional && !((Functional) d).getParameterLists().isEmpty()) {
                             addInvocationProposals(offset, prefix, cpc, node, result, dwp, d, ol);
                         }
-                        if (d instanceof MethodOrValue || d instanceof Class) {
+                        if ((d instanceof MethodOrValue || d instanceof Class) && !isQualified) {
+                            //TODO: eliminate these inside expressions
                             addRefinementProposal(offset, prefix, cpc, node, result, d);
                         }
                         if (d instanceof ValueParameter && d.isClassMember()) {
