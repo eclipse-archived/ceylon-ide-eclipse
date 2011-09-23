@@ -17,9 +17,22 @@ class FindNodeVisitor extends Visitor
     private Node node;
     private int startOffset;
     private int endOffset;
+    private boolean occursInExtends;
+    //private boolean currentlyInExtends;
     
     public Node getNode() {
         return node;
+    }
+    
+    boolean isOccursInExtends() {
+        return occursInExtends;
+    }
+    
+    public void visit(Tree.ExtendedType that) {
+        //currentlyInExtends = true;
+        occursInExtends = occursInExtends || inBounds(that);
+        super.visit(that);
+        //currentlyInExtends = false;
     }
     
     @Override
@@ -81,6 +94,7 @@ class FindNodeVisitor extends Visitor
     public void visit(Tree.SimpleType that) {
         if (inBounds(that.getIdentifier())) {
             node = that;
+            //occursInExtends = currentlyInExtends;
         }
         else {
             super.visit(that);

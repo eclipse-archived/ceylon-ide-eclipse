@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.occursInExtends;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -255,7 +256,7 @@ public class CeylonContentProposer implements IContentProposer {
                 addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
                 if (!inImport) {
                     if (d instanceof Functional) {
-                        addInvocationProposals(offset, prefix, cpc, result, dwp, d);
+                        addInvocationProposals(offset, prefix, cpc, node, result, dwp, d);
                     }
                     if (d instanceof MethodOrValue || d instanceof Class) {
                         addRefinementProposal(offset, prefix, cpc, node, result, d);
@@ -317,11 +318,11 @@ public class CeylonContentProposer implements IContentProposer {
                 getTextFor(dwp, !inImport), true));
     }
 
-    private static void addInvocationProposals(int offset, String prefix,
-            CeylonParseController cpc, List<ICompletionProposal> result,
-            final DeclarationWithProximity dwp, Declaration d) {
+    private static void addInvocationProposals(int offset, String prefix, CeylonParseController cpc, 
+            Node node, List<ICompletionProposal> result, DeclarationWithProximity dwp, 
+            Declaration d) {
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-        if (!isAbstractClass) {
+        if (!isAbstractClass || occursInExtends(cpc.getRootNode(), node)) {
             result.add(sourceProposal(offset, prefix, 
                     CeylonLabelProvider.getImage(d),
                     getDocumentationFor(cpc, d), 
