@@ -160,10 +160,14 @@ public class CeylonContentProposer implements IContentProposer {
         int adjustedStart = start;
         int adjustedEnd = end;
         Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
-        while (--tokenIndex>=0 && adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+        while (--tokenIndex>=0 && (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL 
+                || adjustedToken.getType()==CeylonLexer.INTERSECTION_OP //TODO: hacky workaround the fact that the parser 
+                || adjustedToken.getType()==CeylonLexer.UNION_OP)) {    //      truncates the span of extends/satisfies
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
             if (/*adjustedToken.getType()!=CeylonLexer.SEMICOLON &&*/ 
-                    adjustedToken.getType()!=CeylonLexer.RBRACE) {
+                    adjustedToken.getType()!=CeylonLexer.RBRACE &&
+                    adjustedToken.getType()!=CeylonLexer.INTERSECTION_OP && //TODO: second part of hacky workaround!
+                    adjustedToken.getType()!=CeylonLexer.UNION_OP) {
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
                 adjustedEnd = ((CommonToken) adjustedToken).getStopIndex();
                 break;
@@ -265,7 +269,7 @@ public class CeylonContentProposer implements IContentProposer {
                     addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
                     if (!inImport && ol!=OccurrenceLocation.SATISFIES && 
                             !(node instanceof Tree.TypeConstraint)) {
-                        if (d instanceof Functional) {
+                        if (d instanceof Functional && !((Functional) d).getParameterLists().isEmpty()) {
                             addInvocationProposals(offset, prefix, cpc, node, result, dwp, d, ol);
                         }
                         if (d instanceof MethodOrValue || d instanceof Class) {
@@ -282,11 +286,17 @@ public class CeylonContentProposer implements IContentProposer {
     }
 
     private static boolean isProposable(Node node, Declaration d, OccurrenceLocation ol) {
-        return (!(node instanceof Tree.TypeConstraint) || d instanceof TypeParameter && 
-                        ((TypeParameter) d).getContainer()==node.getScope()) 
+        return (!(node instanceof Tree.TypeConstraint) || isTypeParameterOfCurrentDeclaration(node, d)) 
                 && (d instanceof Class || ol!=OccurrenceLocation.EXTENDS)
                 && (d instanceof Interface || d instanceof TypeParameter || 
                         ol!=OccurrenceLocation.SATISFIES); //TODO: do propose classes in SATISFIES clause of type constraint!
+    }
+
+    private static boolean isTypeParameterOfCurrentDeclaration(Node node, Declaration d) {
+        //TODO: this is a total mess and totally error-prone - figure out something better!
+        return d instanceof TypeParameter && (((TypeParameter) d).getContainer()==node.getScope() ||
+                        ((Tree.TypeConstraint) node).getDeclarationModel()!=null &&
+                        ((TypeParameter) d).getContainer()==((Tree.TypeConstraint) node).getDeclarationModel().getContainer());
     }
 
     private static void addAttributeProposal(int offset, String prefix, CeylonParseController cpc,
