@@ -222,7 +222,7 @@
             verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.ruler"
             overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.refinement.overview"
             
-            colorPreferenceValue="000,255,000"
+            colorPreferenceValue="224,224,224"
             textPreferenceValue="false"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="false"
@@ -237,6 +237,12 @@
             contributesToHeader="true"
             includeOnPreferencePage="true"
             
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="todoAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="todoAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
             colorPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.color"
             textPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.text"
             textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.todo.textStyle"
