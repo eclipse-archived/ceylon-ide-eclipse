@@ -160,7 +160,9 @@ public class CeylonContentProposer implements IContentProposer {
         int adjustedStart = start;
         int adjustedEnd = end;
         Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
-        while (--tokenIndex>=0 && (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL 
+        while (--tokenIndex>=0 && 
+                (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
+                || ((CommonToken) adjustedToken).getStartIndex()==offset //don't consider the token to the right of the caret
                 || adjustedToken.getType()==CeylonLexer.INTERSECTION_OP //TODO: hacky workaround the fact that the parser 
                 || adjustedToken.getType()==CeylonLexer.UNION_OP)) {    //      truncates the span of extends/satisfies
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
