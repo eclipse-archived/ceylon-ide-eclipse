@@ -251,6 +251,34 @@
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/>
             
+      <specification
+            annotationType="org.eclipse.imp.runtime.occurrenceAnnotation"
+            label="Ceylon Occurrences"
+            icon="icons/searchm_obj.gif"
+            presentationLayer="4"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="occurrenceAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="occurrenceAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="occurrenceColorPreference"
+            textPreferenceKey="occurrenceTextPreference"
+            textStylePreferenceKey="occurrenceAnnotationTextStyleKey"
+            highlightPreferenceKey="occurrenceHighlightKey"
+            verticalRulerPreferenceKey="occurrenceVerticalRulerPreference"
+            overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
+
+            colorPreferenceValue="0,64,128"
+            textPreferenceValue="true"
+            textStylePreferenceValue="UNDERLINE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/>
+            
    </extension>
    
    <extension
