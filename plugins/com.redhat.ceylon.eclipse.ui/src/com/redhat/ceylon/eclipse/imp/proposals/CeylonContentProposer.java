@@ -53,6 +53,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -259,10 +260,37 @@ public class CeylonContentProposer implements IContentProposer {
                     if (d instanceof MethodOrValue || d instanceof Class) {
                         addRefinementProposal(offset, prefix, cpc, node, result, d);
                     }
+                    if (d instanceof ValueParameter && d.isClassMember()) {
+                        addAttributeProposal(offset, prefix, cpc, result, d);
+                    }
                 }
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static void addAttributeProposal(int offset, String prefix, CeylonParseController cpc,
+            List<ICompletionProposal> result, Declaration d) {
+        Declaration member = d.getContainer().getMember(d.getName());
+        if (member==null || member==d) {
+            result.add(sourceProposal(offset, prefix, 
+                    CeylonLabelProvider.ATTRIBUTE, 
+                            getDocumentationFor(cpc, d), 
+                            getAttributeDescriptionFor(d), 
+                            getAttributeTextFor(d), false));
+        }
+        //TODO: typechecker does not currently accept "super.x = x"
+        //      as legal syntax
+        /*else if (member instanceof TypedDeclaration && 
+                member.isFormal() && d.getContainer().isInherited(member)
+                && ((TypedDeclaration) member).getType()
+                        .isSupertypeOf(((ValueParameter)d).getType())) {
+            result.add(sourceProposal(offset, prefix, 
+                    CeylonLabelProvider.ATTRIBUTE, 
+                            getDocumentationFor(cpc, member), 
+                            getAttributeRefinementDescriptionFor(d), 
+                            getAttributeRefinementTextFor(d), false));
+        }*/
     }
 
     private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
@@ -270,6 +298,7 @@ public class CeylonContentProposer implements IContentProposer {
         if (node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             //TODO: substitute type arguments of subtype
+            //TODO: if it is equals() or hash, fill in the implementation
             result.add(sourceProposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                             getDocumentationFor(cpc, d), 
@@ -551,6 +580,20 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
     
+    private static String getAttributeTextFor(Declaration d) {
+        StringBuilder result = new StringBuilder("shared ");
+        appendDeclarationText(d, result);
+        result.append(" = ").append(d.getName()).append(";");
+        return result.toString();
+    }
+    
+    /*private static String getAttributeRefinementTextFor(Declaration d) {
+        StringBuilder result = new StringBuilder();
+        result.append("super.").append(d.getName())
+            .append(" = ").append(d.getName()).append(";");
+        return result.toString();
+    }*/
+    
     private static String getRefinementDescriptionFor(Declaration d) {
         StringBuilder result = new StringBuilder("shared actual ");
         appendDeclarationText(d, result);
@@ -560,6 +603,20 @@ public class CeylonContentProposer implements IContentProposer {
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
+    
+    private static String getAttributeDescriptionFor(Declaration d) {
+        StringBuilder result = new StringBuilder("shared ");
+        appendDeclarationText(d, result);
+        result.append(" = ").append(d.getName()).append(";");
+        return result.toString();
+    }
+    
+    /*private static String getAttributeRefinementDescriptionFor(Declaration d) {
+        StringBuilder result = new StringBuilder();
+        result.append("super.").append(d.getName())
+            .append(" = ").append(d.getName()).append(";");
+        return result.toString();
+    }*/
     
     public static String getDescriptionFor(Declaration d) {
         StringBuilder result = new StringBuilder();
