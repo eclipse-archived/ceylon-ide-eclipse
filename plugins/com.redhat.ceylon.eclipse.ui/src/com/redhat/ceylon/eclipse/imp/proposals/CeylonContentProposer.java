@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.occursInExtends;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -62,6 +62,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -259,13 +260,13 @@ public class CeylonContentProposer implements IContentProposer {
             }
             for (final DeclarationWithProximity dwp: set) {
                 Declaration d = dwp.getDeclaration();
-                if (!(node instanceof Tree.TypeConstraint) || 
-                        d instanceof TypeParameter && 
-                                ((TypeParameter) d).getContainer()==node.getScope()) {
+                OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+                if (isProposable(node, d, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
-                    if (!inImport) {
+                    if (!inImport && ol!=OccurrenceLocation.SATISFIES && 
+                            !(node instanceof Tree.TypeConstraint)) {
                         if (d instanceof Functional) {
-                            addInvocationProposals(offset, prefix, cpc, node, result, dwp, d);
+                            addInvocationProposals(offset, prefix, cpc, node, result, dwp, d, ol);
                         }
                         if (d instanceof MethodOrValue || d instanceof Class) {
                             addRefinementProposal(offset, prefix, cpc, node, result, d);
@@ -278,6 +279,14 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static boolean isProposable(Node node, Declaration d, OccurrenceLocation ol) {
+        return (!(node instanceof Tree.TypeConstraint) || d instanceof TypeParameter && 
+                        ((TypeParameter) d).getContainer()==node.getScope()) 
+                && (d instanceof Class || ol!=OccurrenceLocation.EXTENDS)
+                && (d instanceof Interface || d instanceof TypeParameter || 
+                        ol!=OccurrenceLocation.SATISFIES); //TODO: do propose classes in SATISFIES clause of type constraint!
     }
 
     private static void addAttributeProposal(int offset, String prefix, CeylonParseController cpc,
@@ -330,16 +339,17 @@ public class CeylonContentProposer implements IContentProposer {
 
     private static void addInvocationProposals(int offset, String prefix, CeylonParseController cpc, 
             Node node, List<ICompletionProposal> result, DeclarationWithProximity dwp, 
-            Declaration d) {
+            Declaration d, OccurrenceLocation ol) {
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-        if (!isAbstractClass || occursInExtends(cpc.getRootNode(), node)) {
+        if (!isAbstractClass || ol==OccurrenceLocation.EXTENDS) {
             result.add(sourceProposal(offset, prefix, 
                     CeylonLabelProvider.getImage(d),
                     getDocumentationFor(cpc, d), 
                     getPositionalInvocationDescriptionFor(dwp), 
-                    getPositionalInvocationTextFor(dwp), true));
+                    getPositionalInvocationTextFor(dwp), true)); //TODO: include type args if in EXTENDS
             List<ParameterList> pls = ((Functional) d).getParameterLists();
-            if ( !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+            if (ol!=OccurrenceLocation.EXTENDS && 
+                    !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
                 //if there is more than one parameter, 
                 //suggest a named argument invocation 
                 result.add(sourceProposal(offset, prefix, 
