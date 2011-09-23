@@ -245,24 +245,34 @@ public class CeylonContentProposer implements IContentProposer {
         else if (node instanceof Tree.TypedDeclaration) {
             addMemberNameProposal(offset, prefix, node, result);
         }
+        else if (node instanceof Tree.ClassOrInterface || 
+                node instanceof Tree.VoidModifier ||
+                node instanceof Tree.ValueModifier ||
+                node instanceof Tree.FunctionModifier) {
+            //no proposals 
+        }
         else {
             boolean inImport = node.getScope() instanceof ImportList;
-            boolean isQualified = node instanceof Tree.QualifiedMemberOrTypeExpression;
-            if (!inImport && !isQualified) {
+            if (!inImport && 
+                    !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
                 addKeywordProposals(offset, prefix, result);
             }
             for (final DeclarationWithProximity dwp: set) {
                 Declaration d = dwp.getDeclaration();
-                addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
-                if (!inImport) {
-                    if (d instanceof Functional) {
-                        addInvocationProposals(offset, prefix, cpc, node, result, dwp, d);
-                    }
-                    if (d instanceof MethodOrValue || d instanceof Class) {
-                        addRefinementProposal(offset, prefix, cpc, node, result, d);
-                    }
-                    if (d instanceof ValueParameter && d.isClassMember()) {
-                        addAttributeProposal(offset, prefix, cpc, result, d);
+                if (!(node instanceof Tree.TypeConstraint) || 
+                        d instanceof TypeParameter && 
+                                ((TypeParameter) d).getContainer()==node.getScope()) {
+                    addBasicProposal(offset, prefix, cpc, result, inImport, dwp, d);
+                    if (!inImport) {
+                        if (d instanceof Functional) {
+                            addInvocationProposals(offset, prefix, cpc, node, result, dwp, d);
+                        }
+                        if (d instanceof MethodOrValue || d instanceof Class) {
+                            addRefinementProposal(offset, prefix, cpc, node, result, d);
+                        }
+                        if (d instanceof ValueParameter && d.isClassMember()) {
+                            addAttributeProposal(offset, prefix, cpc, result, d);
+                        }
                     }
                 }
             }
