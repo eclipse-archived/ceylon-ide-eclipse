@@ -6,6 +6,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class FindNodeVisitor extends Visitor
@@ -64,7 +65,11 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.BinaryOperatorExpression that) {
         super.visit(that);
-        if (node==null && inBounds(that.getLeftTerm(), that.getRightTerm())) {
+        Term right = that.getRightTerm();
+        if (right==null) {
+            right = that;
+        }
+        if (node==null && inBounds(that.getLeftTerm(), right)) {
             node=that;
         }
     }
@@ -144,7 +149,7 @@ class FindNodeVisitor extends Visitor
     
     private boolean inBounds(Node left, Node right) {
         if (left==null) return false;
-        if (right==null) left=right;
+        if (right==null) right=left;
         Integer tokenStartIndex = left.getStartIndex();
         Integer tokenStopIndex = right.getStopIndex();
         /*Token endToken = right.getEndToken();
