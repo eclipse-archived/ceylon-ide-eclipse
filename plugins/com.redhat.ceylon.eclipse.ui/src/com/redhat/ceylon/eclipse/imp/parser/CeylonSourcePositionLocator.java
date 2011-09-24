@@ -76,7 +76,16 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return visitor.getNode();
     }
     
-    public static enum OccurrenceLocation { EXTENDS, SATISFIES }
+    public static enum OccurrenceLocation { 
+        EXTENDS, 
+        SATISFIES, 
+        UPPER_BOUND, 
+        IMPORT, 
+        EXPRESSION,
+        PARAMETER_LIST,
+        TYPE_PARAMETER_LIST,
+        TYPE_ARGUMENT_LIST
+    }
     
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
         FindNodeVisitor visitor = new FindNodeVisitor(node.getStartIndex(), node.getStopIndex()+1);
