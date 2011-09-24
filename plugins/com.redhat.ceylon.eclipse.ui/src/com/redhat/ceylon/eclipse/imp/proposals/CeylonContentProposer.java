@@ -319,7 +319,7 @@ public class CeylonContentProposer implements IContentProposer {
             if (isKeywordProposable(ol, node)) {
                 addKeywordProposals(offset, prefix, result);
             }
-            for (final DeclarationWithProximity dwp: set) {
+            for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
