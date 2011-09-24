@@ -83,9 +83,9 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 public class CeylonContentProposer implements IContentProposer {
     
-    private static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
+    public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
             .getImageRegistry().get(ICeylonResources.CEYLON_DEFAULT_REFINEMENT);
-    private static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
+    public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
             .getImageRegistry().get(ICeylonResources.CEYLON_FORMAL_REFINEMENT);
     
     
@@ -693,7 +693,7 @@ public class CeylonContentProposer implements IContentProposer {
         return result/*.append(" - invoke with named arguments")*/.toString();
     }
     
-    private static String getRefinementTextFor(Declaration d) {
+    public static String getRefinementTextFor(Declaration d) {
         StringBuilder result = new StringBuilder("shared actual ");
         appendDeclarationText(d, result);
         appendTypeParameters(d, result);
