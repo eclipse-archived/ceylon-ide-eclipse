@@ -371,7 +371,8 @@ public class CeylonContentProposer implements IContentProposer {
     private static boolean isProposable(Declaration dec, OccurrenceLocation ol) {
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
-                (dec instanceof TypeDeclaration || (ol!=PARAMETER_LIST && ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
+                (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
+                (dec instanceof TypeDeclaration || dec instanceof Method && dec.isToplevel() || ol!=PARAMETER_LIST) &&
                 ol!=TYPE_PARAMETER_LIST;
     }
 
