@@ -45,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
@@ -62,11 +63,18 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     @Override
     public boolean canFix(Annotation annotation) {
-        return annotation instanceof IAnnotation 
-                && ((IAnnotation) annotation).getId()==100 ||
-               annotation instanceof MarkerAnnotation && 
-               ((MarkerAnnotation) annotation).getMarker()
-                   .getAttribute(IMessageHandler.ERROR_CODE_KEY, -666)==100;
+        int code;
+        if (annotation instanceof IAnnotation) {
+            code = ((IAnnotation) annotation).getId();
+        }
+        else if (annotation instanceof MarkerAnnotation) {
+            code = ((MarkerAnnotation) annotation).getMarker()
+                   .getAttribute(IMessageHandler.ERROR_CODE_KEY, -666);
+        }
+        else {
+            return false;
+        }
+        return code==100 || code ==200;
     }
 
     @Override
@@ -112,8 +120,20 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     addImportProposals(cu, node, proposals, file, tc);
                 }
                 break;
+            case 200:
+                addSpecifyTypeProposal(node, problem, proposals, file);
             }
         }
+    }
+    
+    private void addSpecifyTypeProposal(Node node, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IFile file) {
+        TextFileChange change = new TextFileChange("Specify Type", file);
+        Type type = (Tree.Type) node;
+        String explicitType = type.getTypeModel().getProducedTypeName();
+        change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
+                explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
+        proposals.add(createSpecifyTypeProposal(problem, file, explicitType, change));
     }
 
     /*public void addRefactoringProposals(IQuickFixInvocationContext context,
@@ -338,22 +358,34 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             if (dist<=brokenName.length()/3+1) {
                 TextFileChange change = new TextFileChange("Rename", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
-                        brokenName.length(), name)); //TODO: don't use problem.getLength() because it's wrong from the problem list
-                proposals.add(createRenameProposal(problem, file, name, dwp, dist, change));
+                        brokenName.length(), name)); //Note: don't use problem.getLength() because it's wrong from the problem list
+                proposals.add(createRenameProposal(problem, file, name, 
+                        dwp.getDeclaration(), dist, change));
             }
           }
     }
 
     private ChangeCorrectionProposal createRenameProposal(final ProblemLocation problem,
-            final IFile file, final String name, DeclarationWithProximity dwp, int dist,
+            final IFile file, final String name, Declaration dec, int dist,
             TextFileChange change) {
         return new ChangeCorrectionProposal("Rename to '" + name + "'", 
-                change, dist+10, CeylonLabelProvider.getImage(dwp.getDeclaration())) {
+                change, dist+10, CeylonLabelProvider.getImage(dec)) {
             @Override
             public void apply(IDocument document) {
-                // TODO Auto-generated method stub
                 super.apply(document);
                 Util.gotoLocation(file, problem.getOffset(), name.length());
+            }
+        };
+    }
+    
+    private ChangeCorrectionProposal createSpecifyTypeProposal(final ProblemLocation problem,
+            final IFile file, final String type, TextFileChange change) {
+        return new ChangeCorrectionProposal("Specify type '" + type + "'", 
+                change, 10, CeylonLabelProvider.CORRECTION) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                Util.gotoLocation(file, problem.getOffset(), type.length());
             }
         };
     }
