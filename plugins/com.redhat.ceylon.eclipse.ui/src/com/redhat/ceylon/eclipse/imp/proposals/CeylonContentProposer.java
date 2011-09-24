@@ -71,6 +71,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -311,6 +312,15 @@ public class CeylonContentProposer implements IContentProposer {
                 }
             }
         }
+        else if (node instanceof QualifiedMemberOrTypeExpression) {
+            for (DeclarationWithProximity dwp: set) {
+                Declaration dec = dwp.getDeclaration();
+                addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
+                if (isInvocationProposable(dec, EXPRESSION)) {
+                    addInvocationProposals(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
+                }
+            }
+        }
         else if (node instanceof Tree.ClassOrInterface || 
                 node instanceof Tree.VoidModifier ||
                 node instanceof Tree.ValueModifier ||
@@ -319,7 +329,7 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else {
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            if (isKeywordProposable(ol, node)) {
+            if (isKeywordProposable(ol)) {
                 addKeywordProposals(offset, prefix, result);
             }
             for (DeclarationWithProximity dwp: set) {
@@ -341,8 +351,7 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-    private static boolean isKeywordProposable(OccurrenceLocation ol, Node node) {
-        //TODO: eliminate keyword proposals after . ?. [].
+    private static boolean isKeywordProposable(OccurrenceLocation ol) {
         return ol==null || ol==EXPRESSION;
     }
     
