@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -86,15 +87,17 @@ public class EditorAnnotationService extends EditorServiceBase {
     private void addRefinementAnnotation(CeylonSourcePositionLocator spl,
             IAnnotationModel model, Tree.Declaration that, Declaration dec) {
         //TODO: improve this:
-        Declaration refined = ((TypeDeclaration) dec.getContainer())
-                .getExtendedTypeDeclaration().getMember(dec.getName());
-        if (refined==null) {
-            refined = dec.getRefinedDeclaration();
+        Class etd = ((TypeDeclaration) dec.getContainer()).getExtendedTypeDeclaration();
+        if (etd!=null) {
+            Declaration refined = etd.getMember(dec.getName());
+            if (refined==null) {
+                refined = dec.getRefinedDeclaration();
+            }
+            RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
+                    that.getIdentifier().getToken().getLine());
+            model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
+                            spl.getLength(that)+1));
         }
-        RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
-                that.getIdentifier().getToken().getLine());
-        model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
-                        spl.getLength(that)+1));
     }
     
     private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
