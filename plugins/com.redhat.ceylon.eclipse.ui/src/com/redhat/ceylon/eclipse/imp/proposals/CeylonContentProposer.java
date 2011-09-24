@@ -1,12 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.proposals;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.INTERSECTION_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UNION_OP;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
@@ -181,13 +179,9 @@ public class CeylonContentProposer implements IContentProposer {
         int tokenType = adjustedToken.getType();
         while (--tokenIndex>=0 && 
                 (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
-                || ((CommonToken) adjustedToken).getStartIndex()==offset //don't consider the token to the right of the caret
-                || adjustedToken.getType()==INTERSECTION_OP //TODO: hacky workaround the fact that the parser 
-                || adjustedToken.getType()==UNION_OP)) {    //      truncates the span of extends/satisfies
+                || ((CommonToken) adjustedToken).getStartIndex()==offset)) { //don't consider the token to the right of the caret
             adjustedToken = cpc.getTokenStream().get(tokenIndex);
-            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL && //don't adjust to a ws/comment token
-                    adjustedToken.getType()!=INTERSECTION_OP && //TODO: second part of hacky workaround!
-                    adjustedToken.getType()!=UNION_OP) {        //      (better to fix it in the parser)
+            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL) { //don't adjust to a ws/comment token
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
                 adjustedEnd = ((CommonToken) adjustedToken).getStopIndex()+1;
                 tokenType = adjustedToken.getType();
@@ -301,9 +295,18 @@ public class CeylonContentProposer implements IContentProposer {
             addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypeConstraint) {
-            for (final DeclarationWithProximity dwp: set) {
+            for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
+                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, null);
+                }
+            }
+        }
+        else if (node instanceof Tree.UnionType || 
+                node instanceof Tree.IntersectionType) {
+            for (DeclarationWithProximity dwp: set) {
+                Declaration dec = dwp.getDeclaration();
+                if (isProposable(dec, null) && dec instanceof TypeDeclaration) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, null);
                 }
             }
