@@ -1,14 +1,17 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -51,7 +54,6 @@ import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -74,7 +76,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             return false;
         }
-        return code==100 || code ==200;
+        return code==100 || code==200 || code==300;
     }
 
     @Override
@@ -122,8 +124,34 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 break;
             case 200:
                 addSpecifyTypeProposal(node, problem, proposals, file);
+            case 300:
+                addImplementFormalMembersProposal(cu, node, proposals, file, tc);
             }
         }
+    }
+    
+    private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
+            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
+        TextFileChange change = new TextFileChange("Implement Formal Members", file);
+        Tree.ClassDefinition def = (Tree.ClassDefinition) node;
+        StringBuilder result = new StringBuilder();
+        for (DeclarationWithProximity dwp: getProposals(node, "", tc.getContext(), cu).values()) {
+            Declaration d = dwp.getDeclaration();
+            if (d.isFormal() && 
+                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                result.append("\n").append(getRefinementTextFor(d) + " { throw; }");
+            }
+        }
+        List<Statement> statements = def.getClassBody().getStatements();
+        int loc;
+        if (statements.isEmpty()) {
+            loc = def.getClassBody().getStartIndex()+1;
+        }
+        else {
+            loc = statements.get(statements.size()-1).getStopIndex()+1;
+        }
+        change.setEdit(new InsertEdit(loc, result.toString()));
+        proposals.add(createImplementFormalMembersProposal(loc, file, change));
     }
     
     private void addSpecifyTypeProposal(Node node, ProblemLocation problem,
@@ -348,18 +376,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
-          for (Map.Entry<String,DeclarationWithProximity> entry: 
-              CeylonContentProposer.getProposals(node, "", tc.getContext(), cu).entrySet()) {
-            String name = entry.getKey();
-            DeclarationWithProximity dwp = entry.getValue();
-            int dist = getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
+          for (DeclarationWithProximity dwp: getProposals(node, "", tc.getContext(), cu).values()) {
+            int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?
             if (dist<=brokenName.length()/3+1) {
                 TextFileChange change = new TextFileChange("Rename", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
-                        brokenName.length(), name)); //Note: don't use problem.getLength() because it's wrong from the problem list
-                proposals.add(createRenameProposal(problem, file, name, 
+                        brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
+                proposals.add(createRenameProposal(problem, file, dwp.getName(), 
                         dwp.getDeclaration(), dist, change));
             }
           }
@@ -381,11 +406,23 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private ChangeCorrectionProposal createSpecifyTypeProposal(final ProblemLocation problem,
             final IFile file, final String type, TextFileChange change) {
         return new ChangeCorrectionProposal("Specify type '" + type + "'", 
-                change, 10, CeylonLabelProvider.CORRECTION) {
+                change, 10, CORRECTION) {
             @Override
             public void apply(IDocument document) {
                 super.apply(document);
                 Util.gotoLocation(file, problem.getOffset(), type.length());
+            }
+        };
+    }
+    
+    private ChangeCorrectionProposal createImplementFormalMembersProposal(final int loc,
+            final IFile file, TextFileChange change) {
+        return new ChangeCorrectionProposal("Refine formal members", 
+                change, 10, FORMAL_REFINEMENT) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                Util.gotoLocation(file, loc, 0);
             }
         };
     }
