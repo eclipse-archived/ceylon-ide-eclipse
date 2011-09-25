@@ -179,7 +179,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                result.append(indent).append(getRefinementTextFor(d)).append(indentAfter);
+                result.append(indent).append(getRefinementTextFor(d, indent)).append(indentAfter);
             }
         }
         change.setEdit(new InsertEdit(offset, result.toString()));
