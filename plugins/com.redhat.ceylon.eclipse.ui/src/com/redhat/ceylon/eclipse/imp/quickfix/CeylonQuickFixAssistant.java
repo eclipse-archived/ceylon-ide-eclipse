@@ -52,6 +52,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -569,12 +570,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addImportProposals(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IFile file,
             TypeChecker tc) {
-        String brokenName = getIdentifyingNode(node).getText();
-
-        Collection<Declaration> candidates = findImportCandidates(cu, tc.getContext(), brokenName);
-        for (Declaration decl : candidates) {
-            proposals.add(createImportProposal(
-                    cu, file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+        if (node instanceof Tree.BaseMemberOrTypeExpression ||
+                node instanceof SimpleType) {
+            String brokenName = getIdentifyingNode(node).getText();
+            Collection<Declaration> candidates = findImportCandidates(cu, tc.getContext(), brokenName);
+            for (Declaration decl : candidates) {
+                proposals.add(createImportProposal(
+                        cu, file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+            }
         }
     }
 
