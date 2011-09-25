@@ -75,12 +75,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         else if (annotation instanceof MarkerAnnotation) {
             code = ((MarkerAnnotation) annotation).getMarker()
-                   .getAttribute(IMessageHandler.ERROR_CODE_KEY, -666);
+                   .getAttribute(IMessageHandler.ERROR_CODE_KEY, 0);
         }
         else {
             return false;
         }
-        return code==100 || code==200 || code==300 || code==400;
+        return code>0;
     }
 
     @Override
@@ -152,16 +152,32 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         context.getSourceViewer().getDocument());
                 break;
             case 400:
-                addMakeSharedProposal(node, problem, proposals, project);
+                addMakeSharedProposal(problem, proposals, project, node);
+                break;
+            case 500:
+                addMakeDefaultProposal(problem, proposals, project, node);
                 break;
             }
         }
     }
-    
-    private void addMakeSharedProposal(Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project) {
+
+    private void addMakeDefaultProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        addAddAnnotationProposal(node, "default ", "Make Default", problem, 
+                decNode.getDeclarationModel().getRefinedDeclaration(), 
+                proposals, project);
+    }
+
+    private void addMakeSharedProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
-        Declaration dec = qmte.getDeclaration();
+        addAddAnnotationProposal(node, "shared ", "Make Shared", problem, qmte.getDeclaration(), 
+                proposals, project);
+    }
+    
+    private void addAddAnnotationProposal(Node node, String annotation, String desc, ProblemLocation problem, 
+            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
         if (dec!=null) {
             for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
@@ -170,10 +186,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     unit.getCompilationUnit().visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     IFile file = CeylonBuilder.getFile(unit);
-                    TextFileChange change = new TextFileChange("Make Shared", file);
+                    TextFileChange change = new TextFileChange(desc, file);
                     change.setEdit(new MultiTextEdit());
                     Integer offset = decNode.getStartIndex();
-                    change.addEdit(new InsertEdit(offset, "shared "));
+                    change.addEdit(new InsertEdit(offset, annotation));
                     if (decNode instanceof Tree.TypedDeclaration) {
                         Type type = ((Tree.TypedDeclaration) decNode).getType();
                         if (type instanceof Tree.FunctionModifier 
@@ -183,17 +199,16 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                                     explicitType));
                         }
                     }
-                    proposals.add(createMakeSharedProposal(dec, offset, file, change));
+                    proposals.add(createAddAnnotionProposal(dec, annotation, offset, file, change));
                     break;
                 }
             }
         }
-                    
     }
 
-    private ChangeCorrectionProposal createMakeSharedProposal(Declaration dec, final int offset, 
-            final IFile file, TextFileChange change) {
-        return new ChangeCorrectionProposal("Make shared '" + dec.getName() + "'", 
+    private ChangeCorrectionProposal createAddAnnotionProposal(Declaration dec, String annotation,
+            final int offset, final IFile file, TextFileChange change) {
+        return new ChangeCorrectionProposal("Make " + annotation + "'" + dec.getName() + "'", 
                 change, 10, CORRECTION) {
             @Override
             public void apply(IDocument document) {
