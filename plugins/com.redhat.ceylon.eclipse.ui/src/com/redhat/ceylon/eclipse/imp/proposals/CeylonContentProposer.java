@@ -285,6 +285,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, int tokenType,
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
+        System.out.println("proposals for a " + node.getNodeType());
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
