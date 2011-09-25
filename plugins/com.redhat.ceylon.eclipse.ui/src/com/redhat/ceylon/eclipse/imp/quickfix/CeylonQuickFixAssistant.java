@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
-//import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
@@ -368,12 +368,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         List<Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
             indentAfter = "\n" + getIndent(decNode, doc);
-            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
+            indent = indentAfter + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
-            Statement statement = statements
-                    .get(statements.size()-1);
+            Statement statement = statements.get(statements.size()-1);
             indent = "\n" + getIndent(statement, doc);
             offset = statement.getStopIndex()+1;
             indentAfter = "";
