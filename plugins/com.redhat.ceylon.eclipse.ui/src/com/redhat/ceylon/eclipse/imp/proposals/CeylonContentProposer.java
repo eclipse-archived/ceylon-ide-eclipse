@@ -554,7 +554,18 @@ public class CeylonContentProposer implements IContentProposer {
                     return new Point(offset-prefix.length() + start, length);
                 }
                 else {
-                    return new Point(offset + text.length()-prefix.length(), 0);
+                    int loc = text.indexOf("bottom;");
+                    int length;
+                    int start;
+                    if (loc<0) {
+                        start = offset + text.length()-prefix.length();
+                        length = 0;
+                    }
+                    else {
+                        start = offset + loc-prefix.length();
+                        length = 6;
+                    }
+                    return new Point(start, length);
                 }
             }
         };
@@ -700,6 +711,7 @@ public class CeylonContentProposer implements IContentProposer {
         appendDeclarationText(d, result);
         appendTypeParameters(d, result);
         appendParameters(d, result);
+        appendImpl(d, result);
         return result.toString();
     }
     
@@ -846,6 +858,19 @@ public class CeylonContentProposer implements IContentProposer {
         appendPackage(td, result);
     }
   }*/
+    
+    private static void appendImpl(Declaration d, StringBuilder result) {
+        if (d instanceof Method && 
+                !((Method) d).getType().getDeclaration().getName().equals("Void")) {
+            result.append(" { return bottom; }");
+        }
+        else if (d instanceof MethodOrValue) {
+            result.append(" = bottom;");
+        }
+        else {
+            result.append("{}");
+        }
+    }
     
     private static void appendParameters(Declaration d, StringBuilder result) {
         if (d instanceof Functional) {
