@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.imp.quickfix;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+//import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
@@ -23,7 +24,9 @@ import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.services.IQuickFixAssistant;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.NullMessageHandler;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -95,6 +98,23 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return new String[] { CeylonBuilder.PROBLEM_MARKER_ID };
     }
 
+    static String getIndent(Node node, IDocument doc) {
+        try {
+            IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
+            String line = doc.get(region.getOffset(), region.getLength());
+            char[] chars = line.toCharArray();
+            for (int i=0; i<chars.length; i++) {
+                if (chars[i]!='\t' && chars[i]!=' ') {
+                    return line.substring(0,i);
+                }
+            }
+            return line;
+        }
+        catch (BadLocationException ble) {
+            return "";
+        }
+    }
+    
     @Override
     public void addProposals(IQuickFixInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals) {
@@ -116,7 +136,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     problem.getOffset() + problem.getLength());
             switch ( problem.getProblemId() ) {
             case 100:
-                addCreateProposals(cu, node, problem, proposals, project);
+                addCreateProposals(cu, node, problem, proposals, project,
+                        context.getSourceViewer().getDocument());
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
                     addImportProposals(cu, node, proposals, file, tc);
@@ -125,33 +146,43 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 200:
                 addSpecifyTypeProposal(node, problem, proposals, file);
             case 300:
-                addImplementFormalMembersProposal(cu, node, proposals, file, tc);
+                addImplementFormalMembersProposal(cu, node, proposals, file, tc,
+                        context.getSourceViewer().getDocument());
             }
         }
     }
     
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
-            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
+            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc,
+            IDocument doc) {
         TextFileChange change = new TextFileChange("Implement Formal Members", file);
         Tree.ClassDefinition def = (Tree.ClassDefinition) node;
+        List<Statement> statements = def.getClassBody().getStatements();
+        int offset;
+        String indent;
+        String indentAfter;
+        if (statements.isEmpty()) {
+            indentAfter = "\n" + getIndent(def.getClassBody(), doc);
+            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
+            offset = def.getClassBody().getStartIndex()+1;
+        }
+        else {
+            Statement statement = statements.get(statements.size()-1);
+            indent = "\n" + getIndent(statement, doc);
+            indentAfter = "";
+            offset = statement.getStopIndex()+1;
+        }
         StringBuilder result = new StringBuilder();
         for (DeclarationWithProximity dwp: getProposals(node, "", tc.getContext(), cu).values()) {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                result.append("\n").append(getRefinementTextFor(d) + " { throw; }");
+                result.append(indent).append(getRefinementTextFor(d))
+                        .append(" { throw; }").append(indentAfter);
             }
         }
-        List<Statement> statements = def.getClassBody().getStatements();
-        int loc;
-        if (statements.isEmpty()) {
-            loc = def.getClassBody().getStartIndex()+1;
-        }
-        else {
-            loc = statements.get(statements.size()-1).getStopIndex()+1;
-        }
-        change.setEdit(new InsertEdit(loc, result.toString()));
-        proposals.add(createImplementFormalMembersProposal(loc, file, change));
+        change.setEdit(new InsertEdit(offset, result.toString()));
+        proposals.add(createImplementFormalMembersProposal(offset, file, change));
     }
     
     private void addSpecifyTypeProposal(Node node, ProblemLocation problem,
@@ -180,7 +211,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }*/
     
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project) {
+            Collection<ICompletionProposal> proposals, IProject project, IDocument doc) {
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
 
@@ -232,10 +263,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
             if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
                     addCreateMemberProposals(proposals, project, "shared " + def, desc, image, 
-                            (Tree.QualifiedMemberOrTypeExpression) smte);
+                            (Tree.QualifiedMemberOrTypeExpression) smte, doc);
             }
             else {
-                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
+                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, doc);
             }
             
         }
@@ -243,7 +274,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.QualifiedMemberOrTypeExpression qmte) {
+            Tree.QualifiedMemberOrTypeExpression qmte, IDocument doc) {
         Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
                 .getTypeModel().getDeclaration();
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
@@ -261,7 +292,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
                     }
                     if (body!=null) {
-                        addProposal(proposals, def, desc, image, typeDec, unit, decNode, body);
+                        addCreateMemberProposal(proposals, def, desc, image, typeDec, unit, 
+                                decNode, body);
                         break;
                     }
                 }
@@ -271,13 +303,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
+            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte,
+            IDocument doc) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 FindStatementVisitor fdv = new FindStatementVisitor(smte);
                 cu.visit(fdv);
                 Tree.Statement statement = fdv.getStatement();
-                addProposal(proposals, def, desc, image, unit, statement);
+                addCreateLocalProposal(proposals, def, desc, image, unit, statement);
                 break;
             }
         }
@@ -313,39 +346,54 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addProposal(Collection<ICompletionProposal> proposals, String def,
+    private void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
             String desc, Image image, Declaration typeDec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.Body body) {
+        IFile file = CeylonBuilder.getFile(unit);
+        TextFileChange change = new TextFileChange("Create Member", file);
+        IDocument doc;
+        try {
+            doc = change.getCurrentDocument(null);
+        }
+        catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
         String indent;
         String indentAfter;
         int offset;
-        if (!body.getStatements().isEmpty()) {
-            Statement statement = body.getStatements()
-                    .get(body.getStatements().size()-1);
-            indent = getIndent(unit.getTokenStream(), statement);
-            offset = statement.getStopIndex()+1;
-            indentAfter = "";
-        }
-        else {
-            indentAfter = getIndent(unit.getTokenStream(), decNode);
+        List<Statement> statements = body.getStatements();
+        if (statements.isEmpty()) {
+            indentAfter = "\n" + getIndent(decNode, doc);
             indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
-        IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange("Add Member", file);
+        else {
+            Statement statement = statements
+                    .get(statements.size()-1);
+            indent = "\n" + getIndent(statement, doc);
+            offset = statement.getStopIndex()+1;
+            indentAfter = "";
+        }
         change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
         proposals.add(createCreateProposal(def, 
                 "Create " + desc + " in '" + typeDec.getName() + "'", 
                 image, indent.length(), offset, file, change));
     }
 
-    private void addProposal(Collection<ICompletionProposal> proposals, String def,
+    private void addCreateLocalProposal(Collection<ICompletionProposal> proposals, String def,
             String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
-        String indent = getIndent(unit.getTokenStream(), statement);
-        int offset = statement.getStartIndex();
         IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange("Add Local", file);
-        change.setEdit(new InsertEdit(offset, def+indent));
+        TextFileChange change = new TextFileChange("Create Local", file);
+        IDocument doc;
+        try {
+            doc = change.getCurrentDocument(null);
+        }
+        catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+        String indent = getIndent(statement, doc);
+        int offset = statement.getStartIndex();
+        change.setEdit(new InsertEdit(offset, def+"\n"+indent));
         proposals.add(createCreateProposal(def, "Create local " + desc, 
                 image, 0, offset, file, change));
     }
