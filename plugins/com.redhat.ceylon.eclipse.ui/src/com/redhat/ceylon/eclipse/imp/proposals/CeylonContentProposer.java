@@ -7,6 +7,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLO
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
@@ -22,6 +23,7 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.O
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
+import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -229,7 +231,7 @@ public class CeylonContentProposer implements IContentProposer {
             return constructCompletions(offset, prefix, tokenType,
                         sortProposals(prefix, getProposals(node, prefix, 
                                 cpc.getContext(), cpc.getRootNode())),
-                        cpc, node);
+                        cpc, node, viewer.getDocument());
         } 
         return null;
         
@@ -284,7 +286,7 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, int tokenType,
-            Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node) {
+            Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, IDocument doc) {
         System.out.println("proposals for a " + node.getNodeType());
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import) {
@@ -342,7 +344,7 @@ public class CeylonContentProposer implements IContentProposer {
                     addInvocationProposals(offset, prefix, cpc, result, dwp, dec, ol);
                 }
                 if (isRefinementProposable(dec, ol)) {
-                    addRefinementProposal(offset, prefix, cpc, node, result, dec);
+                    addRefinementProposal(offset, prefix, cpc, node, result, dec, doc);
                 }
                 if (isAttributeProposable(dec, ol)) {
                     addAttributeProposal(offset, prefix, cpc, result, dec);
@@ -408,7 +410,7 @@ public class CeylonContentProposer implements IContentProposer {
     }
 
     private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
-            Node node, List<ICompletionProposal> result, Declaration d) {
+            Node node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
         if ((d.isDefault() || d.isFormal()) &&
                 node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
@@ -418,7 +420,7 @@ public class CeylonContentProposer implements IContentProposer {
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                             getDocumentationFor(cpc, d), 
                             getRefinementDescriptionFor(d), 
-                            getRefinementTextFor(d), false));
+                            getRefinementTextFor(d, "\n" + getIndent(node, doc)), false));
         }
     }
 
@@ -706,12 +708,12 @@ public class CeylonContentProposer implements IContentProposer {
         return result/*.append(" - invoke with named arguments")*/.toString();
     }
     
-    public static String getRefinementTextFor(Declaration d) {
+    public static String getRefinementTextFor(Declaration d, String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
         appendDeclarationText(d, result);
         appendTypeParameters(d, result);
         appendParameters(d, result);
-        appendImpl(d, result);
+        appendImpl(d, indent, result);
         return result.toString();
     }
     
@@ -859,10 +861,11 @@ public class CeylonContentProposer implements IContentProposer {
     }
   }*/
     
-    private static void appendImpl(Declaration d, StringBuilder result) {
+    private static void appendImpl(Declaration d, String indent, StringBuilder result) {
         if (d instanceof Method) {
+            String extraIndent = indent.contains("\n") ?  indent + getDefaultIndent() : indent;
             result.append( ((Method) d).getTypeDeclaration().getName().equals("Void") ?
-                    " {}" : " { return bottom; }" );
+                    " {}" : " {" + extraIndent + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
             result.append(" = bottom;");
