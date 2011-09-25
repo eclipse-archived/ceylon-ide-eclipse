@@ -32,6 +32,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -79,7 +80,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             return false;
         }
-        return code==100 || code==200 || code==300;
+        return code==100 || code==200 || code==300 || code==400;
     }
 
     @Override
@@ -150,10 +151,58 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addImplementFormalMembersProposal(cu, node, proposals, file, tc,
                         context.getSourceViewer().getDocument());
                 break;
+            case 400:
+                addMakeSharedProposal(node, problem, proposals, project);
+                break;
             }
         }
     }
     
+    private void addMakeSharedProposal(Node node, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project) {
+        Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
+        Declaration dec = qmte.getDeclaration();
+        if (dec!=null) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    //TODO: "object" declarations?
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+                    unit.getCompilationUnit().visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    IFile file = CeylonBuilder.getFile(unit);
+                    TextFileChange change = new TextFileChange("Make Shared", file);
+                    change.setEdit(new MultiTextEdit());
+                    Integer offset = decNode.getStartIndex();
+                    change.addEdit(new InsertEdit(offset, "shared "));
+                    if (decNode instanceof Tree.TypedDeclaration) {
+                        Type type = ((Tree.TypedDeclaration) decNode).getType();
+                        if (type instanceof Tree.FunctionModifier 
+                                || type instanceof Tree.ValueModifier) {
+                            String explicitType = type.getTypeModel().getProducedTypeName();
+                            change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
+                                    explicitType));
+                        }
+                    }
+                    proposals.add(createMakeSharedProposal(dec, offset, file, change));
+                    break;
+                }
+            }
+        }
+                    
+    }
+
+    private ChangeCorrectionProposal createMakeSharedProposal(Declaration dec, final int offset, 
+            final IFile file, TextFileChange change) {
+        return new ChangeCorrectionProposal("Make shared '" + dec.getName() + "'", 
+                change, 10, CORRECTION) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                Util.gotoLocation(file, offset, 0);
+            }
+        };
+    }
+
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
             Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc,
             IDocument doc) {
