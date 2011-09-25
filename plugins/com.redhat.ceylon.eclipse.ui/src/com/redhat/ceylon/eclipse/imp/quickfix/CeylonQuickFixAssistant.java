@@ -170,7 +170,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeActualProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "actual ", "Make Actual", problem, 
+        boolean shared = decNode.getDeclarationModel().isShared();
+        addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
+                shared ? "Make Actual" : "Make Shared Actual", problem, 
                 decNode.getDeclarationModel(), proposals, project);
     }
 
