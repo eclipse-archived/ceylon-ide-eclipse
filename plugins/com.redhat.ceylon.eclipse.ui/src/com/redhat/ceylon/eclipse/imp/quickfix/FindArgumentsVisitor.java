@@ -38,15 +38,17 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.NamedArgument that) {
+        ProducedType ct = currentType;
         currentType = that.getParameter().getType();
         super.visit(that);
-        currentType = null;
+        currentType = ct;
     }
     @Override
     public void visit(Tree.PositionalArgument that) {
+        ProducedType ct = currentType;
         currentType = that.getParameter().getType();
         super.visit(that);
-        currentType = null;
+        currentType = ct;
     }
     @Override
     public void visit(Tree.AttributeDeclaration that) {
@@ -74,9 +76,10 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.AssignmentOp that) {
+        ProducedType ct = currentType;
         currentType = that.getLeftTerm().getTypeModel();
         super.visit(that);
-        currentType = null;
+        currentType = ct;
     }
     @Override
     public void visit(Tree.Return that) {
