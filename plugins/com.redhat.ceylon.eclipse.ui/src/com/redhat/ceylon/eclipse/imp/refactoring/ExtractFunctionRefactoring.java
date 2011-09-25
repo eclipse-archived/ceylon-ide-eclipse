@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -20,10 +22,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
@@ -94,20 +94,22 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			OperationCanceledException {
 		TextFileChange tfc = new TextFileChange("Extract function", sourceFile);
 		tfc.setEdit(new MultiTextEdit());
+		IDocument doc = tfc.getCurrentDocument(null);
+		
 		Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
 		String exp = toString(term);
 		FindContainerVisitor fsv = new FindContainerVisitor(term);
 		rootNode.visit(fsv);
-		Node decNode = fsv.getDeclaration();
-		if (decNode instanceof Tree.Declaration) {
+		Tree.Declaration decNode = fsv.getDeclaration();
+		/*if (decNode instanceof Tree.Declaration) {
 			Tree.AnnotationList anns = ((Tree.Declaration) decNode).getAnnotationList();
 			if (anns!=null && !anns.getAnnotations().isEmpty()) {
 				decNode = anns.getAnnotations().get(0);
 			}
-		}
-		Declaration dec = fsv.getDeclaration().getDeclarationModel();
+		}*/
+		Declaration dec = decNode.getDeclarationModel();
 		FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
 		term.visit(flrv);
 		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
@@ -128,7 +130,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			args = args.substring(0, args.length()-2);
 		}
 		
-		String indent = getIndent(tokenStream, decNode);
+		String indent = "\n" + getIndent(decNode, doc);
 
 		String typeParams = "";
 		String constraints = "";
@@ -136,8 +138,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			for (TypeDeclaration t: localTypes) {
 				typeParams += t.getName() + ", ";
 				if (!t.getSatisfiedTypes().isEmpty()) {
-					constraints += (indent.isEmpty() ? "\n" : indent) +
-					        CeylonAutoEditStrategy.getDefaultIndent() +
+					constraints += indent + getDefaultIndent() +
 							"given " + t.getName() + " satisfies ";
 					for (ProducedType pt: t.getSatisfiedTypes()) {
 						constraints += pt.getProducedTypeName() + "&";
@@ -151,7 +152,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
 		
 		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : (isVoid?"void":"function")) + 
+				(explicitType || dec.isToplevel() ? 
+				        term.getTypeModel().getProducedTypeName() : 
+				        (isVoid ? "void":"function")) + 
 				" " + newName + typeParams + "(" + params + ")" + constraints + 
 				" { " + (isVoid?"":"return ") + exp + "; }" + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));

@@ -261,7 +261,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
       return -(low - 1);
     }
 
-    public static String getIndent(CommonTokenStream tokens, Node node) {
+    /*public static String getIndent(CommonTokenStream tokens, Node node) {
         int prevIndex = node.getToken().getTokenIndex()-1;
         if (node instanceof Tree.Declaration) {
             AnnotationList anl = ((Tree.Declaration) node).getAnnotationList();
@@ -276,5 +276,5 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             }
         }
         return "";
-    }
+    }*/
 }
