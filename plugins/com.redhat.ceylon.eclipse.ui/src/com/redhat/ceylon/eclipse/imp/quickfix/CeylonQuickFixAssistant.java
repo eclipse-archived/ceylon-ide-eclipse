@@ -178,7 +178,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
                 result.append(indent).append(getRefinementTextFor(d))
-                        .append(" { throw; }").append(indentAfter);
+                        .append(" { return bottom; }").append(indentAfter);
             }
         }
         change.setEdit(new InsertEdit(offset, result.toString()));
@@ -222,6 +222,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Image image;
             FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
             cu.visit(fav);
+            boolean isVoid = fav.expectedType==null;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
@@ -246,17 +247,19 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
-                    String type = fav.expectedType==null ? "void" : 
+                    String type = isVoid ? "void" : 
                         fav.expectedType.getProducedTypeName();
-                    def = type + " " + brokenName + params + " { throw; }";
+                    String impl = isVoid ? " {}" : 
+                        " { return bottom; }";
+                    def = type + " " + brokenName + params + impl;
                     desc = "function '" + brokenName + params + "'";
                     image = CeylonLabelProvider.METHOD;
                 }
             }
             else {
-                String type = fav.expectedType==null ? "void" : 
+                String type = isVoid ? "Void" : 
                     fav.expectedType.getProducedTypeName();
-                def = type + " " + brokenName + " { throw; }";
+                def = type + " " + brokenName + " = bottom;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
             }
@@ -406,14 +409,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             @Override
             public void apply(IDocument document) {
                 super.apply(document);
-                int loc = def.indexOf("throw;");
+                int loc = def.indexOf("bottom;");
                 int len;
                 if (loc<0) {
                     loc = def.indexOf("{}")+1;
                     len=0;
                 }
                 else {
-                    len=5;
+                    len=6;
                 }
                 Util.gotoLocation(file, offset + loc + indentLength, len);
             }
