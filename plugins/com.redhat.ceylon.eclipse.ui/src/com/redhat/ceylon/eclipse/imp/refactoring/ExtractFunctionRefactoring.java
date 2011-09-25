@@ -131,6 +131,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		}
 		
 		String indent = "\n" + getIndent(decNode, doc);
+        String extraIndent = indent + getDefaultIndent();
 
 		String typeParams = "";
 		String constraints = "";
@@ -138,8 +139,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			for (TypeDeclaration t: localTypes) {
 				typeParams += t.getName() + ", ";
 				if (!t.getSatisfiedTypes().isEmpty()) {
-					constraints += indent + getDefaultIndent() +
-							"given " + t.getName() + " satisfies ";
+                    constraints += extraIndent + getDefaultIndent() + 
+                            "given " + t.getName() + " satisfies ";
 					for (ProducedType pt: t.getSatisfiedTypes()) {
 						constraints += pt.getProducedTypeName() + "&";
 					}
@@ -156,7 +157,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 				        term.getTypeModel().getProducedTypeName() : 
 				        (isVoid ? "void":"function")) + 
 				" " + newName + typeParams + "(" + params + ")" + constraints + 
-				" { " + (isVoid?"":"return ") + exp + "; }" + indent));
+				" {" + extraIndent + (isVoid?"":"return ") + exp + ";" + indent + "}" 
+				+ indent + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
 		return tfc;
 	}
