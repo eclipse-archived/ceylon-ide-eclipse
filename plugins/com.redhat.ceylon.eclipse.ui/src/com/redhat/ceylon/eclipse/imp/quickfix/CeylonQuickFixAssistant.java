@@ -481,7 +481,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?
             if (dist<=brokenName.length()/3+1) {
-                TextFileChange change = new TextFileChange("Rename", file);
+                TextFileChange change = new TextFileChange("Change Reference", file);
                 change.setEdit(new ReplaceEdit(problem.getOffset(), 
                         brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
                 proposals.add(createRenameProposal(problem, file, dwp.getName(), 
@@ -493,8 +493,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private ChangeCorrectionProposal createRenameProposal(final ProblemLocation problem,
             final IFile file, final String name, Declaration dec, int dist,
             TextFileChange change) {
-        return new ChangeCorrectionProposal("Rename to '" + name + "'", 
-                change, dist+10, CeylonLabelProvider.getImage(dec)) {
+        return new ChangeCorrectionProposal("Change reference to '" + name + "'", 
+                change, dist+10, CORRECTION/*CeylonLabelProvider.getImage(dec)*/) {
             @Override
             public void apply(IDocument document) {
                 super.apply(document);
