@@ -88,6 +88,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
+        if (node.getToken()==null) return null;
         FindNodeVisitor visitor = new FindNodeVisitor(node.getStartIndex(), node.getStopIndex()+1);
         //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
         cu.visit(visitor);
