@@ -246,17 +246,17 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
-                    String type = fav.expectedType==null ? "Nothing" : 
+                    String type = fav.expectedType==null ? "void" : 
                         fav.expectedType.getProducedTypeName();
-                    def = type + " " + brokenName + params + " { return null; }";
+                    def = type + " " + brokenName + params + " { throw; }";
                     desc = "function '" + brokenName + params + "'";
                     image = CeylonLabelProvider.METHOD;
                 }
             }
             else {
-                String type = fav.expectedType==null ? "Nothing" : 
+                String type = fav.expectedType==null ? "void" : 
                     fav.expectedType.getProducedTypeName();
-                def = type + " " + brokenName + " = null;";
+                def = type + " " + brokenName + " { throw; }";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
             }
@@ -406,14 +406,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             @Override
             public void apply(IDocument document) {
                 super.apply(document);
-                int loc = def.indexOf("null;");
+                int loc = def.indexOf("throw;");
                 int len;
                 if (loc<0) {
                     loc = def.indexOf("{}")+1;
                     len=0;
                 }
                 else {
-                    len=4;
+                    len=5;
                 }
                 Util.gotoLocation(file, offset + loc + indentLength, len);
             }
