@@ -860,15 +860,15 @@ public class CeylonContentProposer implements IContentProposer {
   }*/
     
     private static void appendImpl(Declaration d, StringBuilder result) {
-        if (d instanceof Method && 
-                !((Method) d).getType().getDeclaration().getName().equals("Void")) {
-            result.append(" { return bottom; }");
+        if (d instanceof Method) {
+            result.append( ((Method) d).getTypeDeclaration().getName().equals("Void") ?
+                    " {}" : " { return bottom; }" );
         }
         else if (d instanceof MethodOrValue) {
             result.append(" = bottom;");
         }
         else {
-            result.append("{}");
+            result.append(" {}");
         }
     }
     
