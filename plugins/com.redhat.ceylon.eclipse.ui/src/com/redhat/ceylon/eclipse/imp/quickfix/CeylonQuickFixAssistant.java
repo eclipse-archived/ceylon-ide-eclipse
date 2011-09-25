@@ -46,6 +46,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -230,7 +231,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private ChangeCorrectionProposal createAddAnnotionProposal(Declaration dec, String annotation,
             final int offset, final IFile file, TextFileChange change) {
-        return new ChangeCorrectionProposal("Make " + annotation + "'" + dec.getName() + "'", 
+        return new ChangeCorrectionProposal("Make '" + dec.getName() + "' " + 
+                    annotation + "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'", 
                 change, 10, CORRECTION) {
             @Override
             public void apply(IDocument document) {
