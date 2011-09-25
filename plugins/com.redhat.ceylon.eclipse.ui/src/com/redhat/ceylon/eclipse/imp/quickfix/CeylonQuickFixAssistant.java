@@ -98,7 +98,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return new String[] { CeylonBuilder.PROBLEM_MARKER_ID };
     }
 
-    static String getIndent(Node node, IDocument doc) {
+    public static String getIndent(Node node, IDocument doc) {
         try {
             IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
             String line = doc.get(region.getOffset(), region.getLength());
@@ -145,9 +145,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 break;
             case 200:
                 addSpecifyTypeProposal(node, problem, proposals, file);
+                break;
             case 300:
                 addImplementFormalMembersProposal(cu, node, proposals, file, tc,
                         context.getSourceViewer().getDocument());
+                break;
             }
         }
     }
