@@ -157,8 +157,18 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 500:
                 addMakeDefaultProposal(problem, proposals, project, node);
                 break;
+            case 600:
+                addMakeActualProposal(problem, proposals, project, node);
+                break;
             }
         }
+    }
+
+    private void addMakeActualProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        addAddAnnotationProposal(node, "actual ", "Make Actual", problem, 
+                decNode.getDeclarationModel(), proposals, project);
     }
 
     private void addMakeDefaultProposal(ProblemLocation problem,
@@ -171,6 +181,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addMakeSharedProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        //TODO: Make Shared for actual/formal/default member
         Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
         addAddAnnotationProposal(node, "shared ", "Make Shared", problem, qmte.getDeclaration(), 
                 proposals, project);
