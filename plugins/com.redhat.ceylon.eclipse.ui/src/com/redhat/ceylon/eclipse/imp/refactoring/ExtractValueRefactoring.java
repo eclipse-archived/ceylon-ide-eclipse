@@ -1,10 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getIndent;
+import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -13,7 +14,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -56,24 +56,25 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 			OperationCanceledException {
 		TextFileChange tfc = new TextFileChange("Extract value", sourceFile);
 		tfc.setEdit(new MultiTextEdit());
+		IDocument doc = tfc.getCurrentDocument(null);
+		
 		Tree.Term term = (Tree.Term) node;
 		Integer start = node.getStartIndex();
 		int length = node.getStopIndex()-start+1;
 		String exp = toString(term);
 		FindStatementVisitor fsv = new FindStatementVisitor(term);
 		rootNode.visit(fsv);
-		Node statNode = fsv.getStatement();
-		if (statNode instanceof Tree.Declaration) {
+		Tree.Statement statNode = fsv.getStatement();
+		/*if (statNode instanceof Tree.Declaration) {
 			Tree.AnnotationList anns = ((Tree.Declaration) statNode).getAnnotationList();
 			if (anns!=null && !anns.getAnnotations().isEmpty()) {
 				statNode = anns.getAnnotations().get(0);
 			}
-		}
-		String indent = getIndent(tokenStream, statNode);
+		}*/
 		tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
 				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + " " + 
 				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
-				indent));
+				"\n" + getIndent(statNode, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
 		return tfc;
 	}
