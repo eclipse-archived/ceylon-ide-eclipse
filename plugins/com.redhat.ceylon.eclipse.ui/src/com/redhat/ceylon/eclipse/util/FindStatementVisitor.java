@@ -25,7 +25,10 @@ public class FindStatementVisitor extends Visitor
 	}
 	@Override
 	public void visit(Tree.Statement that) {
-		currentStatement = that;
+	    if (!(that instanceof Tree.Variable || 
+	            that instanceof Tree.Parameter)) {
+	        currentStatement = that;
+	    }
 		super.visit(that);
 	}
 	public void visitAny(Node node) {
