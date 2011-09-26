@@ -27,15 +27,13 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 public class RenameRefactoring extends AbstractRefactoring {
     
 	private static class FindReferencesVisitor extends FindReferenceVisitor {
-	    private final Declaration declaration;
         private FindReferencesVisitor(Declaration declaration) {
             super(declaration);
-            this.declaration = declaration;
         }
         @Override
         protected boolean isReference(Declaration ref) {
             return super.isReference(ref) ||
-                    ref!=null && ref.refines(declaration);
+                    ref!=null && ref.refines(getDeclaration());
         }
     }
 
