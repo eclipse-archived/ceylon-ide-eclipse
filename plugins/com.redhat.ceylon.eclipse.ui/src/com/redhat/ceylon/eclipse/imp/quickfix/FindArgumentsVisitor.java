@@ -1,7 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.addToUnion;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -11,6 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -39,6 +44,15 @@ class FindArgumentsVisitor extends Visitor
             if (d!=null) return d;
         }
         return null;
+    }
+    
+    private static ProducedType unionType(ProducedType lhst, ProducedType rhst) {
+        List<ProducedType> list = new ArrayList<ProducedType>();
+        addToUnion(list, rhst);
+        addToUnion(list, lhst);
+        UnionType ut = new UnionType();
+        ut.setCaseTypes(list);
+        return ut.getType();
     }
     
     @Override
@@ -78,9 +92,44 @@ class FindArgumentsVisitor extends Visitor
         super.visit(that);
         currentType = null;
     }
-    @Override
+    /*@Override
     public void visit(Tree.Variable that) {
         currentType = that.getType().getTypeModel();
+        super.visit(that);
+        currentType = null;
+    }*/
+    @Override
+    public void visit(Tree.Resource that) {
+        currentType = ((Interface) getLanguageModuleDeclaration("Closeable")).getType();
+        super.visit(that);
+        currentType = null;
+    }
+    @Override
+    public void visit(Tree.BooleanCondition that) {
+        currentType = ((Class) getLanguageModuleDeclaration("Boolean")).getType();
+        super.visit(that);
+        currentType = null;
+    }
+    @Override
+    public void visit(Tree.ExistsCondition that) {
+        ProducedType nothingType = ((Class) getLanguageModuleDeclaration("Nothing")).getType();
+        ProducedType varType = that.getVariable().getType().getTypeModel();
+        currentType = unionType(varType, nothingType);
+        super.visit(that);
+        currentType = null;
+    }
+    @Override
+    public void visit(Tree.NonemptyCondition that) {
+        ProducedType varType = that.getVariable().getType().getTypeModel();
+        ProducedType emptyType = ((Interface) getLanguageModuleDeclaration("Empty")).getType();
+        currentType = unionType(varType, emptyType);
+        super.visit(that);
+        currentType = null;
+    }
+    @Override
+    public void visit(Tree.SatisfiesCondition that) {
+        ProducedType objectType = ((Class) getLanguageModuleDeclaration("Object")).getType();
+        currentType = objectType;
         super.visit(that);
         currentType = null;
     }
