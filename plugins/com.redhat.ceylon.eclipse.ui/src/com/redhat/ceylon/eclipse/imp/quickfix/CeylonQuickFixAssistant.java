@@ -140,7 +140,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             switch ( problem.getProblemId() ) {
             case 100:
                 addCreateProposals(cu, node, problem, proposals, project,
-                        context.getSourceViewer().getDocument());
+                        context.getSourceViewer().getDocument(), tc);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file, tc);
                     addImportProposals(cu, node, proposals, file, tc);
@@ -301,7 +301,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }*/
     
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, IDocument doc) {
+            Collection<ICompletionProposal> proposals, IProject project, IDocument doc,
+            TypeChecker tc) {
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
 
@@ -310,7 +311,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             String def;
             String desc;
             Image image;
-            FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
+            FindArgumentsVisitor fav = new FindArgumentsVisitor(smte, tc);
             cu.visit(fav);
             boolean isVoid = fav.expectedType==null;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
