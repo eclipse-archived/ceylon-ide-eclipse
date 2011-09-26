@@ -12,6 +12,7 @@ import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -235,6 +236,20 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineAttributeReferences(final PhasedUnit pu, final String template,
             final TextFileChange tfc) {
         new Visitor() {
+            @Override
+            public void visit(Tree.Variable that) {
+                super.visit(that);
+                if (that.getType() instanceof Tree.SyntheticVariable && 
+                    that.getSpecifierExpression().getExpression().getTerm() 
+                        instanceof Tree.BaseMemberExpression) {
+                    Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) that
+                            .getSpecifierExpression().getExpression().getTerm();
+                    if (bme.getDeclaration().equals(declaration)) {
+                        tfc.addEdit(new InsertEdit(bme.getStartIndex(), 
+                                that.getIdentifier().getText()+" = "));
+                    }
+                }
+            }
         	@Override
         	public void visit(Tree.BaseMemberExpression that) {
         		super.visit(that);
