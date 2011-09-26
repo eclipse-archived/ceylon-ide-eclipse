@@ -40,7 +40,7 @@ public class CeylonOccurrenceMarker implements ILanguageService, IOccurrenceMark
                 FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
                 root.visit(frv);
                 fOccurrences.addAll(frv.getNodes());
-                FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+                FindDeclarationVisitor fdv = new FindDeclarationVisitor(frv.getDeclaration());
                 root.visit(fdv);
                 if (fdv.getDeclarationNode()!=null) {
                     fOccurrences.add(fdv.getDeclarationNode());

@@ -4,8 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindReferenceVisitor extends Visitor {
@@ -14,6 +16,13 @@ public class FindReferenceVisitor extends Visitor {
 	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public FindReferenceVisitor(Declaration declaration) {
+	    if (declaration instanceof TypedDeclaration) {
+	        Declaration od = declaration;
+	        while (od!=null) {
+	            declaration = od;
+	            od = ((TypedDeclaration) od).getOriginalDeclaration();
+	        }
+	    }
 		this.declaration = declaration;
 	}
 	
@@ -31,21 +40,23 @@ public class FindReferenceVisitor extends Visitor {
 	
     @Override
     public void visit(Tree.IfClause that) {
-        if (that.getCondition() instanceof Tree.ExistsOrNonemptyCondition) {
-            Tree.Variable var = ((Tree.ExistsOrNonemptyCondition) that.getCondition()).getVariable();
-            if (var.getType() instanceof Tree.SyntheticVariable && 
-                var.getSpecifierExpression().getExpression().getTerm() 
-                    instanceof Tree.BaseMemberExpression) {
-                Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) var
-                        .getSpecifierExpression().getExpression().getTerm();
-                if (bme.getDeclaration().equals(declaration)) {
-                    that.getCondition().visit(this);
-                    Declaration d = declaration;
-                    declaration = var.getDeclarationModel();
-                    that.getBlock().visit(this);
-                    declaration = d;
-                    return;
-                }
+        Tree.Variable var = null;
+        Condition c = that.getCondition();
+        if (c instanceof Tree.ExistsOrNonemptyCondition) {
+            var = ((Tree.ExistsOrNonemptyCondition) c).getVariable();
+        }
+        if (c instanceof Tree.IsCondition) {
+            var = ((Tree.IsCondition) c).getVariable();
+        }
+        if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+            if (var.getDeclarationModel().getOriginalDeclaration()
+                    .equals(declaration)) {
+                c.visit(this);
+                Declaration d = declaration;
+                declaration = var.getDeclarationModel();
+                that.getBlock().visit(this);
+                declaration = d;
+                return;
             }
         }
         super.visit(that);
