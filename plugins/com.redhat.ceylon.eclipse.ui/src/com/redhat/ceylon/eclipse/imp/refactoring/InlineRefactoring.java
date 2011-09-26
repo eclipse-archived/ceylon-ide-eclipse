@@ -238,7 +238,6 @@ public class InlineRefactoring extends AbstractRefactoring {
         new Visitor() {
             @Override
             public void visit(Tree.Variable that) {
-                super.visit(that);
                 if (that.getType() instanceof Tree.SyntheticVariable && 
                     that.getSpecifierExpression().getExpression().getTerm() 
                         instanceof Tree.BaseMemberExpression) {
@@ -249,6 +248,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                                 that.getIdentifier().getText()+" = "));
                     }
                 }
+                super.visit(that);
             }
         	@Override
         	public void visit(Tree.BaseMemberExpression that) {
