@@ -42,7 +42,7 @@ abstract class AbstractFindAction extends Action {
         }
         else {
             MessageDialog.openWarning(editor.getEditorSite().getShell(), 
-                    "Ceylon Find Error", "No declaration name selected");
+                    "Ceylon Find Error", "No appropriate declaration name selected");
         }
     }
     
