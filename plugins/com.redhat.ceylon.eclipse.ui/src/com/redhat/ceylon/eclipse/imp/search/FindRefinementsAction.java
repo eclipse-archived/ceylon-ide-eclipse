@@ -12,6 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
@@ -23,6 +24,7 @@ public class FindRefinementsAction extends AbstractFindAction {
     
     @Override
     boolean isValidSelection(Declaration selectedDeclaration) {
+        selectedDeclaration = new FindReferenceVisitor(selectedDeclaration).getDeclaration();
         return selectedDeclaration!=null && 
                 selectedDeclaration.isClassOrInterfaceMember() &&
                 !(selectedDeclaration instanceof TypeParameter) &&
@@ -34,7 +36,7 @@ public class FindRefinementsAction extends AbstractFindAction {
         return new FindSearchQuery(declaration, project) {
             @Override
             protected Set<Node> getNodes(PhasedUnit pu) {
-                FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
+                FindRefinementsVisitor frv = new FindRefinementsVisitor(new FindReferenceVisitor(declaration).getDeclaration());
                 pu.getCompilationUnit().visit(frv);
                 Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
                 return Collections.<Node>unmodifiableSet(nodes);
