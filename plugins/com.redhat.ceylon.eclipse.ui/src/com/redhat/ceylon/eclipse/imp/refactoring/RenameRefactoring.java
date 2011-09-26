@@ -65,7 +65,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             int count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+                FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
                 pu.getCompilationUnit().visit(frv);
                 pu.getCompilationUnit().visit(fdv);
                 count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
@@ -104,7 +104,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     			for (Node node: frv.getNodes()) {
     	            renameNode(tfc, node);
     			}
-    			FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+    			FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
     			pu.getCompilationUnit().visit(fdv);
     			for (Tree.Declaration node: fdv.getDeclarationNodes()) {
     			    renameNode(tfc, node);

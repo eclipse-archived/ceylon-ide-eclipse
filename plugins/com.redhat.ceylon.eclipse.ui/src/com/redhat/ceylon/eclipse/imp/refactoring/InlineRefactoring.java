@@ -238,13 +238,10 @@ public class InlineRefactoring extends AbstractRefactoring {
         new Visitor() {
             @Override
             public void visit(Tree.Variable that) {
-                if (that.getType() instanceof Tree.SyntheticVariable && 
-                    that.getSpecifierExpression().getExpression().getTerm() 
-                        instanceof Tree.BaseMemberExpression) {
-                    Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) that
-                            .getSpecifierExpression().getExpression().getTerm();
-                    if (bme.getDeclaration().equals(declaration)) {
-                        tfc.addEdit(new InsertEdit(bme.getStartIndex(), 
+                if (that.getType() instanceof Tree.SyntheticVariable) {
+                    if (that.getDeclarationModel().getOriginalDeclaration()
+                            .equals(declaration)) {
+                        tfc.addEdit(new InsertEdit(that.getSpecifierExpression().getStartIndex(), 
                                 that.getIdentifier().getText()+" = "));
                     }
                 }
