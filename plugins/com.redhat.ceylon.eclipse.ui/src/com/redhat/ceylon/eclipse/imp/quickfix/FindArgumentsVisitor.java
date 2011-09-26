@@ -1,5 +1,14 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -15,8 +24,21 @@ class FindArgumentsVisitor extends Visitor
     ProducedType currentType;
     ProducedType expectedType;
     boolean found = false;
-    FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte) {
+    TypeChecker typeChecker;
+    
+    FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte,
+            TypeChecker tc) {
         this.smte = smte;
+        typeChecker = tc;
+    }
+    
+    private Declaration getLanguageModuleDeclaration(String name) {
+        Module languageModule = typeChecker.getContext().getModules().getLanguageModule();
+        for (Package languageScope : languageModule.getPackages() ) {
+            Declaration d = languageScope.getMember(name);
+            if (d!=null) return d;
+        }
+        return null;
     }
     
     @Override
@@ -64,7 +86,22 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.ValueIterator that) {
-        currentType = that.getVariable().getType().getTypeModel();
+        Interface iterable = (Interface) getLanguageModuleDeclaration("Iterable");
+        ProducedType varType = that.getVariable().getType().getTypeModel();
+        ProducedType iterableType = iterable.getProducedType(null, Collections.singletonList(varType));
+        currentType = iterableType;
+        super.visit(that);
+        currentType = null;
+    }
+    @Override
+    public void visit(Tree.KeyValueIterator that) {
+        Interface iterable = (Interface) getLanguageModuleDeclaration("Iterable");
+        Class entry = (Class) getLanguageModuleDeclaration("Entry");
+        ProducedType keyType = that.getKeyVariable().getType().getTypeModel();
+        ProducedType valueType = that.getValueVariable().getType().getTypeModel();
+        ProducedType entryType = entry.getProducedType(null, Arrays.asList(keyType, valueType));
+        ProducedType iterableType = iterable.getProducedType(null, Collections.singletonList(entryType));
+        currentType = iterableType;
         super.visit(that);
         currentType = null;
     }
