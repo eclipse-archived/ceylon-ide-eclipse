@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -7,8 +10,8 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.imp.services.base.FolderBase;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -25,15 +28,16 @@ public class CeylonFoldingUpdater extends FolderBase {
 
     @Override
 	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
-	        List<Annotation> annotations, Object ast) {
+	        final List<Annotation> annotations, Object ast) {
         //TODO: we should also allow multiline comments 
         //      to be folded, but there is no treenode 
         //      for them!
         for (CommonToken token: getTokens()) {
-            if (token.getType()==CeylonLexer.MULTI_COMMENT ||
-                    token.getType()==CeylonLexer.STRING_LITERAL) {
+            if (token.getType()==MULTI_COMMENT ||
+                    token.getType()==STRING_LITERAL) {
                 if (isMultilineToken(token)) {
                     makeAnnotation(token, token);
+                    //TODO: initially collapse copyright notice
                 }
             }
         }
@@ -43,7 +47,10 @@ public class CeylonFoldingUpdater extends FolderBase {
             public void visit(Tree.ImportList importList) {
                 super.visit(importList);
                 if (!importList.getImports().isEmpty()) {
-                    foldIfNecessary(importList);
+                    if (foldIfNecessary(importList)) {
+                        //TODO: initially collapse the import list
+                        //collapseLast(annotations);
+                    }
                 }
             }
             /*@Override 
@@ -63,16 +70,23 @@ public class CeylonFoldingUpdater extends FolderBase {
                 super.visit(that);
                 foldIfNecessary(that);
             }
-            private void foldIfNecessary(Node node) {
-                CommonToken token = (CommonToken) node.getToken();
-                CommonToken endToken = (CommonToken) node.getEndToken();
-                if (endToken.getLine()-token.getLine()>1) {
-                    makeAnnotation(token, endToken);
-                }
-            }
 		}.visit(cu);
 	}
 
+    protected void collapseLast(List<Annotation> annotations) {
+        ((ProjectionAnnotation) annotations.get(annotations.size()-1)).markCollapsed();
+    }
+
+    private boolean foldIfNecessary(Node node) {
+        CommonToken token = (CommonToken) node.getToken();
+        CommonToken endToken = (CommonToken) node.getEndToken();
+        if (endToken.getLine()-token.getLine()>1) {
+            makeAnnotation(token, endToken);
+            return true;
+        }
+        return false;
+    }
+    
     private boolean isMultilineToken(CommonToken token) {
         return token.getText().indexOf('\n')>0 ||
                 token.getText().indexOf('\r')>0;
@@ -80,7 +94,7 @@ public class CeylonFoldingUpdater extends FolderBase {
 
     private void makeAnnotation(CommonToken token, CommonToken endToken) {
         makeAnnotation(token.getStartIndex(), 
-                endToken.getStopIndex()-token.getStartIndex());
+                endToken.getStopIndex()-token.getStartIndex()+1);
     }
 
     private List<CommonToken> getTokens() {
