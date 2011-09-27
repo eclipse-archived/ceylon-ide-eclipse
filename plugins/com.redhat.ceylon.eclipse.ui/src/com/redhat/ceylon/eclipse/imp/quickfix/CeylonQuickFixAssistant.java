@@ -171,6 +171,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 801:
                 addMakeVariableDecProposal(problem, proposals, project, node);
                 break;
+            case 900:
+                addMakeAbstractProposal(problem, proposals, project, node);
+                break;
             }
         }
     }
@@ -189,6 +192,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         Tree.Declaration decNode = (Tree.Declaration) node;
         addAddAnnotationProposal(node, "default ", "Make Default", problem, 
                 decNode.getDeclarationModel().getRefinedDeclaration(), 
+                proposals, project);
+    }
+
+    private void addMakeAbstractProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, 
+                (Declaration) decNode.getDeclarationModel().getContainer(), 
                 proposals, project);
     }
 
