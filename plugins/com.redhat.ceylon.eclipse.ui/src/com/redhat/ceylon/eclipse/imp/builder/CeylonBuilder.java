@@ -405,8 +405,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
         
-        for (PhasedUnit phasedUnit : builtPhasedUnits)
-        {
+        for (PhasedUnit phasedUnit : builtPhasedUnits) {
             IFile file = getFile(phasedUnit);
             CommonTokenStream tokens = phasedUnit.getTokenStream();
             phasedUnit.getCompilationUnit()
@@ -428,8 +427,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         ISourceProject sourceProject, IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
-        for (IFile fileToUpdate : fSourcesToCompile)
-        {
+        for (IFile fileToUpdate : fSourcesToCompile) {
             ResourceVirtualFile file = ResourceVirtualFile.createResourceVirtualFile(fileToUpdate);
             IPath srcFolderPath = retrieveSourceFolder(fileToUpdate);
             ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
@@ -511,32 +509,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     typeChecker.getPhasedUnits().getModuleBuilder(), 
                     typeChecker.getContext(), tokenStream));
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.validateTree();
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.scanDeclarations();
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.scanTypeDeclarations();
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.validateRefinement();
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseTypes();
         }
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseFlow();
         }
         for (PhasedUnit pu : phasedUnitsToUpdate) {
