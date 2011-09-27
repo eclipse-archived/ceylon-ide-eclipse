@@ -165,6 +165,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 700:
                 addMakeSharedDecProposal(problem, proposals, project, node);
                 break;
+            case 800:
+                addMakeVariableProposal(problem, proposals, project, node);
+                break;
+            case 801:
+                addMakeVariableDecProposal(problem, proposals, project, node);
+                break;
             }
         }
     }
@@ -186,6 +192,20 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 proposals, project);
     }
 
+    private void addMakeVariableProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        Tree.BaseMemberOrTypeExpression qmte = (Tree.BaseMemberOrTypeExpression) node;
+        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
+                qmte.getDeclaration(), proposals, project);
+    }
+    
+    private void addMakeVariableDecProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
+                decNode.getDeclarationModel(), proposals, project);
+    }
+    
     private void addMakeSharedProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
@@ -232,9 +252,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private ChangeCorrectionProposal createAddAnnotionProposal(Declaration dec, String annotation,
             final int offset, final IFile file, TextFileChange change) {
-        return new ChangeCorrectionProposal("Make '" + dec.getName() + "' " + 
-                    annotation + "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'", 
-                change, 10, CORRECTION) {
+        String desc = "Make '" + dec.getName() + "' " + annotation;
+        if (dec.getContainer() instanceof TypeDeclaration) {
+            desc += "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'";
+        }
+        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
             @Override
             public void apply(IDocument document) {
                 super.apply(document);
