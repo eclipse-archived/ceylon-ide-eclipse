@@ -38,16 +38,20 @@ public class FindReferenceVisitor extends Visitor {
 	    return ref!=null && declaration.refines(ref);
 	}
 	
-    @Override
-    public void visit(Tree.IfClause that) {
-        Tree.Variable var = null;
-        Condition c = that.getCondition();
+    private Tree.Variable getConditionVariable(Condition c) {
         if (c instanceof Tree.ExistsOrNonemptyCondition) {
-            var = ((Tree.ExistsOrNonemptyCondition) c).getVariable();
+            return ((Tree.ExistsOrNonemptyCondition) c).getVariable();
         }
         if (c instanceof Tree.IsCondition) {
-            var = ((Tree.IsCondition) c).getVariable();
+            return ((Tree.IsCondition) c).getVariable();
         }
+        return null;
+    }
+    
+    @Override
+    public void visit(Tree.IfClause that) {
+        Condition c = that.getCondition();
+        Tree.Variable var = getConditionVariable(c);
         if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
             if (var.getDeclarationModel().getOriginalDeclaration()
                     .equals(declaration)) {
@@ -61,7 +65,25 @@ public class FindReferenceVisitor extends Visitor {
         }
         super.visit(that);
     }
-	
+
+    @Override
+    public void visit(Tree.WhileClause that) {
+        Condition c = that.getCondition();
+        Tree.Variable var = getConditionVariable(c);
+        if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+            if (var.getDeclarationModel().getOriginalDeclaration()
+                    .equals(declaration)) {
+                c.visit(this);
+                Declaration d = declaration;
+                declaration = var.getDeclarationModel();
+                that.getBlock().visit(this);
+                declaration = d;
+                return;
+            }
+        }
+        super.visit(that);
+    }
+    
     @Override
     public void visit(Tree.ExtendedTypeExpression that) {}
     
