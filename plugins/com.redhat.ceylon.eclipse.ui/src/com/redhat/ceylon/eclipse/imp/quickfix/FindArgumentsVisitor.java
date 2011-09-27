@@ -1,10 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
-import java.util.Arrays;
-import java.util.Collections;
-
-import com.redhat.ceylon.compiler.typechecker.model.Class;
-import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -103,24 +98,17 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.ValueIterator that) {
-        //TODO: move to Unit
-        Interface iterable = that.getUnit().getIterableDeclaration();
         ProducedType varType = that.getVariable().getType().getTypeModel();
-        ProducedType iterableType = iterable.getProducedType(null, Collections.singletonList(varType));
-        currentType = iterableType;
+        currentType = that.getUnit().getIterableType(varType);
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.KeyValueIterator that) {
-        //TODO: move to Unit
-        Interface iterable = that.getUnit().getIterableDeclaration();
-        Class entry = that.getUnit().getEntryDeclaration();
         ProducedType keyType = that.getKeyVariable().getType().getTypeModel();
         ProducedType valueType = that.getValueVariable().getType().getTypeModel();
-        ProducedType entryType = entry.getProducedType(null, Arrays.asList(keyType, valueType));
-        ProducedType iterableType = iterable.getProducedType(null, Collections.singletonList(entryType));
-        currentType = iterableType;
+        currentType = that.getUnit().getIterableType(that.getUnit()
+                .getEntryType(keyType, valueType));
         super.visit(that);
         currentType = null;
     }
