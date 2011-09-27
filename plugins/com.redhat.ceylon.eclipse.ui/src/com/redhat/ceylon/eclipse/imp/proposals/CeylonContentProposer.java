@@ -31,7 +31,6 @@ import static java.lang.Character.isUpperCase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -254,27 +253,25 @@ public class CeylonContentProposer implements IContentProposer {
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
       if (tc!=null) {
         for (Module m: tc.getContext().getModules().getListOfModules()) {*/
-        Set<Package> packages = new HashSet<Package>();
-        for (Module m: node.getUnit().getPackage().getModule().getDependencies()) {
-            for (Package p: m.getAllPackages()) {
-                if (!packages.contains(p)) {
-                    packages.add(p);
-                    if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
-                        boolean already = false;
-                        for (ImportList il: node.getUnit().getImportLists()) {
-                            if (il.getImportedPackage()==p) {
-                                already = true;
-                                break;
-                            }
-                        }
-                        if (!already) {
-                            result.add(sourceProposal(offset, prefix, PACKAGE, 
-                                    "[" + p.getQualifiedNameString() + "]", p.getQualifiedNameString(), 
-                                    p.getQualifiedNameString().substring(len), false));
+        //Set<Package> packages = new HashSet<Package>();
+        for (Package p: node.getUnit().getPackage().getModule().getAllPackages()) {
+            //if (!packages.contains(p)) {
+                //packages.add(p);
+                if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
+                    boolean already = false;
+                    for (ImportList il: node.getUnit().getImportLists()) {
+                        if (il.getImportedPackage()==p) {
+                            already = true;
+                            break;
                         }
                     }
+                    if (!already) {
+                        result.add(sourceProposal(offset, prefix, PACKAGE, 
+                                "[" + p.getQualifiedNameString() + "]", p.getQualifiedNameString(), 
+                                p.getQualifiedNameString().substring(len), false));
+                    }
                 }
-            }
+            //}
         }
     }
     
