@@ -73,6 +73,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
 
@@ -98,7 +99,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      */
     public static final String PROBLEM_MARKER_ID = CeylonPlugin.PLUGIN_ID
             + ".ceylonProblem";
-    
+
     /*public static final String TASK_MARKER_ID = CeylonPlugin.PLUGIN_ID
             + ".ceylonTask";*/
 
@@ -107,9 +108,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final Language LANGUAGE = LanguageRegistry
             .findLanguage(LANGUAGE_NAME);
 
-    
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
-    
+
     public static final String CEYLON_CONSOLE= "Ceylon";
 
     private final IResourceVisitor fResourceVisitor= new SourceCollectorVisitor();
@@ -123,8 +123,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final Collection<IFile> fChangedSources= new HashSet<IFile>();
 
     private final Collection<IFile> fSourcesToCompile= new HashSet<IFile>();
-
-    private final Collection<IFile> fSourcesForDeps= new HashSet<IFile>();
 
     private final class SourceDeltaVisitor implements IResourceDeltaVisitor {
         public boolean visit(IResourceDelta delta) throws CoreException {
@@ -192,7 +190,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         return result;
     }
-    
+
     public static List<PhasedUnit> getUnits() {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         for (TypeChecker tc: typeCheckers.values()) {
@@ -202,7 +200,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         return result;
     }
-    
+
     /*public static PhasedUnit getPhasedUnit(IFile file) {
         for (PhasedUnit pu: getUnits(file.getProject())) {
             if (getFile(pu).getFullPath().equals(file.getFullPath())) {
@@ -211,7 +209,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         return null;
     }*/
-    
+
     public static List<PhasedUnit> getUnits(String[] projects) {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         if (projects!=null) {
@@ -298,21 +296,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Collects compilation-unit dependencies for the given file, and records
-     * them via calls to <code>fDependency.addDependency()</code>.
-     */
-    protected void collectDependencies(IFile file) {
-        // String fromPath = file.getFullPath().toString();
-
-        /*getPlugin().writeInfoMsg(
-                "Collecting dependencies from ceylon file: " + file.getName());*/
-
-        // TODO: implement dependency collector
-        // E.g. for each dependency:
-        // fDependencyInfo.addDependency(fromPath, uponPath);
-    }
-
-    /**
      * @return true iff this resource identifies the output folder
      */
     protected boolean isOutputFolder(IResource resource) {
@@ -326,10 +309,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
 
         fChangedSources.clear();
-        fSourcesForDeps.clear();
         fSourcesToCompile.clear();
 
-        boolean partialDeps= true;
         Collection<IFile> allSources= new ArrayList<IFile>();
 
         IProject project = getProject();
@@ -348,33 +329,74 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             } catch (CoreException e) {
                 getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
             }
-            fSourcesForDeps.addAll(allSources);
             clearMarkersOn(allSources);
             builtPhasedUnits = fullBuild(project, sourceProject, monitor);
             if (builtPhasedUnits== null)
                 return new IProject[0];
-            
-            // Collect deps now, so we can compile everything necessary in the case where
-            // we have no dep info yet (e.g. first build for this Eclipse invocation --
-            // we don't persist the dep info yet) but we've been asked to do an auto build
-            // b/c of workspace changes.
-            
-            collectDependencies(monitor);
         }
         else
         {
             try {
-                collectSourcesToCompile(monitor);
+                IResourceDelta delta= getDelta(getProject());
+                boolean emitDiags= getDiagPreference();
+
+                if (delta != null) {
+                    if (emitDiags)
+                        getConsoleStream().println("==> Scanning resource delta for project '" + getProject().getName() + "'... <==");
+                    delta.accept(fDeltaVisitor);
+                    if (emitDiags)
+                        getConsoleStream().println("Delta scan completed for project '" + getProject().getName() + "'...");
+                } else {
+                    if (emitDiags)
+                        getConsoleStream().println("==> Scanning for source files in project '" + getProject().getName() + "'... <==");
+                    getProject().accept(fResourceVisitor);
+                    if (emitDiags)
+                        getConsoleStream().println("Source file scan completed for project '" + getProject().getName() + "'...");
+                }
+                if (fChangedSources.size() > 0) {
+                    Collection<IFile> changeDependents= new HashSet<IFile>();
+
+                    changeDependents.addAll(fChangedSources);
+                    if (emitDiags) {
+                        getConsoleStream().println("Changed files:");
+                        dumpSourceList(changeDependents);
+                    }
+
+                    boolean changed= false;
+                    do {
+                        Collection<IFile> additions= new HashSet<IFile>();
+                        for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
+                            IFile srcFile= iter.next();
+                            PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(srcFile));
+                            if (phasedUnit != null) {
+                                Set<PhasedUnit> phasedUnitsDependingOn = phasedUnit.getDependentsOf();
+                                if (phasedUnitsDependingOn != null) {
+                                    for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
+                                        IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
+                                        additions.add(depFile);
+                                    }
+                                }
+                            }
+                        }
+                        changed = changeDependents.addAll(additions);
+                    } while (changed);
+
+                    for(IFile f: changeDependents) {
+                        if (isSourceFile(f)) {
+                            fSourcesToCompile.add(f);
+                        }
+                    }
+                }
+                if (emitDiags) {
+                    getConsoleStream().println("All files to compile:");
+                    dumpSourceList(fSourcesToCompile);
+                }
                 clearDependencyInfoForChangedFiles();
-                fSourcesForDeps.addAll(fSourcesToCompile); // should be void ... ?
-                fSourcesForDeps.addAll(fChangedSources);
-                collectDependencies(monitor);
                 clearMarkersOn(fSourcesToCompile);
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
-                // TODO : remettre à jour les dépendances ?
-                
+
                 if (getDiagPreference()) {
                     getConsoleStream().print(fDependencyInfo.toString());
                 }
@@ -396,7 +418,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 });
             addTaskMarkers(file, tokens);
         }
-        
+
         monitor.worked(1);
         monitor.done();
         return new IProject[] {project};
@@ -414,13 +436,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             ANTLRInputStream input;
             try {
                 input = new ANTLRInputStream(file.getInputStream());
-            } 
+            }
             catch (IOException e) {
                 throw new RuntimeException(e);
             }
             CeylonLexer lexer = new CeylonLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            
+
             if (monitor.isCanceled()) return null;
 
             CeylonParser parser = new CeylonParser(tokenStream);
@@ -484,10 +506,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     // maybe be considered. But for now it is not required.
                 }
             }
-            
+
             phasedUnitsToUpdate.add(new PhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleBuilder(), 
                     typeChecker.getContext(), tokenStream));
+        }
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
+        {
+            typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
         {
@@ -513,58 +539,53 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         {
             phasedUnit.analyseFlow();
         }
-        
-        for (PhasedUnit phasedUnit : phasedUnitsToUpdate)
-        {
-            typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
+        for (PhasedUnit pu : phasedUnitsToUpdate) {
+            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
         }
-        
+
         return phasedUnitsToUpdate;
     }
 
     private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) {
         System.out.println("Starting full build");
-        
+
         monitor.beginTask("Full Ceylon Build", 4);
         monitor.subTask("Collecting Ceylon source files for project " 
                     + project.getName());
-        
+
         typeCheckers.remove(project);
-        
+
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
                 .verbose(false);
         for (IPath sourceFolder : getSourceFolders(sourceProject)) {
             typeCheckerBuilder.addSrcDirectory(new IFolderVirtualFile(project,
                     sourceFolder.makeRelativeTo(project.getFullPath())));
         }
-        
+
         monitor.worked(1);
         monitor.subTask("Parsing Ceylon source files for project " 
                     + project.getName());
-        
+
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
-        
+
         monitor.worked(1);
         monitor.subTask("Compiling Ceylon source files for project " 
                     + project.getName());
-        
+
         // Parsing of ALL units in the source folder should have been done
         typeChecker.process();
-        
+        for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
+        }
+
         monitor.worked(1);
         monitor.subTask("Collecting Ceylon problems for project " 
                     + project.getName());
-        
+
         typeCheckers.put(project, typeChecker);
-        
+
         System.out.println("Finished full build");
         return typeChecker.getPhasedUnits().getPhasedUnits();
-    }
-
-    protected void collectDependencies(IProgressMonitor monitor) {
-        for(IFile srcFile: fSourcesForDeps) {
-            collectDependencies(srcFile);
-        }
     }
 
     /**
@@ -627,85 +648,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Visits the project delta, if any, or the entire project, and determines the set
-     * of files needed recompilation, and adds them to <code>fSourcesToCompile</code>.
-     * @param monitor
-     * @throws CoreException
-     */
-    private void collectSourcesToCompile(IProgressMonitor monitor) throws CoreException {
-        IResourceDelta delta= getDelta(getProject());
-        boolean emitDiags= getDiagPreference();
-
-        if (delta != null) {
-            if (emitDiags)
-                getConsoleStream().println("==> Scanning resource delta for project '" + getProject().getName() + "'... <==");
-            delta.accept(fDeltaVisitor);
-            if (emitDiags)
-                getConsoleStream().println("Delta scan completed for project '" + getProject().getName() + "'...");
-        } else {
-            if (emitDiags)
-                getConsoleStream().println("==> Scanning for source files in project '" + getProject().getName() + "'... <==");
-            getProject().accept(fResourceVisitor);
-            if (emitDiags)
-                getConsoleStream().println("Source file scan completed for project '" + getProject().getName() + "'...");
-        }
-        collectChangeDependents();
-        if (emitDiags) {
-            getConsoleStream().println("All files to compile:");
-            dumpSourceList(fSourcesToCompile);
-        }
-    }
-
-    // TODO This really *shouldn't* be transitive; the real problem w/ the LPGBuilder is that it
-    // doesn't account for transitive includes itself when computing its dependency info. That is,
-    // when file A includes B includes C, A should be marked as a dependent of C.
-    private void collectChangeDependents() {
-        if (fChangedSources.size() == 0) return;
-
-        Collection<IFile> changeDependents= new HashSet<IFile>();
-        boolean emitDiags= getDiagPreference();
-
-        changeDependents.addAll(fChangedSources);
-        if (emitDiags) {
-            getConsoleStream().println("Changed files:");
-            dumpSourceList(changeDependents);
-        }
-
-        boolean changed= false;
-        do {
-            Collection<IFile> additions= new HashSet<IFile>();
-            scanSourceList(changeDependents, additions);
-            changed= changeDependents.addAll(additions);
-        } while (changed);
-
-        for(IFile f: changeDependents) {
-            if (isSourceFile(f)) {
-                fSourcesToCompile.add(f);
-            }
-        }
-//      getConsoleStream().println("Changed files + dependents:");
-//      dumpSourceList(fSourcesToCompile);
-    }
-
-    private boolean scanSourceList(Collection<IFile> srcList, Collection<IFile> changeDependents) {
-        boolean result= false;
-        for(Iterator<IFile> iter= srcList.iterator(); iter.hasNext(); ) {
-            IFile srcFile= iter.next();
-            Set<String> fileDependents= fDependencyInfo.getDependentsOf(srcFile.getFullPath().toString());
-
-            if (fileDependents != null) {
-                for(Iterator<String> iterator= fileDependents.iterator(); iterator.hasNext(); ) {
-                    String depPath= iterator.next();
-                    IFile depFile= getProject().getWorkspace().getRoot().getFile(new Path(depPath));
-
-                    result= result || changeDependents.add(depFile);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Refreshes all resources in the entire project tree containing the given resource.
      * Crude but effective.
      */
@@ -751,7 +693,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             // TODO Handle resources that are templates and not in user's workspace
             if (!errorResource.exists())
                 return null;
-            
+
             IMarker m = errorResource.createMarker(getMarkerIDFor(severity));
 
             final int MIN_ATTR= 4;
@@ -791,7 +733,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
             public void run() {
                 Shell shell= RuntimePlugin.getInstance().getWorkbench().getActiveWorkbenchWindow().getShell();
-    
+
                 MessageDialog.openInformation(shell, title, msg);
             }
         });
@@ -808,7 +750,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             public void run() {
                 Shell shell= RuntimePlugin.getInstance().getWorkbench().getActiveWorkbenchWindow().getShell();
                 boolean response= MessageDialog.openQuestion(shell, title, query);
-    
+
                 if (response)
                     runIfYes.run();
                 else if (runIfNo != null)
@@ -908,7 +850,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     // TODO penser à : doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
-    
+
     public static int priority(Token token) {
         String comment = token.getText().toLowerCase();
         if (comment.startsWith("//todo")) {
@@ -946,7 +888,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 sourceFolders.add(ModelFactory.createPathEntry(PathEntryType.SOURCE_FOLDER, path)
                                         .getPath());
                                 break;
-                            }                            
+                            }
                         }
                     }
                 }
