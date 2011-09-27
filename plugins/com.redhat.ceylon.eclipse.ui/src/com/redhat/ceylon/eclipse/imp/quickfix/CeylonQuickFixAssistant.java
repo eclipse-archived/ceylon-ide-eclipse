@@ -45,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -146,7 +147,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 break;
             case 200:
-                addSpecifyTypeProposal(node, problem, proposals, file);
+                addSpecifyTypeProposal(cu, node, problem, proposals, file);
                 break;
             case 300:
                 addImplementFormalMembersProposal(cu, node, proposals, file,
@@ -273,11 +274,40 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         proposals.add(createImplementFormalMembersProposal(offset, file, change));
     }
     
-    private void addSpecifyTypeProposal(Node node, ProblemLocation problem,
+    private void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
         TextFileChange change = new TextFileChange("Specify Type", file);
-        Type type = (Tree.Type) node;
-        String explicitType = type.getTypeModel().getProducedTypeName();
+        final Type type = (Tree.Type) node;
+        class InferTypeVisitor extends Visitor {
+            Declaration dec;
+            ProducedType inferredType;
+            @Override public void visit(Tree.TypedDeclaration that) {
+                super.visit(that);
+                if (that.getType()==type) {
+                    dec = that.getDeclarationModel();
+                    inferredType = type.getTypeModel();
+                }
+            }
+            @Override public void visit(Tree.SpecifierStatement that) {
+                super.visit(that);
+                if (that.getBaseMemberExpression().getDeclaration().equals(dec)) {
+                    inferredType = that.getSpecifierExpression().getExpression().getTypeModel();
+                }
+            }
+            @Override public void visit(Tree.AssignmentOp that) {
+                super.visit(that);
+                if (that.getLeftTerm() instanceof Tree.BaseMemberExpression) {
+                    Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) that.getLeftTerm();
+                    if (bme.getDeclaration().equals(dec)) {
+                        //TODO: take a union if there are multiple assignments
+                        inferredType = that.getRightTerm().getTypeModel();
+                    }
+                }
+            }
+        }
+        InferTypeVisitor itv = new InferTypeVisitor();
+        itv.visit(cu);
+        String explicitType = itv.inferredType.getProducedTypeName();
         change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
                 explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
         proposals.add(createSpecifyTypeProposal(problem, file, explicitType, change));
