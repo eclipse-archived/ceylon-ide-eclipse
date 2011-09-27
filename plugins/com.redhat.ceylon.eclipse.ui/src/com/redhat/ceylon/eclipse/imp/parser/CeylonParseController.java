@@ -44,114 +44,114 @@ import com.redhat.ceylon.eclipse.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.TemporaryFile;
 
 public class CeylonParseController extends ParseControllerBase {
-
-  public CeylonParseController() {
-    super(CeylonPlugin.LANGUAGE_ID);
-  }
-
-  private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
-  private CeylonSourcePositionLocator sourcePositionLocator;
-  private CommonTokenStream tokenStream;
-  private final Set<Integer> annotations = new HashSet<Integer>();
-  private TypeChecker typeChecker;
-
-  /**
-   * @param filePath		Project-relative path of file
-   * @param project		Project that contains the file
-   * @param handler		A message handler to receive error messages (or any others)
-   * 						from the parser
-   */
-  public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
-    super.initialize(filePath, project, handler);
-    simpleAnnotationTypeInfo.addProblemMarkerType(CeylonBuilder.PROBLEM_MARKER_ID);
-  }
-
-  public CeylonSourcePositionLocator getSourcePositionLocator() {
-    if (sourcePositionLocator == null) {
-        sourcePositionLocator= new CeylonSourcePositionLocator(this);
-    }
-    return sourcePositionLocator;
-  }
-
-  public ILanguageSyntaxProperties getSyntaxProperties() {
-    return CeylonLanguageSyntaxProperties.INSTANCE;
-  }
-
-  public IAnnotationTypeInfo getAnnotationTypeInfo() {
-    return simpleAnnotationTypeInfo;
-  }
-
-  public Object parse(String contents, IProgressMonitor monitor) {
-
-    IPath path = getPath();
-    ISourceProject sourceProject = getProject();
-    IPath resolvedPath = path;    
-    VirtualFile file;
-    if (path!=null) {
-      if (sourceProject!=null) {
-        resolvedPath = sourceProject.resolvePath(path);
-      }
-      file = new SourceCodeVirtualFile(contents, path);      
-    }
-    else {
-      file = new SourceCodeVirtualFile(contents);
+    
+    public CeylonParseController() {
+        super(CeylonPlugin.LANGUAGE_ID);
     }
     
-    if (file.getName().endsWith(".ceylon")) {
-
-        System.out.println("Compiling " + file.getPath());
-
-        ANTLRInputStream input;
-        try {
-            input = new ANTLRInputStream(file.getInputStream());
-        } 
-        catch (IOException e) {
-            throw new RuntimeException(e);
+    private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
+    private CeylonSourcePositionLocator sourcePositionLocator;
+    private CommonTokenStream tokenStream;
+    private final Set<Integer> annotations = new HashSet<Integer>();
+    private TypeChecker typeChecker;
+    
+    /**
+     * @param filePath		Project-relative path of file
+     * @param project		Project that contains the file
+     * @param handler		A message handler to receive error messages (or any others)
+     * 						from the parser
+     */
+    public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
+        super.initialize(filePath, project, handler);
+        simpleAnnotationTypeInfo.addProblemMarkerType(CeylonBuilder.PROBLEM_MARKER_ID);
+    }
+    
+    public CeylonSourcePositionLocator getSourcePositionLocator() {
+        if (sourcePositionLocator == null) {
+            sourcePositionLocator= new CeylonSourcePositionLocator(this);
         }
-        CeylonLexer lexer = new CeylonLexer(input);
-        tokenStream = new CommonTokenStream(lexer);
+        return sourcePositionLocator;
+    }
+    
+    public ILanguageSyntaxProperties getSyntaxProperties() {
+        return CeylonLanguageSyntaxProperties.INSTANCE;
+    }
+    
+    public IAnnotationTypeInfo getAnnotationTypeInfo() {
+        return simpleAnnotationTypeInfo;
+    }
+    
+    public Object parse(String contents, IProgressMonitor monitor) {
         
-        if (monitor.isCanceled()) return fCurrentAst;
-
-        CeylonParser parser = new CeylonParser(tokenStream);
-        Tree.CompilationUnit cu;
-        try {
-            cu = parser.compilationUnit();
+        IPath path = getPath();
+        ISourceProject sourceProject = getProject();
+        IPath resolvedPath = path;    
+        VirtualFile file;
+        if (path!=null) {
+            if (sourceProject!=null) {
+                resolvedPath = sourceProject.resolvePath(path);
+            }
+            file = new SourceCodeVirtualFile(contents, path);      
         }
-        catch (RecognitionException e) {
-            throw new RuntimeException(e);
+        else {
+            file = new SourceCodeVirtualFile(contents);
         }
         
-        List<LexError> lexerErrors = lexer.getErrors();
-        for (LexError le : lexerErrors) {
-            //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
-            cu.addLexError(le);
-        }
-        lexerErrors.clear();
-
-        List<ParseError> parserErrors = parser.getErrors();
-        for (ParseError pe : parserErrors) {
-            //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
-            cu.addParseError(pe);
-        }
-        parserErrors.clear();
-        
-        annotations.clear();
-        cu.visit(new AnnotationVisitor(annotations));
-        
-        fCurrentAst = cu;
-        
-        if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
-        
-        VirtualFile srcDir = null;
-
-        if (sourceProject!=null) {
-            IProject project = sourceProject.getRawProject();
-            srcDir = getSourceFolder(sourceProject, resolvedPath);
-            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            if (typeChecker == null) return fCurrentAst;
-            //Disable for now, since it causes build to loop sometimes
-            /*{
+        if (file.getName().endsWith(".ceylon")) {
+            
+            System.out.println("Compiling " + file.getPath());
+            
+            ANTLRInputStream input;
+            try {
+                input = new ANTLRInputStream(file.getInputStream());
+            } 
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            CeylonLexer lexer = new CeylonLexer(input);
+            tokenStream = new CommonTokenStream(lexer);
+            
+            if (monitor.isCanceled()) return fCurrentAst;
+            
+            CeylonParser parser = new CeylonParser(tokenStream);
+            Tree.CompilationUnit cu;
+            try {
+                cu = parser.compilationUnit();
+            }
+            catch (RecognitionException e) {
+                throw new RuntimeException(e);
+            }
+            
+            List<LexError> lexerErrors = lexer.getErrors();
+            for (LexError le : lexerErrors) {
+                //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
+                cu.addLexError(le);
+            }
+            lexerErrors.clear();
+            
+            List<ParseError> parserErrors = parser.getErrors();
+            for (ParseError pe : parserErrors) {
+                //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
+                cu.addParseError(pe);
+            }
+            parserErrors.clear();
+            
+            annotations.clear();
+            cu.visit(new AnnotationVisitor(annotations));
+            
+            fCurrentAst = cu;
+            
+            if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+            
+            VirtualFile srcDir = null;
+            
+            if (sourceProject!=null) {
+                IProject project = sourceProject.getRawProject();
+                srcDir = getSourceFolder(sourceProject, resolvedPath);
+                typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                if (typeChecker == null) return fCurrentAst;
+                //Disable for now, since it causes build to loop sometimes
+                /*{
                 //Note: this is now pretty much obsolete, since
                 //      we now do a full build at at startup
                 try {
@@ -163,128 +163,128 @@ public class CeylonParseController extends ParseControllerBase {
                     e.printStackTrace();
                 }
             }*/
-        }
-
-        if (srcDir==null || typeChecker == null) {
-            typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
-            typeChecker.process();
-        }
-        
-        if (monitor.isCanceled()) return fCurrentAst;
-        
-        PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
-        Package pkg = null;
-        if (builtPhasedUnit!=null) {
-            // Editing an already built file
-            Package sourcePackage = builtPhasedUnit.getPackage();
-            pkg = new Package();
-            pkg.setName(sourcePackage.getName());
-            pkg.setModule(sourcePackage.getModule());
-            pkg.getUnits().addAll(sourcePackage.getUnits());
-        }
-        else {
-            // Editing a new file
-            Modules modules = typeChecker.getContext().getModules();
-            if (srcDir==null) {
-                srcDir = new TemporaryFile();
+            }
+            
+            if (srcDir==null || typeChecker == null) {
+                typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
+                typeChecker.process();
+            }
+            
+            if (monitor.isCanceled()) return fCurrentAst;
+            
+            PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
+            Package pkg = null;
+            if (builtPhasedUnit!=null) {
+                // Editing an already built file
+                Package sourcePackage = builtPhasedUnit.getPackage();
+                pkg = new Package();
+                pkg.setName(sourcePackage.getName());
+                pkg.setModule(sourcePackage.getModule());
+                pkg.getUnits().addAll(sourcePackage.getUnits());
             }
             else {
-                // Retrieve the target package from the file src-relative path
-                //TODO: this is very fragile!
-                String packageName = constructPackageName(file, srcDir);
-                for (Module module: modules.getListOfModules()) {
-                    for (Package p: module.getPackages()) {
-                        if (p.getQualifiedNameString().equals(packageName)) {
-                            pkg = p;
-                            break;
-                        }
-                        if (pkg != null) {
-                            break;
+                // Editing a new file
+                Modules modules = typeChecker.getContext().getModules();
+                if (srcDir==null) {
+                    srcDir = new TemporaryFile();
+                }
+                else {
+                    // Retrieve the target package from the file src-relative path
+                    //TODO: this is very fragile!
+                    String packageName = constructPackageName(file, srcDir);
+                    for (Module module: modules.getListOfModules()) {
+                        for (Package p: module.getPackages()) {
+                            if (p.getQualifiedNameString().equals(packageName)) {
+                                pkg = p;
+                                break;
+                            }
+                            if (pkg != null) {
+                                break;
+                            }
                         }
                     }
                 }
+                if (pkg == null) {
+                    // Add the default package
+                    pkg = modules.getDefaultModule().getPackages().get(0);
+                    
+                    // TODO : iterate through parents to get the sub-package 
+                    // in which the package has been created, until we find the module
+                    // Then the package can be created.
+                    // However this should preferably be done on notification of the 
+                    // resource creation
+                    // A more global/systematic integration between the model element 
+                    // (modules, packages, Units) and the IResourceModel should
+                    // maybe be considered. But for now it is not required.
+                }
             }
-            if (pkg == null) {
-                // Add the default package
-                pkg = modules.getDefaultModule().getPackages().get(0);
-
-                // TODO : iterate through parents to get the sub-package 
-                // in which the package has been created, until we find the module
-                // Then the package can be created.
-                // However this should preferably be done on notification of the 
-                // resource creation
-                // A more global/systematic integration between the model element 
-                // (modules, packages, Units) and the IResourceModel should
-                // maybe be considered. But for now it is not required.
+            
+            PhasedUnit phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
+                    typeChecker.getPhasedUnits().getModuleBuilder(), 
+                    typeChecker.getContext(), tokenStream);
+            
+            phasedUnit.validateTree();
+            phasedUnit.scanDeclarations();
+            phasedUnit.scanTypeDeclarations();
+            phasedUnit.validateRefinement();
+            phasedUnit.analyseTypes();
+            phasedUnit.analyseFlow();
+            //phasedUnit.display();
+            
+            //fCurrentAst = cu;
+            
+            if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
+            
+            final IMessageHandler handler = getHandler();
+            if (handler!=null) {
+                cu.visit(new ErrorVisitor(handler) {
+                    @Override
+                    public int getSeverity(Message error) {
+                        return IAnnotation.ERROR;
+                    }
+                });      
             }
+            
+            System.out.println("Finished compiling " + file.getPath());
         }
         
-        PhasedUnit phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
-                typeChecker.getPhasedUnits().getModuleBuilder(), 
-                typeChecker.getContext(), tokenStream);
-
-        phasedUnit.validateTree();
-        phasedUnit.scanDeclarations();
-        phasedUnit.scanTypeDeclarations();
-        phasedUnit.validateRefinement();
-        phasedUnit.analyseTypes();
-        phasedUnit.analyseFlow();
-        //phasedUnit.display();
-                
-        //fCurrentAst = cu;
-
-        if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
-
-        final IMessageHandler handler = getHandler();
-        if (handler!=null) {
-            cu.visit(new ErrorVisitor(handler) {
-                @Override
-                public int getSeverity(Message error) {
-                    return IAnnotation.ERROR;
-                }
-            });      
-        }
-
-        System.out.println("Finished compiling " + file.getPath());
+        return fCurrentAst;
     }
     
-    return fCurrentAst;
-  }
-
-  private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
-    return file.getPath().replaceFirst(srcDir.getPath() + "/", "")
-            .replace("/" + file.getName(), "").replace('/', '.');
-  }
-
-  private VirtualFile getSourceFolder(ISourceProject project, IPath resolvedPath) {
-    for (IPath folderPath: CeylonBuilder.getSourceFolders(project)) {
-        if (folderPath.isPrefixOf(resolvedPath)) {
-            return new IFolderVirtualFile(project.getRawProject(), 
-                    folderPath.makeRelativeTo(project.getRawProject().getFullPath()));
-        }
+    private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
+        return file.getPath().replaceFirst(srcDir.getPath() + "/", "")
+                .replace("/" + file.getName(), "").replace('/', '.');
     }
-    return null;
-  }
-
-  public Iterator<Token> getTokenIterator(IRegion region) {
-    return CeylonSourcePositionLocator.getTokenIterator(getTokenStream(), region);
-  }
-
-  public CommonTokenStream getTokenStream() {
-    return tokenStream;
-  }
-
-
-  public PhasedUnits getPhasedUnits() {
-      return typeChecker.getPhasedUnits();
-  }
-  
-  public Set<Integer> getAnnotations() {
-	return annotations;
-  }
-  
-  public Tree.CompilationUnit getRootNode() {
-	  return (Tree.CompilationUnit) getCurrentAst();
-  }
-
+    
+    private VirtualFile getSourceFolder(ISourceProject project, IPath resolvedPath) {
+        for (IPath folderPath: CeylonBuilder.getSourceFolders(project)) {
+            if (folderPath.isPrefixOf(resolvedPath)) {
+                return new IFolderVirtualFile(project.getRawProject(), 
+                        folderPath.makeRelativeTo(project.getRawProject().getFullPath()));
+            }
+        }
+        return null;
+    }
+    
+    public Iterator<Token> getTokenIterator(IRegion region) {
+        return CeylonSourcePositionLocator.getTokenIterator(getTokenStream(), region);
+    }
+    
+    public CommonTokenStream getTokenStream() {
+        return tokenStream;
+    }
+    
+    
+    public PhasedUnits getPhasedUnits() {
+        return typeChecker.getPhasedUnits();
+    }
+    
+    public Set<Integer> getAnnotations() {
+        return annotations;
+    }
+    
+    public Tree.CompilationUnit getRootNode() {
+        return (Tree.CompilationUnit) getCurrentAst();
+    }
+    
 }

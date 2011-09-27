@@ -139,7 +139,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
                 .getRawProject().findMember(path);
         Util.gotoLocation(file, targetOffset);
     }
-
+    
     public static void gotoNode(Node node, PhasedUnits units, 
             IProject project) {
         IPath path = getNodePath(node, units)
@@ -148,7 +148,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         IResource file = project.findMember(path);
         Util.gotoLocation(file, targetOffset, 0);
     }
-
+    
     private static Node toNode(Object node) {
         if (node instanceof ModelTreeNode) {
             ModelTreeNode treeNode = (ModelTreeNode) node;
@@ -242,24 +242,24 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     // element immediately preceding the offset.
     //
     public static int getTokenIndexAtCharacter(CommonTokenStream stream, int offset) {
-      //search using bisection
-      int low = 0,
-          high = stream.getTokens().size();
-      while (high > low)
-      {
-          int mid = (high + low) / 2;
-          CommonToken midElement = (CommonToken) stream.getTokens().get(mid);
-          if (offset >= midElement.getStartIndex() &&
-              offset <= midElement.getStopIndex())
-               return mid;
-          else if (offset < midElement.getStartIndex())
-               high = mid;
-          else low = mid + 1;
-      }
-
-      return -(low - 1);
+        //search using bisection
+        int low = 0,
+                high = stream.getTokens().size();
+        while (high > low)
+        {
+            int mid = (high + low) / 2;
+            CommonToken midElement = (CommonToken) stream.getTokens().get(mid);
+            if (offset >= midElement.getStartIndex() &&
+                    offset <= midElement.getStopIndex())
+                return mid;
+            else if (offset < midElement.getStartIndex())
+                high = mid;
+            else low = mid + 1;
+        }
+        
+        return -(low - 1);
     }
-
+    
     /*public static String getIndent(CommonTokenStream tokens, Node node) {
         int prevIndex = node.getToken().getTokenIndex()-1;
         if (node instanceof Tree.Declaration) {
