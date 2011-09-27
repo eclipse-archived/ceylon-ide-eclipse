@@ -29,9 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.imp.builder.DependencyInfo;
 import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.language.Language;
@@ -118,8 +116,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private IPreferencesService fPrefService;
 
-    protected DependencyInfo fDependencyInfo;
-
     private final Collection<IFile> fChangedSources= new HashSet<IFile>();
 
     private final Collection<IFile> fSourcesToCompile= new HashSet<IFile>();
@@ -174,10 +170,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             return true;
         }
-    }
-
-    protected DependencyInfo createDependencyInfo(IProject project) {
-        return new DependencyInfo(project);
     }
 
     public static List<PhasedUnit> getUnits(IProject project) {
@@ -322,8 +314,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         TypeChecker typeChecker = typeCheckers.get(project);
 
         List<PhasedUnit> builtPhasedUnits = null;
-        if (fDependencyInfo == null || kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null) {
-            fDependencyInfo= createDependencyInfo(getProject());
+        if (kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null) {
             try {
                 getProject().accept(new AllSourcesVisitor(allSources));
             } catch (CoreException e) {
@@ -391,15 +382,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(fSourcesToCompile);
                 }
-                clearDependencyInfoForChangedFiles();
                 clearMarkersOn(fSourcesToCompile);
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
-
-                if (getDiagPreference()) {
-                    getConsoleStream().print(fDependencyInfo.toString());
-                }
             } catch (CoreException e) {
                 getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
             }
@@ -606,18 +592,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IFile srcFile= iter.next();
 
             consoleStream.println("  " + srcFile.getFullPath());
-        }
-    }
-
-    /**
-     * Clears the dependency information maintained for all files marked as
-     * having changed (i.e. in <code>fSourcesToCompile</code>).
-     */
-    private void clearDependencyInfoForChangedFiles() {
-        for(Iterator<IFile> iter= fSourcesToCompile.iterator(); iter.hasNext(); ) {
-            IFile srcFile= iter.next();
-
-            fDependencyInfo.clearDependenciesOf(srcFile.getFullPath().toString());
         }
     }
 
