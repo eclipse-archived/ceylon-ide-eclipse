@@ -350,7 +350,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             fSourcesForDeps.addAll(allSources);
             clearMarkersOn(allSources);
-            builtPhasedUnits = fullBuild(project, sourceProject, args, monitor);
+            builtPhasedUnits = fullBuild(project, sourceProject, monitor);
             if (builtPhasedUnits== null)
                 return new IProject[0];
             
@@ -370,7 +370,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 fSourcesForDeps.addAll(fChangedSources);
                 collectDependencies(monitor);
                 clearMarkersOn(fSourcesToCompile);
-                builtPhasedUnits = incrementalBuild(project, sourceProject, args, monitor);
+                builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
                 // TODO : remettre à jour les dépendances ?
@@ -403,7 +403,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project,
-        ISourceProject sourceProject, Map args, IProgressMonitor monitor) {
+        ISourceProject sourceProject, IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile)
@@ -522,7 +522,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return phasedUnitsToUpdate;
     }
 
-    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, Map args, IProgressMonitor monitor) {
+    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) {
         System.out.println("Starting full build");
         
         monitor.beginTask("Full Ceylon Build", 4);
