@@ -38,7 +38,6 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -142,15 +141,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addCreateProposals(cu, node, problem, proposals, project,
                         context.getSourceViewer().getDocument(), tc);
                 if (tc!=null) {
-                    addRenameProposals(cu, node, problem, proposals, file, tc);
-                    addImportProposals(cu, node, proposals, file, tc);
+                    addRenameProposals(cu, node, problem, proposals, file);
+                    addImportProposals(cu, node, proposals, file);
                 }
                 break;
             case 200:
                 addSpecifyTypeProposal(node, problem, proposals, file);
                 break;
             case 300:
-                addImplementFormalMembersProposal(cu, node, proposals, file, tc,
+                addImplementFormalMembersProposal(cu, node, proposals, file,
                         context.getSourceViewer().getDocument());
                 break;
             case 400:
@@ -244,8 +243,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
 
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
-            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc,
-            IDocument doc) {
+            Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
         TextFileChange change = new TextFileChange("Implement Formal Members", file);
         Tree.ClassDefinition def = (Tree.ClassDefinition) node;
         List<Statement> statements = def.getClassBody().getStatements();
@@ -264,7 +262,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
-        for (DeclarationWithProximity dwp: getProposals(node, "", tc.getContext(), cu).values()) {
+        for (DeclarationWithProximity dwp: getProposals(node, "", cu).values()) {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
@@ -311,7 +309,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             String def;
             String desc;
             Image image;
-            FindArgumentsVisitor fav = new FindArgumentsVisitor(smte, tc);
+            FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
             cu.visit(fav);
             boolean isVoid = fav.expectedType==null;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
@@ -514,10 +512,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
 
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file, TypeChecker tc) {
+            Collection<ICompletionProposal> proposals, IFile file) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
-          for (DeclarationWithProximity dwp: getProposals(node, "", tc.getContext(), cu).values()) {
+          for (DeclarationWithProximity dwp: getProposals(node, "", cu).values()) {
             int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?
@@ -569,12 +567,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
     
     private void addImportProposals(Tree.CompilationUnit cu, Node node,
-            Collection<ICompletionProposal> proposals, IFile file,
-            TypeChecker tc) {
+            Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof SimpleType) {
             String brokenName = getIdentifyingNode(node).getText();
-            Collection<Declaration> candidates = findImportCandidates(cu, tc.getContext(), brokenName);
+            Collection<Declaration> candidates = findImportCandidates(cu, brokenName);
             for (Declaration decl : candidates) {
                 proposals.add(createImportProposal(
                         cu, file, decl.getContainer().getQualifiedNameString(), decl.getName()));
@@ -583,7 +580,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
 
     private static Collection<Declaration> findImportCandidates(
-            Tree.CompilationUnit cu, Context context, String name) {
+            Tree.CompilationUnit cu, String name) {
         List<Declaration> result = new ArrayList<Declaration>();
         Module currentModule = cu.getUnit().getPackage().getModule();
         addImportProposalsForModule(result, currentModule, name);

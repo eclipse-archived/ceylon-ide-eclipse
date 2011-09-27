@@ -50,8 +50,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.context.Context;
-import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -230,7 +228,7 @@ public class CeylonContentProposer implements IContentProposer {
             if (node==null) node = cpc.getRootNode(); //we're in whitespace at the start of the file
             return constructCompletions(offset, prefix, tokenType,
                         sortProposals(prefix, getProposals(node, prefix, 
-                                cpc.getContext(), cpc.getRootNode())),
+                                cpc.getRootNode())),
                         cpc, node, viewer.getDocument());
         } 
         return null;
@@ -574,9 +572,9 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
-            Context context, Tree.CompilationUnit cu) {
+            Tree.CompilationUnit cu) {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            ProducedType type = getPrimaryType(context, (Tree.QualifiedMemberOrTypeExpression) node);
+            ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
                 return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
             }
@@ -585,48 +583,31 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         else {
-            Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix, context);
+            Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
             result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
             return result;
         }
     }
 
-    private static ProducedType getPrimaryType(Context context, Tree.QualifiedMemberOrTypeExpression qme) {
+    private static ProducedType getPrimaryType(Tree.QualifiedMemberOrTypeExpression qme) {
         ProducedType type = qme.getPrimary().getTypeModel();
         if (type==null) return null;
         if (qme.getMemberOperator() instanceof Tree.SafeMemberOp) {
-            Class nothingType = (Class) getLanguageModuleDeclaration("Nothing", context);
-            return type.minus(nothingType);
+            return qme.getUnit().getDefiniteType(type);
         }
         else if (qme.getMemberOperator() instanceof Tree.SpreadOp) {
-            Interface emptyType = (Interface) getLanguageModuleDeclaration("Empty", context);
-            return type.minus(emptyType).getTypeArgumentList().get(0);
+            return qme.getUnit().getElementType(type);
         }
         else {
             return type;
         }
     }
     
-    private static Declaration getLanguageModuleDeclaration(String name, Context context) {
-        Module languageModule = context.getModules().getLanguageModule();
-        if ( languageModule != null && languageModule.isAvailable() ) {
-            if ("Bottom".equals(name)) {
-                return new BottomType();
-            }
-            for (Package languageScope : languageModule.getPackages() ) {
-                Declaration d = languageScope.getMember(name);
-                if (d != null) {
-                    return d;
-                }
-            }
-        }
-        return null;
-    }
     //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
     private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
-            String prefix, Context context) {
+            String prefix) {
         Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
-        Module languageModule = context.getModules().getLanguageModule();
+        Module languageModule = node.getUnit().getPackage().getModule().getLanguageModule();
         if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
             for (Package languageScope: languageModule.getPackages() ) {
                 for (Map.Entry<String, DeclarationWithProximity> entry: 

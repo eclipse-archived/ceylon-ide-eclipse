@@ -1,21 +1,12 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.addToUnion;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -29,30 +20,9 @@ class FindArgumentsVisitor extends Visitor
     ProducedType currentType;
     ProducedType expectedType;
     boolean found = false;
-    TypeChecker typeChecker;
     
-    FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte,
-            TypeChecker tc) {
+    FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte) {
         this.smte = smte;
-        typeChecker = tc;
-    }
-    
-    private Declaration getLanguageModuleDeclaration(String name) {
-        Module languageModule = typeChecker.getContext().getModules().getLanguageModule();
-        for (Package languageScope : languageModule.getPackages() ) {
-            Declaration d = languageScope.getMember(name);
-            if (d!=null) return d;
-        }
-        return null;
-    }
-    
-    private static ProducedType unionType(ProducedType lhst, ProducedType rhst) {
-        List<ProducedType> list = new ArrayList<ProducedType>();
-        addToUnion(list, rhst);
-        addToUnion(list, lhst);
-        UnionType ut = new UnionType();
-        ut.setCaseTypes(list);
-        return ut.getType();
     }
     
     @Override
@@ -100,42 +70,41 @@ class FindArgumentsVisitor extends Visitor
     }*/
     @Override
     public void visit(Tree.Resource that) {
-        currentType = ((Interface) getLanguageModuleDeclaration("Closeable")).getType();
+        currentType = that.getUnit().getCloseableDeclaration().getType();
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.BooleanCondition that) {
-        currentType = ((Class) getLanguageModuleDeclaration("Boolean")).getType();
+        currentType = that.getUnit().getBooleanDeclaration().getType();
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.ExistsCondition that) {
-        ProducedType nothingType = ((Class) getLanguageModuleDeclaration("Nothing")).getType();
         ProducedType varType = that.getVariable().getType().getTypeModel();
-        currentType = unionType(varType, nothingType);
+        currentType = that.getUnit().getOptionalType(varType);
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.NonemptyCondition that) {
         ProducedType varType = that.getVariable().getType().getTypeModel();
-        ProducedType emptyType = ((Interface) getLanguageModuleDeclaration("Empty")).getType();
-        currentType = unionType(varType, emptyType);
+        currentType = that.getUnit().getEmptyType(varType);
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.SatisfiesCondition that) {
-        ProducedType objectType = ((Class) getLanguageModuleDeclaration("Object")).getType();
+        ProducedType objectType = that.getUnit().getObjectDeclaration().getType();
         currentType = objectType;
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.ValueIterator that) {
-        Interface iterable = (Interface) getLanguageModuleDeclaration("Iterable");
+        //TODO: move to Unit
+        Interface iterable = that.getUnit().getIterableDeclaration();
         ProducedType varType = that.getVariable().getType().getTypeModel();
         ProducedType iterableType = iterable.getProducedType(null, Collections.singletonList(varType));
         currentType = iterableType;
@@ -144,8 +113,9 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.KeyValueIterator that) {
-        Interface iterable = (Interface) getLanguageModuleDeclaration("Iterable");
-        Class entry = (Class) getLanguageModuleDeclaration("Entry");
+        //TODO: move to Unit
+        Interface iterable = that.getUnit().getIterableDeclaration();
+        Class entry = that.getUnit().getEntryDeclaration();
         ProducedType keyType = that.getKeyVariable().getType().getTypeModel();
         ProducedType valueType = that.getValueVariable().getType().getTypeModel();
         ProducedType entryType = entry.getProducedType(null, Arrays.asList(keyType, valueType));
