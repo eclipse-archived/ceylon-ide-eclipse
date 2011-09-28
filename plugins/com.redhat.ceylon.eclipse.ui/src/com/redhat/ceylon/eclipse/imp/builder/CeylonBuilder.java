@@ -69,6 +69,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
@@ -377,6 +378,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             fSourcesToCompile.add(f);
                         }
                     }
+                    for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits()) {
+                        if (phasedUnit.getUnit().getUnresolvedReferences().size() > 0) {
+                            fSourcesToCompile.add((IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource());
+                        }
+                    }
                 }
                 if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
@@ -391,6 +397,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
         
+        typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
         for (PhasedUnit phasedUnit : builtPhasedUnits) {
             IFile file = getFile(phasedUnit);
             CommonTokenStream tokens = phasedUnit.getTokenStream();
@@ -402,6 +409,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                 });
             addTaskMarkers(file, tokens);
+        }
+        for (PhasedUnit pu : builtPhasedUnits) {
+            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
         }
 
         monitor.worked(1);
@@ -516,9 +526,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseFlow();
         }
-        for (PhasedUnit pu : phasedUnitsToUpdate) {
-            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
-        }
 
         return phasedUnitsToUpdate;
     }
@@ -551,9 +558,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         // Parsing of ALL units in the source folder should have been done
         typeChecker.process();
-        for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
-            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
-        }
 
         monitor.worked(1);
         monitor.subTask("Collecting Ceylon problems for project " 
