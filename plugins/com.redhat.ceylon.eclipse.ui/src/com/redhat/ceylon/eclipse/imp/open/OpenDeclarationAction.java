@@ -57,11 +57,14 @@ public class OpenDeclarationAction extends Action {
         if (editor instanceof UniversalEditor) {
             CeylonParseController cpc = (CeylonParseController) ((UniversalEditor) editor).getParseController();
             Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
-            PhasedUnits units = cpc.getPhasedUnits();
-            gotoNode(node, units, project);
+            if (node!=null) {
+                PhasedUnits units = cpc.getPhasedUnits();
+                gotoNode(node, units, project);
+                return;
+            }
         }
-        else {
-            Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
+        Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
+        if (node!=null) {
             PhasedUnits units = CeylonBuilder.getProjectTypeChecker(project).getPhasedUnits();
             gotoNode(node, units, project);
         }
