@@ -47,8 +47,8 @@ public class Util {
     
     public static String getSelectionText(ITextEditor textEditor) {
         ITextSelection sel = getSelection(textEditor);
-        IFileEditorInput fileEditorInput= (IFileEditorInput) textEditor.getEditorInput();
-        IDocument document = textEditor.getDocumentProvider().getDocument(fileEditorInput);
+        IDocument document = textEditor.getDocumentProvider()
+                .getDocument(textEditor.getEditorInput());
         try {
             return document.get(sel.getOffset(), sel.getLength());
         } 
