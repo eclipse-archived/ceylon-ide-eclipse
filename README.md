@@ -40,17 +40,7 @@
     `**/*.ceylon`. Now select `Finish` create a new Java project in the 
     workspace.
     
-6.  Highly recommended: go to `Project > Properties > Java Build Path`
-    and select the `Source` tab. Click `Link Source...` and then
-    `Browse...` and select the folder containing the Ceylon source code
-    for the language module, usually found here:
-    
-        ceylon-spec/languagesrc/current
-   
-    Click `Next`, and add the inclusion pattern `**/*.ceylon`. Finally
-    click `Finish`.
-    
-7.  Use `New > File` to create a new file with the extension `.ceylon`.
+6.  Use `New > File` to create a new file with the extension `.ceylon`.
 
 ## Building with Tycho/Maven 3
 
