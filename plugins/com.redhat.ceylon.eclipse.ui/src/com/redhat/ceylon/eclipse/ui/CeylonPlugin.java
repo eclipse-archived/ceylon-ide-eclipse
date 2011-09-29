@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 
@@ -109,6 +110,7 @@ public class CeylonPlugin extends PluginBase {
 	    
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
+        reg.put(CEYLON_PROJECT, image("prj_obj.gif"));
 		reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
 		reg.put(CEYLON_IMPORT_LIST, image("impc_obj.gif"));
 		reg.put(CEYLON_IMPORT, image("imp_obj.gif"));

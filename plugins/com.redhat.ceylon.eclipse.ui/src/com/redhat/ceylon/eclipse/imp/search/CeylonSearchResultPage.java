@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
@@ -50,20 +52,39 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		//getViewer().refresh();
 	}
 
+    private void configureViewer(StructuredViewer viewer) {
+        viewer.setContentProvider(contentProvider);
+        viewer.setLabelProvider(new CeylonLabelProvider() {
+            Object unwrap(Object element) {
+                if (element instanceof WithProject) {
+                    return ((WithProject) element).element;
+                }
+                else {
+                    return element;
+                }
+            }
+            @Override
+            public Image getImage(Object element) {
+                return super.getImage(unwrap(element));
+            }
+            @Override
+            public String getText(Object element) {
+                return super.getText(unwrap(element));
+            }
+        });
+        viewer.setComparator(new CeylonViewerComparator());
+    }
+
 	@Override
 	protected void configureTableViewer(final TableViewer viewer) {
 		contentProvider = new CeylonSearchResultContentProvider(viewer, this);
-		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new CeylonLabelProvider());
-		viewer.setComparator( new CeylonViewerComparator());
+		configureViewer(viewer);
 	}
 
 	@Override
 	protected void configureTreeViewer(TreeViewer viewer) {
         contentProvider = new CeylonSearchResultTreeContentProvider(viewer, this);
-        viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new CeylonLabelProvider(false));
-        viewer.setComparator( new CeylonViewerComparator());
+        configureViewer(viewer);
 	}
 
 	@Override
