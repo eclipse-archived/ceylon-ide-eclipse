@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getD
 
 import java.util.Comparator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -21,8 +22,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -184,11 +187,22 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     protected void fillContentProvider(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProgressMonitor progressMonitor) throws CoreException {
         for (PhasedUnit unit: CeylonBuilder.getUnits()) {
-        //for (PhasedUnit unit: CeylonBuilder.getUnits(Util.getProject(editor.getEditorInput()))) {
             for (Declaration dec: unit.getPackage().getMembers()) {
                 contentProvider.add(new DeclarationWithProject(dec, 
                         CeylonBuilder.getFile(unit).getProject()),
                         itemsFilter);
+            }
+        }
+        //TODO: this hacks in special support for the language 
+        //      module, when it should be support for any src
+        //      archive in the repo!
+        for (IProject project: CeylonBuilder.getProjects()) {
+            TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
+            for (Package p: tc.getContext().getModules().getLanguageModule().getPackages()) {
+                for (Declaration dec: p.getMembers()) {
+                    contentProvider.add(new DeclarationWithProject(dec, project), 
+                            itemsFilter);
+                }
             }
         }
     }
