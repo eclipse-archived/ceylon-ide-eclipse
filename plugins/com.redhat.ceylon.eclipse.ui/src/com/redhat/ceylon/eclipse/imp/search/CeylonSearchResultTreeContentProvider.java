@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 class CeylonSearchResultTreeContentProvider implements
@@ -29,9 +30,9 @@ class CeylonSearchResultTreeContentProvider implements
 	}
 
     public Object[] getElements(Object inputElement) {
-        Object[] children= getChildren(inputElement);
-        int elementLimit= getElementLimit();
-        if (elementLimit != -1 && elementLimit < children.length) {
+        Object[] children = getChildren(inputElement);
+        int elementLimit = getElementLimit();
+        if (elementLimit!=-1 && elementLimit<children.length) {
             Object[] limitedChildren= new Object[elementLimit];
             System.arraycopy(children, 0, limitedChildren, 0, elementLimit);
             return limitedChildren;
@@ -52,9 +53,9 @@ class CeylonSearchResultTreeContentProvider implements
     }
     
     private synchronized void initialize(AbstractTextSearchResult result) {
-        this.result= (CeylonSearchResult) result;
-        childrenMap= new HashMap<Object, Set<Object>>();
-        if (result != null) {
+        this.result = (CeylonSearchResult) result;
+        childrenMap = new HashMap<Object, Set<Object>>();
+        if (result!=null) {
             Object[] elements= result.getElements();
             for (int i= 0; i < elements.length; i++) {
                 insert(elements[i],  false);
@@ -63,23 +64,20 @@ class CeylonSearchResultTreeContentProvider implements
     }
 
     private void insert(Object child, boolean refreshViewer) {
-
-        Object parent= getParent(child);
-        while (parent != null) {
+        Object parent = getParent(child);
+        while (parent!=null) {
             if (insertChild(parent, child)) {
-                if (refreshViewer)
-                    viewer.add(parent, child);
-            } else {
-                if (refreshViewer)
-                    viewer.refresh(parent);
+                if (refreshViewer) viewer.add(parent, child);
+            } 
+            else {
+                if (refreshViewer) viewer.refresh(parent);
                 return;
             }
-            child= parent;
-            parent= getParent(child);
+            child = parent;
+            parent = getParent(child);
         }
         if (insertChild(result, child)) {
-            if (refreshViewer)
-                viewer.add(result, child);
+            if (refreshViewer) viewer.add(result, child);
         }
     }
 
@@ -91,9 +89,9 @@ class CeylonSearchResultTreeContentProvider implements
      * @return Returns <code>trye</code> if the child was added
      */
     private boolean insertChild(Object parent, Object child) {
-        Set<Object> children= childrenMap.get(parent);
-        if (children == null) {
-            children= new HashSet<Object>();
+        Set<Object> children = childrenMap.get(parent);
+        if (children==null) {
+            children = new HashSet<Object>();
             childrenMap.put(parent, children);
         }
         return children.add(child);
@@ -103,21 +101,22 @@ class CeylonSearchResultTreeContentProvider implements
         // precondition here:  fResult.getMatchCount(child) <= 0
     
         if (hasChildren(element)) {
-            if (refreshViewer)
-                viewer.refresh(element);
-        } else {
+            if (refreshViewer) viewer.refresh(element);
+        } 
+        else {
             if (result.getMatchCount(element) == 0) {
                 childrenMap.remove(element);
                 Object parent= getParent(element);
                 if (parent != null) {
                     removeFromSiblings(element, parent);
                     remove(parent, refreshViewer);
-                } else {
+                } 
+                else {
                     removeFromSiblings(element, result);
-                    if (refreshViewer)
-                        viewer.refresh();
+                    if (refreshViewer) viewer.refresh();
                 }
-            } else {
+            } 
+            else {
                 if (refreshViewer) {
                     viewer.refresh(element);
                 }
@@ -134,9 +133,12 @@ class CeylonSearchResultTreeContentProvider implements
 
     public Object[] getChildren(Object parentElement) {
         Set<Object> children= childrenMap.get(parentElement);
-        if (children == null)
+        if (children == null) {
             return new Object[0];
-        return children.toArray();
+        }
+        else {
+            return children.toArray();
+        }
     }
 
     public boolean hasChildren(Object element) {
@@ -145,25 +147,38 @@ class CeylonSearchResultTreeContentProvider implements
 
     public synchronized void elementsChanged(Object[] updatedElements) {
         for (int i= 0; i < updatedElements.length; i++) {
-            if (result.getMatchCount(updatedElements[i]) > 0)
+            if (result.getMatchCount(updatedElements[i]) > 0) {
                 insert(updatedElements[i], true);
-            else
+            }
+            else {
                 remove(updatedElements[i], true);
+            }
         }
     }
 
     public Object getParent(Object element) {
+        IProject project = null;
+        if (element instanceof WithProject) {
+            WithProject wt = (WithProject) element;
+            project = wt.project;
+            element = wt.element;
+        }
         if (element instanceof IProject) {
             return null;
         }
         if (element instanceof IResource) {
             return ((IResource) element).getParent();
         }
+        if (element instanceof Package) {
+            return project;
+        }
         if (element instanceof Unit) {
-            return ((Unit) element).getPackage();
+            return new WithProject(((Unit) element).getPackage(), project);
         }
         if (element instanceof CeylonElement) {
-            return ((CeylonElement) element).getNode().getUnit();
+            CeylonElement ce = (CeylonElement) element;
+            return new WithProject(ce.getNode().getUnit(), 
+                    ce.getFile().getProject());
         }
         return null;
     }

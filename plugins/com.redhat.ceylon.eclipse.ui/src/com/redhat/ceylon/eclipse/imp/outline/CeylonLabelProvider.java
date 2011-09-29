@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFA
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
 
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.ModelTreeNode;
@@ -65,6 +67,7 @@ public class CeylonLabelProvider implements ILabelProvider {
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
+    public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static  Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
     
     
@@ -82,6 +85,9 @@ public class CeylonLabelProvider implements ILabelProvider {
     public Image getImage(Object element) {
         if (element instanceof IFile) {
             return getImageForFile((IFile) element);
+        }
+        if (element instanceof IProject) {
+            return PROJECT;
         }
         if (element instanceof org.eclipse.core.runtime.Path) {
             return getImageForPath((IPath) element);
@@ -226,6 +232,9 @@ public class CeylonLabelProvider implements ILabelProvider {
         }
         else if (element instanceof IFile) {
             return getLabelForFile((IFile) element);
+        }
+        else if (element instanceof IProject) {
+            return ((IProject) element).getName();
         }
         else if (element instanceof CeylonElement) {
             CeylonElement ce = (CeylonElement) element;
