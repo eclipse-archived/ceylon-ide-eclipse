@@ -25,7 +25,6 @@ import org.eclipse.jface.text.IRegion;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -274,9 +273,8 @@ public class CeylonParseController extends ParseControllerBase {
         return tokenStream;
     }
     
-    
-    public PhasedUnits getPhasedUnits() {
-        return typeChecker.getPhasedUnits();
+    public TypeChecker getTypeChecker() {
+        return typeChecker;
     }
     
     public Set<Integer> getAnnotations() {
