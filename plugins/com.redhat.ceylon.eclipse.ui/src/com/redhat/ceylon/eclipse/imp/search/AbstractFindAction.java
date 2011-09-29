@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
@@ -13,18 +12,19 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 abstract class AbstractFindAction extends Action {
     
-    private final UniversalEditor editor;
+    private final CeylonEditor editor;
     private Declaration declaration;
     
     AbstractFindAction(String text, IEditorPart editor) {
         super(text);
-        if (editor instanceof UniversalEditor) {
-            this.editor = (UniversalEditor) editor;
+        if (editor instanceof CeylonEditor) {
+            this.editor = (CeylonEditor) editor;
             declaration = getReferencedDeclaration(getSelectedNode());
             setEnabled(isValidSelection(declaration));
         }
@@ -47,7 +47,7 @@ abstract class AbstractFindAction extends Action {
     }
     
     private Node getSelectedNode() {
-        CeylonParseController cpc = (CeylonParseController) editor.getParseController();
+        CeylonParseController cpc = editor.getParseController();
         return cpc.getRootNode()==null ? null : 
             findNode(cpc.getRootNode(), 
                 (ITextSelection) editor.getSelectionProvider().getSelection());

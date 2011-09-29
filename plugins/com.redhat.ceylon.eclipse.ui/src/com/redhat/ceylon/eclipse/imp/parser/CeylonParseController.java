@@ -11,6 +11,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
@@ -219,16 +221,19 @@ public class CeylonParseController extends ParseControllerBase {
             }
             
             PhasedUnit phasedUnit;
-            if (path.toPortableString().contains(".src!")) {
+            if (isExternalPath(path)) {
                 // reuse the existing AST
                 cu = builtPhasedUnit.getCompilationUnit();
                 fCurrentAst = cu;
                 phasedUnit = builtPhasedUnit;
                 // the type checker doesn't run all phases
                 // on external modules, so we need to run
-                // type analysis here
-                //TODO: we don't need to run it every time!
-                phasedUnit.analyseTypes();
+                // type analysis here the first time we
+                // use it
+                if (!phasedUnit.isFullyTyped()) {
+                    phasedUnit.validateRefinement();
+                    phasedUnit.analyseTypes();
+                }
             }
             else {
                 phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
@@ -263,6 +268,13 @@ public class CeylonParseController extends ParseControllerBase {
         }
         
         return fCurrentAst;
+    }
+
+    public boolean isExternalPath(IPath path) {
+        IWorkspaceRoot wsRoot= ResourcesPlugin.getWorkspace().getRoot();
+        // If the path is outside the workspace, or pointing inside the workspace, 
+        // but is still file-system-absolute.
+        return path.isAbsolute() && (wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path));
     }
     
     private String constructPackageName(VirtualFile file, VirtualFile srcDir) {

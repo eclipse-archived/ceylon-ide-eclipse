@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoNode;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -14,6 +13,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -53,17 +53,17 @@ public class OpenDeclarationAction extends Action {
     public void gotoDeclaration(DeclarationWithProject dwp) {
         IProject project = dwp.getProject();
         Declaration dec = dwp.getDeclaration();
-        if (editor instanceof UniversalEditor) {
-            CeylonParseController cpc = (CeylonParseController) ((UniversalEditor) editor).getParseController();
+        if (editor instanceof CeylonEditor) {
+            CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
             Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
             if (node!=null) {
-                gotoNode(node, cpc.getTypeChecker(), project);
+                gotoNode(node, cpc.getTypeChecker());
                 return;
             }
         }
         Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
         if (node!=null) {
-            gotoNode(node, CeylonBuilder.getProjectTypeChecker(project), project);
+            gotoNode(node, CeylonBuilder.getProjectTypeChecker(project));
         }
     }
 

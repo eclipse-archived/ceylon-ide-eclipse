@@ -8,23 +8,19 @@ import java.util.Iterator;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.imp.editor.EditorUtility;
+import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -32,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
@@ -141,14 +138,20 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public void gotoNode(Node node) {
-        gotoNode(node, parseController.getTypeChecker(), 
-                parseController.getProject().getRawProject());
+        gotoNode(node, parseController.getTypeChecker());
     }
     
-    public static void gotoNode(Node node, TypeChecker typeChecker, 
-            IProject project) {
-        IPath nodePath = getNodePath(node, typeChecker);
-        if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
+    public static void gotoNode(Node node, TypeChecker typeChecker) {
+        IEditorInput editorInput = EditorUtility.getEditorInput(getNodePath(node, typeChecker));
+        try {
+            CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
+            IRegionSelectionService rss = (IRegionSelectionService) editor.getAdapter(IRegionSelectionService.class);
+            rss.selectAndReveal(getNodeStartOffset(node), 0);
+        }
+        catch (PartInitException pie) {
+            pie.printStackTrace();
+        }
+        /*if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
             IFileStore fileLocation = EFS.getLocalFileSystem().getStore(nodePath);
             FileStoreEditorInput fileStoreEditorInput = new FileStoreEditorInput(
                                         fileLocation);
@@ -168,7 +171,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             if (file!=null) {
                 Util.gotoLocation(file, targetOffset);
             }
-        }
+        }*/
     }
     
     private static Node toNode(Object node) {

@@ -9,6 +9,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+
 public class CeylonEditor extends UniversalEditor {
     static Field refreshContributionsField;
     static Field generateActionGroupField;
@@ -58,4 +60,9 @@ public class CeylonEditor extends UniversalEditor {
         }
         return super.getDocumentProvider();
     }
+
+    public CeylonParseController getParseController() {
+        return (CeylonParseController) super.getParseController();
+    }
+    
 }

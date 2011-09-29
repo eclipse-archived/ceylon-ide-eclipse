@@ -691,6 +691,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
+    private Shell getShell() {
+        return RuntimePlugin.getInstance().getWorkbench()
+                .getActiveWorkbenchWindow().getShell();
+    }
+
     /**
      * Posts a dialog displaying the given message as soon as "conveniently possible".
      * This is not a synchronous call, since this method will get called from a
@@ -700,10 +705,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     protected void postMsgDialog(final String title, final String msg) {
         PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                Shell shell= RuntimePlugin.getInstance().getWorkbench().getActiveWorkbenchWindow().getShell();
-
-                MessageDialog.openInformation(shell, title, msg);
+                MessageDialog.openInformation(getShell(), title, msg);
             }
+
         });
     }
 
@@ -716,8 +720,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     protected void postQuestionDialog(final String title, final String query, final Runnable runIfYes, final Runnable runIfNo) {
         PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
             public void run() {
-                Shell shell= RuntimePlugin.getInstance().getWorkbench().getActiveWorkbenchWindow().getShell();
-                boolean response= MessageDialog.openQuestion(shell, title, query);
+                boolean response= MessageDialog.openQuestion(getShell(), title, query);
 
                 if (response)
                     runIfYes.run();

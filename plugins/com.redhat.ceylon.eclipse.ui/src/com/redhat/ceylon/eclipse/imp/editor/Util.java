@@ -63,8 +63,6 @@ public class Util {
     }
     
     public static void gotoLocation(final IResource file, final int offset, int length) {
-        IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(IMarker.CHAR_START, offset);
         map.put(IMarker.CHAR_END, offset+length);
@@ -72,7 +70,7 @@ public class Util {
         try {
             IMarker marker = file.createMarker(IMarker.TEXT);
             marker.setAttributes(map);
-            IDE.openEditor(page, marker);
+            IDE.openEditor(getActivePage(), marker);
             marker.delete();
         }
         catch (CoreException ce) {} //deliberately swallow it
@@ -88,9 +86,12 @@ public class Util {
     }
     
     public static IEditorPart getCurrentEditor() {
+        return getActivePage().getActiveEditor();
+    }
+
+    public static IWorkbenchPage getActivePage() {
         return PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage()
-                .getActiveEditor();
+                .getActivePage();
     }
     
 }
