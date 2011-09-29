@@ -18,43 +18,44 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 abstract class AbstractFindAction extends Action {
     
-    private final CeylonEditor editor;
-    private Declaration declaration;
+    private final IEditorPart editor;
+    protected Declaration declaration;
+    protected IProject project;
     
     AbstractFindAction(String text, IEditorPart editor) {
         super(text);
+        this.editor = editor;
+        project = Util.getProject(editor);
         if (editor instanceof CeylonEditor) {
-            this.editor = (CeylonEditor) editor;
-            declaration = getReferencedDeclaration(getSelectedNode());
-            setEnabled(isValidSelection(declaration));
+            declaration = getReferencedDeclaration(getSelectedNode((CeylonEditor) editor));
+            setEnabled(isValidSelection());
         }
         else {
-            this.editor = null;
             setEnabled(false);
         }
     }
     
     @Override
     public void run() {
-        if (isValidSelection(declaration)) {
-            NewSearchUI.runQueryInBackground(createSearchQuery(declaration, 
-                    Util.getProject(editor.getEditorInput())));
+        if (isValidSelection()) {
+            NewSearchUI.runQueryInBackground(createSearchQuery());
         }
         else {
             MessageDialog.openWarning(editor.getEditorSite().getShell(), 
-                    "Ceylon Find Error", "No appropriate declaration name selected");
+                    "Ceylon Find Error", 
+                    "No appropriate declaration name selected");
         }
     }
     
-    private Node getSelectedNode() {
+    private static Node getSelectedNode(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
         return cpc.getRootNode()==null ? null : 
             findNode(cpc.getRootNode(), 
                 (ITextSelection) editor.getSelectionProvider().getSelection());
     }
 
-    abstract boolean isValidSelection(Declaration selectedDeclaration);
+    abstract boolean isValidSelection();
 
-    public abstract FindSearchQuery createSearchQuery(Declaration declaration, IProject project);
+    public abstract FindSearchQuery createSearchQuery();
     
 }

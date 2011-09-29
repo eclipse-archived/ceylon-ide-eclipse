@@ -3,11 +3,9 @@ package com.redhat.ceylon.eclipse.imp.search;
 import java.util.Collections;
 import java.util.Set;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -22,13 +20,13 @@ public class FindSubtypesAction extends AbstractFindAction {
 	}
     
     @Override
-    boolean isValidSelection(Declaration selectedDeclaration) {
-        return selectedDeclaration instanceof TypeDeclaration &&
-                !(selectedDeclaration instanceof TypeParameter);
+    boolean isValidSelection() {
+        return declaration instanceof TypeDeclaration &&
+                !(declaration instanceof TypeParameter);
     }
 
     @Override
-    public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {
+    public FindSearchQuery createSearchQuery() {
         return new FindSearchQuery(declaration, project) {
             @Override
             protected Set<Node> getNodes(PhasedUnit pu) {

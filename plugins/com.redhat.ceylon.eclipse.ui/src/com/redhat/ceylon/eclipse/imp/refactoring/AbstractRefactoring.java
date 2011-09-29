@@ -41,14 +41,14 @@ public abstract class AbstractRefactoring extends Refactoring {
     }*/
     
     public AbstractRefactoring(ITextEditor editor) {
+        project = Util.getProject(editor);
         if (editor instanceof CeylonEditor) {
-            IEditorInput input = editor.getEditorInput();
             CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
             tokenStream = cpc.getTokenStream();
             rootNode = cpc.getRootNode();
+            IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = Util.getFile(input);
-                project = Util.getProject(input);
                 node = findNode(rootNode, 
                     (ITextSelection) editor.getSelectionProvider().getSelection());
             }

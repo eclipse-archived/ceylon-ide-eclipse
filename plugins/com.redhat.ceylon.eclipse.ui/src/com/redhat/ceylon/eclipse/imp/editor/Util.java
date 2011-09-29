@@ -23,18 +23,32 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class Util {
     
-    public static IProject getProject(IEditorInput editor) {
-        if (editor instanceof IFileEditorInput) {
-            return ((IFileEditorInput) editor).getFile().getProject();
+    public static IProject getProject(IEditorInput input) {
+        if (input instanceof IFileEditorInput) {
+            return ((IFileEditorInput) input).getFile().getProject();
         }
         else {
             return null;
         }
     }
+    
+    public static IProject getProject(IEditorPart editor) {
+        IProject project = getProject(editor.getEditorInput());
+        /*if (project==null && editor instanceof CeylonEditor) {
+            TypeChecker tc = ((CeylonEditor) editor).getParseController().getTypeChecker();
+            for (IProject p: CeylonBuilder.getProjects()) {
+                TypeChecker ptc = CeylonBuilder.getProjectTypeChecker(p);
+                if (ptc==tc) {
+                    return p;
+                }
+            }
+        }*/
+        return project;
+    }
 
-    public static IFile getFile(IEditorInput editor) {
-        if (editor instanceof IFileEditorInput) {
-            return ((IFileEditorInput) editor).getFile();
+    public static IFile getFile(IEditorInput input) {
+        if (input instanceof IFileEditorInput) {
+            return ((IFileEditorInput) input).getFile();
         }
         else {
             return null;
