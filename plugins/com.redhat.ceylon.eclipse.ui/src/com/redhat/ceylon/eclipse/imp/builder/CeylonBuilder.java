@@ -69,7 +69,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
@@ -835,6 +834,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
+    }
+    
+    public static Collection<IProject> getProjects() {
+        return typeCheckers.keySet();
     }
 
     /**

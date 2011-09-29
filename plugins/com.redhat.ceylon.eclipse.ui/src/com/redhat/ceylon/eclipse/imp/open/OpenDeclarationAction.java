@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -58,15 +57,13 @@ public class OpenDeclarationAction extends Action {
             CeylonParseController cpc = (CeylonParseController) ((UniversalEditor) editor).getParseController();
             Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
             if (node!=null) {
-                PhasedUnits units = cpc.getPhasedUnits();
-                gotoNode(node, units, project);
+                gotoNode(node, cpc.getTypeChecker(), project);
                 return;
             }
         }
         Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
         if (node!=null) {
-            PhasedUnits units = CeylonBuilder.getProjectTypeChecker(project).getPhasedUnits();
-            gotoNode(node, units, project);
+            gotoNode(node, CeylonBuilder.getProjectTypeChecker(project), project);
         }
     }
 
