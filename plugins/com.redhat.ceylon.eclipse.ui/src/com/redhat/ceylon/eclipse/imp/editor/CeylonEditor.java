@@ -7,6 +7,7 @@ import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 public class CeylonEditor extends UniversalEditor {
     static Field refreshContributionsField;
@@ -44,5 +45,17 @@ public class CeylonEditor extends UniversalEditor {
         @Override
         public void fillContextMenu(IMenuManager menu) {}
     }
-
+    
+    private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
+    
+    @Override
+    public IDocumentProvider getDocumentProvider() {
+        if (SourceArchiveDocumentProvider.canHandle(getEditorInput())) {
+            if (sourceArchiveDocumentProvider == null) {
+                sourceArchiveDocumentProvider= new SourceArchiveDocumentProvider();
+            }
+            return sourceArchiveDocumentProvider;
+        }
+        return super.getDocumentProvider();
+    }
 }
