@@ -64,11 +64,8 @@ public class SourceCodeVirtualFile implements VirtualFile {
     
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ResourceVirtualFile) {
-            return ((ResourceVirtualFile) obj).getPath().equals(getPath());
-        }
-        else if (obj instanceof SourceCodeVirtualFile) {
-            return ((SourceCodeVirtualFile) obj).getPath().equals(getPath());
+        if (obj instanceof VirtualFile) {
+            return ((VirtualFile) obj).getPath().equals(getPath());
         }
         else {
             return super.equals(obj);

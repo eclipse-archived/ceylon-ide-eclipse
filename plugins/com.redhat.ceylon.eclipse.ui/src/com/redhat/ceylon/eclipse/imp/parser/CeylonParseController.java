@@ -171,7 +171,7 @@ public class CeylonParseController extends ParseControllerBase {
             
             if (monitor.isCanceled()) return fCurrentAst;
             
-            PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
+            PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
             Package pkg = null;
             if (builtPhasedUnit!=null) {
                 // Editing an already built file
@@ -218,20 +218,35 @@ public class CeylonParseController extends ParseControllerBase {
                 }
             }
             
-            PhasedUnit phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
-                    typeChecker.getPhasedUnits().getModuleBuilder(), 
-                    typeChecker.getContext(), tokenStream);
-            
-            phasedUnit.validateTree();
-            phasedUnit.scanDeclarations();
-            phasedUnit.scanTypeDeclarations();
-            phasedUnit.validateRefinement();
-            phasedUnit.analyseTypes();
-            phasedUnit.analyseFlow();
+            PhasedUnit phasedUnit;
+            if (path.toPortableString().contains(".src!")) {
+                // reuse the existing AST
+                cu = builtPhasedUnit.getCompilationUnit();
+                fCurrentAst = cu;
+                phasedUnit = builtPhasedUnit;
+                // the type checker doesn't run all phases
+                // on external modules, so we need to run
+                // type analysis here
+                //TODO: we don't need to run it every time!
+                phasedUnit.analyseTypes();
+            }
+            else {
+                phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
+                        typeChecker.getPhasedUnits().getModuleBuilder(), 
+                        typeChecker.getContext(), tokenStream);
+
+                phasedUnit.validateTree();
+                phasedUnit.scanDeclarations();
+                phasedUnit.scanTypeDeclarations();
+                phasedUnit.validateRefinement();
+                phasedUnit.analyseTypes();
+                phasedUnit.analyseFlow();
+            }
+                
             //phasedUnit.display();
-            
+                
             //fCurrentAst = cu;
-            
+                
             if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
             
             final IMessageHandler handler = getHandler();
