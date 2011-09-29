@@ -8,6 +8,8 @@ import java.util.Iterator;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -19,13 +21,19 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 
 /**
@@ -129,24 +137,38 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public IPath getPath(Object entity) {
-        return getNodePath(entity, parseController.getPhasedUnits());
+        return getNodePath(entity, parseController.getTypeChecker());
     }
     
     public void gotoNode(Node node) {
-        IPath path = getPath(node).removeFirstSegments(1);
-        int targetOffset = getStartOffset(node);
-        IResource file = parseController.getProject()
-                .getRawProject().findMember(path);
-        Util.gotoLocation(file, targetOffset);
+        gotoNode(node, parseController.getTypeChecker(), 
+                parseController.getProject().getRawProject());
     }
     
-    public static void gotoNode(Node node, PhasedUnits units, 
+    public static void gotoNode(Node node, TypeChecker typeChecker, 
             IProject project) {
-        IPath path = getNodePath(node, units)
-                .removeFirstSegments(1);
-        int targetOffset = getNodeStartOffset(node);
-        IResource file = project.findMember(path);
-        Util.gotoLocation(file, targetOffset, 0);
+        IPath nodePath = getNodePath(node, typeChecker);
+        if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
+            IFileStore fileLocation = EFS.getLocalFileSystem().getStore(nodePath);
+            FileStoreEditorInput fileStoreEditorInput = new FileStoreEditorInput(
+                                        fileLocation);
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                                        .getActivePage();
+            try {
+                page.openEditor(fileStoreEditorInput, CeylonPlugin.EDITOR_ID);
+            }
+            catch (PartInitException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            IPath path = nodePath.removeFirstSegments(1);
+            int targetOffset = getNodeStartOffset(node);
+            IResource file = project.findMember(path);
+            if (file!=null) {
+                Util.gotoLocation(file, targetOffset);
+            }
+        }
     }
     
     private static Node toNode(Object node) {
@@ -190,17 +212,23 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         }
     }
     
-    public static IPath getNodePath(Object entity, PhasedUnits units) {
+    public static IPath getNodePath(Object entity, TypeChecker typeChecker) {
         if (entity instanceof Node) {
             Node node= (Node) entity;
             Unit unit = node.getUnit();
             String fileName = unit.getFilename();
             String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
-            PhasedUnit phasedUnit = units.getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
+            PhasedUnit phasedUnit = typeChecker.getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
             if (phasedUnit != null) {
-                IFileVirtualFile file = (IFileVirtualFile) phasedUnit.getUnitFile();
-                IFile fileResource = (IFile) file.getResource();
-                return fileResource.getFullPath();
+                VirtualFile unitFile = phasedUnit.getUnitFile();
+                if (unitFile instanceof IFileVirtualFile) {
+                    IFileVirtualFile file = (IFileVirtualFile) unitFile;
+                    IFile fileResource = (IFile) file.getResource();
+                    return fileResource.getFullPath();
+                }
+                else {
+                    return Path.fromOSString(unitFile.getPath());
+                }
             }
         }
         if (entity instanceof ICompilationUnit) {

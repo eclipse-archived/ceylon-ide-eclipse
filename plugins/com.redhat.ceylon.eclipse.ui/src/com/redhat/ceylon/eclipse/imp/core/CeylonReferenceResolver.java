@@ -129,7 +129,6 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     public static Tree.CompilationUnit getCompilationUnit(IProject project, 
             Declaration dec) {
         PhasedUnit phasedUnit = CeylonBuilder.getProjectTypeChecker(project)
-                        .getPhasedUnits()
                         .getPhasedUnitFromRelativePath(getRelativePath(dec));
         return phasedUnit==null ? null : phasedUnit.getCompilationUnit();
     }
@@ -145,9 +144,9 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 return root;
             }
             else {
-                PhasedUnit phasedUnit = cpc.getPhasedUnits()
+                PhasedUnit pu = cpc.getTypeChecker()
                         .getPhasedUnitFromRelativePath(getRelativePath(dec));
-                return phasedUnit==null ? null : phasedUnit.getCompilationUnit();
+                return pu==null ? null : pu.getCompilationUnit();
             }
         }
     }
