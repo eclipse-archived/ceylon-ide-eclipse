@@ -121,6 +121,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     @Override
     public void addProposals(IQuickFixInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals) {
+        if (context.getModel()==null) return;
         IProject project = context.getModel().getProject().getRawProject();
         IFile file = context.getModel().getFile();
         TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
