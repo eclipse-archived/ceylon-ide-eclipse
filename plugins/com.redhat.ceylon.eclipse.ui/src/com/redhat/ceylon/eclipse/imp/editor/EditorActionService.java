@@ -57,26 +57,6 @@ public class EditorActionService extends EditorServiceBase {
         createNavigationActions();
     }
     
-    static class SelectionListener implements ISelectionChangedListener {
-        UniversalEditor editor;
-        SelectionListener(UniversalEditor editor) {
-            this.editor = editor;
-        }
-        @Override
-        public void selectionChanged(SelectionChangedEvent event) {
-            final CeylonParseController cpc = (CeylonParseController) editor.getParseController();
-            if (cpc.getRootNode()==null) return;
-            Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
-            if (node!=null) {
-                editor.setHighlightRange(node.getStartIndex(), 
-                        node.getStopIndex()-node.getStartIndex(), false);
-            }
-            else {
-                editor.resetHighlightRange();
-            }
-        }
-    }
-    
     static Method getSourceViewerMethod;
     static {
         try {

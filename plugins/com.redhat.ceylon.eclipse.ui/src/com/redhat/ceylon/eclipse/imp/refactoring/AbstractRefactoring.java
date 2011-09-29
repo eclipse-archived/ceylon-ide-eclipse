@@ -9,7 +9,6 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Refactoring;
@@ -19,6 +18,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
@@ -41,10 +41,9 @@ public abstract class AbstractRefactoring extends Refactoring {
     }*/
     
     public AbstractRefactoring(ITextEditor editor) {
-        if (editor instanceof UniversalEditor) {
-            UniversalEditor ue = (UniversalEditor) editor;
+        if (editor instanceof CeylonEditor) {
             IEditorInput input = editor.getEditorInput();
-            CeylonParseController cpc = (CeylonParseController) ue.getParseController();
+            CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
             tokenStream = cpc.getTokenStream();
             rootNode = cpc.getRootNode();
             if (rootNode!=null && input instanceof IFileEditorInput) {

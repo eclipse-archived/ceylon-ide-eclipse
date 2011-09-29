@@ -13,7 +13,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -23,14 +22,14 @@ import org.eclipse.ui.IFileEditorInput;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 
 public class CleanImportsHandler extends AbstractHandler {
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        UniversalEditor editor = (UniversalEditor) getCurrentEditor();
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) editor
-                .getParseController().getCurrentAst();
+        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         cu.visit(duiv);
