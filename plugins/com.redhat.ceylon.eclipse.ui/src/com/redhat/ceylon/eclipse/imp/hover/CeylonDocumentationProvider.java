@@ -12,6 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
@@ -101,20 +102,17 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             for (Tree.Annotation annotation : annotationList.getAnnotations())
             {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim != null)
+                if (annotPrim instanceof BaseMemberExpression)
                 {
-                    Declaration annotDecl = annotPrim.getDeclaration(); 
-                    if (annotDecl!=null) {
-                        String name = annotDecl.getName();
-                        if ("doc".equals(name))
+                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                    if ("doc".equals(name))
+                    {
+                        Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+                        List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                        if (!args.isEmpty())
                         {
-                            Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
-                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
-                            if (!args.isEmpty())
-                            {
-                                String docLine = args.get(0).getExpression().getTerm().getText();
-                                documentation.append("<br/><p>" + docLine + "</p>");
-                            }
+                            String docLine = args.get(0).getExpression().getTerm().getText();
+                            documentation.append("<br/><p>" + docLine + "</p>");
                         }
                     }
                 }
