@@ -2,11 +2,9 @@ package com.redhat.ceylon.eclipse.imp.search;
 
 import java.util.Set;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -18,12 +16,12 @@ public class FindReferencesAction extends AbstractFindAction {
 	}
 	
     @Override
-    boolean isValidSelection(Declaration selectedDeclaration) {
-        return selectedDeclaration!=null;
+    boolean isValidSelection() {
+        return declaration!=null;
     }
 
 	@Override
-	public FindSearchQuery createSearchQuery(final Declaration declaration, IProject project) {
+	public FindSearchQuery createSearchQuery() {
 	    return new FindSearchQuery(declaration, project) {
 	        @Override
 	        protected Set<Node> getNodes(PhasedUnit pu) {

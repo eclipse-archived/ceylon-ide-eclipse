@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -19,18 +20,21 @@ import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 abstract class FindSearchQuery implements ISearchQuery {
 	
 	private final Declaration referencedDeclaration;
-	private final IProject project;
+	//private final IProject project;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
 
 	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
-		this.project = project;
+		//this.project = project;
 	}
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-	    for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+	    //List<PhasedUnit> units = CeylonBuilder.getUnits(project);
+	    //if (units==null) units = CeylonBuilder.getUnits();
+	    List<PhasedUnit> units = CeylonBuilder.getUnits();
+        for (PhasedUnit pu: units) {
 	        Set<Node> nodes = getNodes(pu);
 	        //TODO: should really add these as we find them:
             for (Node node: nodes) {
@@ -42,7 +46,8 @@ abstract class FindSearchQuery implements ISearchQuery {
                 else {
         			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
         			        CeylonBuilder.getFile(pu), 
-        					node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+        					node.getStartIndex(), 
+        					node.getStopIndex()-node.getStartIndex()+1,
         					node.getToken()));
                 }
     		}
