@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoNode;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -54,11 +55,15 @@ public class OpenDeclarationAction extends Action {
         IProject project = dwp.getProject();
         Declaration dec = dwp.getDeclaration();
         if (editor instanceof CeylonEditor) {
-            CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-            Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
-            if (node!=null) {
-                gotoNode(node, cpc.getTypeChecker());
-                return;
+            CeylonEditor ce = (CeylonEditor) editor;
+            ISourceProject ep = ce.getParseController().getProject();
+            if (ep!=null && ep.equals(project)) {
+                CeylonParseController cpc = ce.getParseController();
+                Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+                if (node!=null) {
+                    gotoNode(node, cpc.getTypeChecker());
+                    return;
+                }
             }
         }
         Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));

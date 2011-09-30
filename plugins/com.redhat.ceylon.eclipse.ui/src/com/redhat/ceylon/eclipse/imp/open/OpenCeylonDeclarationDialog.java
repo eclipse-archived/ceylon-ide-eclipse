@@ -25,6 +25,8 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
@@ -39,7 +41,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
-            //for (PhasedUnit unit: CeylonBuilder.getUnits(Util.getProject(editor.getEditorInput()))) {
+            //search for a source file in the project
+            //TODO: we can probably remove this loop
             for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
                 if (unit.getUnit().getFilename().equals(unitFileName)
                         && unit.getPackage().getQualifiedNameString().equals(packageName)) {
@@ -50,15 +53,34 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         }
                     }
                 }
-           }
-           return null; 
+            }
+            //if we don't find it, search all dependent modules
+            //this will find declarations in src archives
+            for (IProject p: CeylonBuilder.getProjects()) {
+                if (p.getName().equals(projectName)) {
+                    Modules modules = CeylonBuilder.getProjectTypeChecker(p).getContext().getModules();
+                    for (Module module: modules.getListOfModules()) {
+                        for (Package pkg: module.getAllPackages()) { 
+                            if (pkg.getQualifiedNameString().equals(packageName)) {
+                                for (Declaration dec: pkg.getMembers()) {
+                                    if (dec.getQualifiedNameString().equals(qualifiedName)) {
+                                        return new DeclarationWithProject(dec, p);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null; 
         }
         protected void storeItemToMemento(Object item, IMemento element) {
             Declaration dec = ((DeclarationWithProject) item).getDeclaration();
             element.putString("qualifiedName", dec.getQualifiedNameString());
             element.putString("unitFileName", dec.getUnit().getFilename());
             element.putString("packageName", dec.getUnit().getPackage().getQualifiedNameString());
-            element.putString("projectName", ((DeclarationWithProject) item).getProject().getName());
+            IProject project = ((DeclarationWithProject) item).getProject();
+            element.putString("projectName", project.getName());
         }
      }
     
@@ -193,15 +215,14 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         itemsFilter);
             }
         }
-        //TODO: this hacks in special support for the language 
-        //      module, when it should be support for any src
-        //      archive in the repo!
         for (IProject project: CeylonBuilder.getProjects()) {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
-            for (Package p: tc.getContext().getModules().getLanguageModule().getPackages()) {
-                for (Declaration dec: p.getMembers()) {
-                    contentProvider.add(new DeclarationWithProject(dec, project), 
-                            itemsFilter);
+            for (Module m: tc.getContext().getModules().getListOfModules()) {
+                for (Package p: m.getPackages()) {
+                    for (Declaration dec: p.getMembers()) {
+                        contentProvider.add(new DeclarationWithProject(dec, project), 
+                                itemsFilter);
+                    }
                 }
             }
         }
