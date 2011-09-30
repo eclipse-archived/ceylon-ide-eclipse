@@ -856,15 +856,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     IPath path = entry.getPath();
                     if (entry.getEntryKind()==IClasspathEntry.CPE_SOURCE)
                     {
-                        for (IPath pattern: entry.getInclusionPatterns())
+                        /*for (IPath pattern: entry.getInclusionPatterns())
                         {
                             if (LANGUAGE.hasExtension(pattern.getFileExtension()))
-                            {
+                            {*/
                                 sourceFolders.add(ModelFactory.createPathEntry(PathEntryType.SOURCE_FOLDER, path)
                                         .getPath());
-                                break;
+                                /*break;
                             }
-                        }
+                        }*/
                     }
                 }
                 return sourceFolders;

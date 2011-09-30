@@ -34,13 +34,14 @@
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-5.  Use `File > New > Java Project`, and click `Next` once to get to the 
-   `Java Settings` page. Select the `src` directory, click `Configure 
-    inclusion and exclusion filters`, and add the inclusion pattern 
-    `**/*.ceylon`. Now select `Finish` create a new Java project in the 
-    workspace.
+5.  Use `File > New > Java Project`, enter a project name, and select 
+    `Finish` create a new Java project in the workspace.
     
-6.  Use `New > File` to create a new file with the extension `.ceylon`.
+6.  Select the new project in the Java package explorer, and select 
+    `Enable Ceylon Builder` from the context menu.
+    
+7.  Use `New > File` to create a new file with the extension `.ceylon`
+    in the `src` directory of your project.
 
 ## Building with Tycho/Maven 3
 
