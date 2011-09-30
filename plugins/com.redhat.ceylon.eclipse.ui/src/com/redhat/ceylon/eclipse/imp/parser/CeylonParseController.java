@@ -149,21 +149,8 @@ public class CeylonParseController extends ParseControllerBase {
             if (sourceProject!=null) {
                 IProject project = sourceProject.getRawProject();
                 srcDir = getSourceFolder(sourceProject, resolvedPath);
+                //TODO: fix all the potential threading issues with this!
                 typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-                if (typeChecker == null) return fCurrentAst;
-                //Disable for now, since it causes build to loop sometimes
-                /*{
-                //Note: this is now pretty much obsolete, since
-                //      we now do a full build at at startup
-                try {
-                    project.build(IncrementalProjectBuilder.FULL_BUILD, 
-                            CeylonBuilder.BUILDER_ID, null, 
-                            new SubProgressMonitor(monitor, 0));
-                } 
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }*/
             }
             
             if (srcDir==null || typeChecker == null) {
