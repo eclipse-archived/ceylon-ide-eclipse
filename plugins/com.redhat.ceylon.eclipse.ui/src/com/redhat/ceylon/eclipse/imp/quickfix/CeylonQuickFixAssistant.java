@@ -220,9 +220,19 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     
     private void addMakeSharedProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
-        Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
-        addAddAnnotationProposal(node, "shared ", "Make Shared", problem, qmte.getDeclaration(), 
-                proposals, project);
+        Declaration dec = null;
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
+            dec = qmte.getDeclaration();
+        }
+        else if (node instanceof Tree.ImportMemberOrType) {
+            Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
+            dec = imt.getDeclarationModel();
+        }
+        if (dec!=null) {
+            addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
+                    proposals, project);
+        }
     }
     
     private void addMakeSharedDecProposal(ProblemLocation problem,
