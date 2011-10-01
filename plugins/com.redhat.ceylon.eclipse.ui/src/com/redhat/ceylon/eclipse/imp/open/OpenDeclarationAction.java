@@ -40,7 +40,7 @@ public class OpenDeclarationAction extends Action {
         Shell shell = CeylonPlugin.getInstance().getWorkbench()
                 .getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = new OpenCeylonDeclarationDialog(shell, editor);
-        dialog.setTitle("Open Declaration");
+        dialog.setTitle("Open Ceylon Declaration");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
         }

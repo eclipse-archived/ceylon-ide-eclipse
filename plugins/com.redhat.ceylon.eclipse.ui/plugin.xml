@@ -362,7 +362,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open selected declaration"
-            name="Open Declaration"/>
+            name="Open Selected Declaration"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
