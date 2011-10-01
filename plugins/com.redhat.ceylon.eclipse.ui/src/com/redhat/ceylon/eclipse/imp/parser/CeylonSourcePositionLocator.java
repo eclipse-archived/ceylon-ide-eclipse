@@ -142,15 +142,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public static void gotoNode(Node node, TypeChecker typeChecker) {
-        IEditorInput editorInput = EditorUtility.getEditorInput(getNodePath(node, typeChecker));
-        try {
-            CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
-            IRegionSelectionService rss = (IRegionSelectionService) editor.getAdapter(IRegionSelectionService.class);
-            rss.selectAndReveal(getNodeStartOffset(node), 0);
-        }
-        catch (PartInitException pie) {
-            pie.printStackTrace();
-        }
+        gotoLocation(getNodePath(node, typeChecker), 
+                getNodeStartOffset(node));
         /*if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
             IFileStore fileLocation = EFS.getLocalFileSystem().getStore(nodePath);
             FileStoreEditorInput fileStoreEditorInput = new FileStoreEditorInput(
@@ -172,6 +165,18 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
                 Util.gotoLocation(file, targetOffset);
             }
         }*/
+    }
+
+    public static void gotoLocation(IPath path, int offset) {
+        IEditorInput editorInput = EditorUtility.getEditorInput(path);
+        try {
+            CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
+            IRegionSelectionService rss = (IRegionSelectionService) editor.getAdapter(IRegionSelectionService.class);
+            rss.selectAndReveal(offset, 0);
+        }
+        catch (PartInitException pie) {
+            pie.printStackTrace();
+        }
     }
     
     private static Node toNode(Object node) {
