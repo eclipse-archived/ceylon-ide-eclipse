@@ -10,6 +10,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -46,12 +47,17 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     }
     
     public boolean isEnabled() {
-        return getSelectionTarget(getSelection((ITextEditor) getCurrentEditor()))!=null;
+        IEditorPart editor = getCurrentEditor();
+        return editor instanceof ITextEditor &&
+                getSelectionTarget(getSelection((ITextEditor) editor))!=null;
     }
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        go(getSelectionTarget(getSelection((ITextEditor) getCurrentEditor())));
+        IEditorPart editor = getCurrentEditor();
+        if (editor instanceof ITextEditor) {
+            go(getSelectionTarget(getSelection((ITextEditor) editor)));
+        }
         return null;
     }
         
