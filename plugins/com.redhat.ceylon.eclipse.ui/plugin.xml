@@ -359,6 +359,11 @@
           name="Ceylon">
        </category>    
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Open selected declaration"
+            name="Open Declaration"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open toplevel declaration"
@@ -424,6 +429,9 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
+            class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"/>
+      <handler
             class="com.redhat.ceylon.eclipse.imp.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
@@ -457,6 +465,10 @@
             
    <extension
          point="org.eclipse.ui.bindings">
+       <key
+           sequence="M3+D"
+           commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
            sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
@@ -511,6 +523,8 @@
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
+            <dynamic id="openSelectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationMenuItem"/>
             <separator
                   visible="true"
                   name="belowOpen"/>
@@ -592,6 +606,11 @@
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
+            <separator
+                  visible="true"
+                  name="sep5"/>
+            <dynamic id="openSelectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationMenuItem"/>
             <separator
                   visible="true"
                   name="sep2"/>
