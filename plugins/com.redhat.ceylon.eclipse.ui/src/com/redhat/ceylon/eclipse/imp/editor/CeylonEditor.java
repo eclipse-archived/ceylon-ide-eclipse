@@ -19,6 +19,7 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
@@ -57,6 +58,8 @@ public class CeylonEditor extends UniversalEditor {
         }
         getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
         getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
+        ((IContextService) getSite().getService(IContextService.class))
+            .activateContext("com.redhat.ceylon.eclipse.ui.context");
     }
     
     class CeylonGenerateActionGroup extends GenerateActionGroup {
