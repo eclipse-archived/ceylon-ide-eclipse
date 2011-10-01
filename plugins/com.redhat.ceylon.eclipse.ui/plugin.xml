@@ -188,12 +188,6 @@
             class="com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService"
             language="ceylon"/>
    </extension>
-   <extension
-         point="org.eclipse.imp.runtime.editorService">
-      <editorService
-            class="com.redhat.ceylon.eclipse.imp.editor.EditorActionService"
-            language="ceylon"/>
-   </extension>
    
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
