@@ -568,18 +568,9 @@
                   id="com.redhat.ceylon.eclipse.ui.menu.find">
                 <dynamic id="find"
                       class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
-                <separator 
-                      name="sep1" 
-                      visible="true"/>
                 <dynamic id="refactor"
                       class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
-                <separator 
-                      visible="true"
-                      name="sep2"/>
-                <command id="cleanImports"
-                      commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
-                      label="Clean Imports"/>
-                <separator 
+                <separator
                       name="sep3" 
                       visible="true"/>
                 <command
@@ -635,17 +626,8 @@
                   name="sep2"/>
             <dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
-            <separator
-                  visible="true"
-                  name="sep3"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
-            <separator 
-                  visible="true"
-                  name="sep4"/>
-            <command id="cleanImports"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
-                  label="Clean Imports"/>
       </menuContribution>
    </extension>
    
