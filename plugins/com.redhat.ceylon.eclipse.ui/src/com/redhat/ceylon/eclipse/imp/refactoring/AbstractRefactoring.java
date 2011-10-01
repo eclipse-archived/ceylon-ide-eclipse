@@ -41,8 +41,8 @@ public abstract class AbstractRefactoring extends Refactoring {
     }*/
     
     public AbstractRefactoring(ITextEditor editor) {
-        project = Util.getProject(editor);
         if (editor instanceof CeylonEditor) {
+            project = Util.getProject(editor);
             CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
             tokenStream = cpc.getTokenStream();
             rootNode = cpc.getRootNode();

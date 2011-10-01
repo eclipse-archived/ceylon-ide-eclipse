@@ -26,20 +26,20 @@ public class RefactorMenuItems extends CompoundContributionItem {
             return new IContributionItem[] {
                     //new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
-                            new RenameRefactoringAction(editor).isEnabled()),
+                            editor!=null && new RenameRefactoringAction(editor).isEnabled()),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
-                            new InlineRefactoringAction(editor).isEnabled()),
+                            editor!=null && new InlineRefactoringAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
                             "Extract Value...",
-                            new ExtractValueRefactoringAction(editor).isEnabled()),
+                            editor!=null && new ExtractValueRefactoringAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
                             "Extract Function...",
-                            new ExtractFunctionRefactoringAction(editor).isEnabled()),
+                            editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled()),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments", 
                             "Convert to Named Arguments...",
-                            new ConvertToNamedArgumentsRefactoringAction(editor).isEnabled()),
+                            editor!=null && new ConvertToNamedArgumentsRefactoringAction(editor).isEnabled()),
                 };
         /*}
         else {
