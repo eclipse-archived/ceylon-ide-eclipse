@@ -44,7 +44,7 @@ public class CeylonEditor extends UniversalEditor {
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
         getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
-        //getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
+        getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         try {
             getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
             generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
