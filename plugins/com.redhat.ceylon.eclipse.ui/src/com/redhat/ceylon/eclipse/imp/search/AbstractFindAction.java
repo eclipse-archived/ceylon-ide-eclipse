@@ -25,7 +25,7 @@ abstract class AbstractFindAction extends Action {
     AbstractFindAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
-        project = Util.getProject(editor);
+        project = editor==null ? null : Util.getProject(editor);
         if (editor instanceof CeylonEditor) {
             declaration = getReferencedDeclaration(getSelectedNode((CeylonEditor) editor));
             setEnabled(isValidSelection());
