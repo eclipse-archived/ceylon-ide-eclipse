@@ -5,6 +5,7 @@ import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
 import org.eclipse.imp.editor.GenerateActionGroup;
+import org.eclipse.imp.editor.OpenEditorActionGroup;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -28,35 +29,47 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 public class CeylonEditor extends UniversalEditor {
     static Field refreshContributionsField;
     static Field generateActionGroupField;
+    static Field openEditorActionGroupField;
     static {
         try {
             refreshContributionsField = UniversalEditor.class.getDeclaredField("fRefreshContributions");
             refreshContributionsField.setAccessible(true);
             generateActionGroupField = UniversalEditor.class.getDeclaredField("fGenerateActionGroup");
             generateActionGroupField.setAccessible(true);
+            openEditorActionGroupField = UniversalEditor.class.getDeclaredField("fOpenEditorActionGroup");
+            openEditorActionGroupField.setAccessible(true);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+        
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
-        getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
-        getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         try {
             getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
             generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
+            openEditorActionGroupField.set(this, new CeylonOpenEditorActionGroup(this));
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
+        getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
     }
     
     class CeylonGenerateActionGroup extends GenerateActionGroup {
         public CeylonGenerateActionGroup(UniversalEditor editor) {
             super(editor, "");
+        }
+        @Override
+        public void fillContextMenu(IMenuManager menu) {}
+    }
+    
+    class CeylonOpenEditorActionGroup extends OpenEditorActionGroup {
+        public CeylonOpenEditorActionGroup(UniversalEditor editor) {
+            super(editor);
         }
         @Override
         public void fillContextMenu(IMenuManager menu) {}
