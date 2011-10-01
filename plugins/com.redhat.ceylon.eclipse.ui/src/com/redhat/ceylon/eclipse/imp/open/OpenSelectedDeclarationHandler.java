@@ -48,14 +48,14 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return editor instanceof ITextEditor &&
+        return editor instanceof CeylonEditor &&
                 getSelectionTarget(getSelection((ITextEditor) editor))!=null;
     }
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart editor = getCurrentEditor();
-        if (editor instanceof ITextEditor) {
+        if (editor instanceof CeylonEditor) {
             go(getSelectionTarget(getSelection((ITextEditor) editor)));
         }
         return null;
