@@ -74,7 +74,10 @@ class CeylonSearchQuery implements ISearchQuery {
 	    List<PhasedUnit> units = projects==null ? 
 	                CeylonBuilder.getUnits() : 
 	                CeylonBuilder.getUnits(projects);
+	    monitor.beginTask("Ceylon Search", units.size());
+        if (monitor.isCanceled()) return Status.CANCEL_STATUS;
         for (final PhasedUnit pu: units) {
+            monitor.subTask("Searching source file " + pu.getUnitFile().getPath());
 	        SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
 	            @Override
 	            public void matchingNode(Node node) {
@@ -88,7 +91,10 @@ class CeylonSearchQuery implements ISearchQuery {
 	            }
 	        };
             pu.getCompilationUnit().visit(sv);
+            monitor.worked(1);
+            if (monitor.isCanceled()) return Status.CANCEL_STATUS;
         }
+        monitor.done();
 		return Status.OK_STATUS;
 	}
 
