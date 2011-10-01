@@ -48,7 +48,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return editor instanceof CeylonEditor &&
+        return super.isEnabled() && editor instanceof CeylonEditor &&
                 getSelectionTarget(getSelection((ITextEditor) editor))!=null;
     }
     
