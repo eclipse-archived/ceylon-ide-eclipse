@@ -17,6 +17,7 @@ import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Import;
@@ -97,5 +98,15 @@ public class CleanImportsHandler extends AbstractHandler {
     private static String packageName(Tree.Import i) {
         return i.getImportList().getImportedPackage()
                 .getQualifiedNameString();
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        IEditorPart editor = getCurrentEditor();
+        return super.isEnabled() && 
+                editor instanceof CeylonEditor &&
+                editor.getEditorInput() instanceof IFileEditorInput &&
+                !((CeylonEditor) editor).getParseController().getRootNode()
+                        .getImportList().getImports().isEmpty();
     }
 }

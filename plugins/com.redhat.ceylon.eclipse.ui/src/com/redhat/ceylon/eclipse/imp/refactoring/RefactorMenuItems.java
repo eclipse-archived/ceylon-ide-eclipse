@@ -8,6 +8,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
+import com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     
@@ -40,6 +41,10 @@ public class RefactorMenuItems extends CompoundContributionItem {
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments", 
                             "Convert to Named Arguments...",
                             editor!=null && new ConvertToNamedArgumentsRefactoringAction(editor).isEnabled()),
+                    new Separator(),
+                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
+                            "Clean Imports",
+                            new CleanImportsHandler().isEnabled())
                 };
         /*}
         else {
