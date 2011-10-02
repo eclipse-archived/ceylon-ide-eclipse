@@ -332,10 +332,12 @@
    </extension>
    
    <extension
-         point="org.eclipse.ui.perspectiveExtensions"> 
+         point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
         </perspectiveExtension>
    </extension>
    
