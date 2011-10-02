@@ -37,7 +37,7 @@ class CeylonSearchQuery implements ISearchQuery {
         
         @Override
         public boolean matches(String string) {
-            return pattern.matcher(string).find();
+            return pattern.matcher(string).matches();
         }
         
         @Override
