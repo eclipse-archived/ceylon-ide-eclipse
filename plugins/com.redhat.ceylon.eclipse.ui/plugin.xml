@@ -176,6 +176,24 @@
    </extension>
    
    <extension
+         point="org.eclipse.ui.newWizards">
+       <category
+             id="com.redhat.ceylon.eclipse.ui.category" 
+             name="Ceylon"/>
+       <wizard
+             id="com.redhat.ceylon.eclipse.ui.newUnitWizard"
+             icon="icons/template_obj.gif"
+             name="Ceylon Unit"
+             category="com.redhat.ceylon.eclipse.ui.category"
+             class="com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard">
+           <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <primaryWizard
+             id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+   </extension>
+   
+   <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
       <autoEditStrategy
             class="com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy"
