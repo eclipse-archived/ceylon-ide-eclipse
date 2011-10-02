@@ -200,4 +200,10 @@ public class CeylonSearchDialogPage extends DialogPage
 		this.container = container;
 	}
 	
+	@Override
+	public void setVisible(boolean visible) {
+	    container.setPerformActionEnabled(true);
+	    super.setVisible(visible);
+	}
+	
 }
