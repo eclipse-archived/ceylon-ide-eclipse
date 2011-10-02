@@ -1,10 +1,20 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+
+import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
     
@@ -22,7 +32,18 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-        //ResourcesPlugin.getWorkspace()
+        FileCreationOp op = new FileCreationOp();
+        try {
+            getContainer().run(true, true, op);
+        } 
+        catch (InvocationTargetException e) {
+            e.printStackTrace();
+            return false;
+        } 
+        catch (InterruptedException e) {
+            return false;
+        }
+        CeylonSourcePositionLocator.gotoLocation(op.result.getFullPath(), 0);
         return true;
     }
     
@@ -36,4 +57,18 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         addPage(page);
     }
 
+    class FileCreationOp implements IRunnableWithProgress {
+        IFile result;
+        public void run(IProgressMonitor monitor) {
+            IPath path = page.getPackageFragment().getPath().append(page.getUnitName()+".ceylon");
+            IProject project = page.getSourceDir().getJavaProject().getProject();
+            result = project.getFile(path.makeRelativeTo(project.getFullPath()));
+            try {
+                result.create(new ByteArrayInputStream(new byte[0]), false, monitor);
+            }
+            catch (CoreException ce) {
+                ce.printStackTrace();
+            }
+        }
+    }
 }
