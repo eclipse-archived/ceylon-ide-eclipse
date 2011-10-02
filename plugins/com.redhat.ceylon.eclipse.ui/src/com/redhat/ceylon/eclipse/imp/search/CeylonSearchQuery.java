@@ -6,6 +6,7 @@ import static java.util.regex.Pattern.compile;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -18,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
+import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 
 class CeylonSearchQuery implements ISearchQuery {
 	
@@ -51,6 +53,7 @@ class CeylonSearchQuery implements ISearchQuery {
 
     private final String string;
     private final String[] projects;
+    private final IResource[] resources;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
     private int count = 0;
     private final boolean caseSensitive;
@@ -58,7 +61,7 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean includeReferences;
     private final boolean includeDeclarations;
 
-	CeylonSearchQuery(String string, String[] projects,
+	CeylonSearchQuery(String string, String[] projects, IResource[] resources,
 			boolean includeReferences, boolean includeDeclarations,
 			boolean caseSensitive, boolean regex) {
 		this.string = string;
@@ -67,6 +70,7 @@ class CeylonSearchQuery implements ISearchQuery {
 		this.includeDeclarations = includeDeclarations;
 		this.includeReferences = includeReferences;
 		this.regex = regex;
+		this.resources = resources;
 	}
 
 	@Override
@@ -77,26 +81,44 @@ class CeylonSearchQuery implements ISearchQuery {
 	    monitor.beginTask("Ceylon Search", units.size());
         if (monitor.isCanceled()) return Status.CANCEL_STATUS;
         for (final PhasedUnit pu: units) {
-            monitor.subTask("Searching source file " + pu.getUnitFile().getPath());
-	        SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
-	            @Override
-	            public void matchingNode(Node node) {
-	                FindContainerVisitor fcv = new FindContainerVisitor(node);
-	                pu.getCompilationUnit().visit(fcv);
-	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
-	                        CeylonBuilder.getFile(pu), 
-	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
-	                        node.getToken()));
-	                count++;
-	            }
-	        };
-            pu.getCompilationUnit().visit(sv);
+            if (isWithinSelection(pu)) {
+                monitor.subTask("Searching source file " + pu.getUnitFile().getPath());
+    	        SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
+    	            @Override
+    	            public void matchingNode(Node node) {
+    	                FindContainerVisitor fcv = new FindContainerVisitor(node);
+    	                pu.getCompilationUnit().visit(fcv);
+    	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
+    	                        CeylonBuilder.getFile(pu), 
+    	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+    	                        node.getToken()));
+    	                count++;
+    	            }
+    	        };
+                pu.getCompilationUnit().visit(sv);
+            }
             monitor.worked(1);
             if (monitor.isCanceled()) return Status.CANCEL_STATUS;
         }
         monitor.done();
 		return Status.OK_STATUS;
 	}
+
+    public boolean isWithinSelection(PhasedUnit pu) {
+        if (resources==null) {
+            return true;
+        }
+        else {
+            for (IResource r: resources) {
+                if (pu.getUnitFile() instanceof IFileVirtualFile &&
+                        r.getLocation().isPrefixOf(((IFileVirtualFile) pu.getUnitFile())
+                                .getResource().getLocation())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
 	@Override
 	public ISearchResult getSearchResult() {

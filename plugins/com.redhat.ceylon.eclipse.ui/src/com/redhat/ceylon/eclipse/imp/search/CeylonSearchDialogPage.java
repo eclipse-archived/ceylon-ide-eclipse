@@ -1,10 +1,20 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
+import static org.eclipse.search.ui.ISearchPageContainer.SELECTED_PROJECTS_SCOPE;
+import static org.eclipse.search.ui.ISearchPageContainer.SELECTION_SCOPE;
+import static org.eclipse.search.ui.ISearchPageContainer.WORKING_SET_SCOPE;
+import static org.eclipse.search.ui.ISearchPageContainer.WORKSPACE_SCOPE;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
 import org.eclipse.search.ui.NewSearchUI;
@@ -21,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
 
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -120,18 +131,30 @@ public class CeylonSearchDialogPage extends DialogPage
             }
         }
 		int scope = container.getSelectedScope();
-		String[] projectNames;
+		String[] projectNames = null;
+		List<IResource> resources = null;
 		switch (scope) {
-		    case ISearchPageContainer.WORKSPACE_SCOPE:
-		        projectNames = null;
-		    case ISearchPageContainer.SELECTED_PROJECTS_SCOPE:
+		    case WORKSPACE_SCOPE:
+		        break;
+		    case SELECTED_PROJECTS_SCOPE: //called "Enclosing Projects" in the UI
 		        projectNames = container.getSelectedProjectNames();
 		        break;
-		    case ISearchPageContainer.SELECTION_SCOPE:
-		        /*ISelection selection = container.getSelection();
+		    case SELECTION_SCOPE: //the resources selected in the view with focus
+		        resources = new ArrayList<IResource>();
+		        ISelection selection = container.getSelection();
 		        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
 		            IStructuredSelection ss = (IStructuredSelection) selection;
-                    Iterator iter= ((IStructuredSelection) sel).iterator();
+		            for (Iterator<Object> it = ss.iterator(); it.hasNext();) {
+		                Object elem = it.next();
+		                if (elem instanceof IAdaptable) {
+                            IResource resource = (IResource) ((IAdaptable) elem).getAdapter(IResource.class);
+                            if (resource!=null && resource.isAccessible()) {
+                                resources.add(resource);
+                            }
+		                }
+		            }
+		        }
+                    /*Iterator iter= ((IStructuredSelection) sel).iterator();
                     while (iter.hasNext()) {
                         Object curr= iter.next();
                         if (curr instanceof IWorkingSet) {
@@ -155,29 +178,28 @@ public class CeylonSearchDialogPage extends DialogPage
                             if (resource != null && resource.isAccessible()) {
                                 resources.add(resource);
                             }
-                        }
-		            //...
-		        }*/
-		        //TODO: this is wrong!
-	            String project = Util.getProject(container.getActiveEditorInput()).getName();
-	            if (project==null) {
-	                MessageDialog.openError(getShell(), "Ceylon Search Error", 
-	                        "Could not determine project of active editor");
-	                return false;
-	            }
-	            else {
-	                projectNames = new String[] { project };
-	            }
+                        }*/
 	            break;
+		    case WORKING_SET_SCOPE:
+		        for (IWorkingSet ws: container.getSelectedWorkingSets()) {
+		            resources = new ArrayList<IResource>();
+		            for (IAdaptable a: ws.getElements()) {
+                        IResource resource = (IResource) a.getAdapter(IResource.class);
+                        if (resource!=null && resource.isAccessible()) {
+                            resources.add(resource);
+                        }
+		            }
+		        }
+		        break;
 	        default:
                 MessageDialog.openError(getShell(), "Ceylon Search Error", 
                         "Unsupported scope");
 	            return false;
 		}
 		
-		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(
-				searchString, projectNames, references, declarations, 
-				caseSensitive, false));
+		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(searchString, 
+		        projectNames, resources==null ? null : resources.toArray(new IResource[0]), 
+		        references, declarations, caseSensitive, false));
 		return true;
 	}
 
