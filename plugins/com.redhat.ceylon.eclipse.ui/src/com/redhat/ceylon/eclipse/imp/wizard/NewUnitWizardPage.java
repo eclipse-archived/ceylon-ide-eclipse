@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
@@ -45,8 +46,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
-            return (IJavaElement) ((IAdaptable) selection.getFirstElement())
+            IJavaElement je = (IJavaElement) ((IAdaptable) selection.getFirstElement())
                     .getAdapter(IJavaElement.class);
+            //TODO: handle the case of an IFile
+            return je;
         }
         else {
             return null;
@@ -57,6 +60,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
+        initFromSelection();
+        
         Composite composite= new Composite(parent, SWT.NONE);
         composite.setFont(parent.getFont());
 
@@ -96,9 +101,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             }
         });
         
-        IJavaElement je = getSelectedElement();
-        if (je instanceof IPackageFragmentRoot) {
-            sourceDir = (IPackageFragmentRoot) je;
+        if (sourceDir!=null) {
             String folderName = sourceDir.getPath().toPortableString();
             folder.setText(folderName);
         }
@@ -111,9 +114,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                sourceDir = SourceContainerDialog.getSourceContainer(getShell(), 
+                IPackageFragmentRoot pfr = SourceContainerDialog.getSourceContainer(getShell(), 
                         ResourcesPlugin.getWorkspace().getRoot(), sourceDir);
-                if (sourceDir!=null) {
+                if (pfr!=null) {
+                    sourceDir = pfr;
                     String folderName = sourceDir.getPath().toPortableString();
                     folder.setText(folderName);
                     setPageComplete(isComplete());
@@ -142,6 +146,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 setPageComplete(isComplete());
             }
         });
+        
+        if (packageFragment!=null) {
+            String pkgName = packageFragment.getElementName();
+            pkg.setText(pkgName);
+        }
         
         Button selectPackage = new Button(composite, SWT.PUSH);
         selectPackage.setText("Browse...");
@@ -192,21 +201,38 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         Dialog.applyDialogFont(composite);
     }
+
+    public void initFromSelection() {
+        IJavaElement je = getSelectedElement();
+        if (je instanceof IPackageFragmentRoot) {
+            sourceDir = (IPackageFragmentRoot) je;
+        }
+        else if (je instanceof IPackageFragment) {
+            packageFragment = (IPackageFragment) je;
+            sourceDir = (IPackageFragmentRoot) packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
+        }
+    }
     
     public void init(IStructuredSelection selection) {
         this.selection = selection;
-    }
-    
-    @Override
-    public boolean canFlipToNextPage() {
-        // TODO Auto-generated method stub
-        return super.canFlipToNextPage();
     }
     
     private boolean isComplete() {
         return packageFragment!=null &&
                 sourceDir!=null &&
                 !unitName.equals("");
+    }
+    
+    public IPackageFragment getPackageFragment() {
+        return packageFragment;
+    }
+    
+    public IPackageFragmentRoot getSourceDir() {
+        return sourceDir;
+    }
+    
+    public String getUnitName() {
+        return unitName;
     }
     
 }
