@@ -8,6 +8,7 @@ import static org.eclipse.search.ui.ISearchPageContainer.WORKSPACE_SCOPE;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -37,9 +38,9 @@ import org.eclipse.ui.editors.text.TextEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 
 public class CeylonSearchDialogPage extends DialogPage 
-		implements ISearchPage/*, IReplacePage*/ {
+		implements ISearchPage {
 
-	private String searchString=""; //TODO: init search string from selection
+	private String searchPattern;
 	private boolean caseSensitive = false;
 	private boolean references = true;
 	private boolean declarations = true;
@@ -52,7 +53,9 @@ public class CeylonSearchDialogPage extends DialogPage
 	
 	@Override
 	public void createControl(Composite parent) {
-		Composite result = new Composite(parent, SWT.NONE);
+        initSearchPattern();
+
+        Composite result = new Composite(parent, SWT.NONE);
 		setControl(result);
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
@@ -64,18 +67,11 @@ public class CeylonSearchDialogPage extends DialogPage
 		title.setLayoutData(gd);
 		final Combo text = new Combo(result, 0);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-		IEditorPart currentEditor = Util.getCurrentEditor();
-		if (currentEditor instanceof TextEditor) {
-		    searchString = Util.getSelectionText((TextEditor) currentEditor);
-		}
-		if ("".equals(searchString) && !previousPatterns.isEmpty()) {
-		    searchString = previousPatterns.get(0);
-		}
-		text.setText(searchString);
+		text.setText(searchPattern);
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				searchString = text.getText();
+				searchPattern = text.getText();
 			}
 		});
 		for (String string: previousPatterns) {
@@ -123,17 +119,11 @@ public class CeylonSearchDialogPage extends DialogPage
 
 	@Override
 	public boolean performAction() {
-        if (previousPatterns.isEmpty() || 
-                !previousPatterns.get(0).equals(searchString)) {
-            previousPatterns.add(0, searchString);
-            if (previousPatterns.size()>10) {
-                previousPatterns.remove(10);
-            }
-        }
-		int scope = container.getSelectedScope();
+        saveSearchPattern();
+        
 		String[] projectNames = null;
 		List<IResource> resources = null;
-		switch (scope) {
+		switch (container.getSelectedScope()) {
 		    case WORKSPACE_SCOPE:
 		        break;
 		    case SELECTED_PROJECTS_SCOPE: //called "Enclosing Projects" in the UI
@@ -154,31 +144,6 @@ public class CeylonSearchDialogPage extends DialogPage
 		                }
 		            }
 		        }
-                    /*Iterator iter= ((IStructuredSelection) sel).iterator();
-                    while (iter.hasNext()) {
-                        Object curr= iter.next();
-                        if (curr instanceof IWorkingSet) {
-                            IWorkingSet workingSet= (IWorkingSet) curr;
-                            if (workingSet.isAggregateWorkingSet() && workingSet.isEmpty()) {
-                                return FileTextSearchScope.newWorkspaceScope(getExtensions(), fSearchDerived);
-                            }
-                            IAdaptable[] elements= workingSet.getElements();
-                            for (int i= 0; i < elements.length; i++) {
-                                IResource resource= (IResource)elements[i].getAdapter(IResource.class);
-                                if (resource != null && resource.isAccessible()) {
-                                    resources.add(resource);
-                                }
-                            }
-                        } else if (curr instanceof LineElement) {
-                            IResource resource= ((LineElement)curr).getParent();
-                            if (resource != null && resource.isAccessible())
-                                resources.add(resource);
-                        } else if (curr instanceof IAdaptable) {
-                            IResource resource= (IResource) ((IAdaptable)curr).getAdapter(IResource.class);
-                            if (resource != null && resource.isAccessible()) {
-                                resources.add(resource);
-                            }
-                        }*/
 	            break;
 		    case WORKING_SET_SCOPE:
 		        for (IWorkingSet ws: container.getSelectedWorkingSets()) {
@@ -197,18 +162,39 @@ public class CeylonSearchDialogPage extends DialogPage
 	            return false;
 		}
 		
-		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(searchString, 
+		NewSearchUI.runQueryInBackground(new CeylonSearchQuery(searchPattern, 
 		        projectNames, resources==null ? null : resources.toArray(new IResource[0]), 
 		        references, declarations, caseSensitive, false));
 		return true;
 	}
 
-	/*@Override
-	public boolean performReplace() {
-		// TODO Auto-generated method stub
-		return true;
-	}*/
-	
+    private void initSearchPattern() {
+        searchPattern = "";
+        IEditorPart currentEditor = Util.getCurrentEditor();
+        if (currentEditor instanceof TextEditor) {
+            String s = Util.getSelectionText((TextEditor) currentEditor);
+            if (s!=null) {
+                StringTokenizer tokens = new StringTokenizer(s);
+                if (tokens.hasMoreTokens()) {
+                    searchPattern = tokens.nextToken();
+                }
+            }
+        }
+        if ("".equals(searchPattern) && !previousPatterns.isEmpty()) {
+            searchPattern = previousPatterns.get(0);
+        }
+    }
+
+    public void saveSearchPattern() {
+        if (previousPatterns.isEmpty() || 
+                !previousPatterns.get(0).equals(searchPattern)) {
+            previousPatterns.add(0, searchPattern);
+            if (previousPatterns.size()>10) {
+                previousPatterns.remove(10);
+            }
+        }
+    }
+    
 	@Override
 	public void setContainer(ISearchPageContainer container) {
 		this.container = container;
