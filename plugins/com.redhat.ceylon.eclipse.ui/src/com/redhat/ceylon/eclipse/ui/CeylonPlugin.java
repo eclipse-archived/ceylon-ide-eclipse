@@ -20,7 +20,19 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARAT
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
+import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
+import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CORRECTION_INDICATION;
+import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS;
+import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_DUMP_TOKENS;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_MESSAGES;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -46,7 +58,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.framework.BundleContext;
 
 public class CeylonPlugin extends PluginBase {
@@ -100,7 +111,7 @@ public class CeylonPlugin extends PluginBase {
     private ImageDescriptor image(String file) {
         URL url = FileLocator.find(getBundle(), 
                 iconsPath.append(file), null);
-        if (url != null) {
+        if (url!=null) {
         	return ImageDescriptor.createFromURL(url);
         }
         else {
@@ -130,6 +141,7 @@ public class CeylonPlugin extends PluginBase {
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
+        reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
 	}
 	
 	/**
@@ -199,19 +211,19 @@ public class CeylonPlugin extends PluginBase {
                                      new FontData("Courier New", size, SWT.NORMAL), 
                                      new FontData("Monospace", size, SWT.NORMAL)});
     
-            store.setValue(PreferenceConstants.P_EMIT_MESSAGES, false);
-            store.setValue(PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS, false);
-            store.setValue(PreferenceConstants.P_TAB_WIDTH, 4);
-            store.setValue(PreferenceConstants.P_SPACES_FOR_TABS, true);
-            store.setValue(PreferenceConstants.P_DUMP_TOKENS, false);
-            store.setValue(PreferenceConstants.EDITOR_MATCHING_BRACKETS, true);
-            store.setValue(PreferenceConstants.EDITOR_CORRECTION_INDICATION, true);
-            store.setValue(PreferenceConstants.EDITOR_CLOSE_FENCES, true);
+            store.setValue(P_EMIT_MESSAGES, false);
+            store.setValue(P_EMIT_BUILDER_DIAGNOSTICS, false);
+            store.setValue(P_TAB_WIDTH, 4);
+            store.setValue(P_SPACES_FOR_TABS, true);
+            store.setValue(P_DUMP_TOKENS, false);
+            store.setValue(EDITOR_MATCHING_BRACKETS, true);
+            store.setValue(EDITOR_CORRECTION_INDICATION, true);
+            store.setValue(EDITOR_CLOSE_FENCES, true);
             
-            store.setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
-            store.setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
+            store.setValue(EDITOR_TAB_WIDTH, 4);
+            store.setValue(EDITOR_SPACES_FOR_TABS, true);
         
-            PreferenceConverter.setValue(store, PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR,
+            PreferenceConverter.setValue(store, EDITOR_MATCHING_BRACKETS_COLOR,
                     new RGB(0,120,255));
         }
     }

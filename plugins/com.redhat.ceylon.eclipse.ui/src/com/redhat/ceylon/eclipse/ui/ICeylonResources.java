@@ -30,4 +30,6 @@ public interface ICeylonResources {
     
     public static final String CEYLON_CORRECTION = "correction";
     
+    public static final String CEYLON_NEW_FILE = "ceylon_new_file";
+    
 }
