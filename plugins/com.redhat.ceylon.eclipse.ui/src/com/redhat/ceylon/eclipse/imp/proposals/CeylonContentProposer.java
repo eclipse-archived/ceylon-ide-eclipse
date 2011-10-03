@@ -807,6 +807,9 @@ public class CeylonContentProposer implements IContentProposer {
         if (d instanceof Class) {
             result.append("class");
         }
+        else if (d instanceof Interface) {
+            result.append("interface");
+        }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null) {
