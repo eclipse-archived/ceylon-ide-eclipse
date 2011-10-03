@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.hierarchy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -20,15 +23,32 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class HierarchyPopup extends PopupDialog {
 
-    final private Declaration declaration;
+    private Declaration declaration;
+    final private Map<Declaration, Object> superDeclarations = new HashMap<Declaration, Object>();
     
     public HierarchyPopup(Declaration declaration, Shell parent) {
         super(parent, SWT.RESIZE, true, true, false, true, true,
                 "Hierarchy of '" + declaration.getName() + "'", null);
-        this.declaration = declaration;
+        while (declaration!=null) {
+            this.declaration = declaration;
+            Declaration sd;
+            if (declaration instanceof TypeDeclaration) {
+                sd = ((TypeDeclaration) declaration).getExtendedTypeDeclaration();
+            }
+            else if (declaration instanceof TypedDeclaration){
+                sd = declaration.getRefinedDeclaration();
+                if (sd==declaration) sd = null;
+            }
+            else {
+                sd = null;
+            }
+            superDeclarations.put(sd, declaration);
+            declaration = sd;
+        }
     }
     
     @Override
@@ -70,14 +90,15 @@ public class HierarchyPopup extends PopupDialog {
             }
             @Override
             public Object[] getChildren(Object parentElement) {
-                if (parentElement instanceof TypeDeclaration) {
+                Object sd = superDeclarations.get(parentElement);
+                if (sd!=null) {
+                    return new Object[] { sd };
+                }
+                else if (parentElement instanceof TypeDeclaration) {
                     return ((TypeDeclaration) parentElement).getKnownSubtypes().toArray();
                 }
                 else if (parentElement instanceof TypedDeclaration) {
-                    Declaration refinedDeclaration = ((TypedDeclaration) parentElement).getRefinedDeclaration();
-                    if (refinedDeclaration!=parentElement) {
-                        return new Object[] { refinedDeclaration };
-                    }
+                    return new Object[] {};
                 }
                 else if (parentElement instanceof HierarchyPopup) {
                     return new Object[] { declaration };
@@ -99,11 +120,14 @@ public class HierarchyPopup extends PopupDialog {
             @Override
             public String getText(Object element) {
                 Declaration d = (Declaration) element;
+                String desc = CeylonContentProposer.getDescriptionFor(d);
                 if (d.isClassOrInterfaceMember()) {
-                    return d.getName() + " in " + 
+                    return desc + " in " + 
                         ((ClassOrInterface) d.getContainer()).getName();
                 }
-                return d.getName();
+                else {
+                    return desc;
+                }
             }            
             @Override
             public Image getImage(Object element) {
