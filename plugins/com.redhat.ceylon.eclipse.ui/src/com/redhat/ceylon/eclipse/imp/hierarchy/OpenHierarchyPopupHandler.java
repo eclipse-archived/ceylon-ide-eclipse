@@ -9,6 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -21,13 +22,16 @@ public class OpenHierarchyPopupHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart editor = Util.getCurrentEditor();
         Declaration declaration;
+        TypeChecker tc;
         if (editor instanceof CeylonEditor) {
-            declaration = getReferencedDeclaration(getSelectedNode((CeylonEditor) editor));
+            CeylonEditor ce = (CeylonEditor) editor;
+            declaration = getReferencedDeclaration(getSelectedNode(ce));
+            tc = ce.getParseController().getTypeChecker();
         }
         else {
             return null;
         }
-        HierarchyPopup hp  = new HierarchyPopup(declaration, 
+        HierarchyPopup hp  = new HierarchyPopup(declaration, tc,
                 editor.getEditorSite().getShell());
         hp.open();
         return null;
