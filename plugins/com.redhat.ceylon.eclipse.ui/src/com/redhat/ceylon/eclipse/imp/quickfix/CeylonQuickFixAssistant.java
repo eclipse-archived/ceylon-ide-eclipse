@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.FORMAL_REFINEMENT;
@@ -58,6 +59,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
+import com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
@@ -192,7 +194,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         addAddAnnotationProposal(node, "default ", "Make Default", problem, 
-                decNode.getDeclarationModel().getRefinedDeclaration(), 
+                getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
                 proposals, project);
     }
 

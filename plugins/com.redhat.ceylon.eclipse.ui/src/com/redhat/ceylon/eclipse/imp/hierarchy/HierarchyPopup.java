@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.hierarchy;
 
+import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,8 +42,7 @@ public class HierarchyPopup extends PopupDialog {
                 sd = ((TypeDeclaration) declaration).getExtendedTypeDeclaration();
             }
             else if (declaration instanceof TypedDeclaration){
-                sd = declaration.getRefinedDeclaration();
-                if (sd==declaration) sd = null;
+                sd = getRefinedDeclaration(declaration);
             }
             else {
                 sd = null;
@@ -70,6 +71,7 @@ public class HierarchyPopup extends PopupDialog {
         //gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         TreeViewer treeViewer = new TreeViewer(tree);
+        final Object root = new Object();
         treeViewer.setContentProvider(new ITreeContentProvider() {
             @Override
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
@@ -90,6 +92,9 @@ public class HierarchyPopup extends PopupDialog {
             }
             @Override
             public Object[] getChildren(Object parentElement) {
+                if (parentElement==root) {
+                    return new Object[] { declaration };
+                }
                 Object sd = superDeclarations.get(parentElement);
                 if (sd!=null) {
                     return new Object[] { sd };
@@ -98,10 +103,7 @@ public class HierarchyPopup extends PopupDialog {
                     return ((TypeDeclaration) parentElement).getKnownSubtypes().toArray();
                 }
                 else if (parentElement instanceof TypedDeclaration) {
-                    return new Object[] {};
-                }
-                else if (parentElement instanceof HierarchyPopup) {
-                    return new Object[] { declaration };
+                    return ((TypedDeclaration) parentElement).getKnownRefinements().toArray();
                 }
                 return new Object[0];
             }
@@ -134,7 +136,7 @@ public class HierarchyPopup extends PopupDialog {
                 return CeylonLabelProvider.getImage((Declaration) element);
             }
         });
-        treeViewer.setInput(this);
+        treeViewer.setInput(root);
         treeViewer.expandAll();
         return composite;
     }
