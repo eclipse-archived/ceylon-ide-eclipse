@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IFile;
@@ -62,9 +63,20 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         public void run(IProgressMonitor monitor) {
             IPath path = page.getPackageFragment().getPath().append(page.getUnitName()+".ceylon");
             IProject project = page.getSourceDir().getJavaProject().getProject();
+            IFile header = project.getFile("header.ceylon");
+            InputStream his = new ByteArrayInputStream(new byte[0]);
+            if ( page.isIncludePreamble() && 
+                    header.exists() && header.isAccessible() ) {
+                try {
+                    his = header.getContents();
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
             result = project.getFile(path.makeRelativeTo(project.getFullPath()));
             try {
-                result.create(new ByteArrayInputStream(new byte[0]), false, monitor);
+                result.create(his, false, monitor);
             }
             catch (CoreException ce) {
                 ce.printStackTrace();
