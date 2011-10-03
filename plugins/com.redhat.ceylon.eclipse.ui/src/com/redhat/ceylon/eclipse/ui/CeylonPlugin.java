@@ -16,11 +16,11 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CORRECTION_INDICATION;
@@ -29,6 +29,7 @@ import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BR
 import static org.eclipse.imp.preferences.PreferenceConstants.P_DUMP_TOKENS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_MESSAGES;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_SOURCE_FONT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
@@ -44,7 +45,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.imp.preferences.PreferenceConstants;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -206,7 +206,7 @@ public class CeylonPlugin extends PluginBase {
             System.out.println("INITIALIZING PREFERENCES");
             store.setValue(FLAG, true);
             int size = Platform.getOS().equals("macosx") ? 11 : 10;
-            PreferenceConverter.setValue(store, PreferenceConstants.P_SOURCE_FONT, 
+            PreferenceConverter.setValue(store, P_SOURCE_FONT, 
                     new FontData[] { new FontData("Monaco", size, SWT.NORMAL),
                                      new FontData("Courier New", size, SWT.NORMAL), 
                                      new FontData("Monospace", size, SWT.NORMAL)});
