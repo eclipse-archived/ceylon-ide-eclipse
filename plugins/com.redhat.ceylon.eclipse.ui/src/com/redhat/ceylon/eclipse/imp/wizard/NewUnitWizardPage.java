@@ -35,6 +35,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String unitName="";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+    private boolean includePreamble = true;
     
     IStructuredSelection selection;
     
@@ -178,6 +179,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sgd.horizontalSpan = 4;
+        sep.setLayoutData(sgd);
+        
         Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         nameLabel.setText("Compilation unit name: ");
         GridData lgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -186,7 +192,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         final Text name = new Text(composite, SWT.SINGLE | SWT.BORDER);
         GridData ngd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        ngd.horizontalSpan = 3;
+        ngd.horizontalSpan = 2;
         ngd.grabExcessHorizontalSpace = true;
         name.setLayoutData(ngd);
         name.addModifyListener(new ModifyListener() {
@@ -195,6 +201,21 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 unitName = name.getText();
                 setPageComplete(isComplete());
             }
+        });
+        
+        new Label(composite, SWT.NONE);        
+        new Label(composite, SWT.NONE);
+        
+        Button includeHeader = new Button(composite, SWT.CHECK);
+        includeHeader.setText("Include preamble in 'header.ceylon' in project root directory");
+        includeHeader.setSelection(includePreamble);
+        includeHeader.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                includePreamble = !includePreamble;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
         setControl(composite);
@@ -233,6 +254,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     public String getUnitName() {
         return unitName;
+    }
+    
+    public boolean isIncludePreamble() {
+        return includePreamble;
     }
     
 }
