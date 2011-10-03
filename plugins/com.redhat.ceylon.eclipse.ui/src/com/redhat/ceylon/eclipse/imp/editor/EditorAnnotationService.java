@@ -19,8 +19,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -84,15 +84,35 @@ public class EditorAnnotationService extends EditorServiceBase {
         }
     }
     
+    public static Declaration getRefinedDeclaration(Declaration dec) {
+        if (!dec.isClassOrInterfaceMember()) {
+            return null;
+        }
+        else {
+            //TODO: improve this:
+            Class etd = ((ClassOrInterface) dec.getContainer()).getExtendedTypeDeclaration();
+            if (etd==null) {
+                return null;
+            }
+            else {
+                Declaration refined = etd.getMember(dec.getName());
+                if (refined==null) {
+                    //this is the case where the declaration
+                    //refines a concrete member of an interface
+                    refined = dec.getRefinedDeclaration();
+                    if (refined.equals(dec)) {
+                        refined = null;
+                    }
+                }
+                return refined;
+            }
+        }
+    }
+    
     private void addRefinementAnnotation(CeylonSourcePositionLocator spl,
             IAnnotationModel model, Tree.Declaration that, Declaration dec) {
-        //TODO: improve this:
-        Class etd = ((TypeDeclaration) dec.getContainer()).getExtendedTypeDeclaration();
-        if (etd!=null) {
-            Declaration refined = etd.getMember(dec.getName());
-            if (refined==null) {
-                refined = dec.getRefinedDeclaration();
-            }
+        Declaration refined = getRefinedDeclaration(dec);
+        if (refined!=null) {
             RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
                     that.getIdentifier().getToken().getLine());
             model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
