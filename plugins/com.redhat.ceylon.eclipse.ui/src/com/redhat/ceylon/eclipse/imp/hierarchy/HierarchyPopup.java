@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.imp.hierarchy;
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.dialogs.PopupDialog;
@@ -20,19 +22,25 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class HierarchyPopup extends PopupDialog {
 
     private Declaration declaration;
-    final private Map<Declaration, Object> superDeclarations = new HashMap<Declaration, Object>();
+    final private Map<Declaration, Declaration> subtypesOfSupertypes = new HashMap<Declaration, Declaration>();
+    final private Map<Declaration, Set<Declaration>> subtypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
     
-    public HierarchyPopup(Declaration declaration, Shell parent) {
+    public HierarchyPopup(Declaration declaration, TypeChecker tc, Shell parent) {
         super(parent, SWT.RESIZE, true, true, false, true, true,
                 "Hierarchy of '" + declaration.getName() + "'", null);
         while (declaration!=null) {
@@ -47,9 +55,50 @@ public class HierarchyPopup extends PopupDialog {
             else {
                 sd = null;
             }
-            superDeclarations.put(sd, declaration);
+            subtypesOfSupertypes.put(sd, declaration);
             declaration = sd;
         }
+        Modules modules = tc.getContext().getModules();
+        for (Module m: modules.getListOfModules()) {
+            for (Package p: m.getPackages()) {
+                for (Unit u: p.getUnits()) {
+                    for (Declaration d: u.getDeclarations()) {
+                        if (d instanceof ClassOrInterface) {
+                            TypeDeclaration td = (TypeDeclaration) d;
+                            ClassOrInterface etd = td.getExtendedTypeDeclaration();
+                            if (etd!=null) {
+                                Set<Declaration> list = subtypesOfAllTypes.get(etd);
+                                if (list==null) {
+                                    list = new HashSet<Declaration>();
+                                    subtypesOfAllTypes.put(etd, list);
+                                }
+                                list.add(td);
+                            }
+                            for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+                                Set<Declaration> list = subtypesOfAllTypes.get(std);
+                                if (list==null) {
+                                    list = new HashSet<Declaration>();
+                                    subtypesOfAllTypes.put(std, list);
+                                }
+                                list.add(td);
+                            }
+                        }
+                        else if (d instanceof TypedDeclaration) {
+                            Declaration rd = getRefinedDeclaration(d);
+                            if (rd!=null) {
+                                Set<Declaration> list = subtypesOfAllTypes.get(rd);
+                                if (list==null) {
+                                    list = new HashSet<Declaration>();
+                                    subtypesOfAllTypes.put(rd, list);
+                                }
+                                list.add(d);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
     
     @Override
@@ -95,17 +144,19 @@ public class HierarchyPopup extends PopupDialog {
                 if (parentElement==root) {
                     return new Object[] { declaration };
                 }
-                Object sd = superDeclarations.get(parentElement);
+                Declaration sd = subtypesOfSupertypes.get(parentElement);
                 if (sd!=null) {
                     return new Object[] { sd };
                 }
-                else if (parentElement instanceof TypeDeclaration) {
-                    return ((TypeDeclaration) parentElement).getKnownSubtypes().toArray();
+                else {
+                    Set<Declaration> sdl = subtypesOfAllTypes.get(parentElement);
+                    if (sdl==null) {
+                        return new Object[0];
+                    }
+                    else {
+                        return sdl.toArray();
+                    }
                 }
-                else if (parentElement instanceof TypedDeclaration) {
-                    return ((TypedDeclaration) parentElement).getKnownRefinements().toArray();
-                }
-                return new Object[0];
             }
         });
         treeViewer.setLabelProvider(new ILabelProvider() {
@@ -124,12 +175,10 @@ public class HierarchyPopup extends PopupDialog {
                 Declaration d = (Declaration) element;
                 String desc = CeylonContentProposer.getDescriptionFor(d);
                 if (d.isClassOrInterfaceMember()) {
-                    return desc + " in " + 
+                    desc = desc + " in " + 
                         ((ClassOrInterface) d.getContainer()).getName();
                 }
-                else {
-                    return desc;
-                }
+                return desc + " [" + CeylonLabelProvider.getPackageLabel(d) + "]";
             }            
             @Override
             public Image getImage(Object element) {
@@ -137,7 +186,7 @@ public class HierarchyPopup extends PopupDialog {
             }
         });
         treeViewer.setInput(root);
-        treeViewer.expandAll();
+        treeViewer.expandToLevel(6);
         return composite;
     }
     

@@ -18,7 +18,6 @@ import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -90,7 +89,7 @@ public class EditorAnnotationService extends EditorServiceBase {
         }
         else {
             //TODO: improve this:
-            Class etd = ((ClassOrInterface) dec.getContainer()).getExtendedTypeDeclaration();
+            ClassOrInterface etd = ((ClassOrInterface) dec.getContainer()).getExtendedTypeDeclaration();
             if (etd==null) {
                 return null;
             }
@@ -100,7 +99,7 @@ public class EditorAnnotationService extends EditorServiceBase {
                     //this is the case where the declaration
                     //refines a concrete member of an interface
                     refined = dec.getRefinedDeclaration();
-                    if (refined.equals(dec)) {
+                    if (refined!=null && refined.equals(dec)) {
                         refined = null;
                     }
                 }
