@@ -2,17 +2,27 @@ package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
+import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -26,6 +36,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -115,7 +126,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = SourceContainerDialog.getSourceContainer(getShell(), 
+                IPackageFragmentRoot pfr = getSourceContainer(getShell(), 
                         ResourcesPlugin.getWorkspace().getRoot(), sourceDir);
                 if (pfr!=null) {
                     sourceDir = pfr;
@@ -161,7 +172,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         selectPackage.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (sourceDir!=null) {
+                if (sourceDir==null) {
+                    MessageDialog.openWarning(getShell(), "No Source Folder", 
+                            "Please select a source folder");
+                }
+                else {
                     PackageSelectionDialog dialog = new PackageSelectionDialog(getShell(), sourceDir);
                     dialog.setMultipleSelection(false);
                     dialog.setTitle("Package Selection");
@@ -207,13 +222,41 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         new Label(composite, SWT.NONE);
         
         Button includeHeader = new Button(composite, SWT.CHECK);
-        includeHeader.setText("Include preamble in 'header.ceylon' in project root directory");
+        includeHeader.setText("Include preamble in 'header.ceylon' in project root");
         includeHeader.setSelection(includePreamble);
+        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        igd.horizontalSpan = 3;
+        igd.grabExcessHorizontalSpace = true;
+        includeHeader.setLayoutData(igd);
         includeHeader.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 includePreamble = !includePreamble;
             }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        new Label(composite, SWT.NONE);
+
+        Link link = new Link(composite, SWT.NONE);
+        link.setText("<a>(Edit 'header.ceylon')</a>");
+        link.addSelectionListener(new SelectionListener() {            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (sourceDir==null) {
+                    MessageDialog.openWarning(getShell(), "No Source Folder", 
+                            "Please select a source folder");
+                }
+                else {
+                    EditDialog d = new EditDialog(getShell());
+                    d.setText(readHeader());
+                    if (d.open()==Status.OK) {
+                        saveHeader(d.getText());
+                    }
+                }
+            }
+            
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
@@ -258,6 +301,64 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     public boolean isIncludePreamble() {
         return includePreamble;
+    }
+    
+    private String readHeader() {
+        //TODO: use IRunnableWithProgress
+        StringBuilder sb = new StringBuilder();
+        IFile file = getHeaderFile();
+        if (file.exists() && file.isAccessible()) {
+            InputStream stream = null;
+            try {
+                stream = file.getContents();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                String line;
+                while ((line = reader.readLine())!=null) {
+                    sb.append(line).append("\n");
+                }
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            finally {
+                try {
+                    if (stream!=null) stream.close();
+                }
+                catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        }
+        return sb.toString();
+    }
+    
+    private void saveHeader(String header) {
+        //TODO: use IRunnableWithProgress
+        IFile file = getHeaderFile();
+        ByteArrayInputStream stream = null;
+        try {
+            if (file.exists()) {
+                file.delete(true, null);
+            }
+            stream = new ByteArrayInputStream(header.getBytes()); //TODO: encoding
+            file.create(stream, true, null);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                if (stream!=null) stream.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private IFile getHeaderFile() {
+        return sourceDir.getJavaProject().getProject()
+                .getFile("header.ceylon");
     }
     
 }
