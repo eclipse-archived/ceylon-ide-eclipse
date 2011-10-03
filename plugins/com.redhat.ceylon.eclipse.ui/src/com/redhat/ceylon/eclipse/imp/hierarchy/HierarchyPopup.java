@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.hierarchy;
 
-import java.util.Arrays;
-
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -10,13 +8,13 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -34,6 +32,17 @@ public class HierarchyPopup extends PopupDialog {
     }
     
     @Override
+    protected void adjustBounds() {
+        Rectangle bounds = getShell().getBounds();
+        int h = bounds.height;
+        if (h>400) {
+            bounds.height=400;
+            bounds.y = bounds.y + (h-400)/3;
+            getShell().setBounds(bounds);
+        }
+    }
+    
+    @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         Tree tree = new Tree(composite, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
@@ -48,28 +57,11 @@ public class HierarchyPopup extends PopupDialog {
             public void dispose() {}
             @Override
             public boolean hasChildren(Object element) {
-                if (element instanceof TypeDeclaration) {
-                    return ((TypeDeclaration) element).getExtendedTypeDeclaration()!=null;
-                }
-                else if (element instanceof TypedDeclaration){
-                    return ((TypedDeclaration) element).isActual();
-                }
-                else {
-                    return false;
-                }
+                return getChildren(element).length>0;
             }
             @Override
             public Object getParent(Object element) {
-                if (element instanceof TypeDeclaration) {
-                    return ((TypeDeclaration) element).getExtendedTypeDeclaration();
-                }
-                else if (element instanceof TypedDeclaration){
-                    return ((TypedDeclaration) element).getRefinedDeclaration();
-                }
-                else {
-                    return null;
-                }
-                //return null;
+                return null;
             }
             @Override
             public Object[] getElements(Object inputElement) {
@@ -79,10 +71,7 @@ public class HierarchyPopup extends PopupDialog {
             @Override
             public Object[] getChildren(Object parentElement) {
                 if (parentElement instanceof TypeDeclaration) {
-                    Class extendedTypeDeclaration = ((TypeDeclaration) parentElement).getExtendedTypeDeclaration();
-                    if (extendedTypeDeclaration!=null) {
-                        return new Object[] { extendedTypeDeclaration };
-                    }
+                    return ((TypeDeclaration) parentElement).getKnownSubtypes().toArray();
                 }
                 else if (parentElement instanceof TypedDeclaration) {
                     Declaration refinedDeclaration = ((TypedDeclaration) parentElement).getRefinedDeclaration();
