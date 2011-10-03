@@ -1,6 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.hierarchy;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoNode;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,19 +14,27 @@ import java.util.Set;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -31,18 +43,22 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class HierarchyPopup extends PopupDialog {
 
     private Declaration declaration;
+    private final CeylonEditor editor;
+    final boolean isMember;
     final private Map<Declaration, Declaration> subtypesOfSupertypes = new HashMap<Declaration, Declaration>();
     final private Map<Declaration, Set<Declaration>> subtypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
     
-    public HierarchyPopup(Declaration declaration, TypeChecker tc, Shell parent) {
+    public HierarchyPopup(Declaration declaration, CeylonEditor editor, Shell parent) {
         super(parent, SWT.RESIZE, true, true, false, true, true,
-                "Hierarchy of '" + declaration.getName() + "'", null);
+                "Hierarchy of '" + getDescriptionFor(declaration) + "'", null);
+        this.editor = editor;
+        isMember = !(declaration instanceof TypeDeclaration);
         while (declaration!=null) {
             this.declaration = declaration;
             Declaration sd;
@@ -58,7 +74,8 @@ public class HierarchyPopup extends PopupDialog {
             subtypesOfSupertypes.put(sd, declaration);
             declaration = sd;
         }
-        Modules modules = tc.getContext().getModules();
+        Modules modules = editor.getParseController().getTypeChecker()
+                .getContext().getModules();
         for (Module m: modules.getListOfModules()) {
             for (Package p: m.getPackages()) {
                 for (Unit u: p.getUnits()) {
@@ -115,11 +132,11 @@ public class HierarchyPopup extends PopupDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        Tree tree = new Tree(composite, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+        final Tree tree = new Tree(composite, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData gd= new GridData(GridData.FILL_BOTH);
         //gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
-        TreeViewer treeViewer = new TreeViewer(tree);
+        final TreeViewer treeViewer = new TreeViewer(tree);
         final Object root = new Object();
         treeViewer.setContentProvider(new ITreeContentProvider() {
             @Override
@@ -172,22 +189,100 @@ public class HierarchyPopup extends PopupDialog {
             public void addListener(ILabelProviderListener listener) {}
             @Override
             public String getText(Object element) {
-                Declaration d = (Declaration) element;
-                String desc = CeylonContentProposer.getDescriptionFor(d);
-                if (d.isClassOrInterfaceMember()) {
-                    desc = desc + " in " + 
-                        ((ClassOrInterface) d.getContainer()).getName();
-                }
-                return desc + " [" + CeylonLabelProvider.getPackageLabel(d) + "]";
-            }            
+                Declaration d = getDisplayedDeclaration(element);
+                return getDescriptionFor(d) + 
+                        " [" + CeylonLabelProvider.getPackageLabel(d) + "]";
+            }
             @Override
             public Image getImage(Object element) {
-                return CeylonLabelProvider.getImage((Declaration) element);
+                return CeylonLabelProvider.getImage(getDisplayedDeclaration(element));
             }
+            Declaration getDisplayedDeclaration(Object element) {
+                Declaration d = (Declaration) element;
+                if (isMember && d.isClassOrInterfaceMember()) {
+                    d = (ClassOrInterface) d.getContainer();
+                }
+                return d;
+            }            
         });
         treeViewer.setInput(root);
         treeViewer.expandToLevel(6);
+        
+        tree.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {}
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                gotoSelectedElement((IStructuredSelection) treeViewer.getSelection());
+            }
+        });
+
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e) {
+
+                if (tree.getSelectionCount() < 1)
+                    return;
+
+                if (e.button != 1)
+                    return;
+
+                if (tree.equals(e.getSource())) {
+                    Object o= tree.getItem(new Point(e.x, e.y));
+                    TreeItem selection= tree.getSelection()[0];
+                    if (selection.equals(o)) {
+                        gotoSelectedElement((IStructuredSelection) treeViewer.getSelection());
+                    }
+                }
+            }
+        });
+
+        tree.addMouseMoveListener(new MouseMoveListener()    {
+            TreeItem fLastItem= null;
+            public void mouseMove(MouseEvent e) {
+                if (tree.equals(e.getSource())) {
+                    Object o= tree.getItem(new Point(e.x, e.y));
+                    if (fLastItem == null ^ o == null) {
+                        tree.setCursor(o == null ? null : tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+                    }
+                    if (o instanceof TreeItem) {
+                        Rectangle clientArea = tree.getClientArea();
+                        if (!o.equals(fLastItem)) {
+                            fLastItem= (TreeItem)o;
+                            tree.setSelection(new TreeItem[] { fLastItem });
+                        } else if (e.y - clientArea.y < tree.getItemHeight() / 4) {
+                            // Scroll up
+                            Point p= tree.toDisplay(e.x, e.y);
+                            Item item= treeViewer.scrollUp(p.x, p.y);
+                            if (item instanceof TreeItem) {
+                                fLastItem= (TreeItem)item;
+                                tree.setSelection(new TreeItem[] { fLastItem });
+                            }
+                        } else if (clientArea.y + clientArea.height - e.y < tree.getItemHeight() / 4) {
+                            // Scroll down
+                            Point p= tree.toDisplay(e.x, e.y);
+                            Item item= treeViewer.scrollDown(p.x, p.y);
+                            if (item instanceof TreeItem) {
+                                fLastItem= (TreeItem)item;
+                                tree.setSelection(new TreeItem[] { fLastItem });
+                            }
+                        }
+                    } else if (o == null) {
+                        fLastItem= null;
+                    }
+                }
+            }
+        });
+        
         return composite;
+    }
+
+    protected void gotoSelectedElement(IStructuredSelection selection) {
+        Object object = selection.getFirstElement();
+        Declaration dec = (Declaration) object;
+        gotoNode(getReferencedNode(dec, getCompilationUnit(editor.getParseController(), dec)), 
+                editor.getParseController().getTypeChecker());
+        close();
     }
     
 }
