@@ -394,6 +394,11 @@
             description="Open search screen"
             name="Ceylon Search"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Open popup type hierarchy"
+            name="Open Ceylon Hierarchy"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find references to selected declaration"
@@ -455,6 +460,9 @@
             class="com.redhat.ceylon.eclipse.imp.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
+            class="com.redhat.ceylon.eclipse.imp.hierarchy.OpenHierarchyPopupHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"/>
+      <handler
             class="com.redhat.ceylon.eclipse.imp.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
       <handler
@@ -503,6 +511,10 @@
            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
+           sequence="M1+T"
+           commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
        <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
