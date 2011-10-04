@@ -56,12 +56,18 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 				super.visitAny(that);
 				popSubItem();
 			}
-			else if (that instanceof Tree.ImportList || 
-			        that instanceof Tree.Import) {
+			else if (that instanceof Tree.ImportList) {
+			    if (!((Tree.ImportList) that).getImports().isEmpty()) {
+                    pushSubItem(that);
+                    super.visitAny(that);
+                    popSubItem();
+			    }
+			}
+            else if (that instanceof Tree.Import) {
                 pushSubItem(that);
                 super.visitAny(that);
                 popSubItem();
-			}
+            }
 			else {
 				if (INCLUDEALL) {
 					pushSubItem(that,-1);
