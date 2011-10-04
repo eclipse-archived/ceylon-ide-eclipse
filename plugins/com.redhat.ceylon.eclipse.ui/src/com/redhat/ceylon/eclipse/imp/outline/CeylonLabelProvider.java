@@ -52,7 +52,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.imp.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -94,15 +93,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static final Styler ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground = CeylonTokenColorer.PURPLE;
+            //textStyle.foreground = CeylonTokenColorer.PURPLE;
         }
     };
     
     private static final Styler TYPE_ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground = CeylonTokenColorer.PURPLE;
-            //textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
+            //textStyle.foreground = CeylonTokenColorer.PURPLE;
+            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
         }
     };
     
