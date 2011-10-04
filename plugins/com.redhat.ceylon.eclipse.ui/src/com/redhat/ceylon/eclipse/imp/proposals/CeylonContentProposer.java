@@ -67,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -805,10 +806,20 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static void appendDeclarationText(Declaration d, StringBuilder result) {
         if (d instanceof Class) {
-            result.append("class");
+            if (Character.isLowerCase(d.getName().charAt(0))) {
+                result.append("object");
+            }
+            else {
+                result.append("class");
+            }
         }
         else if (d instanceof Interface) {
             result.append("interface");
+        }
+        else if (d instanceof Value 
+                && Character.isLowerCase(((Value) d).getTypeDeclaration()
+                        .getName().charAt(0))) {
+            result.append("object");
         }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
