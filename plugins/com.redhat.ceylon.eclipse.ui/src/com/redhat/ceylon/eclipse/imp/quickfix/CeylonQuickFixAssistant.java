@@ -696,7 +696,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         
         change.setEdit(edit);
         return new ChangeCorrectionProposal("Add import of '" + declaration + "'" + 
-                " in package [" + packageName + "]", change, 50, CeylonLabelProvider.IMPORT);
+                " in package " + packageName, change, 50, CeylonLabelProvider.IMPORT);
     }
     
     private int getBestImportInsertPosition(CompilationUnit cu) {

@@ -258,7 +258,8 @@ public class CeylonContentProposer implements IContentProposer {
         for (Package p: node.getUnit().getPackage().getModule().getAllPackages()) {
             //if (!packages.contains(p)) {
                 //packages.add(p);
-                if (p.getQualifiedNameString().startsWith(fullPath.toString())) {
+                String pkg = p.getQualifiedNameString();
+                if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
                     boolean already = false;
                     for (ImportList il: node.getUnit().getImportLists()) {
                         if (il.getImportedPackage()==p) {
@@ -268,8 +269,8 @@ public class CeylonContentProposer implements IContentProposer {
                     }
                     if (!already) {
                         result.add(sourceProposal(offset, prefix, PACKAGE, 
-                                "[" + p.getQualifiedNameString() + "]", p.getQualifiedNameString(), 
-                                p.getQualifiedNameString().substring(len), false));
+                                "package " + pkg, pkg, 
+                                pkg.substring(len), false));
                     }
                 }
             //}
@@ -843,7 +844,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {
-        result.append(" [").append(getPackageLabel(d)).append("]");
+        result.append(" - ").append(getPackageLabel(d));
     }
     if (d.isClassOrInterfaceMember()) {
         result.append(" - ");

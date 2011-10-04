@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPacka
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -41,6 +43,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
+            String path = element.getString("path");
             //search for a source file in the project
             //TODO: we can probably remove this loop
             for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
@@ -49,7 +52,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     for (Declaration dec: unit.getPackage().getMembers()) {
                         if (dec.getQualifiedNameString().equals(qualifiedName)) {
                             return new DeclarationWithProject(dec, 
-                                    CeylonBuilder.getFile(unit).getProject());
+                                    CeylonBuilder.getFile(unit).getProject(), path);
                         }
                     }
                 }
@@ -64,7 +67,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                             if (pkg.getQualifiedNameString().equals(packageName)) {
                                 for (Declaration dec: pkg.getMembers()) {
                                     if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                                        return new DeclarationWithProject(dec, p);
+                                        return new DeclarationWithProject(dec, p, path);
                                     }
                                 }
                             }
@@ -75,12 +78,14 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             return null; 
         }
         protected void storeItemToMemento(Object item, IMemento element) {
-            Declaration dec = ((DeclarationWithProject) item).getDeclaration();
+            DeclarationWithProject dwp = (DeclarationWithProject) item;
+            Declaration dec = dwp.getDeclaration();
             element.putString("qualifiedName", dec.getQualifiedNameString());
             element.putString("unitFileName", dec.getUnit().getFilename());
             element.putString("packageName", dec.getUnit().getPackage().getQualifiedNameString());
-            IProject project = ((DeclarationWithProject) item).getProject();
+            IProject project = dwp.getProject();
             element.putString("projectName", project.getName());
+            element.putString("path", dwp.getPath());
         }
      }
     
@@ -124,9 +129,21 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             @Override
             public String getText(Object element) {
                 DeclarationWithProject dwp = (DeclarationWithProject) element;
-                return "[" + getPackageLabel(dwp.getDeclaration()) + "] - " + 
-                        dwp.getDeclaration().getUnit().getFilename() +
-                        " in project " + dwp.getProject().getName();
+                String loc = "";
+                /*loc = " - " + dwp.getDeclaration().getUnit().getFilename() +
+                        " in project " + dwp.getProject().getName();*/
+                if (dwp.getPath()!=null) {
+                    loc = dwp.getProject().findMember(dwp.getPath())
+                            .getFullPath().toPortableString();
+                }
+                else {
+                    Module module = dwp.getDeclaration().getUnit()
+                            .getPackage().getModule();
+                    loc = " in module " + module.getNameAsString() +
+                          ":" + module.getVersion() +
+                          " imported by project " + dwp.getProject().getName();
+                }
+                return getPackageLabel(dwp.getDeclaration()) + " - " + loc;
             }
             @Override
             public Image getImage(Object element) {
@@ -147,7 +164,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             @Override
             public String decorateText(String text, Object element) {
                 DeclarationWithProject dwp = (DeclarationWithProject) element;
-                return text + " [" + getPackageLabel(dwp.getDeclaration()) + "]";
+                return text + " - " + getPackageLabel(dwp.getDeclaration());
             }
             @Override
             public Image decorateImage(Image image, Object element) {
@@ -208,11 +225,14 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProgressMonitor progressMonitor) throws CoreException {
+        Set<DeclarationWithProject> set = new HashSet<DeclarationWithProject>();
         for (PhasedUnit unit: CeylonBuilder.getUnits()) {
             for (Declaration dec: unit.getPackage().getMembers()) {
-                contentProvider.add(new DeclarationWithProject(dec, 
-                        CeylonBuilder.getFile(unit).getProject()),
-                        itemsFilter);
+                DeclarationWithProject dwp = new DeclarationWithProject(dec, 
+                        CeylonBuilder.getFile(unit).getProject(),
+                        unit.getUnitFile().getPath());
+                contentProvider.add(dwp, itemsFilter);
+                set.add(dwp);
             }
         }
         for (IProject project: CeylonBuilder.getProjects()) {
@@ -220,8 +240,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: tc.getContext().getModules().getListOfModules()) {
                 for (Package p: m.getPackages()) {
                     for (Declaration dec: p.getMembers()) {
-                        contentProvider.add(new DeclarationWithProject(dec, project), 
-                                itemsFilter);
+                        DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
+                        if (!set.contains(dwp)) {
+                            contentProvider.add(dwp, itemsFilter);
+                        }
                     }
                 }
             }

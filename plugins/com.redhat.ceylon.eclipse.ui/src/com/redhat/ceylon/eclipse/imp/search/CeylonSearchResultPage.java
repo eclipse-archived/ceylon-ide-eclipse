@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.search;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -70,6 +71,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             @Override
             public String getText(Object element) {
                 return super.getText(unwrap(element));
+            }
+            @Override
+            public StyledString getStyledText(Object element) {
+                return super.getStyledText(unwrap(element));
             }
         });
         viewer.setComparator(new CeylonViewerComparator());

@@ -39,7 +39,7 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
                     return "default package";
                 }
                 else {
-                    return "[" + name + "]";
+                    return name;
                 }
             }
             @Override
