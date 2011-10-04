@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
+import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,7 +32,6 @@ import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -59,7 +59,9 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  * @author max
  *
  */
-public class CeylonLabelProvider extends StyledCellLabelProvider implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+public class CeylonLabelProvider extends StyledCellLabelProvider 
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+    
     private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
     
     public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
@@ -264,7 +266,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider implements Dele
         return getStyledLabelFor(ce.getNode())
         		.append(pkg, StyledString.COUNTER_STYLER)
         		.append(" - ", StyledString.DECORATIONS_STYLER)
-        		.append(ce.getFile().getFullPath().toString() + ":" + ce.getLocation(), StyledString.COUNTER_STYLER);
+        		.append(ce.getFile().getFullPath().toString() + ":" + 
+        		        ce.getLocation(), StyledString.COUNTER_STYLER);
     }
     else if (element instanceof Package) {
         return new StyledString("[" + getLabel((Package) element) + "]");
@@ -301,28 +304,31 @@ public class CeylonLabelProvider extends StyledCellLabelProvider implements Dele
         }
         if (n instanceof Tree.AnyClass) {
             Tree.AnyClass ac = (Tree.AnyClass) n;
-            return new StyledString("class ", StyledString.QUALIFIER_STYLER)
+            return new StyledString("class ", QUALIFIER_STYLER)
             .append(name(ac.getIdentifier()))
-            		.append(parameters(ac.getTypeParameterList()) + parameters(ac.getParameterList()), StyledString.QUALIFIER_STYLER);
+            		.append(parameters(ac.getTypeParameterList()) + 
+            		        parameters(ac.getParameterList()), QUALIFIER_STYLER);
         }
         else if (n instanceof Tree.AnyInterface) {
             Tree.AnyInterface ai = (Tree.AnyInterface) n;
-            return new StyledString("interface ", StyledString.QUALIFIER_STYLER).append(name(ai.getIdentifier())).append( 
-                    parameters(ai.getTypeParameterList()),StyledString.QUALIFIER_STYLER);
+            return new StyledString("interface ", QUALIFIER_STYLER)
+                    .append(name(ai.getIdentifier()))
+                    .append(parameters(ai.getTypeParameterList()), QUALIFIER_STYLER);
         }
         else if (n instanceof Tree.ObjectDefinition) {
             Tree.ObjectDefinition ai = (Tree.ObjectDefinition) n;
-            return new StyledString("object ", StyledString.QUALIFIER_STYLER).append(name(ai.getIdentifier()));
+            return new StyledString("object ", QUALIFIER_STYLER)
+                    .append(name(ai.getIdentifier()));
         }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            StyledString label = new StyledString(type(td.getType()), StyledString.QUALIFIER_STYLER).append( 
-                    " " + name(td.getIdentifier()));
+            StyledString label = new StyledString(type(td.getType()), QUALIFIER_STYLER)
+                    .append( " " + name(td.getIdentifier()));
             if (n instanceof Tree.AnyMethod) {
                 Tree.AnyMethod am = (Tree.AnyMethod) n;
                 label.append(parameters(am.getTypeParameterList()) +
                         (am.getParameterLists().isEmpty() ? "" : 
-                            parameters(am.getParameterLists().get(0))), StyledString.QUALIFIER_STYLER);
+                            parameters(am.getParameterLists().get(0))), QUALIFIER_STYLER);
             }
             return label;
         }
