@@ -396,8 +396,8 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.hierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Open popup type hierarchy"
-            name="Open Ceylon Hierarchy"/>
+            description="Show popup hierarchy view"
+            name="Show Ceylon Hierarchy"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -602,6 +602,17 @@
                       class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
                 <dynamic id="refactor"
                       class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+            <separator
+                  visible="true"
+                  name="sep2"/>
+            <command 
+                  id="showOutline"
+                  commandId="org.eclipse.imp.runtime.editor.showOutline"
+                  label="Show Outline"/>
+            <command 
+                  id="showHierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  label="Show Hierarchy"/>
                 <separator
                       name="sep3" 
                       visible="true"/>
@@ -660,6 +671,17 @@
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+            <separator
+                  visible="true"
+                  name="sep3"/>
+            <command 
+                  id="showOutline"
+                  commandId="org.eclipse.imp.runtime.editor.showOutline"
+                  label="Show Outline"/>
+            <command 
+                  id="showHierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  label="Show Hierarchy"/>
       </menuContribution>
    </extension>
    
