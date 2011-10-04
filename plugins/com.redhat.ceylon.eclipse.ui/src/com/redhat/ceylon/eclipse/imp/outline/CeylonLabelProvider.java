@@ -102,6 +102,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground = CeylonTokenColorer.PURPLE;
+            //textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
         }
     };
     
@@ -354,7 +355,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            StyledString label = new StyledString(type(td.getType()), TYPE_STYLER);
+            String type = type(td.getType());
+            Styler styler = TYPE_STYLER;
+            if (type.equals("Void")) {
+                type = "void"; //TODO: fix!
+                styler = KW_STYLER;
+            }
+            StyledString label = new StyledString(type, styler);
             label.append(" ").append(name(td.getIdentifier()), ID_STYLER);
             if (n instanceof Tree.AnyMethod) {
                 Tree.AnyMethod am = (Tree.AnyMethod) n;
