@@ -419,6 +419,11 @@
             description="Clean unused imports from current file"
             name="Clean Imports"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.refineFormals"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Implement all inherited formal members"
+            name="Implement Formal Members"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Rename selected declaration"
@@ -474,6 +479,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
@@ -533,6 +541,11 @@
        <key
            sequence="M3+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
+           sequence="M3+M"
+           commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key

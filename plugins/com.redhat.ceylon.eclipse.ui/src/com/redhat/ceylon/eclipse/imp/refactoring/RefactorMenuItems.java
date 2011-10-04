@@ -9,6 +9,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler;
+import com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     
@@ -44,7 +45,10 @@ public class RefactorMenuItems extends CompoundContributionItem {
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
                             "Clean Imports",
-                            new CleanImportsHandler().isEnabled())
+                            new CleanImportsHandler().isEnabled()),
+                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.refineFormals", 
+                            "Implement Formal Members",
+                            new RefineFormalMembersHandler().isEnabled())
                 };
         /*}
         else {
