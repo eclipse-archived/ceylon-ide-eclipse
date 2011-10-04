@@ -422,7 +422,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.refineFormals"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Implement all inherited formal members"
-            name="Implement Formal Members"/>
+            name="Refine Formal Members"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"

@@ -47,7 +47,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                             "Clean Imports",
                             new CleanImportsHandler().isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.refineFormals", 
-                            "Implement Formal Members",
+                            "Refine Formal Members",
                             new RefineFormalMembersHandler().isEnabled())
                 };
         /*}

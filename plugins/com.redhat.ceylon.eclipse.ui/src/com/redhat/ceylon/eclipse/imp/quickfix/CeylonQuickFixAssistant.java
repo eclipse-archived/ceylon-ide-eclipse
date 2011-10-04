@@ -289,7 +289,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
             Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
-        TextFileChange change = new TextFileChange("Implement Formal Members", file);
+        TextFileChange change = new TextFileChange("Refine Formal Members", file);
         Tree.ClassDefinition def = (Tree.ClassDefinition) node;
         List<Statement> statements = def.getClassBody().getStatements();
         int offset;

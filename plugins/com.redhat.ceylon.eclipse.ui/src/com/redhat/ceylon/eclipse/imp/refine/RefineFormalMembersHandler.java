@@ -41,7 +41,7 @@ public class RefineFormalMembersHandler extends AbstractHandler {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         Node node = getSelectedNode(editor);
-        TextFileChange change = new TextFileChange("Implement Formal Members", 
+        TextFileChange change = new TextFileChange("Refine Formal Members", 
                 Util.getFile(editor.getEditorInput()));
         IDocument doc;
         try {
