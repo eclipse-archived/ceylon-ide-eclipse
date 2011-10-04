@@ -16,8 +16,11 @@ import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -176,7 +179,7 @@ public class HierarchyPopup extends PopupDialog {
                 }
             }
         });
-        treeViewer.setLabelProvider(new ILabelProvider() {
+        treeViewer.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void removeListener(ILabelProviderListener listener) {}
             @Override
@@ -187,23 +190,33 @@ public class HierarchyPopup extends PopupDialog {
             public void dispose() {}
             @Override
             public void addListener(ILabelProviderListener listener) {}
-            @Override
-            public String getText(Object element) {
+            
+            StyledString getStyledText(Object element) {
                 Declaration d = getDisplayedDeclaration(element);
-                return getDescriptionFor(d) + 
-                        " [" + CeylonLabelProvider.getPackageLabel(d) + "]";
+                return new StyledString(getDescriptionFor(d)).append( 
+                        " [" + CeylonLabelProvider.getPackageLabel(d) + "]", StyledString.QUALIFIER_STYLER);
             }
-            @Override
-            public Image getImage(Object element) {
-                return CeylonLabelProvider.getImage(getDisplayedDeclaration(element));
-            }
+            
             Declaration getDisplayedDeclaration(Object element) {
                 Declaration d = (Declaration) element;
                 if (isMember && d.isClassOrInterfaceMember()) {
                     d = (ClassOrInterface) d.getContainer();
                 }
                 return d;
-            }            
+            }
+            
+            @Override
+            public void update(ViewerCell cell) {
+            	Object element = cell.getElement();
+            	
+            	StyledString styledText = getStyledText(element);
+            	
+            	cell.setText(styledText.toString());
+            	cell.setStyleRanges(styledText.getStyleRanges());
+            	cell.setImage(CeylonLabelProvider.getImage(getDisplayedDeclaration(element)));
+            	super.update(cell);
+            }
+            
         });
         treeViewer.setInput(root);
         treeViewer.expandToLevel(6);
