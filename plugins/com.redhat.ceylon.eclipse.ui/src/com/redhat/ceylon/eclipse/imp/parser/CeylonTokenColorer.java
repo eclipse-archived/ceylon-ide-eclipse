@@ -26,7 +26,8 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "this", "outer", "super", "is", "exists", "nonempty"));
     
     private static final Display display = Display.getDefault();
-    private static final Color BRIGHT_BLUE = new Color(display, new RGB(0,120,255));
+    public static final Color BRIGHT_BLUE = new Color(display, new RGB(0,120,255));
+    public static final Color PURPLE = new Color(display, new RGB(63,31,191));
     
     private static final TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute;
