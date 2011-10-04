@@ -5,13 +5,13 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
+import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -27,7 +27,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -193,8 +192,10 @@ public class HierarchyPopup extends PopupDialog {
             
             StyledString getStyledText(Object element) {
                 Declaration d = getDisplayedDeclaration(element);
-                return new StyledString(getDescriptionFor(d)).append( 
-                        " [" + CeylonLabelProvider.getPackageLabel(d) + "]", StyledString.QUALIFIER_STYLER);
+                return new StyledString(getDescriptionFor(d))
+                        .append(" - ", QUALIFIER_STYLER)
+                        .append(CeylonLabelProvider.getPackageLabel(d), 
+                                QUALIFIER_STYLER);
             }
             
             Declaration getDisplayedDeclaration(Object element) {
