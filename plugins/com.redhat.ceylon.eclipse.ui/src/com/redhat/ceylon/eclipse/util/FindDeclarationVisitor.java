@@ -30,6 +30,14 @@ public class FindDeclarationVisitor extends Visitor {
 		super.visit(that);
 	}
 	
+    @Override
+    public void visit(Tree.ObjectDefinition that) {
+        if (isDeclaration(that.getDeclarationModel().getTypeDeclaration())) {
+            declarationNode = that;
+        }
+        super.visit(that);
+    }
+    
 	public void visitAny(Node node) {
 		if (declarationNode==null) {
 			super.visitAny(node);
