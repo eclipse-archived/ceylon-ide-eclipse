@@ -43,16 +43,17 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
     }
 
     private static void appendDescription(Tree.Declaration decl, StringBuilder documentation) {
-        documentation.append("<p>[").append(getPackageLabel(decl)).append("]</p>");
         documentation.append("<p><b>").append(sanitize(CeylonLabelProvider.getLabelFor(decl)))
-                .append("</b></p>");
+                .append("</b></p>").append("<ul><li>in ").append(getPackageLabel(decl))
+                .append("</li><ul>");
     }
 
     private static void appendDeclaringType(StringBuilder documentation, Declaration model) {
         if (model.isClassOrInterfaceMember()) {
             TypeDeclaration declaring = (TypeDeclaration) model.getContainer();
             documentation.append("<ul><li>declared by ").append(declaring.getName())
-                    .append(" [" + getPackageLabel(declaring) + "]</li>");
+                    //.append(" - ").append(getPackageLabel(declaring))
+                    .append("</li>");
             if (model.isActual()) {
                 documentation.append("<li>");
                 appendRefinement(documentation, model.getRefinedDeclaration());
@@ -66,9 +67,9 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
         String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
         if (spkg.isEmpty()) spkg="default package";
-        documentation.append("refines '" + CeylonContentProposer.getDescriptionFor(refined)) 
-                .append("' declared by ").append(supertype.getName()) 
-                .append(" [" + getPackageLabel(refined) + "]");
+        documentation.append("refines '").append(CeylonContentProposer.getDescriptionFor(refined)) 
+                .append("' declared by ").append(supertype.getName());
+                //.append(" - ").append(getPackageLabel(refined));
     }
 
     private static void appendInheritance(StringBuilder documentation, Declaration model) {
@@ -76,8 +77,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             ProducedType extended = ((Class) model).getExtendedType();
             if (extended!=null) {
                 documentation.append("<ul><li>extends ")
-                        .append(sanitize(extended.getProducedTypeName()))
-                        .append(" [" + getPackageLabel(extended.getDeclaration()) + "]</li></ul>");
+                        .append(sanitize(extended.getProducedTypeName()));
+                        //.append(" - ").append(getPackageLabel(extended.getDeclaration())).append("</li></ul>");
             }
         }
         if (model instanceof TypeDeclaration) {
@@ -86,8 +87,8 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                 documentation.append("<ul>");
                 for (ProducedType satisfied : types) {
                     documentation.append("<li>satisfies ")
-                            .append(sanitize(satisfied.getProducedTypeName()) )
-                            .append(" [" + getPackageLabel(satisfied.getDeclaration()) + "]</li>");
+                            .append(sanitize(satisfied.getProducedTypeName()));
+                            //.append(" - ").append(getPackageLabel(satisfied.getDeclaration())).append("</li>");
                 }
                 documentation.append("</ul>");
             }
