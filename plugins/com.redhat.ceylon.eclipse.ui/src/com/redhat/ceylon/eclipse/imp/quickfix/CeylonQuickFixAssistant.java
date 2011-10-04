@@ -58,7 +58,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
@@ -298,7 +297,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         String indentAfter;
         if (statements.isEmpty()) {
             indentAfter = "\n" + getIndent(def.getClassBody(), doc);
-            indent = indentAfter + CeylonAutoEditStrategy.getDefaultIndent();
+            indent = indentAfter + getDefaultIndent();
             offset = def.getClassBody().getStartIndex()+1;
         }
         else {
