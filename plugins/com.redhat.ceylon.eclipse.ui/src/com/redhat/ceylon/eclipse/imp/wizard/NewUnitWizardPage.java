@@ -270,6 +270,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         IJavaElement je = getSelectedElement();
         if (je instanceof IPackageFragmentRoot) {
             sourceDir = (IPackageFragmentRoot) je;
+            packageFragment = sourceDir.getPackageFragment("");
         }
         else if (je instanceof IPackageFragment) {
             packageFragment = (IPackageFragment) je;
@@ -284,6 +285,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private boolean isComplete() {
         return packageFragment!=null &&
                 sourceDir!=null &&
+                sourceDir.getPackageFragment(packageFragment.getElementName())
+                        .equals(packageFragment) &&
                 !unitName.equals("");
     }
     
