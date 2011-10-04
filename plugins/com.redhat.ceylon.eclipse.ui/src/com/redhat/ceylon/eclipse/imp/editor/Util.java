@@ -15,6 +15,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -100,12 +101,13 @@ public class Util {
     }
     
     public static IEditorPart getCurrentEditor() {
-        return getActivePage().getActiveEditor();
+        IWorkbenchPage page = getActivePage();
+        return page==null ? null : page.getActiveEditor();
     }
 
     public static IWorkbenchPage getActivePage() {
-        return PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage();
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        return window==null ? null : window.getActivePage();
     }
     
 }
