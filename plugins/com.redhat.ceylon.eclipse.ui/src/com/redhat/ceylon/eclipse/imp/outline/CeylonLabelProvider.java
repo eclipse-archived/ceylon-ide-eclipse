@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFA
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
@@ -48,6 +49,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -87,6 +89,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
     private static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
     private static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
+    public static Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
@@ -234,6 +237,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return LOCAL_METHOD;
             }
         }
+        else if (n instanceof Tree.Parameter) {
+            return PARAMETER;
+        }
         else {
             if (shared) {
                 return ATTRIBUTE;
@@ -274,6 +280,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 return LOCAL_METHOD;
             }
+        }
+        else if (d instanceof Parameter) {
+            return PARAMETER;
         }
         else {
             if (shared) {
