@@ -292,7 +292,8 @@ public class CeylonContentProposer implements IContentProposer {
         else if (node instanceof Tree.ImportPath) {
             addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
         }
-        else if (node instanceof Tree.TypedDeclaration) {
+        else if (node instanceof Tree.TypedDeclaration && 
+                !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable)) {
             addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypeConstraint) {
