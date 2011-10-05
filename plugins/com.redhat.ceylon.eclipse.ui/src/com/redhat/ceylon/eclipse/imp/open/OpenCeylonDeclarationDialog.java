@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.imp.open;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getStyledDescriptionFor;
+import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Comparator;
@@ -96,23 +97,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public String getText(Object element) {
             DeclarationWithProject dwp = (DeclarationWithProject) element;
-            String loc = "";
-            /*loc = " - " + dwp.getDeclaration().getUnit().getFilename() +
-                    " in project " + dwp.getProject().getName();*/
-            if (dwp.getPath()!=null) {
-                loc = dwp.getProject().findMember(dwp.getPath())
-                        .getFullPath().toPortableString();
-            }
-            else {
-                Module module = dwp.getDeclaration().getUnit()
-                        .getPackage().getModule();
-                loc = " in module " + module.getNameAsString() +
-                      ":" + module.getVersion() +
-                      " imported by project " + dwp.getProject().getName();
-            }
-            return getPackageLabel(dwp.getDeclaration()) + " - " + loc;
+            return getPackageLabel(dwp.getDeclaration()) + " - " + getLocation(dwp);
         }
-        
+
         @Override
         public Image getImage(Object element) {
             return CeylonLabelProvider.PACKAGE;
@@ -158,7 +145,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 StyledString label = getStyledDescriptionFor(dwp.getDeclaration());
                 if (nameOccursMultipleTimes(dwp.getDeclaration())) {
                     label.append(" - ", QUALIFIER_STYLER)
-                        .append(getPackageLabel(dwp.getDeclaration()), QUALIFIER_STYLER);
+                        .append(getPackageLabel(dwp.getDeclaration()), QUALIFIER_STYLER)
+                        .append(" - ", COUNTER_STYLER)
+                        .append(getLocation(dwp), COUNTER_STYLER);
                 }
                 return label;
             }
@@ -325,6 +314,20 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
+    private static String getLocation(DeclarationWithProject dwp) {
+        if (dwp.getPath()!=null) {
+            return dwp.getProject().findMember(dwp.getPath())
+                    .getFullPath().toPortableString();
+        }
+        else {
+            Module module = dwp.getDeclaration().getUnit()
+                    .getPackage().getModule();
+            return " in module " + module.getNameAsString() +
+                  ":" + module.getVersion() +
+                  " imported by project " + dwp.getProject().getName();
+        }
+    }
+    
     private boolean nameOccursMultipleTimes(Declaration dec) {
         Integer n = usedNames.get(dec.getName());
         return n!=null && n>1;
