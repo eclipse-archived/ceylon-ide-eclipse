@@ -51,17 +51,18 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     
     public TextAttribute getColoring(IParseController controller, Object o) {
         if (o == null) return null;
-        Token token = (Token) o;    
+        Token token = (Token) o;
+        CeylonParseController cpc = (CeylonParseController) controller;
         switch (token.getType()) {
             case CeylonParser.UIDENTIFIER:
-                if (inAnnotation(controller, token)) {
+                if (cpc.inAnnotationSpan(token)) {
                     return annotationAttribute;
                 }
                 else {
                     return typeAttribute;
                 }
             case CeylonParser.LIDENTIFIER:
-                if (inAnnotation(controller, token)) {
+                if (cpc.inAnnotationSpan(token)) {
                     return annotationAttribute;
                 }
                 else {
@@ -73,7 +74,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             case CeylonParser.STRING_LITERAL:
             case CeylonParser.CHAR_LITERAL:
             case CeylonParser.QUOTED_LITERAL:
-                if (inAnnotation(controller, token)) {
+                if (cpc.inAnnotationSpan(token)) {
                     return annotationStringAttribute;
                 }
                 else {
@@ -98,11 +99,6 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                     return null;
                 }
         }
-    }
-    
-    private boolean inAnnotation(IParseController controller, Token token) {
-        return ((CeylonParseController) controller).getAnnotations()
-                .contains(token.getTokenIndex());
     }
     
     public IRegion calculateDamageExtent(IRegion seed, IParseController ctlr) {
