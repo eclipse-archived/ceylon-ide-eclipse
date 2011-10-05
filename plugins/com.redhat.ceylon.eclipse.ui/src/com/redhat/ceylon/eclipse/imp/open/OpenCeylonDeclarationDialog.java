@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.imp.open;
 
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getStyledDescriptionFor;
+import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -13,9 +15,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,6 +43,125 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     //private IEditorPart editor;
     
+    static class SelectionLabelDecorator implements ILabelDecorator {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String decorateText(String text, Object element) {
+            DeclarationWithProject dwp = (DeclarationWithProject) element;
+            return text + " - " + getPackageLabel(dwp.getDeclaration());
+        }
+        
+        @Override
+        public Image decorateImage(Image image, Object element) {
+            return null;
+        }
+    }
+
+    static class DetailsLabelProvider implements ILabelProvider {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String getText(Object element) {
+            DeclarationWithProject dwp = (DeclarationWithProject) element;
+            String loc = "";
+            /*loc = " - " + dwp.getDeclaration().getUnit().getFilename() +
+                    " in project " + dwp.getProject().getName();*/
+            if (dwp.getPath()!=null) {
+                loc = dwp.getProject().findMember(dwp.getPath())
+                        .getFullPath().toPortableString();
+            }
+            else {
+                Module module = dwp.getDeclaration().getUnit()
+                        .getPackage().getModule();
+                loc = " in module " + module.getNameAsString() +
+                      ":" + module.getVersion() +
+                      " imported by project " + dwp.getProject().getName();
+            }
+            return getPackageLabel(dwp.getDeclaration()) + " - " + loc;
+        }
+        
+        @Override
+        public Image getImage(Object element) {
+            return CeylonLabelProvider.PACKAGE;
+        }
+    }
+
+    static class LabelProvider extends StyledCellLabelProvider 
+            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public Image getImage(Object element) {
+            DeclarationWithProject dwp = (DeclarationWithProject) element;
+            return dwp==null ? null : CeylonLabelProvider.getImage(dwp.getDeclaration());
+        }
+        
+        @Override
+        public String getText(Object element) {
+            DeclarationWithProject dwp = (DeclarationWithProject) element;
+            return dwp==null ? null : getDescriptionFor(dwp.getDeclaration());
+        }
+
+        @Override
+        public StyledString getStyledText(Object element) {
+            DeclarationWithProject dwp = (DeclarationWithProject) element;
+            return dwp==null ? null : getStyledDescriptionFor(dwp.getDeclaration());
+                    //.append(" - ", QUALIFIER_STYLER)
+                    //.append(getPackageLabel(dwp.getDeclaration()), QUALIFIER_STYLER);
+        }
+
+        @Override
+        public void update(ViewerCell cell) {
+            Object element = cell.getElement();
+            if (element!=null) {
+                StyledString styledText = getStyledText(element);
+                cell.setText(styledText.toString());
+                cell.setStyleRanges(styledText.getStyleRanges());
+                cell.setImage(getImage(element));
+                super.update(cell);
+            }
+        }
+        
+    }
+
     private class TypeSelectionHistory extends SelectionHistory {
         protected Object restoreItemFromMemento(IMemento element) {
             String qualifiedName = element.getString("qualifiedName");
@@ -93,84 +218,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         super(shell);
         //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());
-        setListLabelProvider(new ILabelProvider() {
-            @Override
-            public void addListener(ILabelProviderListener listener) {}
-            @Override
-            public void dispose() {}
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return false;
-            }
-            @Override
-            public void removeListener(ILabelProviderListener listener) {}
-            @Override
-            public Image getImage(Object element) {
-                DeclarationWithProject dwp = (DeclarationWithProject) element;
-                return dwp==null ? null : CeylonLabelProvider.getImage(dwp.getDeclaration());
-            }
-            @Override
-            public String getText(Object element) {
-                DeclarationWithProject dwp = (DeclarationWithProject) element;
-                return dwp==null ? null : getDescriptionFor(dwp.getDeclaration());
-            }            
-        });
-        setDetailsLabelProvider(new ILabelProvider() {
-            @Override
-            public void removeListener(ILabelProviderListener listener) {}
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return false;
-            }
-            @Override
-            public void dispose() {}
-            @Override
-            public void addListener(ILabelProviderListener listener) {}
-            @Override
-            public String getText(Object element) {
-                DeclarationWithProject dwp = (DeclarationWithProject) element;
-                String loc = "";
-                /*loc = " - " + dwp.getDeclaration().getUnit().getFilename() +
-                        " in project " + dwp.getProject().getName();*/
-                if (dwp.getPath()!=null) {
-                    loc = dwp.getProject().findMember(dwp.getPath())
-                            .getFullPath().toPortableString();
-                }
-                else {
-                    Module module = dwp.getDeclaration().getUnit()
-                            .getPackage().getModule();
-                    loc = " in module " + module.getNameAsString() +
-                          ":" + module.getVersion() +
-                          " imported by project " + dwp.getProject().getName();
-                }
-                return getPackageLabel(dwp.getDeclaration()) + " - " + loc;
-            }
-            @Override
-            public Image getImage(Object element) {
-                return CeylonLabelProvider.PACKAGE;
-            }
-        });
-        setListSelectionLabelDecorator(new ILabelDecorator() {         
-            @Override
-            public void removeListener(ILabelProviderListener listener) {}
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return false;
-            }
-            @Override
-            public void dispose() {}
-            @Override
-            public void addListener(ILabelProviderListener listener) {}
-            @Override
-            public String decorateText(String text, Object element) {
-                DeclarationWithProject dwp = (DeclarationWithProject) element;
-                return text + " - " + getPackageLabel(dwp.getDeclaration());
-            }
-            @Override
-            public Image decorateImage(Image image, Object element) {
-                return null;
-            }
-        });
+        setListLabelProvider(new LabelProvider());
+        setDetailsLabelProvider(new DetailsLabelProvider());
+        setListSelectionLabelDecorator(new SelectionLabelDecorator());
     }
     
     public OpenCeylonDeclarationDialog(Shell shell, boolean multi) {

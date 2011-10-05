@@ -111,17 +111,24 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     };
     
-    private static final Styler TYPE_STYLER = new Styler() {
+    public static final Styler TYPE_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
         }
     };
     
-    private static final Styler KW_STYLER = new Styler() {
+    public static final Styler KW_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_MAGENTA);
+        }
+    };
+    
+    public static final Styler ANN_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_CYAN);
         }
     };
     
@@ -515,9 +522,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     @Override
     public void update(ViewerCell cell) {
         Object element = cell.getElement();
-        
         StyledString styledText = getStyledText(element);
-        
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(getImage(element));
