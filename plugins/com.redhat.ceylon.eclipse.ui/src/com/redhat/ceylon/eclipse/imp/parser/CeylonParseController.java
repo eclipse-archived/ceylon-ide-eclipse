@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -38,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.parser.AnnotationVisitor.Span;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
@@ -53,7 +54,7 @@ public class CeylonParseController extends ParseControllerBase {
     private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
     private CeylonSourcePositionLocator sourcePositionLocator;
     private CommonTokenStream tokenStream;
-    private final Set<Integer> annotations = new HashSet<Integer>();
+    private final List<Span> annotationSpans = new ArrayList<Span>();
     private TypeChecker typeChecker;
     
     /**
@@ -137,8 +138,8 @@ public class CeylonParseController extends ParseControllerBase {
             }
             parserErrors.clear();
             
-            annotations.clear();
-            cu.visit(new AnnotationVisitor(annotations));
+            annotationSpans.clear();
+            cu.visit(new AnnotationVisitor(annotationSpans));
             
             fCurrentAst = cu;
             
@@ -291,10 +292,18 @@ public class CeylonParseController extends ParseControllerBase {
         return typeChecker;
     }
     
-    public Set<Integer> getAnnotations() {
-        return annotations;
+    public boolean inAnnotationSpan(Token token) {
+        CommonToken ct = (CommonToken) token;
+        for (Span span: annotationSpans) {
+            if (ct.getStartIndex()>=span.start && 
+                    ct.getStopIndex()<=span.end) {
+                return true;
+            }
+            if (ct.getStopIndex()<span.start) return false;
+        }
+        return false;
     }
-    
+        
     public Tree.CompilationUnit getRootNode() {
         return (Tree.CompilationUnit) getCurrentAst();
     }
