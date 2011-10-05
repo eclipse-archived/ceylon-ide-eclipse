@@ -119,6 +119,14 @@
    </extension>
    
    <extension
+         point="org.eclipse.imp.runtime.entityImageDecorator">
+      <entityImageDecorator
+            class="com.redhat.ceylon.eclipse.imp.outline.CeylonEntityImageDecorator"
+            language="ceylon">
+      </entityImageDecorator>
+   </extension>
+   
+   <extension
          point="org.eclipse.imp.runtime.referenceResolvers">
       <referenceResolver
             class="com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver"

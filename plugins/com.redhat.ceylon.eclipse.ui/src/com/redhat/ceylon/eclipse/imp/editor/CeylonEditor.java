@@ -1,36 +1,57 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+
 import java.lang.reflect.Field;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
 import org.eclipse.imp.editor.GenerateActionGroup;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
+import org.eclipse.imp.editor.OutlineInformationControl;
+import org.eclipse.imp.editor.OutlineLabelProvider;
+import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.imp.services.base.TreeModelBuilderBase;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.information.IInformationPresenter;
+import org.eclipse.jface.text.information.IInformationProvider;
+import org.eclipse.jface.text.information.IInformationProviderExtension;
+import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 
+import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
+import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonEditor extends UniversalEditor {
-    static Field refreshContributionsField;
-    static Field generateActionGroupField;
-    static Field openEditorActionGroupField;
+    private static Field refreshContributionsField;
+    private static Field generateActionGroupField;
+    private static Field openEditorActionGroupField;
+    private static Field labelProviderField;
     static {
         try {
             refreshContributionsField = UniversalEditor.class.getDeclaredField("fRefreshContributions");
@@ -39,12 +60,79 @@ public class CeylonEditor extends UniversalEditor {
             generateActionGroupField.setAccessible(true);
             openEditorActionGroupField = UniversalEditor.class.getDeclaredField("fOpenEditorActionGroup");
             openEditorActionGroupField.setAccessible(true);
+            labelProviderField = OutlineInformationControl.class.getDeclaredField("fInnerLabelProvider");
+            labelProviderField.setAccessible(true);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private static final TreeModelBuilderBase builder = new CeylonTreeModelBuilder();
+
+    private class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
+        public IRegion getSubject(ITextViewer textViewer, int offset) {
+            return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+        }
+        public String getInformation(ITextViewer textViewer, IRegion subject) {
+            // shouldn't be called, given IInformationProviderExtension???
+            throw new UnsupportedOperationException();
+        }
+        public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+            return builder.buildTree(getParseController().getCurrentAst());
+        }
+    }
+
+    private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new OutlineInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId, getLanguage()) {
+                    @Override
+                    protected TreeViewer createTreeViewer(Composite parent, int style) {
+                        TreeViewer tv = super.createTreeViewer(parent, style);
+                        try {
+                            OutlineLabelProvider lp = (OutlineLabelProvider) labelProviderField.get(this);
+                            lp.addLabelDecorator(new CeylonLabelDecorator(getLanguage()));
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return tv;
+                    }
+                    @Override
+                    protected String getStatusFieldText() {
+                        return "";
+                    }
+                };
+            }
+        };
+    }
+
+    @Override
+    protected StructuredSourceViewerConfiguration createSourceViewerConfiguration() {
+        return new StructuredSourceViewerConfiguration(getPreferenceStore(), this) {
+            @Override
+            public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
+                InformationPresenter presenter = new InformationPresenter(getOutlinePresenterControlCreator(sourceViewer, SHOW_OUTLINE));
+                presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+                presenter.setAnchor(AbstractInformationControlManager.ANCHOR_GLOBAL);
+                presenter.setInformationProvider(new OutlineInformationProvider(), IDocument.DEFAULT_CONTENT_TYPE);
+                // TODO Should associate all other partition types with this provider, too
+                //presenter.setSizeConstraints(50, 20, true, false);
+                //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+                return presenter;
+            }
+        };
+    }
         
+    /*private IDialogSettings getSettings(String sectionName) {
+        IDialogSettings settings= RuntimePlugin.getInstance().getDialogSettings().getSection(sectionName);
+        if (settings == null)
+            settings= RuntimePlugin.getInstance().getDialogSettings().addNewSection(sectionName);
+        return settings;
+    }*/
+
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);

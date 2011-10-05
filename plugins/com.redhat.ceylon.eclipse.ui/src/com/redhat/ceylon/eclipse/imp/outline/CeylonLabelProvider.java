@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.ModelTreeNode;
+import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -66,6 +67,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  */
 public class CeylonLabelProvider extends StyledCellLabelProvider 
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+    
+    private static CeylonLabelDecorator DECORATOR = new CeylonLabelDecorator(LanguageRegistry.findLanguage(CeylonPlugin.LANGUAGE_ID));
     
     private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
     
@@ -131,13 +134,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     @Override
     public Image getImage(Object element) {
+        return DECORATOR.decorateImage(getPlainImage(element), element);
+    }
+
+    private static Image getPlainImage(Object element) {
         if (element instanceof IFile) {
             return getImageForFile((IFile) element);
         }
         if (element instanceof IProject) {
             return PROJECT;
         }
-        if (element instanceof org.eclipse.core.runtime.Path) {
+        if (element instanceof IPath) {
             return getImageForPath((IPath) element);
         }
         if (element instanceof CeylonElement) {
@@ -158,11 +165,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return FILE_IMAGE;
     }
     
-    private Image getImageForPath(IPath element) {
+    private static Image getImageForPath(IPath element) {
         return FILE_IMAGE;
     }
     
-    private Image getImageForFile(IFile file) {
+    private static Image getImageForFile(IFile file) {
         int sev = getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
         switch (sev) {
             case IMarker.SEVERITY_ERROR:
@@ -174,12 +181,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
     
-    private Image getImageFor(ModelTreeNode n) {
+    private static Image getImageFor(ModelTreeNode n) {
         if (n.getCategory()==-1) return null;
         return getImageFor((Node) n.getASTNode());
     }
     
-    public static Image getImageFor(Node n) {
+    private static Image getImageFor(Node n) {
         if (n instanceof PackageNode) {
             return PACKAGE;
         }
@@ -239,6 +246,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     public static Image getImage(Declaration d) {
         if (d==null) return null;
+        return DECORATOR.decorateImage(getPlainImage(d), d);
+    }
+
+    private static Image getPlainImage(Declaration d) {
         boolean shared = d.isShared();
         if (d instanceof Class) {
             if (shared) {
@@ -476,7 +487,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         fListeners.remove(listener);
     }
     
-    public static String getLabel(Package packageModel) {
+    private static String getLabel(Package packageModel) {
         String pkg = packageModel.getQualifiedNameString();
         if (pkg.isEmpty()) pkg="default package";
         return pkg;
