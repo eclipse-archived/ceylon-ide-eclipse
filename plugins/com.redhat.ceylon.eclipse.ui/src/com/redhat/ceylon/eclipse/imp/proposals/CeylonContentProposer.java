@@ -817,16 +817,15 @@ public class CeylonContentProposer implements IContentProposer {
         else if (d instanceof Interface) {
             result.append("interface");
         }
-        else if (d instanceof Value 
-                && Character.isLowerCase(((Value) d).getTypeDeclaration()
-                        .getName().charAt(0))) {
-            result.append("object");
-        }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null) {
                 String typeName = td.getType().getProducedTypeName();
-                if (d instanceof Method) {
+                if (td instanceof Value &&
+                        Character.isLowerCase(typeName.charAt(0))) {
+                    result.append("object");
+                }
+                else if (d instanceof Method) {
                     if (typeName.equals("Void")) { //TODO: fix this!
                         result.append("void");
                     }
