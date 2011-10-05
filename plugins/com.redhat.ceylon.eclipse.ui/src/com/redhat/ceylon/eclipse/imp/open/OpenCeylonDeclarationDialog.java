@@ -138,7 +138,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public StyledString getStyledText(Object element) {
             if (element==null) {
-                return null;
+                return new StyledString();
             }
             else {
                 DeclarationWithProject dwp = (DeclarationWithProject) element;
