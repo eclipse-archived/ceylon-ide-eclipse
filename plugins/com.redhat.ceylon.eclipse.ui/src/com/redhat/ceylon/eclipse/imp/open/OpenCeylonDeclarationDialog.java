@@ -6,7 +6,9 @@ import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getS
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -36,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -43,7 +46,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     //private IEditorPart editor;
     
-    static class SelectionLabelDecorator implements ILabelDecorator {
+    class SelectionLabelDecorator implements ILabelDecorator {
         @Override
         public void removeListener(ILabelProviderListener listener) {}
         
@@ -61,7 +64,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public String decorateText(String text, Object element) {
             DeclarationWithProject dwp = (DeclarationWithProject) element;
-            return text + " - " + getPackageLabel(dwp.getDeclaration());
+            if (nameOccursMultipleTimes(dwp.getDeclaration())) {
+                return text;
+            }
+            else {
+                return text + " - " + getPackageLabel(dwp.getDeclaration());
+            }
         }
         
         @Override
@@ -111,7 +119,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    static class LabelProvider extends StyledCellLabelProvider 
+    class LabelProvider extends StyledCellLabelProvider 
             implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
         
         @Override
@@ -142,10 +150,18 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public StyledString getStyledText(Object element) {
-            DeclarationWithProject dwp = (DeclarationWithProject) element;
-            return dwp==null ? null : getStyledDescriptionFor(dwp.getDeclaration());
-                    //.append(" - ", QUALIFIER_STYLER)
-                    //.append(getPackageLabel(dwp.getDeclaration()), QUALIFIER_STYLER);
+            if (element==null) {
+                return null;
+            }
+            else {
+                DeclarationWithProject dwp = (DeclarationWithProject) element;
+                StyledString label = getStyledDescriptionFor(dwp.getDeclaration());
+                if (nameOccursMultipleTimes(dwp.getDeclaration())) {
+                    label.append(" - ", QUALIFIER_STYLER)
+                        .append(getPackageLabel(dwp.getDeclaration()), QUALIFIER_STYLER);
+                }
+                return label;
+            }
         }
 
         @Override
@@ -174,7 +190,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
                 if (unit.getUnit().getFilename().equals(unitFileName)
                         && unit.getPackage().getQualifiedNameString().equals(packageName)) {
-                    for (Declaration dec: unit.getPackage().getMembers()) {
+                    for (Declaration dec: unit.getUnit().getDeclarations()) {
                         if (dec.getQualifiedNameString().equals(qualifiedName)) {
                             return new DeclarationWithProject(dec, 
                                     CeylonBuilder.getFile(unit).getProject(), path);
@@ -272,17 +288,23 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         };
     }
     
+    Map<String,Integer> usedNames = new HashMap<String,Integer>();
+    
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProgressMonitor progressMonitor) throws CoreException {
+        usedNames.clear();
         Set<DeclarationWithProject> set = new HashSet<DeclarationWithProject>();
         for (PhasedUnit unit: CeylonBuilder.getUnits()) {
-            for (Declaration dec: unit.getPackage().getMembers()) {
-                DeclarationWithProject dwp = new DeclarationWithProject(dec, 
-                        CeylonBuilder.getFile(unit).getProject(),
-                        unit.getUnitFile().getPath());
-                contentProvider.add(dwp, itemsFilter);
-                set.add(dwp);
+            for (Declaration dec: unit.getUnit().getDeclarations()) {
+                if (dec.isToplevel() && isPresentable(dec)) {
+                    DeclarationWithProject dwp = new DeclarationWithProject(dec, 
+                            CeylonBuilder.getFile(unit).getProject(),
+                            unit.getUnitFile().getPath());
+                    contentProvider.add(dwp, itemsFilter);
+                    set.add(dwp);
+                    nameOccurs(dec);
+                }
             }
         }
         for (IProject project: CeylonBuilder.getProjects()) {
@@ -290,14 +312,34 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: tc.getContext().getModules().getListOfModules()) {
                 for (Package p: m.getPackages()) {
                     for (Declaration dec: p.getMembers()) {
-                        DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
-                        if (!set.contains(dwp)) {
-                            contentProvider.add(dwp, itemsFilter);
+                        if (isPresentable(dec)) {
+                            DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
+                            if (!set.contains(dwp)) {
+                                contentProvider.add(dwp, itemsFilter);
+                                nameOccurs(dec);
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean nameOccursMultipleTimes(Declaration dec) {
+        Integer n = usedNames.get(dec.getName());
+        return n!=null && n>1;
+    }
+
+    private void nameOccurs(Declaration dec) {
+        Integer i = usedNames.get(dec.getName());
+        if (i==null) i=0;
+        usedNames.put(dec.getName(), i+1);
+    }
+    
+    private boolean isPresentable(Declaration d) {
+        String name = d.getName();
+        return name!=null && (!(d instanceof TypeDeclaration) ||
+                Character.isUpperCase(name.charAt(0)));
     }
     
     @Override
