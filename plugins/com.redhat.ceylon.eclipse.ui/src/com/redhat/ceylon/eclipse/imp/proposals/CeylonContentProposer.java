@@ -9,8 +9,11 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getComp
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -46,6 +49,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -750,6 +754,20 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
     
+    public static StyledString getStyledDescriptionFor(Declaration d) {
+        StyledString result = new StyledString();
+        if (d!=null) {
+            if (d.isFormal()) result.append("formal ", ANN_STYLER);
+            if (d.isDefault()) result.append("default ", ANN_STYLER);
+            appendDeclarationText(d, result);
+            appendTypeParameters(d, result);
+            appendParameters(d, result);
+            /*result.append(" - refine declaration in ") 
+                .append(((Declaration) d.getContainer()).getName());*/
+        }
+        return result;
+    }
+    
     private static void appendPositionalArgs(Declaration d, StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
@@ -806,6 +824,21 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
     
+    private static void appendTypeParameters(Declaration d, StyledString result) {
+        if (d instanceof Generic) {
+            List<TypeParameter> types = ((Generic) d).getTypeParameters();
+            if (!types.isEmpty()) {
+                result.append("<");
+                int len = types.size(), i = 0;
+                for (TypeParameter p: types) {
+                    result.append(p.getName(), TYPE_STYLER);
+                    if (++i<len) result.append(", ");
+                }
+                result.append(">");
+            }
+        }
+    }
+    
     private static void appendDeclarationText(Declaration d, StringBuilder result) {
         if (d instanceof Class) {
             if (Character.isLowerCase(d.getName().charAt(0))) {
@@ -840,6 +873,48 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         result.append(" ").append(d.getName());
+    }
+    
+    private static void appendDeclarationText(Declaration d, StyledString result) {
+        if (d instanceof Class) {
+            if (Character.isLowerCase(d.getName().charAt(0))) {
+                result.append("object", KW_STYLER);
+            }
+            else {
+                result.append("class", KW_STYLER);
+            }
+        }
+        else if (d instanceof Interface) {
+            result.append("interface", KW_STYLER);
+        }
+        else if (d instanceof TypedDeclaration) {
+            TypedDeclaration td = (TypedDeclaration) d;
+            if (td.getType()!=null) {
+                String typeName = td.getType().getProducedTypeName();
+                if (td instanceof Value &&
+                        Character.isLowerCase(typeName.charAt(0))) {
+                    result.append("object", KW_STYLER);
+                }
+                else if (d instanceof Method) {
+                    if (typeName.equals("Void")) { //TODO: fix this!
+                        result.append("void", KW_STYLER);
+                    }
+                    else {
+                        result.append(typeName, TYPE_STYLER);
+                    }
+                }
+                else {
+                    result.append(typeName, TYPE_STYLER);
+                }
+            }
+        }
+        result.append(" ");
+        if (d instanceof TypeDeclaration) {
+            result.append(d.getName(), TYPE_STYLER);
+        }
+        else {
+            result.append(d.getName());
+        }
     }
     
     /*private static void appendPackage(Declaration d, StringBuilder result) {
@@ -883,6 +958,28 @@ public class CeylonContentProposer implements IContentProposer {
                         .append(p.getName()).append(", ");
                     }
                     result.setLength(result.length()-2);
+                    result.append(")");
+                }
+            }
+        }
+    }
+    
+    private static void appendParameters(Declaration d, StyledString result) {
+        if (d instanceof Functional) {
+            List<ParameterList> plists = ((Functional) d).getParameterLists();
+            if (plists!=null && !plists.isEmpty()) {
+                ParameterList params = plists.get(0);
+                if (params.getParameters().isEmpty()) {
+                    result.append("()");
+                }
+                else {
+                    result.append("(");
+                    int len = params.getParameters().size(), i=0;
+                    for (Parameter p: params.getParameters()) {
+                        result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
+                                .append(" ").append(p.getName());
+                        if (++i<len) result.append(", ");
+                    }
                     result.append(")");
                 }
             }
