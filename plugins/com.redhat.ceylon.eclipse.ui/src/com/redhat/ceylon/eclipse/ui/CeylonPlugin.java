@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
@@ -136,6 +137,7 @@ public class CeylonPlugin extends PluginBase {
 		reg.put(CEYLON_ATTRIBUTE, image("public_co.gif"));
 		reg.put(CEYLON_LOCAL_METHOD, image("private_co.gif"));
 		reg.put(CEYLON_LOCAL_ATTRIBUTE, image("private_co.gif"));
+        reg.put(CEYLON_PARAMETER, image("methpro_obj.gif"));
 	    reg.put(CEYLON_DEFAULT_REFINEMENT, image("over_co.gif"));
         reg.put(CEYLON_FORMAL_REFINEMENT, image("implm_co.gif"));
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
