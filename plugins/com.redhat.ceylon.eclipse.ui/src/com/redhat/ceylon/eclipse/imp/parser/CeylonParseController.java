@@ -101,7 +101,7 @@ public class CeylonParseController extends ParseControllerBase {
         
         if (file.getName().endsWith(".ceylon")) {
             
-            System.out.println("Compiling " + file.getPath());
+            //System.out.println("Compiling " + file.getPath());
             
             ANTLRInputStream input;
             try {
@@ -252,7 +252,7 @@ public class CeylonParseController extends ParseControllerBase {
                 });      
             }
             
-            System.out.println("Finished compiling " + file.getPath());
+            //System.out.println("Finished compiling " + file.getPath());
         }
         
         return fCurrentAst;
