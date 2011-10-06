@@ -127,7 +127,7 @@ public class EditorAnnotationService extends EditorServiceBase {
     @Override
     public void setEditor(UniversalEditor editor) {
         super.setEditor(editor);
-        System.out.println("Adding SelectionListener to editor " + editor);
+        //System.out.println("Adding SelectionListener to editor " + editor);
         ((IPostSelectionProvider) editor.getSelectionProvider())
             .addPostSelectionChangedListener(new SelectionListener());
     }
