@@ -35,6 +35,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             if (model!=null) {
                 appendInheritance(documentation, model);
                 appendDeclaringType(documentation, model);
+                appendContainingPackage(documentation, model);
             }
             
             appendDocAnnotationContent(decl, documentation);
@@ -43,9 +44,16 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
     }
 
     private static void appendDescription(Tree.Declaration decl, StringBuilder documentation) {
-        documentation.append("<p><b>").append(sanitize(CeylonLabelProvider.getLabelFor(decl)))
-                .append("</b></p>").append("<ul><li>in ").append(getPackageLabel(decl))
-                .append("</li><ul>");
+        documentation.append("<p><b>")
+                .append(sanitize(CeylonLabelProvider.getLabelFor(decl)))
+                .append("</b></p>");
+    }
+
+    private static void appendContainingPackage(StringBuilder documentation, Declaration model) {
+        if (model.isToplevel()) {
+            documentation.append("<ul><li>in ").append(getPackageLabel(model))
+                    .append("</li><ul>");
+        }
     }
 
     private static void appendDeclaringType(StringBuilder documentation, Declaration model) {
