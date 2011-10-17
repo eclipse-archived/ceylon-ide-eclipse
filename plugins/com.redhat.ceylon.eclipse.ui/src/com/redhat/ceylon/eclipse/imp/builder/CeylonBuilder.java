@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.tools.JavaFileObject;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -57,6 +61,9 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import com.redhat.ceylon.compiler.tools.CeyloncFileManager;
+import com.redhat.ceylon.compiler.tools.CeyloncTaskImpl;
+import com.redhat.ceylon.compiler.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -291,7 +298,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * @return true iff this resource identifies the output folder
      */
     protected boolean isOutputFolder(IResource resource) {
-        return resource.getFullPath().lastSegment().equals("target/classes");
+        return resource.getFullPath().toString().endsWith("build/ceylon");
     }
 
     @Override
@@ -324,6 +331,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             builtPhasedUnits = fullBuild(project, sourceProject, monitor);
             if (builtPhasedUnits== null)
                 return new IProject[0];
+            generateBinaries(project, sourceProject, allSources, monitor);
         }
         else
         {
@@ -391,6 +399,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
+                generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
             } catch (CoreException e) {
                 getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
             }
@@ -568,6 +577,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
+    private static String languageVersion = "0.1";
+    private final static String languageCar = System.getProperty("user.home")+"/.ceylon/repo/ceylon/language/"+languageVersion +"/ceylon.language-"+languageVersion+".car";
+
+    private boolean generateBinaries(IProject project, ISourceProject sourceProject, Collection<IFile> filesToCompile, IProgressMonitor monitor) {
+        File sourcePath = null;
+        for (IPath sourceFolder : getSourceFolders(sourceProject)) {
+            sourcePath = project.getFolder(sourceFolder.makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
+        }
+
+        java.util.List<File> sourceFiles = new ArrayList<File>();
+        for (IFile file : filesToCompile) {
+            sourceFiles.add(file.getRawLocation().toFile());
+        }
+
+        if (sourceFiles.size() > 0)
+        {
+            CeyloncTool compiler;
+            try {
+                compiler = new CeyloncTool();
+            } catch (VerifyError e) {
+                System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
+                throw e;
+            }
+            CeyloncFileManager fileManager = (CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+            Iterable<? extends JavaFileObject> compilationUnits1 =
+                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(null, fileManager, null, Arrays.asList("-src", sourcePath.getAbsolutePath(), "-out", project.getFile("build/ceylon").getRawLocation().toFile().getAbsolutePath(), "-verbose", "-cp", languageCar), null, compilationUnits1);
+            return task.call().booleanValue();
+        }
+        else
+            return false;
+    }
+    
     /**
      * Clears all problem markers (all markers whose type derives from IMarker.PROBLEM)
      * from the given file. A utility method for the use of derived builder classes.
