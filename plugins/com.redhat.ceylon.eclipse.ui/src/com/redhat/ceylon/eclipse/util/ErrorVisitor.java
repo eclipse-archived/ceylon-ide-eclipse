@@ -9,6 +9,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.imp.parser.IMessageHandler;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -25,7 +26,7 @@ public abstract class ErrorVisitor extends Visitor {
     @Override
     public void visitAny(Node node) {
         super.visitAny(node);
-        for (Message error : node.getErrors()) {
+        for (Message error: node.getErrors()) {
             String errorMessage = error.getMessage();
             int startOffset = 0;
             int endOffset = 0;
@@ -45,6 +46,11 @@ public abstract class ErrorVisitor extends Visitor {
                 }
             }
             if (error instanceof AnalysisMessage) {
+                if (error instanceof AnalysisWarning &&
+                            node.getUnit().getPackage().getQualifiedNameString()
+                                    .startsWith("ceylon.language")) {
+                    continue;
+                }
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
                 Node errorNode = getIdentifyingNode(analysisMessage.getTreeNode());
                 if (errorNode == null) {
