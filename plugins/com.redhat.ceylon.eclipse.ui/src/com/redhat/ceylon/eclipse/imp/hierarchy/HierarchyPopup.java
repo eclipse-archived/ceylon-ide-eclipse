@@ -192,10 +192,14 @@ public class HierarchyPopup extends PopupDialog {
             
             StyledString getStyledText(Object element) {
                 Declaration d = getDisplayedDeclaration(element);
-                return new StyledString(getDescriptionFor(d))
-                        .append(" - ", QUALIFIER_STYLER)
-                        .append(CeylonLabelProvider.getPackageLabel(d), 
-                                QUALIFIER_STYLER);
+                StyledString result = new StyledString(getDescriptionFor(d));
+                if (d.getContainer() instanceof Declaration) {
+                    result.append(" in ")
+                            .append(getDescriptionFor((Declaration) d.getContainer()));
+                }
+                result.append(" - ", QUALIFIER_STYLER)
+                        .append(CeylonLabelProvider.getPackageLabel(d), QUALIFIER_STYLER);
+                return result;
             }
             
             Declaration getDisplayedDeclaration(Object element) {
