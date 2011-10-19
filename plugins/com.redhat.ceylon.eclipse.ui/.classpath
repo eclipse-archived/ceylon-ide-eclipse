@@ -6,6 +6,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.1.jar" sourcepath="/ceylon-spec"/>
 	<classpathentry kind="lib" path="lib/compiler.jar" sourcepath="/ceylon-compiler"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ceylon-compiler"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
