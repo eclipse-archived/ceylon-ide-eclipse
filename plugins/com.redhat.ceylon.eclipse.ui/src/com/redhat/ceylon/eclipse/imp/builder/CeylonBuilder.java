@@ -581,11 +581,36 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final static String languageCar = System.getProperty("user.home")+"/.ceylon/repo/ceylon/language/"+languageVersion +"/ceylon.language-"+languageVersion+".car";
 
     private boolean generateBinaries(IProject project, ISourceProject sourceProject, Collection<IFile> filesToCompile, IProgressMonitor monitor) {
-        File sourcePath = null;
+        List<String> options = new ArrayList<String>();
+
+        String srcPath = "";
         for (IPath sourceFolder : getSourceFolders(sourceProject)) {
-            sourcePath = project.getFolder(sourceFolder.makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
+            File sourcePathElement = project.getFolder(sourceFolder.makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
+            if (! srcPath.isEmpty()) {
+                srcPath += File.pathSeparator;
+            }
+            srcPath += sourcePathElement.getAbsolutePath();
+        }
+        options.add("-src");
+        options.add(srcPath);
+
+        IJavaProject javaProject = JavaCore.create(project);
+        if (javaProject.exists()) {
+            IPath outputLocation;
+            try {
+                outputLocation = javaProject.getOutputLocation();
+                options.add("-out");
+                options.add(project.getFolder(outputLocation.makeRelativeTo(project.getFullPath())).getRawLocation().toFile().getAbsolutePath());
+            } catch (JavaModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
+        options.add("-verbose");
+        options.add("-cp");
+        options.add(languageCar);
+        
         java.util.List<File> sourceFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
             sourceFiles.add(file.getRawLocation().toFile());
@@ -603,7 +628,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             CeyloncFileManager fileManager = (CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
             Iterable<? extends JavaFileObject> compilationUnits1 =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(null, fileManager, null, Arrays.asList("-src", sourcePath.getAbsolutePath(), "-out", project.getFile("build/ceylon").getRawLocation().toFile().getAbsolutePath(), "-verbose", "-cp", languageCar), null, compilationUnits1);
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(null, fileManager, null, options, null, compilationUnits1);
             return task.call().booleanValue();
         }
         else
