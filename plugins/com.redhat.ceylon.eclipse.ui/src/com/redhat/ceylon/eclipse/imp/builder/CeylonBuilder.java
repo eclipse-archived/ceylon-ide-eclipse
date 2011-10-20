@@ -607,7 +607,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
 
-        options.add("-verbose");
+//        options.add("-verbose");
         options.add("-cp");
         options.add(languageCar);
         
@@ -758,7 +758,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private Shell getShell() {
+    public static Shell getShell() {
         return RuntimePlugin.getInstance().getWorkbench()
                 .getActiveWorkbenchWindow().getShell();
     }

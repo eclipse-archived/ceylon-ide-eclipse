@@ -705,5 +705,80 @@
                   label="Show Hierarchy"/>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.eclipse.launching.CeylonLaunchDelegate"
+            delegateDescription=""
+            delegateName="Ceylon Local Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
+            modes="run, debug"
+            name="Ceylon Java Application"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
+            class="com.redhat.ceylon.eclipse.debug.ui.launchConfigurations.LocalCeylonApplicationTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonApplication">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug Ceylon Application">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run Ceylon Application">
+            </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplicationImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
+            icon="icons/ceylon_app.gif">
+      </launchConfigurationTypeImage>
+   </extension>
    
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="Ceylon Application"
+            icon="icons/ceylon_app.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.debug.ui.launchConfigurations.CeylonApplicationLaunchShortcut"
+            description="Launch a local Ceylon application"
+            id="com.redhat.ceylon.eclipse.ui.launcher.localJavaShortcut">
+         <description 
+               description="Runs a local Ceylon application"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a local Ceylon application"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+<!--                        <test property="org.eclipse.jdt.launching.hasMain"/>
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                        </and>
+                        -->
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication">
+         </configurationType>
+      </shortcut>
+   </extension>
 </plugin>
