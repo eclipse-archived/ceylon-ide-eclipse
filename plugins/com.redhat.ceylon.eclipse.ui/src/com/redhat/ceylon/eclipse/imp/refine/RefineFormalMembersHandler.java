@@ -51,14 +51,23 @@ public class RefineFormalMembersHandler extends AbstractHandler {
             throw new RuntimeException(e);
         }
         //TODO: copy/pasted from CeylonQuickFixAssisitant
-        Tree.ClassBody body;
+        Tree.Body body;
         int offset;
         if (node instanceof Tree.ClassDefinition) {
             body = ((Tree.ClassDefinition) node).getClassBody();
             offset = -1;
         }
-        else if (node instanceof Tree.ClassBody) {
-            body = (Tree.ClassBody) node;
+        if (node instanceof Tree.InterfaceDefinition) {
+            body = ((Tree.InterfaceDefinition) node).getInterfaceBody();
+            offset = -1;
+        }
+        if (node instanceof Tree.ObjectDefinition) {
+            body = ((Tree.ObjectDefinition) node).getClassBody();
+            offset = -1;
+        }
+        else if (node instanceof Tree.ClassBody || 
+                node instanceof Tree.InterfaceBody) {
+            body = (Tree.Body) node;
             offset = editor.getSelectedRegion().getOffset();
         }
         else {
@@ -111,10 +120,18 @@ public class RefineFormalMembersHandler extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return super.isEnabled() && 
+        if ( super.isEnabled() && 
                 editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput &&
-                ( getSelectedNode((CeylonEditor) editor) instanceof Tree.ClassBody ||
-                getSelectedNode((CeylonEditor) editor) instanceof Tree.ClassDefinition );
+                editor.getEditorInput() instanceof IFileEditorInput ) {
+            Node node = getSelectedNode((CeylonEditor) editor);
+            return node instanceof Tree.ClassBody ||
+                    node instanceof Tree.InterfaceBody ||
+                    node instanceof Tree.ClassDefinition ||
+                    node instanceof Tree.InterfaceDefinition ||
+                    node instanceof Tree.ObjectDefinition;
+        }
+        else {
+            return false;
+        }
     }
 }
