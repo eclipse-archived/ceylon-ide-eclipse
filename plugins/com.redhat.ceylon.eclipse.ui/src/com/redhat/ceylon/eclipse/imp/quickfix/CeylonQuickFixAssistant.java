@@ -290,15 +290,26 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
             Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
         TextFileChange change = new TextFileChange("Refine Formal Members", file);
-        Tree.ClassDefinition def = (Tree.ClassDefinition) node;
-        List<Statement> statements = def.getClassBody().getStatements();
+        Tree.ClassBody body;
+        if (node instanceof Tree.ClassDefinition) {
+            Tree.ClassDefinition def = (Tree.ClassDefinition) node;
+            body = def.getClassBody();
+        }
+        else if (node instanceof Tree.ObjectDefinition) {
+            Tree.ObjectDefinition def = (Tree.ObjectDefinition) node;
+            body = def.getClassBody();
+        }
+        else {
+            return;
+        }
+        List<Statement> statements = body.getStatements();
         int offset;
         String indent;
         String indentAfter;
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(def.getClassBody(), doc);
+            indentAfter = "\n" + getIndent(body, doc);
             indent = indentAfter + getDefaultIndent();
-            offset = def.getClassBody().getStartIndex()+1;
+            offset = body.getStartIndex()+1;
         }
         else {
             Statement statement = statements.get(statements.size()-1);
