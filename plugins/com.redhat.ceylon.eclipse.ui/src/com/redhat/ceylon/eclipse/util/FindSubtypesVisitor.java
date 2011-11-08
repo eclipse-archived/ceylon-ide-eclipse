@@ -32,4 +32,12 @@ public class FindSubtypesVisitor extends Visitor {
 		super.visit(that);
 	}
 		
+    @Override
+    public void visit(Tree.ObjectDefinition that) {
+        if (isRefinement(that.getDeclarationModel().getTypeDeclaration())) {
+            declarationNodes.add(that);
+        }
+        super.visit(that);
+    }
+        
 }
