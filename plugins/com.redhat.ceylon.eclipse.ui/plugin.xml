@@ -360,6 +360,16 @@
                actionID="RulerClick"
                id="com.redhat.ceylon.eclipse.ui.action.selectRuler"/>
       </editorContribution>
+      <editorContribution
+            targetID="com.redhat.ceylon.eclipse.ui.editor"
+            id="com.redhat.ceylon.eclipse.ui.editor.BreakpointRulerActions">
+         <action
+               label="Add breakpoint"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               actionID="RulerDoubleClick"
+               id="org.eclipse.jdt.debug.ui.actions.ManageBreakpointRulerAction">
+         </action>
+      </editorContribution>
    </extension>
    
    <extension
