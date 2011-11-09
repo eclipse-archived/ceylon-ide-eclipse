@@ -36,7 +36,7 @@ public class IFileVirtualFile extends ResourceVirtualFile {
     public InputStream getInputStream() {
         IFile file = (IFile) resource;
         try {
-            return file.getContents();
+            return file.getContents(true);
         } catch (CoreException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
