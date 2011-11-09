@@ -594,6 +594,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-src");
         options.add(srcPath);
 
+        options.add("-g:lines,vars,source");
+
         IJavaProject javaProject = JavaCore.create(project);
         if (javaProject.exists()) {
             IPath outputLocation;
