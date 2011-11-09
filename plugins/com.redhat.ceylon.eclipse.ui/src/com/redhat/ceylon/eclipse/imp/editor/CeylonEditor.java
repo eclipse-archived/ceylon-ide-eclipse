@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
+import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.imp.editor.GenerateActionGroup;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
 import org.eclipse.imp.editor.OutlineInformationControl;
@@ -167,6 +168,7 @@ public class CeylonEditor extends UniversalEditor {
     }
     
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
+    private Object toggleBreakpointTarget;
     
     @Override
     public IDocumentProvider getDocumentProvider() {
@@ -521,6 +523,17 @@ public class CeylonEditor extends UniversalEditor {
         public void update() {
             setEnabled(isEditorInputModifiable());
         }
+    }
+
+    @Override
+    public Object getAdapter(Class required) {
+        if (IToggleBreakpointsTarget.class.equals(required)) {
+            if (toggleBreakpointTarget == null) {
+                toggleBreakpointTarget = new com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter();
+            }
+            return toggleBreakpointTarget;
+        }
+        return super.getAdapter(required);
     }
 
 }
