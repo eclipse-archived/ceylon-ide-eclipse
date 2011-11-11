@@ -316,8 +316,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
     private static String getLocation(DeclarationWithProject dwp) {
         if (dwp.getPath()!=null) {
-            return dwp.getProject().findMember(dwp.getPath())
-                    .getFullPath().toPortableString();
+            return dwp.getProject().isOpen() ?
+                    dwp.getProject().findMember(dwp.getPath())
+                        .getFullPath().toPortableString() :
+                    //if the project is closed findMember() returns null
+                    //so just abbreviate to the project path
+                    dwp.getProject().getFullPath().toPortableString();
         }
         else {
             Module module = dwp.getDeclaration().getUnit()
