@@ -261,6 +261,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        name.forceFocus();
+        
         setControl(composite);
 
         Dialog.applyDialogFont(composite);
