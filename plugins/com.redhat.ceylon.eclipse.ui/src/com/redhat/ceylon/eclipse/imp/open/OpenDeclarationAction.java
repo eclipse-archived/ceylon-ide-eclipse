@@ -41,6 +41,7 @@ public class OpenDeclarationAction extends Action {
                 .getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = new OpenCeylonDeclarationDialog(shell, editor);
         dialog.setTitle("Open Ceylon Declaration");
+        dialog.setMessage("Select a Ceylon declaration to open:");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
         }
