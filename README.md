@@ -20,7 +20,7 @@
     
     <http://www.eclipse.org/downloads/>
     
-2.  `Use Help > Install New Software...` to install all components of 
+2.  Use `Help > Install New Software...` to install all components of 
     IMP from the update site at:
     
     <http://download.eclipse.org/technology/imp/updates/0.2/>
@@ -33,14 +33,18 @@
 4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
-    
-5.  Use `File > New > Java Project`, enter a project name, and select 
+
+5.  Open `Eclipse > Preferences` and go to 
+    `Java > Compiler > Building > Output folder`. Add the pattern
+    `*.ceylon` to `Filtered resources`.
+
+6.  Use `File > New > Java Project`, enter a project name, and select 
     `Finish` create a new Java project in the workspace.
     
-6.  Select the new project in the Java package explorer, and select 
+7.  Select the new project in the Java package explorer, and select 
     `Enable Ceylon Builder` from the context menu.
     
-7.  Use `New > File` to create a new file with the extension `.ceylon`
+8.  Use `New > File` to create a new file with the extension `.ceylon`
     in the `src` directory of your project.
 
 ## Building with Tycho/Maven 3
