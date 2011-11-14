@@ -10,11 +10,13 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -72,13 +74,35 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             if (object instanceof IAdaptable) {
                 IResource resource = (IResource) ((IAdaptable)object).getAdapter(IResource.class);
                 if (resource != null) {
-                    if (resource.getType() == IResource.FILE) {
-                        files.add((IFile) resource);
-                    }
+                    addFiles(files, resource);
                 }
             }
         }
         searchAndLaunch(files, mode);
+    }
+
+    public void addFiles(List<IFile> files, IResource resource) {
+        switch (resource.getType()) {
+            case IResource.FILE:
+                IFile file = (IFile) resource;
+                IPath path = file.getFullPath(); //getProjectRelativePath();
+                if (path!=null && CeylonBuilder.LANGUAGE.hasExtension(path.getFileExtension())) {
+                    files.add(file);
+                }
+                break;
+            case IResource.FOLDER:
+            case IResource.PROJECT:
+                IContainer folder = (IContainer) resource;
+                try {
+                    for (IResource child: folder.members()) {
+                        addFiles(files, child);
+                    }
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
     }
 
     @Override
@@ -95,28 +119,30 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             IProject project = file.getProject();
             TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
-            List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
-            for (Declaration d : declarations) {
-                boolean candidateDeclaration = true;
-                if (! d.isToplevel() || ! d.isShared()) {
-                    candidateDeclaration = false;
-                }
-                if (d instanceof Method) {
-                    Method methodDecl = (Method) d;
-                    if (!methodDecl.getParameterLists().isEmpty() && 
-                            !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
+            if (phasedUnit!=null) {
+                List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
+                for (Declaration d : declarations) {
+                    boolean candidateDeclaration = true;
+                    if (! d.isToplevel() || ! d.isShared()) {
                         candidateDeclaration = false;
                     }
-                }
-                if (d instanceof Class) {
-                    Class classDecl = (Class) d;
-                    if (!classDecl.getParameterList().getParameters().isEmpty()) {
-                        candidateDeclaration = false;
+                    if (d instanceof Method) {
+                        Method methodDecl = (Method) d;
+                        if (!methodDecl.getParameterLists().isEmpty() && 
+                                !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
+                            candidateDeclaration = false;
+                        }
                     }
-                }
-                if (candidateDeclaration) {
-                    topLevelDeclarations.add(d);
-                    correspondingfiles.add(file);
+                    if (d instanceof Class) {
+                        Class classDecl = (Class) d;
+                        if (!classDecl.getParameterList().getParameters().isEmpty()) {
+                            candidateDeclaration = false;
+                        }
+                    }
+                    if (candidateDeclaration) {
+                        topLevelDeclarations.add(d);
+                        correspondingfiles.add(file);
+                    }
                 }
             }
         }
