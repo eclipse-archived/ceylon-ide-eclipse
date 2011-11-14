@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.debug.ui.launchConfigurations;
 
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getStyledDescriptionFor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,31 +26,34 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
-import org.eclipse.jdt.internal.debug.ui.launcher.DebugTypeSelectionDialog;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
-import org.eclipse.ui.dialogs.SelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
+import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.launching.ICeylonLaunchConfigurationConstants;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
@@ -122,7 +128,9 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         } 
         else if (topLevelDeclarations.size() > 1) {
             declarationToRun = chooseDeclaration(topLevelDeclarations);
-            fileToRun = correspondingfiles.get(topLevelDeclarations.indexOf(declarationToRun));
+            if (declarationToRun!=null) {
+                fileToRun = correspondingfiles.get(topLevelDeclarations.indexOf(declarationToRun));
+            }
         } 
         else {
             declarationToRun = topLevelDeclarations.get(0);
@@ -138,10 +146,12 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(CeylonBuilder.getShell())
         {
             {
-                setInitialPattern("**");
                 setTitle("Ceylon Launcher");
-                setMessage("Please select the top-level method or class you want to launch");
+                setMessage("Select the toplevel method or class to launch:");
+                setListLabelProvider(new LabelProvider());
+                setDetailsLabelProvider(new LabelProvider());
             }
+            
             @Override
             protected Control createExtendedContentArea(Composite parent) {
                 return null;
@@ -165,14 +175,18 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             @Override
             protected ItemsFilter createFilter() {
                 return new ItemsFilter() {
-                    public boolean isConsistentItem(Object item) {
-                        return item instanceof Declaration;
-                    }
+                    @Override
                     public boolean matchItem(Object item) {
-                        if(!(item instanceof Declaration) || !declarations.contains(item)) {
-                            return false;
-                        }
-                        return matches(((Declaration)item).getName());
+                        return matchesRawNamePattern(item);
+                    }
+                    @Override
+                    public boolean isConsistentItem(Object item) {
+                        return true;
+                    }
+                    @Override
+                    public String getPattern() {
+                        String pattern = super.getPattern(); 
+                        return pattern.isEmpty() ? "**" : pattern;
                     }
                 };
             }
@@ -195,7 +209,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     AbstractContentProvider contentProvider,
                     ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
                     throws CoreException {
-                if(declarations != null && declarations.size() > 0) {
+                if(declarations != null) {
                     for(Declaration d : declarations) {
                         if(itemsFilter.isConsistentItem(d)) {
                             contentProvider.add(d, itemsFilter);
@@ -206,12 +220,10 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
             @Override
             public String getElementName(Object item) {
-                // TODO Auto-generated method stub
-                return null;
+                return ((Declaration) item).getName();
             }
             
         };
-        
         
         if (sd.open() == Window.OK) {
             return (Declaration)sd.getResult()[0];
@@ -219,6 +231,60 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return null;
     }
 
+    class LabelProvider extends StyledCellLabelProvider 
+            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public Image getImage(Object element) {
+            Declaration d = (Declaration) element;
+            return d==null ? null : CeylonLabelProvider.getImage(d);
+        }
+        
+        @Override
+        public String getText(Object element) {
+            Declaration d = (Declaration) element;
+            return d==null ? null : getDescriptionFor(d);
+        }
+        
+        @Override
+        public StyledString getStyledText(Object element) {
+            if (element==null) {
+                return new StyledString();
+            }
+            else {
+                Declaration d = (Declaration) element;
+                return getStyledDescriptionFor(d);
+            }
+        }
+        
+        @Override
+        public void update(ViewerCell cell) {
+            Object element = cell.getElement();
+            if (element!=null) {
+                StyledString styledText = getStyledText(element);
+                cell.setText(styledText.toString());
+                cell.setStyleRanges(styledText.getStyleRanges());
+                cell.setImage(getImage(element));
+                super.update(cell);
+            }
+        }
+    
+    }
+    
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
         if (config == null) {
