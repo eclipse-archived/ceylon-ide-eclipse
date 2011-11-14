@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.debug.ui.launchConfigurations;
 
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getStyledDescriptionFor;
 
@@ -32,6 +33,7 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -55,6 +57,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
+import com.redhat.ceylon.eclipse.imp.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.launching.ICeylonLaunchConfigurationConstants;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -175,7 +178,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 setTitle("Ceylon Launcher");
                 setMessage("Select the toplevel method or class to launch:");
                 setListLabelProvider(new LabelProvider());
-                setDetailsLabelProvider(new LabelProvider());
+                setDetailsLabelProvider(new DetailsLabelProvider());
+                setListSelectionLabelDecorator(new SelectionLabelDecorator());
             }
             
             @Override
@@ -311,6 +315,58 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     
     }
     
+    class DetailsLabelProvider implements ILabelProvider {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String getText(Object element) {
+            return getPackageLabel((Declaration) element);
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            return CeylonLabelProvider.PACKAGE;
+        }
+    }
+    
+    class SelectionLabelDecorator implements ILabelDecorator {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String decorateText(String text, Object element) {
+            return text + " - " + getPackageLabel((Declaration) element);
+        }
+        
+        @Override
+        public Image decorateImage(Image image, Object element) {
+            return null;
+        }
+    }
+
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
         if (config == null) {
