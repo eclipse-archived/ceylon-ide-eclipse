@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -445,7 +447,26 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         ILaunchConfigurationWorkingCopy wc = null;
         try {
             ILaunchConfigurationType configType = getConfigurationType();
-            wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(declarationToRun.getQualifiedNameString()));
+            String configurationName = "";
+            if (declarationToRun instanceof Class) {
+                configurationName += "class ";
+            }
+            else {
+                if (declarationToRun instanceof Method) {
+                    Method method = (Method) declarationToRun;
+                    if (method.getTypeDeclaration().getName().equals("Void")) {
+                        configurationName += "void ";
+                    }
+                    else {
+                        configurationName += "function ";
+                    }
+                }
+            }
+            configurationName += declarationToRun.getName() + "() - ";
+            String packageName = declarationToRun.getContainer().getQualifiedNameString();
+            configurationName += packageName.isEmpty() ? "default package" : packageName;
+            
+            wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
             wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, declarationToRun.getQualifiedNameString());
             wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
             wc.setMappedResources(new IResource[] {file});
