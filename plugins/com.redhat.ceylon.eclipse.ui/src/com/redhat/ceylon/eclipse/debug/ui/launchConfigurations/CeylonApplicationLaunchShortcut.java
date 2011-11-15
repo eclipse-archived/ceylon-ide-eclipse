@@ -126,7 +126,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
                 for (Declaration d : declarations) {
                     boolean candidateDeclaration = true;
-                    if (! d.isToplevel() || ! d.isShared()) {
+                    if (! d.isToplevel()) {
                         candidateDeclaration = false;
                     }
                     if (d instanceof Method) {
