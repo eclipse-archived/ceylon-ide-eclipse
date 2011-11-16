@@ -81,7 +81,90 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         layout.numColumns = 4;
         composite.setLayout(layout);
         
-        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        Text name = createNameField(composite);
+        createSeparator(composite);
+        createFolderAndPackageFields(composite);
+        name.forceFocus();
+        
+        setControl(composite);
+
+        Dialog.applyDialogFont(composite);
+    }
+
+	private void createSeparator(Composite composite) {
+		Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sgd.horizontalSpan = 4;
+        sep.setLayoutData(sgd);
+	}
+
+	private Text createNameField(Composite composite) {
+		Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        nameLabel.setText("Compilation unit name: ");
+        GridData lgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        lgd.horizontalSpan = 1;
+        nameLabel.setLayoutData(lgd);
+
+        final Text name = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        GridData ngd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        ngd.horizontalSpan = 2;
+        ngd.grabExcessHorizontalSpace = true;
+        name.setLayoutData(ngd);
+        name.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                unitName = name.getText();
+                setPageComplete(isComplete());
+            }
+        });
+        
+        new Label(composite, SWT.NONE);        
+        new Label(composite, SWT.NONE);
+        
+        Button includeHeader = new Button(composite, SWT.CHECK);
+        includeHeader.setText("Include preamble in 'header.ceylon' in project root");
+        includeHeader.setSelection(includePreamble);
+        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        igd.horizontalSpan = 3;
+        igd.grabExcessHorizontalSpace = true;
+        includeHeader.setLayoutData(igd);
+        includeHeader.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                includePreamble = !includePreamble;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        new Label(composite, SWT.NONE);
+
+        Link link = new Link(composite, SWT.NONE);
+        link.setText("<a>(Edit 'header.ceylon')</a>");
+        link.addSelectionListener(new SelectionListener() {            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (sourceDir==null) {
+                    MessageDialog.openWarning(getShell(), "No Source Folder", 
+                            "Please select a source folder");
+                }
+                else {
+                    EditDialog d = new EditDialog(getShell());
+                    d.setText(readHeader());
+                    if (d.open()==Status.OK) {
+                        saveHeader(d.getText());
+                    }
+                }
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+		return name;
+	}
+
+	private void createFolderAndPackageFields(Composite composite) {
+		Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Source folder: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 1;
@@ -193,80 +276,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        
-        Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sgd.horizontalSpan = 4;
-        sep.setLayoutData(sgd);
-        
-        Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        nameLabel.setText("Compilation unit name: ");
-        GridData lgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        lgd.horizontalSpan = 1;
-        nameLabel.setLayoutData(lgd);
-
-        final Text name = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        GridData ngd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        ngd.horizontalSpan = 2;
-        ngd.grabExcessHorizontalSpace = true;
-        name.setLayoutData(ngd);
-        name.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                unitName = name.getText();
-                setPageComplete(isComplete());
-            }
-        });
-        
-        new Label(composite, SWT.NONE);        
-        new Label(composite, SWT.NONE);
-        
-        Button includeHeader = new Button(composite, SWT.CHECK);
-        includeHeader.setText("Include preamble in 'header.ceylon' in project root");
-        includeHeader.setSelection(includePreamble);
-        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        igd.horizontalSpan = 3;
-        igd.grabExcessHorizontalSpace = true;
-        includeHeader.setLayoutData(igd);
-        includeHeader.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                includePreamble = !includePreamble;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
-        
-        new Label(composite, SWT.NONE);
-
-        Link link = new Link(composite, SWT.NONE);
-        link.setText("<a>(Edit 'header.ceylon')</a>");
-        link.addSelectionListener(new SelectionListener() {            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (sourceDir==null) {
-                    MessageDialog.openWarning(getShell(), "No Source Folder", 
-                            "Please select a source folder");
-                }
-                else {
-                    EditDialog d = new EditDialog(getShell());
-                    d.setText(readHeader());
-                    if (d.open()==Status.OK) {
-                        saveHeader(d.getText());
-                    }
-                }
-            }
-            
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
-        
-        name.forceFocus();
-        
-        setControl(composite);
-
-        Dialog.applyDialogFont(composite);
-    }
+	}
 
     public void initFromSelection() {
         IJavaElement je = getSelectedElement();
