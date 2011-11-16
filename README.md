@@ -54,3 +54,10 @@
 2. `site/target/site` now contains an update site you can install from.
    (Need to have IMP update site added too)
 
+## License
+
+The content of this repository is released under the EPL v1.0
+as provided in the LICENSE file that accompanied this code.
+
+By submitting a "pull request" or otherwise contributing to this repository, you
+agree to license your contribution under the license mentioned above.
