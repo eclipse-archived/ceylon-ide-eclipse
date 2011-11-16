@@ -135,7 +135,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
 
     public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
             Declaration dec) {
-        if (dec==null) {
+        if (cpc==null || dec==null) {
             return null;
         }
         else {
