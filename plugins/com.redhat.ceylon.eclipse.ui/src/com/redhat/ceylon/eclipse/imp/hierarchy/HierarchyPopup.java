@@ -296,10 +296,12 @@ public class HierarchyPopup extends PopupDialog {
     }
 
     protected void gotoSelectedElement(IStructuredSelection selection) {
-        Object object = selection.getFirstElement();
-        Declaration dec = (Declaration) object;
-        gotoNode(getReferencedNode(dec, getCompilationUnit(editor.getParseController(), dec)), 
-                editor.getParseController().getTypeChecker());
+    	if (editor.getParseController()!=null) {
+	        Object object = selection.getFirstElement();
+	        Declaration dec = (Declaration) object;
+	        gotoNode(getReferencedNode(dec, getCompilationUnit(editor.getParseController(), dec)), 
+	                editor.getParseController().getTypeChecker());
+    	}
         close();
     }
     
