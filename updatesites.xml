@@ -1,9 +1,6 @@
 <bookmarks>
-  <site url="http://xam.dk/ceylon"
+  <site url="http://ceylon-lang.org/eclipse/updatesite/"
 	selected="true" name="Ceylon Update Site" />
-  <site url="http://xam.dk/imp/updates"
-	selected="true"
-	name="Mirror of IMP w/p2 metadata"/>
   <site url="http://download.eclipse.org/releases/indigo"
 	selected="true"
 	name="Eclipse 3.7 (Indigo)"/>
