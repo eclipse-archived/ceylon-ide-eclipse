@@ -1,6 +1,6 @@
 # Eclipse plugin for Ceylon
 
-## Installing from xam.dk
+## Installing from http://ceylon-lang.org/eclipse/updatesite/
 
 1. Start with a clean install of Eclipse Indigo.
 
@@ -9,7 +9,7 @@
 2. Use `Help > Install New Software ... > Available Software Sites > Import`
    Select `updatesites.xml`
 
-3. Close the dialog and now choose xam.dk updatesite and install the 
+3. Close the dialog and now choose ceylon-lang.org updatesite and install the 
    plugin.
 
 4. Restart and your Eclipse should now syntax highlight Ceylon files.
