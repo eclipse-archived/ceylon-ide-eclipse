@@ -123,12 +123,13 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         for (IFile file : files) {
             IProject project = file.getProject();
             TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
+            PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
+            		.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
             if (phasedUnit!=null) {
                 List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
                 for (Declaration d : declarations) {
                     boolean candidateDeclaration = true;
-                    if (! d.isToplevel()) {
+                    if (!d.isToplevel()) {
                         candidateDeclaration = false;
                     }
                     if (d instanceof Method) {
@@ -138,11 +139,15 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                             candidateDeclaration = false;
                         }
                     }
-                    if (d instanceof Class) {
+                    else if (d instanceof Class) {
                         Class classDecl = (Class) d;
-                        if (!classDecl.getParameterList().getParameters().isEmpty()) {
+                        if (classDecl.getParameterList()==null || 
+                        		!classDecl.getParameterList().getParameters().isEmpty()) {
                             candidateDeclaration = false;
                         }
+                    }
+                    else {
+                    	candidateDeclaration = false;
                     }
                     if (candidateDeclaration) {
                         topLevelDeclarations.add(d);
