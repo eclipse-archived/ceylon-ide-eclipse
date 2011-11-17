@@ -36,7 +36,6 @@ import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -44,11 +43,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -56,9 +56,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
 
 public class CeylonPlugin extends PluginBase {
@@ -84,17 +82,8 @@ public class CeylonPlugin extends PluginBase {
 	@Override
 	public void start(BundleContext context) throws Exception {
 	    super.start(context);
-        final IWorkbench workbench = PlatformUI.getWorkbench();
-        workbench.getDisplay().asyncExec(new Runnable() {
-           public void run() {
-             IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-             if (window != null) {
-                 //setIconForOpenWindows(window);
-                 setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
-                 runInitialBuild();
-             }
-           }
-        });
+        setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
+        runInitialBuild();
 	}
 
 	@Override
@@ -151,27 +140,21 @@ public class CeylonPlugin extends PluginBase {
 	 * to build the model.
 	 */
     private void runInitialBuild() {
-        try {
-            PlatformUI.getWorkbench().getProgressService()
-             .busyCursorWhile(new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) 
-                        throws InvocationTargetException, InterruptedException {
-                   try {
-                       ResourcesPlugin.getWorkspace().build(FULL_BUILD, monitor);
-                   }
-                   catch (CoreException ce) {
-                       throw new InvocationTargetException(ce);
-                   }
+        UIJob buildJob = new UIJob("Workspace build for Ceylon") {
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                try {
+                    ResourcesPlugin.getWorkspace().build(FULL_BUILD, null);
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-             });
-        }
-        catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+                return Status.OK_STATUS;
+            }
+            
+        };
+        buildJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
+        buildJob.schedule();
     }
 
 	/**
