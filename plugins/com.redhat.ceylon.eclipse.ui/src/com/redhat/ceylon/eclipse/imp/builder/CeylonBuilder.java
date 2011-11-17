@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.imp.builder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +18,9 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -60,13 +61,15 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-
 import com.redhat.ceylon.compiler.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleBuilder;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -143,11 +146,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (resource instanceof IFile) {
             IFile file= (IFile) resource;
 
-            if (file.exists()) {
-                if (isSourceFile(file) || isNonRootSourceFile(file)) {
-                    fChangedSources.add(file);
-                }
+            if (isSourceFile(file) || isNonRootSourceFile(file)) {
+                fChangedSources.add(file);
             }
+            
             return false;
         } else if (isOutputFolder(resource)) {
             return false;
@@ -298,7 +300,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * @return true iff this resource identifies the output folder
      */
     protected boolean isOutputFolder(IResource resource) {
-        return resource.getFullPath().toString().endsWith("build/ceylon");
+        IProject project = resource.getProject();
+        IJavaProject javaProject = JavaCore.create(resource.getProject());
+        if (javaProject.exists()) {
+            IPath outputDirectory = null;
+            try {
+                outputDirectory = javaProject.getOutputLocation().makeRelativeTo(project.getFullPath());
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                return false;
+            }
+            if (outputDirectory != null) {
+                return resource.getProjectRelativePath().equals(outputDirectory);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -306,6 +322,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (getPreferencesService().getProject() == null) {
             getPreferencesService().setProject(getProject());
         }
+        
+        boolean emitDiags= getDiagPreference();
 
         fChangedSources.clear();
         fSourcesToCompile.clear();
@@ -320,8 +338,62 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         TypeChecker typeChecker = typeCheckers.get(project);
 
+        final class BooleanHolder {
+            public boolean value;
+        };
+        final BooleanHolder mustDoFullBuild = new BooleanHolder();
+        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
+        
+        IResourceDelta delta = null;
+        if (! mustDoFullBuild.value) {
+            delta = getDelta(getProject());
+            if (delta != null) {
+                try {
+                    delta.accept(new IResourceDeltaVisitor() {
+                        @Override
+                        public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+                            IResource resource = resourceDelta.getResource();
+                            if (resourceDelta.getKind() == IResourceDelta.REMOVED && resource instanceof IFolder) {
+                                IFolder folder = (IFolder) resource; 
+                                Package pkg = retrievePackage(folder);
+                                // If a package has been removed, then trigger a full build
+                                if (pkg != null) {
+                                    mustDoFullBuild.value = true;
+                                    return false;
+                                }
+                            }
+                            if (resource instanceof IFile && resource.getName().equals(ModuleBuilder.MODULE_FILE)) {
+                                // If a module descriptor has been added, removed or changed, trigger a full build
+                                mustDoFullBuild.value = true;
+                                return false;
+                            }
+                            return true;
+                        }
+                    });
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                    mustDoFullBuild.value = true;
+                }
+            }
+        }
+
         List<PhasedUnit> builtPhasedUnits = null;
-        if (kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null) {
+        if (mustDoFullBuild.value) {
+            IJavaProject javaProject = JavaCore.create(project);
+            if (javaProject.exists()) {
+                List<File> carFiles = retrieveCarFiles(javaProject);
+                for (File file : carFiles) {
+                    file.delete();
+                    File parentDir = file.getParentFile();
+                    String name = file.getName();
+                    String nameWithoutExtension = name.replaceAll("....$", "");
+                    new File(parentDir, name + ".sha1").delete();
+                    new File(parentDir, nameWithoutExtension + ".src").delete();
+                    new File(parentDir, nameWithoutExtension + ".src.sha1").delete();
+                }
+                
+            }
+            
             try {
                 getProject().accept(new AllSourcesVisitor(allSources));
             } catch (CoreException e) {
@@ -336,9 +408,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         else
         {
             try {
-                IResourceDelta delta= getDelta(getProject());
-                boolean emitDiags= getDiagPreference();
-
                 if (delta != null) {
                     if (emitDiags)
                         getConsoleStream().println("==> Scanning resource delta for project '" + getProject().getName() + "'... <==");
@@ -380,12 +449,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         changed = changeDependents.addAll(additions);
                     } while (changed);
 
+                    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
+                    
                     for(IFile f: changeDependents) {
                         if (isSourceFile(f)) {
-                            fSourcesToCompile.add(f);
+                            if (f.exists()) {
+                                fSourcesToCompile.add(f);
+                            }
+                            else {
+                                if (delta != null) {
+                                    IResourceDelta removedFile = delta.findMember(f.getProjectRelativePath());
+                                    if (removedFile != null && 
+                                            (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
+                                            removedFile.getMovedToPath() != null) {
+                                        fSourcesToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
+                                    }
+                                }
+                                    
+                                // If the file is moved : add a dependency on the new file
+                                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
+                                if (phasedUnitToDelete != null) {
+                                    phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+                                }
+                            }
                         }
                     }
-                    for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits()) {
+
+                    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                         if (phasedUnit.getUnit().getUnresolvedReferences().size() > 0) {
                             fSourcesToCompile.add((IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource());
                         }
@@ -478,34 +568,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 pkg = alreadyBuiltPhasedUnit.getPackage();
             }
             else {
-                // Editing a new file
-                // Retrieve the target package from the file src-relative path
-                //TODO: this is very fragile!
-                String packageName = file.getPath().replaceFirst(srcDir.getPath() + "/", "")
-                        .replace("/" + file.getName(), "").replace('/', '.');
-                Modules modules = typeChecker.getContext().getModules();
-                for (Module module : modules.getListOfModules()) {
-                    for (Package p : module.getPackages()) {
-                        if (p.getQualifiedNameString().equals(packageName)) {
-                            pkg = p;
-                            break;
-                        }
-                        if (pkg != null)
-                            break;
-                    }
-                }
+                IContainer packageFolder = file.getResource().getParent();
+                pkg = retrievePackage(packageFolder);
                 if (pkg == null) {
-                    // Add the default package
-                    pkg = modules.getDefaultModule().getPackages().get(0);
-
-                    // TODO : iterate through parents to get the sub-package 
-                    // in which the package has been created, until we find the module
-                    // Then the package can be created.
-                    // However this should preferably be done on notification of the 
-                    // resource creation
-                    // A more global/systematic integration between the model element 
-                    // (modules, packages, Units) and the IResourceModel should
-                    // maybe be considered. But for now it is not required.
+                    pkg = createNewPackage(packageFolder);
                 }
             }
 
@@ -965,6 +1031,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (!LANGUAGE.hasExtension(path.getFileExtension()))
             return null;
 
+        return retrieveSourceFolder(path);
+    }
+
+    private IPath retrieveSourceFolder(IFolder folder)
+    {
+        IPath path = folder.getProjectRelativePath();
+        if (path == null)
+            return null;
+        
+        return retrieveSourceFolder(path);
+    }
+
+    private IPath retrieveSourceFolder(IPath path) {
         ISourceProject sourceProject = getSourceProject();
         if (sourceProject != null) {
             Collection<IPath> sourceFolders = retrieveSourceFolders(sourceProject);
@@ -977,4 +1056,107 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
+    private Package retrievePackage(IResource folder) {
+        IPath folderPath = folder.getProjectRelativePath();
+        IPath sourceFolder = retrieveSourceFolder(folderPath);
+        if (sourceFolder == null) {
+            return null;
+        }
+        IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
+        String packageName = relativeFolderPath.toString().replace('/', '.');
+        TypeChecker typeChecker = typeCheckers.get(folder.getProject());
+        Context context = typeChecker.getContext();
+        Modules modules = context.getModules();
+        for (Module module : modules.getListOfModules()) {
+            for (Package p : module.getPackages()) {
+                if (p.getQualifiedNameString().equals(packageName)) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private Package createNewPackage(IContainer folder) {
+        IPath folderPath = folder.getProjectRelativePath();
+        IPath sourceFolder = retrieveSourceFolder(folderPath);
+        if (sourceFolder == null) {
+            return null;
+        }
+        
+        IContainer parent = folder.getParent();
+        IPath packageRelativePath = folder.getProjectRelativePath().makeRelativeTo(parent.getProjectRelativePath());
+        Package parentPackage = null;
+        while (parentPackage == null && ! parent.equals(folder.getProject())) {
+            packageRelativePath = folder.getProjectRelativePath().makeRelativeTo(parent.getProjectRelativePath());
+            parentPackage = retrievePackage(parent);
+            parent = parent.getParent();
+        }
+        
+        Context context = typeCheckers.get(folder.getProject()).getContext();
+        return createPackage(parentPackage, packageRelativePath, context.getModules());
+    }
+    
+    private Package createPackage(Package parentPackage, IPath packageRelativePath, Modules modules) {
+        String[] packageSegments = packageRelativePath.segments();
+        if (packageSegments.length == 1) {
+            Package pkg = new Package();
+            List<String> parentName = null;
+            if (parentPackage == null) {
+                parentName = Collections.emptyList();
+            }
+            else {
+                parentName = parentPackage.getName();
+            }
+            final ArrayList<String> name = new ArrayList<String>(parentName.size() + 1);
+            name.addAll(parentName);
+            name.add(packageRelativePath.segment(0));
+            pkg.setName(name);
+            Module module = null;
+            if (parentPackage != null) {
+                module = parentPackage.getModule();
+            }
+            
+            if (module == null) {
+                module = modules.getDefaultModule();
+            }
+            
+            module.getPackages().add(pkg);
+            pkg.setModule(module);
+            return pkg;
+        }
+        else {
+            Package childPackage = createPackage(parentPackage, packageRelativePath.uptoSegment(1), modules);
+            return createPackage(childPackage, packageRelativePath.removeFirstSegments(1), modules);
+        }
+    }
+    
+    public static List<File> retrieveCarFiles(IJavaProject javaProject) {
+        final List<File> carFiles = new ArrayList<File>();
+        IProject project = javaProject.getProject();
+        if (javaProject.exists()) {
+            File outputDirectory;
+            try {
+                outputDirectory = project.getFolder(javaProject.getOutputLocation().makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
+                class CarFileListFiller {
+                    void fillCarFilesList(File path) {
+                        if (path.isDirectory()) {
+                            for (File f : path.listFiles()) {
+                                fillCarFilesList(f);
+                            }
+                        }
+                        else if (path.isFile() && 
+                                (path.getName().endsWith(".car") || path.getName().endsWith(".jar"))) {
+                            carFiles.add(path.getAbsoluteFile());
+                        }
+                    }
+                };
+                new CarFileListFiller().fillCarFilesList(outputDirectory);
+            } catch (JavaModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return carFiles;
+    }
 }
