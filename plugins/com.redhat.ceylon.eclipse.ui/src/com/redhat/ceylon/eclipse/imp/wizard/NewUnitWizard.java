@@ -4,8 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -66,7 +70,19 @@ public class NewUnitWizard extends Wizard implements INewWizard {
             IProject project = page.getSourceDir().getJavaProject().getProject();
             InputStream his = getHeader(project);
             result = project.getFile(path.makeRelativeTo(project.getFullPath()));
+
+            List<IFolder> resourcesToCreate = new LinkedList<IFolder>();
+            IContainer parent = result.getParent();
+            while (!parent.exists() && (parent instanceof IFolder)) {
+                resourcesToCreate.add((IFolder)parent);
+                parent = parent.getParent();
+            }
+            Collections.reverse(resourcesToCreate);
+            
             try {
+                for (IFolder toCreate : resourcesToCreate) {
+                    toCreate.create(false, false, monitor);
+                }
                 result.create(his, false, monitor);
             }
             catch (CoreException ce) {
@@ -92,6 +108,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                 catch (CoreException e) {
                     e.printStackTrace();
                 }
+                
             }
             return his;
         }
