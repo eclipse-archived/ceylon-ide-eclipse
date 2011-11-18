@@ -153,7 +153,6 @@ public class CeylonPlugin extends PluginBase {
             }
             
         };
-        buildJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
         buildJob.schedule();
     }
 
