@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARAT
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CORRECTION_INDICATION;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS;
@@ -37,7 +36,11 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -47,6 +50,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.imp.model.ISourceProject;
+import org.eclipse.imp.model.ModelFactory;
+import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -56,8 +63,10 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
+
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
 public class CeylonPlugin extends PluginBase {
 
@@ -140,12 +149,28 @@ public class CeylonPlugin extends PluginBase {
 	 * to build the model.
 	 */
     private void runInitialBuild() {
-        UIJob buildJob = new UIJob("Workspace build for Ceylon") {
+        final IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+        Job buildJob = new Job("Building Ceylon Model") {
             @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
+            public IStatus run(IProgressMonitor monitor) {
                 try {
-                    ResourcesPlugin.getWorkspace().build(FULL_BUILD, null);
+                    List<IProject> interestingProjects = new ArrayList<IProject>();
+                    for (IProject project : workspaceRoot.getProjects()) {
+                        if (project.isOpen() && project.hasNature(CeylonNature.NATURE_ID)) {
+                            interestingProjects.add(project);
+                        }
+                    }
+                    
+                    monitor.beginTask("Building Ceylon Model", 3 * interestingProjects.size());
+
+                    for (IProject project : interestingProjects) {
+                        ISourceProject sourceProject = ModelFactory.open(project);
+                        CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
+                    }
                 } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (ModelException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -153,6 +178,7 @@ public class CeylonPlugin extends PluginBase {
             }
             
         };
+        buildJob.setRule(workspaceRoot);
         buildJob.schedule();
     }
 
