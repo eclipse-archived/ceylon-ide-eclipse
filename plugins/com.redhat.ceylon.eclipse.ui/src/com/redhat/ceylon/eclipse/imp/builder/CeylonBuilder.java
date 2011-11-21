@@ -608,6 +608,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         System.out.println("Starting full build");
 
         monitor.beginTask("Full Ceylon Build", 4);
+        TypeChecker typeChecker = buildCeylonModel(project, sourceProject,
+                monitor);
+
+        monitor.worked(1);
+        monitor.subTask("Collecting Ceylon problems for project " 
+                    + project.getName());
+
+        System.out.println("Finished full build");
+        return typeChecker.getPhasedUnits().getPhasedUnits();
+    }
+
+    public static TypeChecker buildCeylonModel(IProject project,
+            ISourceProject sourceProject, IProgressMonitor monitor) {
         monitor.subTask("Collecting Ceylon source files for project " 
                     + project.getName());
 
@@ -633,14 +646,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         // Parsing of ALL units in the source folder should have been done
         typeChecker.process();
 
-        monitor.worked(1);
-        monitor.subTask("Collecting Ceylon problems for project " 
-                    + project.getName());
-
         typeCheckers.put(project, typeChecker);
-
-        System.out.println("Finished full build");
-        return typeChecker.getPhasedUnits().getPhasedUnits();
+        return typeChecker;
     }
 
     private static String languageVersion = "0.1";
