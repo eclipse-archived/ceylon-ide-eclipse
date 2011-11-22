@@ -112,6 +112,7 @@ public class CeylonContentProposer implements IContentProposer {
     public ICompletionProposal[] getContentProposals(IParseController controller,
             final int offset, ITextViewer viewer) {
         CeylonParseController cpc = (CeylonParseController) controller;
+        if (cpc.getTokenStream()==null) return null;
         
         //BEGIN HUGE BUG WORKAROUND
         //What is going on here is that when I have a list of proposals open
