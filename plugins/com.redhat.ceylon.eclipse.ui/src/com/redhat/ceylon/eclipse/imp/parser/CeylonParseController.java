@@ -242,8 +242,9 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleBuilder(), 
                     typeChecker.getContext(), tokenStream);  
-
+            
             phasedUnit.validateTree();
+            phasedUnit.buildModuleImport();
             phasedUnit.scanDeclarations();
             phasedUnit.scanTypeDeclarations();
             phasedUnit.validateRefinement();
