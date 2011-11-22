@@ -259,9 +259,11 @@ public class CeylonContentProposer implements IContentProposer {
       if (tc!=null) {
         for (Module m: tc.getContext().getModules().getListOfModules()) {*/
         //Set<Package> packages = new HashSet<Package>();
-        for (Package p: node.getUnit().getPackage().getModule().getAllPackages()) {
+        Module module = node.getUnit().getPackage().getModule();
+		for (Package p: module.getAllPackages()) {
             //if (!packages.contains(p)) {
                 //packages.add(p);
+        	//if ( p.getModule().equals(module) || p.isShared() ) {
                 String pkg = p.getQualifiedNameString();
                 if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
                     boolean already = false;
