@@ -15,8 +15,12 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.IJobStatus;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
@@ -85,9 +89,40 @@ public class CeylonParseController extends ParseControllerBase {
         return simpleAnnotationTypeInfo;
     }
     
+    private Job retryJob = null;
+    
+    private synchronized void rescheduleJobIfNecessary() {
+        final Job parsingJob = Job.getJobManager().currentJob();
+        if (parsingJob != null && parsingJob instanceof ParserScheduler) {
+//            System.out.println("Start Rescheduling Parsing for " + getPath());
+            if (retryJob == null) {
+                retryJob = new Job("Retry Parsing for " + getPath()) {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        ISourceProject sourceProject = getProject();
+                        final IProject project = sourceProject.getRawProject();
+                        
+                        if (CeylonBuilder.getProjectTypeChecker(project) != null) {
+//                            System.out.println("parsingJob.schedule() for " + getPath());
+                            parsingJob.schedule();
+                        }
+                        else {
+//                            System.out.println("retryJob.schedule(1000) for " + getPath());
+                            retryJob.schedule(1000);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                retryJob.setRule(null);
+            }
+//            System.out.println("retryJob.schedule(1000) for " + getPath());
+            retryJob.schedule(1000);
+        }
+    }
+    
     public Object parse(String contents, IProgressMonitor monitor) {
         
-        IJobManager manager = Job.getJobManager();
+        final IJobManager jobManager = Job.getJobManager();
         
         IPath path = getPath();
         ISourceProject sourceProject = getProject();
@@ -107,7 +142,18 @@ public class CeylonParseController extends ParseControllerBase {
             return fCurrentAst;
         }
        
-       
+        VirtualFile srcDir = null;
+        if (sourceProject!=null) {
+            final IProject project = sourceProject.getRawProject();
+            srcDir = getSourceFolder(sourceProject, resolvedPath);
+            
+            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+            if (typeChecker == null) {
+                rescheduleJobIfNecessary();
+                return fCurrentAst;
+            }
+        }
+        
            
         //System.out.println("Compiling " + file.getPath());
         
@@ -153,24 +199,8 @@ public class CeylonParseController extends ParseControllerBase {
         
         if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
-        VirtualFile srcDir = null;
-        
-        if (sourceProject!=null) {
-            IProject project = sourceProject.getRawProject();
-            srcDir = getSourceFolder(sourceProject, resolvedPath);
-            
-            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            if (typeChecker == null) {
-                Job currentJob = manager.currentJob();
-                if (currentJob != null) {
-                    currentJob.schedule(1000);
-                    return fCurrentAst;
-                }
-            }
-        }
-        
         if (srcDir==null || typeChecker == null) {
-            typeChecker = new TypeCheckerBuilder().verbose(true).getTypeChecker();
+            typeChecker = new TypeCheckerBuilder().verbose(false).getTypeChecker();
             typeChecker.process();
         }
         
