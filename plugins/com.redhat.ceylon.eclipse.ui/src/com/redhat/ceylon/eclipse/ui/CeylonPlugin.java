@@ -35,6 +35,13 @@ import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +70,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -92,6 +100,7 @@ public class CeylonPlugin extends PluginBase {
 	public void start(BundleContext context) throws Exception {
 	    super.start(context);
         setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
+        copyDefaultRepoIfNecessary();
         runInitialBuild();
 	}
 
@@ -181,7 +190,63 @@ public class CeylonPlugin extends PluginBase {
         buildJob.setRule(workspaceRoot);
         buildJob.schedule();
     }
+    
 
+    private void copyDefaultRepoIfNecessary() {
+        File home = new File( System.getProperty("user.home") );
+        File ceylon = new File( home, ".ceylon" );
+        File repo = new File( ceylon, "repo" );
+        repo.mkdirs();
+        if (repo.list().length == 0) {
+            try {
+                Bundle bundle = Platform.getBundle(CeylonPlugin.PLUGIN_ID);
+                Path path = new Path("defaultRepository");
+                URL eclipseUrl = FileLocator.find(bundle, path, null);
+                URL fileURL = FileLocator.resolve(eclipseUrl);
+                File internalRepoCopy;
+                internalRepoCopy = new File(fileURL.toURI());
+                if (internalRepoCopy.exists()) {
+                    copyDirectory(internalRepoCopy, repo);
+                }
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void copyDirectory(File sourceLocation , File targetLocation)
+    throws IOException {
+        
+        if (sourceLocation.isDirectory()) {
+            if (!targetLocation.exists()) {
+                targetLocation.mkdir();
+            }
+            
+            String[] children = sourceLocation.list();
+            for (int i=0; i<children.length; i++) {
+                copyDirectory(new File(sourceLocation, children[i]),
+                        new File(targetLocation, children[i]));
+            }
+        } else {
+            
+            InputStream in = new FileInputStream(sourceLocation);
+            OutputStream out = new FileOutputStream(targetLocation);
+            
+            // Copy the bits from instream to outstream
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.close();
+        }
+    }    
+    
 	/**
 	 * Awful little hack to get a nonugly icon on already-open 
 	 * editors at startup time, since IMP doesn't init the
