@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +62,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+
 import com.redhat.ceylon.compiler.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.tools.CeyloncTool;
@@ -84,6 +86,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
+import com.sun.tools.javac.util.Log;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -667,6 +670,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-src");
         options.add(srcPath);
 
+        //options.add("-verbose");
         options.add("-g:lines,vars,source");
 
         IJavaProject javaProject = JavaCore.create(project);
@@ -700,11 +704,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
                 throw e;
             }
-            CeyloncFileManager fileManager = (CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+            
+            com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
+            MessageConsole console = findConsole(getConsoleName());
+            console.clearConsole();
+            context.put(Log.outKey, new PrintWriter(console.newMessageStream(), true));
+            
+            CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
             Iterable<? extends JavaFileObject> compilationUnits1 =
-                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(null, fileManager, null, options, null, compilationUnits1);
-            return task.call().booleanValue();
+                    fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), fileManager, null, options, null, compilationUnits1);
+            boolean success = task.call().booleanValue();
+            if (!success) console.activate();
+			return success;
         }
         else
             return false;
