@@ -225,6 +225,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             dec = qmte.getDeclaration();
         }
+        else if (node instanceof Tree.QualifiedType) {
+            Tree.QualifiedType qmte = (Tree.QualifiedType) node;
+            dec = qmte.getDeclarationModel();
+        }
         else if (node instanceof Tree.ImportMemberOrType) {
             Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
             dec = imt.getDeclarationModel();
