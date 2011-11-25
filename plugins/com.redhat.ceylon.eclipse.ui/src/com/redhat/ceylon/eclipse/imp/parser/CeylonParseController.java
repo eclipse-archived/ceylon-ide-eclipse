@@ -307,7 +307,8 @@ public class CeylonParseController extends ParseControllerBase {
         IWorkspaceRoot wsRoot= ResourcesPlugin.getWorkspace().getRoot();
         // If the path is outside the workspace, or pointing inside the workspace, 
         // but is still file-system-absolute.
-        return path.isAbsolute() && (wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path));
+        return path!=null && path.isAbsolute() && 
+        		(wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path));
     }
     
     private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
