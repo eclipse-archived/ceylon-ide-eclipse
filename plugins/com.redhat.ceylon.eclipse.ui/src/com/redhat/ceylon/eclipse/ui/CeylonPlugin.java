@@ -205,7 +205,8 @@ public class CeylonPlugin extends PluginBase {
                 URL eclipseUrl = FileLocator.find(bundle, path, null);
                 URL fileURL = FileLocator.resolve(eclipseUrl);
                 File internalRepoCopy;
-                URI fileURI = new URI("file", null, fileURL.getPath(), null);
+                String urlPath = fileURL.getPath();
+                URI fileURI = new URI("file", null, urlPath, null);
                 internalRepoCopy = new File(fileURI);
                 if (internalRepoCopy.exists()) {
                     copyDirectory(internalRepoCopy, repo);
