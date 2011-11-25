@@ -365,7 +365,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     return false;
                                 }
                             }
-                            if (resource instanceof IFile && resource.getName().equals(ModuleBuilder.MODULE_FILE)) {
+                            if (resource instanceof IFile && 
+                                    (resource.getName().equals(ModuleBuilder.MODULE_FILE) ||
+                                            resource.getName().equals(ModuleBuilder.PACKAGE_FILE))) {
                                 // If a module descriptor has been added, removed or changed, trigger a full build
                                 mustDoFullBuild.value = true;
                                 return false;
