@@ -669,8 +669,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         options.add("-src");
         options.add(srcPath);
-
-        //options.add("-verbose");
+        
+        if (System.getProperty("ceylon.verbose")!=null) {
+            options.add("-verbose");
+        }
         options.add("-g:lines,vars,source");
 
         IJavaProject javaProject = JavaCore.create(project);
