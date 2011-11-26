@@ -11,8 +11,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -57,9 +55,10 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
-import com.redhat.ceylon.eclipse.imp.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.launching.ICeylonLaunchConfigurationConstants;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -233,9 +232,17 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 Comparator comp = new Comparator() {
                     public int compare(Object o1, Object o2) {
                         if(o1 instanceof Declaration && o2 instanceof Declaration) {
-                            return ((Declaration)o1).getName().compareTo(((Declaration)o2).getName());
+                        	if (o1 instanceof TypedDeclaration && o2 instanceof TypeDeclaration) {
+                        		return -1;
+                        	}
+                        	else if (o2 instanceof TypedDeclaration && o1 instanceof TypeDeclaration) {
+                        		return 1;
+                        	}
+                        	else {
+                        		return ((Declaration)o1).getName().compareTo(((Declaration)o2).getName());
+                        	}
                         }
-                        return -1;
+                        return 0;
                     }
                 };
                 return comp;
