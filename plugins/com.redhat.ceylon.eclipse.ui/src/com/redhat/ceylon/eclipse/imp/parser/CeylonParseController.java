@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
-import org.eclipse.core.runtime.jobs.IJobStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
@@ -60,7 +59,7 @@ public class CeylonParseController extends ParseControllerBase {
     private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
     private CeylonSourcePositionLocator sourcePositionLocator;
     private CommonTokenStream tokenStream;
-    private final List<Span> annotationSpans = new ArrayList<Span>();
+    private List<Span> annotationSpans;
     private TypeChecker typeChecker;
     
     /**
@@ -192,16 +191,18 @@ public class CeylonParseController extends ParseControllerBase {
         }
         parserErrors.clear();
         
-        annotationSpans.clear();
+        List<Span> spans = new ArrayList<Span>();
         cu.visit(new AnnotationVisitor(annotationSpans));
+        annotationSpans = spans;
         
         fCurrentAst = cu;
         
         if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
         if (srcDir==null || typeChecker == null) {
-            typeChecker = new TypeCheckerBuilder().verbose(false).getTypeChecker();
-            typeChecker.process();
+        	TypeChecker tc = new TypeCheckerBuilder().verbose(false).getTypeChecker();
+            tc.process();
+            typeChecker = tc;
         }
         
         if (monitor.isCanceled()) return fCurrentAst;
@@ -339,6 +340,9 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     public boolean inAnnotationSpan(Token token) {
+    	if (annotationSpans==null) {
+    		return false;
+    	}
         CommonToken ct = (CommonToken) token;
         for (Span span: annotationSpans) {
             if (ct.getStartIndex()>=span.start && 
