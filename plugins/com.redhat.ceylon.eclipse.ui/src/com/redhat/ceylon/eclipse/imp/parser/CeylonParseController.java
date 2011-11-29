@@ -192,7 +192,7 @@ public class CeylonParseController extends ParseControllerBase {
         parserErrors.clear();
         
         List<Span> spans = new ArrayList<Span>();
-        cu.visit(new AnnotationVisitor(annotationSpans));
+        cu.visit(new AnnotationVisitor(spans));
         annotationSpans = spans;
         
         fCurrentAst = cu;
