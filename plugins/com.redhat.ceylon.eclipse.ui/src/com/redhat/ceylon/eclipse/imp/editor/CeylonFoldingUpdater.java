@@ -99,7 +99,7 @@ public class CeylonFoldingUpdater extends FolderBase {
 
     private List<CommonToken> getTokens() {
         return ((CeylonParseController) parseController)
-                .getTokenStream().getTokens();
+                .getTokens();
     }
 
 }

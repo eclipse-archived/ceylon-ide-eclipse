@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIden
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -246,28 +247,28 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return new Path("");
     }
     
-    public static Iterator<Token> getTokenIterator(CommonTokenStream stream, IRegion region) {
+    public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, IRegion region) {
         int regionOffset = region.getOffset();
         int regionLength = region.getLength();
         if (regionLength<=0) {
-            return Collections.<Token>emptyList().iterator();
+            return Collections.<CommonToken>emptyList().iterator();
         }
         int regionEnd = regionOffset + regionLength - 1;
-        if (stream==null) {
+        if (tokens==null) {
             return null;
         }
         else {
-            int firstTokIdx = getTokenIndexAtCharacter(stream, regionOffset);
+            int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
             // getTokenIndexAtCharacter() answers the negative of the index of the
             // preceding token if the given offset is not actually within a token.
             if (firstTokIdx < 0) {
                 firstTokIdx= -firstTokIdx + 1;
             }
-            int lastTokIdx = getTokenIndexAtCharacter(stream, regionEnd);
+            int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
             if (lastTokIdx < 0) {
                 lastTokIdx= -lastTokIdx;
             }
-            return stream.getTokens().subList(firstTokIdx, lastTokIdx+1).iterator();
+            return tokens.subList(firstTokIdx, lastTokIdx+1).iterator();
         }
     }
     
@@ -277,14 +278,14 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     // not exist, it returns the negation of the index of the 
     // element immediately preceding the offset.
     //
-    public static int getTokenIndexAtCharacter(CommonTokenStream stream, int offset) {
+    public static int getTokenIndexAtCharacter(List<CommonToken> tokens, int offset) {
         //search using bisection
         int low = 0,
-                high = stream.getTokens().size();
+                high = tokens.size();
         while (high > low)
         {
             int mid = (high + low) / 2;
-            CommonToken midElement = (CommonToken) stream.getTokens().get(mid);
+            CommonToken midElement = (CommonToken) tokens.get(mid);
             if (offset >= midElement.getStartIndex() &&
                     offset <= midElement.getStopIndex())
                 return mid;
