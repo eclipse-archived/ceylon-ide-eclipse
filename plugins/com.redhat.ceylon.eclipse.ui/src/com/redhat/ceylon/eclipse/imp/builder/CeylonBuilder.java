@@ -503,7 +503,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
         for (PhasedUnit phasedUnit : builtPhasedUnits) {
             IFile file = getFile(phasedUnit);
-            CommonTokenStream tokens = phasedUnit.getTokenStream();
+            List<CommonToken> tokens = phasedUnit.getTokens();
             phasedUnit.getCompilationUnit()
                 .visit(new ErrorVisitor(new MarkerCreator(file, PROBLEM_MARKER_ID)) {
                     @Override
@@ -551,6 +551,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new RuntimeException(e);
             }
             
+            List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+            tokens.addAll(tokenStream.getTokens());
+
             List<LexError> lexerErrors = lexer.getErrors();
             for (LexError le : lexerErrors) {
                 //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
@@ -582,7 +585,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
             phasedUnitsToUpdate.add(new PhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleBuilder(), 
-                    typeChecker.getContext(), tokenStream));
+                    typeChecker.getContext(), tokens));
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
@@ -938,9 +941,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return myConsole;
     }
 
-    private void addTaskMarkers(IFile file, CommonTokenStream tokens) {
+    private void addTaskMarkers(IFile file, List<CommonToken> tokens) {
         //clearTaskMarkersOnFile(file);
-        for (CommonToken token: (List<CommonToken>) tokens.getTokens()) {
+        for (CommonToken token: tokens) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
                 int priority = priority(token);
                 if (priority>=0) {

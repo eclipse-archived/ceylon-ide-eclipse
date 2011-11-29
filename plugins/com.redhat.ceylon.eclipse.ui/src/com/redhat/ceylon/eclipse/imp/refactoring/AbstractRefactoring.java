@@ -4,8 +4,9 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIterator;
 
 import java.util.Iterator;
+import java.util.List;
 
-import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -28,7 +29,7 @@ public abstract class AbstractRefactoring extends Refactoring {
     IFile sourceFile;
     Node node;
     Tree.CompilationUnit rootNode;
-    CommonTokenStream tokenStream;
+    List<CommonToken> tokens;
    
     /*public AbstractRefactoring(IQuickFixInvocationContext context) {
         sourceFile = context.getModel().getFile();
@@ -44,7 +45,7 @@ public abstract class AbstractRefactoring extends Refactoring {
         if (editor instanceof CeylonEditor) {
             project = Util.getProject(editor);
             CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-            tokenStream = cpc.getTokenStream();
+            tokens = cpc.getTokens();
             rootNode = cpc.getRootNode();
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
@@ -76,15 +77,15 @@ public abstract class AbstractRefactoring extends Refactoring {
     }
 
     String toString(Tree.Term term) {
-        return toString(term, tokenStream);
+        return toString(term, tokens);
     }
     
-    static String toString(Tree.Term term, CommonTokenStream tokenStream) {
+    static String toString(Tree.Term term, List<CommonToken> theTokens) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
         Region region = new Region(start, length);
         StringBuilder exp = new StringBuilder();
-        for (Iterator<Token> ti = getTokenIterator(tokenStream, region); 
+        for (Iterator<CommonToken> ti = getTokenIterator(theTokens, region); 
                 ti.hasNext();) {
             exp.append(ti.next().getText());
         }

@@ -58,7 +58,8 @@ public class CeylonParseController extends ParseControllerBase {
     
     private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
     private CeylonSourcePositionLocator sourcePositionLocator;
-    private CommonTokenStream tokenStream;
+
+    private List<CommonToken> tokens;
     private List<Span> annotationSpans;
     private TypeChecker typeChecker;
     
@@ -164,7 +165,7 @@ public class CeylonParseController extends ParseControllerBase {
             throw new RuntimeException(e);
         }
         CeylonLexer lexer = new CeylonLexer(input);
-        tokenStream = new CommonTokenStream(lexer);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         
         if (monitor.isCanceled()) return fCurrentAst;
         
@@ -177,6 +178,9 @@ public class CeylonParseController extends ParseControllerBase {
             throw new RuntimeException(e);
         }
         
+        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+        tokens.addAll(tokenStream.getTokens());
+
         List<LexError> lexerErrors = lexer.getErrors();
         for (LexError le : lexerErrors) {
             //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
@@ -272,7 +276,7 @@ public class CeylonParseController extends ParseControllerBase {
         else {
             phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleBuilder(), 
-                    typeChecker.getContext(), tokenStream);  
+                    typeChecker.getContext(), tokens);  
             
             phasedUnit.validateTree();
             phasedUnit.buildModuleImport();
@@ -327,12 +331,12 @@ public class CeylonParseController extends ParseControllerBase {
         return null;
     }
     
-    public Iterator<Token> getTokenIterator(IRegion region) {
-        return CeylonSourcePositionLocator.getTokenIterator(getTokenStream(), region);
+    public Iterator<CommonToken> getTokenIterator(IRegion region) {
+        return CeylonSourcePositionLocator.getTokenIterator(getTokens(), region);
     }
     
-    public CommonTokenStream getTokenStream() {
-        return tokenStream;
+    public List<CommonToken> getTokens() {
+        return tokens;
     }
     
     public TypeChecker getTypeChecker() {

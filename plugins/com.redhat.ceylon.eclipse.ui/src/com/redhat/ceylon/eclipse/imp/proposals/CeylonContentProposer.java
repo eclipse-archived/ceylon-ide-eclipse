@@ -112,7 +112,10 @@ public class CeylonContentProposer implements IContentProposer {
     public ICompletionProposal[] getContentProposals(IParseController controller,
             final int offset, ITextViewer viewer) {
         CeylonParseController cpc = (CeylonParseController) controller;
-        if (cpc.getTokenStream()==null) return null;
+        List<CommonToken> tokens = cpc.getTokens(); 
+        if (tokens == null) {
+            return null;
+        }
         
         //BEGIN HUGE BUG WORKAROUND
         //What is going on here is that when I have a list of proposals open
@@ -123,17 +126,17 @@ public class CeylonContentProposer implements IContentProposer {
         //corrective action. This should be fixed in IMP!
         CommonToken token;
         CommonToken previousToken;
-        int index = getTokenIndexAtCharacter(cpc.getTokenStream(), offset-1);
+        int index = getTokenIndexAtCharacter(tokens, offset-1);
         if (index<0) {
             index = -index;
-            previousToken = (CommonToken) cpc.getTokenStream().get(index);
-            token = index==cpc.getTokenStream().size()-1 ? 
-                    null : (CommonToken) cpc.getTokenStream().get(index+1);
+            previousToken = (CommonToken) tokens.get(index);
+            token = index==tokens.size()-1 ? 
+                    null : (CommonToken) tokens.get(index+1);
         }
         else {
             previousToken = index==0 ? 
-                    null : (CommonToken) cpc.getTokenStream().get(index-1);
-            token = (CommonToken) cpc.getTokenStream().get(index);
+                    null : (CommonToken) tokens.get(index-1);
+            token = (CommonToken) tokens.get(index);
         }
         char charAtOffset = viewer.getDocument().get().charAt(offset-1);
         Character charInTokenAtOffset = token==null ? 
@@ -177,16 +180,16 @@ public class CeylonContentProposer implements IContentProposer {
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
         //token to the left of the caret
-        int tokenIndex = getTokenIndexAtCharacter(cpc.getTokenStream(), start);
+        int tokenIndex = getTokenIndexAtCharacter(tokens, start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         int adjustedStart = start;
         int adjustedEnd = end;
-        Token adjustedToken = cpc.getTokenStream().get(tokenIndex); 
+        Token adjustedToken = tokens.get(tokenIndex); 
         int tokenType = adjustedToken.getType();
         while (--tokenIndex>=0 && 
                 (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
                 || ((CommonToken) adjustedToken).getStartIndex()==offset)) { //don't consider the token to the right of the caret
-            adjustedToken = cpc.getTokenStream().get(tokenIndex);
+            adjustedToken = tokens.get(tokenIndex);
             if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL) { //don't adjust to a ws/comment token
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
                 adjustedEnd = ((CommonToken) adjustedToken).getStopIndex()+1;

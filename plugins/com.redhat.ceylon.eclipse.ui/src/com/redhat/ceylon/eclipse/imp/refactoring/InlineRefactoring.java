@@ -126,7 +126,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
             int prevIndex = from.getTokenIndex()-1;
             if (prevIndex>=0) {
-                CommonToken tok = (CommonToken) pu.getTokenStream()
+                CommonToken tok = (CommonToken) pu.getTokens()
                         .get(prevIndex);
                 if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
                     from=tok;
@@ -179,7 +179,7 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineReferences(Tree.Declaration declarationNode,
             PhasedUnit declarationUnit, final Tree.Term term, final PhasedUnit pu,
             final TextFileChange tfc) {
-        String template = toString(term, declarationUnit.getTokenStream());
+        String template = toString(term, declarationUnit.getTokens());
         int templateStart = term.getStartIndex();
         if (declarationNode instanceof Tree.AnyAttribute) {
         	inlineAttributeReferences(pu, template, tfc);
@@ -277,7 +277,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     first = false;
                 }
                 result.append(AbstractRefactoring.toString(arg.getExpression().getTerm(), 
-                        pu.getTokenStream()));
+                        pu.getTokens()));
                 found = true;
             }
         }
@@ -297,7 +297,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 Term argTerm = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
                                 .getExpression().getTerm();
                 result//.append(template.substring(start,it.getStartIndex()-templateStart))
-                    .append(AbstractRefactoring.toString( argTerm, pu.getTokenStream()) );
+                    .append(AbstractRefactoring.toString( argTerm, pu.getTokens()) );
                 //start = it.getStopIndex()-templateStart+1;
                 found=true;
             }
@@ -312,7 +312,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 if (first) result.append(" ");
                 if (!first) result.append(", ");
                 first=false;
-                result.append(AbstractRefactoring.toString(e.getTerm(), pu.getTokenStream()));
+                result.append(AbstractRefactoring.toString(e.getTerm(), pu.getTokens()));
             }
             if (!first) result.append(" ");
             result.append("}");
