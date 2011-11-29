@@ -717,8 +717,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
             Iterable<? extends JavaFileObject> compilationUnits1 =
                     fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), fileManager, null, options, null, compilationUnits1);
-            boolean success = task.call().booleanValue();
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), 
+            		fileManager, null, options, null, compilationUnits1);
+            boolean success=false;
+            try {
+            	success = task.call();
+            }
+            catch (Exception e) {
+            	e.printStackTrace();
+            }
             if (!success) console.activate();
 			return success;
         }
