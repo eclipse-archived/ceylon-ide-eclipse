@@ -48,6 +48,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -103,6 +109,7 @@ public class CeylonPlugin extends PluginBase {
         setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
         copyDefaultRepoIfNecessary();
         runInitialBuild();
+        registerProjectOpenListener();
 	}
 
 	@Override
@@ -190,6 +197,61 @@ public class CeylonPlugin extends PluginBase {
         };
         buildJob.setRule(workspaceRoot);
         buildJob.schedule();
+    }
+    
+    private void registerProjectOpenListener() {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        final IWorkspaceRoot workspaceRoot = workspace.getRoot();
+        
+        workspace.addResourceChangeListener(new IResourceChangeListener() {
+            
+            @Override
+            public void resourceChanged(IResourceChangeEvent event) {
+                try {
+                    event.getDelta().accept(new IResourceDeltaVisitor() {
+                        
+                        @Override
+                        public boolean visit(IResourceDelta delta) throws CoreException {
+                            IResource resource = delta.getResource();
+                            if (resource.equals(workspaceRoot)) {
+                                return true;
+                            }
+                            if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
+                                final IProject project = (IProject) resource;
+                                try {
+                                    if (project.isOpen() && project.hasNature(CeylonNature.NATURE_ID)) {
+                                        Job buildJob = new Job("Building Ceylon Model for project " + project.getName()) {
+                                            @Override
+                                            public IStatus run(IProgressMonitor monitor) {
+                                                try {
+                                                    monitor.beginTask("Building Ceylon Model", 3);
+                                                    ISourceProject sourceProject = ModelFactory.open(project);
+                                                    CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
+                                                } catch (ModelException e) {
+                                                    // TODO Auto-generated catch block
+                                                    e.printStackTrace();
+                                                }
+                                                return Status.OK_STATUS;
+                                            }
+                                            
+                                        };
+                                        buildJob.setRule(workspaceRoot);
+                                        buildJob.schedule();
+                                    }
+                                } catch (CoreException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            }
+                            return false;
+                        }
+                    });
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }, IResourceChangeEvent.POST_CHANGE);
     }
     
 
