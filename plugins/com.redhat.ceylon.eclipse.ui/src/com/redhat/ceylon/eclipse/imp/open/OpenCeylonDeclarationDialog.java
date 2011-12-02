@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -315,20 +316,23 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private static String getLocation(DeclarationWithProject dwp) {
-        if (dwp.getPath()!=null) {
-            return dwp.getProject().isOpen() ?
-                    dwp.getProject().findMember(dwp.getPath())
-                        .getFullPath().toPortableString() :
-                    //if the project is closed findMember() returns null
-                    //so just abbreviate to the project path
-                    dwp.getProject().getFullPath().toPortableString();
+        IProject project = dwp.getProject();
+		if (dwp.getPath()!=null) {
+        	IResource r = project.isOpen() ? 
+        			project.findMember(dwp.getPath()) : null;
+            //if the project is closed or for some other reason
+    		//findMember() returns null, just abbreviate to the 
+    		//project path
+            if (r==null) r=project;
+            return r.getFullPath().toPortableString();
+                    
         }
         else {
             Module module = dwp.getDeclaration().getUnit()
                     .getPackage().getModule();
             return " in module " + module.getNameAsString() +
                   ":" + module.getVersion() +
-                  " imported by project " + dwp.getProject().getName();
+                  " imported by project " + project.getName();
         }
     }
     
