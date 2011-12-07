@@ -10,6 +10,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
+import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
@@ -24,16 +25,21 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         
         // Also add the car files of the output directory
         IJavaProject javaProject = getJavaProject(configuration);
-        List<File> carFiles = CeylonBuilder.retrieveCarFiles(javaProject);
+        final List<String> classpathList = new ArrayList<String>(Arrays.asList(javaClasspath));
 
-        List<String> resultList = new ArrayList<String>(Arrays.asList(javaClasspath));
-        for (File file : carFiles) {
-            resultList.add(file.getAbsolutePath());
+        File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
+        if (outputDirectory != null) {
+            new RepositoryLister().list(outputDirectory, new RepositoryLister.Actions() {
+                @Override
+                public void doWithFile(File path) {
+                    classpathList.add(path.getAbsolutePath());
+                }
+            });
         }
-        
+                
         // Also add the language car
-        resultList.add(languageCar); 
+        classpathList.add(languageCar); 
 
-        return resultList.toArray(new String [resultList.size()]);
+        return classpathList.toArray(new String [classpathList.size()]);
     }
 }
