@@ -23,7 +23,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
             "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 
             "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
-            "this", "outer", "super", "is", "exists", "nonempty"));
+            "this", "outer", "super", "is", "exists", "nonempty", "then"));
     
     private static final Display display = Display.getDefault();
     public static final Color BRIGHT_BLUE = new Color(display, new RGB(0,120,255));
