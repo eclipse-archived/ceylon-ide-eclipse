@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
@@ -385,18 +387,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<PhasedUnit> builtPhasedUnits = null;
         if (mustDoFullBuild.value) {
             IJavaProject javaProject = JavaCore.create(project);
-            if (javaProject.exists()) {
-                List<File> carFiles = retrieveCarFiles(javaProject);
-                for (File file : carFiles) {
-                    file.delete();
-                    File parentDir = file.getParentFile();
-                    String name = file.getName();
-                    String nameWithoutExtension = name.replaceAll("....$", "");
-                    new File(parentDir, name + ".sha1").delete();
-                    new File(parentDir, nameWithoutExtension + ".src").delete();
-                    new File(parentDir, nameWithoutExtension + ".src.sha1").delete();
-                }
-                
+            final File outputDirectory = getOutputDirectory(javaProject);
+            if (outputDirectory != null) {
+                List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
+                new RepositoryLister(extensionsToDelete).list(outputDirectory, new RepositoryLister.Actions() {
+                    @Override
+                    public void doWithFile(File path) {
+                        path.delete();
+                    }
+                    
+                    public void exitDirectory(File path) {
+                        if (path.list().length == 0 && ! path.equals(outputDirectory)) {
+                            path.delete();
+                        }
+                    }
+                });
             }
             
             try {
@@ -1164,32 +1169,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    public static List<File> retrieveCarFiles(IJavaProject javaProject) {
-        final List<File> carFiles = new ArrayList<File>();
+
+    public static File getOutputDirectory(IJavaProject javaProject) {
         IProject project = javaProject.getProject();
-        if (javaProject.exists()) {
-            File outputDirectory;
+        if (project.exists()) {
             try {
-                outputDirectory = project.getFolder(javaProject.getOutputLocation().makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
-                class CarFileListFiller {
-                    void fillCarFilesList(File path) {
-                        if (path.isDirectory()) {
-                            for (File f : path.listFiles()) {
-                                fillCarFilesList(f);
-                            }
-                        }
-                        else if (path.isFile() && 
-                                (path.getName().endsWith(".car") || path.getName().endsWith(".jar"))) {
-                            carFiles.add(path.getAbsoluteFile());
-                        }
-                    }
-                };
-                new CarFileListFiller().fillCarFilesList(outputDirectory);
+                return project.getFolder(javaProject.getOutputLocation().makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
             } catch (JavaModelException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
-        return carFiles;
-    }
+        return null;
+    };
 }
