@@ -99,10 +99,7 @@ public class CeylonParseController extends ParseControllerBase {
                 retryJob = new Job("Retry Parsing for " + getPath()) {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
-                        ISourceProject sourceProject = getProject();
-                        final IProject project = sourceProject.getRawProject();
-                        
-                        if (CeylonBuilder.getProjectTypeChecker(project) != null) {
+                        if (CeylonBuilder.getProjectTypeChecker(getProject().getRawProject()) != null) {
 //                            System.out.println("parsingJob.schedule() for " + getPath());
                             parsingJob.schedule();
                         }
@@ -121,8 +118,6 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     public Object parse(String contents, IProgressMonitor monitor) {
-        
-        final IJobManager jobManager = Job.getJobManager();
         
         IPath path = getPath();
         ISourceProject sourceProject = getProject();
@@ -144,10 +139,9 @@ public class CeylonParseController extends ParseControllerBase {
        
         VirtualFile srcDir = null;
         if (sourceProject!=null) {
-            final IProject project = sourceProject.getRawProject();
             srcDir = getSourceFolder(sourceProject, resolvedPath);
             
-            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+            typeChecker = CeylonBuilder.getProjectTypeChecker(sourceProject.getRawProject());
             if (typeChecker == null) {
                 rescheduleJobIfNecessary();
                 return fCurrentAst;
