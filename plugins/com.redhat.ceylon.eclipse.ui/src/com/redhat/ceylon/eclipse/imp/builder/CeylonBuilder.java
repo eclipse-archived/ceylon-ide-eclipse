@@ -305,22 +305,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * @return true iff this resource identifies the output folder
      */
     protected boolean isOutputFolder(IResource resource) {
-        IProject project = resource.getProject();
-        IJavaProject javaProject = JavaCore.create(resource.getProject());
-        if (javaProject.exists()) {
-            IPath outputDirectory = null;
-            try {
-                outputDirectory = javaProject.getOutputLocation().makeRelativeTo(project.getFullPath());
-            } catch (JavaModelException e) {
-                e.printStackTrace();
-                return false;
-            }
-            if (outputDirectory != null) {
-                return resource.getProjectRelativePath().equals(outputDirectory);
-            }
+        IPath outputDirectory = getProjectRelativeOutputDir(JavaCore.create(resource.getProject()));
+        if (outputDirectory==null) {
+        	return false;
         }
-        return false;
+        else {
+            return resource.getProjectRelativePath().equals(outputDirectory);
+        }
     }
+
+	private static IPath getProjectRelativeOutputDir(IJavaProject javaProject) {
+		if (!javaProject.exists()) return null;
+		try {
+			return javaProject.getOutputLocation()
+					.makeRelativeTo(javaProject.getProject().getFullPath());
+		} 
+		catch (JavaModelException e) {
+			return null;
+		}
+	}
 
     @Override
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
@@ -671,7 +674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         String srcPath = "";
         for (IPath sourceFolder : getSourceFolders(sourceProject)) {
-            File sourcePathElement = project.getFolder(sourceFolder.makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
+            File sourcePathElement = toFile(project,sourceFolder.makeRelativeTo(project.getFullPath()));
             if (! srcPath.isEmpty()) {
                 srcPath += File.pathSeparator;
             }
@@ -685,17 +688,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         options.add("-g:lines,vars,source");
 
-        IJavaProject javaProject = JavaCore.create(project);
-        if (javaProject.exists()) {
-            IPath outputLocation;
-            try {
-                outputLocation = javaProject.getOutputLocation();
-                options.add("-out");
-                options.add(project.getFolder(outputLocation.makeRelativeTo(project.getFullPath())).getRawLocation().toFile().getAbsolutePath());
-            } catch (JavaModelException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+        IPath outputDir = getProjectRelativeOutputDir(JavaCore.create(project));
+        if (outputDir!=null) {
+            options.add("-out");
+			options.add(toFile(project, outputDir).getAbsolutePath());
         }
 
 //        options.add("-verbose");
@@ -740,6 +736,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         else
             return false;
     }
+
+	private static File toFile(IProject project, IPath path) {
+		return project.getFolder(path).getRawLocation().toFile();
+	}
     
     /**
      * Clears all problem markers (all markers whose type derives from IMarker.PROBLEM)
@@ -1171,15 +1171,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
 
     public static File getOutputDirectory(IJavaProject javaProject) {
-        IProject project = javaProject.getProject();
-        if (project.exists()) {
-            try {
-                return project.getFolder(javaProject.getOutputLocation().makeRelativeTo(project.getFullPath())).getRawLocation().toFile();
-            } catch (JavaModelException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return toFile(javaProject.getProject(), getProjectRelativeOutputDir(javaProject));
     };
 }
