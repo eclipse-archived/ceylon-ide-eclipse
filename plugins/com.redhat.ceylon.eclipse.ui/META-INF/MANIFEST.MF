@@ -31,5 +31,5 @@ Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,lib/antlr-3.4-complete.jar,
  lib/com.redhat.ceylon.typechecker-0.1.jar,
- lib/compiler.jar
+ lib/com.redhat.ceylon.compiler-0.1.jar
 
