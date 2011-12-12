@@ -69,7 +69,7 @@ import com.redhat.ceylon.compiler.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleBuilder;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -371,8 +371,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 }
                             }
                             if (resource instanceof IFile && 
-                                    (resource.getName().equals(ModuleBuilder.MODULE_FILE) ||
-                                            resource.getName().equals(ModuleBuilder.PACKAGE_FILE))) {
+                                    (resource.getName().equals(ModuleManager.MODULE_FILE) ||
+                                            resource.getName().equals(ModuleManager.PACKAGE_FILE))) {
                                 // If a module descriptor has been added, removed or changed, trigger a full build
                                 mustDoFullBuild.value = true;
                                 return false;
@@ -592,7 +592,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
 
             phasedUnitsToUpdate.add(new PhasedUnit(file, srcDir, cu, pkg, 
-                    typeChecker.getPhasedUnits().getModuleBuilder(), 
+                    typeChecker.getPhasedUnits().getModuleManager(), 
                     typeChecker.getContext(), tokens));
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
