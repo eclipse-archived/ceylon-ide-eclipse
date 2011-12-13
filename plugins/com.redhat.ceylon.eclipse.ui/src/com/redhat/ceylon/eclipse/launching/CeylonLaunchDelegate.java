@@ -10,6 +10,10 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.io.ArtifactProvider;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
 import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
@@ -18,6 +22,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
     private static String languageVersion = "0.1";
     private final static String languageCar = System.getProperty("user.home")+"/.ceylon/repo/ceylon/language/"+languageVersion +"/ceylon.language-"+languageVersion+".car";
 
+    
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration)
             throws CoreException {
@@ -27,9 +32,25 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IJavaProject javaProject = getJavaProject(configuration);
         final List<String> classpathList = new ArrayList<String>(Arrays.asList(javaClasspath));
 
+        TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(javaProject.getProject());
+        RepositoryLister archiveLister = new RepositoryLister();
+        for (ArtifactProvider provider : typeChecker.getContext().getArtifactProviders()) {
+            VirtualFile repository = provider.getHomeRepo();
+            if (repository instanceof FileSystemVirtualFile) {
+                archiveLister.list(((FileSystemVirtualFile)repository).getFile(), new RepositoryLister.Actions() {
+                    @Override
+                    public void doWithFile(File path) {
+                        classpathList.add(path.getAbsolutePath());
+                    }
+                });
+            }
+            else {
+                System.out.println("Ignoring non-filesystem repositories for launching classpath");
+            }
+        }
         File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
         if (outputDirectory != null) {
-            new RepositoryLister().list(outputDirectory, new RepositoryLister.Actions() {
+            archiveLister.list(outputDirectory, new RepositoryLister.Actions() {
                 @Override
                 public void doWithFile(File path) {
                     classpathList.add(path.getAbsolutePath());

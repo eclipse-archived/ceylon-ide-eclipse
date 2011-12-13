@@ -93,8 +93,14 @@ public class CeylonPlugin extends PluginBase {
 	 * The unique instance of this plugin class
 	 */
 	protected static CeylonPlugin pluginInstance;
+	
+	private File ceylonRepository = null;
 
-	public static CeylonPlugin getInstance() {
+	public File getCeylonRepository() {
+        return ceylonRepository;
+    }
+
+    public static CeylonPlugin getInstance() {
 		if (pluginInstance==null) new CeylonPlugin();
 		return pluginInstance;
 	}
@@ -105,9 +111,33 @@ public class CeylonPlugin extends PluginBase {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
+        String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
+        if (! "".equals(ceylonRepositoryProperty)) {
+            File ceylonRepositoryPath = new java.io.File(ceylonRepositoryProperty);
+            if (ceylonRepositoryPath.exists()) {
+                ceylonRepository = ceylonRepositoryPath;
+            }
+        }
+        if (ceylonRepository == null) {
+            try {
+                Bundle bundle = Platform.getBundle(CeylonPlugin.PLUGIN_ID);
+                Path path = new Path("defaultRepository");
+                URL eclipseUrl = FileLocator.find(bundle, path, null);
+                URL fileURL = FileLocator.resolve(eclipseUrl);
+                String urlPath = fileURL.getPath();
+                URI fileURI = new URI("file", null, urlPath, null);
+                ceylonRepository = new File(fileURI);
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 	    super.start(context);
-        setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
-        copyDefaultRepoIfNecessary();
+	    setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
+//        copyDefaultRepoIfNecessary();
         runInitialBuild();
         registerProjectOpenListener();
 	}
