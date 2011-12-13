@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DEFAULT_REFINEMENT;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_WARNING;
@@ -16,10 +17,10 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
@@ -189,6 +190,7 @@ public class CeylonPlugin extends PluginBase {
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
         reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
+        reg.put(CEYLON_EXPORT_CAR, image("jar_pack_wiz.png"));
 	}
 	
 	/**

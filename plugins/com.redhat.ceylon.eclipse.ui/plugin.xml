@@ -209,7 +209,7 @@
          name="Ceylon Module Exporter" 
          class="com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard"
          category="ceylon" 
-         icon="/icons/template_obj.gif"> <!-- TODO! -->
+         icon="/icons/exportjar_wiz.gif">
          <description> 
             Export a Ceylon module to a module repository
          </description> 
