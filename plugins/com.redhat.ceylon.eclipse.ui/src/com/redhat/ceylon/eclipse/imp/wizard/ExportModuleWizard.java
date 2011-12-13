@@ -93,7 +93,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     		   copyFolder(srcFile, destFile);
     		}
     	}
-    	else if (src.getName().endsWith(".car")) {
+    	else if (src.getName().endsWith(".car") ||
+    			src.getName().endsWith(".src") ||
+    			src.getName().endsWith(".sha1")) {
     	    FileChannel source = null;
     	    FileChannel destination = null;
     	    try {
