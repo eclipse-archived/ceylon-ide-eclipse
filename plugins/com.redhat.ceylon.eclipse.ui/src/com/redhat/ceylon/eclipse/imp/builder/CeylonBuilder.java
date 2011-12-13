@@ -649,6 +649,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     sourceFolder.makeRelativeTo(project.getFullPath())));
         }
 
+        typeCheckerBuilder.addRepository(CeylonPlugin.getInstance().getCeylonRepository());
         monitor.worked(1);
         monitor.subTask("Parsing Ceylon source files for project " 
                     + project.getName());
@@ -666,9 +667,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker;
     }
 
-    private static String languageVersion = "0.1";
-    private final static String languageCar = System.getProperty("user.home")+"/.ceylon/repo/ceylon/language/"+languageVersion +"/ceylon.language-"+languageVersion+".car";
-
     private boolean generateBinaries(IProject project, ISourceProject sourceProject, Collection<IFile> filesToCompile, IProgressMonitor monitor) {
         List<String> options = new ArrayList<String>();
 
@@ -683,6 +681,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-src");
         options.add(srcPath);
         
+        String repositories = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+        for (File repository : getAdditionalRepositories(sourceProject)) {
+            repositories += File.pathSeparator;
+            repositories += repository.getAbsolutePath();
+        }
+        options.add("-rep");
+        options.add(repositories);
+
         if (System.getProperty("ceylon.verbose")!=null) {
             options.add("-verbose");
         }
@@ -695,8 +701,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
 
 //        options.add("-verbose");
-        options.add("-cp");
-        options.add(languageCar);
+//        options.add("-cp");
+//        options.add(languageCar);
         
         java.util.List<File> sourceFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
@@ -737,7 +743,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return false;
     }
 
-	private static File toFile(IProject project, IPath path) {
+	private List<File> getAdditionalRepositories(ISourceProject sourceProject) {
+        return Collections.emptyList(); // TODO : should be populated with dependent project output directory for exemple
+    }
+
+    private static File toFile(IProject project, IPath path) {
 		return project.getFolder(path).getRawLocation().toFile();
 	}
     
