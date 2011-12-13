@@ -255,21 +255,23 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
                     unit.getCompilationUnit().visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
-                    IFile file = CeylonBuilder.getFile(unit);
-                    TextFileChange change = new TextFileChange(desc, file);
-                    change.setEdit(new MultiTextEdit());
-                    Integer offset = decNode.getStartIndex();
-                    change.addEdit(new InsertEdit(offset, annotation));
-                    if (decNode instanceof Tree.TypedDeclaration) {
-                        Type type = ((Tree.TypedDeclaration) decNode).getType();
-                        if (type instanceof Tree.FunctionModifier 
-                                || type instanceof Tree.ValueModifier) {
-                            String explicitType = type.getTypeModel().getProducedTypeName();
-                            change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
-                                    explicitType));
+                    if (decNode!=null) {
+                        IFile file = CeylonBuilder.getFile(unit);
+                        TextFileChange change = new TextFileChange(desc, file);
+                        change.setEdit(new MultiTextEdit());
+                        Integer offset = decNode.getStartIndex();
+                        change.addEdit(new InsertEdit(offset, annotation));
+                        if (decNode instanceof Tree.TypedDeclaration) {
+                            Type type = ((Tree.TypedDeclaration) decNode).getType();
+                            if (type instanceof Tree.FunctionModifier 
+                                    || type instanceof Tree.ValueModifier) {
+                                String explicitType = type.getTypeModel().getProducedTypeName();
+                                change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
+                                        explicitType));
+                            }
                         }
+                        proposals.add(createAddAnnotionProposal(dec, annotation, offset, file, change));
                     }
-                    proposals.add(createAddAnnotionProposal(dec, annotation, offset, file, change));
                     break;
                 }
             }
