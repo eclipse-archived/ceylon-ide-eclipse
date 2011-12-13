@@ -30,6 +30,9 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,lib/antlr-3.4-complete.jar,
- lib/com.redhat.ceylon.typechecker-0.1.jar,
- lib/com.redhat.ceylon.compiler-0.1.jar
+ external:$ceylon.repo$/com/redhat/ceylon/compiler/$ceylon.compiler.version$/com.redhat.ceylon.compiler-$ceylon.compiler.version$.jar,
+ external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
+ defaultRepository/com/redhat/ceylon/compiler/0.1/com.redhat.ceylon.compiler-0.1.jar,
+ defaultRepository/com/redhat/ceylon/typechecker/0.1/com.redhat.ceylon.typechecker-0.1.jar
+ 
 

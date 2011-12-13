@@ -198,7 +198,10 @@ public class CeylonParseController extends ParseControllerBase {
         if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
         if (srcDir==null || typeChecker == null) {
-        	TypeChecker tc = new TypeCheckerBuilder().verbose(false).getTypeChecker();
+        	TypeChecker tc = new TypeCheckerBuilder()
+        	.verbose(false)
+        	.addRepository(CeylonPlugin.getInstance().getCeylonRepository())
+        	.getTypeChecker();
             tc.process();
             typeChecker = tc;
         }
