@@ -206,12 +206,12 @@
       <category id="ceylon" name="Ceylon"/>
       <wizard 
          id="com.redhat.ceylon.eclipse.ui.exportModuleWizard" 
-         name="Ceylon Module Exporter" 
+         name="Ceylon Module to Module Repository"
          class="com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard"
          category="ceylon" 
          icon="/icons/exportjar_wiz.gif">
          <description> 
-            Export a Ceylon module to a module repository
+            Export a Ceylon module to a module repository.
          </description> 
          <selection class="org.eclipse.core.resources.IProject"/> 
       </wizard> 
