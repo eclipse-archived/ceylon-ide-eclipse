@@ -28,8 +28,6 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     IWorkbench workbench;
     NewUnitWizardPage page;
     
-    public NewUnitWizard() {}
-    
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
