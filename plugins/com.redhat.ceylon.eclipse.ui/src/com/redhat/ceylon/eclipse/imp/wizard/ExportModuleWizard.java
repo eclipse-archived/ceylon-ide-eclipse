@@ -115,11 +115,4 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     	}
     }
     
-	@Override
-	public boolean canFinish() {
-		return super.canFinish() &&
-				page.isPageComplete() && 
-				new File(page.getRepositoryPath()).exists();
-	}
-
 }

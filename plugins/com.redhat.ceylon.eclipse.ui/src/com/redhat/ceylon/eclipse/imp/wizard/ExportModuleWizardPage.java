@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
+
+import java.io.File;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -27,8 +29,8 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     String repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
     
     ExportModuleWizardPage() {
-        super("New Ceylon Unit", "New Ceylon Unit", CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_NEW_FILE));
+        super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
+                .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
     }
 
@@ -59,7 +61,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
 	void addSelectRepo(Composite composite) {
 		Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        folderLabel.setText("Source module repository: ");
+        folderLabel.setText("Target module repository: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 1;
         folderLabel.setLayoutData(flgd);
@@ -102,7 +104,8 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 	public boolean isPageComplete() {
 		return super.isPageComplete() &&
 				repositoryPath!=null &&
-				!repositoryPath.isEmpty();
+				!repositoryPath.isEmpty() &&
+				new File(repositoryPath).exists();
 	}
 	
 	public String getRepositoryPath() {
