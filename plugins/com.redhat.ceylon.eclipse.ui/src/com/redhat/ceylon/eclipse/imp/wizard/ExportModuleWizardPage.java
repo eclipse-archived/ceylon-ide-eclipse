@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
 
-import java.io.File;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -102,10 +100,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 	
 	@Override
 	public boolean isPageComplete() {
-		return super.isPageComplete() &&
+		return true/*super.isPageComplete() &&
 				repositoryPath!=null &&
 				!repositoryPath.isEmpty() &&
-				new File(repositoryPath).exists();
+				new File(repositoryPath).exists()*/;
 	}
 	
 	public String getRepositoryPath() {
