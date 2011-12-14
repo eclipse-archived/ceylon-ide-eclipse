@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
@@ -53,7 +54,8 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 	public boolean performFinish() {
 		IJavaElement selectedElem = getSelectedElement();
 		if (selectedElem==null) {
-			return false;
+			MessageDialog.openError(getShell(), "Export Module Error", 
+					"No Java project selected.");
 		}
 		else {
 			IJavaProject javaProject = selectedElem.getJavaProject();
@@ -74,13 +76,22 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				/*File source = new File(platformLoc.getFile(), 
 						javaProject.getOutputLocation().toFile().getPath());*/
 				File dest = new File(page.getRepositoryPath());
-				copyFolder(source, dest);
+				if (dest.exists()) {
+					copyFolder(source, dest);
+				}
+				else {
+					MessageDialog.openError(getShell(), "Export Module Error", 
+							"No repository at location: " + page.getRepositoryPath());
+					return false;
+				}
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
+				MessageDialog.openError(getShell(), "Export Module Error", 
+						"Error occurred exporting module: " + e.getMessage());
 			}
-			return true;
 		}
+		return true;
 	}
 	
 	public static void copyFolder(File src, File dest)
@@ -114,5 +125,10 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 	    	System.out.println("Archive exported from " + src + " to " + dest);
     	}
     }
+	
+	@Override
+	public boolean canFinish() {
+		return true;
+	}
     
 }
