@@ -34,6 +34,22 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
         TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(javaProject.getProject());
         RepositoryLister archiveLister = new RepositoryLister();
+        
+        //first add modules in the current project
+        //(we want them first in the classpath)
+        File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
+        if (outputDirectory != null) {
+            archiveLister.list(outputDirectory, new RepositoryLister.Actions() {
+                @Override
+                public void doWithFile(File path) {
+                    classpathList.add(path.getAbsolutePath());
+                }
+            });
+        }
+        
+        //then add modules in the module repo
+        //TODO: don't add modules with the same name as
+        //      as a module belonging to the project
         for (ArtifactProvider provider : typeChecker.getContext().getArtifactProviders()) {
             VirtualFile repository = provider.getHomeRepo();
             if (repository instanceof FileSystemVirtualFile) {
@@ -47,15 +63,6 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             else {
                 System.out.println("Ignoring non-filesystem repositories for launching classpath");
             }
-        }
-        File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
-        if (outputDirectory != null) {
-            archiveLister.list(outputDirectory, new RepositoryLister.Actions() {
-                @Override
-                public void doWithFile(File path) {
-                    classpathList.add(path.getAbsolutePath());
-                }
-            });
         }
                 
         // Also add the language car
