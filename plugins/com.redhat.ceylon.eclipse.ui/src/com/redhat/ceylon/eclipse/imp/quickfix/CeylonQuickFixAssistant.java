@@ -50,11 +50,13 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -351,8 +353,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             @Override public void visit(Tree.SpecifierStatement that) {
                 super.visit(that);
-                if (that.getBaseMemberExpression().getDeclaration().equals(dec)) {
-                    inferredType = that.getSpecifierExpression().getExpression().getTypeModel();
+                Term bme = that.getBaseMemberExpression();
+                if (bme instanceof BaseMemberExpression) {
+                	if (((BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+                		inferredType = that.getSpecifierExpression().getExpression().getTypeModel();
+                	}
                 }
             }
             @Override public void visit(Tree.AssignmentOp that) {
