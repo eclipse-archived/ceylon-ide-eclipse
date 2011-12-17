@@ -689,7 +689,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-rep");
         options.add(repositories);
 
-        if (System.getProperty("ceylon.verbose")!=null) {
+        String verbose = System.getProperty("ceylon.verbose");
+		if (verbose!=null && "true".equals(verbose)) {
             options.add("-verbose");
         }
         options.add("-g:lines,vars,source");
