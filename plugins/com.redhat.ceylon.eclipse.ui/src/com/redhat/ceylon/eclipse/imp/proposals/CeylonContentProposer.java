@@ -124,8 +124,8 @@ public class CeylonContentProposer implements IContentProposer {
         //in the ITextViewer. So we need to do some guessing to figure out
         //that there is a missing character in the token stream and take
         //corrective action. This should be fixed in IMP!
-        CommonToken token;
-        CommonToken previousToken;
+        final CommonToken token;
+        final CommonToken previousToken;
         int index = getTokenIndexAtCharacter(tokens, offset-1);
         if (index<0) {
             index = -index;
@@ -138,16 +138,17 @@ public class CeylonContentProposer implements IContentProposer {
                     null : (CommonToken) tokens.get(index-1);
             token = (CommonToken) tokens.get(index);
         }
-        char charAtOffset = viewer.getDocument().get().charAt(offset-1);
-        Character charInTokenAtOffset = token==null ? 
-                null : token.getText().charAt(offset-token.getStartIndex()-1);
+        char charAtOffset = viewer.getDocument().get().charAt(offset>0?offset-1:0);
+        int offsetInToken = offset-token.getStartIndex();
+		Character charInTokenAtOffset = token==null ? 
+                null : token.getText().charAt(offsetInToken>0?offsetInToken-1:0);
         String prefix = "";
         int start = offset;
         int end = offset;
         if (charInTokenAtOffset!=null && 
                 charAtOffset==charInTokenAtOffset) {
             if (isIdentifier(token)) {
-                prefix = token.getText().substring(0, offset-token.getStartIndex());
+                prefix = token.getText().substring(0, offsetInToken);
                 start = token.getStartIndex();
                 end = token.getStopIndex();
             }
