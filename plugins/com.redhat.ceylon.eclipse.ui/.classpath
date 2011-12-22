@@ -5,6 +5,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/0.1/com.redhat.ceylon.compiler-0.1.jar" sourcepath="/ceylon-compiler/src"/>
 	<classpathentry kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/0.1/com.redhat.ceylon.typechecker-0.1.jar" sourcepath="/ceylon-spec/src"/>
+	<classpathentry kind="lib" path="lib/zip4j_1.2.6.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

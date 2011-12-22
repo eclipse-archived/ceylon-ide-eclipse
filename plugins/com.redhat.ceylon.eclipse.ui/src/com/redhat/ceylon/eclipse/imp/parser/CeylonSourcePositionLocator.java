@@ -10,6 +10,8 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.EditorUtility;
@@ -29,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -227,7 +230,38 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             Unit unit = node.getUnit();
             String fileName = unit.getFilename();
             String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
-            PhasedUnit phasedUnit = typeChecker.getPhasedUnitFromRelativePath(packagePath + "/" + fileName);
+            String fileRelativePath = packagePath + "/" + fileName;
+            PhasedUnit phasedUnit = typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+            if (phasedUnit != null) {
+                if (! phasedUnit.isFullyTyped()) {
+                    IProject currentProject = null;
+                    IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+                    for (IProject project : projects) {
+                        TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                        if (alternateTypeChecker == typeChecker) {
+                            currentProject = project;
+                            break;
+                        }
+                    }
+                    
+                    if (currentProject != null) {
+                        List<IProject> requiredProjects;
+                        requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
+                        for (IProject project : requiredProjects) {
+                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                            if (requiredProjectTypeChecker == null) {
+                                continue;
+                            }
+                            PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+                            if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+                                phasedUnit = requiredProjectPhasedUnit;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
             if (phasedUnit != null) {
                 VirtualFile unitFile = phasedUnit.getUnitFile();
                 if (unitFile instanceof IFileVirtualFile) {

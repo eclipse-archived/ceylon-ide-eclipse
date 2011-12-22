@@ -12,9 +12,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.tools.JavaFileObject;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.io.ZipInputStream;
+import net.lingala.zip4j.model.FileHeader;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -32,6 +38,7 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -64,9 +71,11 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import com.redhat.ceylon.compiler.codegen.JavaPositionsRetriever;
 import com.redhat.ceylon.compiler.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.tools.CeyloncTool;
+import com.redhat.ceylon.compiler.tools.JarOutputRepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -83,6 +92,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.util.RepositoryLister;
+import com.redhat.ceylon.compiler.util.Util;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
@@ -361,22 +371,31 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         @Override
                         public boolean visit(IResourceDelta resourceDelta) throws CoreException {
                             IResource resource = resourceDelta.getResource();
-                            if (resourceDelta.getKind() == IResourceDelta.REMOVED && resource instanceof IFolder) {
-                                IFolder folder = (IFolder) resource; 
-                                Package pkg = retrievePackage(folder);
-                                // If a package has been removed, then trigger a full build
-                                if (pkg != null) {
-                                    mustDoFullBuild.value = true;
-                                    return false;
+                            if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
+                                if (resource instanceof IFolder) {
+                                    IFolder folder = (IFolder) resource; 
+                                    Package pkg = retrievePackage(folder);
+                                    // If a package has been removed, then trigger a full build
+                                    if (pkg != null) {
+                                        mustDoFullBuild.value = true;
+                                        return false;
+                                    }
                                 }
                             }
-                            if (resource instanceof IFile && 
-                                    (resource.getName().equals(ModuleManager.MODULE_FILE) ||
-                                            resource.getName().equals(ModuleManager.PACKAGE_FILE))) {
-                                // If a module descriptor has been added, removed or changed, trigger a full build
-                                mustDoFullBuild.value = true;
-                                return false;
+                            
+                            if (resource instanceof IFile) {
+                                if (resource.getName().equals(ModuleManager.MODULE_FILE) ||
+                                        resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
+                                    // If a module descriptor has been added, removed or changed, trigger a full build
+                                    mustDoFullBuild.value = true;
+                                    return false;
+                                } else {
+                                    if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
+                                        removeObsoleteClassFiles((IFile)resource);
+                                    }
+                                }
                             }
+                                    
                             return true;
                         }
                     });
@@ -649,7 +668,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     sourceFolder.makeRelativeTo(project.getFullPath())));
         }
 
-        typeCheckerBuilder.addRepository(CeylonPlugin.getInstance().getCeylonRepository());
+        for (String repo : getRepositories(sourceProject.getRawProject(), false)) {
+            typeCheckerBuilder.addRepository(new File(repo));
+        }
         monitor.worked(1);
         monitor.subTask("Parsing Ceylon source files for project " 
                     + project.getName());
@@ -681,13 +702,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-src");
         options.add(srcPath);
         
-        String repositories = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
-        for (File repository : getAdditionalRepositories(sourceProject)) {
-            repositories += File.pathSeparator;
-            repositories += repository.getAbsolutePath();
-        }
+        String repositoryForLanguageModule = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
         options.add("-rep");
-        options.add(repositories);
+        options.add(repositoryForLanguageModule);
+        for (String repository : getRepositories(sourceProject.getRawProject(), false)) {
+            options.add("-rep");
+            options.add(repository);
+        }
 
         String verbose = System.getProperty("ceylon.verbose");
 		if (verbose!=null && "true".equals(verbose)) {
@@ -744,8 +765,55 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return false;
     }
 
-	private List<File> getAdditionalRepositories(ISourceProject sourceProject) {
-        return Collections.emptyList(); // TODO : should be populated with dependent project output directory for exemple
+	public static List<String> getRepositories(IProject project, boolean asSources) {
+        List<String> projectRepositories = new ArrayList<String>();
+        projectRepositories.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+        projectRepositories.addAll(getUserRepositories(project, asSources));
+        return Util.addDefaultRepositories(projectRepositories);
+    }
+
+	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
+	    List<IProject> requiredProjects = new ArrayList<IProject>();
+        try {
+            for (String requiredProjectName : javaProject.getRequiredProjectNames()) {
+                IProject requiredProject = javaProject.getProject().getWorkspace().getRoot().getProject(requiredProjectName);
+                if (requiredProject != null) {
+                    requiredProjects.add(requiredProject);
+                }
+            }
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+        }
+        return requiredProjects;
+	}
+	
+    public static List<IProject> getRequiredProjects(IProject project) {
+        IJavaProject javaProject = JavaCore.create(project);
+        if (javaProject == null) {
+            return Collections.emptyList();
+        }
+        return getRequiredProjects(javaProject);
+    }
+    
+	public static List<String> getUserRepositories(IProject project, boolean asSources) {
+        List<String> userRepos = new ArrayList<String>();
+
+        List<IProject> requiredProjects = getRequiredProjects(project);
+        for (IProject requiredProject : requiredProjects) {
+            IJavaProject requiredJavaProject = JavaCore.create(requiredProject);
+            if (requiredJavaProject == null) {
+                continue;
+            }
+            userRepos.add(getOutputDirectory(requiredJavaProject).getAbsolutePath());
+        }
+        
+        userRepos.add(project.getLocation().append("modules").toOSString());
+        
+        for (IProject requiredProject : requiredProjects) {
+            userRepos.add(requiredProject.getLocation().append("modules").toOSString());
+        }
+        
+        return userRepos;
     }
 
     private static File toFile(IProject project, IPath path) {
@@ -1180,6 +1248,65 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
+
+    private void removeObsoleteClassFiles(IFile file) {
+        Package pkg = retrievePackage(file.getParent());
+        if (pkg == null) {
+            return;
+        }
+        IProject project = file.getProject();
+        Module module = pkg.getModule();
+        TypeChecker typeChecker = typeCheckers.get(project);
+        if (typeChecker == null) {
+            return;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(project);
+        final File outputDirectory = getOutputDirectory(javaProject);
+        File moduleDir = Util.getModulePath(outputDirectory, module);
+        File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
+        if(moduleJar.exists()){
+            IPath filePath = file.getProjectRelativePath();
+            IPath sourceFolder = retrieveSourceFolder(filePath);
+            if (sourceFolder == null) {
+                return;
+            }
+            String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+            
+            try {
+                ZipFile zipFile = new ZipFile(moduleJar);
+                FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
+                List<String> entriesToDelete = new ArrayList<String>();
+                ZipInputStream zis = zipFile.getInputStream(fileHeader);
+                try {
+                    Properties mapping = new Properties();
+                    mapping.load(zis);
+                    for (String className : mapping.stringPropertyNames()) {
+                        String sourceFile = mapping.getProperty(className);
+                        if (relativeFilePath.equals(sourceFile)) {
+                            entriesToDelete.add(className);
+                        }
+                    }
+                } finally {
+                    zis.close();
+                }
+                for (String entryToDelete : entriesToDelete) {
+                    zipFile.removeFile(entryToDelete);
+                }
+            } catch (ZipException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            // Open it as Zip
+            // Load Mapping from properties
+            // for all the classes that have a source file with 
+            
+        }
+    }
 
     public static File getOutputDirectory(IJavaProject javaProject) {
         return toFile(javaProject.getProject(), getProjectRelativeOutputDir(javaProject));

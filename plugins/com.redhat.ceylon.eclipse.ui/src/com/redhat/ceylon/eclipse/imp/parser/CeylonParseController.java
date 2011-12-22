@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -198,10 +199,20 @@ public class CeylonParseController extends ParseControllerBase {
         if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
         if (srcDir==null || typeChecker == null) {
-        	TypeChecker tc = new TypeCheckerBuilder()
-        	.verbose(false)
-        	.addRepository(CeylonPlugin.getInstance().getCeylonRepository())
-        	.getTypeChecker();
+        	TypeCheckerBuilder tcb = new TypeCheckerBuilder()
+        	.verbose(false);
+        	
+        	if (sourceProject == null) {
+                for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+                    
+                }
+        	}
+        	
+            for (String repo : CeylonBuilder.getRepositories(sourceProject.getRawProject(), true)) {
+                tcb.addRepository(new File(repo));
+            }
+        	
+        	TypeChecker tc = tcb.getTypeChecker();
             tc.process();
             typeChecker = tc;
         }
