@@ -34,6 +34,6 @@ Bundle-ClassPath: ./,
  lib/zip4j_1.2.6.jar,
  external:$ceylon.repo$/com/redhat/ceylon/compiler/$ceylon.compiler.version$/com.redhat.ceylon.compiler-$ceylon.compiler.version$.jar,
  external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
- defaultRepository/com/redhat/ceylon/compiler/0.1/com.redhat.ceylon.compiler-0.1.jar,
- defaultRepository/com/redhat/ceylon/typechecker/0.1/com.redhat.ceylon.typechecker-0.1.jar
+ lib/com.redhat.ceylon.compiler-0.1-ide.jar,
+ lib/com.redhat.ceylon.typechecker-0.1-ide.jar
 
