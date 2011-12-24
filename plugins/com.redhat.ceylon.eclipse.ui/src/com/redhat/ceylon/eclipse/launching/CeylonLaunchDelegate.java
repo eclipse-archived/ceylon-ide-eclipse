@@ -3,17 +3,25 @@ package com.redhat.ceylon.eclipse.launching;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
+import org.antlr.gunit.gUnitParser.file_return;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.io.ArtifactProvider;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
@@ -33,40 +41,50 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         final List<String> classpathList = new ArrayList<String>(Arrays.asList(javaClasspath));
 
         TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(javaProject.getProject());
-        RepositoryLister archiveLister = new RepositoryLister();
+
+        Context context = typeChecker.getContext();
+        Modules projectModules = context.getModules();
+
+        Set<Module> modulesToAdd = new HashSet<Module>();
+        modulesToAdd.add(projectModules.getLanguageModule());
+        for (Module module : projectModules.getListOfModules()) {
+            if (! module.equals(projectModules.getDefaultModule())) {
+                modulesToAdd.add(module); 
+            }
+        }
         
-        //first add modules in the current project
-        //(we want them first in the classpath)
+        List<ArtifactProvider> providersToSearch = new ArrayList<ArtifactProvider>();
+        
         File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
         if (outputDirectory != null) {
-            archiveLister.list(outputDirectory, new RepositoryLister.Actions() {
-                @Override
-                public void doWithFile(File path) {
-                    classpathList.add(path.getAbsolutePath());
-                }
-            });
+            ArtifactProvider outputProvider = new ArtifactProvider(new FileSystemVirtualFile(outputDirectory), context.getVfs());
+            providersToSearch.add(outputProvider);
         }
         
-        //then add modules in the module repo
-        //TODO: don't add modules with the same name as
-        //      as a module belonging to the project
-        for (ArtifactProvider provider : typeChecker.getContext().getArtifactProviders()) {
-            VirtualFile repository = provider.getHomeRepo();
-            if (repository instanceof FileSystemVirtualFile) {
-                archiveLister.list(((FileSystemVirtualFile)repository).getFile(), new RepositoryLister.Actions() {
-                    @Override
-                    public void doWithFile(File path) {
-                        classpathList.add(path.getAbsolutePath());
+        classpathList.add(new File(new File(outputDirectory, "default"), "default.car").getAbsolutePath());
+
+        providersToSearch.addAll(context.getArtifactProviders());
+        
+        for (Module module : modulesToAdd) {
+            boolean artifactFound = false;
+            for (ArtifactProvider provider : providersToSearch) {
+                VirtualFile moduleArtifact = provider.getArtifact(module.getName(), module.getVersion(), Arrays.asList("car", "jar"));
+                if (moduleArtifact != null) {
+                    String modulePath = moduleArtifact.getPath();
+                    File moduleFile = new File(modulePath);
+                    if (moduleFile.exists()) {
+                        classpathList.add(moduleFile.getAbsolutePath());
+                        artifactFound = true;
+                        break;
+                    } else {
+                        System.out.println("Ignoring non-existing module artifact (" + modulePath + ") for launching classpath");
                     }
-                });
+                }
             }
-            else {
-                System.out.println("Ignoring non-filesystem repositories for launching classpath");
+            if (! artifactFound) {
+                System.out.println("Artifact not found for module '" + module.getNameAsString() + "/" + module.getVersion() + "' for launching classpath");
             }
         }
-                
-        // Also add the language car
-        classpathList.add(languageCar); 
 
         return classpathList.toArray(new String [classpathList.size()]);
     }
