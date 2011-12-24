@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,8 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.internal.resources.ResourceStatus;
+import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -34,6 +37,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -44,6 +48,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.language.Language;
@@ -59,9 +64,13 @@ import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.internal.core.builder.JavaBuilder;
+import org.eclipse.jdt.internal.core.util.Messages;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -336,10 +345,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	}
 
     @Override
-    protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
+    protected IProject[] build(final int kind, Map args, IProgressMonitor monitor) throws CoreException {
         if (getPreferencesService().getProject() == null) {
             getPreferencesService().setProject(getProject());
         }
+        
+        MessageConsole console = findConsole();
+        console.clearConsole();
         
         boolean emitDiags= getDiagPreference();
 
@@ -400,7 +412,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     });
                 } catch (CoreException e) {
-                    e.printStackTrace();
+                    getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
                     mustDoFullBuild.value = true;
                 }
             }
@@ -431,6 +443,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             } catch (CoreException e) {
                 getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
             }
+            clearProjectMarkers();
             clearMarkersOn(allSources);
             builtPhasedUnits = fullBuild(project, sourceProject, monitor);
             if (builtPhasedUnits== null)
@@ -544,6 +557,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             pu.collectUnitDependencies(typeChecker.getPhasedUnits());
         }
 
+        for (final IProject dependingOnProject : project.getReferencingProjects()) {
+            Job buildJob = new Job("Building Ceylon project " + dependingOnProject.getName()) {
+                @Override
+                public IStatus run(IProgressMonitor monitor) {
+                    try {
+                        dependingOnProject.build(mustDoFullBuild.value ? FULL_BUILD : kind, monitor);
+                    } catch (CoreException e) {
+                        return new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), "Job '" + this.getName() + "' failed", e);
+                    }
+                    return Status.OK_STATUS;
+                }
+                
+            };
+            buildJob.schedule();
+        }
+        
         monitor.worked(1);
         monitor.done();
         return new IProject[] {project};
@@ -639,11 +668,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return phasedUnitsToUpdate;
     }
 
-    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) {
+    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
         System.out.println("Starting full build");
 
         monitor.beginTask("Full Ceylon Build", 4);
-        TypeChecker typeChecker = buildCeylonModel(project, sourceProject,
+        TypeChecker typeChecker = buildCeylonModel(project, sourceProject, 
                 monitor);
 
         monitor.worked(1);
@@ -655,7 +684,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static TypeChecker buildCeylonModel(IProject project,
-            ISourceProject sourceProject, IProgressMonitor monitor) {
+            ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
         monitor.subTask("Collecting Ceylon source files for project " 
                     + project.getName());
 
@@ -668,7 +697,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     sourceFolder.makeRelativeTo(project.getFullPath())));
         }
 
-        for (String repo : getRepositories(sourceProject.getRawProject(), false)) {
+        for (String repo : getRepositories(project)) {
             typeCheckerBuilder.addRepository(new File(repo));
         }
         monitor.worked(1);
@@ -688,7 +717,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker;
     }
 
-    private boolean generateBinaries(IProject project, ISourceProject sourceProject, Collection<IFile> filesToCompile, IProgressMonitor monitor) {
+    private boolean generateBinaries(IProject project, ISourceProject sourceProject, Collection<IFile> filesToCompile, IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
 
         String srcPath = "";
@@ -702,10 +731,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add("-src");
         options.add(srcPath);
         
-        String repositoryForLanguageModule = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
-        options.add("-rep");
-        options.add(repositoryForLanguageModule);
-        for (String repository : getRepositories(sourceProject.getRawProject(), false)) {
+        for (String repository : getUserRepositories(sourceProject.getRawProject())) {
             options.add("-rep");
             options.add(repository);
         }
@@ -742,8 +768,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             
             com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
-            MessageConsole console = findConsole(getConsoleName());
-            console.clearConsole();
+            MessageConsole console = findConsole();
             context.put(Log.outKey, new PrintWriter(console.newMessageStream(), true));
             
             CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
@@ -765,10 +790,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return false;
     }
 
-	public static List<String> getRepositories(IProject project, boolean asSources) {
+	public static List<String> getRepositories(IProject project) throws CoreException {
         List<String> projectRepositories = new ArrayList<String>();
-        projectRepositories.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
-        projectRepositories.addAll(getUserRepositories(project, asSources));
+        projectRepositories.addAll(getUserRepositories(project));
         return Util.addDefaultRepositories(projectRepositories);
     }
 
@@ -777,6 +801,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         try {
             for (String requiredProjectName : javaProject.getRequiredProjectNames()) {
                 IProject requiredProject = javaProject.getProject().getWorkspace().getRoot().getProject(requiredProjectName);
+                
                 if (requiredProject != null) {
                     requiredProjects.add(requiredProject);
                 }
@@ -795,22 +820,72 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return getRequiredProjects(javaProject);
     }
     
-	public static List<String> getUserRepositories(IProject project, boolean asSources) {
+
+    public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = new ArrayList<String>();
 
-        List<IProject> requiredProjects = getRequiredProjects(project);
-        for (IProject requiredProject : requiredProjects) {
-            IJavaProject requiredJavaProject = JavaCore.create(requiredProject);
-            if (requiredJavaProject == null) {
-                continue;
+        userRepos.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+        
+        if (project != null) {
+            List<IProject> requiredProjects = getRequiredProjects(project);
+            for (IProject requiredProject : requiredProjects) {
+                if (! requiredProject.isOpen()) {
+                    throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is not opened.", null));
+                } else {
+                    if (! requiredProject.hasNature(CeylonNature.NATURE_ID)) {
+                        IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+                        boolean oneCeylonMarker = false;
+                        for (IMarker marker : projectMarkers) {
+                            Object sourceId = marker.getAttribute(IMarker.SOURCE_ID);
+                            if ("Ceylon".equals(sourceId)) {
+                                oneCeylonMarker = true;
+                                break;
+                            }
+                        }
+                        if (! oneCeylonMarker) {
+                            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                            marker.setAttributes(
+                                new String[] {
+                                    IMarker.MESSAGE,
+                                    IMarker.SEVERITY,
+                                    IMarker.LOCATION,
+                                    IJavaModelMarker.CYCLE_DETECTED,
+                                    IJavaModelMarker.CLASSPATH_FILE_FORMAT,
+                                    IJavaModelMarker.ID,
+                                    IJavaModelMarker.ARGUMENTS ,
+                                    IJavaModelMarker.CATEGORY_ID,
+                                    IMarker.SOURCE_ID,
+                                },
+                                new Object[] {
+                                    "Project '" + project.getName() + "' is requiring project: '" + requiredProject.getName() + "', which doesn't have the Ceylon nature",
+                                    new Integer(IMarker.SEVERITY_ERROR),
+                                    "Build Path",
+                                    "false",
+                                    "false",
+                                    new Integer(IResourceStatus.OPERATION_FAILED),
+                                    "",
+                                    new Integer(CategorizedProblem.CAT_BUILDPATH),
+                                    "Ceylon",
+                                }
+                            );
+                        }
+
+                        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is has not the Ceylon Nature.", null));
+                    }
+                }
+                    
+                IJavaProject requiredJavaProject = JavaCore.create(requiredProject);
+                if (requiredJavaProject == null) {
+                    continue;
+                }
+                userRepos.add(getOutputDirectory(requiredJavaProject).getAbsolutePath());
             }
-            userRepos.add(getOutputDirectory(requiredJavaProject).getAbsolutePath());
-        }
-        
-        userRepos.add(project.getLocation().append("modules").toOSString());
-        
-        for (IProject requiredProject : requiredProjects) {
-            userRepos.add(requiredProject.getLocation().append("modules").toOSString());
+            
+            userRepos.add(project.getLocation().append("modules").toOSString());
+            
+            for (IProject requiredProject : requiredProjects) {
+                userRepos.add(requiredProject.getLocation().append("modules").toOSString());
+            }
         }
         
         return userRepos;
@@ -831,6 +906,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             file.deleteMarkers(getWarningMarkerID(), true, IResource.DEPTH_INFINITE);
             file.deleteMarkers(getInfoMarkerID(), true, IResource.DEPTH_INFINITE);
         } catch (CoreException e) {
+        }
+    }
+
+    protected void clearProjectMarkers() {
+        try {
+            getProject().deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+        } catch (CoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -982,33 +1066,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         });
     }
 
-    /**
-     * Derived classes may override to specify a unique name for a separate console;
-     * otherwise, all IMP builders share a single console. @see IMP_BUILDER_CONSOLE.
-     * @return the name of the console to use for diagnostic output, if any
-     */
-    protected String getConsoleName() {
-        return CEYLON_CONSOLE;
-    }
-
-    /**
-     * If you want your builder to have its own console, be sure to override
-     * getConsoleName().
-     * @return the console whose name is returned by getConsoleName()
-     */
-    protected MessageConsoleStream getConsoleStream() {
-        return findConsole(getConsoleName()).newMessageStream();
+    protected static MessageConsoleStream getConsoleStream() {
+        return findConsole().newMessageStream();
     }
 
     /**
      * Find or create the console with the given name
      * @param consoleName
      */
-    protected MessageConsole findConsole(String consoleName) {
-        if (consoleName == null) {
-            RuntimePlugin.getInstance().getLog().log(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, "BuilderBase.findConsole() called with a null console name; substituting default console"));
-            consoleName= CEYLON_CONSOLE;
-        }
+    protected static MessageConsole findConsole() {
+        String consoleName = CEYLON_CONSOLE;
         MessageConsole myConsole= null;
         final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
         IConsole[] consoles= consoleManager.getConsoles();
@@ -1064,6 +1131,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         catch (CoreException e) {
             getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
         }
+        clearProjectMarkers();
         clearMarkersOn(allSources);
     }
     
