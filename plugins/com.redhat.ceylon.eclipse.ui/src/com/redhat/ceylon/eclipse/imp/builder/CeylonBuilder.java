@@ -407,6 +407,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     }
                                 }
                             }
+                            
+                            if (resource instanceof IProject && 
+                                    ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
+                                mustDoFullBuild.value = true;
+                                return false;
+                            }
                                     
                             return true;
                         }
@@ -486,7 +492,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 if (phasedUnitsDependingOn != null) {
                                     for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
                                         IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
-                                        additions.add(depFile);
+                                        if (depFile.getProject().equals(project)) {
+                                            additions.add(depFile);
+                                        } else {
+                                            depFile.touch(monitor);
+                                        }
                                     }
                                 }
                             }
@@ -525,6 +535,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             fSourcesToCompile.add((IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource());
                         }
                     }
+                    
+                    for (IProject referencingProject : project.getReferencingProjects()) {
+                        TypeChecker referencingTypeChecker = getProjectTypeChecker(referencingProject);
+                        if (referencingTypeChecker != null) {
+                            for (PhasedUnit phasedUnit : referencingTypeChecker.getPhasedUnits().getPhasedUnits()) {
+                                if (phasedUnit.getUnit().getUnresolvedReferences().size() > 0) {
+                                    IFile depFile= (IFile) ((IFileVirtualFile) phasedUnit.getUnitFile()).getResource();
+                                    depFile.touch(monitor);
+                                }
+                            }
+                        }
+                    }
                 }
                 if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
@@ -535,6 +557,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (builtPhasedUnits== null)
                     return new IProject[0];
                 generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
+                updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
+                
             } catch (CoreException e) {
                 getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
             }
@@ -553,8 +577,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 });
             addTaskMarkers(file, tokens);
         }
+        
+        List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
+        
+        for (IProject requiredProject : getRequiredProjects(project)) {
+            TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(requiredProject);
+            if (requiredProjectTypeChecker != null) {
+                phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+            }
+        }
+        
         for (PhasedUnit pu : builtPhasedUnits) {
-            pu.collectUnitDependencies(typeChecker.getPhasedUnits());
+            pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
         }
 
         for (final IProject dependingOnProject : project.getReferencingProjects()) {
@@ -576,6 +610,47 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         monitor.worked(1);
         monitor.done();
         return new IProject[] {project};
+    }
+
+    private void updateExternalPhasedUnitsInReferencingProjects(
+            IProject project, List<PhasedUnit> builtPhasedUnits) {
+        for (IProject referencingProject : project.getReferencingProjects()) {
+            TypeChecker referencingTypeChecker = getProjectTypeChecker(referencingProject);
+            if (referencingTypeChecker != null) {
+                List<PhasedUnit> referencingPhasedUnits = new ArrayList<PhasedUnit>();
+                for (PhasedUnit builtPhasedUnit : builtPhasedUnits) {
+                    List<PhasedUnits> phasedUnitsOfDependencies = referencingTypeChecker.getPhasedUnitsOfDependencies();
+                    for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
+                        String relativePath = builtPhasedUnit.getPathRelativeToSrcDir();
+                        PhasedUnit referencingPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(relativePath);
+                        if (referencingPhasedUnit != null) {
+                            phasedUnitsOfDependency.removePhasedUnitForRelativePath(relativePath);
+                            PhasedUnit newReferencingPhasedUnit = new PhasedUnit(referencingPhasedUnit.getUnitFile(), 
+                                    referencingPhasedUnit.getSrcDir(), 
+                                    builtPhasedUnit.getCompilationUnit(), 
+                                    referencingPhasedUnit.getPackage(), 
+                                    phasedUnitsOfDependency.getModuleManager(), 
+                                    referencingTypeChecker.getContext(), 
+                                    builtPhasedUnit.getTokens());
+                            phasedUnitsOfDependency.addPhasedUnit(newReferencingPhasedUnit.getUnitFile(), 
+                                    newReferencingPhasedUnit);
+                            // replace referencingPhasedUnit
+                            referencingPhasedUnits.add(newReferencingPhasedUnit);
+                        }
+                    }
+                }
+                
+                for (PhasedUnit pu : referencingPhasedUnits) {
+                    pu.scanDeclarations();
+                }
+                for (PhasedUnit pu : referencingPhasedUnits) {
+                    pu.scanTypeDeclarations();
+                }
+                for (PhasedUnit pu : referencingPhasedUnits) {
+                    pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+                }
+            }
+        }
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project,
