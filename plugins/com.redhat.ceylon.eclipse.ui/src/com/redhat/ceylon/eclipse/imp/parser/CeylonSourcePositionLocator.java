@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.parser;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -235,7 +236,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             if (phasedUnit != null) {
                 if (! phasedUnit.isFullyTyped()) {
                     IProject currentProject = null;
-                    IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+                    Collection<IProject> projects = CeylonBuilder.getProjects();
                     for (IProject project : projects) {
                         TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
                         if (alternateTypeChecker == typeChecker) {
