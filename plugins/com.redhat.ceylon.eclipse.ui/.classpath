@@ -4,8 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.compiler-0.1-ide.jar" sourcepath="/ceylon-compiler/src"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.1-ide.jar" sourcepath="/ceylon-spec/src"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.compiler-0.1-ide.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.1-ide.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
