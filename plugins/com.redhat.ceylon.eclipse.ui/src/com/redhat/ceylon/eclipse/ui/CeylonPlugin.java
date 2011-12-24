@@ -81,6 +81,9 @@ import org.eclipse.swt.graphics.RGB;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
@@ -216,6 +219,24 @@ public class CeylonPlugin extends PluginBase {
                         ISourceProject sourceProject = ModelFactory.open(project);
                         CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
                     }
+                    
+                    for (IProject project : interestingProjects) {
+                        TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                        if (typeChecker != null) {
+                            List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
+                            
+                            for (IProject requiredProject : CeylonBuilder.getRequiredProjects(project)) {
+                                TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
+                                if (requiredProjectTypeChecker != null) {
+                                    phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+                                }
+                            }
+                            
+                            for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+                                pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+                            }
+                        }
+                    }
                 } catch (CoreException e) {
                     return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                 } catch (ModelException e) {
@@ -275,6 +296,23 @@ public class CeylonPlugin extends PluginBase {
                                             };
                                             buildJob.setRule(workspaceRoot);
                                             buildJob.schedule();
+                                        }
+                                    }
+                                    for (IProject projectToBuild : projectsToBuild) {
+                                        TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                                        if (typeChecker != null) {
+                                            List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
+                                            
+                                            for (IProject requiredProject : CeylonBuilder.getRequiredProjects(projectToBuild)) {
+                                                TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
+                                                if (requiredProjectTypeChecker != null) {
+                                                    phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+                                                }
+                                            }
+                                            
+                                            for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+                                                pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+                                            }
                                         }
                                     }
                                 } catch (CoreException e) {
