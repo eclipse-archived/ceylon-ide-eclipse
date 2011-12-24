@@ -11,9 +11,12 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -28,6 +31,7 @@ import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -142,10 +146,19 @@ public class CeylonParseController extends ParseControllerBase {
         if (sourceProject!=null) {
             srcDir = getSourceFolder(sourceProject, resolvedPath);
             
-            typeChecker = CeylonBuilder.getProjectTypeChecker(sourceProject.getRawProject());
+            IProject project = sourceProject.getRawProject();
+            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker == null) {
-                rescheduleJobIfNecessary();
-                return fCurrentAst;
+                if (project != null) {
+                    try {
+                        IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+                        if (projectMarkers.length ==0) {
+                            rescheduleJobIfNecessary();
+                            return fCurrentAst;
+                        }
+                    } catch (CoreException e) {
+                    }
+                }
             }
         }
         
@@ -202,14 +215,24 @@ public class CeylonParseController extends ParseControllerBase {
         	TypeCheckerBuilder tcb = new TypeCheckerBuilder()
         	.verbose(false);
         	
-        	if (sourceProject == null) {
+            IProject project = null;
+            if (sourceProject != null) {
+                project = sourceProject.getRawProject();
+            } else {
                 for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-                    
+                    if (p.getLocation().isPrefixOf(path)) {
+                        project = p;
+                        break;
+                    }
                 }
-        	}
-        	
-            for (String repo : CeylonBuilder.getRepositories(sourceProject.getRawProject(), true)) {
-                tcb.addRepository(new File(repo));
+            }
+            
+            try {
+                for (String repo : CeylonBuilder.getRepositories(project)) {
+                    tcb.addRepository(new File(repo));
+                }
+            } catch (CoreException e) {
+                throw new RuntimeException(e);
             }
         	
         	TypeChecker tc = tcb.getTypeChecker();
