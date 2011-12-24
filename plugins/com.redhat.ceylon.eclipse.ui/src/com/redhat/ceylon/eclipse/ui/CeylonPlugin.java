@@ -140,7 +140,7 @@ public class CeylonPlugin extends PluginBase {
 	    setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
 //        copyDefaultRepoIfNecessary();
         runInitialBuild();
-        registerProjectOpenListener();
+        registerProjectOpenCloseListener();
 	}
 
 	@Override
@@ -217,11 +217,9 @@ public class CeylonPlugin extends PluginBase {
                         CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
                     }
                 } catch (CoreException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                 } catch (ModelException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                 }
                 return Status.OK_STATUS;
             }
@@ -231,7 +229,7 @@ public class CeylonPlugin extends PluginBase {
         buildJob.schedule();
     }
     
-    private void registerProjectOpenListener() {
+    private void registerProjectOpenCloseListener() {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         final IWorkspaceRoot workspaceRoot = workspace.getRoot();
         
@@ -251,24 +249,33 @@ public class CeylonPlugin extends PluginBase {
                             if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                                 final IProject project = (IProject) resource;
                                 try {
-                                    if (project.isOpen() && project.hasNature(CeylonNature.NATURE_ID)) {
-                                        Job buildJob = new Job("Building Ceylon Model for project " + project.getName()) {
-                                            @Override
-                                            public IStatus run(IProgressMonitor monitor) {
-                                                try {
-                                                    monitor.beginTask("Building Ceylon Model", 3);
-                                                    ISourceProject sourceProject = ModelFactory.open(project);
-                                                    CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
-                                                } catch (ModelException e) {
-                                                    // TODO Auto-generated catch block
-                                                    e.printStackTrace();
+                                    List<IProject> projectsToBuild = new ArrayList<IProject>();
+                                    projectsToBuild.add(project); 
+                                    for (IProject referencingProject : project.getReferencingProjects()) {
+                                        projectsToBuild.add(referencingProject);
+                                    }
+                                    for (final IProject projectToBuild : projectsToBuild) {
+                                        if (projectToBuild.isOpen() && projectToBuild.hasNature(CeylonNature.NATURE_ID)) {
+                                            Job buildJob = new Job("Building Ceylon Model for project " + projectToBuild.getName()) {
+                                                @Override
+                                                public IStatus run(IProgressMonitor monitor) {
+                                                    try {
+                                                        monitor.beginTask("Building Ceylon Model", 3);
+                                                        ISourceProject sourceProject = ModelFactory.open(projectToBuild);
+                                                        CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject,
+                                                                monitor);
+                                                    } catch (ModelException e) {
+                                                        return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
+                                                    } catch (CoreException e) {
+                                                        return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
+                                                    }
+                                                    return Status.OK_STATUS;
                                                 }
-                                                return Status.OK_STATUS;
-                                            }
-                                            
-                                        };
-                                        buildJob.setRule(workspaceRoot);
-                                        buildJob.schedule();
+                                                
+                                            };
+                                            buildJob.setRule(workspaceRoot);
+                                            buildJob.schedule();
+                                        }
                                     }
                                 } catch (CoreException e) {
                                     // TODO Auto-generated catch block
