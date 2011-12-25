@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFA
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_MODULE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
@@ -193,6 +194,7 @@ public class CeylonPlugin extends PluginBase {
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
         reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
+        reg.put(CEYLON_NEW_MODULE, image("newftrprj_wiz.png"));
         reg.put(CEYLON_EXPORT_CAR, image("jar_pack_wiz.png"));
 	}
 	
@@ -332,7 +334,7 @@ public class CeylonPlugin extends PluginBase {
     }
     
 
-    private void copyDefaultRepoIfNecessary() {
+    /*private void copyDefaultRepoIfNecessary() {
         File home = new File( System.getProperty("user.home") );
         File ceylon = new File( home, ".ceylon" );
         File repo = new File( ceylon, "repo" );
@@ -358,7 +360,7 @@ public class CeylonPlugin extends PluginBase {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
     
     public void copyDirectory(File sourceLocation , File targetLocation)
     throws IOException {

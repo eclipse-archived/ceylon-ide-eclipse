@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -44,7 +45,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         if (page == null) {
             page= new NewUnitWizardPage("New Ceylon Unit",
                     "Create a new Ceylon compilation unit that will contain Ceylon source.",
-                    "");
+                    "", CEYLON_NEW_FILE);
             page.init(selection);
         }
         addPage(page);

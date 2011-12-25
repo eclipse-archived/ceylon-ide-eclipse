@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_MODULE;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -79,7 +80,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         if (page == null) {
             page= new NewUnitWizardPage("New Ceylon Module",
                     "Create a runnable Ceylon module with module and package descriptors.",
-                    "run") {
+                    "run", CEYLON_NEW_MODULE) {
                 @Override
                 String getCompilationUnitLabel() {
                     return "Runnable compilation unit: ";

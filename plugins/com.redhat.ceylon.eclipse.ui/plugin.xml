@@ -199,7 +199,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
-             icon="icons/template_obj.gif"
+             icon="icons/feature_obj.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewModuleWizard">

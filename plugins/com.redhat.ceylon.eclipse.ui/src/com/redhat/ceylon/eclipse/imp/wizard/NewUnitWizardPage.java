@@ -50,9 +50,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     private IStructuredSelection selection;
     
-    NewUnitWizardPage(String title, String description, String defaultUnitName) {
+    NewUnitWizardPage(String title, String description, 
+    		String defaultUnitName, String icon) {
         super(title, title, CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_NEW_FILE));
+                .getImageRegistry().getDescriptor(icon));
         setDescription(description);
         unitName = defaultUnitName;
     }
