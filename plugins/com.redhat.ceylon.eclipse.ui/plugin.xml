@@ -197,8 +197,19 @@
            <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
+       <wizard
+             id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
+             icon="icons/template_obj.gif"
+             name="Ceylon Module"
+             category="com.redhat.ceylon.eclipse.ui.category"
+             class="com.redhat.ceylon.eclipse.imp.wizard.NewModuleWizard">
+           <description>Create a runnable Ceylon module with module and package descriptors</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+       <primaryWizard
+             id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
    </extension>
    
    <extension 
@@ -362,6 +373,8 @@
             <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
         </perspectiveExtension>
    </extension>
    
