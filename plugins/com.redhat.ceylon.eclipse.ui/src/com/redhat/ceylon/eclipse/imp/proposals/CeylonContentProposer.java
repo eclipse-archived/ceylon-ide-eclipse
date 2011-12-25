@@ -717,12 +717,19 @@ public class CeylonContentProposer implements IContentProposer {
     
     public static String getRefinementTextFor(Declaration d, ProducedReference pr, String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
+        if (isVariable(d)) {
+        	result.append("variable ");
+        }
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, result);
         appendImpl(d, indent, result);
         return result.toString();
     }
+
+	private static boolean isVariable(Declaration d) {
+		return d instanceof TypedDeclaration && ((TypedDeclaration) d).isVariable();
+	}
     
     private static String getAttributeTextFor(Declaration d) {
         StringBuilder result = new StringBuilder("shared ");
@@ -740,6 +747,9 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static String getRefinementDescriptionFor(Declaration d, ProducedReference pr) {
         StringBuilder result = new StringBuilder("shared actual ");
+        if (isVariable(d)) {
+        	result.append("variable ");
+        }
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, result);
@@ -965,7 +975,9 @@ public class CeylonContentProposer implements IContentProposer {
                     " {}" : " {" + extraIndent + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
-            result.append(" = bottom;");
+            result.append(" ")
+                .append(isVariable(d) ? ":=" : "=")
+                .append(" bottom;");
         }
         else {
             result.append(" {}");
