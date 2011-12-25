@@ -43,17 +43,18 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
-    private String unitName="";
+    private String unitName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private boolean includePreamble = true;
     
-    IStructuredSelection selection;
+    private IStructuredSelection selection;
     
-    NewUnitWizardPage() {
-        super("New Ceylon Unit", "New Ceylon Unit", CeylonPlugin.getInstance()
+    NewUnitWizardPage(String title, String description, String defaultUnitName) {
+        super(title, title, CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_NEW_FILE));
-        setDescription("Create a new Ceylon compilation unit that will contain Ceylon source.");
+        setDescription(description);
+        unitName = defaultUnitName;
     }
 
     private IJavaElement getSelectedElement() {
@@ -81,26 +82,31 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         layout.numColumns = 4;
         composite.setLayout(layout);
         
-        Text name = createNameField(composite);
-        createSeparator(composite);
-        createFolderAndPackageFields(composite);
-        name.forceFocus();
+        createControls(composite);
         
         setControl(composite);
 
         Dialog.applyDialogFont(composite);
     }
 
-	private void createSeparator(Composite composite) {
-		Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+	void createControls(Composite composite) {
+		Text name = createNameField(composite);
+        createSeparator(composite);
+        createFolderField(composite);
+        createPackageField(composite);
+		name.forceFocus();
+	}
+
+    void createSeparator(Composite composite) {
+        Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sgd.horizontalSpan = 4;
         sep.setLayoutData(sgd);
-	}
+    }
 
-	private Text createNameField(Composite composite) {
-		Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        nameLabel.setText("Compilation unit name: ");
+    Text createNameField(Composite composite) {
+        Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        nameLabel.setText(getCompilationUnitLabel());
         GridData lgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         lgd.horizontalSpan = 1;
         nameLabel.setLayoutData(lgd);
@@ -117,6 +123,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 setPageComplete(isComplete());
             }
         });
+        name.setText(unitName);
         
         new Label(composite, SWT.NONE);        
         new Label(composite, SWT.NONE);
@@ -160,11 +167,15 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-		return name;
-	}
+        return name;
+    }
 
-	private void createFolderAndPackageFields(Composite composite) {
-		Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+    String getCompilationUnitLabel() {
+        return "Compilation unit name: ";
+    }
+
+    Text createFolderField(Composite composite) {
+        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Source folder: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 1;
@@ -221,9 +232,13 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        return folder;
+    }
+    
+    Text createPackageField(Composite composite) {
         
         Label packageLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        packageLabel.setText("Package: ");
+        packageLabel.setText(getPackageLabel());
         GridData plgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         plgd.horizontalSpan = 1;
         packageLabel.setLayoutData(plgd);
@@ -276,7 +291,12 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-	}
+        return pkg;
+    }
+
+    String getPackageLabel() {
+        return "Package: ";
+    }
 
     public void initFromSelection() {
         IJavaElement je = getSelectedElement();
