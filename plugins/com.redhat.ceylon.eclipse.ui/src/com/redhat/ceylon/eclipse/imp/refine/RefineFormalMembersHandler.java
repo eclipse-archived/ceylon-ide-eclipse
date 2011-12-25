@@ -26,12 +26,14 @@ import org.eclipse.ui.IFileEditorInput;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class RefineFormalMembersHandler extends AbstractHandler {
     
@@ -93,7 +95,8 @@ public class RefineFormalMembersHandler extends AbstractHandler {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                result.append(indent).append(getRefinementTextFor(d, indent)).append(indentAfter);
+            	ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(node, d);
+                result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
             }
         }
         change.setEdit(new InsertEdit(offset, result.toString()));
