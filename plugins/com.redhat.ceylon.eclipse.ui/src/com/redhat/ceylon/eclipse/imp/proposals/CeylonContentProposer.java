@@ -67,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -423,16 +424,30 @@ public class CeylonContentProposer implements IContentProposer {
         if ((d.isDefault() || d.isFormal()) &&
                 node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+            ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: substitute type arguments of subtype
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(sourceProposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                             getDocumentationFor(cpc, d), 
-                            getRefinementDescriptionFor(d), 
-                            getRefinementTextFor(d, "\n" + getIndent(node, doc)), false));
+                            getRefinementDescriptionFor(d, pr), 
+                            getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), false));
         }
     }
 
+	public static ProducedReference getRefinedProducedReference(Node node,
+			Declaration d) {
+		ProducedType outerType = node.getScope().getDeclaringType(d);
+		List<ProducedType> params = new ArrayList<ProducedType>();
+		if (d instanceof Generic) {
+		    for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
+			    params.add(tp.getType());
+		    }
+		}
+		ProducedReference pr = d.getProducedReference(outerType, params);
+		return pr;
+	}
+    
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
@@ -700,11 +715,11 @@ public class CeylonContentProposer implements IContentProposer {
         return result/*.append(" - invoke with named arguments")*/.toString();
     }
     
-    public static String getRefinementTextFor(Declaration d, String indent) {
+    public static String getRefinementTextFor(Declaration d, ProducedReference pr, String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
-        appendDeclarationText(d, result);
+        appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
-        appendParameters(d, result);
+        appendParameters(d, pr, result);
         appendImpl(d, indent, result);
         return result.toString();
     }
@@ -723,11 +738,11 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }*/
     
-    private static String getRefinementDescriptionFor(Declaration d) {
+    private static String getRefinementDescriptionFor(Declaration d, ProducedReference pr) {
         StringBuilder result = new StringBuilder("shared actual ");
-        appendDeclarationText(d, result);
+        appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
-        appendParameters(d, result);
+        appendParameters(d, pr, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
@@ -847,6 +862,9 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static void appendDeclarationText(Declaration d, StringBuilder result) {
+        appendDeclarationText(d, null, result);
+    }
+    private static void appendDeclarationText(Declaration d, ProducedReference pr, StringBuilder result) {
         if (d instanceof Class) {
             if (Character.isLowerCase(d.getName().charAt(0))) {
                 result.append("object");
@@ -861,7 +879,11 @@ public class CeylonContentProposer implements IContentProposer {
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null) {
-                String typeName = td.getType().getProducedTypeName();
+            	ProducedType type = td.getType();
+            	if (pr!=null) {
+            	    type = type.substitute(pr.getTypeArguments());
+            	}
+                String typeName = type.getProducedTypeName();
                 if (td instanceof Value &&
                         Character.isLowerCase(typeName.charAt(0))) {
                     result.append("object");
@@ -951,6 +973,10 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static void appendParameters(Declaration d, StringBuilder result) {
+    	appendParameters(d, null, result);
+    }
+    
+    private static void appendParameters(Declaration d, ProducedReference pr, StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null && !plists.isEmpty()) {
@@ -961,8 +987,12 @@ public class CeylonContentProposer implements IContentProposer {
                 else {
                     result.append("(");
                     for (Parameter p: params.getParameters()) {
-                        result.append(p.getType().getProducedTypeName()).append(" ")
-                        .append(p.getName()).append(", ");
+                    	ProducedType type = p.getType();
+                    	if (pr!=null) {
+                    		type = type.substitute(pr.getTypeArguments());
+                    	}
+                        result.append(type.getProducedTypeName()).append(" ")
+                            .append(p.getName()).append(", ");
                     }
                     result.setLength(result.length()-2);
                     result.append(")");

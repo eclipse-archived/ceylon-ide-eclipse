@@ -46,6 +46,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -62,6 +63,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -330,7 +332,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                result.append(indent).append(getRefinementTextFor(d, indent)).append(indentAfter);
+            	ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(node, d);
+                result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
             }
         }
         change.setEdit(new InsertEdit(offset, result.toString()));
