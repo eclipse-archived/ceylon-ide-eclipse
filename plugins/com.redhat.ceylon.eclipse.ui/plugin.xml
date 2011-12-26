@@ -199,17 +199,28 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
-             icon="icons/feature_obj.gif"
+             icon="icons/newftrprj_wiz.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewModuleWizard">
            <description>Create a runnable Ceylon module with module and package descriptors</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
+       <wizard
+             id="com.redhat.ceylon.eclipse.ui.newPackageWizard"
+             icon="icons/newpack_wiz.gif"
+             name="Ceylon Package"
+             category="com.redhat.ceylon.eclipse.ui.category"
+             class="com.redhat.ceylon.eclipse.imp.wizard.NewPackageWizard">
+           <description>Create a Ceylon package with a package descriptor</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
+       <primaryWizard
+             id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
    </extension>
    
    <extension 
@@ -375,6 +386,8 @@
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
         </perspectiveExtension>
    </extension>
    
