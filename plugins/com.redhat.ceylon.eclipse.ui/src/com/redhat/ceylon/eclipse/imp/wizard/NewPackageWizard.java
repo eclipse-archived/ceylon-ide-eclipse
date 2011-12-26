@@ -24,7 +24,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-    	FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
+        FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), "package", 
                 page.isIncludePreamble(), 
                 "Package package {\n    name='" + 
@@ -56,13 +56,18 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                     return "Package name: ";
                 }
                 @Override
-            	void createControls(Composite composite) {
-            		Text name = createPackageField(composite);
+                void createControls(Composite composite) {
+                    Text name = createPackageField(composite);
                     createSharedField(composite);
                     createSeparator(composite);
-            		createFolderField(composite);
-            		name.forceFocus();
-            	}
+                    createFolderField(composite);
+                    name.forceFocus();
+                }
+                @Override
+                boolean isComplete() {
+                    return super.isComplete() && 
+                            !getPackageFragment().isDefaultPackage();
+                }
             };
             page.init(selection);
         }

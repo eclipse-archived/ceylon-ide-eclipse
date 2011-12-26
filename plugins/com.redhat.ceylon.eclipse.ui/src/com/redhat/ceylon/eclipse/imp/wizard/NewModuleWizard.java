@@ -90,18 +90,23 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     return "Module name: ";
                 }
                 @Override
-        		String getSharedPackageLabel() {
-        			return "Create module with shared root package"; // (visible to other modules)
-        		}
+                String getSharedPackageLabel() {
+                    return "Create module with shared root package"; // (visible to other modules)
+                }
                 @Override
-            	void createControls(Composite composite) {
-            		Text name = createPackageField(composite);
+                void createControls(Composite composite) {
+                    Text name = createPackageField(composite);
                     createSharedField(composite);
                     createNameField(composite);
                     createSeparator(composite);
-            		createFolderField(composite);
-            		name.forceFocus();
-            	}
+                    createFolderField(composite);
+                    name.forceFocus();
+                }
+                @Override
+                boolean isComplete() {
+                    return super.isComplete() && 
+                            !getPackageFragment().isDefaultPackage();
+                }
             };
             page.init(selection);
         }
