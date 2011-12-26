@@ -52,7 +52,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private IStructuredSelection selection;
     
     NewUnitWizardPage(String title, String description, 
-    		String defaultUnitName, String icon) {
+            String defaultUnitName, String icon) {
         super(title, title, CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(icon));
         setDescription(description);
@@ -91,13 +91,13 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         Dialog.applyDialogFont(composite);
     }
 
-	void createControls(Composite composite) {
-		Text name = createNameField(composite);
+    void createControls(Composite composite) {
+        Text name = createNameField(composite);
         createSeparator(composite);
         createFolderField(composite);
         createPackageField(composite);
-		name.forceFocus();
-	}
+        name.forceFocus();
+    }
 
     void createSeparator(Composite composite) {
         Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
@@ -321,9 +321,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         });
     }
 
-	String getSharedPackageLabel() {
-		return "Create shared package (visible to other modules)";
-	}
+    String getSharedPackageLabel() {
+        return "Create shared package (visible to other modules)";
+    }
     
     String getPackageLabel() {
         return "Package: ";
@@ -347,7 +347,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         this.selection = selection;
     }
     
-    private boolean isComplete() {
+    boolean isComplete() {
         return packageFragment!=null &&
                 sourceDir!=null &&
                 sourceDir.getPackageFragment(packageFragment.getElementName())
@@ -372,8 +372,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
     
     public boolean isShared() {
-		return shared;
-	}
+        return shared;
+    }
     
     private String readHeader() {
         //TODO: use IRunnableWithProgress
