@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
@@ -46,7 +45,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String unitName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+    private String packageName = "";
     private boolean includePreamble = true;
+    private boolean shared = true;
     
     private IStructuredSelection selection;
     
@@ -168,6 +169,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
         return name;
     }
 
@@ -227,6 +229,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     sourceDir = pfr;
                     String folderName = sourceDir.getPath().toPortableString();
                     folder.setText(folderName);
+                    packageFragment = sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
                 }
             }
@@ -252,16 +255,19 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         pkg.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                String packageName = pkg.getText();
-                packageFragment = sourceDir.getPackageFragment(packageName);
+                packageName = pkg.getText();
+                if (sourceDir!=null) {
+                    packageFragment = sourceDir.getPackageFragment(packageName);
+                }
                 setPageComplete(isComplete());
             }
         });
+        pkg.setText(packageName);
         
-        if (packageFragment!=null) {
+        /*if (packageFragment!=null) {
             String pkgName = packageFragment.getElementName();
             pkg.setText(pkgName);
-        }
+        }*/
         
         Button selectPackage = new Button(composite, SWT.PUSH);
         selectPackage.setText("Browse...");
@@ -283,7 +289,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     dialog.open();
                     Object result = dialog.getFirstResult();
                     if (result!=null) {
-                        String packageName = ((IPackageFragment) result).getElementName();
+                        packageName = ((IPackageFragment) result).getElementName();
                         pkg.setText(packageName);
                         setPageComplete(isComplete());
                     }
@@ -295,6 +301,30 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         return pkg;
     }
 
+    void createSharedField(Composite composite) {        
+        new Label(composite, SWT.NONE);
+        
+        Button sharedPackage = new Button(composite, SWT.CHECK);
+        sharedPackage.setText(getSharedPackageLabel());
+        sharedPackage.setSelection(shared);
+        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        igd.horizontalSpan = 3;
+        igd.grabExcessHorizontalSpace = true;
+        sharedPackage.setLayoutData(igd);
+        sharedPackage.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                shared = !shared;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    }
+
+	String getSharedPackageLabel() {
+		return "Create shared package (visible to other modules)";
+	}
+    
     String getPackageLabel() {
         return "Package: ";
     }
@@ -304,9 +334,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         if (je instanceof IPackageFragmentRoot) {
             sourceDir = (IPackageFragmentRoot) je;
             packageFragment = sourceDir.getPackageFragment("");
+            packageName = packageFragment.getElementName();
         }
         else if (je instanceof IPackageFragment) {
             packageFragment = (IPackageFragment) je;
+            packageName = packageFragment.getElementName();
             sourceDir = (IPackageFragmentRoot) packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
         }
     }
@@ -338,6 +370,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     public boolean isIncludePreamble() {
         return includePreamble;
     }
+    
+    public boolean isShared() {
+		return shared;
+	}
     
     private String readHeader() {
         //TODO: use IRunnableWithProgress

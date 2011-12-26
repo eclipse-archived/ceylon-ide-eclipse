@@ -41,7 +41,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     page.isIncludePreamble(), 
                     "Package package {\n    name='" + 
                              page.getPackageFragment().getElementName() + 
-                             "';\n    shared=true;\n}")
+                             "';\n    shared=" + page.isShared() + ";\n}")
                 .run(monitor);
         }
         public IFile getResult() {
@@ -90,8 +90,13 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     return "Module name: ";
                 }
                 @Override
+        		String getSharedPackageLabel() {
+        			return "Create module with shared root package"; // (visible to other modules)
+        		}
+                @Override
             	void createControls(Composite composite) {
             		Text name = createPackageField(composite);
+                    createSharedField(composite);
                     createNameField(composite);
                     createSeparator(composite);
             		createFolderField(composite);
