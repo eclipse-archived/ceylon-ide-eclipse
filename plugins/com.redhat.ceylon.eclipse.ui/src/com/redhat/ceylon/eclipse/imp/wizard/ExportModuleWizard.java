@@ -32,7 +32,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-            page = new ExportModuleWizardPage(getDefaultRepositoryPath());
+            IJavaElement selectedElement = getSelectedElement();
+			page = new ExportModuleWizardPage(getDefaultRepositoryPath(),
+					selectedElement==null ? null : selectedElement.getJavaProject());
             //page.init(selection);
         }
         addPage(page);
@@ -61,14 +63,13 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     
 	@Override
 	public boolean performFinish() {
-		IJavaElement selectedElem = getSelectedElement();
 		String repositoryPath = page.getRepositoryPath();
-		if (selectedElem==null) {
+		IJavaProject project = page.getProject();
+		if (project==null) {
 			MessageDialog.openError(getShell(), "Export Module Error", 
 					"No Java project selected.");
 		}
 		else {
-			IJavaProject javaProject = selectedElem.getJavaProject();
 			/*IProject project = javaProject.getProject();
 			List<PhasedUnit> list = CeylonBuilder.getProjectTypeChecker(project)
 				.getPhasedUnits().getPhasedUnits();
@@ -79,9 +80,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 			}*/
 			try {
 				//URL platformLoc = Platform.getInstanceLocation().getURL();
-				IPath projectLoc = javaProject.getProject().getLocation().makeAbsolute();
+				IPath projectLoc = project.getProject().getLocation().makeAbsolute();
 				projectLoc = projectLoc.uptoSegment(projectLoc.segmentCount()-1);
-				IPath outputDir = javaProject.getOutputLocation();
+				IPath outputDir = project.getOutputLocation();
 				File source = projectLoc.append(outputDir).toFile();
 				/*File source = new File(platformLoc.getFile(), 
 						javaProject.getOutputLocation().toFile().getPath());*/

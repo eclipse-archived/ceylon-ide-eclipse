@@ -4,6 +4,10 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
 
 import java.io.File;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -26,12 +30,14 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
     //private IStructuredSelection selection;
     private String repositoryPath;
+    private IJavaProject project;
     
-    ExportModuleWizardPage(String defaultRepositoryPath) {
+    ExportModuleWizardPage(String defaultRepositoryPath, IJavaProject project) {
         super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
         repositoryPath = defaultRepositoryPath;
+        this.project = project;
         setPageComplete(isComplete());
     }
 
@@ -52,7 +58,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         
         //TODO: let you select a module descriptor to
         //      export just that module!
-        
+        addSelectProject(composite);
 		addSelectRepo(composite);
         
         setControl(composite);
@@ -102,6 +108,65 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 	
 	}
 	
+    void addSelectProject(Composite composite) {
+        
+        Label projectLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        projectLabel.setText("Project containing modules: ");
+        GridData plgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        plgd.horizontalSpan = 1;
+        projectLabel.setLayoutData(plgd);
+
+        final Text projectField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        GridData pgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        pgd.horizontalSpan = 2;
+        pgd.grabExcessHorizontalSpace = true;
+        projectField.setLayoutData(pgd);
+        projectField.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String projectName = projectField.getText();
+                try {
+                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
+                            .getJavaProjects()) {
+                        if (jp.getElementName().equals(projectName)) {
+                        	project = jp;
+                        }
+                    }
+                }
+                catch (JavaModelException jme) {
+                    jme.printStackTrace();
+                }
+                setPageComplete(isComplete());
+            }
+        });
+        if (project!=null) {
+        	projectField.setText(project.getElementName());
+        }
+        
+        Button selectProject = new Button(composite, SWT.PUSH);
+        selectProject.setText("Browse...");
+        GridData spgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        spgd.horizontalSpan = 1;
+        selectProject.setLayoutData(spgd);
+        selectProject.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ProjectSelectionDialog dialog = new ProjectSelectionDialog(getShell());
+                dialog.setMultipleSelection(false);
+                dialog.setTitle("Project Selection");
+                dialog.setMessage("Select a project:");
+                dialog.open();
+                Object result = dialog.getFirstResult();
+                if (result!=null) {
+                    project = (IJavaProject) result;
+                	projectField.setText(project.getElementName());
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    }
+
 	private boolean isComplete() {
 		return repositoryPath!=null &&
 				!repositoryPath.isEmpty() &&
@@ -112,4 +177,8 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 		return repositoryPath;
 	}
     
+	public IJavaProject getProject() {
+		return project;
+	}
+	
 }
