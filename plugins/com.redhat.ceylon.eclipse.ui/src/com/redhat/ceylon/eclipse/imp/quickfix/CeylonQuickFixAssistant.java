@@ -29,14 +29,21 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
+import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -64,6 +71,7 @@ import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
+import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -145,7 +153,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             switch ( problem.getProblemId() ) {
             case 100:
                 addCreateProposals(cu, node, problem, proposals, project,
-                        context.getSourceViewer().getDocument(), tc);
+                        context.getSourceViewer().getDocument(), tc, file);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
                     addImportProposals(cu, node, proposals, file);
@@ -399,7 +407,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, IDocument doc,
-            TypeChecker tc) {
+            TypeChecker tc, IFile file) {
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
 
@@ -458,6 +466,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             else {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, doc);
+                addCreateToplevelProposal(proposals, def, desc, image, file, brokenName);
             }
             
         }
@@ -535,6 +544,55 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             params.append(", ");
         }
+    }
+
+    private void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, final String def,
+            final String desc, final Image image, final IFile file, final String unitName) {
+        proposals.add(new ICompletionProposal() {
+			@Override
+			public Point getSelection(IDocument doc) {
+				return null;
+			}
+			@Override
+			public Image getImage() {
+				return image;
+			}
+			@Override
+			public String getDisplayString() {
+				return "Create toplevel " + desc + " in new unit";
+			}
+			
+			@Override
+			public IContextInformation getContextInformation() {
+				return null;
+			}
+			
+			@Override
+			public String getAdditionalProposalInfo() {
+				return null;
+			}
+			
+			@Override
+			public void apply(IDocument doc) {
+				IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+						.findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
+				if (descriptor!=null) {
+					try {
+						NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
+						wizard.setSelection(new StructuredSelection(file));
+						wizard.setDefaultUnitName(unitName);
+						wizard.setContents(def);
+						WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+								wizard);
+						wd.setTitle(wizard.getWindowTitle());
+						wd.open();
+					}
+					catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
     }
 
     private void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,

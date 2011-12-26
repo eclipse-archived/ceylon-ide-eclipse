@@ -6,10 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -49,12 +51,17 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         return repositoryPath;
 	}
 
+	//TODO: fix copy/paste from NewUnitWizardPage
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
-            IJavaElement je = (IJavaElement) ((IAdaptable) selection.getFirstElement())
-                    .getAdapter(IJavaElement.class);
-            //TODO: handle the case of an IFile
-            return je;
+            Object element = selection.getFirstElement();
+            if (element instanceof IFile) {
+            	return JavaCore.create(((IFile) element).getParent());
+            }
+            else {
+			    return (IJavaElement) ((IAdaptable) element)
+                        .getAdapter(IJavaElement.class);
+            }
         }
         else {
             return null;

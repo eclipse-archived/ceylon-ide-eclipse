@@ -59,12 +59,17 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         unitName = defaultUnitName;
     }
 
+	//TODO: fix copy/paste to ExportModuleWizard
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
-            IJavaElement je = (IJavaElement) ((IAdaptable) selection.getFirstElement())
-                    .getAdapter(IJavaElement.class);
-            //TODO: handle the case of an IFile
-            return je;
+            Object element = selection.getFirstElement();
+            if (element instanceof IFile) {
+            	return JavaCore.create(((IFile) element).getParent());
+            }
+            else {
+			    return (IJavaElement) ((IAdaptable) element)
+                        .getAdapter(IJavaElement.class);
+            }
         }
         else {
             return null;
