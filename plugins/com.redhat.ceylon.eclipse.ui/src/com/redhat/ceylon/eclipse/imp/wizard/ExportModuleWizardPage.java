@@ -2,8 +2,9 @@ package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
 
+import java.io.File;
+
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -23,18 +24,20 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
-    IStructuredSelection selection;
-    String repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
+    //private IStructuredSelection selection;
+    private String repositoryPath;
     
-    ExportModuleWizardPage() {
+    ExportModuleWizardPage(String defaultRepositoryPath) {
         super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
+        repositoryPath = defaultRepositoryPath;
+        setPageComplete(isComplete());
     }
 
-    public void init(IStructuredSelection selection) {
+    /*public void init(IStructuredSelection selection) {
         this.selection = selection;
-    }
+    }*/
     
     @Override
     public void createControl(Composite parent) {
@@ -73,6 +76,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 repositoryPath = folder.getText();
+        		setPageComplete(isComplete());
             }
         });
         
@@ -98,12 +102,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 	
 	}
 	
-	@Override
-	public boolean isPageComplete() {
-		return true/*super.isPageComplete() &&
-				repositoryPath!=null &&
+	private boolean isComplete() {
+		return repositoryPath!=null &&
 				!repositoryPath.isEmpty() &&
-				new File(repositoryPath).exists()*/;
+				new File(repositoryPath).exists();
 	}
 	
 	public String getRepositoryPath() {
