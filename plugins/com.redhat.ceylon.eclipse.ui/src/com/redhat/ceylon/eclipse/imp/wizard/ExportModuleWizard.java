@@ -16,27 +16,36 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 public class ExportModuleWizard extends Wizard implements IExportWizard {
 
-    IStructuredSelection selection;
-    IWorkbench workbench;
-    ExportModuleWizardPage page;
+    private IStructuredSelection selection;
+    private ExportModuleWizardPage page;
     
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
-        this.workbench = workbench;
 	}
 
     @Override
     public void addPages() {
         super.addPages();
         if (page == null) {
-            page = new ExportModuleWizardPage();
-            page.init(selection);
+            page = new ExportModuleWizardPage(getDefaultRepositoryPath());
+            //page.init(selection);
         }
         addPage(page);
     }
+
+	private String getDefaultRepositoryPath() {
+		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
+        		.get("repositoryPath");
+        if (repositoryPath==null) {
+        	repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
+        }
+        return repositoryPath;
+	}
 
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
@@ -53,6 +62,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 	@Override
 	public boolean performFinish() {
 		IJavaElement selectedElem = getSelectedElement();
+		String repositoryPath = page.getRepositoryPath();
 		if (selectedElem==null) {
 			MessageDialog.openError(getShell(), "Export Module Error", 
 					"No Java project selected.");
@@ -75,13 +85,14 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				File source = projectLoc.append(outputDir).toFile();
 				/*File source = new File(platformLoc.getFile(), 
 						javaProject.getOutputLocation().toFile().getPath());*/
-				File dest = new File(page.getRepositoryPath());
+				File dest = new File(repositoryPath);
 				if (dest.exists()) {
 					copyFolder(source, dest);
+					persistDefaultRepositoryPath(repositoryPath);
 				}
 				else {
 					MessageDialog.openError(getShell(), "Export Module Error", 
-							"No repository at location: " + page.getRepositoryPath());
+							"No repository at location: " + repositoryPath);
 					return false;
 				}
 			} 
@@ -92,6 +103,13 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 			}
 		}
 		return true;
+	}
+
+	private void persistDefaultRepositoryPath(String repositoryPath) {
+		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
+		    CeylonPlugin.getInstance().getDialogSettings()
+		            .put("repositoryPath", repositoryPath);
+		}
 	}
 	
 	public static void copyFolder(File src, File dest)
