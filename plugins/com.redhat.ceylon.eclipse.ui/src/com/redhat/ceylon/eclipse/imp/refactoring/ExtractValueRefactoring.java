@@ -62,7 +62,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		Integer start = node.getStartIndex();
 		int length = node.getStopIndex()-start+1;
 		String exp = toString(term);
-		FindStatementVisitor fsv = new FindStatementVisitor(term);
+		FindStatementVisitor fsv = new FindStatementVisitor(term, false);
 		rootNode.visit(fsv);
 		Tree.Statement statNode = fsv.getStatement();
 		/*if (statNode instanceof Tree.Declaration) {

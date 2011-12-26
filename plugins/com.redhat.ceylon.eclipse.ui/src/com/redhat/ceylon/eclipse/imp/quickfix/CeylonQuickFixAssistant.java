@@ -466,6 +466,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             else {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, doc);
+                addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte, doc);
                 addCreateToplevelProposal(proposals, def, desc, image, file, brokenName);
             }
             
@@ -507,10 +508,25 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             IDocument doc) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                FindStatementVisitor fdv = new FindStatementVisitor(smte);
+                FindStatementVisitor fdv = new FindStatementVisitor(smte, false);
                 cu.visit(fdv);
                 Tree.Statement statement = fdv.getStatement();
-                addCreateLocalProposal(proposals, def, desc, image, unit, statement);
+                addCreateProposal(proposals, def, true, desc, image, unit, statement);
+                break;
+            }
+        }
+    }
+
+    private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Image image, 
+            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte,
+            IDocument doc) {
+        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            if (unit.getUnit().equals(cu.getUnit())) {
+                FindStatementVisitor fdv = new FindStatementVisitor(smte, true);
+                cu.visit(fdv);
+                Tree.Statement statement = fdv.getStatement();
+                addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
                 break;
             }
         }
@@ -628,10 +644,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 image, indent.length(), offset, file, change));
     }
 
-    private void addCreateLocalProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
+    private void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
+            boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
         IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange("Create Local", file);
+        TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
         IDocument doc;
         try {
             doc = change.getCurrentDocument(null);
@@ -642,7 +658,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         change.setEdit(new InsertEdit(offset, def+"\n"+indent));
-        proposals.add(createCreateProposal(def, "Create local " + desc, 
+        proposals.add(createCreateProposal(def, (local ? "Create local " : "Create toplevel ") + desc, 
                 image, 0, offset, file, change));
     }
 

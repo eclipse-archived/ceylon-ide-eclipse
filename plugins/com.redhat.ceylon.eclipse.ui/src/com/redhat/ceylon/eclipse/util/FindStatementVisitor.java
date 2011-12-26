@@ -7,15 +7,22 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindStatementVisitor extends Visitor 
 		implements NaturalVisitor {
-	Tree.Term term;
-	Tree.Statement statement;
-	Tree.Statement currentStatement;
+	
+	private final Tree.Term term;
+	private Tree.Statement statement;
+	private Tree.Statement currentStatement;
+	private final boolean toplevel;
+	private boolean currentlyToplevel=true;
+	
 	public Tree.Statement getStatement() {
 		return statement;
 	}
-	public FindStatementVisitor(Tree.Term term) {
-		this.term=term;
+	
+	public FindStatementVisitor(Tree.Term term, boolean toplevel) {
+		this.term = term;
+		this.toplevel = toplevel;
 	}
+	
 	@Override
 	public void visit(Tree.Term that) {
 		if (that==term) {
@@ -23,17 +30,25 @@ public class FindStatementVisitor extends Visitor
 		}
 		super.visit(that);
 	}
+	
 	@Override
 	public void visit(Tree.Statement that) {
-	    if (!(that instanceof Tree.Variable || 
-	            that instanceof Tree.Parameter)) {
-	        currentStatement = that;
+    	if (!toplevel || currentlyToplevel) {
+    		if (!(that instanceof Tree.Variable || 
+    				that instanceof Tree.Parameter)) {
+    			currentStatement = that;
+	    	}
 	    }
+	    boolean octl = currentlyToplevel;
+	    currentlyToplevel = false;
 		super.visit(that);
+		currentlyToplevel = octl;
 	}
+	
 	public void visitAny(Node node) {
 		if (statement==null) {
 			super.visitAny(node);
 		}
 	}
+	
 }
