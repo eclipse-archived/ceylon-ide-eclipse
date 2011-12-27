@@ -49,7 +49,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
     
     private void smartIndentAfterNewline(IDocument d, DocumentCommand c) {
-        
         if (c.offset==-1 || d.getLength()==0) {
             return;
         }
@@ -65,7 +64,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
 
     private void smartIndentOnKeypress(IDocument d, DocumentCommand c) {
-
         if (c.offset==-1 || d.getLength()==0) {
             return;
         }
