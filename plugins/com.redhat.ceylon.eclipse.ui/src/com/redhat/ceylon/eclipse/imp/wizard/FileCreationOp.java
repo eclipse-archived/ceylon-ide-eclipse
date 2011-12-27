@@ -59,15 +59,21 @@ class FileCreationOp implements IRunnableWithProgress {
         reverse(resourcesToCreate);
         
         try {
-            for (IFolder pkg : resourcesToCreate) {
-                pkg.create(false, false, monitor);
+            if (result.exists()) {
+            	//TODO!
+            	System.out.println("File already exists!");
             }
-            result.create(his, false, monitor);
-            result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
-                    false, false, monitor);
-            parent.refreshLocal(IResource.DEPTH_ZERO, monitor);
-            for (IFolder pkg : resourcesToCreate) {
-                pkg.refreshLocal(IResource.DEPTH_ZERO, monitor);
+            else {
+                for (IFolder pkg : resourcesToCreate) {
+                    pkg.create(false, false, monitor);
+                }
+                result.create(his, false, monitor);
+                result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
+                        false, false, monitor);
+                parent.refreshLocal(IResource.DEPTH_ZERO, monitor);
+                for (IFolder pkg : resourcesToCreate) {
+                    pkg.refreshLocal(IResource.DEPTH_ZERO, monitor);
+                }
             }
         }
         catch (CoreException ce) {

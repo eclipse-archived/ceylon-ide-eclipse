@@ -50,7 +50,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         if (page == null) {
             page= new NewUnitWizardPage("New Ceylon Package",
                     "Create a Ceylon package with a package descriptor.",
-                    "package", CEYLON_NEW_PACKAGE) {
+                    "package", CEYLON_NEW_PACKAGE, true) {
                 @Override
                 String getPackageLabel() {
                     return "Package name: ";

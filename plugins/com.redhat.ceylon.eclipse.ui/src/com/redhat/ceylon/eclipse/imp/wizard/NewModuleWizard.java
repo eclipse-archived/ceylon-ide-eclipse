@@ -80,7 +80,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         if (page == null) {
             page= new NewUnitWizardPage("New Ceylon Module",
                     "Create a runnable Ceylon module with module and package descriptors.",
-                    "run", CEYLON_NEW_MODULE) {
+                    "run", CEYLON_NEW_MODULE, true) {
                 @Override
                 String getCompilationUnitLabel() {
                     return "Runnable compilation unit: ";

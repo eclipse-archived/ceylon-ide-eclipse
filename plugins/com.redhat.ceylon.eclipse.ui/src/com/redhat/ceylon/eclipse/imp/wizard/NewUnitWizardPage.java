@@ -48,15 +48,20 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String packageName = "";
     private boolean includePreamble = true;
     private boolean shared = true;
+    private boolean declaration;
+    private final boolean declarationButtonDisabled;
     
     private IStructuredSelection selection;
     
     NewUnitWizardPage(String title, String description, 
-            String defaultUnitName, String icon) {
+            String defaultUnitName, String icon,
+            boolean declarationButtonDisabled) {
         super(title, title, CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(icon));
         setDescription(description);
         unitName = defaultUnitName;
+        this.declarationButtonDisabled = declarationButtonDisabled;
+        declaration = declarationButtonDisabled;
     }
 
 	//TODO: fix copy/paste to ExportModuleWizard
@@ -98,6 +103,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
     void createControls(Composite composite) {
         Text name = createNameField(composite);
+        createDeclarationField(composite);
         createSeparator(composite);
         createFolderField(composite);
         createPackageField(composite);
@@ -155,6 +161,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         Link link = new Link(composite, SWT.NONE);
         link.setText("<a>(Edit 'header.ceylon')</a>");
+        GridData kgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        kgd.horizontalSpan = 2;
+        kgd.grabExcessHorizontalSpace = true;
+        link.setLayoutData(kgd);
         link.addSelectionListener(new SelectionListener() {            
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -174,6 +184,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
+        new Label(composite, SWT.NONE);
 
         return name;
     }
@@ -326,6 +338,27 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         });
     }
 
+    void createDeclarationField(Composite composite) {        
+        new Label(composite, SWT.NONE);
+        
+        Button dec = new Button(composite, SWT.CHECK);
+        dec.setText("create toplevel class or method declaration");
+        dec.setSelection(declaration);
+        dec.setEnabled(!declarationButtonDisabled);
+        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        igd.horizontalSpan = 3;
+        igd.grabExcessHorizontalSpace = true;
+        dec.setLayoutData(igd);
+        dec.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	declaration = !declaration;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    }
+
     String getSharedPackageLabel() {
         return "Create shared package (visible to other modules)";
     }
@@ -379,6 +412,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     public boolean isShared() {
         return shared;
     }
+    
+    public boolean isDeclaration() {
+		return declaration;
+	}
     
     private String readHeader() {
         //TODO: use IRunnableWithProgress
