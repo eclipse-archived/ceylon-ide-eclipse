@@ -31,14 +31,26 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
             else if (cmd.text.length()==1 || 
                     //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                    getIndentWithSpaces() && isIndent(cmd.text)) {
+                    getIndentWithSpaces() && 
+                        isIndent(getPrefix(doc, cmd))) {
                 smartIndentOnKeypress(doc, cmd);
             }
         }
     }
+
+	private String getPrefix(IDocument doc, DocumentCommand cmd) {
+		try {
+			int lineOffset = doc.getLineInformationOfOffset(cmd.offset).getOffset();
+			return doc.get(lineOffset, cmd.offset-lineOffset) + cmd.text;
+		} 
+		catch (BadLocationException e) {
+			return cmd.text;
+		}
+	}
     
     public boolean isIndent(String text) {
-        if (text.length()==getIndentSpaces()) {
+        if (!text.isEmpty() && 
+        		text.length() % getIndentSpaces()==0) {
             for (char c: text.toCharArray()) {
                 if (c!=' ') return false;
             }
@@ -125,7 +137,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 break;
             default:
                 //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                if (getIndentWithSpaces() && isIndent(c.text)) {
+                if (getIndentWithSpaces() && 
+                		isIndent(getPrefix(d, c))) {
                     if (isStringOrCommentContinuation(c.offset)) {
                         shiftToBeginningOfStringOrCommentContinuation(d, c);
                     }
