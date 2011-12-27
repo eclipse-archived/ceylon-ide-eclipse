@@ -30,6 +30,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         		smartIndentAfterNewline(doc, cmd);
         	}
         	else if (cmd.text.length()==1 || 
+        			//when spacesfortabs is enabled, we get sent spaces instead of a tab
         			getIndentWithSpaces() && isIndent(cmd.text)) {
         		smartIndentOnKeypress(doc, cmd);
         	}
@@ -105,7 +106,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 fixIndentOfCurrentLine(d, c);
                 break;
             default:
-                if (isIndent(c.text)) {
+            	//when spacesfortabs is enabled, we get sent spaces instead of a tab
+                if (getIndentWithSpaces() && isIndent(c.text)) {
                     fixIndentOfCurrentLine(d, c);
                 }
         }
