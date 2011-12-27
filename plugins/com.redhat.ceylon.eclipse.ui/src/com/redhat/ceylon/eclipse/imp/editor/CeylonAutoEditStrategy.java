@@ -21,7 +21,8 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     public void customizeDocumentCommand(IDocument doc, DocumentCommand cmd) {
-    	//Note that IMP's Correct Indentation sends us a tab
+    	
+        //Note that IMP's Correct Indentation sends us a tab
     	//character at the start of each line of selected
     	//text. This is amazingly sucky because it's very
     	//difficult to distingush Correct Indentation from
@@ -32,20 +33,37 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         if (cmd.doit == false) {
             return;
         }
+        
         //cmd.length>0 means we are replacing or deleting text
         else if (cmd.text!=null && cmd.length==0) { 
-            if (cmd.text.length()==1 && isLineEnding(doc, cmd.text)) {
+            if (cmd.text.isEmpty()) {
+                //workaround for a really annoying bug where we 
+                //get sent "" instead of "\t" or "    " by IMP
+                //reconstruct what we would have been sent 
+                //without the bug
+                if (getIndentWithSpaces()) {
+                    int overhang = getPrefix(doc, cmd).length() % getIndentSpaces();
+                    cmd.text = getDefaultIndent().substring(overhang);
+                }
+                else {
+                    cmd.text = "\t";
+                }
+                smartIndentOnKeypress(doc, cmd);
+            }
+            else if (cmd.text.length()==1 && isLineEnding(doc, cmd.text)) {
             	//a typed newline
                 smartIndentAfterNewline(doc, cmd);
             }
             else if (cmd.text.length()==1 || 
-                    //when spacesfortabs is enabled, we get sent spaces instead of a tab
+                    //when spacesfortabs is enabled, we get 
+                    //sent spaces instead of a tab
                     getIndentWithSpaces() && isIndent(getPrefix(doc, cmd))) {
-            	//anything that might represent a single keypress
-            	//or a Correct Indentation
+            	//anything that might represent a single 
+                //keypress or a Correct Indentation
                 smartIndentOnKeypress(doc, cmd);
             }
         }
+        
     }
 
 	private String getPrefix(IDocument doc, DocumentCommand cmd) {
@@ -418,7 +436,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         if (getIndentWithSpaces()) {
             int spaces = getIndentSpaces();
             for (int i=1; i<=spaces; i++) {
-                buf.append(' ');                            
+                buf.append(' ');                          
             }
         }
         else {
