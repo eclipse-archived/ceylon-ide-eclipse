@@ -81,13 +81,31 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonParseController pc = ((CeylonEditor) editor).getParseController();
-            CommonToken token = pc.getTokens().get(getTokenIndexAtCharacter(pc.getTokens(), offset));
-            return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
-                    token.getType()==CeylonLexer.MULTI_COMMENT);
+            int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
+            if (tokenIndex>=0) {
+  	            CommonToken token = pc.getTokens().get(tokenIndex);
+                return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
+                        token.getType()==CeylonLexer.MULTI_COMMENT) &&
+                        token.getStartIndex()<offset;
+            }
         }
-        else {
-            return false;
+        return false;
+    }
+
+    private int getStringIndent(int offset) {
+        IEditorPart editor = Util.getCurrentEditor();
+        if (editor instanceof CeylonEditor) {
+            CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+            int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
+            if (tokenIndex>=0) {
+                CommonToken token = pc.getTokens().get(tokenIndex);
+                if (token!=null && token.getType()==CeylonLexer.STRING_LITERAL &&
+                        token.getStartIndex()<offset) {
+                    return token.getCharPositionInLine()+1;
+                }
+            }
         }
+        return -1;
     }
 
     private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
@@ -135,14 +153,24 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-        char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
-        char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
-        char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
-        StringBuilder buf = new StringBuilder(c.text);
-        appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
-                startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                false, buf);
-        c.text = buf.toString();
+        int stringIndent = getStringIndent(c.offset);
+        if (stringIndent>=0 && getIndentWithSpaces()) {
+            StringBuilder sb = new StringBuilder();
+            for (int i=0; i<stringIndent; i++) {
+                sb.append(' ');
+            }
+            c.text = c.text + sb.toString();
+        }
+        else {
+            char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
+            char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
+            char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
+            StringBuilder buf = new StringBuilder(c.text);
+            appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
+                    startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
+                    false, buf);
+            c.text = buf.toString();
+        }
     }
     
     private void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
