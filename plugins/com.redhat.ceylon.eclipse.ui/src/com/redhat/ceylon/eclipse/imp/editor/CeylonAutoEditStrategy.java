@@ -24,13 +24,15 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         if (cmd.doit == false) {
             return;
         }
-        else if (cmd.length==0 && cmd.text!=null && 
-                isLineEnding(doc, cmd.text)) {
-            smartIndentAfterNewline(doc, cmd);
-        }
-        else if (cmd.text.length()==1 || 
-                getIndentWithSpaces() && isIndent(cmd.text)) {
-            smartIndentOnKeypress(doc, cmd);
+        else if (cmd.text!=null) {
+        	if (cmd.length==0 && cmd.text.length()==1 &&
+        			isLineEnding(doc, cmd.text)) {
+        		smartIndentAfterNewline(doc, cmd);
+        	}
+        	else if (cmd.text.length()==1 || 
+        			getIndentWithSpaces() && isIndent(cmd.text)) {
+        		smartIndentOnKeypress(doc, cmd);
+        	}
         }
     }
     
