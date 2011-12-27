@@ -160,13 +160,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private void shiftToBeginningOfStringOrCommentContinuation(IDocument d, DocumentCommand c)
             throws BadLocationException {
-        int start = getStartOfCurrentLine(d, c);
+        //int start = getStartOfCurrentLine(d, c);
         int end = getEndOfCurrentLine(d, c);
-        int loc = firstEndOfWhitespace(d, start, end);
-        //c.text = d.get(start, firstEndOfWhitespace(d, start, end));
-        //c.length = c.text.length();
-        //c.shiftsCaret = true;
-        if (loc!=start) {
+        int loc = firstEndOfWhitespace(d, c.offset/*start*/, end);
+        if (loc>c.offset) {
             c.length = 0;
             c.text = "";
             c.caretOffset = loc;
