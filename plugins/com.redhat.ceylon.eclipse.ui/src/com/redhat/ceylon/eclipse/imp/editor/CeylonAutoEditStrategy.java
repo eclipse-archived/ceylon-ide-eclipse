@@ -25,15 +25,15 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             return;
         }
         else if (cmd.text!=null) {
-        	if (cmd.length==0 && cmd.text.length()==1 &&
-        			isLineEnding(doc, cmd.text)) {
-        		smartIndentAfterNewline(doc, cmd);
-        	}
-        	else if (cmd.text.length()==1 || 
-        			//when spacesfortabs is enabled, we get sent spaces instead of a tab
-        			getIndentWithSpaces() && isIndent(cmd.text)) {
-        		smartIndentOnKeypress(doc, cmd);
-        	}
+            if (cmd.length==0 && cmd.text.length()==1 &&
+                    isLineEnding(doc, cmd.text)) {
+                smartIndentAfterNewline(doc, cmd);
+            }
+            else if (cmd.text.length()==1 || 
+                    //when spacesfortabs is enabled, we get sent spaces instead of a tab
+                    getIndentWithSpaces() && isIndent(cmd.text)) {
+                smartIndentOnKeypress(doc, cmd);
+            }
         }
     }
     
@@ -77,16 +77,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
     
-    private boolean isLiteralOrCommentContinuation(int offset) {
+    private boolean isStringOrCommentContinuation(int offset) {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
-        	CeylonParseController pc = ((CeylonEditor) editor).getParseController();
-        	CommonToken token = pc.getTokens().get(getTokenIndexAtCharacter(pc.getTokens(), offset));
-			return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
-					token.getType()==CeylonLexer.MULTI_COMMENT);
+            CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+            CommonToken token = pc.getTokens().get(getTokenIndexAtCharacter(pc.getTokens(), offset));
+            return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
+                    token.getType()==CeylonLexer.MULTI_COMMENT);
         }
         else {
-        	return false;
+            return false;
         }
     }
 
@@ -98,18 +98,38 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 break;
             case '{':
             case '\t':
-            	if (isLiteralOrCommentContinuation(c.offset)) {
-            		c.length=0;
-            		c.text="";
-            		return;
-            	}
-                fixIndentOfCurrentLine(d, c);
-                break;
-            default:
-            	//when spacesfortabs is enabled, we get sent spaces instead of a tab
-                if (getIndentWithSpaces() && isIndent(c.text)) {
+                if (isStringOrCommentContinuation(c.offset)) {
+                    shiftToBeginningOfStringOrCommentContinuation(d, c);
+                }
+                else {
                     fixIndentOfCurrentLine(d, c);
                 }
+                break;
+            default:
+                //when spacesfortabs is enabled, we get sent spaces instead of a tab
+                if (getIndentWithSpaces() && isIndent(c.text)) {
+                    if (isStringOrCommentContinuation(c.offset)) {
+                        shiftToBeginningOfStringOrCommentContinuation(d, c);
+                    }
+                    else {
+                        fixIndentOfCurrentLine(d, c);
+                    }
+                }
+        }
+    }
+
+    private void shiftToBeginningOfStringOrCommentContinuation(IDocument d, DocumentCommand c)
+            throws BadLocationException {
+        int start = getStartOfCurrentLine(d, c);
+        int end = getEndOfCurrentLine(d, c);
+        int loc = firstEndOfWhitespace(d, start, end);
+        //c.text = d.get(start, firstEndOfWhitespace(d, start, end));
+        //c.length = c.text.length();
+        //c.shiftsCaret = true;
+        if (loc!=start) {
+            c.length = 0;
+            c.text = "";
+            c.caretOffset = loc;
         }
     }
     
@@ -210,12 +230,12 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private int getStartOfPreviousLine(IDocument d, int offset) 
             throws BadLocationException {
-    	int os;
-    	int line = d.getLineOfOffset(offset);
-    	do {
-    	    os = d.getLineOffset(--line);
-    	}
-    	while (isLiteralOrCommentContinuation(os));
+        int os;
+        int line = d.getLineOfOffset(offset);
+        do {
+            os = d.getLineOffset(--line);
+        }
+        while (isStringOrCommentContinuation(os));
         return os;
     }
     
