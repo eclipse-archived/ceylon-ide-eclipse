@@ -24,6 +24,15 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
+    	if ("".equals(contents) && page.isDeclaration()) {
+    		char initial = page.getUnitName().charAt(0);
+			if (Character.isUpperCase(initial)) {
+				contents = "class " + page.getUnitName() + "() {}";
+			}
+			else {
+				contents = "void " + page.getUnitName() + "() {}";
+			}
+    	}
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), page.getUnitName(), 
                 page.isIncludePreamble(), contents);
@@ -47,7 +56,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         if (page == null) {
             page= new NewUnitWizardPage("New Ceylon Unit",
                     "Create a new Ceylon compilation unit that will contain Ceylon source.",
-                    defaultUnitName, CEYLON_NEW_FILE);
+                    defaultUnitName, CEYLON_NEW_FILE, !"".equals(contents));
             page.init(selection);
         }
         addPage(page);
