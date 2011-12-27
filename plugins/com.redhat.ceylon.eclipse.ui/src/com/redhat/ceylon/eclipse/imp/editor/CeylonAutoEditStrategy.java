@@ -1,9 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
-import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.imp.services.IAutoEditStrategy;
 import org.eclipse.jface.text.BadLocationException;
@@ -11,6 +13,10 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
+import org.eclipse.ui.IEditorPart;
+
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
@@ -69,22 +75,40 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             ble.printStackTrace();
         }
     }
+    
+    private boolean isLiteralOrCommentContinuation(int offset) {
+        IEditorPart editor = Util.getCurrentEditor();
+        if (editor instanceof CeylonEditor) {
+        	CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+        	CommonToken token = pc.getTokens().get(getTokenIndexAtCharacter(pc.getTokens(), offset));
+			return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
+					token.getType()==CeylonLexer.MULTI_COMMENT);
+        }
+        else {
+        	return false;
+        }
+    }
 
     private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-       switch (c.text.charAt(0)) {
-           case '}':
-               reduceIndentOfCurrentLine(d, c);
-               break;
-           case '{':
-           case '\t':
-               fixIndentOfCurrentLine(d, c);
-               break;
-           default:
-               if (isIndent(c.text)) {
-                   fixIndentOfCurrentLine(d, c);
-               }
-       }
+        switch (c.text.charAt(0)) {
+            case '}':
+                reduceIndentOfCurrentLine(d, c);
+                break;
+            case '{':
+            case '\t':
+            	if (isLiteralOrCommentContinuation(c.offset)) {
+            		c.length=0;
+            		c.text="";
+            		return;
+            	}
+                fixIndentOfCurrentLine(d, c);
+                break;
+            default:
+                if (isIndent(c.text)) {
+                    fixIndentOfCurrentLine(d, c);
+                }
+        }
     }
     
     private void indentNewLine(IDocument d, DocumentCommand c)
@@ -184,7 +208,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private int getStartOfPreviousLine(IDocument d, int offset) 
             throws BadLocationException {
-        return d.getLineOffset(d.getLineOfOffset(offset)-1);
+    	int os;
+    	int line = d.getLineOfOffset(offset);
+    	do {
+    	    os = d.getLineOffset(--line);
+    	}
+    	while (isLiteralOrCommentContinuation(os));
+        return os;
     }
     
     /*private int getStartOfNextLine(IDocument d, int offset) 
