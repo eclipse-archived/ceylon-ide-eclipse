@@ -413,6 +413,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
             String brokenName = getIdentifyingNode(node).getText();
             if (brokenName.isEmpty()) return;
+            boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
             String def;
             String desc;
             Image image;
@@ -428,7 +429,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     params.setLength(params.length()-2);
                 }
                 params.append(")");
-                if (Character.isUpperCase(brokenName.charAt(0))) {
+                if (isUpperCase) {
                     String supertype = "";
                     if (fav.expectedType!=null) {
                         if (fav.expectedType.getDeclaration() instanceof Class) {
@@ -452,12 +453,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     image = CeylonLabelProvider.METHOD;
                 }
             }
-            else {
+            else if (!isUpperCase) {
                 String type = isVoid ? "Void" : 
                     fav.expectedType.getProducedTypeName();
                 def = type + " " + brokenName + " = bottom;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
+            }
+            else {
+                return;
             }
 
             if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
