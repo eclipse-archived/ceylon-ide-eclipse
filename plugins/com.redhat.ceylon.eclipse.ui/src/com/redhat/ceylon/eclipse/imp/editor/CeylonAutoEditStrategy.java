@@ -21,18 +21,28 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     public void customizeDocumentCommand(IDocument doc, DocumentCommand cmd) {
+    	//Note that IMP's Correct Indentation sends us a tab
+    	//character at the start of each line of selected
+    	//text. This is amazingly sucky because it's very
+    	//difficult to distingush Correct Indentation from
+    	//an actual typed tab.
+    	//Note also that typed tabs are replaced with spaces
+    	//before this method is called if the spacesfortabs 
+    	//setting is enabled.
         if (cmd.doit == false) {
             return;
         }
-        else if (cmd.text!=null) {
-            if (cmd.length==0 && cmd.text.length()==1 &&
-                    isLineEnding(doc, cmd.text)) {
+        //cmd.length>0 means we are replacing or deleting text
+        else if (cmd.text!=null && cmd.length==0) { 
+            if (cmd.text.length()==1 && isLineEnding(doc, cmd.text)) {
+            	//a typed newline
                 smartIndentAfterNewline(doc, cmd);
             }
             else if (cmd.text.length()==1 || 
                     //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                    getIndentWithSpaces() && 
-                        isIndent(getPrefix(doc, cmd))) {
+                    getIndentWithSpaces() && isIndent(getPrefix(doc, cmd))) {
+            	//anything that might represent a single keypress
+            	//or a Correct Indentation
                 smartIndentOnKeypress(doc, cmd);
             }
         }
@@ -137,8 +147,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 break;
             default:
                 //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                if (getIndentWithSpaces() && 
-                		isIndent(getPrefix(d, c))) {
+                if (getIndentWithSpaces() && isIndent(getPrefix(d, c))) {
                     if (isStringOrCommentContinuation(c.offset)) {
                         shiftToBeginningOfStringOrCommentContinuation(d, c);
                     }
