@@ -68,6 +68,11 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                     return super.isComplete() && 
                             !getPackageFragment().isDefaultPackage();
                 }
+                @Override
+                boolean packageNameIsLegal(String packageName) {
+                    return !packageName.isEmpty() && 
+                            super.packageNameIsLegal(packageName);
+                }
             };
             page.init(selection);
         }

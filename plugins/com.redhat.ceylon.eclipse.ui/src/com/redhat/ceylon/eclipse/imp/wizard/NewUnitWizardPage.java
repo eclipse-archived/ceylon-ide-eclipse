@@ -129,14 +129,20 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         ngd.horizontalSpan = 2;
         ngd.grabExcessHorizontalSpace = true;
         name.setLayoutData(ngd);
+        name.setText(unitName);
         name.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 unitName = name.getText();
+                if (!unitName.matches("\\w+")) {
+                    setErrorMessage("Please enter a legal compilation unit name.");
+                }
+                else {
+                    setErrorMessage(null);
+                }
                 setPageComplete(isComplete());
             }
         });
-        name.setText(unitName);
         
         new Label(composite, SWT.NONE);        
         new Label(composite, SWT.NONE);
@@ -206,6 +212,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
         folder.setLayoutData(fgd);
+        if (sourceDir!=null) {
+            String folderName = sourceDir.getPath().toPortableString();
+            folder.setText(folderName);
+        }        
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -226,11 +236,6 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 setPageComplete(isComplete());
             }
         });
-        
-        if (sourceDir!=null) {
-            String folderName = sourceDir.getPath().toPortableString();
-            folder.setText(folderName);
-        }
         
         Button selectFolder = new Button(composite, SWT.PUSH);
         selectFolder.setText("Browse...");
@@ -253,6 +258,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        
         return folder;
     }
     
@@ -269,17 +275,23 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         pgd.horizontalSpan = 2;
         pgd.grabExcessHorizontalSpace = true;
         pkg.setLayoutData(pgd);
+        pkg.setText(packageName);
         pkg.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
+                if (!packageNameIsLegal(packageName)) {
+                    setErrorMessage(getIllegalPackageNameMessage());
+                }
+                else {
+                    setErrorMessage(null);
+                }
                 if (sourceDir!=null) {
                     packageFragment = sourceDir.getPackageFragment(packageName);
                 }
                 setPageComplete(isComplete());
             }
         });
-        pkg.setText(packageName);
         
         /*if (packageFragment!=null) {
             String pkgName = packageFragment.getElementName();
@@ -315,6 +327,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        
         return pkg;
     }
 
@@ -474,5 +487,14 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         return sourceDir.getJavaProject().getProject()
                 .getFile("header.ceylon");
     }
+
+    boolean packageNameIsLegal(String packageName) {
+        return packageName.isEmpty() || 
+            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+    }
     
+    String getIllegalPackageNameMessage() {
+        return "Please enter a legal package name.";
+    }
+
 }
