@@ -8,11 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.EditorUtility;
@@ -173,6 +170,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
 
     public static void gotoLocation(IPath path, int offset) {
+        if (path==null || path.isEmpty()) return;
         IEditorInput editorInput = EditorUtility.getEditorInput(path);
         try {
             CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
