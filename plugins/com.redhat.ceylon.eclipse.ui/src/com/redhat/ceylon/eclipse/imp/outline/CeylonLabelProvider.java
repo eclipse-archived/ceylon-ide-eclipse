@@ -327,7 +327,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                     .append(":" + ce.getLocation(), COUNTER_STYLER);
         }
         else if (element instanceof Package) {
-            return new StyledString(" - " + getLabel((Package) element));
+            return new StyledString(getLabel((Package) element), QUALIFIER_STYLER);
         }
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
