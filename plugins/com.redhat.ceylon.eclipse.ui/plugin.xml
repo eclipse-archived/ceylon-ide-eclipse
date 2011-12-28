@@ -198,6 +198,15 @@
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
        <wizard
+             id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
+             icon="icons/new_wiz.gif"
+             name="Ceylon Project"
+             category="com.redhat.ceylon.eclipse.ui.category"
+             class="com.redhat.ceylon.eclipse.imp.wizard.NewProjectWizard"
+             project="true">
+           <description>Create a Ceylon project</description>
+       </wizard>
+       <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
              icon="icons/newftrprj_wiz.gif"
              name="Ceylon Module"
@@ -217,6 +226,8 @@
        </wizard>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+       <primaryWizard
+             id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
        <primaryWizard
@@ -382,6 +393,8 @@
             <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
             <newWizardShortcut
