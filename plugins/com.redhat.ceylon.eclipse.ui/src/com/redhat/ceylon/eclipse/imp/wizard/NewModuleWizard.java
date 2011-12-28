@@ -107,6 +107,15 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     return super.isComplete() && 
                             !getPackageFragment().isDefaultPackage();
                 }
+                @Override
+                boolean packageNameIsLegal(String packageName) {
+                    return !packageName.isEmpty() && 
+                            super.packageNameIsLegal(packageName);
+                }
+                @Override
+                String getIllegalPackageNameMessage() {
+                    return "Please enter a legal module name.";
+                }
             };
             page.init(selection);
         }
