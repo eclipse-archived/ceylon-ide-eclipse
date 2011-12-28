@@ -57,7 +57,7 @@ public class HierarchyPopup extends PopupDialog {
     final private Map<Declaration, Set<Declaration>> subtypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
     
     public HierarchyPopup(Declaration declaration, CeylonEditor editor, Shell parent) {
-        super(parent, SWT.RESIZE, true, true, false, true, true,
+        super(parent, INFOPOPUPRESIZE_SHELLSTYLE, true, true, true, true, false,
                 "Hierarchy of '" + getDescriptionFor(declaration) + "'", null);
         this.editor = editor;
         isMember = !(declaration instanceof TypeDeclaration);
