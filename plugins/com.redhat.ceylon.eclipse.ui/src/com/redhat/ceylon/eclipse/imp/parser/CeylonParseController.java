@@ -11,6 +11,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
+import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -21,7 +22,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
@@ -126,7 +126,7 @@ public class CeylonParseController extends ParseControllerBase {
         
         IPath path = getPath();
         ISourceProject sourceProject = getProject();
-        IPath resolvedPath = path;    
+        IPath resolvedPath = path;
         VirtualFile file;
         if (path!=null) {
             if (sourceProject!=null) {
@@ -212,8 +212,7 @@ public class CeylonParseController extends ParseControllerBase {
         if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
         if (srcDir==null || typeChecker == null) {
-        	TypeCheckerBuilder tcb = new TypeCheckerBuilder()
-        	.verbose(false);
+        	TypeCheckerBuilder tcb = new TypeCheckerBuilder().verbose(false);
         	
             IProject project = null;
             if (sourceProject != null) {
@@ -228,10 +227,29 @@ public class CeylonParseController extends ParseControllerBase {
             }
             
             try {
-                for (String repo : CeylonBuilder.getRepositories(project)) {
-                    tcb.addRepository(new File(repo));
+                if (project==null) {
+                    //for files from external repos, search for
+                    //the repo by iterating all repos referenced
+                    //by all projects
+                    for (IProject p: CeylonBuilder.getProjects()) {
+                        boolean found = false;
+                        for (String repo: CeylonBuilder.getRepositories(p)) {
+                            if (path.toString().startsWith(repo)) {
+                                tcb.addRepository(new File(repo));
+                                found=true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
                 }
-            } catch (CoreException e) {
+                else {
+                    for (String repo : CeylonBuilder.getRepositories(project)) {
+                        tcb.addRepository(new File(repo));
+                    }
+                }
+            } 
+            catch (CoreException e) {
                 throw new RuntimeException(e);
             }
         	

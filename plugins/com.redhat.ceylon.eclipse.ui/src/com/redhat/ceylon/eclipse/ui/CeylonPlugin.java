@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +117,16 @@ public class CeylonPlugin extends PluginBase {
 	@Override
 	public void start(BundleContext context) throws Exception {
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
+        ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
+	    super.start(context);
+	    setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
+//        copyDefaultRepoIfNecessary();
+        runInitialBuild();
+        registerProjectOpenCloseListener();
+	}
+
+    public static File getCeylonRepository(String ceylonRepositoryProperty) {
+        File ceylonRepository=null;
         if (! "".equals(ceylonRepositoryProperty)) {
             File ceylonRepositoryPath = new java.io.File(ceylonRepositoryProperty);
             if (ceylonRepositoryPath.exists()) {
@@ -133,20 +142,13 @@ public class CeylonPlugin extends PluginBase {
                 String urlPath = fileURL.getPath();
                 URI fileURI = new URI("file", null, urlPath, null);
                 ceylonRepository = new File(fileURI);
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
-	    super.start(context);
-	    setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
-//        copyDefaultRepoIfNecessary();
-        runInitialBuild();
-        registerProjectOpenCloseListener();
-	}
+        return ceylonRepository;
+    }
 
 	@Override
 	public String getID() {

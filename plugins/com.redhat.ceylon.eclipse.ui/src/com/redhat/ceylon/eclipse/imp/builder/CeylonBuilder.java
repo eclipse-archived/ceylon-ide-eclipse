@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.builder.MarkerCreator;
@@ -891,7 +892,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = new ArrayList<String>();
 
-        userRepos.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+        String repoPath = project.getPersistentProperties()
+                    .get(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
+        File repo;
+        if (repoPath==null) {
+            repo = CeylonPlugin.getInstance().getCeylonRepository();
+        }
+        else { 
+            repo = CeylonPlugin.getCeylonRepository(repoPath);
+        }
+        userRepos.add(repo.getAbsolutePath());
+        
         
         if (project != null) {
             List<IProject> requiredProjects = getRequiredProjects(project);
