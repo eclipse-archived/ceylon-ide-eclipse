@@ -39,11 +39,11 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.builder.MarkerCreator;
@@ -892,8 +892,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = new ArrayList<String>();
 
-        String repoPath = project.getPersistentProperties()
-                    .get(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
+        String repoPath = new ProjectScope(project)
+                .getNode(CeylonPlugin.PLUGIN_ID)
+                .get("repo", null);
+        //project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
         File repo;
         if (repoPath==null) {
             repo = CeylonPlugin.getInstance().getCeylonRepository();
@@ -907,9 +909,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (project != null) {
             List<IProject> requiredProjects = getRequiredProjects(project);
             for (IProject requiredProject : requiredProjects) {
-                if (! requiredProject.isOpen()) {
+                if (!requiredProject.isOpen()) {
                     throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is not opened.", null));
-                } else {
+                } 
+                else {
                     if (! requiredProject.hasNature(CeylonNature.NATURE_ID)) {
                         IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
                         boolean oneCeylonMarker = false;

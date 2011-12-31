@@ -7,10 +7,9 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -41,13 +40,10 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
             IJavaProject project=null;
             if (selectedElement!=null) {
                 project = selectedElement.getJavaProject();
-                try {
-                    repoPath = project.getProject()
-                            .getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
-                }
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
+                repoPath = new ProjectScope(project.getProject())
+                        .getNode(CeylonPlugin.PLUGIN_ID)
+                        .get("repo", null);
+                //project.getProject().getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
             }
 			if (repoPath==null) repoPath = getDefaultRepositoryPath();
             page = new ExportModuleWizardPage(repoPath, project);
