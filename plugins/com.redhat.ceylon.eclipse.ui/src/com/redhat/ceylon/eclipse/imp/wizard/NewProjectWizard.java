@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -25,12 +26,20 @@ import org.eclipse.jdt.ui.actions.ShowInPackageViewAction;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -48,6 +57,9 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     private IConfigurationElement fConfigElement;
 
+    private String repositoryPath;
+    private boolean useEmbeddedRepo=true;
+    
     public NewProjectWizard() {
         this(null, null);
     }
@@ -91,6 +103,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 Control locationControl= createLocationControl(composite);
                 locationControl.setLayoutData(new GridData(FILL_HORIZONTAL));
 
+                addSelectRepo(composite);
+
                 Control jreControl= createJRESelectionControl(composite);
                 jreControl.setLayoutData(new GridData(FILL_HORIZONTAL));
 
@@ -102,7 +116,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
                 Control infoControl= createInfoControl(composite);
                 infoControl.setLayoutData(new GridData(FILL_HORIZONTAL));
-
+                
                 setControl(composite);
             }
         };
@@ -117,8 +131,80 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         addPage(fSecondPage);
         
         fFirstPage.init(getSelection(), getActivePart());
-    }       
+    }
+    
+    //TODO: fix copy/paste!
+    void addSelectRepo(Composite parent) {
+        final Composite composite= new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 4;
+        composite.setLayout(layout);
+        
+        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        composite.setLayoutData(gd);
+        
+        Button useEmbedded = new Button(composite, SWT.CHECK);
+        useEmbedded.setText("Use embedded module repository");
+        useEmbedded.setSelection(true);
+        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        igd.horizontalSpan = 4;
+        igd.grabExcessHorizontalSpace = true;
+        useEmbedded.setLayoutData(igd);
 
+        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        folderLabel.setText("External module repository: ");
+        GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        flgd.horizontalSpan = 1;
+        folderLabel.setLayoutData(flgd);
+
+        final Text folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        fgd.horizontalSpan = 2;
+        fgd.grabExcessHorizontalSpace = true;
+        folder.setLayoutData(fgd);
+        folder.setEnabled(false);
+        folder.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                repositoryPath = folder.getText();
+            }
+        });
+        
+        repositoryPath = ExportModuleWizard.getDefaultRepositoryPath();
+        folder.setText(repositoryPath);
+        
+        final Button selectFolder = new Button(composite, SWT.PUSH);
+        selectFolder.setText("Browse...");
+        GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sfgd.horizontalSpan = 1;
+        selectFolder.setLayoutData(sfgd);
+        selectFolder.setEnabled(false);
+        selectFolder.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String dir = new DirectoryDialog(getShell()).open();
+                if (dir!=null) {
+                    repositoryPath = dir;
+                    folder.setText(repositoryPath);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    
+        useEmbedded.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                useEmbeddedRepo = !useEmbeddedRepo;
+                folder.setEnabled(!useEmbeddedRepo);
+                selectFolder.setEnabled(!useEmbeddedRepo);
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+    }
+    
     protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
         fSecondPage.performFinish(monitor); // use the full progress monitor
     }
@@ -146,6 +232,19 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             });
             new CeylonNature().addToProject(getCreatedElement().getProject());
         }
+        
+        if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
+            try {
+                getCreatedElement().getProject()
+                    .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
+                            repositoryPath);
+                ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+            } 
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+        
         return res;
     }
     

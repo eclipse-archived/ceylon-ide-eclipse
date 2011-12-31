@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -35,14 +37,26 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         super.addPages();
         if (page == null) {
             IJavaElement selectedElement = getSelectedElement();
-			page = new ExportModuleWizardPage(getDefaultRepositoryPath(),
-					selectedElement==null ? null : selectedElement.getJavaProject());
+            String repoPath=null;
+            IJavaProject project=null;
+            if (selectedElement!=null) {
+                project = selectedElement.getJavaProject();
+                try {
+                    repoPath = project.getProject().getPersistentProperties()
+                            .get(new QualifiedName("ceylon","repo"));
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+			if (repoPath==null) repoPath = getDefaultRepositoryPath();
+            page = new ExportModuleWizardPage(repoPath, project);
             //page.init(selection);
         }
         addPage(page);
     }
 
-	private String getDefaultRepositoryPath() {
+	static String getDefaultRepositoryPath() {
 		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
         		.get("repositoryPath");
         if (repositoryPath==null) {
@@ -113,7 +127,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 		return true;
 	}
 
-	private void persistDefaultRepositoryPath(String repositoryPath) {
+	static void persistDefaultRepositoryPath(String repositoryPath) {
 		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
 		    CeylonPlugin.getInstance().getDialogSettings()
 		            .put("repositoryPath", repositoryPath);
