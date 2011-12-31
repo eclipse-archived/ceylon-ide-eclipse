@@ -7,9 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
-import org.antlr.gunit.gUnitParser.file_return;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
@@ -22,15 +19,10 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
-import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
-    private static String languageVersion = "0.1";
-    private final static String languageCar = System.getProperty("user.home")+"/.ceylon/repo/ceylon/language/"+languageVersion +"/ceylon.language-"+languageVersion+".car";
-
-    
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration)
             throws CoreException {
