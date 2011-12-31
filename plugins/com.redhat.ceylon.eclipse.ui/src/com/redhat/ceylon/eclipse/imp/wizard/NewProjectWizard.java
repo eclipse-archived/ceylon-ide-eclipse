@@ -10,11 +10,12 @@ import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -46,6 +47,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
+import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -234,15 +236,19 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         }
         
         if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
+            IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
+                    .getNode(CeylonPlugin.PLUGIN_ID);
+            node.put("repo", repositoryPath);
             try {
-                getCreatedElement().getProject()
-                    .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
-                            repositoryPath);
-                ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+                node.flush();
             } 
-            catch (CoreException e) {
+            catch (BackingStoreException e) {
                 e.printStackTrace();
             }
+            /*getCreatedElement().getProject()
+                    .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
+                            repositoryPath);*/
+            ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
         }
         
         return res;
