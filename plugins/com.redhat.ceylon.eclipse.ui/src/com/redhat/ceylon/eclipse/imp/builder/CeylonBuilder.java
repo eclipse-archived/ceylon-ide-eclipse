@@ -590,8 +590,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 public IStatus run(IProgressMonitor monitor) {
                     try {
                         dependingOnProject.build(mustDoFullBuild.value ? FULL_BUILD : kind, monitor);
-                    } catch (CoreException e) {
-                        return new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), "Job '" + this.getName() + "' failed", e);
+                    } 
+                    catch (CoreException e) {
+                        return new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), 
+                                "Job '" + this.getName() + "' failed", e);
                     }
                     return Status.OK_STATUS;
                 }
