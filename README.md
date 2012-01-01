@@ -2,17 +2,23 @@
 
 ## Installing from http://ceylon-lang.org/eclipse/updatesite/
 
-1. Start with a clean install of Eclipse Indigo.
-
-   <http://www.eclipse.org/downloads/>
-
-2. Use `Help > Install New Software ... > Available Software Sites > Import`
-   Select `updatesites.xml`
-
-3. Close the dialog and now choose ceylon-lang.org updatesite and install the 
-   plugin.
-
-4. Restart and your Eclipse should now syntax highlight Ceylon files.
+1.  Start with a clean install of Eclipse Indigo.
+    
+    <http://www.eclipse.org/downloads/>
+    
+2.  Use `Help > Install New Software ... > Available Software Sites > Import`
+    Select `updatesites.xml`
+    
+3.  Close the dialog and now choose ceylon-lang.org updatesite and install the 
+    plugin.
+    
+4.  Restart Eclipse.
+    
+5.  Use `File > New > Ceylon Project`, enter a project name, and select 
+    `Finish` create a new Ceylon project in the workspace.
+    
+6.  Use `New > Ceylon Unit` to create a new `.ceylon` file in the `src` 
+    directory of your project.
 
 ## Installing/Building with (pure) Eclipse
 
@@ -33,26 +39,21 @@
 4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
-
-5.  Open `Eclipse > Preferences` and go to 
-    `Java > Compiler > Building > Output folder`. Add the pattern
-    `*.ceylon` to `Filtered resources`.
-
-6.  Use `File > New > Java Project`, enter a project name, and select 
-    `Finish` create a new Java project in the workspace.
     
-7.  Select the new project in the Java package explorer, and select 
-    `Enable Ceylon Builder` from the context menu.
+5.  Use `File > New > Ceylon Project`, enter a project name, and select 
+    `Finish` create a new Ceylon project in the workspace.
     
-8.  Use `New > File` to create a new file with the extension `.ceylon`
-    in the `src` directory of your project.
+6.  Use `New > Ceylon Unit` to create a new `.ceylon` file in the `src` 
+    directory of your project.
 
 ## Building with Tycho/Maven 3
 
-1.  mvn clean install
-
-2. `site/target/site` now contains an update site you can install from.
-   (Need to have IMP update site added too)
+1.  From this directory, type
+    
+        mvn clean install
+    
+2.  `site/target/site` now contains an update site you can install from.
+    (Need to have IMP update site added too.)
 
 ## License
 
