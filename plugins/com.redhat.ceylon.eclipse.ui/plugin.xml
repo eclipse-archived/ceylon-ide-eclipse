@@ -844,4 +844,13 @@
          </configurationType>
       </shortcut>
    </extension>
+
+   <extension point="org.eclipse.ui.propertyPages">
+       <page 
+           id="com.redhat.ceylon.eclipse.ui.preferences"
+           name="Ceylon"
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferencesPage"/>
+   </extension>
 </plugin>

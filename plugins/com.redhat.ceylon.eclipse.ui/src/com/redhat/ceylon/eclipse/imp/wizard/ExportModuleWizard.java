@@ -52,7 +52,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         addPage(page);
     }
 
-	static String getDefaultRepositoryPath() {
+	public static String getDefaultRepositoryPath() {
 		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
         		.get("repositoryPath");
         if (repositoryPath==null) {
@@ -123,7 +123,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 		return true;
 	}
 
-	static void persistDefaultRepositoryPath(String repositoryPath) {
+	public static void persistDefaultRepositoryPath(String repositoryPath) {
 		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
 		    CeylonPlugin.getInstance().getDialogSettings()
 		            .put("repositoryPath", repositoryPath);
