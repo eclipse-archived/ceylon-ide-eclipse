@@ -128,9 +128,14 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     
     public static Tree.CompilationUnit getCompilationUnit(IProject project, 
             Declaration dec) {
-        PhasedUnit phasedUnit = CeylonBuilder.getProjectTypeChecker(project)
-                        .getPhasedUnitFromRelativePath(getRelativePath(dec));
+        PhasedUnit phasedUnit = getPhasedUnit(project, dec);
         return phasedUnit==null ? null : phasedUnit.getCompilationUnit();
+    }
+
+    public static PhasedUnit getPhasedUnit(IProject project, 
+            Declaration dec) {
+        return CeylonBuilder.getProjectTypeChecker(project)
+                        .getPhasedUnitFromRelativePath(getRelativePath(dec));
     }
 
     public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
