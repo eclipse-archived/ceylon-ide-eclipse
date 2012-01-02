@@ -84,9 +84,12 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -95,8 +98,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.util.RepositoryLister;
 import com.redhat.ceylon.compiler.util.Util;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
@@ -499,6 +504,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                     PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
                     
+                    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+                        Unit unit = phasedUnit.getUnit();
+                        if (unit.getUnresolvedReferences().size() > 0) {
+                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                            if (fileToAdd.exists()) {
+                                fSourcesToCompile.add(fileToAdd);
+                            }
+                        }
+                        Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
+                        if (duplicateDeclarations.size() > 0) {
+                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                            if (fileToAdd.exists()) {
+                                fSourcesToCompile.add(fileToAdd);
+                                fileToAdd.touch(monitor);
+                            }
+                            for (Declaration duplicateDeclaration : duplicateDeclarations) {
+                                PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
+                                if (duplicateDeclPU != null) {
+                                    IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
+                                    if (duplicateDeclFile.exists()) {
+                                        fSourcesToCompile.add(duplicateDeclFile);
+                                        duplicateDeclFile.touch(monitor);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     for(IFile f: changeDependents) {
                         if (isSourceFile(f)) {
                             if (f.exists()) {
@@ -520,12 +553,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
                                 }
                             }
-                        }
-                    }
-
-                    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-                        if (phasedUnit.getUnit().getUnresolvedReferences().size() > 0) {
-                            fSourcesToCompile.add((IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource());
                         }
                     }
                     
@@ -714,6 +741,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     typeChecker.getContext(), tokens));
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
+            if (typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(phasedUnit.getPathRelativeToSrcDir()) != null) {
+                typeChecker.getPhasedUnits().removePhasedUnitForRelativePath(phasedUnit.getPathRelativeToSrcDir());
+            }
             typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
