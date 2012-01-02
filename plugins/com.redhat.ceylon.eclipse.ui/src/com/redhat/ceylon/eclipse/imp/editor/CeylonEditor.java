@@ -6,13 +6,22 @@ import java.lang.reflect.Field;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.imp.editor.GenerateActionGroup;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
 import org.eclipse.imp.editor.OutlineInformationControl;
 import org.eclipse.imp.editor.OutlineLabelProvider;
+import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -53,6 +62,8 @@ public class CeylonEditor extends UniversalEditor {
     private static Field generateActionGroupField;
     private static Field openEditorActionGroupField;
     private static Field labelProviderField;
+    private static Field fParserSchedulerField;
+    
     static {
         try {
             refreshContributionsField = UniversalEditor.class.getDeclaredField("fRefreshContributions");
@@ -63,6 +74,8 @@ public class CeylonEditor extends UniversalEditor {
             openEditorActionGroupField.setAccessible(true);
             labelProviderField = OutlineInformationControl.class.getDeclaredField("fInnerLabelProvider");
             labelProviderField.setAccessible(true);
+            fParserSchedulerField = UniversalEditor.class.getDeclaredField("fParserScheduler");
+            fParserSchedulerField.setAccessible(true);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -83,6 +96,8 @@ public class CeylonEditor extends UniversalEditor {
             return builder.buildTree(getParseController().getCurrentAst());
         }
     }
+
+    private IResourceChangeListener fResourceListener;
 
     private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
         return new IInformationControlCreator() {
@@ -141,6 +156,7 @@ public class CeylonEditor extends UniversalEditor {
             getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
             generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
             openEditorActionGroupField.set(this, new CeylonOpenEditorActionGroup(this));
+            watchForSourceBuild();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -149,6 +165,46 @@ public class CeylonEditor extends UniversalEditor {
         getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         ((IContextService) getSite().getService(IContextService.class))
             .activateContext("com.redhat.ceylon.eclipse.ui.context");
+    }
+    
+    private void watchForSourceBuild() {
+        if (fLanguageServiceManager == null ||
+            fLanguageServiceManager.getParseController() == null ||
+            fLanguageServiceManager.getParseController().getProject() == null) {
+            return;
+        }
+        
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
+            public void resourceChanged(IResourceChangeEvent event) {
+                if (event.getType() != IResourceChangeEvent.POST_BUILD)
+                    return;
+                if (event.getBuildKind() != IncrementalProjectBuilder.AUTO_BUILD)
+                    return;
+                
+                IParseController pc= fLanguageServiceManager.getParseController();
+                if (pc == null) {
+                    return;
+                }
+                IPath oldWSRelPath= pc.getProject().getRawProject().getFullPath().append(pc.getPath());
+                IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+
+                if (rd != null) {
+                    try {
+                        ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
+                        if (scheduler != null) {
+                            scheduler.cancel();
+                            scheduler.schedule(50);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, IResourceChangeEvent.POST_BUILD);
     }
     
     class CeylonGenerateActionGroup extends GenerateActionGroup {
@@ -536,4 +592,9 @@ public class CeylonEditor extends UniversalEditor {
         return super.getAdapter(required);
     }
 
+    public void dispose() {
+        if (fResourceListener != null) {
+            ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
+        }
+    }
 }
