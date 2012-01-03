@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -53,6 +54,8 @@ public class CeylonPreferencesPage extends PropertyPage {
     protected void performDefaults() {
         useEmbeddedRepo=true;
         useEmbedded.setSelection(true);
+        selectFolder.setEnabled(false);
+        folder.setEnabled(false);
         super.performDefaults();
     }
     
@@ -96,25 +99,37 @@ public class CeylonPreferencesPage extends PropertyPage {
         return (IProject) getElement();
     }
     
+    private Button selectFolder;
+    private Text folder;
+    
     //TODO: fix copy/paste!
     void addSelectRepo(Composite parent) {
         
+        Label desc = new Label(parent, SWT.LEFT | SWT.WRAP);
+        desc.setText("The Ceylon builder compiles Ceylon source contained in the project:");
+
         final Button enableBuilder = new Button(parent, SWT.PUSH);
         enableBuilder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
         enableBuilder.setText("Enable Ceylon Builder");
         enableBuilder.setEnabled(!builderEnabled);
 
-        final Composite composite= new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 4;
-        composite.setLayout(layout);
-        
+        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sep.setLayoutData(sgd);
+
+        Label title = new Label(parent, SWT.LEFT | SWT.WRAP);
+        title.setText("The Ceylon module repository contains dependencies:");
+        //final Composite composite= new Composite(parent, SWT.NONE);
+        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 4;
+        composite.setLayout(layout);        
         
         useEmbedded = new Button(composite, SWT.CHECK);
-        useEmbedded.setText("Use embedded module repository");
+        useEmbedded.setText("Use embedded module repository (contains only language module)");
         GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         igd.horizontalSpan = 4;
         igd.grabExcessHorizontalSpace = true;
@@ -130,7 +145,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         flgd.horizontalSpan = 1;
         folderLabel.setLayoutData(flgd);
 
-        final Text folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
@@ -151,7 +166,7 @@ public class CeylonPreferencesPage extends PropertyPage {
             folder.setText(repositoryPath);
         }
         
-        final Button selectFolder = new Button(composite, SWT.PUSH);
+        selectFolder = new Button(composite, SWT.PUSH);
         selectFolder.setText("Browse...");
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
