@@ -137,8 +137,12 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 if (!unitName.matches("\\w+")) {
                     setErrorMessage("Please enter a legal compilation unit name.");
                 }
+                else if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
+                }
                 else {
                     setErrorMessage(null);
+                    
                 }
                 setPageComplete(isComplete());
             }
@@ -221,6 +225,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void modifyText(ModifyEvent e) {
                 String folderName = folder.getText();
                 try {
+                    sourceDir = null;
                     for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
                             .getJavaProjects()) {
                         for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
@@ -232,6 +237,12 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 }
                 catch (JavaModelException jme) {
                     jme.printStackTrace();
+                }
+                if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
+                }
+                else {
+                    setErrorMessage(null);
                 }
                 setPageComplete(isComplete());
             }
@@ -253,6 +264,12 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     folder.setText(folderName);
                     packageFragment = sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
+                }
+                else if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
+                }
+                else {
+                    setErrorMessage(null);
                 }
             }
             @Override
@@ -282,6 +299,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 packageName = pkg.getText();
                 if (!packageNameIsLegal(packageName)) {
                     setErrorMessage(getIllegalPackageNameMessage());
+                }
+                else if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
                 }
                 else {
                     setErrorMessage(null);
