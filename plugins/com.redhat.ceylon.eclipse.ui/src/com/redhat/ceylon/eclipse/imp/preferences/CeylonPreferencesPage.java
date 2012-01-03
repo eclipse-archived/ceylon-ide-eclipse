@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
+import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -97,6 +98,12 @@ public class CeylonPreferencesPage extends PropertyPage {
     
     //TODO: fix copy/paste!
     void addSelectRepo(Composite parent) {
+        
+        final Button enableBuilder = new Button(parent, SWT.PUSH);
+        enableBuilder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+        enableBuilder.setText("Enable Ceylon Builder");
+        enableBuilder.setEnabled(!builderEnabled);
+
         final Composite composite= new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.numColumns = 4;
@@ -114,6 +121,8 @@ public class CeylonPreferencesPage extends PropertyPage {
         useEmbedded.setLayoutData(igd);
 
         useEmbedded.setSelection(useEmbeddedRepo);
+        
+        useEmbedded.setEnabled(builderEnabled);
 
         Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("External module repository: ");
@@ -126,7 +135,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
         folder.setLayoutData(fgd);
-        folder.setEnabled(false);
+        folder.setEnabled(!useEmbeddedRepo&&builderEnabled);
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -147,7 +156,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
         selectFolder.setLayoutData(sfgd);
-        selectFolder.setEnabled(false);
+        selectFolder.setEnabled(!useEmbeddedRepo&&builderEnabled);
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -172,10 +181,32 @@ public class CeylonPreferencesPage extends PropertyPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        enableBuilder.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new CeylonNature().addToProject(getSelectedProject());
+                enableBuilder.setEnabled(false);
+                useEmbedded.setEnabled(true);
+                builderEnabled=true;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    
     }
+
+    boolean builderEnabled = false;
     
     @Override
-    protected Control createContents(Composite composite) {        
+    protected Control createContents(Composite composite) {
+        
+        try {
+            builderEnabled = getSelectedProject().hasNature(CeylonNature.NATURE_ID);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        
         repositoryPath = new ProjectScope(getSelectedProject())
                 .getNode(CeylonPlugin.PLUGIN_ID)
                 .get("repo", null);
