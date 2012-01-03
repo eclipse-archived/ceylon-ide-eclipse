@@ -104,6 +104,7 @@ import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.zip.ZipFileIndex;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -869,20 +870,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             MessageConsole console = findConsole();
             context.put(Log.outKey, new PrintWriter(console.newMessageStream(), true));
             
-            CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
-            Iterable<? extends JavaFileObject> compilationUnits1 =
-                    fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), 
-            		fileManager, null, options, null, compilationUnits1);
-            boolean success=false;
+            ZipFileIndex.clearCache();
             try {
-            	success = task.call();
+                CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+                Iterable<? extends JavaFileObject> compilationUnits1 =
+                        fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+                CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), 
+                        fileManager, null, options, null, compilationUnits1);
+                boolean success=false;
+                try {
+                    success = task.call();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (!success) console.activate();
+                return success;
             }
-            catch (Exception e) {
-            	e.printStackTrace();
+            finally {
+                ZipFileIndex.clearCache();
             }
-            if (!success) console.activate();
-			return success;
         }
         else
             return false;
