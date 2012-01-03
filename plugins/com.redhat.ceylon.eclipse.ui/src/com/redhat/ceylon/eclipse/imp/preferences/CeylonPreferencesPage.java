@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.preferences;
 
+import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
+
+import java.io.File;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -39,16 +42,40 @@ public class CeylonPreferencesPage extends PropertyPage {
     
     private Button useEmbedded;
     
+    //TODO: fix copy/paste!
+    public boolean isRepoValid() {
+        if (useEmbeddedRepo) {
+            return true;
+        }
+        else if (repositoryPath==null) {
+            return false;
+        }
+        else {
+            String carPath = repositoryPath + "/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
+                    "/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
+            return new File(carPath).exists();
+        }        
+    }
+    
     @Override
     public boolean performOk() {
+        if (!isRepoValid()) return false;
         store();
         return super.performOk();
     }
     
     @Override
     protected void performApply() {
-        store();
-        super.performApply();
+        if (isRepoValid()) {
+            store();
+            super.performApply();
+        }
+    }
+    
+    @Override
+    public boolean okToLeave() {
+        if (!isRepoValid()) return false;
+        return super.okToLeave();
     }
     
     @Override
@@ -159,6 +186,12 @@ public class CeylonPreferencesPage extends PropertyPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 repositoryPath = folder.getText();
+                if (!isRepoValid()) {
+                    setErrorMessage("Please select a module repository containing the language module");
+                }
+                else {
+                    setErrorMessage(null);
+                }
             }
         });
         
@@ -195,6 +228,12 @@ public class CeylonPreferencesPage extends PropertyPage {
                 useEmbeddedRepo = !useEmbeddedRepo;
                 folder.setEnabled(!useEmbeddedRepo);
                 selectFolder.setEnabled(!useEmbeddedRepo);
+                if (useEmbeddedRepo) {
+                    setErrorMessage(null);
+                }
+                else if (!isRepoValid()) {
+                    setErrorMessage("Please select a module repository containing the language module");
+                }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -212,6 +251,13 @@ public class CeylonPreferencesPage extends PropertyPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
     
+        if (useEmbeddedRepo) {
+            setErrorMessage(null);
+        }
+        else if (!isRepoValid()) {
+            setErrorMessage("Please select a module repository containing the language module");
+        }
+
     }
 
     boolean builderEnabled = false;
