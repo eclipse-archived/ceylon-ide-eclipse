@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     
@@ -51,10 +52,12 @@ public class NewModuleWizard extends Wizard implements INewWizard {
 
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
+    private IWorkbench workbench;
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
+        this.workbench = workbench;
     }
     
     @Override
@@ -70,6 +73,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         catch (InterruptedException e) {
             return false;
         }
+        BasicNewResourceWizard.selectAndReveal(op.getResult(), 
+                workbench.getActiveWorkbenchWindow());
         gotoLocation(op.getResult().getFullPath(), 0);
         return true;
     }
@@ -117,7 +122,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     return "Please enter a legal module name.";
                 }
             };
-            page.init(selection);
+            page.init(workbench, selection);
         }
         addPage(page);
     }

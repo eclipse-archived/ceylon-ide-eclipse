@@ -594,27 +594,32 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 			
 			@Override
 			public void apply(IDocument doc) {
-				IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-						.findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
-				if (descriptor!=null) {
-					try {
-						NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
-						wizard.setSelection(new StructuredSelection(file));
-						wizard.setDefaultUnitName(unitName);
-						wizard.setContents(def);
-						WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
-								wizard);
-						wd.setTitle(wizard.getWindowTitle());
-						wd.open();
-					}
-					catch (CoreException e) {
-						e.printStackTrace();
-					}
-				}
+				openNewUnitWizard(def, file, unitName);
 			}
 		});
     }
 
+    private static void openNewUnitWizard(final String def, final IFile file,
+            final String unitName) {
+        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+                .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
+        if (descriptor!=null) {
+            try {
+                NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
+                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
+                wizard.setDefaultUnitName(unitName);
+                wizard.setContents(def);
+                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        wizard);
+                wd.setTitle(wizard.getWindowTitle());
+                wd.open();
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     private void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
             String desc, Image image, Declaration typeDec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.Body body) {

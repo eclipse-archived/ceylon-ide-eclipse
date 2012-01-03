@@ -9,10 +9,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
     
     private IStructuredSelection selection;
+    private IWorkbench workbench;
+
     private NewUnitWizardPage page;
     private String defaultUnitName="";
     private String contents="";
@@ -20,6 +23,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
+        this.workbench = workbench;
     }
     
     @Override
@@ -46,6 +50,8 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         catch (InterruptedException e) {
             return false;
         }
+        BasicNewResourceWizard.selectAndReveal(op.getResult(), 
+                workbench.getActiveWorkbenchWindow());
         gotoLocation(op.getResult().getFullPath(), 0);
         return true;
     }
@@ -57,7 +63,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
             page= new NewUnitWizardPage("New Ceylon Unit",
                     "Create a new Ceylon compilation unit that will contain Ceylon source.",
                     defaultUnitName, CEYLON_NEW_FILE, !"".equals(contents));
-            page.init(selection);
+            page.init(workbench, selection);
         }
         addPage(page);
     }
@@ -66,9 +72,9 @@ public class NewUnitWizard extends Wizard implements INewWizard {
 		this.defaultUnitName = defaultUnitName;
 	}
     
-    public void setSelection(IStructuredSelection selection) {
+    /*public void setSelection(IStructuredSelection selection) {
 		this.selection = selection;
-	}
+	}*/
     
     public void setContents(String contents) {
 		this.contents = contents;

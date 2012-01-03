@@ -5,21 +5,34 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_PACKAGE;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 public class NewPackageWizard extends Wizard implements INewWizard {
 
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
+    private IWorkbench workbench;
+    
+    public IPackageFragment getPackageFragment() {
+        return page.getPackageFragment();
+    }
+    
+    public IPackageFragmentRoot getSourceFolder() {
+        return page.getSourceDir();
+    }
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
+        this.workbench=workbench;
     }
     
     @Override
@@ -40,6 +53,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         catch (InterruptedException e) {
             return false;
         }
+        BasicNewResourceWizard.selectAndReveal(op.getResult(), 
+                workbench.getActiveWorkbenchWindow());
         gotoLocation(op.getResult().getFullPath(), 0);
         return true;
     }
@@ -74,7 +89,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                             super.packageNameIsLegal(packageName);
                 }
             };
-            page.init(selection);
+            page.init(workbench, selection);
         }
         addPage(page);
     }

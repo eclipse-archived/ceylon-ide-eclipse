@@ -20,10 +20,12 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.wizards.NewSourceFolderCreationWizard;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -34,9 +36,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -52,7 +58,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private final boolean declarationButtonDisabled;
     
     private IStructuredSelection selection;
-    
+    private IWorkbench workbench;
+
     NewUnitWizardPage(String title, String description, 
             String defaultUnitName, String icon,
             boolean declarationButtonDisabled) {
@@ -105,8 +112,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         Text name = createNameField(composite);
         createDeclarationField(composite);
         createSeparator(composite);
-        createFolderField(composite);
-        createPackageField(composite);
+        Text folder = createFolderField(composite);
+        createPackageField(composite, folder);
         name.forceFocus();
     }
 
@@ -170,7 +177,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         new Label(composite, SWT.NONE);
 
         Link link = new Link(composite, SWT.NONE);
-        link.setText("<a>(Edit 'header.ceylon')</a>");
+        link.setText("<a>Edit 'header.ceylon'...</a>");
         GridData kgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         kgd.horizontalSpan = 2;
         kgd.grabExcessHorizontalSpace = true;
@@ -190,7 +197,6 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     }
                 }
             }
-            
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
@@ -276,9 +282,79 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        new Label(composite, SWT.NONE);
+
+        Link link = new Link(composite, SWT.NONE);
+        link.setText("<a>Create new source folder...</a>");
+        GridData kgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        kgd.horizontalSpan = 3;
+        kgd.grabExcessHorizontalSpace = true;
+        link.setLayoutData(kgd);
+        link.addSelectionListener(new SelectionListener() {            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IPackageFragmentRoot pfr = (IPackageFragmentRoot) openSourceFolderWizard();
+                if (pfr!=null) {
+                    sourceDir = pfr;
+                    String folderName = sourceDir.getPath().toPortableString();
+                    folder.setText(folderName);
+                    packageFragment = sourceDir.getPackageFragment(packageName);
+                    setPageComplete(isComplete());
+                }
+                else if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
+                }
+                else {
+                    setErrorMessage(null);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+
         return folder;
     }
     
+    Text createPackageField(Composite composite, final Text folder) {
+        
+        final Text pkg = createPackageField(composite);
+        
+        new Label(composite, SWT.NONE);
+        
+        Link link = new Link(composite, SWT.NONE);
+        link.setText("<a>Create new Ceylon package with descriptor...</a>");
+        GridData kgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        kgd.horizontalSpan = 3;
+        kgd.grabExcessHorizontalSpace = true;
+        link.setLayoutData(kgd);
+        link.addSelectionListener(new SelectionListener() {            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                NewPackageWizard wiz = openPackageWizard();
+                IPackageFragment pfr = wiz.getPackageFragment();
+                if (pfr!=null) {
+                    sourceDir = wiz.getSourceFolder();
+                    String folderName = sourceDir.getPath().toPortableString();
+                    folder.setText(folderName);
+                    pkg.setText(pfr.getElementName());
+                    packageFragment = pfr;
+                    setPageComplete(isComplete());
+                }
+                else if (sourceDir==null) {
+                    setErrorMessage("Please select a source folder");
+                }
+                else {
+                    setErrorMessage(null);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        return pkg;
+
+    }
+        
     Text createPackageField(Composite composite) {
         
         Label packageLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
@@ -351,6 +427,46 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         return pkg;
     }
 
+    private NewPackageWizard openPackageWizard() {
+        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+                .findWizard("com.redhat.ceylon.eclipse.ui.newPackageWizard");
+        if (descriptor!=null) {
+            try {
+                NewPackageWizard wizard = (NewPackageWizard) descriptor.createWizard();
+                wizard.init(workbench, selection);
+                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        wizard);
+                wd.setTitle(wizard.getWindowTitle());
+                wd.open();
+                return wizard;
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
+    private IJavaElement openSourceFolderWizard() {
+        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+                .findWizard("org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard");
+        if (descriptor!=null) {
+            try {
+                NewSourceFolderCreationWizard wizard = (NewSourceFolderCreationWizard) descriptor.createWizard();
+                wizard.init(workbench, selection);
+                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        wizard);
+                wd.setTitle(wizard.getWindowTitle());
+                wd.open();
+                return wizard.getCreatedElement();
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
     void createSharedField(Composite composite) {        
         new Label(composite, SWT.NONE);
         
@@ -414,8 +530,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         }
     }
     
-    public void init(IStructuredSelection selection) {
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
+        this.workbench = workbench;
     }
     
     boolean isComplete() {
