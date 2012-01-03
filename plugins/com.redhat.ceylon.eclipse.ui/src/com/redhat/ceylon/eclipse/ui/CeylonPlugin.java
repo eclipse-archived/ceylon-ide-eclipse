@@ -1,30 +1,5 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DEFAULT_REFINEMENT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_WARNING;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT_LIST;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_INTERFACE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_MODULE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_PACKAGE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OPEN_DECLARATION;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CORRECTION_INDICATION;
 import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS;
@@ -88,7 +63,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
-public class CeylonPlugin extends PluginBase {
+public class CeylonPlugin extends PluginBase implements ICeylonResources {
 
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
@@ -200,6 +175,7 @@ public class CeylonPlugin extends PluginBase {
         reg.put(CEYLON_NEW_MODULE, image("newftrprj_wiz.png"));
         reg.put(CEYLON_NEW_PACKAGE, image("newpack_wiz.png"));
         reg.put(CEYLON_EXPORT_CAR, image("jar_pack_wiz.png"));
+        reg.put(ELE32, image("ceylon_icon_32px.png"));
 	}
 	
 	/**

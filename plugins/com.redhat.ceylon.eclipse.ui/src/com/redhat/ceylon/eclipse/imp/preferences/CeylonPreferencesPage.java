@@ -30,6 +30,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 public class CeylonPreferencesPage extends PropertyPage {
 
@@ -112,6 +113,9 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableBuilder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
         enableBuilder.setText("Enable Ceylon Builder");
         enableBuilder.setEnabled(!builderEnabled);
+        enableBuilder.setImage(CeylonPlugin.getInstance()
+                .getImageRegistry().get(ICeylonResources.ELE32));
+        //enableBuilder.setSize(40, 40);
 
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
