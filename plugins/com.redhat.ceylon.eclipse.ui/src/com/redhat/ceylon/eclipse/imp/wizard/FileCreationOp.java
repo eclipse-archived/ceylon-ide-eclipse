@@ -28,7 +28,7 @@ class FileCreationOp implements IRunnableWithProgress {
     private final boolean includePreamble;
     private final String contents;
     
-    private  IFile result;
+    private IFile result;
     
     IFile getResult() {
         return result;
