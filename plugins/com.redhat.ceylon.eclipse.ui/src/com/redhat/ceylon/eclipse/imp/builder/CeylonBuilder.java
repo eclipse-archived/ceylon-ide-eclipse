@@ -84,7 +84,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -101,7 +100,6 @@ import com.redhat.ceylon.compiler.util.Util;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
@@ -994,11 +992,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 userRepos.add(getOutputDirectory(requiredJavaProject).getAbsolutePath());
             }
             
-            userRepos.add(project.getLocation().append("modules").toOSString());
+            /*userRepos.add(project.getLocation().append("modules").toOSString());
             
             for (IProject requiredProject : requiredProjects) {
                 userRepos.add(requiredProject.getLocation().append("modules").toOSString());
-            }
+            }*/
         }
         
         return userRepos;
