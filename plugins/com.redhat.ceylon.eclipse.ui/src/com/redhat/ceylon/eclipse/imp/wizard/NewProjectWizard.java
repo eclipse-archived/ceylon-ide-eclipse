@@ -14,10 +14,13 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
@@ -122,13 +125,27 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 
                 setControl(composite);
             }
+            @Override
+            public IClasspathEntry[] getSourceClasspathEntries() {
+                IClasspathEntry[] entries = super.getSourceClasspathEntries();
+                entries[0] = JavaCore.newSourceEntry(entries[0].getPath()
+                        .removeLastSegments(1).append("source"));
+                return entries;
+            }
         };
         fFirstPage.setTitle("New Ceylon Project");
         fFirstPage.setDescription("Create a Ceylon project in the workspace or in an external location.");
         addPage(fFirstPage);
 
         if (fSecondPage == null)
-            fSecondPage= new NewJavaProjectWizardPageTwo(fFirstPage);
+            fSecondPage= new NewJavaProjectWizardPageTwo(fFirstPage) {
+            @Override
+            public void init(IJavaProject jproject, IPath outputLocation,
+                    IClasspathEntry[] entries, boolean overrideExisting) {
+                super.init(jproject, outputLocation.removeLastSegments(1).append("modules"), 
+                        entries, overrideExisting);
+            }
+        };
         fSecondPage.setTitle("Ceylon Project Settings");
         fSecondPage.setDescription("Define the Ceylon build settings.");
         addPage(fSecondPage);
