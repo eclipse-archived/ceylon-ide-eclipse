@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
+import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_MARGIN;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_SPACING;
@@ -8,6 +9,7 @@ import static org.eclipse.jface.dialogs.IDialogConstants.VERTICAL_SPACING;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.ProjectScope;
@@ -188,6 +190,12 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             @Override
             public void modifyText(ModifyEvent e) {
                 repositoryPath = folder.getText();
+                if (!isRepoValid()) {
+                    fFirstPage.setErrorMessage("Please select a module repository containing the language module");
+                }
+                else {
+                    fFirstPage.setErrorMessage(null);
+                }
             }
         });
         
@@ -219,6 +227,12 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 useEmbeddedRepo = !useEmbeddedRepo;
                 folder.setEnabled(!useEmbeddedRepo);
                 selectFolder.setEnabled(!useEmbeddedRepo);
+                if (useEmbeddedRepo) {
+                    fFirstPage.setErrorMessage(null);
+                }
+                else if (!isRepoValid()) {
+                    fFirstPage.setErrorMessage("Please select a module repository containing the language module");
+                }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -226,11 +240,26 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         
     }
     
+    public boolean isRepoValid() {
+        if (useEmbeddedRepo) {
+            return true;
+        }
+        else if (repositoryPath==null) {
+            return false;
+        }
+        else {
+            String carPath = repositoryPath + "/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
+                    "/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
+            return new File(carPath).exists();
+        }        
+    }
+    
     protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
         fSecondPage.performFinish(monitor); // use the full progress monitor
     }
 
     public boolean performFinish() {
+        if (!isRepoValid()) return false;
         boolean res= super.performFinish();
         if (res) {
             final IJavaElement newElement= getCreatedElement();
