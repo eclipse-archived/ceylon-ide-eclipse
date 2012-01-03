@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -137,16 +138,17 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     
     //TODO: fix copy/paste!
     void addSelectRepo(Composite parent) {
-        final Composite composite= new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 4;
-        composite.setLayout(layout);
-        
+        //final Composite composite= new Composite(parent, SWT.NONE);
+        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        composite.setText("Ceylon module repository");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 4;
+        composite.setLayout(layout);        
         
         Button useEmbedded = new Button(composite, SWT.CHECK);
-        useEmbedded.setText("Use embedded module repository");
+        useEmbedded.setText("Use embedded module repository (contains only language module)");
         useEmbedded.setSelection(true);
         GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         igd.horizontalSpan = 4;
