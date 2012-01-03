@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -21,7 +22,9 @@ public class FindRefinementsVisitor extends Visitor {
 	}
 	
     protected boolean isRefinement(Declaration dec) {
-        return dec!=null && dec.refines(declaration);
+        return dec!=null && dec.refines(declaration) ||
+                dec instanceof Setter && ((Setter)dec).getGetter()
+                        .refines(declaration);
     }
     
 	@Override
