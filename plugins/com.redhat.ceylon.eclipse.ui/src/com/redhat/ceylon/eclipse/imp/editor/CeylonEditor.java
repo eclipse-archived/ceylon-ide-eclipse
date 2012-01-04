@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
