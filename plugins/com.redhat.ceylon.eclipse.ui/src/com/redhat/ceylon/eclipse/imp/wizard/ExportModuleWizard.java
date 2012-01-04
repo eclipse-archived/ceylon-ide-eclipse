@@ -85,6 +85,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 		if (project==null) {
 			MessageDialog.openError(getShell(), "Export Module Error", 
 					"No Java project selected.");
+			return false;
 		}
 		else {
 			/*IProject project = javaProject.getProject();
