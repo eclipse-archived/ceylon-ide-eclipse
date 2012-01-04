@@ -106,6 +106,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         setControl(composite);
 
         Dialog.applyDialogFont(composite);
+        
+        setPageComplete(isComplete());
     }
 
     void createControls(Composite composite) {
@@ -141,15 +143,17 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 unitName = name.getText();
-                if (!unitName.matches("\\w+")) {
-                    setErrorMessage("Please enter a legal compilation unit name.");
+                if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!packageNameIsLegal()) {
+                    setErrorMessage(getIllegalPackageNameMessage());
                 }
                 else {
-                    setErrorMessage(null);
-                    
+                    setErrorMessage(null); 
                 }
                 setPageComplete(isComplete());
             }
@@ -187,7 +191,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir==null) {
                     MessageDialog.openWarning(getShell(), "No Source Folder", 
-                            "Please select a source folder");
+                            getSelectSourceFolderMessage());
                 }
                 else {
                     EditDialog d = new EditDialog(getShell());
@@ -245,7 +249,13 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     jme.printStackTrace();
                 }
                 if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!packageNameIsLegal()) {
+                    setErrorMessage(getIllegalPackageNameMessage());
+                }
+                else if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -271,8 +281,14 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     packageFragment = sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
                 }
-                else if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                if (sourceDir==null) {
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!packageNameIsLegal()) {
+                    setErrorMessage(getIllegalPackageNameMessage());
+                }
+                else if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -301,8 +317,14 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     packageFragment = sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
                 }
-                else if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                if (sourceDir==null) {
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!packageNameIsLegal()) {
+                    setErrorMessage(getIllegalPackageNameMessage());
+                }
+                else if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -340,8 +362,14 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     packageFragment = pfr;
                     setPageComplete(isComplete());
                 }
+                if (!packageNameIsLegal()) {
+                    setErrorMessage(getIllegalPackageNameMessage());
+                }
                 else if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -373,11 +401,14 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
-                if (!packageNameIsLegal(packageName)) {
+                if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
                 }
                 else if (sourceDir==null) {
-                    setErrorMessage("Please select a source folder");
+                    setErrorMessage(getSelectSourceFolderMessage());
+                }
+                else if (!unitIsNameLegal()) {
+                    setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -404,7 +435,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir==null) {
                     MessageDialog.openWarning(getShell(), "No Source Folder", 
-                            "Please select a source folder");
+                            getSelectSourceFolderMessage());
                 }
                 else {
                     PackageSelectionDialog dialog = new PackageSelectionDialog(getShell(), sourceDir);
@@ -417,6 +448,18 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                         packageName = ((IPackageFragment) result).getElementName();
                         pkg.setText(packageName);
                         setPageComplete(isComplete());
+                    }
+                    if (!packageNameIsLegal()) {
+                        setErrorMessage(getIllegalPackageNameMessage());
+                    }
+                    else if (sourceDir==null) {
+                        setErrorMessage(getSelectSourceFolderMessage());
+                    }
+                    else if (!unitIsNameLegal()) {
+                        setErrorMessage(getIllegalUnitNameMessage());
+                    }
+                    else {
+                        setErrorMessage(null);
                     }
                 }
             }
@@ -536,11 +579,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
     
     boolean isComplete() {
-        return packageFragment!=null &&
+        return packageNameIsLegal() && unitIsNameLegal() &&
                 sourceDir!=null &&
                 sourceDir.getPackageFragment(packageFragment.getElementName())
-                        .equals(packageFragment) &&
-                !unitName.equals("");
+                        .equals(packageFragment);
     }
     
     public IPackageFragment getPackageFragment() {
@@ -625,9 +667,31 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 .getFile("header.ceylon");
     }
 
+    private boolean unitIsNameLegal() {
+        return unitName!=null && 
+                unitIsNameLegal(unitName);
+    }
+
+    boolean unitIsNameLegal(String unitName) {
+        return unitName.matches("\\w+");
+    }
+    
+    private String getIllegalUnitNameMessage() {
+        return "Please enter a legal compilation unit name.";
+    }
+    
+    private String getSelectSourceFolderMessage() {
+        return "Please select a source folder";
+    }
+
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 
             packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+    }
+    
+    private boolean packageNameIsLegal() {
+        return packageName!=null &&
+                packageNameIsLegal(packageName);
     }
     
     String getIllegalPackageNameMessage() {
