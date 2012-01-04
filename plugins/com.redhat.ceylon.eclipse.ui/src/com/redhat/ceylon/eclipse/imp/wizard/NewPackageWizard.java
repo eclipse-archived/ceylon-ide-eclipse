@@ -88,6 +88,10 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                     return !packageName.isEmpty() && 
                             super.packageNameIsLegal(packageName);
                 }
+                @Override
+                boolean unitIsNameLegal(String unitName) {
+                    return true;
+                }
             };
             page.init(workbench, selection);
         }
