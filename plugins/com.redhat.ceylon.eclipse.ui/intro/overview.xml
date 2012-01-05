@@ -28,17 +28,22 @@
            <text>Write and run a Hello World program in Ceylon.</text>
     </link>
     <link style-id="content-link" 
+         label="Introduction to Ceylon Modules" 
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.module">
+           <text>Create a Ceylon module and export it to a module repository.</text>
+    </link>
+    <link style-id="content-link" 
          label="Ceylon Documentation" 
          url="http://ceylon-lang.org/documentation"
          id="documentation">
            <text>Learn more about Ceylon.</text>
     </link>
-    <link style-id="content-link" 
-         label="Language Specification" 
+    <!--link style-id="content-link" 
+         label="Specification" 
          url="http://ceylon-lang.org/documentation/spec/pdf/ceylon-language-specification.pdf"
          id="spec">
-           <text>Read the specification.</text>
-    </link>
+           <text>Read the language specification.</text>
+    </link-->
            </group>
      </group>
      <group id="page-content">

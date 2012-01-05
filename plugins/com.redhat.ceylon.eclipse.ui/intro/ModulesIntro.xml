@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Introduction to Ceylon Modules">
+
+    <intro>
+        <description>
+            This cheat sheet shows you how to create a new Ceylon project, a
+            Ceylon module contained in that project, and finally export the
+            module to an external Ceylon module repository.
+        </description>
+    </intro>
+
+    <item title="Open the Java Perspective" skip="true">
+        <action pluginId="org.eclipse.ui.cheatsheets"
+            class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
+            param1="org.eclipse.jdt.ui.JavaPerspective" />
+        <description>
+            We need to be in the Java Perspective. Select
+            <b>Window > Open Perspective > Java</b> from the menu bar at the
+            top of the workbench, or click below. (If you're already in the
+            Java perspective, you can skip this step.)
+        </description>
+    </item>
+
+    <item title="Create a Ceylon project" dialog="true">
+        <description>
+            First, we&apos;ll create a project using the New Ceylon Project
+            wizard. Select 
+            <b>File > New > Ceylon Project</b> or click below.
+            <br/>
+            <br/>
+            Call the project "modules", or whatever you like, and click 
+            <b>Finish</b>.
+        </description>
+        <command required="false"
+            serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newProjectWizard)" />
+    </item>
+
+    <item title="Create a Ceylon module" dialog="true">
+        <description>
+            Next, we&apos;ll create the Ceylon module using the New Ceylon 
+            Module wizard. Select
+            <b>File > New > Ceylon Module</b> or click below.
+            <br/>
+            <br/>
+            Call the module "hello", or whatever you like, choose the 
+            source folder of the project we just created, and finally click 
+            <b>Finish</b>.
+        </description>
+        <command required="false"
+            serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newModuleWizard)" />
+    </item>
+
+    <item title="Add code to the run method">
+        <description>
+            Next, in the Ceylon editor that opened automatically, add the
+            following code to the body of the "run" method:
+            <br/>
+            <br/>
+            <b>print("hello world");</b>
+            <br/>
+            <br/>
+            Remember to save the file.
+        </description>
+    </item>
+
+    <item title="Export the module">
+        <description>
+            Finally, select the project in the Package Explorer and select 
+            <b>File > Export... > Ceylon > Ceylon Module to Module Repository</b>
+            or click below.
+            <br/>
+            <br/>
+            Choose the project we just created, and a Ceylon module repository 
+            on your filesystem. Click <b>Finish</b> to export our new module to 
+            the module repository.
+            <br/>
+            <br/> 
+            You can now run the module on the Ceylon module runtime using 
+            the <b>ceylon</b> command line tool.
+        </description>
+        <command
+              required="false"
+              serialization="org.eclipse.ui.file.export(exportWizardId=com.redhat.ceylon.eclipse.ui.exportModuleWizard)"/>
+    </item>
+
+</cheatsheet>
