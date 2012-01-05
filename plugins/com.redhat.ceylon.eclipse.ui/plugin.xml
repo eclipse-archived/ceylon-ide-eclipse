@@ -860,4 +860,22 @@
            content="intro/overview.xml"/>  
    </extension>
    
+   <extension
+         point="org.eclipse.ui.cheatsheets.cheatSheetContent">
+      <category
+            id="com.redhat.ceylon.eclipse.ui.category"
+            name="Ceylon">
+      </category>
+      <cheatsheet
+            category="com.redhat.ceylon.eclipse.ui.category"
+            composite="false"
+            contentFile="intro/HelloWorld.xml"
+            id="com.redhat.ceylon.eclipse.ui.cheatsheet.hello"
+            name="Hello World with Ceylon">
+         <description>
+            Write and run a Hello World program in Ceylon
+         </description>
+      </cheatsheet>
+   </extension>
+   
 </plugin>

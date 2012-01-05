@@ -23,6 +23,11 @@
            <text>Create a new Ceylon project.</text>
     </link>
     <link style-id="content-link" 
+         label="Hello World with Ceylon" 
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.hello">
+           <text>Write and run a Hello World program in Ceylon.</text>
+    </link>
+    <link style-id="content-link" 
          label="Ceylon Documentation" 
          url="http://ceylon-lang.org/documentation"
          id="documentation">

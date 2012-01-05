@@ -26,7 +26,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.debug.ui,
  org.eclipse.jdt.debug,
  org.eclipse.jdt.launching,
- org.eclipse.jdt.debug.ui
+ org.eclipse.jdt.debug.ui,
+ org.eclipse.ui.cheatsheets
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
