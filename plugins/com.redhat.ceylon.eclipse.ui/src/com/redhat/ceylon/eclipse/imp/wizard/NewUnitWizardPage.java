@@ -233,20 +233,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                String folderName = folder.getText();
-                try {
-                    sourceDir = null;
-                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
-                            .getJavaProjects()) {
-                        for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
-                            if (pfr.getPath().toPortableString().equals(folderName)) {
-                                sourceDir = pfr;
-                            }
-                        }
-                    }
-                }
-                catch (JavaModelException jme) {
-                    jme.printStackTrace();
+                setSourceDir(folder.getText());
+                if (sourceDir!=null && packageNameIsLegal()) {
+                    packageFragment = sourceDir.getPackageFragment(packageName);
                 }
                 if (sourceDir==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
@@ -261,6 +250,23 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     setErrorMessage(null);
                 }
                 setPageComplete(isComplete());
+            }
+            private void setSourceDir(String folderName) {
+                try {
+                    sourceDir = null;
+                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
+                            .getJavaProjects()) {
+                        for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
+                            if (pfr.getPath().toPortableString().equals(folderName)) {
+                                sourceDir = pfr;
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch (JavaModelException jme) {
+                    jme.printStackTrace();
+                }
             }
         });
         
@@ -401,6 +407,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
+                if (sourceDir!=null && packageNameIsLegal()) {
+                    packageFragment = sourceDir.getPackageFragment(packageName);
+                }
                 if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
                 }
@@ -412,9 +421,6 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 }
                 else {
                     setErrorMessage(null);
-                }
-                if (sourceDir!=null) {
-                    packageFragment = sourceDir.getPackageFragment(packageName);
                 }
                 setPageComplete(isComplete());
             }
@@ -447,6 +453,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     if (result!=null) {
                         packageName = ((IPackageFragment) result).getElementName();
                         pkg.setText(packageName);
+                        if (sourceDir!=null) {
+                            packageFragment = sourceDir.getPackageFragment(packageName);
+                        }
                         setPageComplete(isComplete());
                     }
                     if (!packageNameIsLegal()) {
@@ -534,7 +543,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         new Label(composite, SWT.NONE);
         
         Button dec = new Button(composite, SWT.CHECK);
-        dec.setText("create toplevel class or method declaration");
+        dec.setText("Create toplevel class or method declaration");
         dec.setSelection(declaration);
         dec.setEnabled(!declarationButtonDisabled);
         GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
