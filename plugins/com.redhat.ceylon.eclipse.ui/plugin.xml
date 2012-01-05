@@ -876,6 +876,17 @@
             Write and run a Hello World program in Ceylon
          </description>
       </cheatsheet>
+      <cheatsheet
+            category="com.redhat.ceylon.eclipse.ui.category"
+            composite="false"
+            contentFile="intro/ModulesIntro.xml"
+            id="com.redhat.ceylon.eclipse.ui.cheatsheet.module"
+            name="Introduction to Ceylon Modules">
+         <description>
+            Create a Ceylon module and export it to a module 
+            repository
+         </description>
+      </cheatsheet>
    </extension>
    
 </plugin>
