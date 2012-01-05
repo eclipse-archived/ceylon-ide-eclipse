@@ -63,7 +63,7 @@
         </description>
     </item>
 
-    <item title="Export the module">
+    <item title="Export the module" dialog="true">
         <description>
             Finally, select the project in the Package Explorer and select 
             <b>File > Export... > Ceylon > Ceylon Module to Module Repository</b>
