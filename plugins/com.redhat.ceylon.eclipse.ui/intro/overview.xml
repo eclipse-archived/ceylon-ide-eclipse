@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<introContent>
+
+   <page id="com.redhat.ceylon.ui.intro" 
+          style="$theme$/html/overview.css" 
+         style-id="page">
+     <title style-id="intro-header">Welcome to Ceylon IDE</title>
+     <include path="overview/navigation-links"/>
+     <group id="page-content">
+           <group id="content-header" label="Welcome to Ceylon IDE">
+           </group>
+           <!--text style-id="page-title" id="page-title">TUTORIALS</text-->
+           <text style-id="page-description" id="page-description">
+               The Ceylon IDE for Eclipse is the best way to get started 
+               with Ceylon.
+           </text>
+           <group id="content-group" 
+            style-id="content-group">
+    <link style-id="content-link" 
+         label="New Ceylon Project" 
+         url="http://org.eclipse.ui.intro/runAction?class=com.redhat.ceylon.eclipse.imp.wizard.NewProjectAction&amp;pluginId=com.redhat.ceylon.eclipse.ui&amp;standby=true" 
+         id="newproject">
+           <text>Create a new Ceylon project.</text>
+    </link>
+    <link style-id="content-link" 
+         label="Ceylon Documentation" 
+         url="http://ceylon-lang.org/documentation"
+         id="documentation">
+           <text>Learn more about Ceylon.</text>
+    </link>
+    <link style-id="content-link" 
+         label="Language Specification" 
+         url="http://ceylon-lang.org/documentation/spec/pdf/ceylon-language-specification.pdf"
+         id="spec">
+           <text>Read the specification.</text>
+    </link>
+           </group>
+     </group>
+     <group id="page-content">
+           <img src="../icons/ceylon_logo_450px.png"/>
+     </group>
+   </page>
+   
+   <extensionContent 
+       id="com.redhat.ceylon.ui.overview" 
+       name="Ceylon IDE" 
+       style="overview.css"
+       path="overview/@">
+   <group style-id="content-group"
+          id="content-group">
+   <link style-id="content-link" 
+         label="Ceylon IDE" 
+         url="http://org.eclipse.ui.intro/showPage?id=com.redhat.ceylon.ui.intro" 
+         id="ceylon">
+       <text>Get started writing Ceylon code using Ceylon IDE</text>
+   </link>
+   </group>
+   </extensionContent>
+   
+</introContent>

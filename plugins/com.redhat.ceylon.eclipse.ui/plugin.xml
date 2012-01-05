@@ -853,4 +853,11 @@
            adaptable="true"
            class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferencesPage"/>
    </extension>
+   
+   <extension point="org.eclipse.ui.intro.configExtension">
+       <configExtension
+           configId="org.eclipse.ui.intro.universalConfig"
+           content="intro/overview.xml"/>  
+   </extension>
+   
 </plugin>
