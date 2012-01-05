@@ -1,62 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cheatsheet
-      title="Hello World with Ceylon">
-      
-   <intro>
-      <description>
-         This cheat sheet shows you how to create a new Ceylon 
-         project, a Ceylon compilation unit contained in that
-         project, and finally run the Ceylon program.
-      </description>
-   </intro>
-   
-   <item
-        title="Open the Java Perspective">
-        <description>
-        We need to be in the Java Perspective. (Select 
-        <b>Window > Open Perspective > Java</b> from the menu bar at the 
-        top of the workbench.)
-        </description>
-   </item>
-   
-   <item
-         title="Create a Ceylon project">
-      <description>
-         First, we&apos;ll create a project using the "New Ceylon Project"
-         wizard. Select <b>File > New > Ceylon Project</b>, or click
-         below. Call the project <b>hello</b>, and click <b>Finish</b>.
-      </description>
-      <command
-            required="false"
-            serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newProjectWizard)"/>
-   </item>
-     
-   <item
-         title="Create a Ceylon compilation unit">
-      <description>
-       Next, we&apos;ll need a Ceylon compilation unit, which we'll create using 
-       the New Ceylon Unit wizard. Select <b>File > New > Ceylon Project</b>, or 
-       click below. Call the unit <b>hello</b>, select <b>Create toplevel class or 
-       method declaration</b>, choose the source folder of the project we just 
-       created, and finally click <b>Finish</b>.
-      </description>
-      <command
-            required="false"
-            serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newUnitWizard)"/>
-   </item>
-   
-   <item
-        title="Add the code to the method">
-       <description>
-       Next, add the following code to the body of the "hello" method:<br/><br/>
-       <b>print("hello world");</b>.<br/><br/> Remember to save the file.
-       </description>
-   </item>
-   
-   <item title="Run the program">
-       <description>Now let's run the program. Select the project or compilation 
-       unit in the Package Explorer and select <b>Run > Run As > Ceylon Application</b>.
-       You should see the message in the console.</description>
-   </item>
-      
+<cheatsheet title="Hello World with Ceylon">
+
+	<intro>
+		<description>
+			This cheat sheet shows you how to create a new Ceylon project, a
+			Ceylon compilation unit contained in that project, and finally run
+			the Ceylon program.
+		</description>
+	</intro>
+
+	<item title="Open the Java Perspective" skip="true">
+		<action pluginId="org.eclipse.ui.cheatsheets"
+			class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
+			param1="org.eclipse.jdt.ui.JavaPerspective" />
+		<description>
+			We need to be in the Java Perspective. Select
+			<b>Window > Open Perspective > Java</b> from the menu bar at the
+			top of the workbench, or click below. (If you're already in the
+			Java perspective, you can skip this step.)
+		</description>
+	</item>
+
+	<item title="Create a Ceylon project" dialog="true">
+		<description>
+			First, we&apos;ll create a project using the New Ceylon Project
+			wizard. Select 
+			<b>File > New > Ceylon Project</b> or click below.
+			<br/>
+			<br/>
+			Call the project "hello", or whatever you like, and click 
+			<b>Finish</b>.
+		</description>
+		<command required="false"
+			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newProjectWizard)" />
+	</item>
+
+	<item title="Create a Ceylon compilation unit" dialog="true">
+		<description>
+			Next, we&apos;ll need a Ceylon compilation unit, which we'll create
+			using the New Ceylon Unit wizard. Select
+			<b>File > New > Ceylon Project</b> or click below.
+			<br/>
+			<br/>
+			Call the unit "hello", or whatever you like, select the option
+			<b>Create toplevel class or method declaration</b>, choose the 
+			source folder of the project we just created, and finally click 
+			<b>Finish</b>.
+		</description>
+		<command required="false"
+			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newUnitWizard)" />
+	</item>
+
+	<item title="Add the code to the method">
+		<description>
+			Next, in the Ceylon editor that opened automatically, add the
+			following code to the body of the "hello" method:
+			<br/>
+			<br/>
+			<b>print("hello world");</b>
+			<br/>
+			<br/>
+			Remember to save the file.
+		</description>
+	</item>
+
+	<item title="Run the program">
+		<description>
+			Now let's run the program. Select the project or compilation
+			unit in the Package Explorer and select
+			<b>Run > Run As > Ceylon Application</b>.
+			You should see the message in the console.
+		</description>
+	</item>
+
 </cheatsheet>
