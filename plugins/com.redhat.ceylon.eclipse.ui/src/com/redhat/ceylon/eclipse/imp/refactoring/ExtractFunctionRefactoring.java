@@ -94,7 +94,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextChange tfc = editor!=null && editor.isDirty() ?
+		TextChange tfc = searchInEditor() ?
 		        new DocumentChange("Extract Function", document) :
 		        new TextFileChange("Extract Function", sourceFile);
 		extractInFile(tfc);

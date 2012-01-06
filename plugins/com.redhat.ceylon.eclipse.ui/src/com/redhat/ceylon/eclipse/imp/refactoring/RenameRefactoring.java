@@ -66,10 +66,19 @@ public class RenameRefactoring extends AbstractRefactoring {
 	    else {
             int count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                if (searchInFile(pu)) {
+                    FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+                    FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+                    pu.getCompilationUnit().visit(frv);
+                    pu.getCompilationUnit().visit(fdv);
+                    count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+                }
+            }
+            if (searchInEditor()) {
                 FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
                 FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-                pu.getCompilationUnit().visit(frv);
-                pu.getCompilationUnit().visit(fdv);
+                editor.getParseController().getRootNode().visit(frv);
+                editor.getParseController().getRootNode().visit(fdv);
                 count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
             }
     		return count;
@@ -98,15 +107,14 @@ public class RenameRefactoring extends AbstractRefactoring {
         pm.beginTask("Rename", units.size());
         int i=0;
         for (PhasedUnit pu: units) {
-            if (editor==null || !editor.isDirty() || 
-                    !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit())) {
+            if (searchInFile(pu)) {
                 TextFileChange tfc = new TextFileChange("Rename", 
                         CeylonBuilder.getFile(pu));
                 renameInFile(tfc, cc, pu.getCompilationUnit());
                 pm.worked(i++);
             }
         }
-        if (editor!=null && editor.isDirty()) {
+        if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             renameInFile(dc, cc, editor.getParseController().getRootNode());
             pm.worked(i++);
