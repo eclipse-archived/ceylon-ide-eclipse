@@ -191,7 +191,6 @@ public class CeylonEditor extends UniversalEditor {
                     try {
                         ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
                         if (scheduler != null) {
-                            scheduler.cancel();
                             scheduler.schedule(50);
                         }
                     } catch (IllegalArgumentException e) {

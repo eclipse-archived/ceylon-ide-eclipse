@@ -340,12 +340,6 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit.analyseFlow();
         }
             
-        //phasedUnit.display();
-            
-        //fCurrentAst = cu;
-            
-        if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
-        
         final IMessageHandler handler = getHandler();
         if (handler!=null) {
             cu.visit(new ErrorVisitor(handler) {
