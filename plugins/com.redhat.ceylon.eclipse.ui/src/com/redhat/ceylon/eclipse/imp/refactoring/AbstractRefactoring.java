@@ -14,6 +14,8 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.Refactoring;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -21,6 +23,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -100,6 +103,11 @@ public abstract class AbstractRefactoring extends Refactoring {
         return new DocumentChange(editor.getEditorInput().getName() + 
                 " - current editor", document);
     }
+    
+    TextFileChange newTextFileChange(PhasedUnit pu) {
+        return new TextFileChange(getName(), 
+                CeylonBuilder.getFile(pu));
+    }
 
     boolean searchInEditor() {
         return editor!=null && editor.isDirty();
@@ -108,6 +116,12 @@ public abstract class AbstractRefactoring extends Refactoring {
     boolean searchInFile(PhasedUnit pu) {
         return editor==null || !editor.isDirty() || 
                 !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit());
+    }
+    
+    TextChange newLocalChange() {
+        return searchInEditor() ?
+                new DocumentChange(getName(), document) :
+                new TextFileChange(getName(), sourceFile);
     }
 
 }

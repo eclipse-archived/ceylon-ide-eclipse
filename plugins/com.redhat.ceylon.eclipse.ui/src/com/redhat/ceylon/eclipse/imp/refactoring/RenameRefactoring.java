@@ -67,22 +67,22 @@ public class RenameRefactoring extends AbstractRefactoring {
             int count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 if (searchInFile(pu)) {
-                    FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                    FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-                    pu.getCompilationUnit().visit(frv);
-                    pu.getCompilationUnit().visit(fdv);
-                    count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+                    count += countReferences(pu.getCompilationUnit());
                 }
             }
             if (searchInEditor()) {
-                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-                editor.getParseController().getRootNode().visit(frv);
-                editor.getParseController().getRootNode().visit(fdv);
-                count += frv.getNodes().size() + fdv.getDeclarationNodes().size();
+                count += countReferences(editor.getParseController().getRootNode());
             }
     		return count;
 	    }
+	}
+	
+	private int countReferences(Tree.CompilationUnit cu) {
+        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+        FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+        cu.visit(frv);
+        cu.visit(fdv);
+        return frv.getNodes().size() + fdv.getDeclarationNodes().size();
 	}
 
 	public String getName() {
@@ -102,14 +102,13 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-        CompositeChange cc = new CompositeChange("Rename");
+        CompositeChange cc = new CompositeChange(getName());
         List<PhasedUnit> units = CeylonBuilder.getUnits(project);
-        pm.beginTask("Rename", units.size());
+        pm.beginTask(getName(), units.size());
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = new TextFileChange("Rename", 
-                        CeylonBuilder.getFile(pu));
+                TextFileChange tfc = newTextFileChange(pu);
                 renameInFile(tfc, cc, pu.getCompilationUnit());
                 pm.worked(i++);
             }
