@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.ITextSelection;

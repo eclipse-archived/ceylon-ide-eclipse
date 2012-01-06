@@ -9,23 +9,30 @@ import org.eclipse.ui.texteditor.TextEditorAction;
 
 abstract class AbstractRefactoringAction extends TextEditorAction {
     final AbstractRefactoring refactoring;
+    final IEditorPart editor;
     
     AbstractRefactoringAction(String prefix, IEditorPart editor) {
 		super(RefactoringMessages.ResBundle, prefix, 
 		        editor instanceof ITextEditor ? (ITextEditor) editor : null);
 		refactoring = createRefactoring();
-		setEnabled(refactoring.isEnabled());
+		this.editor = editor;
+		setEnabled(refactoring.isEnabled() && !editor.isDirty());
 	}
 
 	public void run() {
-	    if (refactoring.isEnabled()) {
+	    if (editor.isDirty()) {
+            MessageDialog.openWarning(getTextEditor().getEditorSite().getShell(), 
+                    "Ceylon Refactoring Error", 
+                    "Please save current editor before refactoring");
+	    }
+	    else if (refactoring.isEnabled()) {
     		new RefactoringStarter().activate(refactoring, createWizard(refactoring),
     						getTextEditor().getSite().getShell(),
     						refactoring.getName(), false);
 	    }
 	    else {
             MessageDialog.openWarning(getTextEditor().getEditorSite().getShell(), 
-                    "Ceylon Find Error", message());
+                    "Ceylon Refactoring Error", message());
 	    }
 	}
 	
