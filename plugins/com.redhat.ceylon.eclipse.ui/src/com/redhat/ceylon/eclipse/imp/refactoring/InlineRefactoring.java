@@ -63,8 +63,15 @@ public class InlineRefactoring extends AbstractRefactoring {
         else {
             int count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                if (searchInFile(pu)) {
+                    FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+                    pu.getCompilationUnit().visit(frv);
+                    count += frv.getNodes().size();
+                }
+            }
+            if (searchInEditor()) {
                 FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-                pu.getCompilationUnit().visit(frv);
+                editor.getParseController().getRootNode().visit(frv);
                 count += frv.getNodes().size();
             }
             return count;
@@ -94,7 +101,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         Tree.Term term = null;
         List<CommonToken> declarationTokens = null;
         if (declaration!=null) {
-            if (editor!=null && editor.isDirty()) {
+            if (searchInEditor()) {
                 CompilationUnit cu = editor.getParseController().getRootNode();
                 if (cu.getUnit().equals(declaration.getUnit())) {
                     declarationUnit = cu;
@@ -119,8 +126,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange("Inline");
         if (declarationNode!=null) {
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                if (editor==null || !editor.isDirty() || 
-                        !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit())) {
+                if (searchInFile(pu)) {
                     TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
                     inlineInFile(tfc, cc, declarationNode, declarationUnit, 
                             term, declarationTokens, 
@@ -128,7 +134,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
     		}
         }
-        if (editor!=null && editor.isDirty()) {
+        if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             inlineInFile(dc, cc, declarationNode, declarationUnit, 
                     term, declarationTokens,

@@ -18,6 +18,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -98,6 +99,15 @@ public abstract class AbstractRefactoring extends Refactoring {
     DocumentChange newDocumentChange() {
         return new DocumentChange(editor.getEditorInput().getName() + 
                 " - current editor", document);
+    }
+
+    boolean searchInEditor() {
+        return editor!=null && editor.isDirty();
+    }
+
+    boolean searchInFile(PhasedUnit pu) {
+        return editor==null || !editor.isDirty() || 
+                !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit());
     }
 
 }
