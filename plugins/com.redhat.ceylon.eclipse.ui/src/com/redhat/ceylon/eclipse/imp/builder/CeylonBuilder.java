@@ -1277,9 +1277,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeCheckers.get(project);
     }
     
-    public static Collection<IProject> getProjects() {
+    public static Iterable<IProject> getProjects() {
         return typeCheckers.keySet();
     }
+
+    public static void removeProjectTypeChecker(IProject project) {
+        typeCheckers.remove(project);
+    }
+    
 
     /**
      * Read the IJavaProject classpath configuration and populate the ISourceProject's
