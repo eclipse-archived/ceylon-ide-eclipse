@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.List;
 
@@ -97,6 +98,12 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
+	    Declaration existing = declaration.getContainer()
+                        .getMemberOrParameter(declaration.getUnit(), newName);
+        if (null!=existing && !existing.equals(declaration)) {
+	        return createWarningStatus("An existing declaration named '" +
+	            newName + "' already exists in the same scope");
+	    }
 		return new RefactoringStatus();
 	}
 

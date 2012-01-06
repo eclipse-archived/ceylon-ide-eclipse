@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,6 +15,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -49,6 +51,12 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
+        Declaration existing = node.getScope()
+                .getMemberOrParameter(node.getUnit(), newName);
+        if (null!=existing) {
+            return createWarningStatus("An existing declaration named '" +
+                    newName + "' already exists in the same scope");
+        }
 		return new RefactoringStatus();
 	}
 

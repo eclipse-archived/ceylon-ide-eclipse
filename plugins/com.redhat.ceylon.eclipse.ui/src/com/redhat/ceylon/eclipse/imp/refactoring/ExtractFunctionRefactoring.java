@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +88,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
+        Declaration existing = node.getScope()
+                .getMemberOrParameter(node.getUnit(), newName);
+        if (null!=existing) {
+            return createWarningStatus("An existing declaration named '" +
+                    newName + "' already exists in the same scope");
+        }
 		return new RefactoringStatus();
 	}
 
