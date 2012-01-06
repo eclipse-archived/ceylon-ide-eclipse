@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 
+import java.util.List;
+
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.CoreException;
@@ -9,7 +11,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
@@ -23,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -85,40 +90,72 @@ public class InlineRefactoring extends AbstractRefactoring {
 			OperationCanceledException {
 
         Tree.Declaration declarationNode=null;
-        PhasedUnit declarationUnit=null;
+        CompilationUnit declarationUnit=null;
         Tree.Term term = null;
+        List<CommonToken> declarationTokens = null;
         if (declaration!=null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                if (pu.getUnit().equals(declaration.getUnit())) {
-                    declarationUnit = pu;
-        			FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
-        			pu.getCompilationUnit().visit(fdv);
-        			declarationNode = fdv.getDeclarationNode();
-        			term = getInlinedTerm(declarationNode);
-                    break;
+            if (editor!=null && editor.isDirty()) {
+                CompilationUnit cu = editor.getParseController().getRootNode();
+                if (cu.getUnit().equals(declaration.getUnit())) {
+                    declarationUnit = cu;
+                    declarationTokens = editor.getParseController().getTokens();
                 }
-    		}
+            }
+            if (declarationUnit==null) {
+                for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                    if (pu.getUnit().equals(declaration.getUnit())) {
+                        declarationUnit = pu.getCompilationUnit();
+                        declarationTokens = pu.getTokens();
+                        break;
+                    }
+                }
+            }
+            FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+            declarationUnit.visit(fdv);
+            declarationNode = fdv.getDeclarationNode();
+            term = getInlinedTerm(declarationNode);
         }
 		
         CompositeChange cc = new CompositeChange("Inline");
         if (declarationNode!=null) {
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
-                tfc.setEdit(new MultiTextEdit());
-                inlineReferences(declarationNode, declarationUnit, term, pu, tfc);
-                deleteDeclaration(declarationNode, declarationUnit, pu, tfc);
-    			if (tfc.getEdit().hasChildren()) {
-    			    cc.add(tfc);
-    			}
+                if (editor==null || !editor.isDirty() || 
+                        !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit())) {
+                    TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
+                    inlineInFile(tfc, cc, declarationNode, declarationUnit, 
+                            term, declarationTokens, 
+                            pu.getCompilationUnit(), pu.getTokens());
+                }
     		}
+        }
+        if (editor!=null && editor.isDirty()) {
+            DocumentChange dc = newDocumentChange();
+            inlineInFile(dc, cc, declarationNode, declarationUnit, 
+                    term, declarationTokens,
+                    editor.getParseController().getRootNode(), 
+                    editor.getParseController().getTokens());
         }
         return cc;
         
 	}
 
-    private void deleteDeclaration(Tree.Declaration declarationNode, PhasedUnit declarationUnit,
-            PhasedUnit pu, TextFileChange tfc) {
-        if (delete && pu==declarationUnit) {
+    private void inlineInFile(TextChange tfc, CompositeChange cc, 
+            Tree.Declaration declarationNode, CompilationUnit declarationUnit, 
+            Tree.Term term, List<CommonToken> declarationTokens,
+            CompilationUnit pu, List<CommonToken> tokens) {
+        tfc.setEdit(new MultiTextEdit());
+        inlineReferences(declarationNode, declarationUnit, term, declarationTokens, 
+                pu, tokens, tfc);
+        deleteDeclaration(declarationNode, declarationUnit, pu, tokens, tfc);
+        if (tfc.getEdit().hasChildren()) {
+            cc.add(tfc);
+        }
+    }
+
+    private void deleteDeclaration(Tree.Declaration declarationNode, 
+            CompilationUnit declarationUnit, CompilationUnit pu, 
+            List<CommonToken> tokens, TextChange tfc) {
+        if (delete && pu.getUnit().equals(declarationUnit.getUnit())) {
             CommonToken from = (CommonToken) declarationNode.getToken();
             Tree.AnnotationList anns = declarationNode.getAnnotationList();
             if (!anns.getAnnotations().isEmpty()) {
@@ -126,8 +163,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
             int prevIndex = from.getTokenIndex()-1;
             if (prevIndex>=0) {
-                CommonToken tok = (CommonToken) pu.getTokens()
-                        .get(prevIndex);
+                CommonToken tok = tokens.get(prevIndex);
                 if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
                     from=tok;
                 }
@@ -177,20 +213,21 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
 
     private void inlineReferences(Tree.Declaration declarationNode,
-            PhasedUnit declarationUnit, final Tree.Term term, final PhasedUnit pu,
-            final TextFileChange tfc) {
-        String template = toString(term, declarationUnit.getTokens());
+            CompilationUnit declarationUnit, Tree.Term term, List<CommonToken> declarationTokens,
+            CompilationUnit pu, List<CommonToken> tokens, TextChange tfc) {
+        String template = toString(term, declarationTokens);
         int templateStart = term.getStartIndex();
         if (declarationNode instanceof Tree.AnyAttribute) {
         	inlineAttributeReferences(pu, template, tfc);
         }
         else {
-        	inlineFunctionReferences(pu, term, template, templateStart, tfc);
+        	inlineFunctionReferences(pu, tokens, term, template, templateStart, tfc);
         }
     }
 
-    private void inlineFunctionReferences(final PhasedUnit pu, final Tree.Term term,
-            final String template, final int templateStart, final TextFileChange tfc) {
+    private void inlineFunctionReferences(final CompilationUnit pu, final List<CommonToken> tokens,
+            final Tree.Term term, final String template, final int templateStart, 
+            final TextChange tfc) {
         new Visitor() {
         	@Override
         	public void visit(final Tree.InvocationExpression that) {
@@ -210,10 +247,10 @@ public class InlineRefactoring extends AbstractRefactoring {
         							start = it.getStopIndex()-templateStart+1;
         							boolean sequenced = param.isSequenced();
         							if (that.getPositionalArgumentList()!=null) {
-        								interpolatePositionalArguments(result, that, it, sequenced, pu);
+        								interpolatePositionalArguments(result, that, it, sequenced, tokens);
         							}
         							if (that.getNamedArgumentList()!=null) {
-        								interpolateNamedArguments(result, that, it, sequenced, pu);
+        								interpolateNamedArguments(result, that, it, sequenced, tokens);
         							}
         						}
         					}
@@ -230,11 +267,11 @@ public class InlineRefactoring extends AbstractRefactoring {
         					result.toString()));
         		}
         	}
-        }.visit(pu.getCompilationUnit());
+        }.visit(pu);
     }
 
-    private void inlineAttributeReferences(final PhasedUnit pu, final String template,
-            final TextFileChange tfc) {
+    private void inlineAttributeReferences(final CompilationUnit pu, final String template,
+            final TextChange tfc) {
         new Visitor() {
             @Override
             public void visit(Tree.Variable that) {
@@ -256,12 +293,12 @@ public class InlineRefactoring extends AbstractRefactoring {
         					template));	
         		}
         	}
-        }.visit(pu.getCompilationUnit());
+        }.visit(pu);
     }
 
     private static void interpolatePositionalArguments(StringBuilder result, 
             Tree.InvocationExpression that, Tree.BaseMemberExpression it,
-            boolean sequenced, PhasedUnit pu) {
+            boolean sequenced, List<CommonToken> tokens) {
         boolean first = true;
         boolean found = false;
         if (sequenced) {
@@ -277,7 +314,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     first = false;
                 }
                 result.append(AbstractRefactoring.toString(arg.getExpression().getTerm(), 
-                        pu.getTokens()));
+                        tokens));
                 found = true;
             }
         }
@@ -290,14 +327,14 @@ public class InlineRefactoring extends AbstractRefactoring {
 
     private static void interpolateNamedArguments(StringBuilder result,
             Tree.InvocationExpression that, Tree.BaseMemberExpression it,
-            boolean sequenced, PhasedUnit pu) {
+            boolean sequenced, List<CommonToken> tokens) {
         boolean found = false;
         for (Tree.NamedArgument arg: that.getNamedArgumentList().getNamedArguments()) {
             if (it.getDeclaration().equals(arg.getParameter())) {
                 Term argTerm = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
                                 .getExpression().getTerm();
                 result//.append(template.substring(start,it.getStartIndex()-templateStart))
-                    .append(AbstractRefactoring.toString( argTerm, pu.getTokens()) );
+                    .append(AbstractRefactoring.toString(argTerm, tokens) );
                 //start = it.getStopIndex()-templateStart+1;
                 found=true;
             }
@@ -312,7 +349,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 if (first) result.append(" ");
                 if (!first) result.append(", ");
                 first=false;
-                result.append(AbstractRefactoring.toString(e.getTerm(), pu.getTokens()));
+                result.append(AbstractRefactoring.toString(e.getTerm(), tokens));
             }
             if (!first) result.append(" ");
             result.append("}");

@@ -9,8 +9,10 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
@@ -29,6 +31,8 @@ public abstract class AbstractRefactoring extends Refactoring {
     Node node;
     Tree.CompilationUnit rootNode;
     List<CommonToken> tokens;
+    IDocument document;
+    CeylonEditor editor;
    
     /*public AbstractRefactoring(IQuickFixInvocationContext context) {
         sourceFile = context.getModel().getFile();
@@ -89,6 +93,11 @@ public abstract class AbstractRefactoring extends Refactoring {
             exp.append(ti.next().getText());
         }
         return exp.toString();
+    }
+    
+    DocumentChange newDocumentChange() {
+        return new DocumentChange(editor.getEditorInput().getName() + 
+                " - current editor", document);
     }
 
 }

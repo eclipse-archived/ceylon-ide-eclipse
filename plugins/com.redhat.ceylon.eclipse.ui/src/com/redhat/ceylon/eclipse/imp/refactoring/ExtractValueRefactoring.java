@@ -7,7 +7,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -54,8 +56,15 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Extract value", sourceFile);
-		tfc.setEdit(new MultiTextEdit());
+		TextChange tfc = editor!=null && editor.isDirty() ?
+		        new DocumentChange("Extract Value", document) :
+		        new TextFileChange("Extract Value", sourceFile);
+		extractInFile(tfc);
+		return tfc;
+	}
+
+    private void extractInFile(TextChange tfc) throws CoreException {
+        tfc.setEdit(new MultiTextEdit());
 		IDocument doc = tfc.getCurrentDocument(null);
 		
 		Tree.Term term = (Tree.Term) node;
@@ -76,8 +85,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
 				"\n" + getIndent(statNode, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
-		return tfc;
-	}
+    }
 
 	public void setNewName(String text) {
 		newName = text;

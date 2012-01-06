@@ -4,7 +4,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -40,8 +42,15 @@ public class ConvertToNamedArgumentsRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextFileChange tfc = new TextFileChange("Convert to named arguments", sourceFile);
-		tfc.setEdit(new MultiTextEdit());
+		TextChange tfc = editor!=null && editor.isDirty() ?
+		        new DocumentChange("Convert to Named Arguments", document) :
+		        new TextFileChange("Convert to Named Arguments", sourceFile);
+		convertInFile(tfc);			
+		return tfc;
+	}
+
+    private void convertInFile(TextChange tfc) {
+        tfc.setEdit(new MultiTextEdit());
 		Tree.PositionalArgumentList argList = (Tree.PositionalArgumentList) node;
 		Integer start =node.getStartIndex();
 		int length = node.getStopIndex()-start+1;
@@ -59,8 +68,7 @@ public class ConvertToNamedArgumentsRefactoring extends AbstractRefactoring {
 			}
 		}
 		result.append(" }");
-		tfc.addEdit(new ReplaceEdit(start, length, result.toString()));			
-		return tfc;
-	}
+		tfc.addEdit(new ReplaceEdit(start, length, result.toString()));
+    }
 	
 }
