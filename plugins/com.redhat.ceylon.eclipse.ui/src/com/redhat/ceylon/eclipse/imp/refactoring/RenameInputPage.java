@@ -42,12 +42,26 @@ public class RenameInputPage extends UserInputWizardPage {
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				getRenameRefactoring().setNewName(text.getText());
+			    String name = text.getText();
+                validateIdentifier(name);
+				getRenameRefactoring().setNewName(name);
 			}
 		});
 	}
-
+	
 	private RenameRefactoring getRenameRefactoring() {
 		return (RenameRefactoring) getRefactoring();
 	}
+	
+    void validateIdentifier(String name) {
+        if (!name.matches("^[a-zA-Z_]\\w*$")) {
+            setErrorMessage("Not a legal Ceylon identifier");
+            setPageComplete(false);
+        }
+        else {
+            setErrorMessage(null);
+            setPageComplete(true);
+        }
+    }
+
 }

@@ -35,7 +35,9 @@ public class ExtractValueInputPage extends UserInputWizardPage {
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent event) {
-				getExtractLocalRefactoring().setNewName(text.getText());
+                String name = text.getText();
+			    validateIdentifier(name);
+                getExtractLocalRefactoring().setNewName(name);
 			}
 		});
 		final Button et = new Button(result, SWT.CHECK);
@@ -63,4 +65,16 @@ public class ExtractValueInputPage extends UserInputWizardPage {
 	private ExtractValueRefactoring getExtractLocalRefactoring() {
 		return (ExtractValueRefactoring) getRefactoring();
 	}
+
+    void validateIdentifier(String name) {
+        if (!name.matches("^[a-z_]\\w*$")) {
+            setErrorMessage("Not a legal Ceylon identifier");
+            setPageComplete(false);
+        }
+        else {
+            setErrorMessage(null);
+            setPageComplete(true);
+        }
+    }
+
 }
