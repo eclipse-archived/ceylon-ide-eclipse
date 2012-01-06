@@ -234,8 +234,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             if (phasedUnit != null) {
                 if (! phasedUnit.isFullyTyped()) {
                     IProject currentProject = null;
-                    Collection<IProject> projects = CeylonBuilder.getProjects();
-                    for (IProject project : projects) {
+                    for (IProject project : CeylonBuilder.getProjects()) {
                         TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
                         if (alternateTypeChecker == typeChecker) {
                             currentProject = project;

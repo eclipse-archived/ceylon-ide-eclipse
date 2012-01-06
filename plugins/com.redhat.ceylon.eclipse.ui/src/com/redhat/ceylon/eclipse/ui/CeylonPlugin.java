@@ -257,6 +257,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                     for (IProject referencingProject : project.getReferencingProjects()) {
                                         projectsToBuild.add(referencingProject);
                                     }
+                                    if (! project.isOpen()) {
+                                        CeylonBuilder.removeProjectTypeChecker(project);
+                                    }
                                     for (final IProject projectToBuild : projectsToBuild) {
                                         if (projectToBuild.isOpen() && projectToBuild.hasNature(CeylonNature.NATURE_ID)) {
                                             Job buildJob = new Job("Building Ceylon Model for project " + projectToBuild.getName()) {
