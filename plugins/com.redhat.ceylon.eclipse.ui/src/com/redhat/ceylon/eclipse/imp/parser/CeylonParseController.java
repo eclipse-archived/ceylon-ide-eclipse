@@ -41,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -268,7 +269,9 @@ public class CeylonParseController extends ParseControllerBase {
             pkg = new Package();
             pkg.setName(sourcePackage.getName());
             pkg.setModule(sourcePackage.getModule());
-            pkg.getUnits().addAll(sourcePackage.getUnits());
+            for (Unit pkgUnit : sourcePackage.getUnits()) {
+                pkg.addUnit(pkgUnit);
+            }
         }
         else {
             // Editing a new file
