@@ -251,7 +251,7 @@ public class CeylonParseController extends ParseControllerBase {
                 }
             } 
             catch (CoreException e) {
-                throw new RuntimeException(e);
+                return fCurrentAst; 
             }
         	
         	TypeChecker tc = tcb.getTypeChecker();

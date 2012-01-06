@@ -947,49 +947,49 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             List<IProject> requiredProjects = getRequiredProjects(project);
             for (IProject requiredProject : requiredProjects) {
                 if (!requiredProject.isOpen()) {
-                    throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is not opened.", null));
-                } 
-                else {
-                    if (! requiredProject.hasNature(CeylonNature.NATURE_ID)) {
-                        IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
-                        boolean oneCeylonMarker = false;
-                        for (IMarker marker : projectMarkers) {
-                            Object sourceId = marker.getAttribute(IMarker.SOURCE_ID);
-                            if ("Ceylon".equals(sourceId)) {
-                                oneCeylonMarker = true;
-                                break;
-                            }
+//                    throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is not opened.", null));
+                    continue;
+                }
+                
+                if (! requiredProject.hasNature(CeylonNature.NATURE_ID)) {
+                    IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+                    boolean oneCeylonMarker = false;
+                    for (IMarker marker : projectMarkers) {
+                        Object sourceId = marker.getAttribute(IMarker.SOURCE_ID);
+                        if ("Ceylon".equals(sourceId)) {
+                            oneCeylonMarker = true;
+                            break;
                         }
-                        if (! oneCeylonMarker) {
-                            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                            marker.setAttributes(
-                                new String[] {
-                                    IMarker.MESSAGE,
-                                    IMarker.SEVERITY,
-                                    IMarker.LOCATION,
-                                    IJavaModelMarker.CYCLE_DETECTED,
-                                    IJavaModelMarker.CLASSPATH_FILE_FORMAT,
-                                    IJavaModelMarker.ID,
-                                    IJavaModelMarker.ARGUMENTS ,
-                                    IJavaModelMarker.CATEGORY_ID,
-                                    IMarker.SOURCE_ID,
-                                },
-                                new Object[] {
-                                    "Project '" + project.getName() + "' is requiring project: '" + requiredProject.getName() + "', which doesn't have the Ceylon nature",
-                                    new Integer(IMarker.SEVERITY_ERROR),
-                                    "Build Path",
-                                    "false",
-                                    "false",
-                                    new Integer(IResourceStatus.OPERATION_FAILED),
-                                    "",
-                                    new Integer(CategorizedProblem.CAT_BUILDPATH),
-                                    "Ceylon",
-                                }
-                            );
-                        }
-
-                        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is has not the Ceylon Nature.", null));
                     }
+                    if (! oneCeylonMarker) {
+                        IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                        marker.setAttributes(
+                            new String[] {
+                                IMarker.MESSAGE,
+                                IMarker.SEVERITY,
+                                IMarker.LOCATION,
+                                IJavaModelMarker.CYCLE_DETECTED,
+                                IJavaModelMarker.CLASSPATH_FILE_FORMAT,
+                                IJavaModelMarker.ID,
+                                IJavaModelMarker.ARGUMENTS ,
+                                IJavaModelMarker.CATEGORY_ID,
+                                IMarker.SOURCE_ID,
+                            },
+                            new Object[] {
+                                "Project '" + project.getName() + "' is requiring project: '" + requiredProject.getName() + "', which doesn't have the Ceylon nature",
+                                new Integer(IMarker.SEVERITY_ERROR),
+                                "Build Path",
+                                "false",
+                                "false",
+                                new Integer(IResourceStatus.OPERATION_FAILED),
+                                "",
+                                new Integer(CategorizedProblem.CAT_BUILDPATH),
+                                "Ceylon",
+                            }
+                        );
+                    }
+//                        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), IResourceStatus.OPERATION_FAILED, "Required project " + requiredProject.getName() + " cannot be added to the build path since it is has not the Ceylon Nature.", null));
+                    continue;
                 }
                     
                 IJavaProject requiredJavaProject = JavaCore.create(requiredProject);
