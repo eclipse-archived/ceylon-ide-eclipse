@@ -7,10 +7,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -56,9 +54,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		TextChange tfc = searchInEditor() ?
-		        new DocumentChange("Extract Value", document) :
-		        new TextFileChange("Extract Value", sourceFile);
+		TextChange tfc = newLocalChange();
 		extractInFile(tfc);
 		return tfc;
 	}

@@ -64,18 +64,20 @@ public class InlineRefactoring extends AbstractRefactoring {
             int count = 0;
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 if (searchInFile(pu)) {
-                    FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-                    pu.getCompilationUnit().visit(frv);
-                    count += frv.getNodes().size();
+                    count += countReferences(pu.getCompilationUnit());
                 }
             }
             if (searchInEditor()) {
-                FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-                editor.getParseController().getRootNode().visit(frv);
-                count += frv.getNodes().size();
+                count += countReferences(editor.getParseController().getRootNode());
             }
             return count;
         }
+	}
+	
+	private int countReferences(Tree.CompilationUnit cu) {
+        FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+        cu.visit(frv);
+        return frv.getNodes().size();
 	}
 
 	public String getName() {
@@ -123,11 +125,11 @@ public class InlineRefactoring extends AbstractRefactoring {
             term = getInlinedTerm(declarationNode);
         }
 		
-        CompositeChange cc = new CompositeChange("Inline");
+        CompositeChange cc = new CompositeChange(getName());
         if (declarationNode!=null) {
             for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 if (searchInFile(pu)) {
-                    TextFileChange tfc = new TextFileChange("Inline", CeylonBuilder.getFile(pu));
+                    TextFileChange tfc = newTextFileChange(pu);
                     inlineInFile(tfc, cc, declarationNode, declarationUnit, 
                             term, declarationTokens, 
                             pu.getCompilationUnit(), pu.getTokens());
