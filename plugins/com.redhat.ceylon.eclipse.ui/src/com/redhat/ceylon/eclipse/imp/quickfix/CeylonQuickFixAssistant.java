@@ -152,8 +152,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     problem.getOffset() + problem.getLength());
             switch ( problem.getProblemId() ) {
             case 100:
-                addCreateProposals(cu, node, problem, proposals, project,
-                        context.getSourceViewer().getDocument(), tc, file);
+                addCreateProposals(cu, node, problem, proposals, 
+                        project, tc, file);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
                     addImportProposals(cu, node, proposals, file);
@@ -163,8 +163,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addSpecifyTypeProposal(cu, node, problem, proposals, file);
                 break;
             case 300:
-                addImplementFormalMembersProposal(cu, node, proposals, file,
-                        context.getSourceViewer().getDocument());
+                if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
+                    addImplementFormalMembersProposal(cu, node, proposals, file,
+                            context.getSourceViewer().getDocument());
+                }
                 break;
             case 400:
                 addMakeSharedProposal(problem, proposals, project, node);
@@ -405,9 +407,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         catch (CoreException ce) {}
     }*/
     
-    private void addCreateProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, IDocument doc,
-            TypeChecker tc, IFile file) {
+    private void addCreateProposals(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IProject project, TypeChecker tc, IFile file) {
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
 
@@ -466,11 +468,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
             if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
                     addCreateMemberProposals(proposals, project, "shared " + def, desc, image, 
-                            (Tree.QualifiedMemberOrTypeExpression) smte, doc);
+                            (Tree.QualifiedMemberOrTypeExpression) smte);
             }
             else {
-                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, doc);
-                addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte, doc);
+                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
+                addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte);
                 addCreateToplevelProposal(proposals, def, desc, image, file, brokenName);
             }
             
@@ -479,7 +481,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.QualifiedMemberOrTypeExpression qmte, IDocument doc) {
+            Tree.QualifiedMemberOrTypeExpression qmte) {
         Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
                 .getTypeModel().getDeclaration();
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
@@ -508,8 +510,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte,
-            IDocument doc) {
+            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 FindStatementVisitor fdv = new FindStatementVisitor(smte, false);
@@ -523,8 +524,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte,
-            IDocument doc) {
+            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 FindStatementVisitor fdv = new FindStatementVisitor(smte, true);
