@@ -10,7 +10,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -96,30 +98,43 @@ public class RenameRefactoring extends AbstractRefactoring {
         pm.beginTask("Rename", units.size());
         int i=0;
         for (PhasedUnit pu: units) {
-    		TextFileChange tfc = new TextFileChange("Rename", CeylonBuilder.getFile(pu));
-    		tfc.setEdit(new MultiTextEdit());
-    		if (declaration!=null) {
-    			FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-    			pu.getCompilationUnit().visit(frv);
-    			for (Node node: frv.getNodes()) {
-    	            renameNode(tfc, node);
-    			}
-    			FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-    			pu.getCompilationUnit().visit(fdv);
-    			for (Tree.Declaration node: fdv.getDeclarationNodes()) {
-    			    renameNode(tfc, node);
-    			}
-    		}
-    		if (tfc.getEdit().hasChildren()) {
-    		    cc.add(tfc);
-    		}
-    		pm.worked(i++);
+            if (editor==null || !editor.isDirty() || 
+                    !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit())) {
+                TextFileChange tfc = new TextFileChange("Rename", 
+                        CeylonBuilder.getFile(pu));
+                renameInFile(tfc, cc, pu.getCompilationUnit());
+                pm.worked(i++);
+            }
+        }
+        if (editor!=null && editor.isDirty()) {
+            DocumentChange dc = newDocumentChange();
+            renameInFile(dc, cc, editor.getParseController().getRootNode());
+            pm.worked(i++);
         }
         pm.done();
 		return cc;
 	}
 
-	private void renameNode(TextFileChange tfc, Node node) {
+    private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
+        tfc.setEdit(new MultiTextEdit());
+        if (declaration!=null) {
+        	FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+        	root.visit(frv);
+        	for (Node node: frv.getNodes()) {
+                renameNode(tfc, node);
+        	}
+        	FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+        	root.visit(fdv);
+        	for (Tree.Declaration node: fdv.getDeclarationNodes()) {
+        	    renameNode(tfc, node);
+        	}
+        }
+        if (tfc.getEdit().hasChildren()) {
+            cc.add(tfc);
+        }
+    }
+
+	private void renameNode(TextChange tfc, Node node) {
 	    Node identifyingNode = getIdentifyingNode(node);
 		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
 		        identifyingNode.getText().length(), newName));
