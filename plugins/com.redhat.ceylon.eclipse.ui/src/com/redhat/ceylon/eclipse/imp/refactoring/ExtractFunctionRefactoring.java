@@ -239,14 +239,22 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 			typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
 		}
 		
-		boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
+		String type;
+		String ending;
+		if ("Void".equals(term.getTypeModel().getProducedTypeName())) {
+	         type = "void";
+	         ending = "";
+		}
+		else {
+            type = explicitType || dec.isToplevel() ? 
+                    term.getTypeModel().getProducedTypeName() : "function";
+            ending = "return ";
+		}
 		
-		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-		        (isVoid ? "void": (explicitType || dec.isToplevel() ? 
-				        term.getTypeModel().getProducedTypeName() : 
-				        "function")) + 
-				" " + newName + typeParams + "(" + params + ")" + constraints + 
-				" {" + extraIndent + (isVoid?"":"return ") + exp + ";" + indent + "}" 
+        tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
+		        type + " " + newName + typeParams + "(" + params + ")" + 
+                constraints + 
+				" {" + extraIndent + ending + exp + ";" + indent + "}" 
 				+ indent + indent));
 		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
     }
