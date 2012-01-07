@@ -34,6 +34,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 	private final class CheckStatementsVisitor extends Visitor {
 	    String problem = null;
         @Override
+        public void visit(Tree.Body that) {}
+        @Override
         public void visit(Tree.Declaration that) {
             super.visit(that);
             //TODO: search to see if it is referenced outside
@@ -127,6 +129,14 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     return createWarningStatus("Selected statements contain "
                             + v.problem + " at  " + s.getLocation());
                 }
+            }
+        }
+        else if (node instanceof Tree.Term) {
+            CheckStatementsVisitor v = new CheckStatementsVisitor();
+            node.visit(v);
+            if (v.problem!=null) {
+                return createWarningStatus("Selected expression contains "
+                        + v.problem);
             }
         }
 		return new RefactoringStatus();
