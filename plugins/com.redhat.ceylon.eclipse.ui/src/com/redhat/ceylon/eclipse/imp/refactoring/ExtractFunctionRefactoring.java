@@ -5,7 +5,9 @@ import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.get
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -51,7 +53,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         public void visit(Tree.SpecifierStatement that) {
             super.visit(that);
             //TODO: search to see if the specified value is 
-            //      defined of referenced outside the selected 
+            //      defined or referenced outside the selected 
             //      list of statements
             problem = "a specification statement";
         }
@@ -59,9 +61,23 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         public void visit(Tree.AssignmentOp that) {
             super.visit(that);
             //TODO: search to see if the specified value is 
-            //      defined of referenced outside the selected 
+            //      defined or referenced outside the selected 
             //      list of statements
             problem = "an assignment";
+        }
+    }
+
+    private final class FindResultVisitor extends Visitor {
+        Tree.AttributeDeclaration result = null;
+        @Override
+        public void visit(Tree.Body that) {}
+        @Override
+        public void visit(Tree.AttributeDeclaration that) {
+            super.visit(that);
+            //TODO: search to see if the specified value is 
+            //      defined or referenced outside the selected 
+            //      list of statements
+            result = that;
         }
     }
 
@@ -226,9 +242,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
 		
 		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-				(explicitType || dec.isToplevel() ? 
+		        (isVoid ? "void": (explicitType || dec.isToplevel() ? 
 				        term.getTypeModel().getProducedTypeName() : 
-				        (isVoid ? "void":"function")) + 
+				        "function")) + 
 				" " + newName + typeParams + "(" + params + ")" + constraints + 
 				" {" + extraIndent + (isVoid?"":"return ") + exp + ";" + indent + "}" 
 				+ indent + indent));
@@ -241,6 +257,15 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         
         Tree.Body body = (Tree.Body) node;
         List<Statement> statements = getStatements(body);
+        Tree.AttributeDeclaration result = null;
+        for (Statement s: statements) {
+            FindResultVisitor v = new FindResultVisitor();
+            s.visit(v);
+            if (v.result!=null) {
+                result = v.result;
+            }
+        }
+            
         Integer start = statements.get(0).getStartIndex();
         int length = statements.get(statements.size()-1)
                 .getStopIndex()-start+1;
@@ -265,13 +290,23 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         String params = "";
         String args = "";
         if (!flrv.getLocalReferences().isEmpty()) {
-            for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-                params += bme.getTypeModel().getProducedTypeName() + 
-                        " " + bme.getIdentifier().getText() + ", ";
-                args += bme.getIdentifier().getText() + ", ";
+            Set<Declaration> done = new HashSet<Declaration>();
+            if (result!=null) {
+                done.add(result.getDeclarationModel());
             }
-            params = params.substring(0, params.length()-2);
-            args = args.substring(0, args.length()-2);
+            boolean nonempty = false;
+            for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+                if (done.add(bme.getDeclaration())) {
+                    params += bme.getTypeModel().getProducedTypeName() + 
+                            " " + bme.getIdentifier().getText() + ", ";
+                    args += bme.getIdentifier().getText() + ", ";
+                    nonempty = true;
+                }
+            }
+            if (nonempty) {
+                params = params.substring(0, params.length()-2);
+                args = args.substring(0, args.length()-2);
+            }
         }
         
         String indent = "\n" + getIndent(decNode, doc);
@@ -294,17 +329,34 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        //boolean isVoid = "Void".equals(term.getTypeModel().getProducedTypeName());
-        
-        String content = "void" + " " + newName + typeParams + "(" + params + ")" + 
+        String content = result==null ? "void" : result.getDeclarationModel()
+                .getType().getProducedTypeName();
+        content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
         for (Statement s: statements) {
-            content+=extraIndent + toString(s);
+            content += extraIndent + toString(s);
+        }
+        if (result!=null) {
+            content += extraIndent + "return " + result.getDeclarationModel().getName() + ";";
         }
         content += indent + "}" + indent + indent;
         
-        tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));
-        tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ");"));
+        String invocation = newName + "(" + args + ");";
+        if (result!=null) {
+            String modifs;
+            if (result.getDeclarationModel().isShared()) {
+                modifs = "shared " + result.getDeclarationModel()
+                        .getType().getProducedTypeName() + " ";
+            }
+            else {
+                modifs = "value ";
+            }
+            invocation = modifs + result.getDeclarationModel().getName() + 
+                    "=" + invocation;
+        }
+        
+        tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));        
+        tfc.addEdit(new ReplaceEdit(start, length, invocation));
     }
 
     private List<Statement> getStatements(Tree.Body body) {
