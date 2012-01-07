@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.get
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,51 +34,136 @@ import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
-	private final class CheckStatementsVisitor extends Visitor {
-	    String problem = null;
+    private final class FindOuterReferencesVisitor extends Visitor {
+        final Declaration declaration;
+        int refs = 0;
+        FindOuterReferencesVisitor(Declaration declaration) {
+            this.declaration = declaration;
+        }
         @Override
-        public void visit(Tree.Body that) {}
+        public void visit(Tree.MemberOrTypeExpression that) {
+            super.visit(that);
+            if (that.getDeclaration().equals(declaration)) {
+                refs++;
+            }
+        }
         @Override
         public void visit(Tree.Declaration that) {
             super.visit(that);
-            //TODO: search to see if it is referenced outside
-            //      the selected list of statements
-            problem = "a declaration";
+            if (that.getDeclarationModel().equals(declaration)) {
+                refs++;
+            }
+        }
+        @Override
+        public void visit(Tree.Type that) {
+            super.visit(that);
+            if (that.getTypeModel().getDeclaration().equals(declaration)) {
+                refs++;
+            }
+        }
+    }
+    
+    private final class CheckExpressionVisitor extends Visitor {
+        String problem = null;
+        @Override
+        public void visit(Tree.Body that) {}
+        @Override
+        public void visit(Tree.AssignmentOp that) {
+            super.visit(that);
+            problem = "an assignment";
+        }
+    }
+
+	private final class CheckStatementsVisitor extends Visitor {
+	    final Tree.Body scope;
+	    final Collection<Statement> statements;
+	    CheckStatementsVisitor(Tree.Body scope, 
+	            Collection<Statement> statements) {
+	        this.scope = scope;
+	        this.statements = statements;
+	    }
+	    String problem = null;
+        @Override
+        public void visit(Tree.Body that) {
+            if (that.equals(scope)) {
+                super.visit(that);
+            }
+        }
+        @Override
+        public void visit(Tree.Declaration that) {
+            super.visit(that);
+            if (result==null || !that.equals(result)) {
+                Declaration d = that.getDeclarationModel();
+                if (d.isShared()) {
+                    problem = "a shared declaration";
+                }
+                else {
+                    if (hasOuterRefs(d, scope, statements)) {
+                        problem = "a declaration used elsewhere";
+                    }
+                }
+            }
+        }
+        @Override
+        public void visit(Tree.SpecifierStatement that) {
+            super.visit(that);
+            if (that.getBaseMemberExpression() instanceof Tree.MemberOrTypeExpression) {
+                Declaration d = ((Tree.MemberOrTypeExpression) that.getBaseMemberExpression()).getDeclaration();
+                if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
+                    problem = "a specification statement for a declaration used or defined elsewhere";
+                }
+            }
+        }
+        @Override
+        public void visit(Tree.AssignmentOp that) {
+            super.visit(that);
+            if (that.getLeftTerm() instanceof Tree.MemberOrTypeExpression) {
+                Declaration d = ((Tree.MemberOrTypeExpression) that.getLeftTerm()).getDeclaration();
+                if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
+                    problem = "an assignment to a declaration used or defined elsewhere";
+                }
+            }
+        }
+        private boolean notResultRef(Declaration d) {
+            return result==null || !result.getDeclarationModel().equals(d);
         }
         @Override
         public void visit(Tree.Directive that) {
             super.visit(that);
             problem = "a directive statement";
         }
-        @Override
-        public void visit(Tree.SpecifierStatement that) {
-            super.visit(that);
-            //TODO: search to see if the specified value is 
-            //      defined or referenced outside the selected 
-            //      list of statements
-            problem = "a specification statement";
-        }
-        @Override
-        public void visit(Tree.AssignmentOp that) {
-            super.visit(that);
-            //TODO: search to see if the specified value is 
-            //      defined or referenced outside the selected 
-            //      list of statements
-            problem = "an assignment";
-        }
     }
 
+    private boolean hasOuterRefs(Declaration d, Tree.Body scope, 
+            Collection<Statement> statements) {
+        FindOuterReferencesVisitor v = 
+                new FindOuterReferencesVisitor(d);
+        for (Statement s: scope.getStatements()) {
+            if (!statements.contains(s)) {
+                s.visit(v);
+            }
+        }
+        return v.refs>0;
+    }
+    
     private final class FindResultVisitor extends Visitor {
         Tree.AttributeDeclaration result = null;
+        final Tree.Body scope;
+        final Collection<Statement> statements;
+        FindResultVisitor(Tree.Body scope, 
+                Collection<Statement> statements) {
+            this.scope = scope;
+            this.statements = statements;
+        }
         @Override
         public void visit(Tree.Body that) {}
         @Override
         public void visit(Tree.AttributeDeclaration that) {
             super.visit(that);
-            //TODO: search to see if the specified value is 
-            //      defined or referenced outside the selected 
-            //      list of statements
-            result = that;
+            if (hasOuterRefs(that.getDeclarationModel(), 
+                    scope, statements)) {
+                result = that;
+            }
         }
     }
 
@@ -112,13 +198,33 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
 	private String newName;
 	private boolean explicitType;
-    private ITextSelection selection;
+    private Tree.AttributeDeclaration result;
+    private List<Statement> statements;
 
 	public ExtractFunctionRefactoring(ITextEditor editor) {
 	    super(editor);
-		newName = guessName();
-        selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+	    init((ITextSelection) editor.getSelectionProvider().getSelection());
+	    if (result!=null) {
+	        newName = result.getDeclarationModel().getName();
+	    }
+	    else {
+		    newName = guessName();
+	    }
 	}
+
+    private void init(ITextSelection selection) {
+        if (node instanceof Tree.Body) {
+            Tree.Body body = (Tree.Body) node;
+            statements = getStatements(body, selection);
+	        for (Statement s: statements) {
+	            FindResultVisitor v = new FindResultVisitor(body, statements);
+	            s.visit(v);
+	            if (v.result!=null) {
+	                result = v.result;
+	            }
+	        }
+	    }
+    }
 
     @Override
     boolean isEnabled() {
@@ -138,8 +244,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
         if (node instanceof Tree.Body) {
-            for (Statement s: getStatements((Tree.Body) node)) {
-                CheckStatementsVisitor v = new CheckStatementsVisitor();
+            Tree.Body body = (Tree.Body) node;
+            for (Statement s: statements) {
+                CheckStatementsVisitor v = new CheckStatementsVisitor(body, statements);
                 s.visit(v);
                 if (v.problem!=null) {
                     return createWarningStatus("Selected statements contain "
@@ -148,7 +255,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             }
         }
         else if (node instanceof Tree.Term) {
-            CheckStatementsVisitor v = new CheckStatementsVisitor();
+            CheckExpressionVisitor v = new CheckExpressionVisitor();
             node.visit(v);
             if (v.problem!=null) {
                 return createWarningStatus("Selected expression contains "
@@ -264,15 +371,6 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         IDocument doc = tfc.getCurrentDocument(null);
         
         Tree.Body body = (Tree.Body) node;
-        List<Statement> statements = getStatements(body);
-        Tree.AttributeDeclaration result = null;
-        for (Statement s: statements) {
-            FindResultVisitor v = new FindResultVisitor();
-            s.visit(v);
-            if (v.result!=null) {
-                result = v.result;
-            }
-        }
             
         Integer start = statements.get(0).getStartIndex();
         int length = statements.get(statements.size()-1)
@@ -288,33 +386,42 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }*/
         Declaration dec = decNode.getDeclarationModel();
         FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
-        body.visit(flrv);
+        for (Statement s: statements) {
+            s.visit(flrv);
+        }
         List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+        List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-            addLocalType(dec, bme.getTypeModel(), localTypes, 
-                    new ArrayList<ProducedType>());
+            if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
+                FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
+                for (Statement s: body.getStatements()) {
+                    if (!statements.contains(s)) {
+                        s.visit(v);
+                    }
+                }
+                if (v.refs>0) {
+                    addLocalType(dec, bme.getTypeModel(), localTypes, 
+                            new ArrayList<ProducedType>());
+                    localRefs.add(bme);
+                }
+            }
         }
         
         String params = "";
         String args = "";
-        if (!flrv.getLocalReferences().isEmpty()) {
-            Set<Declaration> done = new HashSet<Declaration>();
-            if (result!=null) {
-                done.add(result.getDeclarationModel());
+        Set<Declaration> done = new HashSet<Declaration>();
+        boolean nonempty = false;
+        for (Tree.BaseMemberExpression bme: localRefs) {
+            if (done.add(bme.getDeclaration())) {
+                params += bme.getTypeModel().getProducedTypeName() + 
+                        " " + bme.getIdentifier().getText() + ", ";
+                args += bme.getIdentifier().getText() + ", ";
+                nonempty = true;
             }
-            boolean nonempty = false;
-            for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-                if (done.add(bme.getDeclaration())) {
-                    params += bme.getTypeModel().getProducedTypeName() + 
-                            " " + bme.getIdentifier().getText() + ", ";
-                    args += bme.getIdentifier().getText() + ", ";
-                    nonempty = true;
-                }
-            }
-            if (nonempty) {
-                params = params.substring(0, params.length()-2);
-                args = args.substring(0, args.length()-2);
-            }
+        }
+        if (nonempty) {
+            params = params.substring(0, params.length()-2);
+            args = args.substring(0, args.length()-2);
         }
         
         String indent = "\n" + getIndent(decNode, doc);
@@ -367,7 +474,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
     }
 
-    private List<Statement> getStatements(Tree.Body body) {
+    private List<Statement> getStatements(Tree.Body body, ITextSelection selection) {
         List<Statement> statements = new ArrayList<Statement>();
         for (Tree.Statement s: body.getStatements()) {
             if (s.getStartIndex()>=selection.getOffset() &&
