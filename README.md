@@ -14,11 +14,7 @@
     
 4.  Restart Eclipse.
     
-5.  Use `File > New > Ceylon Project`, enter a project name, and select 
-    `Finish` create a new Ceylon project in the workspace.
-    
-6.  Use `New > Ceylon Unit` to create a new `.ceylon` file in the `src` 
-    directory of your project.
+5.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Installing/Building with (pure) Eclipse
 
@@ -40,11 +36,7 @@
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-5.  Use `File > New > Ceylon Project`, enter a project name, and select 
-    `Finish` create a new Ceylon project in the workspace.
-    
-6.  Use `New > Ceylon Unit` to create a new `.ceylon` file in the `src` 
-    directory of your project.
+5.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Building with Tycho/Maven 3
 
@@ -52,8 +44,8 @@
     
         mvn clean install
     
-2.  `site/target/site` now contains an update site you can install from.
-    (Need to have IMP update site added too.)
+2.  The directory `site/target/site` now contains an update site you can 
+    install from. (You need to have IMP update site added too.)
 
 ## License
 

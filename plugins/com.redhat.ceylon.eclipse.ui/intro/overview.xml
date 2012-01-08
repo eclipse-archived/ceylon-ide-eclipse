@@ -7,7 +7,7 @@
      <title style-id="intro-header">Welcome to Ceylon IDE</title>
      <include path="overview/navigation-links"/>
      <group id="page-content">
-           <group id="content-header" label="Welcome to Ceylon IDE">
+           <group id="content-header" label="Welcome to Ceylon">
            </group>
            <!--text style-id="page-title" id="page-title">TUTORIALS</text-->
            <text style-id="page-description" id="page-description">
@@ -20,7 +20,7 @@
          label="New Ceylon Project" 
          url="http://org.eclipse.ui.intro/runAction?class=com.redhat.ceylon.eclipse.imp.wizard.NewProjectAction&amp;pluginId=com.redhat.ceylon.eclipse.ui&amp;standby=true" 
          id="newproject">
-           <text>Create a new Ceylon project</text>
+           <text>Create a new Ceylon project and switch to the Ceylon perspective</text>
     </link>
     <link style-id="content-link" 
          label="Hello World with Ceylon" 
