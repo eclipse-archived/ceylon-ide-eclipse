@@ -25,7 +25,7 @@ public class NewProjectAction extends ActionDelegate {
                         wizard);
                 wd.setTitle(wizard.getWindowTitle());
                 wd.open();
-                wb.showPerspective(JavaUI.ID_PERSPECTIVE, 
+                wb.showPerspective("com.redhat.ceylon.eclipse.ui.perspective", 
                         wb.getActiveWorkbenchWindow());
             }
             catch (CoreException e) {

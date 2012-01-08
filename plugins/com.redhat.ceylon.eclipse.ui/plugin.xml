@@ -439,6 +439,12 @@
                menubarPath="org.eclipse.search.menu/dialogGroup"
                id="com.redhat.ceylon.eclipse.ui.action.ceylonSearchMenu"
                definitionId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
+         <action
+               label="Welcome to Ceylon"
+               class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
+               icon="icons/ceylon_icon_16px.png"
+               menubarPath="help/helpEnd"
+               id="com.redhat.ceylon.eclipse.ui.action.welcome"/>
       </actionSet>
    </extension>
    
@@ -887,6 +893,55 @@
             repository
          </description>
       </cheatsheet>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.redhat.ceylon.eclipse.ui.CeylonPerspectiveFactory"
+            id="com.redhat.ceylon.eclipse.ui.perspective"
+            name="Ceylon"
+            icon="icons/ceylon_icon_16px.png">
+          <description>Ceylon development perspective</description>
+      </perspective>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="com.redhat.ceylon.eclipse.ui.perspective">
+            <view id="org.eclipse.ui.views.ProblemView"
+                  relative="org.eclipse.ui.editorss"
+                  ratio="0.73"
+                  relationship="bottom"/>
+            <view id="org.eclipse.search.ui.views.SearchView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  relationship="stack"/>
+            <view id="org.eclipse.ui.console.ConsoleView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  relationship="stack"/>
+            <view id="org.eclipse.jdt.ui.PackageExplorer"
+                  relative="org.eclipse.ui.editorss"
+                  ratio="0.22"
+                  relationship="left"/>
+            <view id="org.eclipse.ui.views.ContentOutline"
+                  relative="org.eclipse.ui.editorss"
+                  ratio="0.72"
+                  relationship="right"/>
+            <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
+            <actionSet
+                  id="org.eclipse.debug.ui.launchActionSet"/>
+             <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
+            <perspectiveShortcut 
+                  id="org.eclipse.debug.ui.DebugPerspective"/>
+      </perspectiveExtension>
    </extension>
    
 </plugin>
