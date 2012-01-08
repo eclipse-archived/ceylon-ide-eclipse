@@ -390,7 +390,6 @@
          point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
-            <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
             <newWizardShortcut
@@ -424,41 +423,7 @@
          </action>
       </editorContribution>
    </extension>
-   
-   <extension
-         point="org.eclipse.ui.actionSets">
-      <!-- We need to use an action set here because the Eclipse search menu doesn't
-           support contributions from the org.eclipse.ui.menus contribution point. -->
-      <actionSet
-            label="Ceylon Actions"
-            id="com.redhat.ceylon.eclipse.ui.actionSet">
-         <!--menu
-               label="Search"
-               path="navigate"
-               id="org.eclipse.search.menu">
-                <groupMarker name="internalDialogGroup"/>  
-                <groupMarker name="dialogGroup"/>
-                <separator name="fileSearchContextMenuActionsGroup"/>
-                <separator name="contextMenuActionsGroup"/>
-                <separator name="occurencesActionsGroup"/>
-                <separator name="extraSearchGroup"/>
-         </menu-->
-         <action
-               label="Ceylon..."
-               icon="icons/find_obj.gif"
-               class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
-               menubarPath="org.eclipse.search.menu/dialogGroup"
-               id="com.redhat.ceylon.eclipse.ui.action.ceylonSearchMenu"
-               definitionId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
-         <action
-               label="Welcome to Ceylon"
-               class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
-               icon="icons/ceylon_icon_16px.png"
-               menubarPath="help/helpEnd"
-               id="com.redhat.ceylon.eclipse.ui.action.welcome"/>
-      </actionSet>
-   </extension>
-   
+
    <extension
          point="org.eclipse.ui.commands">
        <category
@@ -481,6 +446,11 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open search screen"
             name="Ceylon Search"/>
+       <command
+            id="com.redhat.ceylon.eclipse.ui.action.welcome"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Open welcome page"
+            name="Ceylon Welcome"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.hierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -557,6 +527,12 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
+            commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
+            commandId="com.redhat.ceylon.eclipse.ui.action.welcome"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.hierarchy.OpenHierarchyPopupHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"/>
@@ -805,7 +781,12 @@
          <menu
                label="Search"
                id="org.eclipse.search.menu">
-             <separator name="internalDialogGroup"/>  
+             <separator name="internalDialogGroup"/>
+             <command
+                   id="ceylonSearch"
+                   commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
+                   label="Ceylon..."
+                   icon="icons/find_obj.gif"/>
              <separator name="dialogGroup"/>
              <separator
                     visible="true"
@@ -817,6 +798,15 @@
              <separator name="extraSearchGroup" visible="true"/>
              <separator name="contextMenuActionsGroup" visible="true"/>
         </menu>
+      </menuContribution>
+      <menuContribution
+         locationURI="menu:help">
+             <separator name="sep" visible="true"/>
+             <command
+                   id="ceylonWelcome"
+                   commandId="com.redhat.ceylon.eclipse.ui.action.welcome"
+                   label="Welcome to Ceylon"
+                   icon="icons/ceylon_icon_16px.png"/>
       </menuContribution>
    </extension>
    <extension
@@ -973,7 +963,6 @@
                   relative="org.eclipse.ui.editorss"
                   ratio="0.72"
                   relationship="right"/>
-            <actionSet id="com.redhat.ceylon.eclipse.ui.actionSet"/>
             <actionSet
                   id="org.eclipse.debug.ui.launchActionSet"/>
              <newWizardShortcut
