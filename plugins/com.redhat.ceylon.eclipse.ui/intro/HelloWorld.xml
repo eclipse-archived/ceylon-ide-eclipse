@@ -9,13 +9,13 @@
 		</description>
 	</intro>
 
-	<item title="Open the Java Perspective" skip="true">
+	<item title="Open the Ceylon Perspective" skip="true">
 		<action pluginId="org.eclipse.ui.cheatsheets"
 			class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
-			param1="org.eclipse.jdt.ui.JavaPerspective" />
+			param1="com.redhat.ceylon.eclipse.ui.perspective" />
 		<description>
-			We need to be in the Java Perspective. Select
-			<b>Window > Open Perspective > Java</b> from the menu bar at the
+			We need to be in the Ceylon Perspective. Select
+			<b>Window > Open Perspective > Other ... > Ceylon</b> from the menu bar at the
 			top of the workbench, or click below. (If you're already in the
 			Java perspective, you can skip this step.)
 		</description>
