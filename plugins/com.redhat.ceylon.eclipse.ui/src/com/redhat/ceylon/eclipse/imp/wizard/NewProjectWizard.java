@@ -299,6 +299,16 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
         }
         
+        /*IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
+                .getNode(JavaCore.PLUGIN_ID);
+        node.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "*.launch, *.ceylon");
+        try {
+            node.flush();
+        } 
+        catch (BackingStoreException e) {
+            e.printStackTrace();
+        }*/
+        
         return res;
     }
     
