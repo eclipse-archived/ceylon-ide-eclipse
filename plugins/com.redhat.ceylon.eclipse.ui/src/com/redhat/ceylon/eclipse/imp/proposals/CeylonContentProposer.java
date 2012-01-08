@@ -53,6 +53,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -76,8 +77,16 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
@@ -236,9 +245,13 @@ public class CeylonContentProposer implements IContentProposer {
                 node = mv.result;
             }
             if (node==null) node = cpc.getRootNode(); //we're in whitespace at the start of the file
+            
+            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+            rtv.visit(cpc.getRootNode());
+            
             return constructCompletions(offset, prefix, tokenType,
-                        sortProposals(prefix, getProposals(node, prefix, 
-                                cpc.getRootNode())),
+                        sortProposals(prefix, rtv.requiredType, 
+                                getProposals(node, prefix, cpc.getRootNode())),
                         cpc, node, viewer.getDocument());
         } 
         return null;
@@ -516,15 +529,83 @@ public class CeylonContentProposer implements IContentProposer {
         return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
     }
     
-    private static Set<DeclarationWithProximity> sortProposals(final String prefix,
-            Map<String, DeclarationWithProximity> proposals) {
+    private static class RequiredTypeVisitor extends Visitor {
+        private Node node;
+        ProducedType requiredType = null;
+        RequiredTypeVisitor(Node node) {
+            this.node = node;
+        }
+        @Override
+        public void visit(InvocationExpression that) {
+            super.visit(that);
+            if (that.getPositionalArgumentList()==node) {
+                int pos = that.getPositionalArgumentList().getPositionalArguments().size();
+                Primary p = that.getPrimary();
+                if (p instanceof MemberOrTypeExpression) {
+                    ProducedReference pr = ((MemberOrTypeExpression) p).getTarget();
+                    Parameter param = ((Functional) pr.getDeclaration()).getParameterLists()
+                            .get(0).getParameters().get(pos);
+                    requiredType = pr.getTypedParameter(param).getType();
+                }
+            }
+        }
+        @Override
+        public void visit(SpecifiedArgument that) {
+            super.visit(that);
+            if (that.getSpecifierExpression()==node) {
+                //TODO: does not substitute type args!
+                requiredType = that.getParameter().getType();
+            }
+        }
+        @Override
+        public void visit(SpecifierStatement that) {
+            super.visit(that);
+            if (that.getSpecifierExpression()==node) {
+                requiredType = that.getBaseMemberExpression().getTypeModel();
+            }
+        }
+        @Override
+        public void visit(AttributeDeclaration that) {
+            super.visit(that);
+            if (that.getSpecifierOrInitializerExpression()==node) {
+                requiredType = that.getType().getTypeModel();
+            }
+        }
+        @Override
+        public void visit(AssignOp that) {
+            super.visit(that);
+            if (that==node) {
+                requiredType = that.getLeftTerm().getTypeModel();
+            }
+        }
+        @Override
+        public void visit(Return that) {
+            super.visit(that);
+            if (that==node) {
+                requiredType = type(that.getDeclaration());
+            }
+        }
+    }
+    
+    private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
+            final ProducedType type, Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
                 new Comparator<DeclarationWithProximity>() {
                     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
                         String xName = x.getName();
                         String yName = y.getName();
+                        ProducedType xtype = type(x.getDeclaration());
+                        ProducedType ytype = type(y.getDeclaration());
+                        boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof BottomType;
+                        boolean ybottom = ytype!=null && ytype.getDeclaration() instanceof BottomType;
+                        if (xbottom && !ybottom) {
+                            return 1;
+                        }
+                        if (ybottom && !xbottom) {
+                            return -1;
+                        }
                         if (prefix.length()!=0) {
-                            int lowers =  isLowerCase(prefix.charAt(0)) ? -1 : 1;
+                            int lowers = isLowerCase(prefix.charAt(0)) ? -1 : 1;
                             if (isLowerCase(xName.charAt(0)) && 
                                     isUpperCase(yName.charAt(0))) {
                                 return lowers;
@@ -532,6 +613,26 @@ public class CeylonContentProposer implements IContentProposer {
                             else if (isUpperCase(xName.charAt(0)) && 
                                     isLowerCase(yName.charAt(0))) {
                                 return -lowers;
+                            }
+                        }
+                        if (type!=null) {
+                            boolean xassigns = xtype!=null && xtype.isSubtypeOf(type);
+                            boolean yassigns = ytype!=null && ytype.isSubtypeOf(type);
+                            if (xassigns && !yassigns) {
+                                return -1;
+                            }
+                            if (yassigns && !xassigns) {
+                                return 1;
+                            }
+                            if (xassigns && yassigns) {
+                                boolean xtd = x.getDeclaration() instanceof TypedDeclaration;
+                                boolean ytd = y.getDeclaration() instanceof TypedDeclaration;
+                                if (xtd && !ytd) {
+                                    return -1;
+                                }
+                                if (ytd && !xtd) {
+                                    return 1;
+                                }
                             }
                         }
                         if (x.getProximity()!=y.getProximity()) {
@@ -542,6 +643,23 @@ public class CeylonContentProposer implements IContentProposer {
                 });
         set.addAll(proposals.values());
         return set;
+    }
+    
+    private static ProducedType type(Declaration d) {
+        if (d instanceof TypeDeclaration) {
+            if (d instanceof Class) {
+                if (!((Class) d).isAbstract()) {
+                    return ((TypeDeclaration) d).getType();
+                }
+            }
+            return null;
+        }
+        else if (d instanceof TypedDeclaration) {
+            return ((TypedDeclaration) d).getType();
+        }
+        else {
+            return null;//impossible
+        }
     }
     
     private static SourceProposal sourceProposal(final int offset, final String prefix,
