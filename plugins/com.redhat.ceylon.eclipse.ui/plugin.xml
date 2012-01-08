@@ -387,21 +387,6 @@
    </extension>
    
    <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-        <perspectiveExtension 
-              targetID="org.eclipse.jdt.ui.JavaPerspective">
-            <newWizardShortcut
-                  id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
-            <newWizardShortcut
-                  id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
-            <newWizardShortcut
-                  id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
-            <newWizardShortcut
-                  id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
-        </perspectiveExtension>
-   </extension>
-   
-   <extension
          point="org.eclipse.ui.editorActions">
       <editorContribution
             targetID="com.redhat.ceylon.eclipse.ui.editor"
@@ -954,7 +939,8 @@
                   relationship="stack"/>
             <view id="org.eclipse.ui.console.ConsoleView"
                   relative="org.eclipse.ui.views.ProblemView"
-                  relationship="stack"/>
+                  relationship="right"
+                  ratio="0.6"/>
             <view id="org.eclipse.jdt.ui.PackageExplorer"
                   relative="org.eclipse.ui.editorss"
                   ratio="0.22"
@@ -976,6 +962,21 @@
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
       </perspectiveExtension>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension 
+              targetID="org.eclipse.jdt.ui.JavaPerspective">
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
+            <newWizardShortcut
+                  id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
+        </perspectiveExtension>
    </extension>
    
 </plugin>
