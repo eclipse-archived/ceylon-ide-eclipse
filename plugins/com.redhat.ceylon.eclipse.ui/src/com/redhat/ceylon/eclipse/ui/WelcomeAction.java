@@ -3,29 +3,30 @@ package com.redhat.ceylon.eclipse.ui;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.intro.config.IntroURLFactory.createIntroURL;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.intro.config.IIntroURL;
 
-public class WelcomeAction implements IWorkbenchWindowActionDelegate {
+public class WelcomeAction extends AbstractHandler {
     
     @Override
-    public void run(IAction action) {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
-        getWorkbench().getIntroManager().showIntro(window, false);
-        IIntroURL url = createIntroURL("http://org.eclipse.ui.intro/showPage?id=com.redhat.ceylon.ui.intro");
-        url.execute();
+        if (window == null || window.getActivePage() == null) {
+            Shell shell = CeylonPlugin.getInstance().getWorkbench()
+                    .getActiveWorkbenchWindow().getShell();
+            MessageDialog.openError(shell, "Ceylon Welcome Error", "No active window");
+        }
+        else {
+            getWorkbench().getIntroManager().showIntro(window, false);
+            IIntroURL url = createIntroURL("http://org.eclipse.ui.intro/showPage?id=com.redhat.ceylon.ui.intro");
+            url.execute();
+        }
+        return null;
     }
-
-    @Override
-    public void init(IWorkbenchWindow window) {}
-
-    @Override
-    public void selectionChanged(IAction action, ISelection selection) {}
-
-    @Override
-    public void dispose() {}   
     
 }
