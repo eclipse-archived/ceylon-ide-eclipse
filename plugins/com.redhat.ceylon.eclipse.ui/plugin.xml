@@ -432,6 +432,17 @@
       <actionSet
             label="Ceylon Actions"
             id="com.redhat.ceylon.eclipse.ui.actionSet">
+         <!--menu
+               label="Search"
+               path="navigate"
+               id="org.eclipse.search.menu">
+                <groupMarker name="internalDialogGroup"/>  
+                <groupMarker name="dialogGroup"/>
+                <separator name="fileSearchContextMenuActionsGroup"/>
+                <separator name="contextMenuActionsGroup"/>
+                <separator name="occurencesActionsGroup"/>
+                <separator name="extraSearchGroup"/>
+         </menu-->
          <action
                label="Ceylon..."
                icon="icons/find_obj.gif"
@@ -701,8 +712,8 @@
             <menu
                   label="Source"
                   id="com.redhat.ceylon.eclipse.ui.menu.find">
-                <dynamic id="find"
-                      class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+                <!--dynamic id="find"
+                      class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
                 <dynamic id="refactor"
                       class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
             <separator
@@ -772,6 +783,9 @@
                   name="sep2"/>
             <dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+            <separator
+                  visible="true"
+                  name="sep4"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
             <separator
@@ -785,6 +799,24 @@
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
                   label="Show Hierarchy"/>
+      </menuContribution>
+      <menuContribution
+         locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
+         <menu
+               label="Search"
+               id="org.eclipse.search.menu">
+             <separator name="internalDialogGroup"/>  
+             <separator name="dialogGroup"/>
+             <separator
+                    visible="true"
+                    name="findGroup"/>
+             <dynamic id="find"
+                    class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+             <separator name="fileSearchContextMenuActionsGroup" visible="true"/>
+             <separator name="occurencesActionsGroup" visible="true"/>
+             <separator name="extraSearchGroup" visible="true"/>
+             <separator name="contextMenuActionsGroup" visible="true"/>
+        </menu>
       </menuContribution>
    </extension>
    <extension

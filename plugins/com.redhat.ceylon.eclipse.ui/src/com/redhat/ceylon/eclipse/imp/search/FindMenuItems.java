@@ -4,7 +4,6 @@ package com.redhat.ceylon.eclipse.imp.search;
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
@@ -33,8 +32,8 @@ public class FindMenuItems extends CompoundContributionItem {
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findRefinements", "Find Refinements",
                             new FindRefinementsAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findSubtypes", "Find Subtypes",
-                            new FindSubtypesAction(editor).isEnabled()),
-                    new Separator()
+                            new FindSubtypesAction(editor).isEnabled())
+                    //new Separator()
                 };
         /*}
         else {
