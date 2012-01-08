@@ -218,7 +218,8 @@ public class CeylonParseController extends ParseControllerBase {
             IProject project = null;
             if (sourceProject != null) {
                 project = sourceProject.getRawProject();
-            } else {
+            } 
+            else if (path!=null) { //path==null in structured compare editor
                 for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
                     if (p.getLocation().isPrefixOf(path)) {
                         project = p;
@@ -229,19 +230,21 @@ public class CeylonParseController extends ParseControllerBase {
             
             try {
                 if (project==null) {
-                    //for files from external repos, search for
-                    //the repo by iterating all repos referenced
-                    //by all projects
-                    for (IProject p: CeylonBuilder.getProjects()) {
-                        boolean found = false;
-                        for (String repo: CeylonBuilder.getRepositories(p)) {
-                            if (path.toString().startsWith(repo)) {
-                                tcb.addRepository(new File(repo));
-                                found=true;
-                                break;
+                    if (path!=null) { //path==null in structured compare editor
+                        //for files from external repos, search for
+                        //the repo by iterating all repos referenced
+                        //by all projects
+                        for (IProject p: CeylonBuilder.getProjects()) {
+                            boolean found = false;
+                            for (String repo: CeylonBuilder.getRepositories(p)) {
+                                if (path.toString().startsWith(repo)) {
+                                    tcb.addRepository(new File(repo));
+                                    found=true;
+                                    break;
+                                }
                             }
+                            if (found) break;
                         }
-                        if (found) break;
                     }
                 }
                 else {
