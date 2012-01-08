@@ -28,6 +28,8 @@ public class FindMenuItems extends CompoundContributionItem {
                     //new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findReferences", "Find References",
                             new FindReferencesAction(editor).isEnabled()),
+                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findAssignments", "Find Assignments",
+                            new FindAssignmentsAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findRefinements", "Find Refinements",
                             new FindRefinementsAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findSubtypes", "Find Subtypes",

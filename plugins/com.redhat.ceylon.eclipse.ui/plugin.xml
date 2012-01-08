@@ -481,6 +481,11 @@
             description="Find references to selected declaration"
             name="Find References"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.findAssignments"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Find references to selected declaration"
+            name="Find Assignments"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.findRefinements"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find refinements of selected member"
@@ -548,6 +553,9 @@
             class="com.redhat.ceylon.eclipse.imp.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
       <handler
+            class="com.redhat.ceylon.eclipse.imp.search.FindAssignmentsHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"/>
+      <handler
             class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"/>
       <handler
@@ -603,6 +611,11 @@
        <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
+           sequence="M3+W"
+           commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
