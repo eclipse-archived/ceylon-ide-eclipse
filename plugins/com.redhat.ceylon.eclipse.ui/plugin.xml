@@ -800,7 +800,7 @@
         </menu>
       </menuContribution>
       <menuContribution
-         locationURI="menu:help">
+         locationURI="menu:help?after=intro">
              <separator name="sep" visible="true"/>
              <command
                    id="ceylonWelcome"
