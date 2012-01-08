@@ -42,11 +42,14 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -56,6 +59,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -98,7 +102,26 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 //        copyDefaultRepoIfNecessary();
         runInitialBuild();
         registerProjectOpenCloseListener();
+        addResourceFilterPreference();
 	}
+
+    private void addResourceFilterPreference() throws BackingStoreException {
+        IEclipsePreferences instancePreferences = InstanceScope.INSTANCE
+                .getNode(JavaCore.PLUGIN_ID);
+        /*IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE
+                .getNode(JavaCore.PLUGIN_ID);*/
+        String filter = instancePreferences.get(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
+        if (filter.isEmpty()) {
+            filter = "*.launch, *.ceylon";
+        }
+        else if (!filter.contains("*.ceylon")) {
+            filter += ", *.ceylon";
+        }
+        instancePreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
+        //defaultPreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "*.launch, *.ceylon");
+        instancePreferences.flush();
+        //defaultPreferences.flush();
+    }
 
     public static File getCeylonRepository(String ceylonRepositoryProperty) {
         File ceylonRepository=null;
