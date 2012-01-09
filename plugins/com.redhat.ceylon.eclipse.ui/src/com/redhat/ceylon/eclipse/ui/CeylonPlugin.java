@@ -80,27 +80,37 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
 	    super.start(context);
 //        copyDefaultRepoIfNecessary();
-        runInitialBuild();
-        registerProjectOpenCloseListener();
         addResourceFilterPreference();
+        registerProjectOpenCloseListener();
+        runInitialBuild();
 	}
 
     private void addResourceFilterPreference() throws BackingStoreException {
-        IEclipsePreferences instancePreferences = InstanceScope.INSTANCE
-                .getNode(JavaCore.PLUGIN_ID);
-        /*IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE
-                .getNode(JavaCore.PLUGIN_ID);*/
-        String filter = instancePreferences.get(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
-        if (filter.isEmpty()) {
-            filter = "*.launch, *.ceylon";
-        }
-        else if (!filter.contains("*.ceylon")) {
-            filter += ", *.ceylon";
-        }
-        instancePreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
-        //defaultPreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "*.launch, *.ceylon");
-        instancePreferences.flush();
-        //defaultPreferences.flush();
+        new Job("Add Resource Filter for Ceylon projects") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                IEclipsePreferences instancePreferences = InstanceScope.INSTANCE
+                        .getNode(JavaCore.PLUGIN_ID);
+                /*IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE
+                        .getNode(JavaCore.PLUGIN_ID);*/
+                String filter = instancePreferences.get(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
+                if (filter.isEmpty()) {
+                    filter = "*.launch, *.ceylon";
+                }
+                else if (!filter.contains("*.ceylon")) {
+                    filter += ", *.ceylon";
+                }
+                instancePreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
+                try {
+                    instancePreferences.flush();
+                } catch (BackingStoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                return Status.OK_STATUS;
+            }
+            
+        }.schedule();
     }
 
     public static File getCeylonRepository(String ceylonRepositoryProperty) {
