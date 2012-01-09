@@ -943,10 +943,12 @@
                   ratio="0.6"/>
             <view id="org.eclipse.jdt.ui.PackageExplorer"
                   relative="org.eclipse.ui.editorss"
+                  closeable="false"
                   ratio="0.22"
                   relationship="left"/>
             <view id="org.eclipse.ui.views.ContentOutline"
                   relative="org.eclipse.ui.editorss"
+                  closeable="false"
                   ratio="0.72"
                   relationship="right"/>
             <actionSet
