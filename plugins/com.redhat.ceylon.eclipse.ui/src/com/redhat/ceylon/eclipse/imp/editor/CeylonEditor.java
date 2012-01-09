@@ -5,6 +5,7 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
@@ -49,11 +50,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
@@ -74,6 +77,7 @@ public class CeylonEditor extends UniversalEditor {
     private static Field openEditorActionGroupField;
     private static Field labelProviderField;
     private static Field fParserSchedulerField;
+    private static Method updateCaretMethod;
     
     static {
         try {
@@ -87,12 +91,25 @@ public class CeylonEditor extends UniversalEditor {
             labelProviderField.setAccessible(true);
             fParserSchedulerField = UniversalEditor.class.getDeclaredField("fParserScheduler");
             fParserSchedulerField.setAccessible(true);
+            updateCaretMethod = AbstractTextEditor.class.getDeclaredMethod("updateCaret");
+            updateCaretMethod.setAccessible(true);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private void updateFontAndCaret() {
+        Font font = currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE);
+        getSourceViewer().getTextWidget().setFont(font);
+        try {
+            updateCaretMethod.invoke(this);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private static final TreeModelBuilderBase builder = new CeylonTreeModelBuilder();
 
     private class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
@@ -149,8 +166,7 @@ public class CeylonEditor extends UniversalEditor {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(TEXT_FONT_PREFERENCE)) {
-                getSourceViewer().getTextWidget()
-                    .setFont(currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE));
+                updateFontAndCaret();
             }
         }
     };
@@ -209,7 +225,7 @@ public class CeylonEditor extends UniversalEditor {
         
         //CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
         currentTheme.getColorRegistry().addListener(colorChangeListener);
-        getSourceViewer().getTextWidget().setFont(currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE));
+        updateFontAndCaret();
         currentTheme.getFontRegistry().addListener(fontChangeListener);
         
     }
