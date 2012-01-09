@@ -1,18 +1,5 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CLOSE_FENCES;
-import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_CORRECTION_INDICATION;
-import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS;
-import static org.eclipse.imp.preferences.PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_DUMP_TOKENS;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_MESSAGES;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_SOURCE_FONT;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
-import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
-import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
-import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,15 +35,9 @@ import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.RGB;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
@@ -98,7 +79,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
         ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
 	    super.start(context);
-	    setPreferenceDefaults(RuntimePlugin.getInstance().getPreferenceStore());
 //        copyDefaultRepoIfNecessary();
         runInitialBuild();
         registerProjectOpenCloseListener();
@@ -395,62 +375,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
             in.close();
             out.close();
         }
-    }    
-    
-	/**
-	 * Awful little hack to get a nonugly icon on already-open 
-	 * editors at startup time, since IMP doesn't init the
-	 * editor to the language-specific icon until the editor
-	 * becomes active.
-	 */
-    /*private void setIconForOpenWindows(IWorkbenchWindow window) {
-        for (IWorkbenchPage page: window.getPages()) {
-             for (IEditorReference ref: page.findEditors(null, UniversalEditor.EDITOR_ID, IWorkbenchPage.MATCH_ID)) {
-                 try {
-                    Method method = WorkbenchPart.class.getDeclaredMethod("setTitleImage", Image.class);
-                    method.setAccessible(true);
-                    method.invoke(ref.getEditor(true), CeylonLabelProvider.FILE_IMAGE);
-                 }
-                 catch (Exception e) {
-                     e.printStackTrace();
-                 }
-             }
-         }
-    }*/
-    
-    private static final String FLAG = "preferencesInitialized";
-
-    /**
-     * Really awful hack to initialize some preferences the 
-     * first time we run the IDE, since IMP sometimes fails
-     * to set the defaults in time for already-open editors
-     * to detect them.
-     */
-    private static void setPreferenceDefaults(IPreferenceStore store) {
-        if (!store.getBoolean(FLAG)) {
-            System.out.println("INITIALIZING PREFERENCES");
-            store.setValue(FLAG, true);
-            int size = Platform.getOS().equals("macosx") ? 11 : 10;
-            PreferenceConverter.setValue(store, P_SOURCE_FONT, 
-                    new FontData[] { new FontData("Monaco", size, SWT.NORMAL),
-                                     new FontData("Courier New", size, SWT.NORMAL), 
-                                     new FontData("Monospace", size, SWT.NORMAL)});
-    
-            store.setValue(P_EMIT_MESSAGES, false);
-            store.setValue(P_EMIT_BUILDER_DIAGNOSTICS, false);
-            store.setValue(P_TAB_WIDTH, 4);
-            store.setValue(P_SPACES_FOR_TABS, true);
-            store.setValue(P_DUMP_TOKENS, false);
-            store.setValue(EDITOR_MATCHING_BRACKETS, true);
-            store.setValue(EDITOR_CORRECTION_INDICATION, true);
-            store.setValue(EDITOR_CLOSE_FENCES, true);
-            
-            store.setValue(EDITOR_TAB_WIDTH, 4);
-            store.setValue(EDITOR_SPACES_FOR_TABS, true);
-        
-            PreferenceConverter.setValue(store, EDITOR_MATCHING_BRACKETS_COLOR,
-                    new RGB(0,120,255));
-        }
     }
-
+    
 }

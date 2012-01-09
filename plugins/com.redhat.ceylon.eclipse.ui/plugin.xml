@@ -1062,6 +1062,16 @@
         </description>
     </colorDefinition>
 
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor" 
+        label="Matching brackets, braces, parens"
+        value="0,120,255">
+        <description>
+            Color for highlighting matching braces, brackets, and parens. (Takes effect after closing Ceylon editor.)
+        </description>
+    </colorDefinition>
+
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.editorFont" 
