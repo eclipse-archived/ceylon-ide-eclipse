@@ -123,9 +123,9 @@ public class RefineFormalMembersHandler extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        if ( super.isEnabled() && 
+        if (super.isEnabled() && 
                 editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput ) {
+                editor.getEditorInput() instanceof IFileEditorInput) {
             Node node = getSelectedNode((CeylonEditor) editor);
             return node instanceof Tree.ClassBody ||
                     node instanceof Tree.InterfaceBody ||
