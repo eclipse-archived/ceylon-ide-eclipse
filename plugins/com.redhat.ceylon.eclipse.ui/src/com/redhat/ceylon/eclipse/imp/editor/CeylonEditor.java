@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
 import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
 import java.lang.reflect.Field;
 import java.text.BreakIterator;
@@ -24,6 +25,7 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -45,6 +47,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -53,6 +56,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.themes.ITheme;
 
@@ -177,7 +181,13 @@ public class CeylonEditor extends UniversalEditor {
 
     @Override
     public void createPartControl(Composite parent) {
+        
+        String esft = getPreferenceStore().getString(EDITOR_SPACES_FOR_TABS);
+        //String etw = getPreferenceStore().getString(EDITOR_TAB_WIDTH);
         super.createPartControl(parent);
+        getPreferenceStore().setValue(EDITOR_SPACES_FOR_TABS, esft);
+        //getPreferenceStore().setValue(EDITOR_TAB_WIDTH, etw);
+
         try {
             getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
             generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
@@ -196,6 +206,23 @@ public class CeylonEditor extends UniversalEditor {
         currentTheme.getColorRegistry().addListener(colorChangeListener);
         getSourceViewer().getTextWidget().setFont(currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE));
         currentTheme.getFontRegistry().addListener(fontChangeListener);
+        
+    }
+    
+    @Override
+    protected void configureSourceViewerDecorationSupport(
+            SourceViewerDecorationSupport support) {
+        setupMatchingBrackets();
+        super.configureSourceViewerDecorationSupport(support);
+    }
+
+    private void setupMatchingBrackets() {
+        IPreferenceStore store = getPreferenceStore();
+        store.setDefault(MATCHING_BRACKETS, true);
+        Color color = currentTheme.getColorRegistry()
+                    .get("com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor");
+        store.setDefault(MATCHING_BRACKETS_COLOR, 
+                color.getRed() +"," + color.getGreen() + "," + color.getBlue());
     }
     
     private void watchForSourceBuild() {
