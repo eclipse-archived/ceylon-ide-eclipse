@@ -1,11 +1,8 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -17,7 +14,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -83,6 +79,12 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         runInitialBuild();
+	}
+	
+	@Override
+	public void stop(BundleContext context) throws Exception {
+	    super.stop(context);
+	    unregisterProjectOpenCloseListener();
 	}
 
     private void addResourceFilterPreference() throws BackingStoreException {
@@ -246,90 +248,92 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
     }
     
     private void registerProjectOpenCloseListener() {
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        final IWorkspaceRoot workspaceRoot = workspace.getRoot();
-        
-        workspace.addResourceChangeListener(new IResourceChangeListener() {
-            
-            @Override
-            public void resourceChanged(IResourceChangeEvent event) {
-                try {
-                    event.getDelta().accept(new IResourceDeltaVisitor() {
-                        
-                        @Override
-                        public boolean visit(IResourceDelta delta) throws CoreException {
-                            IResource resource = delta.getResource();
-                            if (resource.equals(workspaceRoot)) {
-                                return true;
-                            }
-                            if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
-                                final IProject project = (IProject) resource;
-                                try {
-                                    List<IProject> projectsToBuild = new ArrayList<IProject>();
-                                    projectsToBuild.add(project); 
-                                    for (IProject referencingProject : project.getReferencingProjects()) {
-                                        projectsToBuild.add(referencingProject);
-                                    }
-                                    if (! project.isOpen()) {
-                                        CeylonBuilder.removeProjectTypeChecker(project);
-                                    }
-                                    for (final IProject projectToBuild : projectsToBuild) {
-                                        if (projectToBuild.isOpen() && projectToBuild.hasNature(CeylonNature.NATURE_ID)) {
-                                            Job buildJob = new Job("Building Ceylon Model for project " + projectToBuild.getName()) {
-                                                @Override
-                                                public IStatus run(IProgressMonitor monitor) {
-                                                    try {
-                                                        monitor.beginTask("Building Ceylon Model", 3);
-                                                        ISourceProject sourceProject = ModelFactory.open(projectToBuild);
-                                                        CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject,
-                                                                monitor);
-                                                    } catch (ModelException e) {
-                                                        return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
-                                                    } catch (CoreException e) {
-                                                        return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
-                                                    }
-                                                    return Status.OK_STATUS;
-                                                }
-                                                
-                                            };
-                                            buildJob.setRule(workspaceRoot);
-                                            buildJob.schedule();
-                                        }
-                                    }
-                                    for (IProject projectToBuild : projectsToBuild) {
-                                        TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-                                        if (typeChecker != null) {
-                                            List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
-                                            
-                                            for (IProject requiredProject : CeylonBuilder.getRequiredProjects(projectToBuild)) {
-                                                TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
-                                                if (requiredProjectTypeChecker != null) {
-                                                    phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
-                                                }
-                                            }
-                                            
-                                            for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
-                                                pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
-                                            }
-                                        }
-                                    }
-                                } catch (CoreException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                }
-                            }
-                            return false;
-                        }
-                    });
-                } catch (CoreException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-        }, IResourceChangeEvent.POST_CHANGE);
+        getWorkspace().addResourceChangeListener(projectOpenCloseListener, 
+                IResourceChangeEvent.POST_CHANGE);
     }
-    
 
+    private void unregisterProjectOpenCloseListener() {
+        getWorkspace().removeResourceChangeListener(projectOpenCloseListener);
+    }
+
+    IResourceChangeListener projectOpenCloseListener = new IResourceChangeListener() {
+        @Override
+        public void resourceChanged(IResourceChangeEvent event) {
+            try {
+                event.getDelta().accept(new IResourceDeltaVisitor() {                    
+                    @Override
+                    public boolean visit(IResourceDelta delta) throws CoreException {
+                        final IWorkspaceRoot workspaceRoot = getWorkspace().getRoot();
+                        IResource resource = delta.getResource();
+                        if (resource.equals(workspaceRoot)) {
+                            return true;
+                        }
+                        if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
+                            final IProject project = (IProject) resource;
+                            try {
+                                List<IProject> projectsToBuild = new ArrayList<IProject>();
+                                projectsToBuild.add(project); 
+                                for (IProject referencingProject : project.getReferencingProjects()) {
+                                    projectsToBuild.add(referencingProject);
+                                }
+                                if (! project.isOpen()) {
+                                    CeylonBuilder.removeProjectTypeChecker(project);
+                                }
+                                for (final IProject projectToBuild : projectsToBuild) {
+                                    if (projectToBuild.isOpen() && projectToBuild.hasNature(CeylonNature.NATURE_ID)) {
+                                        Job buildJob = new Job("Building Ceylon Model for project " + projectToBuild.getName()) {
+                                            @Override
+                                            public IStatus run(IProgressMonitor monitor) {
+                                                try {
+                                                    monitor.beginTask("Building Ceylon Model", 3);
+                                                    ISourceProject sourceProject = ModelFactory.open(projectToBuild);
+                                                    CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject,
+                                                            monitor);
+                                                } catch (ModelException e) {
+                                                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
+                                                } catch (CoreException e) {
+                                                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
+                                                }
+                                                return Status.OK_STATUS;
+                                            }
+                                            
+                                        };
+                                        buildJob.setRule(workspaceRoot);
+                                        buildJob.schedule();
+                                    }
+                                }
+                                for (IProject projectToBuild : projectsToBuild) {
+                                    TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                                    if (typeChecker != null) {
+                                        List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
+                                        
+                                        for (IProject requiredProject : CeylonBuilder.getRequiredProjects(projectToBuild)) {
+                                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
+                                            if (requiredProjectTypeChecker != null) {
+                                                phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+                                            }
+                                        }
+                                        
+                                        for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+                                            pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+                                        }
+                                    }
+                                }
+                            } catch (CoreException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                        return false;
+                    }
+                });
+            } catch (CoreException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    };
+    
     /*private void copyDefaultRepoIfNecessary() {
         File home = new File( System.getProperty("user.home") );
         File ceylon = new File( home, ".ceylon" );
@@ -358,7 +362,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         }
     }*/
     
-    public void copyDirectory(File sourceLocation , File targetLocation)
+    /*public void copyDirectory(File sourceLocation , File targetLocation)
     throws IOException {
         
         if (sourceLocation.isDirectory()) {
@@ -385,6 +389,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
             in.close();
             out.close();
         }
-    }
+    }*/
     
 }
