@@ -980,17 +980,98 @@
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
         </perspectiveExtension>
    </extension>
-   
-   <extension point="org.eclipse.core.runtime.preferences">
-       <initializer class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferenceInitializer"/> 
-   </extension>
-   
-   <extension 
-         point="org.eclipse.ui.preferencePages">
-       <page
-         id="com.redhat.ceylon.eclipse.ui.colors" 
-         name="Ceylon Syntax"
-         class="com.redhat.ceylon.eclipse.imp.preferences.SyntaxPreferencePage"/>
-   </extension> 
+      
+   <extension point="org.eclipse.ui.themes">
+    <themeElementCategory
+        id="com.redhat.ceylon.eclipse.ui.theme" 
+        label="Ceylon">
+        <description>
+            Ceylon editor
+        </description>
+    </themeElementCategory>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.keywords" label="Keywords"
+        value="COLOR_DARK_MAGENTA">
+        <description>
+            Color for highlighting Ceylon keywords
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" label="Annotations"
+        value="COLOR_DARK_CYAN">
+        <description>
+            Color for highlighting annotation identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" label="Other identifiers"
+        value="COLOR_BLACK">
+        <description>
+            Color for highlighting identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.types" label="Type identifiers"
+        value="COLOR_DARK_BLUE">
+        <description>
+            Color for highlighting type identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.numbers" label="Numeric literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting numeric literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.strings" label="String literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting string literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.comments" label="Comments"
+        value="COLOR_DARK_GRAY">
+        <description>
+            Color for highlighting comments
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings" label="Strings in annotations"
+        value="COLOR_DARK_GRAY">
+        <description>
+            Color for highlighting strings in annotations
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.todos" label="Todos"
+        value="0,120,255">
+        <description>
+            Color for highlighting TODOs and FIXes.
+        </description>
+    </colorDefinition>
+
+    <fontDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.editorFont" 
+        label="Ceylon Editor Text Font"
+        defaultsTo="org.eclipse.wst.sse.ui.textfont">
+        <description>
+            Font for Ceylon editor
+        </description>
+    </fontDefinition>
+
+</extension>
    
 </plugin>

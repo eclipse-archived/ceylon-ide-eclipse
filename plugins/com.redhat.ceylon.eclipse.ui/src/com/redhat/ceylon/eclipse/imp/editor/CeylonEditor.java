@@ -48,19 +48,22 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.TextNavigationAction;
+import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonEditor extends UniversalEditor {
+    private static final String TEXT_FONT_PREFERENCE = "com.redhat.ceylon.eclipse.ui.editorFont";
+    
     private static Field refreshContributionsField;
     private static Field generateActionGroupField;
     private static Field openEditorActionGroupField;
@@ -131,11 +134,22 @@ public class CeylonEditor extends UniversalEditor {
     private IPropertyChangeListener colorChangeListener = new IPropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().startsWith("color.")) {
+            if (event.getProperty().startsWith("com.redhat.ceylon.eclipse.ui.theme.color.")) {
                 getSourceViewer().invalidateTextPresentation();
             }
         }
     };
+    
+    IPropertyChangeListener fontChangeListener = new IPropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getProperty().equals(TEXT_FONT_PREFERENCE)) {
+                getSourceViewer().getTextWidget()
+                    .setFont(currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE));
+            }
+        }
+    };
+    private final ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
     
     @Override
     protected StructuredSourceViewerConfiguration createSourceViewerConfiguration() {
@@ -178,7 +192,10 @@ public class CeylonEditor extends UniversalEditor {
         ((IContextService) getSite().getService(IContextService.class))
             .activateContext("com.redhat.ceylon.eclipse.ui.context");
         
-        CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
+        //CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
+        currentTheme.getColorRegistry().addListener(colorChangeListener);
+        getSourceViewer().getTextWidget().setFont(currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE));
+        currentTheme.getFontRegistry().addListener(fontChangeListener);
     }
     
     private void watchForSourceBuild() {
@@ -609,6 +626,8 @@ public class CeylonEditor extends UniversalEditor {
         if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }
-        CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(colorChangeListener);
+        //CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(colorChangeListener);
+        currentTheme.getColorRegistry().removeListener(colorChangeListener);
+        currentTheme.getFontRegistry().removeListener(fontChangeListener);
     }
 }

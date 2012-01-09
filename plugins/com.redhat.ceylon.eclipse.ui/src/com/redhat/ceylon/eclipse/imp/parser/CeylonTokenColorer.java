@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
-import static org.eclipse.jface.preference.PreferenceConverter.getColor;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,19 +7,18 @@ import java.util.Set;
 import org.antlr.runtime.Token;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.ITokenColorer;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
     
@@ -31,44 +28,40 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
             "this", "outer", "super", "is", "exists", "nonempty", "then"));
     
-    private static final Display display = Display.getDefault();
-    private static final IPreferenceStore store = CeylonPlugin.getInstance().getPreferenceStore();
-
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute;
     
-    private static TextAttribute text(String key, int style) {
-        return new TextAttribute(new Color(display, getColor(store, "color."+key)), null, style); 
+    private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
+        return new TextAttribute(color(colorRegistry, key), null, style); 
+    }
+    
+    private static Color color(ColorRegistry colorRegistry, String key) {
+        return colorRegistry.get("com.redhat.ceylon.eclipse.ui.theme.color." + key);
     }
     
     static {
-        // NOTE: Colors (i.e., instances of org.eclipse.swt.graphics.Color) are system resources
-        // and are limited in number.  THEREFORE, it is good practice to reuse existing system Colors
-        // or to allocate a fixed set of new Colors and reuse those.  If new Colors are instantiated
-        // beyond the bounds of your system capacity then your Eclipse invocation may cease to function
-        // properly or at all.
-        initColors();
-        store.addPropertyChangeListener(new IPropertyChangeListener() {
+        final ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();        
+        initColors(currentTheme.getColorRegistry());
+        currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith("color.")) {
-                    initColors();
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().redraw();
+                if (event.getProperty().startsWith("com.redhat.ceylon.eclipse.ui.theme.color.")) {
+                    initColors(currentTheme.getColorRegistry());
                 }
             }
         });
     }
 
-    private static void initColors() {
-        identifierAttribute = text("identifiers", SWT.NORMAL);
-        typeAttribute = text("types", SWT.NORMAL);
-        keywordAttribute = text("keywords", SWT.BOLD);
-        numberAttribute = text("numbers", SWT.NORMAL);
-        commentAttribute = text("comments", SWT.NORMAL);
-        stringAttribute = text("strings", SWT.NORMAL);
-        annotationStringAttribute = text("annotationstrings", SWT.NORMAL);
-        annotationAttribute = text("annotations", SWT.NORMAL);
-        todoAttribute = text("todos", SWT.NORMAL);
+    private static void initColors(ColorRegistry colorRegistry) {
+        identifierAttribute = text(colorRegistry, "identifiers", SWT.NORMAL);
+        typeAttribute = text(colorRegistry, "types", SWT.NORMAL);
+        keywordAttribute = text(colorRegistry, "keywords", SWT.BOLD);
+        numberAttribute = text(colorRegistry, "numbers", SWT.NORMAL);
+        commentAttribute = text(colorRegistry, "comments", SWT.NORMAL);
+        stringAttribute = text(colorRegistry, "strings", SWT.NORMAL);
+        annotationStringAttribute = text(colorRegistry, "annotationstrings", SWT.NORMAL);
+        annotationAttribute = text(colorRegistry, "annotations", SWT.NORMAL);
+        todoAttribute = text(colorRegistry, "todos", SWT.NORMAL);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {
