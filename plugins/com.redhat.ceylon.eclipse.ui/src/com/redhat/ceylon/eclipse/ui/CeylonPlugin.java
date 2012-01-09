@@ -105,8 +105,8 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                 instancePreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
                 try {
                     instancePreferences.flush();
-                } catch (BackingStoreException e) {
-                    // TODO Auto-generated catch block
+                } 
+                catch (BackingStoreException e) {
                     e.printStackTrace();
                 }
                 return Status.OK_STATUS;
