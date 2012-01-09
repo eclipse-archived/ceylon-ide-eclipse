@@ -1076,9 +1076,9 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.editorFont" 
         label="Ceylon Editor Text Font"
-        defaultsTo="org.eclipse.wst.sse.ui.textfont">
+        defaultsTo="org.eclipse.jface.textfont">
         <description>
-            Font for Ceylon editor
+            Font for displaying code in the Ceylon editor
         </description>
     </fontDefinition>
 
