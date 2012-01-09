@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CleanImportsHandler extends AbstractHandler {
     
@@ -103,10 +104,13 @@ public class CleanImportsHandler extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return super.isEnabled() && 
+        if (super.isEnabled() && 
                 editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput &&
-                !((CeylonEditor) editor).getParseController().getRootNode()
-                        .getImportList().getImports().isEmpty();
+                editor.getEditorInput() instanceof IFileEditorInput) {
+            CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
+            return cpc.getRootNode()==null ? false :
+                !cpc.getRootNode().getImportList().getImports().isEmpty();
+        }
+        return false;
     }
 }
