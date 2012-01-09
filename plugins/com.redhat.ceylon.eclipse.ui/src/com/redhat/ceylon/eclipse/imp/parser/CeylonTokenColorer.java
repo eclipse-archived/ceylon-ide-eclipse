@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import static org.eclipse.jface.preference.PreferenceConverter.getColor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,15 +9,19 @@ import java.util.Set;
 import org.antlr.runtime.Token;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.ITokenColorer;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
     
@@ -26,11 +32,14 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "this", "outer", "super", "is", "exists", "nonempty", "then"));
     
     private static final Display display = Display.getDefault();
-    public static final Color BRIGHT_BLUE = new Color(display, new RGB(0,120,255));
-    public static final Color PURPLE = new Color(display, new RGB(63,31,191));
-    
-    private static final TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
+    private static final IPreferenceStore store = CeylonPlugin.getInstance().getPreferenceStore();
+
+    private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute;
+    
+    private static TextAttribute text(String key, int style) {
+        return new TextAttribute(new Color(display, getColor(store, "color."+key)), null, style); 
+    }
     
     static {
         // NOTE: Colors (i.e., instances of org.eclipse.swt.graphics.Color) are system resources
@@ -38,15 +47,28 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         // or to allocate a fixed set of new Colors and reuse those.  If new Colors are instantiated
         // beyond the bounds of your system capacity then your Eclipse invocation may cease to function
         // properly or at all.
-        identifierAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLACK), null, SWT.NORMAL);
-        typeAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_BLUE), null, SWT.NORMAL);
-        keywordAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_MAGENTA), null, SWT.BOLD);
-        numberAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLUE), null, SWT.NORMAL);
-        commentAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.NORMAL);
-        stringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_BLUE), null, SWT.NORMAL);
-        annotationStringAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_GRAY), null, SWT.NORMAL);
-        annotationAttribute = new TextAttribute(display.getSystemColor(SWT.COLOR_DARK_CYAN), null, SWT.NORMAL);
-        todoAttribute = new TextAttribute(BRIGHT_BLUE, null, SWT.NORMAL);
+        initColors();
+        store.addPropertyChangeListener(new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getProperty().startsWith("color.")) {
+                    initColors();
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().redraw();
+                }
+            }
+        });
+    }
+
+    private static void initColors() {
+        identifierAttribute = text("identifiers", SWT.NORMAL);
+        typeAttribute = text("types", SWT.NORMAL);
+        keywordAttribute = text("keywords", SWT.BOLD);
+        numberAttribute = text("numbers", SWT.NORMAL);
+        commentAttribute = text("comments", SWT.NORMAL);
+        stringAttribute = text("strings", SWT.NORMAL);
+        annotationStringAttribute = text("annotationstrings", SWT.NORMAL);
+        annotationAttribute = text("annotations", SWT.NORMAL);
+        todoAttribute = text("todos", SWT.NORMAL);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {

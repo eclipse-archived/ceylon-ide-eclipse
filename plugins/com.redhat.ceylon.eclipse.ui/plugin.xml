@@ -979,4 +979,16 @@
         </perspectiveExtension>
    </extension>
    
+   <extension point="org.eclipse.core.runtime.preferences">
+       <initializer class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferenceInitializer"/> 
+   </extension>
+   
+   <extension 
+         point="org.eclipse.ui.preferencePages">
+       <page
+         id="com.redhat.ceylon.eclipse.ui.colors" 
+         name="Ceylon Syntax"
+         class="com.redhat.ceylon.eclipse.imp.preferences.SyntaxPreferencePage"/>
+   </extension> 
+   
 </plugin>
