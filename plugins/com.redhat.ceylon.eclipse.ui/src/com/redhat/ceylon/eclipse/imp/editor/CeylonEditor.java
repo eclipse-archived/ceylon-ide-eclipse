@@ -39,6 +39,8 @@ import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
@@ -52,9 +54,11 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 
+import com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonEditor extends UniversalEditor {
     private static Field refreshContributionsField;
@@ -124,6 +128,15 @@ public class CeylonEditor extends UniversalEditor {
         };
     }
 
+    private IPropertyChangeListener colorChangeListener = new IPropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getProperty().startsWith("color.")) {
+                getSourceViewer().invalidateTextPresentation();
+            }
+        }
+    };
+    
     @Override
     protected StructuredSourceViewerConfiguration createSourceViewerConfiguration() {
         return new StructuredSourceViewerConfiguration(getPreferenceStore(), this) {
@@ -164,6 +177,8 @@ public class CeylonEditor extends UniversalEditor {
         getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         ((IContextService) getSite().getService(IContextService.class))
             .activateContext("com.redhat.ceylon.eclipse.ui.context");
+        
+        CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
     }
     
     private void watchForSourceBuild() {
@@ -583,7 +598,7 @@ public class CeylonEditor extends UniversalEditor {
     public Object getAdapter(Class required) {
         if (IToggleBreakpointsTarget.class.equals(required)) {
             if (toggleBreakpointTarget == null) {
-                toggleBreakpointTarget = new com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter();
+                toggleBreakpointTarget = new ToggleBreakpointAdapter();
             }
             return toggleBreakpointTarget;
         }
@@ -594,5 +609,6 @@ public class CeylonEditor extends UniversalEditor {
         if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }
+        CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(colorChangeListener);
     }
 }
