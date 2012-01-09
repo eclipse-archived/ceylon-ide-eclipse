@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.editor;
 
 import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import java.lang.reflect.Field;
 import java.text.BreakIterator;
@@ -168,6 +169,10 @@ public class CeylonEditor extends UniversalEditor {
                 //presenter.setSizeConstraints(50, 20, true, false);
                 //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
                 return presenter;
+            }
+            @Override
+            public int getTabWidth(ISourceViewer sourceViewer) {
+                return getPreferenceStore().getInt(EDITOR_TAB_WIDTH);
             }
         };
     }
