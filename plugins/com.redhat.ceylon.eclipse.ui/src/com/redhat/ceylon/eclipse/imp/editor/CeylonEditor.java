@@ -655,6 +655,7 @@ public class CeylonEditor extends UniversalEditor {
     }
 
     public void dispose() {
+        super.dispose();
         if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }
