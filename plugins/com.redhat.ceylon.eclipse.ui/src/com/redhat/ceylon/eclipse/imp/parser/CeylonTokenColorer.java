@@ -22,6 +22,16 @@ import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
     
+    public static String IDENTIFIERS = "identifiers";
+    public static String TYPES = "types";
+    public static String KEYWORDS = "keywords";
+    public static String NUMBERS = "numbers";
+    public static String STRINGS = "strings";
+    public static String COMMENTS = "comments";
+    public static String TODOS = "todos";
+    public static String ANNOTATIONS = "annotations";
+    public static String ANNOTATION__STRINGS = "annotationstrings";
+    
     public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
             "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 
@@ -35,7 +45,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         return new TextAttribute(color(colorRegistry, key), null, style); 
     }
     
-    private static Color color(ColorRegistry colorRegistry, String key) {
+    public static Color color(ColorRegistry colorRegistry, String key) {
         return colorRegistry.get("com.redhat.ceylon.eclipse.ui.theme.color." + key);
     }
     
@@ -53,15 +63,15 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     }
 
     private static void initColors(ColorRegistry colorRegistry) {
-        identifierAttribute = text(colorRegistry, "identifiers", SWT.NORMAL);
-        typeAttribute = text(colorRegistry, "types", SWT.NORMAL);
-        keywordAttribute = text(colorRegistry, "keywords", SWT.BOLD);
-        numberAttribute = text(colorRegistry, "numbers", SWT.NORMAL);
-        commentAttribute = text(colorRegistry, "comments", SWT.NORMAL);
-        stringAttribute = text(colorRegistry, "strings", SWT.NORMAL);
-        annotationStringAttribute = text(colorRegistry, "annotationstrings", SWT.NORMAL);
-        annotationAttribute = text(colorRegistry, "annotations", SWT.NORMAL);
-        todoAttribute = text(colorRegistry, "todos", SWT.NORMAL);
+        identifierAttribute = text(colorRegistry, IDENTIFIERS, SWT.NORMAL);
+        typeAttribute = text(colorRegistry, TYPES, SWT.NORMAL);
+        keywordAttribute = text(colorRegistry, KEYWORDS, SWT.BOLD);
+        numberAttribute = text(colorRegistry, NUMBERS, SWT.NORMAL);
+        commentAttribute = text(colorRegistry, COMMENTS, SWT.NORMAL);
+        stringAttribute = text(colorRegistry, STRINGS, SWT.NORMAL);
+        annotationStringAttribute = text(colorRegistry, ANNOTATION__STRINGS, SWT.NORMAL);
+        annotationAttribute = text(colorRegistry, ANNOTATIONS, SWT.NORMAL);
+        todoAttribute = text(colorRegistry, TODOS, SWT.NORMAL);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {

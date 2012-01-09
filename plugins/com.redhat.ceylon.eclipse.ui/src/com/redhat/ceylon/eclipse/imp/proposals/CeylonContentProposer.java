@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUT
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.TYPE_STYLER;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -1070,7 +1071,7 @@ public class CeylonContentProposer implements IContentProposer {
             result.append(d.getName(), TYPE_STYLER);
         }
         else {
-            result.append(d.getName());
+            result.append(d.getName(), ID_STYLER);
         }
     }
     
@@ -1144,7 +1145,7 @@ public class CeylonContentProposer implements IContentProposer {
                     int len = params.getParameters().size(), i=0;
                     for (Parameter p: params.getParameters()) {
                         result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
-                                .append(" ").append(p.getName());
+                                .append(" ").append(p.getName(), ID_STYLER);
                         if (++i<len) result.append(", ");
                     }
                     result.append(")");

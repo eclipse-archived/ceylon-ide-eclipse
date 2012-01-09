@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.outline;
 
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.ANNOTATIONS;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.KEYWORDS;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.TYPES;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.IDENTIFIERS;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.color;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
@@ -32,6 +37,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.services.ILabelProvider;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -39,10 +45,9 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.TextStyle;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -96,39 +101,41 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static  Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
     
-    private static final Styler ID_STYLER = new Styler() {
+    private static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
+            .getThemeManager().getCurrentTheme().getColorRegistry();
+    
+    public static final Styler ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            //textStyle.foreground = CeylonTokenColorer.PURPLE;
+            textStyle.foreground=color(colorRegistry, IDENTIFIERS);
         }
     };
     
-    private static final Styler TYPE_ID_STYLER = new Styler() {
+    public static final Styler TYPE_ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            //textStyle.foreground = CeylonTokenColorer.PURPLE;
-            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
+            textStyle.foreground=color(colorRegistry, TYPES);
         }
     };
     
     public static final Styler TYPE_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
+            textStyle.foreground=color(colorRegistry, TYPES);
         }
     };
     
     public static final Styler KW_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_MAGENTA);
+            textStyle.foreground=color(colorRegistry, KEYWORDS);
         }
     };
     
     public static final Styler ANN_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=Display.getDefault().getSystemColor(SWT.COLOR_DARK_CYAN);
+            textStyle.foreground=color(colorRegistry, ANNOTATIONS);
         }
     };
     
@@ -469,7 +476,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             for (Tree.Parameter p: pl.getParameters()) {
                 label.append(type(p.getType()), TYPE_STYLER) 
                         .append(" ")
-                        .append(name(p.getIdentifier()));
+                        .append(name(p.getIdentifier()), ID_STYLER);
                 if (++i<len) label.append(", ");
             }
             label.append(")");
