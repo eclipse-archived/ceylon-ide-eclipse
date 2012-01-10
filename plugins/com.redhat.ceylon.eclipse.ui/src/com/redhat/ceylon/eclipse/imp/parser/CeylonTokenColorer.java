@@ -31,6 +31,8 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     public static String TODOS = "todos";
     public static String ANNOTATIONS = "annotations";
     public static String ANNOTATION__STRINGS = "annotationstrings";
+    public static String SEMIS = "semis";
+    public static String BRACES = "braces";    
     
     public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
@@ -39,7 +41,8 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "this", "outer", "super", "is", "exists", "nonempty", "then"));
     
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
-    annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute;
+    annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
+    semiAttribute, braceAttribute;
     
     private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
         return new TextAttribute(color(colorRegistry, key), null, style); 
@@ -72,6 +75,8 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         annotationStringAttribute = text(colorRegistry, ANNOTATION__STRINGS, SWT.NORMAL);
         annotationAttribute = text(colorRegistry, ANNOTATIONS, SWT.NORMAL);
         todoAttribute = text(colorRegistry, TODOS, SWT.NORMAL);
+        semiAttribute = text(colorRegistry, SEMIS, SWT.NORMAL);
+        braceAttribute = text(colorRegistry, BRACES, SWT.NORMAL);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {
@@ -113,6 +118,11 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                 else {
                     return commentAttribute;
                 }
+            case CeylonParser.SEMICOLON:
+                return semiAttribute;
+            case CeylonParser.LBRACE:
+            case CeylonParser.RBRACE:
+                return braceAttribute;
             case CeylonParser.EOF:
             case CeylonParser.WS:
                 return null;
