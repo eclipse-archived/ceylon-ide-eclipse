@@ -11,7 +11,6 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
-import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -49,6 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.imp.parser.AnnotationVisitor.Span;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
@@ -150,16 +150,16 @@ public class CeylonParseController extends ParseControllerBase {
             IProject project = sourceProject.getRawProject();
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker == null) {
-                if (project != null) {
-                    try {
+                try {
+                    if (project != null && project.hasNature(CeylonNature.NATURE_ID)) {
                         IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
-                        if (projectMarkers.length ==0) {
+                        if (projectMarkers.length==0) {
                             rescheduleJobIfNecessary();
                             return fCurrentAst;
                         }
-                    } catch (CoreException e) {
                     }
-                }
+                } 
+                catch (CoreException e) {}
             }
         }
         
