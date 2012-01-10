@@ -121,6 +121,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+            if (pc.getTokens()==null) return false;
             int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
             if (tokenIndex>=0) {
   	            CommonToken token = pc.getTokens().get(tokenIndex);
@@ -136,6 +137,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+            if (pc.getTokens()==null) return -1;
             int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
             if (tokenIndex>=0) {
                 CommonToken token = pc.getTokens().get(tokenIndex);
