@@ -875,9 +875,11 @@
        <page 
            id="com.redhat.ceylon.eclipse.ui.preferences"
            name="Ceylon"
-           objectClass="org.eclipse.core.resources.IProject"
-           adaptable="true"
-           class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferencesPage"/>
+           class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferencesPage">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject"/>
+         </enabledWhen>
+       </page>
    </extension>
    
    <extension point="org.eclipse.ui.intro.configExtension">

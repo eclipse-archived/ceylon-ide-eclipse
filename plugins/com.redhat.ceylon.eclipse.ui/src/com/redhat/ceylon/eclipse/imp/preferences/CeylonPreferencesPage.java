@@ -124,7 +124,7 @@ public class CeylonPreferencesPage extends PropertyPage {
     }
 
     private IProject getSelectedProject() {
-        return (IProject) getElement();
+        return (IProject) getElement().getAdapter(IProject.class);
     }
     
     private Button selectFolder;
