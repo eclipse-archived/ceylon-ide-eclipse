@@ -1034,7 +1034,7 @@
         id="com.redhat.ceylon.eclipse.ui.theme.color.strings" label="String literals"
         value="COLOR_BLUE">
         <description>
-            Color for highlighting string literals
+            Color for highlighting string literals and character literals
         </description>
     </colorDefinition>
     <colorDefinition
@@ -1059,6 +1059,22 @@
         value="0,120,255">
         <description>
             Color for highlighting TODOs and FIXes.
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.semis" label="Semicolons"
+        value="BLACK">
+        <description>
+            Color for highlighting semicolons.
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.braces" label="Braces"
+        value="BLACK">
+        <description>
+            Color for highlighting braces.
         </description>
     </colorDefinition>
 
