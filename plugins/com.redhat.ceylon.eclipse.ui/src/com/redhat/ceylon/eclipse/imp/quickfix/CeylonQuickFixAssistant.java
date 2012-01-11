@@ -416,7 +416,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Image image;
             FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
             cu.visit(fav);
-            boolean isVoid = fav.expectedType==null;
+            ProducedType t = fav.expectedType;
+            boolean isVoid = t==null;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
@@ -428,21 +429,29 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 params.append(")");
                 if (isUpperCase) {
                     String supertype = "";
-                    if (fav.expectedType!=null) {
-                        if (fav.expectedType.getDeclaration() instanceof Class) {
-                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()"; //TODO: arguments!
+                    if (t!=null) {
+                        if (t.getDeclaration() instanceof Class) {
+                            supertype = " extends " + t.getProducedTypeName() + "()"; //TODO: arguments!
                         }
                         else {
-                            supertype = " satisfies " + fav.expectedType.getProducedTypeName();
+                            supertype = " satisfies " + t.getProducedTypeName();
                         }
                     }
-                    def = "class " + brokenName + params + supertype + " {}";
+                    def = "class " + brokenName + params + supertype + " {\n";
+                    for (DeclarationWithProximity dwp: t.getDeclaration().getMatchingMemberDeclarations("", 0).values()) {
+                        Declaration d = dwp.getDeclaration();
+                        if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                            ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(t, d);
+                            def+= "$indent    " + getRefinementTextFor(d, pr, "") + "\n";
+                        }
+                    }
+                    def+="$indent}";
                     desc = "class '" + brokenName + params + supertype + "'";
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
                     String type = isVoid ? "void" : 
-                        fav.expectedType.getProducedTypeName();
+                        t.getProducedTypeName();
                     String impl = isVoid ? " {}" : 
                         " { return bottom; }";
                     def = type + " " + brokenName + params + impl;
@@ -452,7 +461,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             else if (!isUpperCase) {
                 String type = isVoid ? "Void" : 
-                    fav.expectedType.getProducedTypeName();
+                    t.getProducedTypeName();
                 def = type + " " + brokenName + " = bottom;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
@@ -468,7 +477,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             else {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
                 addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte);
-                addCreateToplevelProposal(proposals, def, desc, image, file, brokenName);
+                addCreateToplevelProposal(proposals, def.replace("$indent", ""), 
+                        desc, image, file, brokenName);
             }
             
         }
@@ -508,9 +518,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                FindStatementVisitor fdv = new FindStatementVisitor(smte, false);
-                cu.visit(fdv);
-                Tree.Statement statement = fdv.getStatement();
+                FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
+                cu.visit(fsv);
+                Tree.Statement statement = fsv.getStatement();
                 addCreateProposal(proposals, def, true, desc, image, unit, statement);
                 break;
             }
@@ -522,9 +532,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                FindStatementVisitor fdv = new FindStatementVisitor(smte, true);
-                cu.visit(fdv);
-                Tree.Statement statement = fdv.getStatement();
+                FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
+                cu.visit(fsv);
+                Tree.Statement statement = fsv.getStatement();
                 addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
                 break;
             }
@@ -639,6 +649,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
+        def = def.replace("$indent", indent);
         change.setEdit(new InsertEdit(offset, def+"\n"+indent));
         proposals.add(createCreateProposal(def, (local ? "Create local " : "Create toplevel ") + desc, 
                 image, 0, offset, file, change));
