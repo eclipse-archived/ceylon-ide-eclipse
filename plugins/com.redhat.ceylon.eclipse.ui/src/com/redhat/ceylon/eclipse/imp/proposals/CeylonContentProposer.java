@@ -449,17 +449,25 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-	public static ProducedReference getRefinedProducedReference(Node node,
-			Declaration d) {
-		ProducedType outerType = node.getScope().getDeclaringType(d);
-		List<ProducedType> params = new ArrayList<ProducedType>();
+	public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
+		return refinedProducedReference(node.getScope().getDeclaringType(d), d);
+	}
+
+    public static ProducedReference getRefinedProducedReference(ProducedType superType, 
+            Declaration d) {
+        return refinedProducedReference(superType.getDeclaration().getDeclaringType(d), d);
+    }
+    
+    private static ProducedReference refinedProducedReference(ProducedType declaringType, 
+            Declaration d) {
+        List<ProducedType> params = new ArrayList<ProducedType>();
 		if (d instanceof Generic) {
 		    for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
 			    params.add(tp.getType());
 		    }
 		}
-		return d.getProducedReference(outerType, params);
-	}
+		return d.getProducedReference(declaringType, params);
+    }
     
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
@@ -833,7 +841,8 @@ public class CeylonContentProposer implements IContentProposer {
         return result/*.append(" - invoke with named arguments")*/.toString();
     }
     
-    public static String getRefinementTextFor(Declaration d, ProducedReference pr, String indent) {
+    public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
+            String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d)) {
         	result.append("variable ");
@@ -992,7 +1001,8 @@ public class CeylonContentProposer implements IContentProposer {
     private static void appendDeclarationText(Declaration d, StringBuilder result) {
         appendDeclarationText(d, null, result);
     }
-    private static void appendDeclarationText(Declaration d, ProducedReference pr, StringBuilder result) {
+    private static void appendDeclarationText(Declaration d, ProducedReference pr, 
+            StringBuilder result) {
         if (d instanceof Class) {
             if (Character.isLowerCase(d.getName().charAt(0))) {
                 result.append("object");
@@ -1106,7 +1116,8 @@ public class CeylonContentProposer implements IContentProposer {
     	appendParameters(d, null, result);
     }
     
-    private static void appendParameters(Declaration d, ProducedReference pr, StringBuilder result) {
+    private static void appendParameters(Declaration d, ProducedReference pr, 
+            StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null && !plists.isEmpty()) {

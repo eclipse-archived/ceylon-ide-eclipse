@@ -4,8 +4,6 @@ import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 
-import java.util.Collections;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -26,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 
 public class CreateSubtypeHandler extends AbstractHandler {
@@ -116,8 +115,7 @@ public class CreateSubtypeHandler extends AbstractHandler {
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations("", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-        		ProducedReference pr = d.getProducedReference(type, 
-        				Collections.<ProducedType>emptyList()); //TODO: is this OK?
+        		ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(type, d);
         		def.append("    ").append(getRefinementTextFor(d, pr, ""))
         		        .append("\n");
         	}
