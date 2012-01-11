@@ -24,8 +24,10 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private IWorkbench workbench;
 
     private NewUnitWizardPage page;
+    private NewSubtypeWizardPage pageOne;
     private String defaultUnitName="";
     private String contents="";
+    private String description = "Create a new Ceylon compilation unit that will contain Ceylon source.";
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -35,18 +37,18 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-    	if ("".equals(contents) && page.isDeclaration()) {
-    		char initial = page.getUnitName().charAt(0);
-			if (Character.isUpperCase(initial)) {
-				contents = "class " + page.getUnitName() + "() {}";
-			}
-			else {
-				contents = "void " + page.getUnitName() + "() {}";
-			}
-    	}
-    	else {
-    		contents=contents.replace("$unitName", page.getUnitName());
-    	}
+        if ("".equals(contents) && page.isDeclaration()) {
+            char initial = page.getUnitName().charAt(0);
+            if (Character.isUpperCase(initial)) {
+                contents = "class " + page.getUnitName() + "() {}";
+            }
+            else {
+                contents = "void " + page.getUnitName() + "() {}";
+            }
+        }
+        if (contents.contains("$className")) {
+            contents=contents.replace("$className", pageOne.getClassName());
+        }
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), page.getUnitName(), 
                 page.isIncludePreamble(), contents);
@@ -69,46 +71,59 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     @Override
     public void addPages() {
         super.addPages();
-        if (page == null) {
-            page= new NewUnitWizardPage("New Ceylon Unit",
-                    "Create a new Ceylon compilation unit that will contain Ceylon source.",
-                    defaultUnitName, CEYLON_NEW_FILE, !"".equals(contents));
+        if (contents.contains("$className")) {
+            if (pageOne==null) {
+                pageOne = new NewSubtypeWizardPage(getWindowTitle(), 
+                        defaultUnitName);
+            }
+            addPage(pageOne);
+        }
+        if (page==null) {
+            page = new NewUnitWizardPage(getWindowTitle(),
+                    description, defaultUnitName, 
+                    CEYLON_NEW_FILE, !"".equals(contents));
             page.init(workbench, selection);
         }
         addPage(page);
     }
     
     public void setDefaultUnitName(String defaultUnitName) {
-		this.defaultUnitName = defaultUnitName;
-	}
+        this.defaultUnitName = defaultUnitName;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
     /*public void setSelection(IStructuredSelection selection) {
-		this.selection = selection;
-	}*/
+        this.selection = selection;
+    }*/
     
     public void setContents(String contents) {
-		this.contents = contents;
-	}
-
-	public static void open(final String def, final IFile file,
-	        final String unitName) {
-	    IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-	            .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
-	    if (descriptor!=null) {
-	        try {
-	            NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
-	            wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
-	            wizard.setDefaultUnitName(unitName);
-	            wizard.setContents(def);
-	            WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
-	                    wizard);
-	            wd.setTitle(wizard.getWindowTitle());
-	            wd.open();
-	        }
-	        catch (CoreException e) {
-	            e.printStackTrace();
-	        }
-	    }
-	}
+        this.contents = contents;
+    }
+    
+    public static void open(String def, IFile file, String unitName, 
+            String title, String description) {
+        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+                .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
+        if (descriptor!=null) {
+            try {
+                NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
+                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
+                wizard.setDefaultUnitName(unitName);
+                wizard.setContents(def);
+                wizard.setWindowTitle(title);
+                wizard.setDescription(description);
+                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        wizard);
+                wd.setTitle(title);
+                wd.open();
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     
 }

@@ -49,7 +49,7 @@ public class CreateSubtypeHandler extends AbstractHandler {
         
         StringBuilder def = new StringBuilder();
         TypeDeclaration td = type.getDeclaration();
-        def.append("class $unitName");
+        def.append("class $className");
         //TODO: add a type parameter for each type
         //      argument that is itself a type 
         //      parameter
@@ -118,7 +118,8 @@ public class CreateSubtypeHandler extends AbstractHandler {
         }
         def.append("}");
         NewUnitWizard.open(def.toString(), Util.getFile(editor.getEditorInput()), 
-        		"My" + td.getName());
+        		"My" + td.getName(), "Create Subtype", 
+        		"Create a new Ceylon compilation unit containing the new class.");
         
 		return null;
 	}
