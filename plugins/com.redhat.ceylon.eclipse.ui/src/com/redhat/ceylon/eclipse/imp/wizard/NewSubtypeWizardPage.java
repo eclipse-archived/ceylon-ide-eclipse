@@ -61,7 +61,10 @@ public class NewSubtypeWizardPage extends WizardPage implements IWizardPage {
                 getNextPage().setUnitName(className);
                 getNextPage().getUnitNameText().setText(className);
                 boolean legal = classNameIsLegal(className);
-                if (!legal) {
+                if (legal) {
+                    setErrorMessage(null);
+                }
+                else {
                     setErrorMessage("Please enter a legal class name.");
                 }
                 setPageComplete(legal);
