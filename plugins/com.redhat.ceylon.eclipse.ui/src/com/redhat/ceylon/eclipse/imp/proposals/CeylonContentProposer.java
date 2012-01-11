@@ -458,8 +458,7 @@ public class CeylonContentProposer implements IContentProposer {
 			    params.add(tp.getType());
 		    }
 		}
-		ProducedReference pr = d.getProducedReference(outerType, params);
-		return pr;
+		return d.getProducedReference(outerType, params);
 	}
     
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,

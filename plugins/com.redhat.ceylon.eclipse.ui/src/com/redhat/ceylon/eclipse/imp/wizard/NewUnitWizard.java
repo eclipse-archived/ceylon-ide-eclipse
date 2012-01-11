@@ -5,10 +5,17 @@ import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
@@ -78,6 +85,27 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     public void setContents(String contents) {
 		this.contents = contents;
+	}
+
+	public static void open(final String def, final IFile file,
+	        final String unitName) {
+	    IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+	            .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
+	    if (descriptor!=null) {
+	        try {
+	            NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
+	            wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
+	            wizard.setDefaultUnitName(unitName);
+	            wizard.setContents(def);
+	            WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
+	                    wizard);
+	            wd.setTitle(wizard.getWindowTitle());
+	            wd.open();
+	        }
+	        catch (CoreException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
     
 }

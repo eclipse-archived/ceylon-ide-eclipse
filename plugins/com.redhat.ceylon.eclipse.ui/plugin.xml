@@ -472,6 +472,11 @@
             description="Implement all inherited formal members"
             name="Refine Formal Members"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.createSubtype"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Create a subtype of the selected type"
+            name="Create Subtype"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Rename selected declaration"
@@ -539,6 +544,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
@@ -608,6 +616,11 @@
        <key
            sequence="M3+M"
            commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
+           sequence="M3+B"
+           commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
