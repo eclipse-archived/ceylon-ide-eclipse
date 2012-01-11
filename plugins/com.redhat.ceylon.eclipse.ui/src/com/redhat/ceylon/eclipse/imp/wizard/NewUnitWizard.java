@@ -27,6 +27,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private NewSubtypeWizardPage pageOne;
     private String defaultUnitName="";
     private String contents="";
+    private String title = "New Ceylon Unit";
     private String description = "Create a new Ceylon compilation unit that will contain Ceylon source.";
     
     @Override
@@ -73,13 +74,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         super.addPages();
         if (contents.contains("$className")) {
             if (pageOne==null) {
-                pageOne = new NewSubtypeWizardPage(getWindowTitle(), 
+                pageOne = new NewSubtypeWizardPage(title, 
                         defaultUnitName);
             }
             addPage(pageOne);
         }
         if (page==null) {
-            page = new NewUnitWizardPage(getWindowTitle(),
+            page = new NewUnitWizardPage(title,
                     description, defaultUnitName, 
                     CEYLON_NEW_FILE, !"".equals(contents));
             page.init(workbench, selection);
@@ -93,6 +94,10 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
     
     /*public void setSelection(IStructuredSelection selection) {
@@ -113,7 +118,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                 wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
                 wizard.setDefaultUnitName(unitName);
                 wizard.setContents(def);
-                wizard.setWindowTitle(title);
+                wizard.setTitle(title);
                 wizard.setDescription(description);
                 WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
                         wizard);
