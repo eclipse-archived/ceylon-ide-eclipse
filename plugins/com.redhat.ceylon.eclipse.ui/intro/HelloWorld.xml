@@ -46,6 +46,13 @@
 			<b>Create toplevel class or method declaration</b>, choose the 
 			source folder of the project we just created, and finally click 
 			<b>Finish</b>.
+			<br/>
+			<br/>
+			Note that if you give the compilation unit an initial lowercase
+			name, the wizard will fill in a method declaration. If you give
+			it an initial uppercase name, the wizard will fill in a class 
+			declaration. For the purposes of this tutorial, it doesn't really 
+			matter which.
 		</description>
 		<command required="false"
 			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newUnitWizard)" />
@@ -54,7 +61,8 @@
 	<item title="Add the code to the method">
 		<description>
 			Next, in the Ceylon editor that opened automatically, add the
-			following code to the body of the "hello" method:
+			following code to the body of the "hello" method (or "Hello"
+			class):
 			<br/>
 			<br/>
 			<b>print("hello world");</b>
