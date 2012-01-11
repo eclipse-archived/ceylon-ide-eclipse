@@ -586,7 +586,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 			}
 			@Override
 			public void apply(IDocument doc) {
-				NewUnitWizard.open(def, file, unitName);
+				NewUnitWizard.open(def, file, unitName, 
+				        "Create Missing Declaration in New Unit",
+				        "Create a new Ceylon compilation unit with the missing declaration.");
 			}
 		});
     }

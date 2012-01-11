@@ -59,6 +59,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     private IStructuredSelection selection;
     private IWorkbench workbench;
+    private Text unitNameText;
 
     NewUnitWizardPage(String title, String description, 
             String defaultUnitName, String icon,
@@ -91,12 +92,12 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
-
+        
         initFromSelection();
         
-        Composite composite= new Composite(parent, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setFont(parent.getFont());
-
+        
         GridLayout layout = new GridLayout();
         layout.numColumns = 4;
         composite.setLayout(layout);
@@ -104,7 +105,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         createControls(composite);
         
         setControl(composite);
-
+        
         Dialog.applyDialogFont(composite);
         
         setPageComplete(isComplete());
@@ -129,7 +130,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     Text createNameField(Composite composite) {
         Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         nameLabel.setText(getCompilationUnitLabel());
-        GridData lgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         lgd.horizontalSpan = 1;
         nameLabel.setLayoutData(lgd);
 
@@ -158,6 +159,8 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                 setPageComplete(isComplete());
             }
         });
+        
+        unitNameText = name;
         
         new Label(composite, SWT.NONE);        
         new Label(composite, SWT.NONE);
@@ -539,25 +542,27 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         });
     }
 
-    void createDeclarationField(Composite composite) {        
-        new Label(composite, SWT.NONE);
-        
-        Button dec = new Button(composite, SWT.CHECK);
-        dec.setText("Create toplevel class or method declaration");
-        dec.setSelection(declaration);
-        dec.setEnabled(!declarationButtonDisabled);
-        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        igd.horizontalSpan = 3;
-        igd.grabExcessHorizontalSpace = true;
-        dec.setLayoutData(igd);
-        dec.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-            	declaration = !declaration;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
+    void createDeclarationField(Composite composite) {
+        if (!declarationButtonDisabled) {
+            new Label(composite, SWT.NONE);
+
+            Button dec = new Button(composite, SWT.CHECK);
+            dec.setText("Create toplevel class or method declaration");
+            dec.setSelection(declaration);
+            dec.setEnabled(!declarationButtonDisabled);
+            GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+            igd.horizontalSpan = 3;
+            igd.grabExcessHorizontalSpace = true;
+            dec.setLayoutData(igd);
+            dec.addSelectionListener(new SelectionListener() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    declaration = !declaration;
+                }
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {}
+            });
+        }
     }
 
     String getSharedPackageLabel() {
@@ -604,6 +609,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     public String getUnitName() {
         return unitName;
+    }
+    
+    Text getUnitNameText() {
+        return unitNameText;
     }
     
     public boolean isIncludePreamble() {
@@ -705,6 +714,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     
     String getIllegalPackageNameMessage() {
         return "Please enter a legal package name.";
+    }
+    
+    void setUnitName(String unitName) {
+        this.unitName = unitName;
     }
 
 }
