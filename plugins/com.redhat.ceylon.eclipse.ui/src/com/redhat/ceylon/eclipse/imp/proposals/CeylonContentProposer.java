@@ -63,6 +63,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -455,9 +456,19 @@ public class CeylonContentProposer implements IContentProposer {
 
     public static ProducedReference getRefinedProducedReference(ProducedType superType, 
             Declaration d) {
-        ProducedType declaringType = superType.getDeclaration().getDeclaringType(d);
-        ProducedType outerType = superType.getSupertype(declaringType.getDeclaration());
-        return refinedProducedReference(outerType, d);
+        if (superType.getDeclaration() instanceof IntersectionType) {
+            for (ProducedType pt: superType.getDeclaration().getSatisfiedTypes()) {
+                ProducedReference result = getRefinedProducedReference(pt, d);
+                if (result!=null) return result;
+            }
+            return null; //never happens?
+        }
+        else {
+            ProducedType declaringType = superType.getDeclaration().getDeclaringType(d);
+            if (declaringType==null) return null;
+            ProducedType outerType = superType.getSupertype(declaringType.getDeclaration());
+            return refinedProducedReference(outerType, d);
+        }
     }
     
     private static ProducedReference refinedProducedReference(ProducedType outerType, 
