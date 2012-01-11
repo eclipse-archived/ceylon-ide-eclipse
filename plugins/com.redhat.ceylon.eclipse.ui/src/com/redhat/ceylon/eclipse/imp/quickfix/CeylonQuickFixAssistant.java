@@ -31,19 +31,14 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -435,7 +430,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     String supertype = "";
                     if (fav.expectedType!=null) {
                         if (fav.expectedType.getDeclaration() instanceof Class) {
-                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()";
+                            supertype = " extends " + fav.expectedType.getProducedTypeName() + "()"; //TODO: arguments!
                         }
                         else {
                             supertype = " satisfies " + fav.expectedType.getProducedTypeName();
@@ -581,45 +576,21 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 			public String getDisplayString() {
 				return "Create toplevel " + desc + " in new unit";
 			}
-			
 			@Override
 			public IContextInformation getContextInformation() {
 				return null;
 			}
-			
 			@Override
 			public String getAdditionalProposalInfo() {
 				return null;
 			}
-			
 			@Override
 			public void apply(IDocument doc) {
-				openNewUnitWizard(def, file, unitName);
+				NewUnitWizard.open(def, file, unitName);
 			}
 		});
     }
 
-    private static void openNewUnitWizard(final String def, final IFile file,
-            final String unitName) {
-        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-                .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
-        if (descriptor!=null) {
-            try {
-                NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
-                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
-                wizard.setDefaultUnitName(unitName);
-                wizard.setContents(def);
-                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
-                        wizard);
-                wd.setTitle(wizard.getWindowTitle());
-                wd.open();
-            }
-            catch (CoreException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
     private void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
             String desc, Image image, Declaration typeDec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.Body body) {
