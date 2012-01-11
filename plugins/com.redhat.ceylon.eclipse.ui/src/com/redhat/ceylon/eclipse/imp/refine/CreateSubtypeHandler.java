@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -55,9 +56,20 @@ public class CreateSubtypeHandler extends AbstractHandler {
         StringBuilder def = new StringBuilder();
         TypeDeclaration td = type.getDeclaration();
         def.append("class $className");
-        //TODO: add a type parameter for each type
-        //      argument that is itself a type 
-        //      parameter
+        boolean first = true;
+        for (ProducedType ta: type.getTypeArgumentList()) {
+            if (ta.getDeclaration() instanceof TypeParameter) {
+                if (first) {
+                    def.append("<");
+                    first=false;
+                }
+                else {
+                    def.append(", ");
+                }
+                def.append(ta.getDeclaration().getName());
+            }
+        }
+        if (!first) def.append(">");
         if (td instanceof Class) {
         	Class c = (Class) td;
         	if (c.getParameterList().getParameters().isEmpty()) {
