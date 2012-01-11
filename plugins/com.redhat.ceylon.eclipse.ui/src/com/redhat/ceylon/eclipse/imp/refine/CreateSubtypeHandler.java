@@ -40,6 +40,12 @@ public class CreateSubtypeHandler extends AbstractHandler {
         if (node instanceof Tree.BaseType) {
         	type = ((Tree.BaseType) node).getTypeModel();
         }
+        else if (node instanceof Tree.BaseTypeExpression) {
+            type = ((Tree.BaseTypeExpression) node).getTypeModel();
+        }
+        else if (node instanceof Tree.ExtendedTypeExpression) {
+            type = ((Tree.ExtendedTypeExpression) node).getTypeModel();
+        }
         else if (node instanceof Tree.ClassOrInterface) {
         	type = ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
         }
@@ -141,6 +147,8 @@ public class CreateSubtypeHandler extends AbstractHandler {
                 editor.getEditorInput() instanceof IFileEditorInput) {
             Node node = getSelectedNode((CeylonEditor) editor);
             return node instanceof Tree.BaseType || 
+                    node instanceof Tree.BaseTypeExpression ||
+                    node instanceof Tree.ExtendedTypeExpression ||
             		node instanceof Tree.ClassOrInterface;
         }
         else {
