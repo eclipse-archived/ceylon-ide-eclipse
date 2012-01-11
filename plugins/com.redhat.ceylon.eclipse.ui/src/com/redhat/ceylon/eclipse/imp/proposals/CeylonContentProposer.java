@@ -455,10 +455,12 @@ public class CeylonContentProposer implements IContentProposer {
 
     public static ProducedReference getRefinedProducedReference(ProducedType superType, 
             Declaration d) {
-        return refinedProducedReference(superType.getDeclaration().getDeclaringType(d), d);
+        ProducedType declaringType = superType.getDeclaration().getDeclaringType(d);
+        ProducedType outerType = superType.getSupertype(declaringType.getDeclaration());
+        return refinedProducedReference(outerType, d);
     }
     
-    private static ProducedReference refinedProducedReference(ProducedType declaringType, 
+    private static ProducedReference refinedProducedReference(ProducedType outerType, 
             Declaration d) {
         List<ProducedType> params = new ArrayList<ProducedType>();
 		if (d instanceof Generic) {
@@ -466,7 +468,7 @@ public class CeylonContentProposer implements IContentProposer {
 			    params.add(tp.getType());
 		    }
 		}
-		return d.getProducedReference(declaringType, params);
+		return d.getProducedReference(outerType, params);
     }
     
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
