@@ -36,7 +36,6 @@ public class CreateSubtypeHandler extends AbstractHandler {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         Node node = getSelectedNode(editor);
-        //TODO: open a dialog to prompt for a name!
         ProducedType type;
         if (node instanceof Tree.BaseType) {
         	type = ((Tree.BaseType) node).getTypeModel();
@@ -50,7 +49,7 @@ public class CreateSubtypeHandler extends AbstractHandler {
         
         StringBuilder def = new StringBuilder();
         TypeDeclaration td = type.getDeclaration();
-        def.append("class My").append(td.getName());
+        def.append("class $unitName");
         //TODO: add a type parameter for each type
         //      argument that is itself a type 
         //      parameter

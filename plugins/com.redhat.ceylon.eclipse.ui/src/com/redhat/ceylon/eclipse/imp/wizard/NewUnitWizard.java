@@ -44,6 +44,9 @@ public class NewUnitWizard extends Wizard implements INewWizard {
 				contents = "void " + page.getUnitName() + "() {}";
 			}
     	}
+    	else {
+    		contents=contents.replace("$unitName", page.getUnitName());
+    	}
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), page.getUnitName(), 
                 page.isIncludePreamble(), contents);
