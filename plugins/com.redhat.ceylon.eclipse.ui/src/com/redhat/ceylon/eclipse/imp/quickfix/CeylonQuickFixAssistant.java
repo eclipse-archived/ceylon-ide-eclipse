@@ -184,8 +184,36 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 900:
                 addMakeAbstractProposal(problem, proposals, project, node);
                 break;
+            case 1000:
+                addAddParenthesesProposal(problem, file, proposals, node);
+                break;
             }
         }
+    }
+
+    private void addAddParenthesesProposal(ProblemLocation problem, IFile file,
+            Collection<ICompletionProposal> proposals, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        TextFileChange change = new TextFileChange("Add Empty Parameter List", file);
+        Integer offset = decNode.getIdentifier().getStopIndex();
+        change.setEdit(new InsertEdit(offset+1, "()"));
+        proposals.add(createAddParenthesesProposal(decNode.getDeclarationModel(), 
+                offset+2, file, change));
+    }
+
+    private ChangeCorrectionProposal createAddParenthesesProposal(Declaration dec,
+            final int offset, final IFile file, TextFileChange change) {
+        String desc = "Add empty parameter list to '" + dec.getName() + "'";
+        if (dec.getContainer() instanceof TypeDeclaration) {
+            desc += "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'";
+        }
+        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                Util.gotoLocation(file, offset, 0);
+            }
+        };
     }
 
     private void addMakeActualProposal(ProblemLocation problem,
@@ -304,7 +332,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
             Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
-        TextFileChange change = new TextFileChange("Refine Formal Members", file);
         Tree.ClassBody body;
         if (node instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition def = (Tree.ClassDefinition) node;
@@ -341,13 +368,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
             }
         }
+        TextFileChange change = new TextFileChange("Refine Formal Members", file);
         change.setEdit(new InsertEdit(offset, result.toString()));
         proposals.add(createImplementFormalMembersProposal(offset, file, change));
     }
     
     private void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
-        TextFileChange change = new TextFileChange("Specify Type", file);
         final Type type = (Tree.Type) node;
         class InferTypeVisitor extends Visitor {
             Declaration dec;
@@ -382,6 +409,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         InferTypeVisitor itv = new InferTypeVisitor();
         itv.visit(cu);
         String explicitType = itv.inferredType.getProducedTypeName();
+        TextFileChange change =  new TextFileChange("Specify Type", file);
         change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
                 explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
         proposals.add(createSpecifyTypeProposal(problem, file, explicitType, change));
