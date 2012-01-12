@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
+import static org.eclipse.imp.parser.IMessageHandler.SEVERITY_KEY;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +17,13 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public abstract class ErrorVisitor extends Visitor {
     private final IMessageHandler handler;
+    private boolean warnForErrors = false;
     
     public ErrorVisitor(IMessageHandler handler) {
         this.handler = handler;
@@ -70,13 +75,26 @@ public abstract class ErrorVisitor extends Visitor {
                 }
             }
             attributes.put("CeylonMessageClass", error.getClass().getSimpleName());
-            attributes.put(IMessageHandler.SEVERITY_KEY, getSeverity(error));
-            attributes.put(IMessageHandler.ERROR_CODE_KEY, error.getCode());
+            attributes.put(SEVERITY_KEY, getSeverity(error, warnForErrors));
+            attributes.put(ERROR_CODE_KEY, error.getCode());
 
             handler.handleSimpleMessage(errorMessage, startOffset, endOffset,
                     startCol, startCol, startLine, startLine, attributes);
         }
     }
+    
+    @Override
+    public void visit(StatementOrArgument that) {
+        boolean owe = warnForErrors;
+        warnForErrors = false;
+        for (Tree.CompilerAnnotation c: that.getCompilerAnnotations()) {
+            if (c.getIdentifier().getText().equals("error")) {
+                warnForErrors = true;
+            }
+        }
+        super.visit(that);
+        warnForErrors = owe;
+    }
 
-    public abstract int getSeverity(Message error);
+    public abstract int getSeverity(Message error, boolean expected);
 }
