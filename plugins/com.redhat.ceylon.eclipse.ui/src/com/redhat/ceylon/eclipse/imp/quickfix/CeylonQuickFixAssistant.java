@@ -429,7 +429,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 params.append(")");
                 if (isUpperCase) {
                     String supertype = "";
-                    if (t!=null) {
+                    if (!isVoid) {
                         if (t.getDeclaration() instanceof Class) {
                             supertype = " extends " + t.getProducedTypeName() + "()"; //TODO: arguments!
                         }
@@ -438,11 +438,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         }
                     }
                     def = "class " + brokenName + params + supertype + " {\n";
-                    for (DeclarationWithProximity dwp: t.getDeclaration().getMatchingMemberDeclarations("", 0).values()) {
-                        Declaration d = dwp.getDeclaration();
-                        if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                            ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(t, d);
-                            def+= "$indent    " + getRefinementTextFor(d, pr, "") + "\n";
+                    if (!isVoid) {
+                        for (DeclarationWithProximity dwp: t.getDeclaration().getMatchingMemberDeclarations("", 0).values()) {
+                            Declaration d = dwp.getDeclaration();
+                            if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                                ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(t, d);
+                                def+= "$indent    " + getRefinementTextFor(d, pr, "") + "\n";
+                            }
                         }
                     }
                     def+="$indent}";
@@ -450,10 +452,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
-                    String type = isVoid ? "void" : 
-                        t.getProducedTypeName();
-                    String impl = isVoid ? " {}" : 
-                        " { return bottom; }";
+                    String type = isVoid ? "void" : t.getProducedTypeName();
+                    String impl = isVoid ? " {}" : " { return bottom; }";
                     def = type + " " + brokenName + params + impl;
                     desc = "function '" + brokenName + params + "'";
                     image = CeylonLabelProvider.METHOD;
