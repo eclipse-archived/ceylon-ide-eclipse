@@ -1073,7 +1073,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * Refreshes all resources in the entire project tree containing the given resource.
      * Crude but effective.
      */
-    protected void doRefresh(final IResource resource) {
+    /*protected void doRefresh(final IResource resource) {
         IWorkspaceRunnable r= new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
                 resource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -1084,7 +1084,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         } catch (CoreException e) {
             getPlugin().logException("Error while refreshing after a build", e);
         }
-    }
+    }*/
 
     /**
      * @return the ID of the marker type for the given marker severity (one of
