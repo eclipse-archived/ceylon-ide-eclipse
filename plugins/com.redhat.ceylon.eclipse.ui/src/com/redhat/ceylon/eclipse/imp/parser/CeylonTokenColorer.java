@@ -33,6 +33,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     public static String ANNOTATION__STRINGS = "annotationstrings";
     public static String SEMIS = "semis";
     public static String BRACES = "braces";    
+    public static String PACKAGES = "packages";    
     
     public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
@@ -42,7 +43,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
-    semiAttribute, braceAttribute;
+    semiAttribute, braceAttribute, packageAttribute;
     
     private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
         return new TextAttribute(color(colorRegistry, key), null, style); 
@@ -77,39 +78,30 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         todoAttribute = text(colorRegistry, TODOS, SWT.NORMAL);
         semiAttribute = text(colorRegistry, SEMIS, SWT.NORMAL);
         braceAttribute = text(colorRegistry, BRACES, SWT.NORMAL);
+        packageAttribute = text(colorRegistry, PACKAGES, SWT.NORMAL);
     }
     
     public TextAttribute getColoring(IParseController controller, Object o) {
         if (o == null) return null;
         Token token = (Token) o;
-        CeylonParseController cpc = (CeylonParseController) controller;
         switch (token.getType()) {
+            case CeylonParser.PIDENTIFIER:
+                return packageAttribute;
+            case CeylonParser.AIDENTIFIER:
+                return annotationAttribute;
             case CeylonParser.UIDENTIFIER:
-                if (cpc.inAnnotationSpan(token)) {
-                    return annotationAttribute;
-                }
-                else {
-                    return typeAttribute;
-                }
+                return typeAttribute;
             case CeylonParser.LIDENTIFIER:
-                if (cpc.inAnnotationSpan(token)) {
-                    return annotationAttribute;
-                }
-                else {
-                    return identifierAttribute;
-                }
+                return identifierAttribute;
             case CeylonParser.FLOAT_LITERAL:
             case CeylonParser.NATURAL_LITERAL:
                 return numberAttribute;
+            case CeylonParser.ASTRING_LITERAL:
+                return annotationStringAttribute;
             case CeylonParser.STRING_LITERAL:
             case CeylonParser.CHAR_LITERAL:
             case CeylonParser.QUOTED_LITERAL:
-                if (cpc.inAnnotationSpan(token)) {
-                    return annotationStringAttribute;
-                }
-                else {
-                    return stringAttribute;
-                }
+                return stringAttribute;
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
                 if (CeylonBuilder.priority(token)>=0) {

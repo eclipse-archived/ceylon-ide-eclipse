@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.proposals;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
@@ -11,10 +13,10 @@ import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDef
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -305,8 +307,11 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static boolean isIdentifier(Token token) {
-        return token.getType()==LIDENTIFIER || 
-                token.getType()==UIDENTIFIER;
+        int type = token.getType();
+        return type==LIDENTIFIER || 
+                type==UIDENTIFIER ||
+                type==AIDENTIFIER ||
+                type==PIDENTIFIER;
     }
     
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, int tokenType,
