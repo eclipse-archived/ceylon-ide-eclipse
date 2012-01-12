@@ -121,6 +121,10 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                 String getIllegalPackageNameMessage() {
                     return "Please enter a legal module name.";
                 }
+                @Override
+                String[] getFileNames() {
+                    return new String[] { "module", "package", getUnitName() };
+                }
             };
             page.init(workbench, selection);
         }
