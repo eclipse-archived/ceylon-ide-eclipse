@@ -1038,6 +1038,14 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.packages" label="Package identifiers"
+        value="COLOR_DARK_GRAY">
+        <description>
+            Color for highlighting module and package identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.numbers" label="Numeric literals"
         value="COLOR_BLUE">
         <description>

@@ -10,7 +10,6 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -49,7 +48,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.imp.parser.AnnotationVisitor.Span;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
@@ -66,7 +64,6 @@ public class CeylonParseController extends ParseControllerBase {
     private CeylonSourcePositionLocator sourcePositionLocator;
 
     private List<CommonToken> tokens;
-    private List<Span> annotationSpans;
     private TypeChecker typeChecker;
     
     /**
@@ -203,10 +200,6 @@ public class CeylonParseController extends ParseControllerBase {
             cu.addParseError(pe);
         }
         parserErrors.clear();
-        
-        List<Span> spans = new ArrayList<Span>();
-        cu.visit(new AnnotationVisitor(spans));
-        annotationSpans = spans;
         
         fCurrentAst = cu;
         
@@ -393,21 +386,6 @@ public class CeylonParseController extends ParseControllerBase {
         return typeChecker;
     }
     
-    public boolean inAnnotationSpan(Token token) {
-    	if (annotationSpans==null) {
-    		return false;
-    	}
-        CommonToken ct = (CommonToken) token;
-        for (Span span: annotationSpans) {
-            if (ct.getStartIndex()>=span.start && 
-                    ct.getStopIndex()<=span.end) {
-                return true;
-            }
-            if (ct.getStopIndex()<span.start) return false;
-        }
-        return false;
-    }
-        
     public Tree.CompilationUnit getRootNode() {
         return (Tree.CompilationUnit) getCurrentAst();
     }
