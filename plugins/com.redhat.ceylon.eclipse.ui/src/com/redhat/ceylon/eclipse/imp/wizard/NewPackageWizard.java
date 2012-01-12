@@ -92,6 +92,10 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                 boolean unitIsNameLegal(String unitName) {
                     return true;
                 }
+                @Override
+                String[] getFileNames() {
+                    return new String[] { "package" };
+                }
             };
             page.init(workbench, selection);
         }

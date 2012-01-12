@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
@@ -13,6 +14,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -720,4 +722,24 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         this.unitName = unitName;
     }
 
+    @Override
+    public void setPageComplete(boolean complete) {
+        setMessage(null);
+        for (String file: getFileNames()) {
+            IPath path = packageFragment.getPath()
+                    .append(file).addFileExtension("ceylon");
+            if (getWorkspace().getRoot().getFile(path)
+                    .exists()) {
+                setMessage("Existing unit will not be overwritten: " + 
+                        path.toPortableString(), 
+                            WARNING);
+                break;
+            }
+        }
+        super.setPageComplete(complete);
+    }
+
+    String[] getFileNames() {
+        return new String[] { unitName };
+    }
 }
