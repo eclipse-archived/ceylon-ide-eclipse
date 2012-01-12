@@ -347,8 +347,8 @@ public class CeylonParseController extends ParseControllerBase {
         if (handler!=null) {
             cu.visit(new ErrorVisitor(handler) {
                 @Override
-                public int getSeverity(Message error) {
-                    return IAnnotation.ERROR;
+                public int getSeverity(Message error, boolean expected) {
+                    return expected ? IAnnotation.WARNING : IAnnotation.ERROR;
                 }
             });      
         }

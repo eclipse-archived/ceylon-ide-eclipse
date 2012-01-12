@@ -590,8 +590,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             phasedUnit.getCompilationUnit()
                 .visit(new ErrorVisitor(new MarkerCreator(file, PROBLEM_MARKER_ID)) {
                     @Override
-                    public int getSeverity(Message error) {
-                        return IMarker.SEVERITY_ERROR;
+                    public int getSeverity(Message error, boolean expected) {
+                        return expected ? IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
                     }
                 });
             addTaskMarkers(file, tokens);
