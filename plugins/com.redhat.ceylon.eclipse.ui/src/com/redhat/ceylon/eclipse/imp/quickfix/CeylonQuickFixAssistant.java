@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -186,6 +187,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 break;
             case 1000:
                 addAddParenthesesProposal(problem, file, proposals, node);
+                addChangeDeclarationProposal(problem, file, proposals, node);
                 break;
             }
         }
@@ -195,7 +197,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Collection<ICompletionProposal> proposals, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         TextFileChange change = new TextFileChange("Add Empty Parameter List", file);
-        Integer offset = decNode.getIdentifier().getStopIndex();
+        int offset = decNode.getIdentifier().getStopIndex();
         change.setEdit(new InsertEdit(offset+1, "()"));
         proposals.add(createAddParenthesesProposal(decNode.getDeclarationModel(), 
                 offset+2, file, change));
@@ -212,6 +214,41 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             public void apply(IDocument document) {
                 super.apply(document);
                 Util.gotoLocation(file, offset, 0);
+            }
+        };
+    }
+
+    private void addChangeDeclarationProposal(ProblemLocation problem, IFile file,
+            Collection<ICompletionProposal> proposals, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        CommonToken token = (CommonToken) decNode.getMainToken();
+        String keyword;
+        if (decNode instanceof Tree.AnyClass){
+            keyword = "interface";
+        }
+        else if (decNode instanceof Tree.AnyMethod) {
+            if (token.getText().equals("void")) return;
+            keyword = "value";
+        }
+        else {
+            return;
+        }
+        TextFileChange change = new TextFileChange("Change Declaration", file);
+        change.setEdit(new ReplaceEdit(token.getStartIndex(), token.getText().length(), 
+                keyword));
+        proposals.add(createChangeDeclarationProposal(decNode.getDeclarationModel(), 
+                keyword, token, file, change));
+    }
+
+    private ChangeCorrectionProposal createChangeDeclarationProposal(Declaration dec,
+            final String kw, final CommonToken token, final IFile file, TextFileChange change) {
+        String desc = "Change declaration to '" + kw + "'";
+        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
+            @Override
+            public void apply(IDocument document) {
+                super.apply(document);
+                Util.gotoLocation(file, token.getStartIndex(), 
+                        kw.length());
             }
         };
     }
