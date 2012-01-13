@@ -477,6 +477,11 @@
             description="Create a subtype of the selected type"
             name="Create Subtype"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Move selected declaration to new unit"
+            name="Move to New Unit"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Rename selected declaration"
@@ -547,6 +552,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.imp.refine.MoveDeclarationHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
