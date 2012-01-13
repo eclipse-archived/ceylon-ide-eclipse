@@ -2,17 +2,18 @@ package com.redhat.ceylon.eclipse.imp.refine;
 
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
-import static org.eclipse.ltk.core.refactoring.RefactoringCore.getUndoManager;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -47,16 +48,18 @@ public class MoveDeclarationHandler extends AbstractHandler {
                     tc = new TextFileChange("Move to New Unit", 
                             Util.getFile(editor.getEditorInput()));
                 }
-                Integer start = node.getStartIndex();
+                int start = node.getStartIndex();
                 int length = node.getStopIndex()-start+1;
                 contents = document.get(start, length);
                 tc.setEdit(new DeleteEdit(start, length));
                 NewUnitWizard.open(contents, Util.getFile(editor.getEditorInput()), 
                         ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
                         "Create a new Ceylon compilation unit containing the selected declaration.");
-                //TODO: fix the undo, this is not right!
-                getUndoManager().addUndo("Move to New Unit", 
-                        tc.perform(new NullProgressMonitor()));
+                tc.initializeValidationData(null);
+                PerformChangeOperation op = new PerformChangeOperation(tc);
+                /*op.setUndoManager(RefactoringCore.getUndoManager(), 
+                		"Move to New Unit");*/
+				ResourcesPlugin.getWorkspace().run(op, new NullProgressMonitor());
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
