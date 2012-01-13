@@ -725,15 +725,17 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     @Override
     public void setPageComplete(boolean complete) {
         setMessage(null);
-        for (String file: getFileNames()) {
-            IPath path = packageFragment.getPath()
-                    .append(file).addFileExtension("ceylon");
-            if (getWorkspace().getRoot().getFile(path)
-                    .exists()) {
-                setMessage("Existing unit will not be overwritten: " + 
-                        path.toPortableString(), 
+        if (complete) {
+            for (String file: getFileNames()) {
+                IPath path = packageFragment.getPath()
+                        .append(file).addFileExtension("ceylon");
+                if (getWorkspace().getRoot().getFile(path)
+                        .exists()) {
+                    setMessage("Existing unit will not be overwritten: " + 
+                            path.toPortableString(), 
                             WARNING);
-                break;
+                    break;
+                }
             }
         }
         super.setPageComplete(complete);
