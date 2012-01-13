@@ -10,6 +10,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler;
+import com.redhat.ceylon.eclipse.imp.refine.MoveDeclarationHandler;
 import com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
@@ -30,6 +31,9 @@ public class RefactorMenuItems extends CompoundContributionItem {
                     //new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
                             editor!=null && new RenameRefactoringAction(editor).isEnabled()),
+                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit", 
+                            "Move to New Unit...",
+                            new MoveDeclarationHandler().isEnabled()),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
                             editor!=null && new InlineRefactoringAction(editor).isEnabled()),
@@ -48,7 +52,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                             "Refine Formal Members",
                             new RefineFormalMembersHandler().isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.createSubtype", 
-                            "Create Subtype",
+                            "Create Subtype...",
                             new CreateSubtypeHandler().isEnabled()),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
