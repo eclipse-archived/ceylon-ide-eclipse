@@ -1,24 +1,22 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
-import static java.util.Collections.reverse;
+import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.undo.CreateFileOperation;
 
 class FileCreationOp implements IRunnableWithProgress {
 
@@ -27,6 +25,7 @@ class FileCreationOp implements IRunnableWithProgress {
     private final String unitName;
     private final boolean includePreamble;
     private final String contents;
+    private final Shell shell;
     
     private IFile result;
     
@@ -36,56 +35,32 @@ class FileCreationOp implements IRunnableWithProgress {
     
     FileCreationOp(IPackageFragmentRoot sourceDir,
             IPackageFragment packageFragment, String unitName,
-            boolean includePreamble, String contents) {
+            boolean includePreamble, String contents, Shell shell) {
         this.sourceDir = sourceDir;
         this.packageFragment = packageFragment;
         this.unitName = unitName;
         this.includePreamble = includePreamble;
         this.contents = contents;
+        this.shell = shell;
     }
     
     public void run(IProgressMonitor monitor) {
         IPath path = packageFragment.getPath().append(unitName + ".ceylon");
         IProject project = sourceDir.getJavaProject().getProject();
-        InputStream his = getHeader(project);
         result = project.getFile(path.makeRelativeTo(project.getFullPath()));
-
-        List<IFolder> resourcesToCreate = new LinkedList<IFolder>();
-        IContainer parent = result.getParent();
-        while (!parent.exists() && (parent instanceof IFolder)) {
-            resourcesToCreate.add((IFolder)parent);
-            parent = parent.getParent();
-        }
-        reverse(resourcesToCreate);
-        
+        InputStream stream = new ByteArrayInputStream(contents.getBytes());
+        CreateFileOperation op = new CreateFileOperation(result, null, 
+                getHeader(project), "Create Ceylon Unit");
         try {
-            if (result.exists()) {
-            	//TODO!
-            	System.out.println("File already exists!");
-            }
-            else {
-                for (IFolder pkg : resourcesToCreate) {
-                    pkg.create(false, false, monitor);
-                }
-                result.create(his, false, monitor);
-                result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
-                        false, false, monitor);
-                parent.refreshLocal(IResource.DEPTH_ZERO, monitor);
-                for (IFolder pkg : resourcesToCreate) {
-                    pkg.refreshLocal(IResource.DEPTH_ZERO, monitor);
-                }
-            }
+            PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
+                .execute(op, monitor, getUIInfoAdapter(shell));
+            result.appendContents(stream, false, false, monitor);
+        } 
+        catch (ExecutionException e) {
+            e.printStackTrace();
         }
-        catch (CoreException ce) {
-            ce.printStackTrace();
-        }
-        finally {
-            try {
-                his.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
     

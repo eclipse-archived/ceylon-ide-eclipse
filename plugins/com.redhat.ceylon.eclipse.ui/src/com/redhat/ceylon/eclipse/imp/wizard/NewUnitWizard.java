@@ -52,7 +52,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         }
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), page.getUnitName(), 
-                page.isIncludePreamble(), contents);
+                page.isIncludePreamble(), contents, getShell());
         try {
             getContainer().run(true, true, op);
         } 
