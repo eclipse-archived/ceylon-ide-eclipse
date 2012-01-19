@@ -15,6 +15,7 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.io.ArtifactProvider;
+import com.redhat.ceylon.compiler.typechecker.io.VFSArtifactProvider;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -49,7 +50,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         
         File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
         if (outputDirectory != null) {
-            ArtifactProvider outputProvider = new ArtifactProvider(new FileSystemVirtualFile(outputDirectory), context.getVfs());
+            ArtifactProvider outputProvider = new VFSArtifactProvider(new FileSystemVirtualFile(outputDirectory), context.getVfs());
             providersToSearch.add(outputProvider);
         }
         
