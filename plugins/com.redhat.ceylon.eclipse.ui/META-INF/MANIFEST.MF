@@ -37,5 +37,6 @@ Bundle-ClassPath: ./,
  external:$ceylon.repo$/com/redhat/ceylon/compiler/java/$ceylon.compiler.version$/com.redhat.ceylon.compiler.java-$ceylon.compiler.version$.jar,
  external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
  lib/com.redhat.ceylon.compiler.java-0.1-ide.jar,
- lib/com.redhat.ceylon.typechecker-0.1-ide.jar
+ lib/com.redhat.ceylon.typechecker-0.1-ide.jar,
+ lib/com.redhat.ceylon.module-resolver-0.1-ide.jar
 
