@@ -272,9 +272,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addMakeAbstractProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, 
-                (Declaration) decNode.getDeclarationModel().getContainer(), 
+        Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            dec = (Declaration) ((Tree.Declaration) node).getDeclarationModel().getContainer();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
+        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
                 proposals, project);
     }
 
