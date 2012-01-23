@@ -201,7 +201,10 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.Declaration that) {
         if (inBounds(that.getIdentifier())) {
-            node = that;
+            if (node==null || //todo: awful, awful hack for case (is ...)
+                    !node.getLocation().equals(that.getLocation())) {
+                node = that;
+            }
         }
         else {
             super.visit(that);
