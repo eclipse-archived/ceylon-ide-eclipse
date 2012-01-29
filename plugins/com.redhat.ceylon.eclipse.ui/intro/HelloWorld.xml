@@ -39,7 +39,7 @@
 		<description>
 			Next, we&apos;ll need a Ceylon compilation unit, which we'll create
 			using the New Ceylon Unit wizard. Select
-			<b>File > New > Ceylon Project</b> or click below.
+			<b>File > New > Ceylon Unit</b> or click below.
 			<br/>
 			<br/>
 			Call the unit "hello", or whatever you like, select the option
