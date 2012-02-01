@@ -48,8 +48,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     }
 
     private String getNodeDeclarationName(Node node) {
-        if (node instanceof Tree.Primary) {
-            return ((Tree.Primary) node).getDeclaration().getName();
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            return ((Tree.MemberOrTypeExpression) node).getDeclaration().getName();
         } 
         else if (node instanceof Tree.SimpleType) {
             return ((Tree.SimpleType) node).getDeclarationModel().getName();
@@ -93,8 +93,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
 
     public static Declaration getReferencedDeclaration(Node node) {
         //NOTE: this must accept a null node, returning null!
-        if (node instanceof Tree.Primary) {
-            return ((Tree.Primary) node).getDeclaration();
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            return ((Tree.MemberOrTypeExpression) node).getDeclaration();
         } 
         else if (node instanceof Tree.SimpleType) {
             return ((Tree.SimpleType) node).getDeclarationModel();

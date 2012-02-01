@@ -240,39 +240,42 @@ public class InlineRefactoring extends AbstractRefactoring {
         	@Override
         	public void visit(final Tree.InvocationExpression that) {
         		super.visit(that);
-        		if (that.getPrimary().getDeclaration().equals(declaration)) {
-        			//TODO: breaks for invocations like f(f(x, y),z)
-        			final StringBuilder result = new StringBuilder();
-        			class InterpolateArgumentsVisitor extends Visitor {
-        				int start = 0;
-        				@Override
-        				public void visit(Tree.BaseMemberExpression it) {
-        					super.visit(it);
-        					if (it.getDeclaration() instanceof Parameter) {
-        						Parameter param = (Parameter) it.getDeclaration();
-        						if ( param.getDeclaration().equals(declaration) ) {
-        							result.append(template.substring(start,it.getStartIndex()-templateStart));
-        							start = it.getStopIndex()-templateStart+1;
-        							boolean sequenced = param.isSequenced();
-        							if (that.getPositionalArgumentList()!=null) {
-        								interpolatePositionalArguments(result, that, it, sequenced, tokens);
-        							}
-        							if (that.getNamedArgumentList()!=null) {
-        								interpolateNamedArguments(result, that, it, sequenced, tokens);
-        							}
-        						}
-        					}
-        				}
-        				void finish() {
-        					result.append(template.substring(start, template.length()));
-        				}
-        			}
-        			InterpolateArgumentsVisitor iv = new InterpolateArgumentsVisitor();
-        			iv.visit(term);
-        			iv.finish();
-        			tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
-        					that.getStopIndex()-that.getStartIndex()+1, 
-        					result.toString()));
+        		if (that.getPrimary() instanceof Tree.MemberOrTypeExpression) {
+        		    Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
+        		    if (mte.getDeclaration().equals(declaration)) {
+        		        //TODO: breaks for invocations like f(f(x, y),z)
+        		        final StringBuilder result = new StringBuilder();
+        		        class InterpolateArgumentsVisitor extends Visitor {
+        		            int start = 0;
+        		            @Override
+        		            public void visit(Tree.BaseMemberExpression it) {
+        		                super.visit(it);
+        		                if (it.getDeclaration() instanceof Parameter) {
+        		                    Parameter param = (Parameter) it.getDeclaration();
+        		                    if ( param.getDeclaration().equals(declaration) ) {
+        		                        result.append(template.substring(start,it.getStartIndex()-templateStart));
+        		                        start = it.getStopIndex()-templateStart+1;
+        		                        boolean sequenced = param.isSequenced();
+        		                        if (that.getPositionalArgumentList()!=null) {
+        		                            interpolatePositionalArguments(result, that, it, sequenced, tokens);
+        		                        }
+        		                        if (that.getNamedArgumentList()!=null) {
+        		                            interpolateNamedArguments(result, that, it, sequenced, tokens);
+        		                        }
+        		                    }
+        		                }
+        		            }
+        		            void finish() {
+        		                result.append(template.substring(start, template.length()));
+        		            }
+        		        }
+        		        InterpolateArgumentsVisitor iv = new InterpolateArgumentsVisitor();
+        		        iv.visit(term);
+        		        iv.finish();
+        		        tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
+        		                that.getStopIndex()-that.getStartIndex()+1, 
+        		                result.toString()));
+        		    }
         		}
         	}
         }.visit(pu);
