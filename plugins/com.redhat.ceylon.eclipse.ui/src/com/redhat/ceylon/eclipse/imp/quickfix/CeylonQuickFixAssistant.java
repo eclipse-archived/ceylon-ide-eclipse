@@ -808,15 +808,16 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 node instanceof SimpleType) {
             String brokenName = getIdentifyingNode(node).getText();
             Collection<Declaration> candidates = findImportCandidates(cu, brokenName);
-            for (Declaration decl : candidates) {
-                proposals.add(createImportProposal(
-                        cu, file, decl.getContainer().getQualifiedNameString(), decl.getName()));
+            for (Declaration decl: candidates) {
+                proposals.add(createImportProposal(cu, file, 
+                        decl.getContainer().getQualifiedNameString(), 
+                        decl.getName()));
             }
         }
     }
 
-    private static Collection<Declaration> findImportCandidates(
-            Tree.CompilationUnit cu, String name) {
+    private static Collection<Declaration> findImportCandidates(Tree.CompilationUnit cu, 
+            String name) {
         List<Declaration> result = new ArrayList<Declaration>();
         Module currentModule = cu.getUnit().getPackage().getModule();
         addImportProposalsForModule(result, currentModule, name);
@@ -825,8 +826,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private static void addImportProposalsForModule(List<Declaration> output,
             Module module, String name) {
-        for (Package pkg : module.getAllPackages()) {
-            Declaration member = pkg.getMember(name);
+        for (Package pkg: module.getAllPackages()) {
+            Declaration member = pkg.getMember(name, null);
             if (member != null) {
                 output.add(member);
             }

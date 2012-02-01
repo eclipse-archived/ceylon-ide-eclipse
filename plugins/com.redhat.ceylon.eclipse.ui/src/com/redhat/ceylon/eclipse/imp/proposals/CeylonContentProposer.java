@@ -418,7 +418,7 @@ public class CeylonContentProposer implements IContentProposer {
 
     private static void addAttributeProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, Declaration d) {
-        Declaration member = d.getContainer().getMember(d.getName());
+        Declaration member = d.getContainer().getMember(d.getName(), null); //TODO: pass signature?
         if (member==null || member==d) {
             result.add(sourceProposal(offset, prefix, ATTRIBUTE, 
                             getDocumentationFor(cpc, d), 

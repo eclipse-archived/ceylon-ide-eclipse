@@ -94,7 +94,7 @@ public class EditorAnnotationService extends EditorServiceBase {
                 return null;
             }
             else {
-                Declaration refined = etd.getMember(dec.getName());
+                Declaration refined = etd.getMember(dec.getName(), null); //TODO: pass signature?
                 if (refined==null) {
                     //this is the case where the declaration
                     //refines a concrete member of an interface
