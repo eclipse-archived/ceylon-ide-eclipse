@@ -782,9 +782,15 @@ public class CeylonContentProposer implements IContentProposer {
             for (Package languageScope: languageModule.getPackages() ) {
                 for (Map.Entry<String, DeclarationWithProximity> entry: 
                     languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
-                    if (entry.getValue().getDeclaration().isShared()) {
-                        result.put(entry.getKey(), entry.getValue());
+                    try {
+                        if (entry.getValue().getDeclaration().isShared()) {
+                            result.put(entry.getKey(), entry.getValue());
+                        }
                     }
+                    catch(RuntimeException e) {
+                        e.printStackTrace();
+                    }
+                    
                 }
             }
         }
