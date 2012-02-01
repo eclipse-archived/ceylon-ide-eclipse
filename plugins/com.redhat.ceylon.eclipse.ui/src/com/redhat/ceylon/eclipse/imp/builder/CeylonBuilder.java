@@ -95,8 +95,10 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.Util;
+import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
@@ -782,7 +784,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
-    public static TypeChecker buildCeylonModel(IProject project,
+    public static TypeChecker buildCeylonModel(final IProject project,
             ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
         monitor.subTask("Collecting Ceylon source files for project " 
                     + project.getName());
@@ -791,6 +793,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
                 .verbose(false);
+// Uncomment to load elements from the JDT classpath and model through the JDT Model Loader
+// Currently incompatible with multi-module project or cross-project dependencies.
+// and also with doc and hovers for the ceylon.language module
+//
+//                .moduleManagerFactory(new ModuleManagerFactory(){
+//            @Override
+//            public ModuleManager createModuleManager(Context context) {
+//                return new JDTModuleManager(context, JavaCore.create(project));
+//            }
+//        });
         for (IPath sourceFolder : getSourceFolders(sourceProject)) {
             typeCheckerBuilder.addSrcDirectory(new IFolderVirtualFile(project,
                     sourceFolder.makeRelativeTo(project.getFullPath())));
