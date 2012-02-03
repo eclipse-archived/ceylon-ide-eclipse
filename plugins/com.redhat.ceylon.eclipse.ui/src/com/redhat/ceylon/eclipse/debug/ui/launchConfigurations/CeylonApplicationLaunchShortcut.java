@@ -140,8 +140,9 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     }
                     else if (d instanceof Class) {
                         Class classDecl = (Class) d;
-                        if (classDecl.getParameterList()==null || 
-                        		!classDecl.getParameterList().getParameters().isEmpty()) {
+                        if (classDecl.isAbstract() || 
+                                classDecl.getParameterList()==null || 
+                                !classDecl.getParameterList().getParameters().isEmpty()) {
                             candidateDeclaration = false;
                         }
                     }
