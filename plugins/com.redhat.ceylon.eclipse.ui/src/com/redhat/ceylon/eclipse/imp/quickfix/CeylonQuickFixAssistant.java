@@ -52,12 +52,16 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
@@ -184,8 +188,16 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 800:
                 addMakeVariableProposal(problem, proposals, project, node);
                 break;
+            case 803:
+                addMakeVariableProposal(problem, proposals, project, node);
+                addFixSpecificationProposal(problem, proposals, project, file, node);
+                break;
             case 801:
-                addMakeVariableDecProposal(problem, proposals, project, node);
+                addMakeVariableDecProposal(cu, problem, proposals, project, node);
+                addFixSpecificationProposal(problem, proposals, project, file, node);
+                break;
+            case 802:
+                addFixAssignmentProposal(problem, proposals, project, file, node);
                 break;
             case 900:
                 addMakeAbstractProposal(problem, proposals, project, node);
@@ -290,18 +302,57 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addMakeVariableProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
-        Tree.BaseMemberOrTypeExpression qmte = (Tree.BaseMemberOrTypeExpression) node;
+        Term term;
+        if (node instanceof Tree.AssignmentOp) {
+            term = ((Tree.AssignOp) node).getLeftTerm();
+        }
+        else if (node instanceof Tree.UnaryOperatorExpression) {
+            term = ((Tree.PrefixOperatorExpression) node).getTerm();
+        }
+        else {
+            return;
+        }
+        Declaration dec = ((Tree.BaseMemberExpression) term).getDeclaration();
         addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
-                qmte.getDeclaration(), proposals, project);
+                dec, proposals, project);
     }
     
-    private void addMakeVariableDecProposal(ProblemLocation problem,
+    private void addMakeVariableDecProposal(Tree.CompilationUnit cu, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
-                decNode.getDeclarationModel(), proposals, project);
+        final Tree.SpecifierOrInitializerExpression sie = (Tree.SpecifierOrInitializerExpression) node;
+        class GetInitializedVisitor extends Visitor {
+            Value dec;
+            @Override
+            public void visit(Tree.AttributeDeclaration that) {
+                super.visit(that);
+                if (that.getSpecifierOrInitializerExpression()==sie) {
+                    dec = that.getDeclarationModel();
+                }
+            }
+        }
+        GetInitializedVisitor v = new GetInitializedVisitor();
+        v.visit(cu);
+        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
+                proposals, project);
     }
     
+    private void addFixSpecificationProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
+        proposals.add(createFixAssignmentProposal("=", ((CommonToken) node.getMainToken()).getStartIndex(), file));
+    }
+    
+    private void addFixAssignmentProposal(ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
+        proposals.add(createFixAssignmentProposal(":=", ((CommonToken) node.getMainToken()).getStartIndex(), file));
+    }
+    
+    private ChangeCorrectionProposal createFixAssignmentProposal(String op, int offset, IFile file) {
+        String desc = "Change to '" + op + "'";
+        TextFileChange change = new TextFileChange(desc, file);
+        change.setEdit(new ReplaceEdit(offset, op.length()==1 ? 2 : 1, op));
+        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION);
+    }
+
     private void addMakeSharedProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Declaration dec = null;
