@@ -83,6 +83,7 @@ public class JDTClass implements ClassMirror {
     private String qualifiedName;
     private String simpleName;
     private boolean superClassSet = false;
+    private List<ClassMirror> innerClasses;
     
 
     public JDTClass(BinaryTypeBinding klass, LookupEnvironment lookupEnvironment) {
@@ -226,4 +227,21 @@ public class JDTClass implements ClassMirror {
         return fields;
     }
 
+    @Override
+    public boolean isInnerClass() {
+        return klass.isMemberType();
+    }
+
+    @Override
+    public List<ClassMirror> getDirectInnerClasses() {
+        if (innerClasses == null) {
+            ReferenceBinding[] memberTypeBindings = klass.memberTypes();
+            innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
+            for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
+                BinaryTypeBinding classBinding = (BinaryTypeBinding) memberTypeBinding;
+                innerClasses.add(new JDTClass(classBinding, lookupEnvironment));
+            }
+        }
+        return innerClasses;
+    }
 }
