@@ -155,6 +155,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     addImportProposals(cu, node, proposals, file);
                 }
                 break;
+            case 101:
+                if (tc!=null) {
+                    addRenameProposals(cu, node, problem, proposals, file);
+                }
+                break;
             case 200:
                 addSpecifyTypeProposal(cu, node, problem, proposals, file);
                 break;
