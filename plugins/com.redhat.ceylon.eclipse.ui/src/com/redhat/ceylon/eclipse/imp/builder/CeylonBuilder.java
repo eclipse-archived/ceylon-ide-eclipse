@@ -792,17 +792,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeCheckers.remove(project);
 
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
-                .verbose(false);
+                .verbose(false)
 // Uncomment to load elements from the JDT classpath and model through the JDT Model Loader
 // Currently incompatible with multi-module project or cross-project dependencies.
 // and also with doc and hovers for the ceylon.language module
 //
-//                .moduleManagerFactory(new ModuleManagerFactory(){
-//            @Override
-//            public ModuleManager createModuleManager(Context context) {
-//                return new JDTModuleManager(context, JavaCore.create(project));
-//            }
-//        });
+                .moduleManagerFactory(new ModuleManagerFactory(){
+            @Override
+            public ModuleManager createModuleManager(Context context) {
+                return new JDTModuleManager(context, JavaCore.create(project));
+            }
+        });
         for (IPath sourceFolder : getSourceFolders(sourceProject)) {
             typeCheckerBuilder.addSrcDirectory(new IFolderVirtualFile(project,
                     sourceFolder.makeRelativeTo(project.getFullPath())));

@@ -32,6 +32,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.IWorkingCopy;
 import org.eclipse.jdt.core.JavaModelException;
@@ -66,9 +67,11 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
@@ -91,10 +94,38 @@ public class JDTModelLoader extends AbstractModelLoader {
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
     
-    public JDTModelLoader(ModuleManager moduleManager, Modules modules){
+    public JDTModelLoader(final ModuleManager moduleManager, Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
-        this.typeFactory = new Unit();
+        this.typeFactory = new Unit() {
+            /**
+             * Search for a declaration in the language module. 
+             */
+            public Declaration getLanguageModuleDeclaration(String name) {
+                //all elements in ceylon.language are auto-imported
+                //traverse all default module packages provided they have not been traversed yet
+                Module languageModule = moduleManager.getContext().getModules().getLanguageModule();
+                if ( languageModule != null && languageModule.isAvailable() ) {
+                    for (Package languageScope : languageModule.getPackages() ) {
+                        String packageName = languageScope.getQualifiedNameString() + ".";
+                        if (name.startsWith(packageName)) {
+                            name = name.substring(packageName.length());
+                            break;
+                        }
+                    }
+                    if ("Bottom".equals(name)) {
+                        return getBottomDeclaration();
+                    }
+                    for (Package languageScope : languageModule.getPackages() ) {
+                        Declaration d = languageScope.getMember(name, null);
+                        if (d != null) {
+                            return d;
+                        }
+                    }
+                }
+                return null;
+            }
+        };
         this.typeParser = new TypeParser(this, typeFactory);
         javaProject = ((JDTModuleManager)moduleManager).getJavaProject();
 
@@ -132,11 +163,14 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public void loadStandardModules() {
-        super.loadStandardModules();
-        // load two packages for the language module
-        Module languageModule = modules.getLanguageModule();
-        findOrCreatePackage(languageModule, "ceylon.language");
-        findOrCreatePackage(languageModule, "ceylon.language.descriptor");
+        Module languageModule = moduleManager.getContext().getModules().getLanguageModule();
+        Package languagePackage = languageModule.getPackage("ceylon.language");
+        typeFactory.setPackage(languagePackage);
+        /*
+         * We start by loading java.lang and ceylon.language because we will need them no matter what.
+         */
+        loadPackage("java.lang", false);
+        loadPackage("com.redhat.ceylon.compiler.java.metadata", false);
     }
     
     @Override
@@ -149,25 +183,23 @@ public class JDTModelLoader extends AbstractModelLoader {
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
-            IPackageFragment packageFragment = jdtModule.getPackageFragmentRoot().getPackageFragment(packageName);
-
-            if(packageFragment.exists() && loadDeclarations) {
-                try {
-                    for (IClassFile classFile : packageFragment.getClassFiles()) {
-                        IType type = classFile.getType();
-                        if (! type.isMember()) {
-                            convertToDeclaration(lookupClassMirror(type.getFullyQualifiedName()), DeclarationType.VALUE);
-                        } else {
-                            System.out.println("Inner class");
+            IPackageFragmentRoot root = jdtModule.getPackageFragmentRoot();
+            IPackageFragment packageFragment = null;
+            if (root != null) {
+                packageFragment = root.getPackageFragment(packageName);
+                if(packageFragment.exists() && loadDeclarations) {
+                    try {
+                        for (IClassFile classFile : packageFragment.getClassFiles()) {
+                            IType type = classFile.getType();
+                            if (! type.isMember()) {
+                                convertToDeclaration(lookupClassMirror(type.getFullyQualifiedName()), DeclarationType.VALUE);
+                            }
                         }
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
                     }
-                } catch (JavaModelException e) {
-                    e.printStackTrace();
                 }
             }
-        }
-        else {
-            System.out.println("");
         }
     }
 

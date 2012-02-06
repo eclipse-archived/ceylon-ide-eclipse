@@ -21,7 +21,9 @@
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -33,15 +35,23 @@ import com.redhat.ceylon.compiler.loader.impl.reflect.ReflectionModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 public class JDTModuleManager extends LazyModuleManager {
 
     private AbstractModelLoader modelLoader;
     private IJavaProject javaProject;
+    private Set<String> sourceModules;
+
+    public Set<String> getSourceModules() {
+        return sourceModules;
+    }
 
     public IJavaProject getJavaProject() {
         return javaProject;
@@ -50,6 +60,8 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
+        sourceModules = new HashSet<String>();
+        sourceModules.add("ceylon.language");
     }
 
     @Override
@@ -79,7 +91,7 @@ public class JDTModuleManager extends LazyModuleManager {
      */
     @Override
     protected boolean isModuleLoadedFromSource(String moduleName){
-        return false;
+        return sourceModules.contains(moduleName);
     }
     
     @Override
@@ -108,13 +120,21 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     @Override
+    public void resolveModule(Module module, VirtualFile artifact,
+            List<PhasedUnits> phasedUnitsOfDependencies) {
+        if (artifact.getName().endsWith(".src")) {
+            sourceModules.add(module.getNameAsString());
+        }
+        super.resolveModule(module, artifact, phasedUnitsOfDependencies);
+    }
+
+    @Override
     public void prepareForTypeChecking() {
         getModelLoader().loadStandardModules();
-        getModelLoader().loadPackageDescriptors();
     }
     
     @Override
     public Iterable<String> getSearchedArtifactExtensions() {
-        return Arrays.asList("car", "jar");
+        return Arrays.asList("src", "car", "jar");
     }
 }
