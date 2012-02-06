@@ -1265,7 +1265,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * build path accordingly.
      */
     public static List<IPath> getSourceFolders(ISourceProject project) {
-        IJavaProject javaProject = JavaCore.create(project.getRawProject());
+        IProject theProject = project.getRawProject();
+        return getSourceFolders(theProject);
+    }
+
+    public static List<IPath> getSourceFolders(IProject theProject) {
+        IJavaProject javaProject = JavaCore.create(theProject);
         if (javaProject.exists()) {
             try {
                 List<IPath> sourceFolders = new ArrayList<IPath>();
