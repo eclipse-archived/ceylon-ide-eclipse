@@ -244,4 +244,9 @@ public class JDTClass implements ClassMirror {
         }
         return innerClasses;
     }
+
+    @Override
+    public boolean isStatic() {
+        return klass.isStatic();
+    }
 }

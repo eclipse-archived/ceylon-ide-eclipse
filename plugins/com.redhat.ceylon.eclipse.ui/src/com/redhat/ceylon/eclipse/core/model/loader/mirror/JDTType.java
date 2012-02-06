@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.lang.model.type.TypeKind;
 
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -49,6 +50,10 @@ public class JDTType implements TypeMirror {
     private List<TypeMirror> typeArguments;
     private TypeKind typeKind;
     private TypeMirror componentType;
+    private boolean upperBoundSet = false;
+    private boolean lowerBoundSet = false;
+    private TypeMirror upperBound;
+    private TypeMirror lowerBound;
     
 
     public JDTType(TypeBinding type) {
@@ -127,5 +132,39 @@ public class JDTType implements TypeMirror {
     @Override
     public boolean isPrimitive() {
         return type.isBaseType();
+    }
+
+    @Override
+    public TypeMirror getUpperBound() {
+        if (!upperBoundSet) {
+            if (type.isWildcard()) {
+                WildcardBinding wildcardBinding = (WildcardBinding) type;
+                if (wildcardBinding.boundKind == Wildcard.EXTENDS) {
+                    TypeBinding upperBoundBinding = wildcardBinding.bound;
+                    if (upperBoundBinding != null) {
+                        upperBound = new JDTType(upperBoundBinding);
+                    }
+                }
+            }
+            upperBoundSet = true;
+        }
+        return upperBound;
+    }
+
+    @Override
+    public TypeMirror getLowerBound() {
+        if (!lowerBoundSet) {
+            if (type.isWildcard()) {
+                WildcardBinding wildcardBinding = (WildcardBinding) type;
+                if (wildcardBinding.boundKind == Wildcard.SUPER) {
+                    TypeBinding lowerBoundBinding = wildcardBinding.bound;
+                    if (lowerBoundBinding != null) {
+                        lowerBound = new JDTType(lowerBoundBinding);
+                    }
+                }
+            }
+            lowerBoundSet = true;
+        }
+        return lowerBound;
     }
 }
