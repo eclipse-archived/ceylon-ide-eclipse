@@ -163,12 +163,14 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public void loadStandardModules() {
-        Module languageModule = moduleManager.getContext().getModules().getLanguageModule();
-        Package languagePackage = languageModule.getPackage("ceylon.language");
-        typeFactory.setPackage(languagePackage);
         /*
          * We start by loading java.lang and ceylon.language because we will need them no matter what.
          */
+        
+        Module javaModule = findOrCreateModule("java.lang");
+        Package javaLangPackage = findOrCreatePackage(javaModule, "java.lang");
+        javaLangPackage.setShared(true);
+        
         loadPackage("java.lang", false);
         loadPackage("com.redhat.ceylon.compiler.java.metadata", false);
     }

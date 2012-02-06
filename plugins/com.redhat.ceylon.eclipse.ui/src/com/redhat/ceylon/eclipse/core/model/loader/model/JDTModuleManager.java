@@ -25,6 +25,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
@@ -42,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 public class JDTModuleManager extends LazyModuleManager {
 
@@ -91,7 +95,37 @@ public class JDTModuleManager extends LazyModuleManager {
      */
     @Override
     protected boolean isModuleLoadedFromSource(String moduleName){
-        return sourceModules.contains(moduleName);
+        if (sourceModules.contains(moduleName)) {
+            return true;
+        }
+        
+        IProject project = javaProject.getProject();
+        if (moduleFileInProject(moduleName, project)) {
+            return true;
+        }
+
+        try {
+            for (IProject p : project.getReferencedProjects()) {
+                if (moduleFileInProject(moduleName, p)) {
+                    return true;
+                }
+            }
+        } catch (CoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean moduleFileInProject(String moduleName, IProject p) {
+        List<IPath> sourceFolders = CeylonBuilder.getSourceFolders(p);
+        for (IPath sourceFolder : sourceFolders) {
+            IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + "/module.ceylon").makeRelativeTo(p.getFullPath());
+            if (p.getFile(moduleFile).exists()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -136,5 +170,11 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public Iterable<String> getSearchedArtifactExtensions() {
         return Arrays.asList("src", "car", "jar");
+    }
+    
+    public void visitModuleFile() {
+        Package currentPkg = getCurrentPackage();
+        sourceModules.add(currentPkg.getNameAsString());
+        super.visitModuleFile();
     }
 }
