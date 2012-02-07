@@ -213,17 +213,38 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
             ClassFile classFile = (ClassFile) type.getClassFile();
-            IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getUnderlyingResource(), true);
-            BinaryTypeBinding binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
-            if (binaryTypeBinding == null) {
-                char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
-                ReferenceBinding existingType = lookupEnvironment.getCachedType(compoundName);
-                if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
-                    return null;
+            
+            if (classFile == null) {
+                String packageName = type.getPackageFragment().getElementName();
+                
+                Module module = findOrCreateModule(packageName);
+                
+                if (module instanceof JDTModule) {
+                    JDTModule jdtModule = (JDTModule) module;
+                    IPackageFragmentRoot fragmentRoot = jdtModule.getPackageFragmentRoot();
+                    if (fragmentRoot != null) {
+                        IPackageFragment packageFragment = fragmentRoot.getPackageFragment(packageName);
+                        if (packageFragment != null) {
+                            String shortClassName = name.substring(packageName.length() + 1);
+                            classFile = (ClassFile) packageFragment.getClassFile(shortClassName + ".class");
+                        }
+                    }
                 }
-                binaryTypeBinding = (BinaryTypeBinding) existingType;
             }
-            return new JDTClass(binaryTypeBinding, lookupEnvironment);
+            
+            if (classFile != null && classFile.exists()) {
+                IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getUnderlyingResource(), true);
+                BinaryTypeBinding binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
+                if (binaryTypeBinding == null) {
+                    char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
+                    ReferenceBinding existingType = lookupEnvironment.getCachedType(compoundName);
+                    if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
+                        return null;
+                    }
+                    binaryTypeBinding = (BinaryTypeBinding) existingType;
+                }
+                return new JDTClass(binaryTypeBinding, lookupEnvironment);
+            }
         } catch (JavaModelException e) {
             e.printStackTrace();
         }
