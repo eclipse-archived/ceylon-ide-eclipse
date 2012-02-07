@@ -165,6 +165,7 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public void prepareForTypeChecking() {
         getModelLoader().loadStandardModules();
+        getModelLoader().loadPackageDescriptors();
     }
     
     @Override
