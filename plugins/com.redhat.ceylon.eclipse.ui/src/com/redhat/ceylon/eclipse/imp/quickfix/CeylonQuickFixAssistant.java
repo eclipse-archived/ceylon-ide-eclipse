@@ -72,6 +72,7 @@ import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
+import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -602,6 +603,16 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             else {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
+                ClassOrInterface container = findClassContainer(cu, smte);
+                if(container != null){
+                    do{
+                        addCreateMemberProposals(proposals, project, def, desc, image, container);
+                        if(container.getContainer() instanceof Declaration)
+                            container = findClassContainer((Declaration) container.getContainer());
+                        else 
+                            break;
+                    }while(container != null);
+                }
                 addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte);
                 addCreateToplevelProposal(proposals, def.replace("$indent", ""), 
                         desc, image, file, brokenName);
@@ -610,11 +621,45 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
+    private ClassOrInterface findClassContainer(CompilationUnit cu, Node n){
+        FindContainerVisitor visitor = new FindContainerVisitor(n);
+        visitor.visit(cu);
+        com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration declaration = visitor.getDeclaration();
+        if(declaration == null || declaration == n)
+            return null;
+        if(declaration instanceof Tree.ClassOrInterface)
+            return (ClassOrInterface) declaration.getDeclarationModel();
+        if(declaration instanceof Tree.MethodDefinition)
+            return findClassContainer(declaration.getDeclarationModel());
+        if(declaration instanceof Tree.ObjectDefinition)
+            return findClassContainer(declaration.getDeclarationModel());
+        return null;
+    }
+    
+    private ClassOrInterface findClassContainer(Declaration declarationModel) {
+        do{
+            if(declarationModel == null)
+                return null;
+            if(declarationModel instanceof ClassOrInterface)
+                return (ClassOrInterface) declarationModel;
+            if(declarationModel.getContainer() instanceof Declaration)
+                declarationModel = (Declaration)declarationModel.getContainer();
+            else
+                return null;
+        }while(true);
+    }
+
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
             Tree.QualifiedMemberOrTypeExpression qmte) {
         Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
                 .getTypeModel().getDeclaration();
+        addCreateMemberProposals(proposals, project, def, desc, image, typeDec);
+    }
+    
+    private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Image image, 
+            Declaration typeDec) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
@@ -628,6 +673,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     }
                     else if (decNode instanceof Tree.InterfaceDefinition){
                         body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+                    }
+                    else if (decNode instanceof Tree.ObjectDefinition){
+                        body = ((Tree.ObjectDefinition) decNode).getClassBody();
                     }
                     if (body!=null) {
                         addCreateMemberProposal(proposals, def, desc, image, typeDec, unit, 
