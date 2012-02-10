@@ -372,8 +372,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 if (ch1=='}') break;
                 char ch = getLastNonWhitespaceCharacterInLine(d, start, end);
                 if (ch==';' || ch=='{' || ch=='}') break;
-                start = getStartOfPreviousLine(d, start); 
                 end = getEndOfPreviousLine(d, start);
+                start = getStartOfPreviousLine(d, start); 
             }
         }
         int endOfWs = firstEndOfWhitespace(d, start, end);
