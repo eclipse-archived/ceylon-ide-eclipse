@@ -135,6 +135,8 @@ public class EditorAnnotationService extends EditorServiceBase {
     class SelectionListener implements ISelectionChangedListener {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
+            if(!(editor instanceof CeylonEditor))
+                return;
             final CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
             if (cpc.getRootNode()==null) return;
             Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
