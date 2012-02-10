@@ -69,6 +69,7 @@ import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.AbstractConsole;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -138,6 +139,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static final Language LANGUAGE = LanguageRegistry
             .findLanguage(LANGUAGE_NAME);
+
+    public static final String JAVA_LANGUAGE_NAME = "java";
 
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
 
@@ -291,7 +294,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (path == null)
             return false;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension()))
+        if (!LANGUAGE.hasExtension(path.getFileExtension())
+                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
             return false;
 
         ISourceProject sourceProject = getSourceProject();
@@ -681,6 +685,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         TypeChecker typeChecker = typeCheckers.get(project);
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
+            // skip non-ceylon files
+            if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension()))
+                continue;
             ResourceVirtualFile file = ResourceVirtualFile.createResourceVirtualFile(fileToUpdate);
             IPath srcFolderPath = retrieveSourceFolder(fileToUpdate);
             ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
@@ -863,48 +870,68 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //        options.add("-cp");
 //        options.add(languageCar);
         
+        java.util.List<File> javaSourceFiles = new ArrayList<File>();
         java.util.List<File> sourceFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-            sourceFiles.add(file.getRawLocation().toFile());
+            if(LANGUAGE.hasExtension(file.getFileExtension()))
+                sourceFiles.add(file.getRawLocation().toFile());
+            else if(JAVA_LANGUAGE_NAME.equals(file.getFileExtension()))
+                javaSourceFiles.add(file.getRawLocation().toFile());
         }
 
-        if (sourceFiles.size() > 0)
+        if (sourceFiles.size() > 0 || javaSourceFiles.size() > 0)
         {
-            CeyloncTool compiler;
-            try {
-                compiler = new CeyloncTool();
-            } catch (VerifyError e) {
-                System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
-                throw e;
-            }
-            
-            com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
             MessageConsole console = findConsole();
-            context.put(Log.outKey, new PrintWriter(console.newMessageStream(), true));
-            
-            ZipFileIndex.clearCache();
-            try {
-                CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
-                Iterable<? extends JavaFileObject> compilationUnits1 =
-                        fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-                CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(new PrintWriter(console.newMessageStream(), true), 
-                        fileManager, null, options, null, compilationUnits1);
-                boolean success=false;
-                try {
-                    success = task.call();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (!success) console.activate();
-                return success;
+            PrintWriter printWriter = new PrintWriter(console.newMessageStream(), true);
+
+            boolean success = true;
+            // first java source files
+            if(!javaSourceFiles.isEmpty()){
+                success = compile(options, javaSourceFiles, printWriter, console);
             }
-            finally {
-                ZipFileIndex.clearCache();
+            // then ceylon source files if that last run worked
+            if(!sourceFiles.isEmpty() && success){
+                success = compile(options, sourceFiles, printWriter, console);
             }
+            return success;
         }
         else
             return false;
+    }
+
+    private boolean compile(List<String> options,
+            java.util.List<File> sourceFiles, PrintWriter printWriter, AbstractConsole console) throws VerifyError {
+        CeyloncTool compiler;
+        try {
+            compiler = new CeyloncTool();
+        } catch (VerifyError e) {
+            System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
+            throw e;
+        }
+
+        com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
+        context.put(Log.outKey, printWriter);
+
+        ZipFileIndex.clearCache();
+        try {
+            CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+            Iterable<? extends JavaFileObject> compilationUnits1 =
+                    fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
+                    fileManager, null, options, null, compilationUnits1);
+            boolean success=false;
+            try {
+                success = task.call();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (!success) console.activate();
+            return success;
+        }
+        finally {
+            ZipFileIndex.clearCache();
+        }
     }
 
 	public static List<String> getRepositories(IProject project) throws CoreException {
@@ -1315,7 +1342,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (path == null)
             return null;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension()))
+        if (!LANGUAGE.hasExtension(path.getFileExtension())
+                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
             return null;
 
         return retrieveSourceFolder(path);
