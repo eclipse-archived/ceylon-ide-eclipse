@@ -348,10 +348,10 @@ public class CeylonContentProposer implements IContentProposer {
         else if (node instanceof QualifiedMemberOrTypeExpression) {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
                 if (isInvocationProposable(dec, EXPRESSION)) {
                     addInvocationProposals(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
                 }
+                addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
             }
         }
         else if (node instanceof Tree.ClassOrInterface || 
