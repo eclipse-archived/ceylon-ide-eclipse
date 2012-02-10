@@ -136,9 +136,22 @@ public class JDTModuleManager extends LazyModuleManager {
             module = new Module();
         else {
             try {
-                for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
-                    if (root.getPackageFragment(moduleNameString).exists()) {
-                        module = new JDTModule(this, root);
+                if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
+                    // pick the first package fragment root
+                    for(IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()){
+                        if(!root.isArchive()
+                                && !root.isExternal()){
+                            module = new JDTModule(this, root);
+                            break;
+                        }
+                    }
+                }
+                else{
+                    for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
+                        if (root.getPackageFragment(moduleNameString).exists()) {
+                            module = new JDTModule(this, root);
+                            break;
+                        }
                     }
                 }
             } catch (JavaModelException e) {
