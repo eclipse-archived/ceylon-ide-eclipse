@@ -219,6 +219,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
             ClassFile classFile = (ClassFile) type.getClassFile();
             
+            IFile ifile = null; 
             if (classFile == null) {
                 String packageName = type.getPackageFragment().getElementName();
                 
@@ -232,13 +233,24 @@ public class JDTModelLoader extends AbstractModelLoader {
                         if (packageFragment != null) {
                             String shortClassName = name.substring(packageName.length() + 1);
                             classFile = (ClassFile) packageFragment.getClassFile(shortClassName + ".class");
+                            if(classFile == null || !classFile.exists()){
+                                org.eclipse.jdt.internal.core.CompilationUnit cu = (CompilationUnit) packageFragment.getCompilationUnit(shortClassName + ".java");
+                                IRegion region = new Region();
+                                region.add(cu.getPrimaryElement());
+                                IResource[] generatedResources = JavaCore.getGeneratedResources(region, false);
+                                if(generatedResources.length > 0){
+                                    ifile = (IFile) generatedResources[0];
+                                }
+                            }else
+                                ifile = (IFile) classFile.getUnderlyingResource();
                         }
                     }
                 }
-            }
+            }else
+                ifile = (IFile) classFile.getUnderlyingResource();
             
-            if (classFile != null && classFile.exists()) {
-                IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getUnderlyingResource(), true);
+            if (classFile != null) {
+                IBinaryType binaryType = classFile.getBinaryTypeInfo(ifile, true);
                 BinaryTypeBinding binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
                 if (binaryTypeBinding == null) {
                     char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
