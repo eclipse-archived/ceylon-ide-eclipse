@@ -133,6 +133,22 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return false;
     }
 
+    private boolean isLineComment(int offset) {
+        IEditorPart editor = Util.getCurrentEditor();
+        if (editor instanceof CeylonEditor) {
+            CeylonParseController pc = ((CeylonEditor) editor).getParseController();
+            if (pc.getTokens()==null) return false;
+            int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
+            if (tokenIndex>=0) {
+  	            CommonToken token = pc.getTokens().get(tokenIndex);
+                return token!=null 
+                		&& token.getType()==CeylonLexer.LINE_COMMENT
+                		&& token.getStartIndex()<=offset;
+            }
+        }
+        return false;
+    }
+
     private int getStringIndent(int offset) {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
@@ -231,7 +247,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
                         getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
                 char startOfCurrentLineChar = c.text.equals("{") ? '{' : getNextNonWhitespaceCharacter(d, start);
-                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev; //TODO: improve this 'cos should check tabs vs spaces
+                //TODO: improve this 'cos should check tabs vs spaces
+                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev
+                		&& !isLineComment(endOfPrev);
+                
                 StringBuilder buf = new StringBuilder();
                 appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
                         lastNonWhitespaceChar, correctContinuation, buf);
