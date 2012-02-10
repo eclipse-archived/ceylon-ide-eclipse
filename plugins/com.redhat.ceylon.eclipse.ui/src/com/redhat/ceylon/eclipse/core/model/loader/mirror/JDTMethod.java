@@ -20,28 +20,10 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.Flags;
-import org.eclipse.jdt.core.IAnnotatable;
-import org.eclipse.jdt.core.ILocalVariable;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.ITypeHierarchy;
-import org.eclipse.jdt.core.ITypeParameter;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -51,7 +33,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
-import com.redhat.ceylon.compiler.loader.impl.reflect.mirror.ReflectionVariable;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
@@ -61,7 +42,6 @@ import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 public class JDTMethod implements MethodMirror {
 
     private MethodBinding method;
-    private LookupEnvironment lookupEnvironment;
     private MethodVerifier methodVerifier;
     private Map<String, AnnotationMirror> annotations;
     private String name;
@@ -72,7 +52,6 @@ public class JDTMethod implements MethodMirror {
     
     public JDTMethod(MethodBinding method, LookupEnvironment lookupEnvironment) {
         this.method = method;
-        this.lookupEnvironment = lookupEnvironment;
         this.methodVerifier = lookupEnvironment.methodVerifier();
     }
 
