@@ -81,10 +81,17 @@ public class JDTModelLoader extends AbstractModelLoader {
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
     
-    public JDTModelLoader(final ModuleManager moduleManager, Modules modules){
+    public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
         this.typeFactory = new Unit() {
+            @Override
+            public Package getPackage() {
+                if(super.getPackage() == null){
+                    super.setPackage(modules.getLanguageModule().getDirectPackage("ceylon.language"));
+                }
+                return super.getPackage();
+            }
             /**
              * Search for a declaration in the language module. 
              */
