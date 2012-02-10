@@ -20,21 +20,15 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-
-import javax.tools.JavaFileObject.Kind;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IRegion;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.IWorkingCopy;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
@@ -52,16 +46,13 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.ClassFile;
+import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.JavaProject;
-import org.eclipse.jdt.launching.sourcelookup.containers.PackageFragmentRootSourceContainer;
+import org.eclipse.jdt.internal.core.Region;
 
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.TypeParser;
-import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.compiler.loader.impl.reflect.mirror.ReflectionClass;
-import com.redhat.ceylon.compiler.loader.impl.reflect.mirror.ReflectionMethod;
-import com.redhat.ceylon.compiler.loader.impl.reflect.model.ReflectionModule;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
@@ -69,7 +60,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -77,9 +67,6 @@ import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
 
 /**
  * A model loader which uses the JDT model.
@@ -181,7 +168,9 @@ public class JDTModelLoader extends AbstractModelLoader {
         if(loadDeclarations && !loadedPackages.add(packageName)){
             return;
         }
-        Module module = findOrCreateModule(packageName);
+        if(!loadDeclarations)
+            return;
+        Module module = lookupModule(packageName);
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
@@ -205,6 +194,22 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
 
+    private Module lookupModule(String packageName) {
+        for(Module module : modules.getListOfModules()){
+            if(module instanceof LazyModule){
+                if(((LazyModule)module).containsPackage(packageName))
+                    return module;
+            }else if(isSubPackage(module.getNameAsString(), packageName))
+                return module;
+        }
+        return modules.getDefaultModule();
+    }
+
+    private boolean isSubPackage(String moduleName, String pkgName) {
+        return pkgName.equals(moduleName)
+                || pkgName.startsWith(moduleName+".");
+    }
+
     @Override
     public ClassMirror lookupClassMirror(String name) {
         try {
@@ -217,7 +222,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             if (classFile == null) {
                 String packageName = type.getPackageFragment().getElementName();
                 
-                Module module = findOrCreateModule(packageName);
+                Module module = lookupModule(packageName);
                 
                 if (module instanceof JDTModule) {
                     JDTModule jdtModule = (JDTModule) module;
