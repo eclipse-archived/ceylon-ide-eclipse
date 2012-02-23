@@ -32,6 +32,7 @@ import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.osgi.framework.Bundle;
@@ -199,7 +200,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 	 */
     private void runInitialBuild() {
         final IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-        Job buildJob = new Job("Building Ceylon Model") {
+        final Job buildJob = new Job("Building Ceylon Model") {
             @Override
             public IStatus run(IProgressMonitor monitor) {
                 try {
@@ -210,7 +211,11 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                         }
                     }
                     
-                    monitor.beginTask("Building Ceylon Model", 3 * interestingProjects.size());
+                    monitor.beginTask("Building Ceylon Model", 4 * interestingProjects.size());
+                    monitor.subTask("Waiting for JDT to initialize");
+                    while (JavaModelManager.getJavaModelManager().batchContainerInitializations != JavaModelManager.BATCH_INITIALIZATION_FINISHED) {
+                        yieldRule(monitor);
+                    }
 
                     for (IProject project : interestingProjects) {
                         ISourceProject sourceProject = ModelFactory.open(project);
@@ -234,6 +239,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                             }
                         }
                     }
+                    monitor.done();
                 } catch (CoreException e) {
                     return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                 } catch (ModelException e) {
