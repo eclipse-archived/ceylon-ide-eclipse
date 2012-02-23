@@ -195,4 +195,14 @@ public class JDTMethod implements MethodMirror {
         }
         return false;
     }
+
+    @Override
+    public boolean isProtected() {
+        return method.isProtected();
+    }
+
+    @Override
+    public boolean isDefaultAccess() {
+        return method.isDefault();
+    }
 }

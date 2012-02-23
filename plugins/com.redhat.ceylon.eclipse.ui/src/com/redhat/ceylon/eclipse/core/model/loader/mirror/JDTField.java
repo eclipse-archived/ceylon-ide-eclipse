@@ -81,4 +81,14 @@ public class JDTField implements FieldMirror {
     public String toString() {
         return "[JDTField: "+field.toString()+"]";
     }
+
+    @Override
+    public boolean isProtected() {
+        return field.isProtected();
+    }
+
+    @Override
+    public boolean isDefaultAccess() {
+        return field.isDefault();
+    }
 }

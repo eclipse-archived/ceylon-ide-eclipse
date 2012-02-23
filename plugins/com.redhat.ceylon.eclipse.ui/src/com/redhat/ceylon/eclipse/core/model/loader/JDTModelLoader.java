@@ -20,6 +20,11 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClassFile;
@@ -32,7 +37,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
@@ -43,22 +50,31 @@ import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.parser.Parser;
+import org.eclipse.jdt.internal.compiler.parser.SourceTypeConverter;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilationUnit;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.Region;
+import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
+import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
+import org.eclipse.jdt.internal.core.search.StringOperation;
 
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
+import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -80,6 +96,7 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
+    private boolean mustResetLookupEnvironment = false;
     
     public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
@@ -95,29 +112,17 @@ public class JDTModelLoader extends AbstractModelLoader {
             /**
              * Search for a declaration in the language module. 
              */
+            private Map<String, Declaration> languageModuledeclarations = new HashMap<String, Declaration>();
+            
             public Declaration getLanguageModuleDeclaration(String name) {
-                //all elements in ceylon.language are auto-imported
-                //traverse all default module packages provided they have not been traversed yet
-                Module languageModule = moduleManager.getContext().getModules().getLanguageModule();
-                if ( languageModule != null && languageModule.isAvailable() ) {
-                    for (Package languageScope : languageModule.getPackages() ) {
-                        String packageName = languageScope.getQualifiedNameString() + ".";
-                        if (name.startsWith(packageName)) {
-                            name = name.substring(packageName.length());
-                            break;
-                        }
-                    }
-                    if ("Bottom".equals(name)) {
-                        return getBottomDeclaration();
-                    }
-                    for (Package languageScope : languageModule.getPackages() ) {
-                        Declaration d = languageScope.getMember(name, null);
-                        if (d != null) {
-                            return d;
-                        }
+                Declaration decl = languageModuledeclarations.get(name);
+                if (decl == null) {
+                    decl = super.getLanguageModuleDeclaration(name);
+                    if (decl != null) {
+                        languageModuledeclarations.put(name, decl);
                     }
                 }
-                return null;
+                return decl;
             }
         };
         this.typeParser = new TypeParser(this, typeFactory);
@@ -133,9 +138,34 @@ public class JDTModelLoader extends AbstractModelLoader {
         try {
             lookupEnvironment = new LookupEnvironment(new ITypeRequestor() {
                 
+                private Parser basicParser;
+
                 @Override
-                public void accept(ISourceType[] sourceType, PackageBinding packageBinding,
+                public void accept(ISourceType[] sourceTypes, PackageBinding packageBinding,
                         AccessRestriction accessRestriction) {
+                    // case of SearchableEnvironment of an IJavaProject is used
+                    ISourceType sourceType = sourceTypes[0];
+                    while (sourceType.getEnclosingType() != null)
+                        sourceType = sourceType.getEnclosingType();
+                    if (sourceType instanceof SourceTypeElementInfo) {
+                        // get source
+                        SourceTypeElementInfo elementInfo = (SourceTypeElementInfo) sourceType;
+                        IType type = elementInfo.getHandle();
+                        ICompilationUnit sourceUnit = (ICompilationUnit) type.getCompilationUnit();
+                        accept(sourceUnit, accessRestriction);
+                    } else {
+                        CompilationResult result = new CompilationResult(sourceType.getFileName(), 1, 1, 0);
+                        CompilationUnitDeclaration unit =
+                            SourceTypeConverter.buildCompilationUnit(
+                                sourceTypes,
+                                SourceTypeConverter.FIELD_AND_METHOD // need field and methods
+                                | SourceTypeConverter.MEMBER_TYPE, // need member types
+                                // no need for field initialization
+                                lookupEnvironment.problemReporter,
+                                result);
+                        lookupEnvironment.buildTypeBindings(unit, accessRestriction);
+                        lookupEnvironment.completeTypeBindings(unit, true);
+                    }
                 }
                 
                 @Override
@@ -145,8 +175,42 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
                 
                 @Override
-                public void accept(ICompilationUnit unit,
+                public void accept(ICompilationUnit sourceUnit,
                         AccessRestriction accessRestriction) {
+                    // Switch the current policy and compilation result for this unit to the requested one.
+                    CompilationResult unitResult = new CompilationResult(sourceUnit, 1, 1, compilerOptions.maxProblemsPerUnit);
+                    try {
+                        CompilationUnitDeclaration parsedUnit = basicParser().dietParse(sourceUnit, unitResult);
+                        lookupEnvironment.buildTypeBindings(parsedUnit, accessRestriction);
+                        lookupEnvironment.completeTypeBindings(parsedUnit, true);
+                    } catch (AbortCompilationUnit e) {
+                        // at this point, currentCompilationUnitResult may not be sourceUnit, but some other
+                        // one requested further along to resolve sourceUnit.
+                        if (unitResult.compilationUnit == sourceUnit) { // only report once
+                            //requestor.acceptResult(unitResult.tagAsAccepted());
+                        } else {
+                            throw e; // want to abort enclosing request to compile
+                        }
+                    }
+                    // Display unit error in debug mode
+                    if (BasicSearchEngine.VERBOSE) {
+                        if (unitResult.problemCount > 0) {
+                            System.out.println(unitResult);
+                        }
+                    }
+                }
+
+                private Parser basicParser() {
+                    if (this.basicParser == null) {
+                        ProblemReporter problemReporter =
+                            new ProblemReporter(
+                                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+                                compilerOptions,
+                                new DefaultProblemFactory());
+                        this.basicParser = new Parser(problemReporter, false);
+                        this.basicParser.reportOnlyOneSyntaxError = true;
+                    }
+                    return this.basicParser;
                 }
             }, compilerOptions, problemReporter, ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null));
         } catch (JavaModelException e) {
@@ -190,7 +254,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                         for (IClassFile classFile : packageFragment.getClassFiles()) {
                             IType type = classFile.getType();
                             if (! type.isMember()) {
-                                convertToDeclaration(lookupClassMirror(type.getFullyQualifiedName()), DeclarationType.VALUE);
+                                convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                             }
                         }
                     } catch (JavaModelException e) {
@@ -217,62 +281,64 @@ public class JDTModelLoader extends AbstractModelLoader {
                 || pkgName.startsWith(moduleName+".");
     }
 
+    synchronized private LookupEnvironment getLookupEnvironment() {
+        if (mustResetLookupEnvironment) {
+            lookupEnvironment.reset();
+            mustResetLookupEnvironment = false;
+        }
+        return lookupEnvironment;
+    }
+    
     @Override
-    public ClassMirror lookupNewClassMirror(String name) {
+    public synchronized ClassMirror lookupNewClassMirror(String name) {
         try {
             IType type = javaProject.findType(name);
             if (type == null) {
                 return null;
             }
-            ClassFile classFile = (ClassFile) type.getClassFile();
             
-            IFile ifile = null; 
-            if (classFile == null) {
-                String packageName = type.getPackageFragment().getElementName();
+            LookupEnvironment theLookupEnvironment = getLookupEnvironment();
+            if (type.isBinary()) {
+                ClassFile classFile = (ClassFile) type.getClassFile();
                 
-                Module module = lookupModule(packageName);
-                
-                if (module instanceof JDTModule) {
-                    JDTModule jdtModule = (JDTModule) module;
-                    IPackageFragmentRoot fragmentRoot = jdtModule.getPackageFragmentRoot();
-                    if (fragmentRoot != null) {
-                        IPackageFragment packageFragment = fragmentRoot.getPackageFragment(packageName);
-                        if (packageFragment != null) {
-                            String shortClassName = name.substring(packageName.length() + 1);
-                            classFile = (ClassFile) packageFragment.getClassFile(shortClassName + ".class");
-                            if(classFile == null || !classFile.exists()){
-                                org.eclipse.jdt.internal.core.CompilationUnit cu = (CompilationUnit) packageFragment.getCompilationUnit(shortClassName + ".java");
-                                IRegion region = new Region();
-                                region.add(cu.getPrimaryElement());
-                                IResource[] generatedResources = JavaCore.getGeneratedResources(region, false);
-                                if(generatedResources.length > 0){
-                                    ifile = (IFile) generatedResources[0];
-                                }
-                            }else
-                                ifile = (IFile) classFile.getUnderlyingResource();
+                if (classFile != null) {
+                    IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getCorrespondingResource(), true);
+                    BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+                    if (binaryTypeBinding == null) {
+                        char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
+                        ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
+                        if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
+                            return null;
                         }
+                        binaryTypeBinding = (BinaryTypeBinding) existingType;
                     }
+                    return new JDTClass(binaryTypeBinding, theLookupEnvironment);
                 }
-            }else
-                ifile = (IFile) classFile.getUnderlyingResource();
-            
-            if (classFile != null) {
-                IBinaryType binaryType = classFile.getBinaryTypeInfo(ifile, true);
-                BinaryTypeBinding binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
-                if (binaryTypeBinding == null) {
-                    char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
-                    ReferenceBinding existingType = lookupEnvironment.getCachedType(compoundName);
-                    if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
-                        return null;
-                    }
-                    binaryTypeBinding = (BinaryTypeBinding) existingType;
+            } else {
+                char[][] compoundName = CharOperation.splitOn('.', type.getFullyQualifiedName().toCharArray());
+                ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
+                if (referenceBinding != null) {
+                    return new JDTClass(referenceBinding, theLookupEnvironment);
                 }
-                return new JDTClass(binaryTypeBinding, lookupEnvironment);
             }
         } catch (JavaModelException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    
+    @Override
+    public Declaration convertToDeclaration(String typeName,
+            DeclarationType declarationType) {
+        if (typeName.startsWith("ceylon.language")) {
+            return typeFactory.getLanguageModuleDeclaration(typeName.substring(typeName.lastIndexOf('.') + 1));
+        }
+        try {
+            return super.convertToDeclaration(typeName, declarationType);
+        } catch(RuntimeException e) {
+            return null;
+        }
     }
 
     @Override
@@ -282,6 +348,24 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected boolean isOverridingMethod(MethodMirror methodSymbol) {
         return ((JDTMethod)methodSymbol).isOverridingMethod();
+    }
+
+    @Override
+    protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
+        Unit unit = null;
+        JDTClass jdtClass = ((JDTClass)classMirror);
+        String unitName = jdtClass.getFileName();
+        if (!jdtClass.isBinary()) {
+            for (Unit unitToTest : pkg.getUnits()) {
+                if (unitToTest.getFilename().equals(unitName)) {
+                    return unit;
+                }
+            }
+        }
+        unit = new ExternalUnit();
+        unit.setFilename(jdtClass.getFileName());
+        unit.setPackage(pkg);
+        return unit;
     }
 
     @Override
@@ -297,5 +381,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected void logVerbose(String message) {
         System.err.println("NOTE: "+message);
+    }
+    
+    @Override
+    public void removeDeclarations(List<Declaration> declarations) {
+        super.removeDeclarations(declarations);
+        mustResetLookupEnvironment = true;
     }
 }
