@@ -49,6 +49,8 @@ import org.eclipse.jdt.internal.compiler.impl.ITypeRequestor;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ProblemReasons;
+import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.parser.SourceTypeConverter;
@@ -297,6 +299,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
             
+            
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
             if (type.isBinary()) {
                 ClassFile classFile = (ClassFile) type.getClassFile();
@@ -318,6 +321,15 @@ public class JDTModelLoader extends AbstractModelLoader {
                 char[][] compoundName = CharOperation.splitOn('.', type.getFullyQualifiedName().toCharArray());
                 ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
                 if (referenceBinding != null) {
+                    if (referenceBinding instanceof ProblemReferenceBinding) {
+                        ProblemReferenceBinding problemReferenceBinding = (ProblemReferenceBinding) referenceBinding;
+                        if (problemReferenceBinding.problemId() == ProblemReasons.InternalNameProvided) {
+                            referenceBinding = problemReferenceBinding.closestReferenceMatch();
+                        } else {
+                            System.out.println(ProblemReferenceBinding.problemReasonString(problemReferenceBinding.problemId()));
+                            return null;
+                        }
+                    }
                     return new JDTClass(referenceBinding, theLookupEnvironment);
                 }
             }
@@ -358,7 +370,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         if (!jdtClass.isBinary()) {
             for (Unit unitToTest : pkg.getUnits()) {
                 if (unitToTest.getFilename().equals(unitName)) {
-                    return unit;
+                    return unitToTest;
                 }
             }
         }
@@ -385,7 +397,21 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public void removeDeclarations(List<Declaration> declarations) {
-        super.removeDeclarations(declarations);
+        List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
+        allDeclarations.addAll(declarations);
+        for (Declaration declaration : declarations) {
+            retrieveInnerDeclarations(declaration, allDeclarations);
+        }
+        super.removeDeclarations(allDeclarations);
         mustResetLookupEnvironment = true;
+    }
+
+    private void retrieveInnerDeclarations(Declaration declaration,
+            List<Declaration> allDeclarations) {
+        List<Declaration> members = declaration.getMembers();
+        allDeclarations.addAll(members);
+        for (Declaration member : members) {
+            retrieveInnerDeclarations(member, allDeclarations);
+        }
     }
 }
