@@ -32,6 +32,7 @@ import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jface.text.IRegion;
 
+import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -142,7 +143,7 @@ public class CeylonParseController extends ParseControllerBase {
        
         VirtualFile srcDir = null;
         if (sourceProject!=null) {
-            srcDir = getSourceFolder(sourceProject, resolvedPath);
+            srcDir = getSourceFolder(sourceProject.getRawProject(), resolvedPath);
             
             IProject project = sourceProject.getRawProject();
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
@@ -262,6 +263,9 @@ public class CeylonParseController extends ParseControllerBase {
         if (builtPhasedUnit!=null) {
             // Editing an already built file
             Package sourcePackage = builtPhasedUnit.getPackage();
+            if (sourcePackage instanceof LazyPackage) {
+                throw new RuntimeException("This should NOT be a LazyPackage");
+            }
             pkg = new Package();
             pkg.setName(sourcePackage.getName());
             pkg.setModule(sourcePackage.getModule());
@@ -364,11 +368,11 @@ public class CeylonParseController extends ParseControllerBase {
                 .replace("/" + file.getName(), "").replace('/', '.');
     }
     
-    private VirtualFile getSourceFolder(ISourceProject project, IPath resolvedPath) {
+    private VirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
         for (IPath folderPath: CeylonBuilder.getSourceFolders(project)) {
             if (folderPath.isPrefixOf(resolvedPath)) {
-                return new IFolderVirtualFile(project.getRawProject(), 
-                        folderPath.makeRelativeTo(project.getRawProject().getFullPath()));
+                return new IFolderVirtualFile(project, 
+                        folderPath.makeRelativeTo(project.getFullPath()));
             }
         }
         return null;
