@@ -218,7 +218,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    public ClassMirror lookupClassMirror(String name) {
+    public ClassMirror lookupNewClassMirror(String name) {
         try {
             IType type = javaProject.findType(name);
             if (type == null) {
