@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
-import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -91,7 +90,7 @@ public class JDTClass implements ClassMirror {
     @Override
     public String getSimpleName() {
         if (simpleName == null) {
-            simpleName = new String(klass.qualifiedSourceName());
+            simpleName = new String(klass.sourceName());
         }
         return simpleName;
     }
@@ -206,7 +205,7 @@ public class JDTClass implements ClassMirror {
             ReferenceBinding[] memberTypeBindings = klass.memberTypes();
             innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
             for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
-                BinaryTypeBinding classBinding = (BinaryTypeBinding) memberTypeBinding;
+                ReferenceBinding classBinding = (ReferenceBinding) memberTypeBinding;
                 innerClasses.add(new JDTClass(classBinding, lookupEnvironment));
             }
         }
