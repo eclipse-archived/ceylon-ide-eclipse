@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
@@ -42,7 +43,7 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 
 public class JDTClass implements ClassMirror {
 
-    private BinaryTypeBinding klass;
+    private ReferenceBinding klass;
     private LookupEnvironment lookupEnvironment;
     
     private PackageMirror pkg;
@@ -58,7 +59,7 @@ public class JDTClass implements ClassMirror {
     private List<ClassMirror> innerClasses;
     
 
-    public JDTClass(BinaryTypeBinding klass, LookupEnvironment lookupEnvironment) {
+    public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment) {
         this.klass = klass;
         this.lookupEnvironment = lookupEnvironment;
     }
@@ -184,11 +185,6 @@ public class JDTClass implements ClassMirror {
     }
 
     @Override
-    public boolean isLoadedFromSource() {
-        return false;
-    }
-
-    @Override
     public List<FieldMirror> getDirectFields() {
         if (fields == null) {
             FieldBinding[] directFields = klass.fields();
@@ -220,5 +216,23 @@ public class JDTClass implements ClassMirror {
     @Override
     public boolean isStatic() {
         return klass.isStatic();
+    }
+    
+    public String getFileName() {
+        char[] fileName = klass.getFileName();
+        int start = CharOperation.lastIndexOf('/', fileName) + 1;
+        if (start == 0 || start < CharOperation.lastIndexOf('\\', fileName))
+            start = CharOperation.lastIndexOf('\\', fileName) + 1;
+
+        return new String(CharOperation.subarray(fileName, start, -1));
+    }
+
+    public boolean isBinary() {
+        return klass.isBinaryBinding();
+    }
+
+    @Override
+    public boolean isLoadedFromSource() {
+        return false;
     }
 }
