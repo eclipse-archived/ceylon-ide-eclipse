@@ -37,10 +37,10 @@ import static java.lang.Character.isUpperCase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
@@ -60,6 +60,7 @@ import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationKey;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
@@ -614,7 +615,7 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
-            final ProducedType type, Map<String, DeclarationWithProximity> proposals) {
+            final ProducedType type, Map<DeclarationKey, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
                 new Comparator<DeclarationWithProximity>() {
                     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
@@ -664,7 +665,30 @@ public class CeylonContentProposer implements IContentProposer {
                         if (x.getProximity()!=y.getProximity()) {
                             return new Integer(x.getProximity()).compareTo(y.getProximity());
                         }
-                        return xName.compareTo(yName);
+                        int i = xName.compareTo(yName);
+                        if (i!=0) {
+                            return i;
+                        }
+                        if (x.getDeclaration() instanceof Functional && 
+                                y.getDeclaration() instanceof Functional) {
+                            Functional xf = (Functional) x.getDeclaration();
+                            Functional yf = (Functional) y.getDeclaration();
+                            List<Parameter> xps = xf.getParameterLists().get(0).getParameters();
+                            List<Parameter> yps = yf.getParameterLists().get(0).getParameters();
+                            for (int j=0; j<xps.size(); j++) {
+                                if (j>=yps.size()) {
+                                    return 1;
+                                }
+                                else {
+                                    int k = xps.get(j).getTypeDeclaration().getName()
+                                            .compareTo(yps.get(j).getTypeDeclaration().getName());
+                                    if (k!=0) {
+                                        return k;
+                                    }
+                                }
+                            }
+                        }
+                        return 0;
                     }
                 });
         set.addAll(proposals.values());
@@ -741,7 +765,7 @@ public class CeylonContentProposer implements IContentProposer {
         };
     }
     
-    public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
+    public static Map<DeclarationKey, DeclarationWithProximity> getProposals(Node node, String prefix,
             Tree.CompilationUnit cu) {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
@@ -753,7 +777,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         else {
-            Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
+            Map<DeclarationKey, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
             result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
             return result;
         }
@@ -774,13 +798,13 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
-    private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
+    private static Map<DeclarationKey, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
             String prefix) {
-        Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
+        Map<DeclarationKey, DeclarationWithProximity> result = new HashMap<DeclarationKey, DeclarationWithProximity>();
         Module languageModule = node.getUnit().getPackage().getModule().getLanguageModule();
         if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
             for (Package languageScope: languageModule.getPackages() ) {
-                for (Map.Entry<String, DeclarationWithProximity> entry: 
+                for (Map.Entry<DeclarationKey, DeclarationWithProximity> entry: 
                     languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
                     try {
                         if (entry.getValue().getDeclaration().isShared()) {
@@ -962,7 +986,13 @@ public class CeylonContentProposer implements IContentProposer {
                 else {
                     result.append("(");
                     for (Parameter p: params.getParameters()) {
-                        result.append(p.getName()).append(", ");
+                        String pn = p.getName();
+                        //TODO: this is a temp hack!
+                        if ("unknown".equals(pn)) {
+                            pn = "the" + d.getUnit().getDefiniteType(p.getType())
+                                    .getDeclaration().getName();
+                        }
+                        result.append(pn).append(", ");
                     }
                     result.setLength(result.length()-2);
                     result.append(")");
