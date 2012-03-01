@@ -684,9 +684,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             // skip non-ceylon files
             if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension())) {
                 Unit toRemove = getJavaUnit(project, fileToUpdate);
-                // FIXME: no idea what goes wrong here but I can't work with my IDE crashing at every save:
-                // https://github.com/ceylon/ceylon-ide-eclipse/issues/187
-                if(toRemove != null && toRemove.getPackage() != null)
+                if(toRemove != null) // If the unit is not null, the package should never be null
                     toRemove.getPackage().removeUnit(toRemove);
                 continue;
             }
