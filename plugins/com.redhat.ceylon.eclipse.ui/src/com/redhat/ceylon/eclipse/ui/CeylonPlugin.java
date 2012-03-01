@@ -212,11 +212,12 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                     }
                     
                     monitor.beginTask("Building Ceylon Model", 4 * interestingProjects.size());
+/*
                     monitor.subTask("Waiting for JDT to initialize");
                     while (JavaModelManager.getJavaModelManager().batchContainerInitializations != JavaModelManager.BATCH_INITIALIZATION_FINISHED) {
                         yieldRule(monitor);
                     }
-
+*/
                     for (IProject project : interestingProjects) {
                         ISourceProject sourceProject = ModelFactory.open(project);
                         CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
