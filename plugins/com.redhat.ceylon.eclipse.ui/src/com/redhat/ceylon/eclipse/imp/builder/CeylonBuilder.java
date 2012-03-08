@@ -97,6 +97,7 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
@@ -339,6 +340,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
 	public static JDTModelLoader getProjectModelLoader(IProject project) {
 	    TypeChecker typeChecker = getProjectTypeChecker(project);
+	    if (typeChecker == null) {
+	        return null;
+	    }
 	    return (JDTModelLoader) ((JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager()).getModelLoader();
 	}
 
@@ -790,10 +794,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (javaElement instanceof ICompilationUnit) {
             ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
             IJavaElement packageFragment = compilationUnit.getParent();
-            Package pkg = getProjectModelLoader(project).findPackage(packageFragment.getElementName());
-            if (pkg != null) {
-                for (Unit unit : pkg.getUnits()) {
-                    return unit;
+            JDTModelLoader projectModelLoader = getProjectModelLoader(project);
+            if (projectModelLoader != null) {
+                Package pkg = projectModelLoader.findPackage(packageFragment.getElementName());
+                if (pkg != null) {
+                    for (Unit unit : pkg.getUnits()) {
+                        return unit;
+                    }
                 }
             }
         }
