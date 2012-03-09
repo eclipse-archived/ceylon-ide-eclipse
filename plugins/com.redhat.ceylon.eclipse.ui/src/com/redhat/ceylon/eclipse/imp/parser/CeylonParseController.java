@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
@@ -50,6 +49,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
@@ -97,20 +97,40 @@ public class CeylonParseController extends ParseControllerBase {
     
     private Job retryJob = null;
     
-    private synchronized void rescheduleJobIfNecessary() {
+    private boolean isCanceling(IProgressMonitor monitor) {
+        boolean isCanceling = false;
+        if (monitor != null) {
+            isCanceling = monitor.isCanceled();
+        }
+        CeylonParserScheduler scheduler = getScheduler();
+        if (scheduler != null && scheduler.isCanceling()) {
+            if (monitor != null && !monitor.isCanceled()) {
+                monitor.setCanceled(true);
+            }
+            isCanceling = true;
+        }
+        return isCanceling;
+    }
+    
+    private CeylonParserScheduler getScheduler() {
         final Job parsingJob = Job.getJobManager().currentJob();
-        if (parsingJob != null && parsingJob instanceof ParserScheduler) {
-//            System.out.println("Start Rescheduling Parsing for " + getPath());
+        if (parsingJob instanceof CeylonParserScheduler) {
+            return (CeylonParserScheduler) parsingJob;
+        }
+        return null;
+    }
+    
+    private synchronized void rescheduleJobIfNecessary() {
+        final CeylonParserScheduler parsingJob = getScheduler();
+        if (parsingJob != null) {
             if (retryJob == null) {
                 retryJob = new Job("Retry Parsing for " + getPath()) {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         if (CeylonBuilder.getProjectTypeChecker(getProject().getRawProject()) != null) {
-//                            System.out.println("parsingJob.schedule() for " + getPath());
                             parsingJob.schedule();
                         }
                         else {
-//                            System.out.println("retryJob.schedule(1000) for " + getPath());
                             retryJob.schedule(1000);
                         }
                         return Status.OK_STATUS;
@@ -118,7 +138,6 @@ public class CeylonParseController extends ParseControllerBase {
                 };
                 retryJob.setRule(null);
             }
-//            System.out.println("retryJob.schedule(1000) for " + getPath());
             retryJob.schedule(1000);
         }
     }
@@ -142,7 +161,10 @@ public class CeylonParseController extends ParseControllerBase {
         if (! file.getName().endsWith(".ceylon")) {
             return fCurrentAst;
         }
-       
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
         VirtualFile srcDir = null;
         if (sourceProject!=null) {
             srcDir = getSourceFolder(sourceProject.getRawProject(), resolvedPath);
@@ -154,7 +176,9 @@ public class CeylonParseController extends ParseControllerBase {
                     if (project != null && project.hasNature(CeylonNature.NATURE_ID)) {
                         IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
                         if (projectMarkers.length==0) {
-                            rescheduleJobIfNecessary();
+                            if (! isCanceling(monitor)) {
+                                rescheduleJobIfNecessary();
+                            }
                             return fCurrentAst;
                         }
                     }
@@ -166,6 +190,10 @@ public class CeylonParseController extends ParseControllerBase {
            
         //System.out.println("Compiling " + file.getPath());
         
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+
         ANTLRInputStream input;
         try {
             input = new ANTLRInputStream(file.getInputStream());
@@ -176,7 +204,9 @@ public class CeylonParseController extends ParseControllerBase {
         CeylonLexer lexer = new CeylonLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         
-        if (monitor.isCanceled()) return fCurrentAst;
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
         
         CeylonParser parser = new CeylonParser(tokenStream);
         Tree.CompilationUnit cu;
@@ -190,6 +220,10 @@ public class CeylonParseController extends ParseControllerBase {
         tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
         tokens.addAll(tokenStream.getTokens());
 
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
         List<LexError> lexerErrors = lexer.getErrors();
         for (LexError le : lexerErrors) {
             //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
@@ -205,8 +239,6 @@ public class CeylonParseController extends ParseControllerBase {
         parserErrors.clear();
         
         fCurrentAst = cu;
-        
-        if (monitor.isCanceled()) return fCurrentAst; // currentAst might (probably will) be inconsistent with the lex stream now
         
         if (srcDir==null || typeChecker == null) {
         	TypeCheckerBuilder tcb = new TypeCheckerBuilder().verbose(false);
@@ -260,8 +292,10 @@ public class CeylonParseController extends ParseControllerBase {
             typeChecker = tc;
         }
         
-        if (monitor.isCanceled()) return fCurrentAst;
-        
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+         
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
         Package pkg = null;
         if (builtPhasedUnit!=null) {
@@ -314,6 +348,10 @@ public class CeylonParseController extends ParseControllerBase {
             }
         }
         
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
         PhasedUnit phasedUnit;
         if (isExternalPath(path)) {
             // reuse the existing AST
@@ -344,6 +382,10 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit.analyseFlow();
         }
             
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
         final IMessageHandler handler = getHandler();
         if (handler!=null) {
             cu.visit(new ErrorVisitor(handler) {

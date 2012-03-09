@@ -23,6 +23,7 @@ import org.eclipse.imp.editor.OutlineLabelProvider;
 import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 import org.eclipse.imp.ui.DefaultPartListener;
@@ -31,6 +32,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
@@ -78,7 +80,10 @@ public class CeylonEditor extends UniversalEditor {
     private static Field labelProviderField;
     private static Field fParserSchedulerField;
     private static Method updateCaretMethod;
-    
+    private static Field fAnnotationCreatorField;
+    private static Field fDocumentListenerField;
+    private static Method watchDocumentMethod;
+
     static {
         try {
             refreshContributionsField = UniversalEditor.class.getDeclaredField("fRefreshContributions");
@@ -91,8 +96,15 @@ public class CeylonEditor extends UniversalEditor {
             labelProviderField.setAccessible(true);
             fParserSchedulerField = UniversalEditor.class.getDeclaredField("fParserScheduler");
             fParserSchedulerField.setAccessible(true);
+            fAnnotationCreatorField = UniversalEditor.class.getDeclaredField("fAnnotationCreator");
+            fAnnotationCreatorField.setAccessible(true);
             updateCaretMethod = AbstractTextEditor.class.getDeclaredMethod("updateCaret");
             updateCaretMethod.setAccessible(true);
+            
+            fDocumentListenerField = UniversalEditor.class.getDeclaredField("fDocumentListener");
+            fDocumentListenerField.setAccessible(true);
+            watchDocumentMethod = UniversalEditor.class.getDeclaredMethod("watchDocument", new Class[] {Long.TYPE});
+            watchDocumentMethod.setAccessible(true);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -209,6 +221,26 @@ public class CeylonEditor extends UniversalEditor {
         getPreferenceStore().setValue(EDITOR_SPACES_FOR_TABS, esft);
         //getPreferenceStore().setValue(EDITOR_TAB_WIDTH, etw);
 
+        CeylonParserScheduler ceylonParserScheduler;
+        try {
+            Field astListenersField = ParserScheduler.class.getDeclaredField("fAstListeners");
+            astListenersField.setAccessible(true);
+
+            ParserScheduler parserScheduler = (ParserScheduler) fParserSchedulerField.get(this);
+            Object astListeners = astListenersField.get(parserScheduler);
+            ceylonParserScheduler = new CeylonParserScheduler(getParseController(), this, getDocumentProvider(),
+                    (IMessageHandler) fAnnotationCreatorField.get(this));
+            astListenersField.set(ceylonParserScheduler, astListeners);
+            fParserSchedulerField.set(this, ceylonParserScheduler);
+/*
+            IDocumentListener docLister = (IDocumentListener) fDocumentListenerField.get(this);
+            getDocumentProvider().getDocument(getEditorInput()).removeDocumentListener(docLister);
+            watchDocumentMethod.invoke(this, new Object[] {100});
+            */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         try {
             getSite().getPage().removePartListener((DefaultPartListener) refreshContributionsField.get(this));
             generateActionGroupField.set(this, new CeylonGenerateActionGroup(this));
@@ -271,6 +303,7 @@ public class CeylonEditor extends UniversalEditor {
                     try {
                         ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
                         if (scheduler != null) {
+                            scheduler.cancel();
                             scheduler.schedule(50);
                         }
                     } catch (IllegalArgumentException e) {
