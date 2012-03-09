@@ -20,8 +20,10 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -32,14 +34,13 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.impl.reflect.ReflectionModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -167,12 +168,16 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     @Override
-    public void resolveModule(Module module, VirtualFile artifact,
-            List<PhasedUnits> phasedUnitsOfDependencies) {
-        if (artifact.getName().endsWith(".src")) {
-            sourceModules.add(module.getNameAsString());
-        }
-        super.resolveModule(module, artifact, phasedUnitsOfDependencies);
+    public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
+    		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
+        try {
+			if (artifact.artifact().getName().endsWith(".src")) {
+			    sourceModules.add(module.getNameAsString());
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+        super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies);
     }
 
     @Override

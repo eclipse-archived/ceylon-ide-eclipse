@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.launching;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,15 +13,19 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.impl.FileContentStore;
+import com.redhat.ceylon.cmr.impl.SimpleRepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
-import com.redhat.ceylon.compiler.typechecker.io.ArtifactProvider;
-import com.redhat.ceylon.compiler.typechecker.io.VFSArtifactProvider;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
@@ -46,22 +51,41 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             }
         }
         
-        List<ArtifactProvider> providersToSearch = new ArrayList<ArtifactProvider>();
+        List<RepositoryManager> repositoryManagers = new ArrayList<RepositoryManager>();
         
         File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
         if (outputDirectory != null) {
-            ArtifactProvider outputProvider = new VFSArtifactProvider(new FileSystemVirtualFile(outputDirectory), context.getVfs());
-            providersToSearch.add(outputProvider);
+        	RepositoryManager outputRepo = new SimpleRepositoryManager(new FileContentStore(outputDirectory), new EclipseLogger());
+            repositoryManagers.add(outputRepo);
         }
         
         classpathList.add(new File(new File(outputDirectory, "default"), "default.car").getAbsolutePath());
 
-        providersToSearch.addAll(context.getArtifactProviders());
+        repositoryManagers.add(context.getRepositoryManager());
         
         for (Module module : modulesToAdd) {
             boolean artifactFound = false;
-            for (ArtifactProvider provider : providersToSearch) {
-                VirtualFile moduleArtifact = provider.getArtifact(module.getName(), module.getVersion(), Arrays.asList("car", "jar"));
+            ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+            for (RepositoryManager provider : repositoryManagers) {
+            	// try first with car
+            	ctx.setSuffix(ArtifactContext.CAR);
+                File moduleArtifact = null;
+				try {
+					moduleArtifact = provider.getArtifact(ctx);
+				} catch (IOException e) {
+					e.printStackTrace();
+					// ignore
+				}
+                if(moduleArtifact == null){
+                	// try with .jar
+                	ctx.setSuffix(ArtifactContext.JAR);
+                	try {
+						moduleArtifact = provider.getArtifact(ctx);
+					} catch (IOException e) {
+						e.printStackTrace();
+						// ignore
+					}
+                }
                 if (moduleArtifact != null) {
                     String modulePath = moduleArtifact.getPath();
                     File moduleFile = new File(modulePath);
