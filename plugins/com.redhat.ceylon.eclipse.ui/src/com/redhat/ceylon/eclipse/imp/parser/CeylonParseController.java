@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRInputStream;
@@ -32,6 +32,7 @@ import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jface.text.IRegion;
 
+import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -50,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.SourceCodeVirtualFile;
@@ -222,6 +224,7 @@ public class CeylonParseController extends ParseControllerBase {
                 }
             }
             
+            List<String> repos = new LinkedList<String>();
             try {
                 if (project==null) {
                     if (path!=null) { //path==null in structured compare editor
@@ -230,9 +233,9 @@ public class CeylonParseController extends ParseControllerBase {
                         //by all projects
                         for (IProject p: CeylonBuilder.getProjects()) {
                             boolean found = false;
-                            for (String repo: CeylonBuilder.getRepositories(p)) {
+                            for (String repo: CeylonBuilder.getUserRepositories(p)) {
                                 if (path.toString().startsWith(repo)) {
-                                    tcb.addRepository(new File(repo));
+                                    repos.add(repo);
                                     found=true;
                                     break;
                                 }
@@ -242,15 +245,16 @@ public class CeylonParseController extends ParseControllerBase {
                     }
                 }
                 else {
-                    for (String repo : CeylonBuilder.getRepositories(project)) {
-                        tcb.addRepository(new File(repo));
+                    for (String repo : CeylonBuilder.getUserRepositories(project)) {
+                        repos.add(repo);
                     }
                 }
             } 
             catch (CoreException e) {
                 return fCurrentAst; 
             }
-        	
+        	tcb.setRepositoryManager(Util.makeRepositoryManager(repos, new EclipseLogger()));
+            
         	TypeChecker tc = tcb.getTypeChecker();
             tc.process();
             typeChecker = tc;

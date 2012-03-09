@@ -75,6 +75,8 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
+import com.redhat.ceylon.compiler.java.util.RepositoryLister;
+import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -94,14 +96,11 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
-import com.redhat.ceylon.compiler.java.util.RepositoryLister;
-import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.ModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
@@ -837,9 +836,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     sourceFolder.makeRelativeTo(project.getFullPath())));
         }
 
-        for (String repo : getRepositories(project)) {
-            typeCheckerBuilder.addRepository(new File(repo));
-        }
+        List<String> repos = getUserRepositories(project);
+        typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, new EclipseLogger()));
+
         monitor.worked(1);
         monitor.subTask("Parsing Ceylon source files for project " 
                     + project.getName());
@@ -973,12 +972,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         finally {
             ZipFileIndex.clearCache();
         }
-    }
-
-	public static List<String> getRepositories(IProject project) throws CoreException {
-        List<String> projectRepositories = new ArrayList<String>();
-        projectRepositories.addAll(getUserRepositories(project));
-        return Util.addDefaultRepositories(projectRepositories);
     }
 
 	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
