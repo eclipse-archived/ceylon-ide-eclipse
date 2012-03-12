@@ -234,4 +234,9 @@ public class JDTClass implements ClassMirror {
     public boolean isLoadedFromSource() {
         return false;
     }
+
+	@Override
+	public boolean isAnonymous() {
+		return klass.isAnonymousType();
+	}
 }
