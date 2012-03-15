@@ -34,12 +34,17 @@ Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlug
 Bundle-ClassPath: ./,
  lib/antlr-3.4-complete.jar,
  lib/zip4j_1.2.6.jar,
- external:$ceylon.repo$/com/redhat/ceylon/compiler/java/$ceylon.compiler.version$/com.redhat.ceylon.compiler.java-$ceylon.compiler.version$.jar,
- external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
- external:$ceylon.repo$/com/redhat/ceylon/module-resolver/$ceylon.module-resolver.version$/com.redhat.ceylon.module-resolver-$ceylon.module-resolver.version$.jar,
- external:$ceylon.repo$/ceylon/language/$ceylon.language.version$/ceylon.language-$ceylon.language.version$.car,
  lib/com.redhat.ceylon.compiler.java-0.1-ide.jar,
  lib/com.redhat.ceylon.typechecker-0.1-ide.jar,
  lib/com.redhat.ceylon.module-resolver-0.1-ide.jar,
- lib/ceylon.language-0.1-ide.jar
-
+ lib/ceylon.language-0.1-ide.jar,
+ lib/commons-logging-1.1.1.jar,
+ lib/httpclient-4.1.1.jar,
+ lib/httpcore-4.1.1.jar,
+ lib/jandex-1.0.3.Final.jar,
+ lib/sardine-314.jar,
+ lib/slf4j-api-1.6.1.jar,
+ external:$ceylon.repo$/com/redhat/ceylon/compiler/java/$ceylon.compiler.version$/com.redhat.ceylon.compiler.java-$ceylon.compiler.version$.jar,
+ external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
+ external:$ceylon.repo$/com/redhat/ceylon/module-resolver/$ceylon.module-resolver.version$/com.redhat.ceylon.module-resolver-$ceylon.module-resolver.version$.jar,
+ external:$ceylon.repo$/ceylon/language/$ceylon.language.version$/ceylon.language-$ceylon.language.version$.car
