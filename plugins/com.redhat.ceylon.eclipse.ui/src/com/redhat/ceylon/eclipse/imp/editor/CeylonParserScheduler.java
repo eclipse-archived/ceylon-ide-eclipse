@@ -113,7 +113,6 @@ public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserSchedule
                 }
 //              System.out.println("Parsing complete.");
                 if (!wrappedMonitor.isCanceled()) {
-                    System.out.println("Notifying listeners");
                     notifyModelListeners(wrappedMonitor);
                 } else {
                     return Status.CANCEL_STATUS;
