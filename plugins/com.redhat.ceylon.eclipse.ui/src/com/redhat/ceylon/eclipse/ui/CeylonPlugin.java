@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -237,6 +238,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 */
                     for (IProject project : interestingProjects) {
                         ISourceProject sourceProject = ModelFactory.open(project);
+                        project.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
                         CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
                     }
                     
@@ -309,6 +311,11 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                             @Override
                                             public IStatus run(IProgressMonitor monitor) {
                                                 try {
+                                                    try {
+                                                        project.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+                                                    } catch (CoreException e) {
+                                                        e.printStackTrace();
+                                                    }
                                                     monitor.beginTask("Building Ceylon Model", 3);
                                                     ISourceProject sourceProject = ModelFactory.open(projectToBuild);
                                                     CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject,
