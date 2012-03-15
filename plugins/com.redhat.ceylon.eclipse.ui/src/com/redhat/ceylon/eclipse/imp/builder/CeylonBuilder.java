@@ -72,6 +72,9 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
@@ -927,11 +930,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             boolean success = true;
             // first java source files
             if(!javaSourceFiles.isEmpty()){
-                success = compile(options, javaSourceFiles, printWriter, console);
+                success = compile(project, options, javaSourceFiles, printWriter, console);
             }
             // then ceylon source files if that last run worked
             if(!sourceFiles.isEmpty() && success){
-                success = compile(options, sourceFiles, printWriter, console);
+                success = compile(project, options, sourceFiles, printWriter, console);
             }
             return success;
         }
@@ -939,7 +942,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return false;
     }
 
-    private boolean compile(List<String> options,
+    private boolean compile(IProject project, List<String> options,
             java.util.List<File> sourceFiles, PrintWriter printWriter, AbstractConsole console) throws VerifyError {
         CeyloncTool compiler;
         try {
@@ -951,10 +954,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
         context.put(Log.outKey, printWriter);
+        CeylonLog.preRegister(context);
 
         ZipFileIndex.clearCache();
         try {
             CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+            
+            ArtifactContext ctx = null;
+            Modules projectModules = getProjectModules(project);
+            if (projectModules != null) {
+                Module languageModule = projectModules.getLanguageModule();
+                ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
+            } else {
+                ctx = new ArtifactContext("ceylon.language", "0.1");
+            }
+            ctx.setSuffix(ArtifactContext.CAR);
+            RepositoryManager repositoryManager = getProjectRepositoryManager(project);
+            if (repositoryManager != null) {
+                File languageModuleArchive;
+                try {
+                    languageModuleArchive = repositoryManager.getArtifact(ctx);
+                    options.add("-classpath");
+                    options.add(languageModuleArchive.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
             Iterable<? extends JavaFileObject> compilationUnits1 =
                     fileManager.getJavaFileObjectsFromFiles(sourceFiles);
             CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
@@ -1002,17 +1028,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = new ArrayList<String>();
 
-        String repoPath = new ProjectScope(project)
-                .getNode(CeylonPlugin.PLUGIN_ID)
-                .get("repo", null);
-        //project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
-        File repo;
-        if (repoPath==null) {
-            repo = CeylonPlugin.getInstance().getCeylonRepository();
-        }
-        else { 
-            repo = CeylonPlugin.getCeylonRepository(repoPath);
-        }
+        File repo = getCeylonRepository(project);
+        
         userRepos.add(repo.getAbsolutePath());
         
         
@@ -1042,6 +1059,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         return userRepos;
+    }
+
+    public static File getCeylonRepository(IProject project) {
+        String repoPath = new ProjectScope(project)
+                .getNode(CeylonPlugin.PLUGIN_ID)
+                .get("repo", null);
+        //project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
+        File repo;
+        if (repoPath==null) {
+            repo = CeylonPlugin.getInstance().getCeylonRepository();
+        }
+        else { 
+            repo = CeylonPlugin.getCeylonRepository(repoPath);
+        }
+        return repo;
     }
 
     private static File toFile(IProject project, IPath path) {
@@ -1310,6 +1342,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
+    }
+
+    public static Modules getProjectModules(IProject project) {
+        TypeChecker typeChecker = getProjectTypeChecker(project);
+        if (typeChecker == null) {
+            return null;
+        }
+        return typeChecker.getContext().getModules();
+    }
+
+    public static RepositoryManager getProjectRepositoryManager(IProject project) {
+        TypeChecker typeChecker = getProjectTypeChecker(project);
+        if (typeChecker == null) {
+            return null;
+        }
+        return typeChecker.getContext().getRepositoryManager();
     }
     
     public static Iterable<IProject> getProjects() {
