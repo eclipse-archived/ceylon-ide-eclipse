@@ -58,6 +58,13 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 	
 	private File ceylonRepository = null;
 
+	/**
+     * - If the 'ceylon.repo' property exist, returns the corresponding file
+     * <br>
+     * - Else return the internal defaultRepository folder
+	 * 
+	 * @return
+	 */
 	public File getCeylonRepository() {
         return ceylonRepository;
     }
@@ -116,6 +123,16 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         }.schedule();
     }
 
+    
+    /**
+     * - If the property is not empty, return the corresponding file
+     * <br>
+     * - Else return the internal defaultRepository folder
+     * 
+     * @param ceylonRepositoryProperty
+     * @return
+     * 
+     */
     public static File getCeylonRepository(String ceylonRepositoryProperty) {
         File ceylonRepository=null;
         if (! "".equals(ceylonRepositoryProperty)) {
