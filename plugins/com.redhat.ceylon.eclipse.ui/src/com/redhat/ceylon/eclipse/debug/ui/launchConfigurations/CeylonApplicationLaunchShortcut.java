@@ -122,36 +122,38 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         for (IFile file : files) {
             IProject project = file.getProject();
             TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
-            		.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
-            if (phasedUnit!=null) {
-                List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
-                for (Declaration d : declarations) {
-                    boolean candidateDeclaration = true;
-                    if (!d.isToplevel()) {
-                        candidateDeclaration = false;
-                    }
-                    if (d instanceof Method) {
-                        Method methodDecl = (Method) d;
-                        if (!methodDecl.getParameterLists().isEmpty() && 
-                                !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
+            if (typeChecker != null) {
+                PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
+                        .getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
+                if (phasedUnit!=null) {
+                    List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
+                    for (Declaration d : declarations) {
+                        boolean candidateDeclaration = true;
+                        if (!d.isToplevel()) {
                             candidateDeclaration = false;
                         }
-                    }
-                    else if (d instanceof Class) {
-                        Class classDecl = (Class) d;
-                        if (classDecl.isAbstract() || 
-                                classDecl.getParameterList()==null || 
-                                !classDecl.getParameterList().getParameters().isEmpty()) {
+                        if (d instanceof Method) {
+                            Method methodDecl = (Method) d;
+                            if (!methodDecl.getParameterLists().isEmpty() && 
+                                    !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
+                                candidateDeclaration = false;
+                            }
+                        }
+                        else if (d instanceof Class) {
+                            Class classDecl = (Class) d;
+                            if (classDecl.isAbstract() || 
+                                    classDecl.getParameterList()==null || 
+                                    !classDecl.getParameterList().getParameters().isEmpty()) {
+                                candidateDeclaration = false;
+                            }
+                        }
+                        else {
                             candidateDeclaration = false;
                         }
-                    }
-                    else {
-                    	candidateDeclaration = false;
-                    }
-                    if (candidateDeclaration) {
-                        topLevelDeclarations.add(d);
-                        correspondingfiles.add(file);
+                        if (candidateDeclaration) {
+                            topLevelDeclarations.add(d);
+                            correspondingfiles.add(file);
+                        }
                     }
                 }
             }
