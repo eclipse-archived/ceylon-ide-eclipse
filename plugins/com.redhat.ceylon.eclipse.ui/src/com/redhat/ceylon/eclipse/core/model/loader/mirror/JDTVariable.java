@@ -25,10 +25,12 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.java.metadata.Name;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
+import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 
@@ -38,10 +40,14 @@ public class JDTVariable implements VariableMirror {
     private AnnotationBinding[] annotationBindings;
     private Map<String, AnnotationMirror> annotations;
     private TypeMirror type;
+    private MethodMirror methodMirror;
+    private String name;
 
-    public JDTVariable(TypeBinding typeBinding, AnnotationBinding[] annotationBindings) {
+    public JDTVariable(TypeBinding typeBinding, AnnotationBinding[] annotationBindings, MethodMirror methodMirror) {
         this.typeBinding = typeBinding;
         this.annotationBindings = annotationBindings;
+        this.methodMirror = methodMirror;
+        setName();
     }
 
     @Override
@@ -62,9 +68,32 @@ public class JDTVariable implements VariableMirror {
 
     @Override
     public String getName() {
-        AnnotationMirror name = getAnnotation(Name.class.getName());
-        if(name == null)
-            return "unknown";
-        return (String) name.getValue();
+        if (name == null) {
+            setName();
+        }
+        return name;
+    }
+    
+    private void setName() {
+        AnnotationMirror nameAnnotation = getAnnotation(Name.class.getName());
+        if(nameAnnotation != null) {
+            name = (String) nameAnnotation.getValue();
+            return;
+        }
+        
+        String baseName = toParameterName(typeBinding);
+        int count = 0;
+        String nameToReturn = baseName;
+        for (VariableMirror parameter : methodMirror.getParameters()) {
+            if (parameter.getName().equals(nameToReturn)) {
+                count ++;
+                nameToReturn = baseName + Integer.toString(count);
+            }
+        }
+        name = nameToReturn;
+    }
+    
+    private String toParameterName(TypeBinding parameterType) {
+        return new String(parameterType.sourceName()).replaceAll("\\.", "_").toLowerCase();
     }
 }
