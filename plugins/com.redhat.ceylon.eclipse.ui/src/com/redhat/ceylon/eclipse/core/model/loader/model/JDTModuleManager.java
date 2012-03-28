@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -30,6 +31,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
@@ -137,24 +139,26 @@ public class JDTModuleManager extends LazyModuleManager {
             module = new Module();
         else {
             try {
+                List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
                 if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
-                    // pick the first package fragment root
-                    for(IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()){
-                        if(!root.isArchive()
-                                && !root.isExternal()){
-                            module = new JDTModule(this, root);
-                            break;
+                    // Add the list of source package fragment roots
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        IClasspathEntry entry = root.getResolvedClasspathEntry();
+                        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
+                            roots.add(root);
                         }
                     }
                 }
                 else{
-                    for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        IClasspathEntry entry = root.getResolvedClasspathEntry();
+                        
                         if (root.getPackageFragment(moduleNameString).exists()) {
-                            module = new JDTModule(this, root);
-                            break;
+                            roots.add(root);
                         }
                     }
                 }
+                module = new JDTModule(this, roots);
             } catch (JavaModelException e) {
                 e.printStackTrace();
             }

@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.loader;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,9 +241,9 @@ public class JDTModelLoader extends AbstractModelLoader {
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
-            IPackageFragmentRoot root = jdtModule.getPackageFragmentRoot();
+            List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
             IPackageFragment packageFragment = null;
-            if (root != null) {
+            for (IPackageFragmentRoot root : roots) {
                 packageFragment = root.getPackageFragment(packageName);
                 if(packageFragment.exists() && loadDeclarations) {
                     try {
@@ -250,6 +251,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                             IType type = classFile.getType();
                             if (! type.isMember()) {
                                 convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                            }
+                        }
+                        for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
+                            for (IType type : compilationUnit.getTypes()) {
+                                if (! type.isMember()) {
+                                    convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                }
                             }
                         }
                     } catch (JavaModelException e) {
@@ -261,6 +269,14 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private Module lookupModule(String packageName) {
+        Module module = lookupModuleInternal(packageName);
+        if (module != null) {
+            return module;
+        }
+        return modules.getDefaultModule();
+    }
+
+    public Module lookupModuleInternal(String packageName) {
         for(Module module : modules.getListOfModules()){
             if(module instanceof LazyModule){
                 if(((LazyModule)module).containsPackage(packageName))
@@ -268,7 +284,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             }else if(isSubPackage(module.getNameAsString(), packageName))
                 return module;
         }
-        return modules.getDefaultModule();
+        return null;
     }
 
     private boolean isSubPackage(String moduleName, String pkgName) {
@@ -352,6 +368,53 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected boolean isOverridingMethod(MethodMirror methodSymbol) {
         return ((JDTMethod)methodSymbol).isOverridingMethod();
+    }
+
+    
+    @Override
+    public Module findOrCreateModule(String pkgName) {
+        java.util.List<String> moduleName;
+        boolean isJava = false;
+        boolean defaultModule = false;
+
+        Module module = lookupModuleInternal(pkgName);
+        if (module != null) {
+            return module;
+        }
+        
+        // FIXME: this is a rather simplistic view of the world
+        if(pkgName == null){
+            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
+            defaultModule = true;
+        }else if(pkgName.startsWith("java.")){
+            moduleName = Arrays.asList("java");
+            isJava = true;
+        } else if(pkgName.startsWith("sun.")){
+            moduleName = Arrays.asList("sun");
+            isJava = true;
+        } else if(pkgName.startsWith("ceylon.language."))
+            moduleName = Arrays.asList("ceylon","language");
+        else{
+            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
+            defaultModule = true;
+        }
+        
+        module = moduleManager.getOrCreateModule(moduleName, null);
+        // make sure that when we load the ceylon language module we set it to where
+        // the typechecker will look for it
+        if(pkgName != null
+                 && pkgName.startsWith("ceylon.language.")
+                 && modules.getLanguageModule() == null){
+             modules.setLanguageModule(module);
+         }
+         
+         if (module instanceof LazyModule) {
+             ((LazyModule)module).setJava(isJava);
+         }
+         // FIXME: this can't be that easy.
+         module.setAvailable(true);
+         module.setDefault(defaultModule);
+         return module;
     }
 
     @Override
