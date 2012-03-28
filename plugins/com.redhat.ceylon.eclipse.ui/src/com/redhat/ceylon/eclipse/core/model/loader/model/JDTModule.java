@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
 import java.net.URLClassLoader;
+import java.util.List;
 
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 
@@ -30,15 +31,15 @@ import com.redhat.ceylon.compiler.loader.model.LazyModule;
 public class JDTModule extends LazyModule {
 
     private JDTModuleManager moduleManager;
-    private IPackageFragmentRoot packageFragmentRoot;
+    private List<IPackageFragmentRoot> packageFragmentRoots;
 
-    public JDTModule(JDTModuleManager jdtModuleManager, IPackageFragmentRoot packageFragmentRoot) {
+    public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
-        this.packageFragmentRoot = packageFragmentRoot;
+        this.packageFragmentRoots = packageFragmentRoots;
     }
 
-    public IPackageFragmentRoot getPackageFragmentRoot() {
-        return packageFragmentRoot;
+    public List<IPackageFragmentRoot> getPackageFragmentRoots() {
+        return packageFragmentRoots;
     }
 
     @Override
