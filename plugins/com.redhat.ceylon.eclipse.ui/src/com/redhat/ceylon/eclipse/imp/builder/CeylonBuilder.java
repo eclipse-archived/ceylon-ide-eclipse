@@ -786,7 +786,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             phasedUnit.analyseFlow();
         }
 
-        addProblemAndTaskMarkers(typeChecker);
+        addProblemAndTaskMarkers(phasedUnitsToUpdate);
         
         return phasedUnitsToUpdate;
     }
@@ -861,14 +861,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Collecting Ceylon problems for project " 
                 + project.getName());
     
-        addProblemAndTaskMarkers(typeChecker);
+        addProblemAndTaskMarkers(typeChecker.getPhasedUnits().getPhasedUnits());
         monitor.worked(1);
 
         return typeChecker;
     }
 
-    private static void addProblemAndTaskMarkers(TypeChecker typeChecker) {
-        for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits()) {
+    private static void addProblemAndTaskMarkers(List<PhasedUnit> units) {
+        for (PhasedUnit phasedUnit : units) {
             IFile file = getFile(phasedUnit);
             List<CommonToken> tokens = phasedUnit.getTokens();
             phasedUnit.getCompilationUnit()
