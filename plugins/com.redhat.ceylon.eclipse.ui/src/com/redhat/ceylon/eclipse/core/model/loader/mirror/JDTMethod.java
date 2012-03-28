@@ -109,7 +109,7 @@ public class JDTMethod implements MethodMirror {
             }
             parameters = new ArrayList<VariableMirror>(javaParameters.length);
             for(int i=0;i<javaParameters.length;i++)
-                parameters.add(new JDTVariable(javaParameters[i], annotations[i]));
+                parameters.add(new JDTVariable(javaParameters[i], annotations[i], this));
         }
         return parameters;
     }
