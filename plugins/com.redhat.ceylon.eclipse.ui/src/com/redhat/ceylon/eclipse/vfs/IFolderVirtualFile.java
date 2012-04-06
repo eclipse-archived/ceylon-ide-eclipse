@@ -50,4 +50,8 @@ public class IFolderVirtualFile extends ResourceVirtualFile {
         
         return children;
     }
+    
+    public IFolder getFolder() {
+        return (IFolder) resource;
+    }
 }
