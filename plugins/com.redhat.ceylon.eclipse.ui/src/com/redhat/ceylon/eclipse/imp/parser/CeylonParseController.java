@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.java.util.Util;
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -68,6 +69,7 @@ public class CeylonParseController extends ParseControllerBase {
 
     private List<CommonToken> tokens;
     private TypeChecker typeChecker;
+    private AbstractModelLoader modelLoader;
     
     /**
      * @param filePath		Project-relative path of file
@@ -184,7 +186,10 @@ public class CeylonParseController extends ParseControllerBase {
                     }
                 } 
                 catch (CoreException e) {}
+            } else {
+                modelLoader = CeylonBuilder.getProjectModelLoader(project);
             }
+            
         }
         
            
@@ -302,9 +307,15 @@ public class CeylonParseController extends ParseControllerBase {
             // Editing an already built file
             Package sourcePackage = builtPhasedUnit.getPackage();
             if (sourcePackage instanceof LazyPackage) {
-                throw new RuntimeException("This should NOT be a LazyPackage");
+                if (modelLoader != null) {
+                    pkg = new LazyPackage(modelLoader);
+                } else {
+                    pkg = new Package();
+                }
+            } else {
+                pkg = new Package();
             }
-            pkg = new Package();
+            
             pkg.setName(sourcePackage.getName());
             pkg.setModule(sourcePackage.getModule());
             for (Unit pkgUnit : sourcePackage.getUnits()) {

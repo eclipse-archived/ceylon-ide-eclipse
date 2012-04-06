@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -238,8 +239,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 */
                     for (IProject project : interestingProjects) {
                         ISourceProject sourceProject = ModelFactory.open(project);
-                        project.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
-                        CeylonBuilder.buildCeylonModel(project, sourceProject, monitor);
+                        CeylonBuilder.buildCeylonModel(project, sourceProject, null, monitor);
                     }
                     
                     for (IProject project : interestingProjects) {
@@ -311,14 +311,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                             @Override
                                             public IStatus run(IProgressMonitor monitor) {
                                                 try {
-                                                    try {
-                                                        project.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
-                                                    } catch (CoreException e) {
-                                                        e.printStackTrace();
-                                                    }
                                                     monitor.beginTask("Building Ceylon Model", 3);
                                                     ISourceProject sourceProject = ModelFactory.open(projectToBuild);
-                                                    CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject,
+                                                    CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject, null, 
                                                             monitor);
                                                 } catch (ModelException e) {
                                                     return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
