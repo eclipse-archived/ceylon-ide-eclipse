@@ -22,6 +22,7 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,6 +216,16 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
     
+    // TODO : remove when the bug in the AbstractModelLoader is corrected
+    @Override
+    public LazyPackage findOrCreatePackage(Module module, String pkgName) {
+        LazyPackage result = super.findOrCreatePackage(module, pkgName);
+        if ("".equals(pkgName)) {
+            result.setName(Collections.<String>emptyList());
+        }
+        return result;
+    }
+
     @Override
     public void loadStandardModules() {
         /*

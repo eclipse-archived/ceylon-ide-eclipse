@@ -20,9 +20,14 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
+
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +46,7 @@ import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -50,6 +56,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
+/**
+ * @author david
+ *
+ */
 public class JDTModuleManager extends LazyModuleManager {
 
     private AbstractModelLoader modelLoader;
@@ -70,18 +80,55 @@ public class JDTModuleManager extends LazyModuleManager {
         sourceModules = new HashSet<String>();
         sourceModules.add("ceylon.language");
     }
-
+    /*
+     * TODO : Remove when the package creation (and module binding) in ModuleManager will be done with a method 
+     * that can be overriden (createPackage, as suggested here - a "" name parameter correspond to the empty package)
+     * Then we can only override this new createPackage method with our already-existing one
+     */
+    
     @Override
     public void initCoreModules() {
-        super.initCoreModules();
         Modules modules = getContext().getModules();
+        if ( modules == null ) {
+            modules = new Modules();
+
+            //build default module (module in which packages belong to when not explicitly under a module
+            final List<String> defaultModuleName = Collections.singletonList(Module.DEFAULT_MODULE_NAME);
+            final Module defaultModule = createModule(defaultModuleName);
+            defaultModule.setDefault(true);
+            defaultModule.setAvailable(true);
+            defaultModule.setVersion("unversioned");
+            modules.getListOfModules().add(defaultModule);
+            modules.setDefaultModule(defaultModule);
+
+            //create language module and add it as a dependency of defaultModule
+            //since packages outside a module cannot declare dependencies
+            final List<String> languageName = Arrays.asList("ceylon", "language");
+            Module languageModule = createModule(languageName);
+            languageModule.setLanguageModule(languageModule);
+            languageModule.setAvailable(false); //not available yet
+            modules.setLanguageModule(languageModule);
+            modules.getListOfModules().add(languageModule);
+            defaultModule.getImports().add(new ModuleImport(languageModule, false, false));
+            defaultModule.setLanguageModule(languageModule);
+            getContext().setModules(modules);
+
+            //build empty package
+            final Package emptyPackage = createPackage("", defaultModule);
+        }
+        super.initCoreModules();
         // FIXME: this should go away somewhere else, but we need it to be set otherwise
         // when we load the module from compiled sources, ModuleManager.getOrCreateModule() will not
         // return the language module because its version is null
         Module languageModule = modules.getLanguageModule();
         languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
+        Module defaultModule = modules.getDefaultModule();
     }
     
+    protected Package createPackage(String pkgName, Module module) {
+        return getModelLoader().findOrCreatePackage(module, pkgName);
+    }
+
     @Override
     public AbstractModelLoader getModelLoader() {
         if(modelLoader == null){
@@ -135,39 +182,31 @@ public class JDTModuleManager extends LazyModuleManager {
     protected Module createModule(List<String> moduleName) {
         Module module = null;
         String moduleNameString = Util.getName(moduleName);
-        if(isModuleLoadedFromSource(moduleNameString))
-            module = new Module();
-        else {
-            try {
-                List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
-                if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
-                    // Add the list of source package fragment roots
-                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                        IClasspathEntry entry = root.getResolvedClasspathEntry();
-                        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
-                            roots.add(root);
-                        }
+        List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
+        try {
+            if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
+                // Add the list of source package fragment roots
+                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                    IClasspathEntry entry = root.getResolvedClasspathEntry();
+                    if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
+                        roots.add(root);
                     }
                 }
-                else{
-                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                        IClasspathEntry entry = root.getResolvedClasspathEntry();
-                        
-                        if (root.getPackageFragment(moduleNameString).exists()) {
-                            roots.add(root);
-                        }
+            } else {
+                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                    IClasspathEntry entry = root.getResolvedClasspathEntry();
+                    
+                    if (root.getPackageFragment(moduleNameString).exists()) {
+                        roots.add(root);
                     }
                 }
-                module = new JDTModule(this, roots);
-            } catch (JavaModelException e) {
-                e.printStackTrace();
             }
+        } catch (JavaModelException e) {
+            e.printStackTrace();
         }
-        if (module == null) {
-            module = new JDTModule(this, null);
-        }
-        module.setName(moduleName);
         
+        module = new JDTModule(this, roots);
+        module.setName(moduleName);
         return module;
     }
 
@@ -199,5 +238,45 @@ public class JDTModuleManager extends LazyModuleManager {
         Package currentPkg = getCurrentPackage();
         sourceModules.add(currentPkg.getNameAsString());
         super.visitModuleFile();
+    }
+    
+
+    private Method addErrorToModuleMethod = null;
+    
+    // Todo : to be suppressed when the base one will be done protected. 
+    private void addErrorToModule(List<String> moduleName, String error) {
+        if (addErrorToModuleMethod == null) {
+            try {
+                addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", new Class[] {List.class, String.class});
+                addErrorToModuleMethod.setAccessible(true);
+                addErrorToModuleMethod.invoke(this, new Object[] {moduleName, error});
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    // Todo : to push into the base ModelManager class
+    public void addTopLevelModuleError() {
+        addErrorToModule(new ArrayList<String>(), "A module cannot be defined at the top level of the hierarchy");
+    }
+    public void addTwoModulesInHierarchyError(List<String> existingModuleName, List<String> newModulePackageName) {
+        StringBuilder error = new StringBuilder("Found two modules within the same hierarchy: '");
+        error.append( formatPath( existingModuleName ) )
+            .append( "' and '" )
+            .append( formatPath( newModulePackageName ) )
+            .append("'");
+        addErrorToModule(existingModuleName, error.toString());
+        addErrorToModule(newModulePackageName, error.toString());
     }
 }
