@@ -153,11 +153,16 @@ public class CeylonParseController extends ParseControllerBase {
         if (path!=null) {
             if (sourceProject!=null) {
                 resolvedPath = sourceProject.resolvePath(path);
+                if (resolvedPath == null) {// file has been deleted for example
+                    path = null;
+                    sourceProject = null;
+                }
             }
-            file = new SourceCodeVirtualFile(contents, path);      
         }
-        else {
+        if (path == null) {
             file = new SourceCodeVirtualFile(contents);
+        } else {
+            file = new SourceCodeVirtualFile(contents, path);
         }
         
         if (! file.getName().endsWith(".ceylon")) {
