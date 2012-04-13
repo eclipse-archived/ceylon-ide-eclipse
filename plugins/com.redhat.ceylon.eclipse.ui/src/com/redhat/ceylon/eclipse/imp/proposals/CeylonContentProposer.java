@@ -77,6 +77,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -777,7 +778,19 @@ public class CeylonContentProposer implements IContentProposer {
     private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
             String prefix) {
         Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
-        Module languageModule = node.getUnit().getPackage().getModule().getLanguageModule();
+        if (node == null) {
+            return result;
+        }
+        Unit unit = node.getUnit();
+        if (unit == null) {
+            return result;
+        }
+        Package pkg = unit.getPackage();
+        if (pkg == null) {
+            return result;
+        }
+        
+        Module languageModule = pkg.getModule().getLanguageModule();
         if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
             for (Package languageScope: languageModule.getPackages() ) {
                 for (Map.Entry<String, DeclarationWithProximity> entry: 
