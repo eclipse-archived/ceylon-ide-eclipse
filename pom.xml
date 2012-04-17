@@ -17,7 +17,7 @@
 	  <platform-version-name>indigo</platform-version-name>
 	  <tychoVersion>0.12.0</tychoVersion>
 	  <scmBranch>trunk</scmBranch>
-	  <BUILD_ALIAS>M1</BUILD_ALIAS>
+	  <BUILD_ALIAS>M2</BUILD_ALIAS>
 	  <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
 	  <memoryOptions2>-XX:MaxPermSize=256m</memoryOptions2>
 	  <systemProperties></systemProperties>
@@ -36,7 +36,7 @@
 	    <layout>p2</layout>
 	    <!-- Will have to use the xam.dk mirror until IMP publish an updatesite with p2 metadata -->
 	    <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
-            <url>http://xam.dk/imp/updates</url>
+            <url>http://download.jboss.org/tools/extras/imp</url>
 	  </repository>
 
 	</repositories>
