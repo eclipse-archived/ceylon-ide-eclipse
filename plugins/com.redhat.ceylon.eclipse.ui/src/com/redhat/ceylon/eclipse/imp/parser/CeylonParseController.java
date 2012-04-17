@@ -1,10 +1,14 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -23,14 +27,18 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.ISourceProject;
+import org.eclipse.imp.model.ModelFactory;
+import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jdt.core.IJavaModelMarker;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IRegion;
 
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
@@ -173,10 +181,68 @@ public class CeylonParseController extends ParseControllerBase {
         }
         
         VirtualFile srcDir = null;
+        IProject project = null;
+        
         if (sourceProject!=null) {
             srcDir = getSourceFolder(sourceProject.getRawProject(), resolvedPath);
-            
-            IProject project = sourceProject.getRawProject();
+            project = sourceProject.getRawProject();
+        }
+        
+        if (srcDir == null && project == null) {
+            if (path!=null) { //path==null in structured compare editor
+                //for files from external repos, search for
+                //the repo by iterating all repos referenced
+                //by all projects
+
+                String osFileString = path.toOSString();
+                String artifactName = null;
+                String version = null;
+                int lastColonIdx = osFileString.lastIndexOf('!');
+                if (lastColonIdx > 0) {
+                    String srcArchivePath= osFileString.substring(0, lastColonIdx);
+                    String separator = Pattern.quote(File.separator);
+                    String hyphen = Pattern.quote("-");
+                    String dot = Pattern.quote(".");
+                    Pattern pattern = Pattern.compile(".*" + separator + "([^" + separator + "]+)" + hyphen + "(.+)" + dot + "src");
+                    Matcher matcher = pattern.matcher(srcArchivePath);
+                    if (matcher.matches()) {
+                        artifactName = matcher.group(1);
+                        version = matcher.group(2);
+                    }
+                }
+                
+                for (IProject p: CeylonBuilder.getProjects()) {
+                    boolean found = false;
+                    RepositoryManager manager = CeylonBuilder.getProjectRepositoryManager(project);
+                    
+                    if (artifactName != null && version != null) {
+                        RepositoryManager repositoryManager = CeylonBuilder.getProjectRepositoryManager(p);
+                        File artifact = null;
+                        try {
+                            artifact = repositoryManager.getArtifact(artifactName, version);
+                        } catch (IOException e) {
+                        }
+                        if (artifact != null) {
+                            try {
+                                sourceProject = ModelFactory.open(p);
+                                project = p;
+                                found=true;
+                            } catch (ModelException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        }
+                        if (found) break;
+                    }
+                }
+            }
+        }
+        
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+
+        if (sourceProject != null) {
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker == null) {
                 try {
@@ -197,7 +263,6 @@ public class CeylonParseController extends ParseControllerBase {
             
         }
         
-           
         //System.out.println("Compiling " + file.getPath());
         
         if (isCanceling(monitor)) {
@@ -250,10 +315,9 @@ public class CeylonParseController extends ParseControllerBase {
         
         fCurrentAst = cu;
         
-        if (srcDir==null || typeChecker == null) {
+        if (typeChecker == null) {
         	TypeCheckerBuilder tcb = new TypeCheckerBuilder().verbose(false);
         	
-            IProject project = null;
             if (sourceProject != null) {
                 project = sourceProject.getRawProject();
             } 
@@ -273,6 +337,7 @@ public class CeylonParseController extends ParseControllerBase {
                         //for files from external repos, search for
                         //the repo by iterating all repos referenced
                         //by all projects
+
                         for (IProject p: CeylonBuilder.getProjects()) {
                             boolean found = false;
                             for (String repo: CeylonBuilder.getUserRepositories(p)) {
@@ -282,6 +347,7 @@ public class CeylonParseController extends ParseControllerBase {
                                     break;
                                 }
                             }
+
                             if (found) break;
                         }
                     }
@@ -290,12 +356,13 @@ public class CeylonParseController extends ParseControllerBase {
                     for (String repo : CeylonBuilder.getUserRepositories(project)) {
                         repos.add(repo);
                     }
+                    repos.add(CeylonBuilder.getOutputDirectory(JavaCore.create(project)).getAbsolutePath());
                 }
             } 
             catch (CoreException e) {
                 return fCurrentAst; 
             }
-        	tcb.setRepositoryManager(Util.makeRepositoryManager(repos, new EclipseLogger()));
+        	tcb.setRepositoryManager(Util.makeRepositoryManager(repos, null, new EclipseLogger()));
             
         	TypeChecker tc = tcb.getTypeChecker();
             tc.process();
@@ -307,69 +374,9 @@ public class CeylonParseController extends ParseControllerBase {
         }
          
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
-        Package pkg = null;
-        if (builtPhasedUnit!=null) {
-            // Editing an already built file
-            Package sourcePackage = builtPhasedUnit.getPackage();
-            if (sourcePackage instanceof LazyPackage) {
-                if (modelLoader != null) {
-                    pkg = new LazyPackage(modelLoader);
-                } else {
-                    pkg = new Package();
-                }
-            } else {
-                pkg = new Package();
-            }
-            
-            pkg.setName(sourcePackage.getName());
-            pkg.setModule(sourcePackage.getModule());
-            for (Unit pkgUnit : sourcePackage.getUnits()) {
-                pkg.addUnit(pkgUnit);
-            }
-        }
-        else {
-            // Editing a new file
-            Modules modules = typeChecker.getContext().getModules();
-            if (srcDir==null) {
-                srcDir = new TemporaryFile();
-            }
-            else {
-                // Retrieve the target package from the file src-relative path
-                //TODO: this is very fragile!
-                String packageName = constructPackageName(file, srcDir);
-                for (Module module: modules.getListOfModules()) {
-                    for (Package p: module.getPackages()) {
-                        if (p.getQualifiedNameString().equals(packageName)) {
-                            pkg = p;
-                            break;
-                        }
-                        if (pkg != null) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (pkg == null) {
-                // Add the default package
-                pkg = modules.getDefaultModule().getPackages().get(0);
-                
-                // TODO : iterate through parents to get the sub-package 
-                // in which the package has been created, until we find the module
-                // Then the package can be created.
-                // However this should preferably be done on notification of the 
-                // resource creation
-                // A more global/systematic integration between the model element 
-                // (modules, packages, Units) and the IResourceModel should
-                // maybe be considered. But for now it is not required.
-            }
-        }
-        
-        if (isCanceling(monitor)) {
-            return fCurrentAst;
-        }
         
         PhasedUnit phasedUnit;
-        if (isExternalPath(path)) {
+        if (isExternalPath(path) && builtPhasedUnit != null) {
             // reuse the existing AST
             cu = builtPhasedUnit.getCompilationUnit();
             fCurrentAst = cu;
@@ -384,6 +391,63 @@ public class CeylonParseController extends ParseControllerBase {
             }
         }
         else {
+            Package pkg = null;
+            if (builtPhasedUnit!=null) {
+                // Editing an already built file
+                Package sourcePackage = builtPhasedUnit.getPackage();
+                if (sourcePackage instanceof LazyPackage) {
+                    if (modelLoader != null) {
+                        pkg = new LazyPackage(modelLoader);
+                    } else {
+                        pkg = new Package();
+                    }
+                } else {
+                    pkg = new Package();
+                }
+                
+                pkg.setName(sourcePackage.getName());
+                pkg.setModule(sourcePackage.getModule());
+                for (Unit pkgUnit : sourcePackage.getUnits()) {
+                    pkg.addUnit(pkgUnit);
+                }
+            }
+            else {
+                // Editing a new file
+                Modules modules = typeChecker.getContext().getModules();
+                if (srcDir==null) {
+                    srcDir = new TemporaryFile();
+                }
+                else {
+                    // Retrieve the target package from the file src-relative path
+                    //TODO: this is very fragile!
+                    String packageName = constructPackageName(file, srcDir);
+                    for (Module module: modules.getListOfModules()) {
+                        for (Package p: module.getPackages()) {
+                            if (p.getQualifiedNameString().equals(packageName)) {
+                                pkg = p;
+                                break;
+                            }
+                            if (pkg != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (pkg == null) {
+                    // Add the default package
+                    pkg = modules.getDefaultModule().getPackages().get(0);
+                    
+                    // TODO : iterate through parents to get the sub-package 
+                    // in which the package has been created, until we find the module
+                    // Then the package can be created.
+                    // However this should preferably be done on notification of the 
+                    // resource creation
+                    // A more global/systematic integration between the model element 
+                    // (modules, packages, Units) and the IResourceModel should
+                    // maybe be considered. But for now it is not required.
+                }
+            }
+            
             phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleManager(), 
                     typeChecker.getContext(), tokens);  

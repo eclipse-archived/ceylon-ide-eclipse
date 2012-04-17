@@ -827,17 +827,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Setting up typechecker for project " 
                 + project.getName());
 
+        final IJavaProject javaProject = JavaCore.create(project);
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
             .verbose(false)
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
                 public ModuleManager createModuleManager(Context context) {
-                    return new JDTModuleManager(context, JavaCore.create(project));
+                    return new JDTModuleManager(context, javaProject);
                 }
             });
 
         List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, new EclipseLogger()));
+        typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, getOutputDirectory(javaProject).getAbsolutePath(), new EclipseLogger()));
         final TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
         final PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
         final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager(); 
@@ -855,11 +856,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
             srcDir.getResource().accept(new IResourceVisitor() {
-                private IFolder pkgFolder;
-                private Package pkg;
                 private Module module;
                 
                 public boolean visit(IResource resource) throws CoreException {
+                    Package pkg;
                     if (resource.equals(srcDir.getResource())) {
                         IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
                         if (moduleFile.exists()) {
@@ -905,6 +905,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
                     if (resource instanceof IFile) {
                         if (resource.exists()) {
+                            List<String> pkgName = Arrays.asList(resource.getParent().getProjectRelativePath().makeRelativeTo(srcFolderPath).segments());
+                            String pkgNameAsString = formatPath(pkgName);
+                            pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
+                            
                             if (LANGUAGE.hasExtension(resource.getFileExtension())) {
                                 if (scannedSources != null) {
                                     scannedSources.add((IFile)resource);
@@ -1044,7 +1048,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 Module languageModule = projectModules.getLanguageModule();
                 ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
             } else {
-                ctx = new ArtifactContext("ceylon.language", "0.1");
+                ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
             }
             ctx.setSuffix(ArtifactContext.CAR);
             RepositoryManager repositoryManager = getProjectRepositoryManager(project);

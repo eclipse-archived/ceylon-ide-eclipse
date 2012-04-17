@@ -53,6 +53,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
@@ -125,6 +126,7 @@ public class JDTModuleManager extends LazyModuleManager {
         Module defaultModule = modules.getDefaultModule();
     }
     
+    @Override
     protected Package createPackage(String pkgName, Module module) {
         return getModelLoader().findOrCreatePackage(module, pkgName);
     }
@@ -279,4 +281,15 @@ public class JDTModuleManager extends LazyModuleManager {
         addErrorToModule(existingModuleName, error.toString());
         addErrorToModule(newModulePackageName, error.toString());
     }
+    
+    @Override
+    protected PhasedUnits createPhasedUnits() {
+        return new PhasedUnits(getContext(), new ModuleManagerFactory() {
+            @Override
+            public ModuleManager createModuleManager(Context context) {
+                return JDTModuleManager.this;
+            }
+        });
+    }
+
 }
