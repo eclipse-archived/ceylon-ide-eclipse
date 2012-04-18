@@ -126,6 +126,10 @@ public class CeylonContentProposer implements IContentProposer {
      */
     public ICompletionProposal[] getContentProposals(IParseController controller,
             final int offset, ITextViewer viewer) {
+        if (controller == null || viewer == null) {
+            return null;
+        }
+        
         CeylonParseController cpc = (CeylonParseController) controller;
         List<CommonToken> tokens = cpc.getTokens(); 
         if (tokens == null) {
