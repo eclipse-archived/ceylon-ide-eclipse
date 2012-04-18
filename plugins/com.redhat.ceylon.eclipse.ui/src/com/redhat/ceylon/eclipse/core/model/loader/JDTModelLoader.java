@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
@@ -70,12 +72,14 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModule;
@@ -219,11 +223,18 @@ public class JDTModelLoader extends AbstractModelLoader {
     // TODO : remove when the bug in the AbstractModelLoader is corrected
     @Override
     public LazyPackage findOrCreatePackage(Module module, String pkgName) {
-        LazyPackage result = super.findOrCreatePackage(module, pkgName);
+        LazyPackage pkg = super.findOrCreatePackage(module, pkgName);
         if ("".equals(pkgName)) {
-            result.setName(Collections.<String>emptyList());
+            pkg.setName(Collections.<String>emptyList());
         }
-        return result;
+        Module currentModule = pkg.getModule();
+        if (currentModule.equals(modules.getDefaultModule()) && ! currentModule.equals(module)) {
+            currentModule.getPackages().remove(pkg);
+            pkg.setModule(null);
+            module.getPackages().add(pkg);
+            pkg.setModule(module);
+        }
+        return pkg;
     }
 
     @Override
@@ -260,13 +271,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                     try {
                         for (IClassFile classFile : packageFragment.getClassFiles()) {
                             IType type = classFile.getType();
-                            if (! type.isMember()) {
+                            if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
                                 convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                             }
                         }
                         for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
                             for (IType type : compilationUnit.getTypes()) {
-                                if (! type.isMember()) {
+                                if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
                                     convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                 }
                             }
@@ -313,6 +324,10 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public synchronized ClassMirror lookupNewClassMirror(String name) {
+        if (sourceDeclarations.contains(name)) {
+            return null;
+        }
+        
         try {
             IType type = javaProject.findType(name);
             if (type == null) {
@@ -363,6 +378,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public Declaration convertToDeclaration(String typeName,
             DeclarationType declarationType) {
+        if (sourceDeclarations.contains(typeName)) {
+            return null;
+        }
         if (typeName.startsWith("ceylon.language")) {
             return typeFactory.getLanguageModuleDeclaration(typeName.substring(typeName.lastIndexOf('.') + 1));
         }
@@ -478,6 +496,21 @@ public class JDTModelLoader extends AbstractModelLoader {
         allDeclarations.addAll(members);
         for (Declaration member : members) {
             retrieveInnerDeclarations(member, allDeclarations);
+        }
+    }
+    
+    private Set<String> sourceDeclarations = new TreeSet<String>();
+    public void setupSourceFileObjects(List<PhasedUnit> phasedUnits) {
+        for (PhasedUnit unit : phasedUnits) {
+            final String pkgName = unit.getPackage().getQualifiedNameString();
+            unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
+                @Override
+                public void loadFromSource(Tree.Declaration decl) {
+                    String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
+                    String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+                        sourceDeclarations.add(fqn);
+                }
+            });
         }
     }
 }

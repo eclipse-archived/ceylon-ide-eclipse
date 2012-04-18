@@ -843,7 +843,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
         final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager(); 
         final Context context = typeChecker.getContext();
-        final AbstractModelLoader modelLoader = moduleManager.getModelLoader();
+        final JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
         final Module defaultModule = context.getModules().getDefaultModule();
         
         monitor.worked(1);
@@ -934,6 +934,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Compiling Ceylon source files for project " 
                     + project.getName());
 
+        modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
+        
         // Parsing of ALL units in the source folder should have been done
         typeChecker.process();
 
