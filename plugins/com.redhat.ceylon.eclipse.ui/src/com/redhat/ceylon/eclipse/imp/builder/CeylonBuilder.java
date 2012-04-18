@@ -57,6 +57,7 @@ import org.eclipse.imp.preferences.PreferenceConstants;
 import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -1474,7 +1475,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 List<IPath> sourceFolders = new ArrayList<IPath>();
                 for (IClasspathEntry entry: javaProject.getResolvedClasspath(true)) {
                     IPath path = entry.getPath();
-                    if (entry.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
+                    if (isCeylonSourceEntry(entry)) {
                         sourceFolders.add(path);
                     }
                 }
@@ -1485,6 +1486,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
         return Collections.emptyList();
+    }
+
+    public static boolean isCeylonSourceEntry(IClasspathEntry entry) {
+        if (entry.getEntryKind()!=IClasspathEntry.CPE_SOURCE) {
+            return false;
+        }
+        
+        for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
+            if (attribute.getName().equals("CEYLON") && "true".equalsIgnoreCase(attribute.getValue())) {
+                return true;
+            }
+        }
+
+        for (IPath exclusionPattern : entry.getExclusionPatterns()) {
+            if (exclusionPattern.toString().endsWith(".ceylon")) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static Collection<IPath> retrieveSourceFolders(
