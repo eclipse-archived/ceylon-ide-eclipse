@@ -82,8 +82,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
+import com.redhat.ceylon.eclipse.core.model.loader.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 /**
  * A model loader which uses the JDT model.
@@ -116,13 +118,13 @@ public class JDTModelLoader extends AbstractModelLoader {
             private Map<String, Declaration> languageModuledeclarations = new HashMap<String, Declaration>();
             
             public Declaration getLanguageModuleDeclaration(String name) {
-                Declaration decl = languageModuledeclarations.get(name);
-                if (decl == null) {
-                    decl = super.getLanguageModuleDeclaration(name);
-                    if (decl != null) {
-                        languageModuledeclarations.put(name, decl);
-                    }
+                if (languageModuledeclarations.containsKey(name)) {
+                    return languageModuledeclarations.get(name);
                 }
+                
+                languageModuledeclarations.put(name, null);
+                Declaration decl = super.getLanguageModuleDeclaration(name);
+                languageModuledeclarations.put(name, decl);
                 return decl;
             }
         };
@@ -266,25 +268,31 @@ public class JDTModelLoader extends AbstractModelLoader {
             List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
             IPackageFragment packageFragment = null;
             for (IPackageFragmentRoot root : roots) {
-                packageFragment = root.getPackageFragment(packageName);
-                if(packageFragment.exists() && loadDeclarations) {
-                    try {
-                        for (IClassFile classFile : packageFragment.getClassFiles()) {
-                            IType type = classFile.getType();
-                            if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
-                                convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
-                            }
-                        }
-                        for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
-                            for (IType type : compilationUnit.getTypes()) {
-                                if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
-                                    convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                try {
+                    if (CeylonBuilder.isCeylonSourceEntry(root.getRawClasspathEntry())) {
+                        packageFragment = root.getPackageFragment(packageName);
+                        if(packageFragment.exists() && loadDeclarations) {
+                            try {
+                                for (IClassFile classFile : packageFragment.getClassFiles()) {
+                                    IType type = classFile.getType();
+                                    if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
+                                        convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                    }
                                 }
+                                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
+                                    for (IType type : compilationUnit.getTypes()) {
+                                        if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
+                                            convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                        }
+                                    }
+                                }
+                            } catch (JavaModelException e) {
+                                e.printStackTrace();
                             }
                         }
-                    } catch (JavaModelException e) {
-                        e.printStackTrace();
                     }
+                } catch (JavaModelException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -325,7 +333,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized ClassMirror lookupNewClassMirror(String name) {
         if (sourceDeclarations.contains(name)) {
-            return null;
+            return new SourceClass(name);
         }
         
         try {
@@ -378,9 +386,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public Declaration convertToDeclaration(String typeName,
             DeclarationType declarationType) {
-        if (sourceDeclarations.contains(typeName)) {
-            return null;
-        }
         if (typeName.startsWith("ceylon.language")) {
             return typeFactory.getLanguageModuleDeclaration(typeName.substring(typeName.lastIndexOf('.') + 1));
         }
