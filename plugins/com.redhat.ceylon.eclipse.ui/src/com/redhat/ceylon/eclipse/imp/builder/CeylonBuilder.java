@@ -89,6 +89,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -938,7 +939,50 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
         
         // Parsing of ALL units in the source folder should have been done
-        typeChecker.process();
+
+        final List<PhasedUnit> listOfUnits = phasedUnits.getPhasedUnits();
+
+        phasedUnits.getModuleManager().prepareForTypeChecking();
+        phasedUnits.visitModules();
+
+        //By now le language module version should be known (as local)
+        //or we should use the default one.
+        Module languageModule = context.getModules().getLanguageModule();
+        if (languageModule.getVersion() == null) {
+            languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
+        }
+
+        final ModuleValidator moduleValidator = new ModuleValidator(context, phasedUnits) {
+
+            @Override
+            protected void executeExternalModulePhases() {
+                for (PhasedUnits dependencyPhasedUnits : getPhasedUnitsOfDependencies()) {
+                    modelLoader.setupSourceFileObjects(dependencyPhasedUnits.getPhasedUnits());
+                }
+                super.executeExternalModulePhases();
+            }
+            
+        };
+        
+        moduleValidator.verifyModuleDependencyTree();
+        typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
+
+        for (PhasedUnit pu : listOfUnits) {
+            pu.validateTree();
+            pu.scanDeclarations();
+        }
+        for (PhasedUnit pu : listOfUnits) {
+            pu.scanTypeDeclarations();
+        }
+        for (PhasedUnit pu: listOfUnits) {
+            pu.validateRefinement();
+        }
+        for (PhasedUnit pu : listOfUnits) {
+            pu.analyseTypes();
+        }
+        for (PhasedUnit pu: listOfUnits) {
+            pu.analyseFlow();
+        }
 
         typeCheckers.put(project, typeChecker);
         
