@@ -829,7 +829,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Setting up typechecker for project " 
                 + project.getName());
 
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
         final IJavaProject javaProject = JavaCore.create(project);
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
             .verbose(false)
@@ -858,11 +857,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (final IPath srcFolderPath : sourceFolders) {
             final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
-            IResource srcDirResource = srcDir.getResource();
-            if (! srcDirResource.exists()) {
-                continue;
-            }
-            srcDirResource.accept(new IResourceVisitor() {
+            srcDir.getResource().accept(new IResourceVisitor() {
                 private Module module;
                 
                 public boolean visit(IResource resource) throws CoreException {
