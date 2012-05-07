@@ -399,8 +399,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (n instanceof Tree.AnyMethod) {
                 Tree.AnyMethod am = (Tree.AnyMethod) n;
                 parameters(am.getTypeParameterList(), label);
-                if (!am.getParameterLists().isEmpty()) { 
-                    parameters(am.getParameterLists().get(0), label);
+                for (Tree.ParameterList pl: am.getParameterLists()) { 
+                    parameters(pl, label);
                 }
             }
             return label;
@@ -474,9 +474,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             label.append("(");
             int len = pl.getParameters().size(), i=0;
             for (Tree.Parameter p: pl.getParameters()) {
-                label.append(type(p.getType()), TYPE_STYLER) 
-                        .append(" ")
-                        .append(name(p.getIdentifier()), ID_STYLER);
+                if (p!=null) {
+                    label.append(type(p.getType()), TYPE_STYLER) 
+                            .append(" ")
+                            .append(name(p.getIdentifier()), ID_STYLER);
+                    if (p instanceof Tree.FunctionalParameterDeclaration) {
+                        Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
+                        for (Tree.ParameterList ipl: fp.getParameterLists()) {
+                            parameters(ipl, label);
+                        }
+                    }
+                }
                 if (++i<len) label.append(", ");
             }
             label.append(")");
