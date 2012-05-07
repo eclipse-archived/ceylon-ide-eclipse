@@ -62,6 +62,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.FunctionalParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -74,6 +75,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -979,6 +981,18 @@ public class CeylonContentProposer implements IContentProposer {
                 else {
                     result.append("(");
                     for (Parameter p: params.getParameters()) {
+                        if (p instanceof FunctionalParameter) {
+                            FunctionalParameter fp = (FunctionalParameter) p;
+                            for (ParameterList pl: fp.getParameterLists()) {
+                                result.append("(");
+                                for (Parameter pp: pl.getParameters()) {
+                                    result.append(pp.getType().getProducedTypeName(true))
+                                         .append(" ").append(pp.getName()).append(", ");
+                                }
+                                result.setLength(result.length()-2);
+                                result.append(") ");
+                            }
+                        }
                         result.append(p.getName()).append(", ");
                     }
                     result.setLength(result.length()-2);
@@ -1063,11 +1077,12 @@ public class CeylonContentProposer implements IContentProposer {
             	    type = type.substitute(pr.getTypeArguments());
             	}
                 String typeName = type.getProducedTypeName();
-                if (td instanceof Value &&
-                        Character.isLowerCase(typeName.charAt(0))) {
+                if (td instanceof Value && 
+                        td.getTypeDeclaration().isAnonymous()) {
                     result.append("object");
                 }
-                else if (d instanceof Method) {
+                else if (d instanceof Method || 
+                        d instanceof FunctionalParameter) {
                     if (typeName.equals("Void")) { //TODO: fix this!
                         result.append("void");
                     }
@@ -1085,7 +1100,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static void appendDeclarationText(Declaration d, StyledString result) {
         if (d instanceof Class) {
-            if (Character.isLowerCase(d.getName().charAt(0))) {
+            if (d.isAnonymous()) {
                 result.append("object", KW_STYLER);
             }
             else {
@@ -1100,10 +1115,11 @@ public class CeylonContentProposer implements IContentProposer {
             if (td.getType()!=null) {
                 String typeName = td.getType().getProducedTypeName();
                 if (td instanceof Value &&
-                        Character.isLowerCase(typeName.charAt(0))) {
+                        td.getTypeDeclaration().isAnonymous()) {
                     result.append("object", KW_STYLER);
                 }
-                else if (d instanceof Method) {
+                else if (d instanceof Method || 
+                        d instanceof FunctionalParameter) {
                     if (typeName.equals("Void")) { //TODO: fix this!
                         result.append("void", KW_STYLER);
                     }
@@ -1154,30 +1170,47 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static void appendParameters(Declaration d, StringBuilder result) {
-    	appendParameters(d, null, result);
+        appendParameters(d, null, result);
     }
     
     private static void appendParameters(Declaration d, ProducedReference pr, 
             StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
-            if (plists!=null && !plists.isEmpty()) {
-                ParameterList params = plists.get(0);
-                if (params.getParameters().isEmpty()) {
-                    result.append("()");
-                }
-                else {
-                    result.append("(");
-                    for (Parameter p: params.getParameters()) {
-                    	ProducedType type = p.getType();
-                    	if (pr!=null) {
-                    		type = type.substitute(pr.getTypeArguments());
-                    	}
-                        result.append(type.getProducedTypeName()).append(" ")
-                            .append(p.getName()).append(", ");
+            if (plists!=null) {
+                for (ParameterList params: plists) {
+                    if (params.getParameters().isEmpty()) {
+                        result.append("()");
                     }
-                    result.setLength(result.length()-2);
-                    result.append(")");
+                    else {
+                        result.append("(");
+                        for (Parameter p: params.getParameters()) {
+                            ProducedTypedReference ppr = pr==null ? 
+                                    null : pr.getTypedParameter(p);
+                            appendDeclarationText(p, ppr, result);
+                            appendParameters(p, ppr, result);
+                        	/*ProducedType type = p.getType();
+                        	if (pr!=null) {
+                        		type = type.substitute(pr.getTypeArguments());
+                        	}
+                            result.append(type.getProducedTypeName()).append(" ")
+                                .append(p.getName());
+                            if (p instanceof FunctionalParameter) {
+                                result.append("(");
+                                FunctionalParameter fp = (FunctionalParameter) p;
+                                for (Parameter pp: fp.getParameterLists().get(0).getParameters()) {
+                                    result.append(pp.getType().substitute(pr.getTypeArguments())
+                                            .getProducedTypeName())
+                                        .append(" ").append(pp.getName()).append(", ");
+                                }
+                                result.setLength(result.length()-2);
+                                result.append(")");
+                            }*/
+                            result.append(", ");
+                        }
+                        result.setLength(result.length()-2);
+                        result.append(")");
+                    }
                 }
             }
         }
@@ -1186,20 +1219,35 @@ public class CeylonContentProposer implements IContentProposer {
     private static void appendParameters(Declaration d, StyledString result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
-            if (plists!=null && !plists.isEmpty()) {
-                ParameterList params = plists.get(0);
-                if (params.getParameters().isEmpty()) {
-                    result.append("()");
-                }
-                else {
-                    result.append("(");
-                    int len = params.getParameters().size(), i=0;
-                    for (Parameter p: params.getParameters()) {
-                        result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
-                                .append(" ").append(p.getName(), ID_STYLER);
-                        if (++i<len) result.append(", ");
+            if (plists!=null) {
+                for (ParameterList params: plists) {
+                    if (params.getParameters().isEmpty()) {
+                        result.append("()");
                     }
-                    result.append(")");
+                    else {
+                        result.append("(");
+                        int len = params.getParameters().size(), i=0;
+                        for (Parameter p: params.getParameters()) {
+                            appendDeclarationText(p, result);
+                            appendParameters(p, result);
+                            /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
+                                    .append(" ").append(p.getName(), ID_STYLER);
+                            if (p instanceof FunctionalParameter) {
+                                result.append("(");
+                                FunctionalParameter fp = (FunctionalParameter) p;
+                                List<Parameter> fpl = fp.getParameterLists().get(0).getParameters();
+                                int len2 = fpl.size(), j=0;
+                                for (Parameter pp: fpl) {
+                                    result.append(pp.getType().getProducedTypeName(), TYPE_STYLER)
+                                        .append(" ").append(pp.getName(), ID_STYLER);
+                                    if (++j<len2) result.append(", ");
+                                }
+                                result.append(")");
+                            }*/
+                            if (++i<len) result.append(", ");
+                        }
+                        result.append(")");
+                    }
                 }
             }
         }
