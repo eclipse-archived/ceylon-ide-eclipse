@@ -440,25 +440,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         List<IProject> requiredProjects = getRequiredProjects(project);
         if (mustDoFullBuild.value) {
             monitor.beginTask("Full Ceylon Build of project " + project.getName(), 9);
-            IJavaProject javaProject = JavaCore.create(project);
-            final File outputDirectory = getOutputDirectory(javaProject);
-            if (outputDirectory != null) {
-                monitor.subTask("Cleaning existing artifacts");
-                List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
-                new RepositoryLister(extensionsToDelete).list(outputDirectory, new RepositoryLister.Actions() {
-                    @Override
-                    public void doWithFile(File path) {
-                        path.delete();
-                    }
-                    
-                    public void exitDirectory(File path) {
-                        if (path.list().length == 0 && ! path.equals(outputDirectory)) {
-                            path.delete();
-                        }
-                    }
-                });
-                monitor.worked(1);
-            }
             
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -475,12 +456,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         else
         {
             try {
+                monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 6);
                 List<IResourceDelta> deltas = new ArrayList<IResourceDelta>();
                 deltas.add(currentDelta);
                 for (IProject requiredProject : requiredProjects) {
                     deltas.add(getDelta(requiredProject));
                 }
                 
+                monitor.subTask("Scanning deltas"); 
                 for (IResourceDelta delta : deltas) {
                     if (delta != null) {
                         if (emitDiags)
@@ -494,6 +477,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                monitor.worked(1);
+                monitor.subTask("Scanning dependencies of deltas"); 
                 if (fChangedSources.size() > 0) {
                     Collection<IFile> changeDependents= new HashSet<IFile>();
 
@@ -606,17 +591,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
                 clearMarkersOn(fSourcesToCompile);
+                monitor.worked(1);
+                monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                monitor.worked(1);
+                monitor.subTask("Generating binaries");
                 generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                monitor.worked(1);
+                monitor.subTask("Updating referencing projects");
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
+                monitor.worked(1);
                 
             } catch (CoreException e) {
                 getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
@@ -1015,6 +1007,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
         modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
+
+        monitor.worked(1);
         
         // Parsing of ALL units in the source folder should have been done
 
@@ -1044,6 +1038,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             
         };
+        
+        monitor.worked(1);
         
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1550,6 +1546,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
         super.clean(monitor);
+        
+        IJavaProject javaProject = JavaCore.create(getProject());
+        final File outputDirectory = getOutputDirectory(javaProject);
+        if (outputDirectory != null) {
+            monitor.subTask("Cleaning existing artifacts");
+            List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
+            new RepositoryLister(extensionsToDelete).list(outputDirectory, new RepositoryLister.Actions() {
+                @Override
+                public void doWithFile(File path) {
+                    path.delete();
+                }
+                
+                public void exitDirectory(File path) {
+                    if (path.list().length == 0 && ! path.equals(outputDirectory)) {
+                        path.delete();
+                    }
+                }
+            });
+        }
+        
+        monitor.subTask("Clear project and source markers");
         Collection<IFile> allSources= new ArrayList<IFile>();
         try {
             getProject().accept(new AllSourcesVisitor(allSources));
