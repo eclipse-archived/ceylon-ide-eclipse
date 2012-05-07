@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.core.ErrorHandler;
@@ -377,6 +378,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final BooleanHolder mustDoFullBuild = new BooleanHolder();
         mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
         
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         IResourceDelta currentDelta = null;
         if (! mustDoFullBuild.value) {
             currentDelta = getDelta(getProject());
@@ -429,6 +433,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
         List<IProject> requiredProjects = getRequiredProjects(project);
         if (mustDoFullBuild.value) {
@@ -453,9 +460,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.worked(1);
             }
             
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
             final List<IFile> allSources= new ArrayList<IFile>();
             builtPhasedUnits = fullBuild(project, sourceProject, allSources, monitor);            
             monitor.subTask("Generating binaries");
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
             generateBinaries(project, sourceProject, allSources, monitor);
             monitor.worked(1);
         }
@@ -478,6 +491,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                 }
                 
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
                 if (fChangedSources.size() > 0) {
                     Collection<IFile> changeDependents= new HashSet<IFile>();
 
@@ -506,6 +522,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     currentFileTypeChecker, currentFileProject);
 
                             for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
+                                if (monitor.isCanceled()) {
+                                    throw new OperationCanceledException();
+                                }
                                 IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
                                 IProject newDependencyProject = depFile.getProject();
                                 if (newDependencyProject == project || newDependencyProject == currentFileProject) {
@@ -521,6 +540,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
                     PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
                     
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
                     for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                         Unit unit = phasedUnit.getUnit();
                         if (unit.getUnresolvedReferences().size() > 0) {
@@ -549,6 +571,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         }
                     }
                     
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
                     for(IFile f: changeDependents) {
                         if (isSourceFile(f) && f.getProject() == project) {
                             if (f.exists()) {
@@ -577,11 +602,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(fSourcesToCompile);
                 }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
                 clearMarkersOn(fSourcesToCompile);
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
                 generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 
             } catch (CoreException e) {
@@ -723,6 +757,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
             // skip non-ceylon files
             if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension())) {
                 Unit toRemove = getJavaUnit(project, fileToUpdate);
@@ -756,31 +793,55 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             phasedUnitsToUpdate.add(newPhasedUnit);
             
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(phasedUnit.getPathRelativeToSrcDir()) != null) {
                 typeChecker.getPhasedUnits().removePhasedUnitForRelativePath(phasedUnit.getPathRelativeToSrcDir());
             }
             typeChecker.getPhasedUnits().addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.validateTree();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.scanDeclarations();
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.scanTypeDeclarations();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.validateRefinement();
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseTypes();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseFlow();
         }
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         addProblemAndTaskMarkers(phasedUnitsToUpdate);
         
         return phasedUnitsToUpdate;
@@ -829,6 +890,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Setting up typechecker for project " 
                 + project.getName());
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
         final IJavaProject javaProject = JavaCore.create(project);
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
@@ -854,6 +918,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Parsing Ceylon source files for project " 
                     + project.getName());
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         final Collection<IPath> sourceFolders = retrieveSourceFolders(project);
         for (final IPath srcFolderPath : sourceFolders) {
             final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
@@ -861,6 +928,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             IResource srcDirResource = srcDir.getResource();
             if (! srcDirResource.exists()) {
                 continue;
+            }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
             }
             srcDirResource.accept(new IResourceVisitor() {
                 private Module module;
@@ -941,16 +1011,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Compiling Ceylon source files for project " 
                     + project.getName());
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
         
         // Parsing of ALL units in the source folder should have been done
 
         final List<PhasedUnit> listOfUnits = phasedUnits.getPhasedUnits();
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         phasedUnits.getModuleManager().prepareForTypeChecking();
         phasedUnits.visitModules();
 
-        //By now le language module version should be known (as local)
+        //By now the language module version should be known (as local)
         //or we should use the default one.
         Module languageModule = context.getModules().getLanguageModule();
         if (languageModule.getVersion() == null) {
@@ -969,26 +1045,47 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
         };
         
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         moduleValidator.verifyModuleDependencyTree();
         typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit pu : listOfUnits) {
             pu.validateTree();
             pu.scanDeclarations();
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit pu : listOfUnits) {
             pu.scanTypeDeclarations();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
         for (PhasedUnit pu: listOfUnits) {
             pu.validateRefinement();
         }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         for (PhasedUnit pu : listOfUnits) {
             pu.analyseTypes();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
         for (PhasedUnit pu: listOfUnits) {
             pu.analyseFlow();
         }
 
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         typeCheckers.put(project, typeChecker);
         
         monitor.worked(1);
