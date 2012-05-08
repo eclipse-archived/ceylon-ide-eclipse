@@ -7,6 +7,7 @@ public interface ICeylonResources {
     public static final String CEYLON_FILE_ERROR = "ceylon_file_error";
     
     public static final String CEYLON_CLASS = "ceylon_class";
+    public static final String CEYLON_ABSTRACT_CLASS = "ceylon_abstract_class";
     public static final String CEYLON_INTERFACE = "ceylon_interface";
     public static final String CEYLON_LOCAL_CLASS = "ceylon_local_class";
     public static final String CEYLON_LOCAL_INTERFACE = "ceylon_local_interface";
@@ -32,6 +33,7 @@ public interface ICeylonResources {
     public static final String CEYLON_CORRECTION = "correction";
     
     public static final String CEYLON_NEW_FILE = "ceylon_new_file";
+    public static final String CEYLON_NEW_PROJECT = "ceylon_new_project";
     public static final String CEYLON_NEW_MODULE = "ceylon_new_module";
     public static final String CEYLON_NEW_PACKAGE = "ceylon_new_package";
     public static final String CEYLON_EXPORT_CAR = "ceylon_export_car";

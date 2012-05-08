@@ -8,7 +8,6 @@ import org.eclipse.imp.services.DecorationDescriptor;
 import org.eclipse.imp.services.DecorationDescriptor.Quadrant;
 import org.eclipse.imp.services.IEntityImageDecorator;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -23,7 +22,8 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     private final static int REFINES = 1 << 4;
     private final static int IMPLEMENTS = 1 << 5;
     private final static int FORMAL = 1 << 6;
-    private final static int ABSTRACT = 1 << 7;
+    //private final static int ABSTRACT = 1 << 7;
+    private final static int DEFAULT = 1 << 7;
 
     @Override
     public DecorationDescriptor[] getAllDecorations() {
@@ -31,13 +31,15 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
                 new DecorationDescriptor(ERROR, CeylonPlugin.getInstance().getBundle(), 
                         "/icons/error.gif", Quadrant.BOTTOM_LEFT),
                 new DecorationDescriptor(REFINES, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/over_tiny_co.gif", Quadrant.BOTTOM_RIGHT),
+                        "/icons/ceylon_decorator_actual.png", Quadrant.BOTTOM_RIGHT),
                 new DecorationDescriptor(IMPLEMENTS, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/implm_tiny_co.gif", Quadrant.BOTTOM_RIGHT),
+                        "/icons/ceylon_decorator_actual.png", Quadrant.BOTTOM_RIGHT),
                 new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/final_co.gif", Quadrant.TOP_RIGHT),
-                new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/abstract_co.gif", Quadrant.TOP_RIGHT),
+                        "/icons/ceylon_decorator_formal.png", Quadrant.TOP_RIGHT),
+                        new DecorationDescriptor(DEFAULT, CeylonPlugin.getInstance().getBundle(),
+                                "/icons/ceylon_decorator_default.png", Quadrant.TOP_RIGHT)
+                /*new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().getBundle(), 
+                        "/icons/abstract_co.gif", Quadrant.TOP_RIGHT),*/
             };
     }
     
@@ -79,9 +81,12 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
         if (model.isFormal()) {
             result |= FORMAL;
         }
-        if (model instanceof Class && ((Class) model).isAbstract()) {
-            result |= ABSTRACT;
+        if (model.isDefault()) {
+            result |= DEFAULT;
         }
+        /*if (model instanceof Class && ((Class) model).isAbstract()) {
+            result |= ABSTRACT;
+        }*/
         Declaration refined = getRefinedDeclaration(model);
         if (refined!=null) {
             result |= refined.isFormal() ? IMPLEMENTS : REFINES;

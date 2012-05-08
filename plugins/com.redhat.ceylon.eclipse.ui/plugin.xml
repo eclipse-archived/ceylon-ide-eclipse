@@ -15,7 +15,7 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Ceylon Editor"
-            icon="icons/template_obj.gif"
+            icon="icons/ceylon_unit_16px.png"
             extensions="ceylon" 
             default="true" 
             class="com.redhat.ceylon.eclipse.imp.editor.CeylonEditor"
@@ -30,7 +30,7 @@
          point="org.eclipse.imp.runtime.languageDescription">
       <language
             url="http://in.relation.to/Tutorials/IntroductionToCeylon"
-            icon="icons/template_obj.gif"
+            icon="icons/ceylon_unit_16px.png"
             extensions="ceylon"
             description="Say more, more clearly"
             natureID="com.redhat.ceylon.eclipse.ui.imp.nature"
@@ -178,7 +178,7 @@
             enabled="true"
             extensions="ceylon:90"
             sizeHint="460,160"
-            icon="icons/find_obj.gif"
+            icon="icons/ceylon_search_16px.png"
             showScopeSection="true"
             label="Ceylon Search"/>
    </extension>
@@ -190,7 +190,7 @@
              name="Ceylon"/>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"
-             icon="icons/template_obj.gif"
+             icon="icons/ceylon_unit_16px.png"
              name="Ceylon Unit"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard">
@@ -199,7 +199,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
-             icon="icons/new_wiz.gif"
+             icon="icons/ceylon_project_16px.png"
              name="Ceylon Project"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewProjectWizard"
@@ -208,7 +208,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
-             icon="icons/newftrprj_wiz.gif"
+             icon="icons/ceylon_module_16px.png"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewModuleWizard">
@@ -217,7 +217,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newPackageWizard"
-             icon="icons/newpack_wiz.gif"
+             icon="icons/ceylon_package_16px.png"
              name="Ceylon Package"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.imp.wizard.NewPackageWizard">
@@ -242,11 +242,11 @@
             name="Ceylon Module to Module Repository"
             class="com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard"
             category="ceylon" 
-            icon="/icons/exportjar_wiz.gif">
+            icon="/icons/ceylon_export_16px.png">
           <description>Export a Ceylon module to a module repository.</description>
           <selection class="org.eclipse.core.resources.IResource"/> 
       </wizard> 
-   </extension> 
+   </extension>
    
    <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
@@ -277,7 +277,7 @@
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             label="Ceylon Refinement Indicators"
             annotationImageProvider="com.redhat.ceylon.eclipse.imp.editor.RefinementAnnotationImageProvider"
-            icon="icons/over_co.gif"
+            icon="icons/ceylon_decorator_actual.png"
             presentationLayer="0"
             contributesToHeader="true"
             includeOnPreferencePage="true"
@@ -673,7 +673,7 @@
             <command
                   label="Open Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-                  icon="icons/opentype.gif"
+                  icon="icons/ceylon_declaration_16px.png"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <dynamic id="openSelectedDeclaration"
                       class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationMenuItem"/>
@@ -689,7 +689,7 @@
             <command
                   label="Open Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-                  icon="icons/opentype.gif"
+                  icon="icons/ceylon_declaration_16px.png"
                   tooltip="Open Ceylon Declaration"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
             </toolbar>
@@ -797,7 +797,7 @@
                    id="ceylonSearch"
                    commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
                    label="Ceylon..."
-                   icon="icons/find_obj.gif"/>
+                   icon="icons/ceylon_search_16px.png"/>
              <separator name="dialogGroup"/>
              <separator
                     visible="true"

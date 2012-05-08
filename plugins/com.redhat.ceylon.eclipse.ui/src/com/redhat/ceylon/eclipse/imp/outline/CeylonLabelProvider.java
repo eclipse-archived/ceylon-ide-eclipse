@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.KEYWORDS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.TYPES;
@@ -7,6 +8,7 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.IDENTIFIER
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.color;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ABSTRACT_CLASS;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
@@ -87,6 +89,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static Image FILE_WITH_ERROR_IMAGE = imageRegistry.get(CEYLON_FILE_ERROR);
     
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
+    public static Image ABSTRACT_CLASS = imageRegistry.get(CEYLON_ABSTRACT_CLASS);
     private static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
     private static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
     private static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
@@ -229,7 +232,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static Image getImage(Node n, boolean shared) {
         if (n instanceof Tree.AnyClass) {
             if (shared) {
-                return CLASS;
+                return hasAnnotation(((Tree.AnyClass) n).getAnnotationList(), 
+                        "abstract") ? ABSTRACT_CLASS : CLASS;
             }
             else {
                 return LOCAL_CLASS;
@@ -273,7 +277,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         boolean shared = d.isShared();
         if (d instanceof Class) {
             if (shared) {
-                return CLASS;
+                return ((Class) d).isAbstract() ? 
+                        ABSTRACT_CLASS : CLASS;
             }
             else {
                 return LOCAL_CLASS;

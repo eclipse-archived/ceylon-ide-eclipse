@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_PROJECT;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_MARGIN;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_SPACING;
 import static org.eclipse.jface.dialogs.IDialogConstants.VERTICAL_MARGIN;
@@ -74,7 +74,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     public NewProjectWizard(NewJavaProjectWizardPageOne pageOne, NewJavaProjectWizardPageTwo pageTwo) {
         setDefaultPageImageDescriptor(CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_NEW_FILE));
+                .getImageRegistry().getDescriptor(CEYLON_NEW_PROJECT));
         setDialogSettings(JavaPlugin.getDefault().getDialogSettings());
         setWindowTitle("New Ceylon Project");
         fFirstPage= pageOne;
