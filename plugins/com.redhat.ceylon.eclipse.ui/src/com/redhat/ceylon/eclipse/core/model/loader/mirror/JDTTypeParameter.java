@@ -20,8 +20,6 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

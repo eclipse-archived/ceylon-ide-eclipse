@@ -22,7 +22,6 @@ package com.redhat.ceylon.eclipse.core.model.loader.model;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -214,13 +213,9 @@ public class JDTModuleManager extends LazyModuleManager {
 
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
-    		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
-        try {
-			if (artifact.artifact().getName().endsWith(".src")) {
-			    sourceModules.add(module.getNameAsString());
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
+		if (artifact.artifact().getName().endsWith(".src")) {
+		    sourceModules.add(module.getNameAsString());
 		}
         super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies);
     }

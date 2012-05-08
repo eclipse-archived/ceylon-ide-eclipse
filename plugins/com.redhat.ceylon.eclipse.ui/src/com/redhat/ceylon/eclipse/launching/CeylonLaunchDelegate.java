@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.launching;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,14 +13,11 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.FileContentStore;
 import com.redhat.ceylon.cmr.impl.SimpleRepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.io.impl.FileSystemVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -46,7 +42,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         Set<Module> modulesToAdd = new HashSet<Module>();
         modulesToAdd.add(projectModules.getLanguageModule());
         for (Module module : projectModules.getListOfModules()) {
-            if (! module.equals(projectModules.getDefaultModule())) {
+            if (!module.equals(projectModules.getDefaultModule())) {
                 modulesToAdd.add(module); 
             }
         }
@@ -70,21 +66,11 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             	// try first with car
             	ctx.setSuffix(ArtifactContext.CAR);
                 File moduleArtifact = null;
-				try {
-					moduleArtifact = provider.getArtifact(ctx);
-				} catch (IOException e) {
-					e.printStackTrace();
-					// ignore
-				}
-                if(moduleArtifact == null){
+				moduleArtifact = provider.getArtifact(ctx);
+                if (moduleArtifact == null){
                 	// try with .jar
                 	ctx.setSuffix(ArtifactContext.JAR);
-                	try {
-						moduleArtifact = provider.getArtifact(ctx);
-					} catch (IOException e) {
-						e.printStackTrace();
-						// ignore
-					}
+					moduleArtifact = provider.getArtifact(ctx);
                 }
                 if (moduleArtifact != null) {
                     String modulePath = moduleArtifact.getPath();
@@ -93,12 +79,13 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
                         classpathList.add(moduleFile.getAbsolutePath());
                         artifactFound = true;
                         break;
-                    } else {
+                    } 
+                    else {
                         System.out.println("Ignoring non-existing module artifact (" + modulePath + ") for launching classpath");
                     }
                 }
             }
-            if (! artifactFound) {
+            if (!artifactFound) {
                 System.out.println("Artifact not found for module '" + module.getNameAsString() + "/" + module.getVersion() + "' for launching classpath");
             }
         }
