@@ -87,7 +87,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static Image FILE_WITH_ERROR_IMAGE = imageRegistry.get(CEYLON_FILE_ERROR);
     
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
-    private static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
+    public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
     private static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
     private static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
     public static Image METHOD = imageRegistry.get(CEYLON_METHOD);
