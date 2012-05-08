@@ -55,17 +55,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -164,6 +153,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
                 }
+                break;
+            case 102:
+                addCreateEnumProposal(cu, node, problem, proposals, 
+                        project, tc, file);
                 break;
             case 200:
                 addSpecifyTypeProposal(cu, node, problem, proposals, file);
@@ -303,7 +296,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addMakeVariableProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
-        Term term;
+        Tree.Term term;
         if (node instanceof Tree.AssignmentOp) {
             term = ((Tree.AssignOp) node).getLeftTerm();
         }
@@ -398,7 +391,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         Integer offset = decNode.getStartIndex();
                         change.addEdit(new InsertEdit(offset, annotation));
                         if (decNode instanceof Tree.TypedDeclaration) {
-                            Type type = ((Tree.TypedDeclaration) decNode).getType();
+                            Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
                             if (type instanceof Tree.FunctionModifier 
                                     || type instanceof Tree.ValueModifier) {
                                 String explicitType = type.getTypeModel().getProducedTypeName();
@@ -443,7 +436,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             return;
         }
-        List<Statement> statements = body.getStatements();
+        List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
         String indentAfter;
@@ -453,7 +446,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             offset = body.getStartIndex()+1;
         }
         else {
-            Statement statement = statements.get(statements.size()-1);
+            Tree.Statement statement = statements.get(statements.size()-1);
             indent = "\n" + getIndent(statement, doc);
             indentAfter = "";
             offset = statement.getStopIndex()+1;
@@ -474,7 +467,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     
     private void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
-        final Type type = (Tree.Type) node;
+        final Tree.Type type = (Tree.Type) node;
         class InferTypeVisitor extends Visitor {
             Declaration dec;
             ProducedType inferredType;
@@ -487,9 +480,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             @Override public void visit(Tree.SpecifierStatement that) {
                 super.visit(that);
-                Term bme = that.getBaseMemberExpression();
-                if (bme instanceof BaseMemberExpression) {
-                	if (((BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+                Tree.Term bme = that.getBaseMemberExpression();
+                if (bme instanceof Tree.BaseMemberExpression) {
+                	if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
                 		inferredType = that.getSpecifierExpression().getExpression().getTypeModel();
                 	}
                 }
@@ -528,6 +521,119 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         catch (CoreException ce) {}
     }*/
+    
+    private void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IProject project, TypeChecker tc, IFile file) {
+        if (node instanceof Tree.BaseType) {
+            String brokenName = getIdentifyingNode(node).getText();
+            if (brokenName.isEmpty()) return;
+            Tree.BaseType bt = (Tree.BaseType) node;
+            FindContainerVisitor fdv = new FindContainerVisitor(node);
+            fdv.visit(cu);
+            Tree.Declaration dec = fdv.getDeclaration();
+            if (dec instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition cd = (Tree.ClassDefinition) dec;
+                if (cd.getCaseTypes()!=null) {
+                    if (cd.getCaseTypes().getTypes().contains(bt)) {
+                        addCreateEnumProposal(proposals, project, 
+                                "class " + brokenName + parameters(cd.getTypeParameterList()) +
+                                    parameters(cd.getParameterList()) +
+                                    " extends " + cd.getDeclarationModel().getName() + 
+                                    parameters(cd.getTypeParameterList()) + 
+                                    arguments(cd.getParameterList()) + " {}", 
+                                "class '"+ brokenName + parameters(cd.getTypeParameterList()) +
+                                parameters(cd.getParameterList()) + "'", 
+                                CeylonLabelProvider.CLASS, cu, cd);
+                    }
+                }
+            }
+            if (dec instanceof Tree.InterfaceDefinition) {
+                Tree.InterfaceDefinition cd = (Tree.InterfaceDefinition) dec;
+                if (cd.getCaseTypes()!=null) {
+                    if (cd.getCaseTypes().getTypes().contains(bt)) {
+                        addCreateEnumProposal(proposals, project, 
+                                "interface " + brokenName + parameters(cd.getTypeParameterList()) +
+                                    " satisfies " + cd.getDeclarationModel().getName() + 
+                                    parameters(cd.getTypeParameterList()) + " {}", 
+                                "interface '"+ brokenName + parameters(cd.getTypeParameterList()) +  "'", 
+                                CeylonLabelProvider.INTERFACE, cu, cd);
+                    }
+                }
+            }
+        }
+    }
+    
+    private static String parameters(Tree.ParameterList pl) {
+        StringBuilder result = new StringBuilder();
+        if (pl==null ||
+                pl.getParameters().isEmpty()) {
+            result.append("()");
+        }
+        else {
+            result.append("(");
+            int len = pl.getParameters().size(), i=0;
+            for (Tree.Parameter p: pl.getParameters()) {
+                if (p!=null) {
+                    result.append(p.getType().getTypeModel().getProducedTypeName()) 
+                            .append(" ")
+                            .append(p.getIdentifier().getText());
+                    //TODO: easy to add back in:
+                    /*if (p instanceof Tree.FunctionalParameterDeclaration) {
+                        Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
+                        for (Tree.ParameterList ipl: fp.getParameterLists()) {
+                            parameters(ipl, label);
+                        }
+                    }*/
+                }
+                if (++i<len) result.append(", ");
+            }
+            result.append(")");
+        }
+        return result.toString();
+    }
+    
+    private static String parameters(Tree.TypeParameterList tpl) {
+        StringBuilder result = new StringBuilder();
+        if (tpl!=null &&
+                !tpl.getTypeParameterDeclarations().isEmpty()) {
+            result.append("<");
+            int len = tpl.getTypeParameterDeclarations().size(), i=0;
+            for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
+                result.append(p.getIdentifier().getText());
+                if (++i<len) result.append(", ");
+            }
+            result.append(">");
+        }
+        return result.toString();
+    }
+    
+    private static String arguments(Tree.ParameterList pl) {
+        StringBuilder result = new StringBuilder();
+        if (pl==null ||
+                pl.getParameters().isEmpty()) {
+            result.append("()");
+        }
+        else {
+            result.append("(");
+            int len = pl.getParameters().size(), i=0;
+            for (Tree.Parameter p: pl.getParameters()) {
+                if (p!=null) {
+                    result.append(p.getIdentifier().getText());
+                    //TODO: easy to add back in:
+                    /*if (p instanceof Tree.FunctionalParameterDeclaration) {
+                        Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
+                        for (Tree.ParameterList ipl: fp.getParameterLists()) {
+                            parameters(ipl, label);
+                        }
+                    }*/
+                }
+                if (++i<len) result.append(", ");
+            }
+            result.append(")");
+        }
+        return result.toString();
+    }
     
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
@@ -621,7 +727,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private ClassOrInterface findClassContainer(CompilationUnit cu, Node n){
+    private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node n){
         FindContainerVisitor visitor = new FindContainerVisitor(n);
         visitor.visit(cu);
         com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration declaration = visitor.getDeclaration();
@@ -683,6 +789,17 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         break;
                     }
                 }
+            }
+        }
+    }
+
+    private void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Image image, 
+            Tree.CompilationUnit cu, Tree.TypeDeclaration cd) {
+        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            if (unit.getUnit().equals(cu.getUnit())) {
+                addCreateEnumProposal(proposals, def, desc, image, unit, cd);
+                break;
             }
         }
     }
@@ -792,14 +909,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         String indent;
         String indentAfter;
         int offset;
-        List<Statement> statements = body.getStatements();
+        List<Tree.Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
             indentAfter = "\n" + getIndent(decNode, doc);
             indent = indentAfter + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
-            Statement statement = statements.get(statements.size()-1);
+            Tree.Statement statement = statements.get(statements.size()-1);
             indent = "\n" + getIndent(statement, doc);
             offset = statement.getStopIndex()+1;
             indentAfter = "";
@@ -808,6 +925,25 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         proposals.add(createCreateProposal(def, 
                 "Create " + desc + " in '" + typeDec.getName() + "'", 
                 image, indent.length(), offset, file, change));
+    }
+
+    private void addCreateEnumProposal(Collection<ICompletionProposal> proposals, String def,
+            String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
+        IFile file = CeylonBuilder.getFile(unit);
+        TextFileChange change = new TextFileChange("Create Enumerated", file);
+        IDocument doc;
+        try {
+            doc = change.getCurrentDocument(null);
+        }
+        catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+        String indent = getIndent(statement, doc);
+        int offset = statement.getStopIndex()+2;
+        //def = def.replace("$indent", indent);
+        change.setEdit(new InsertEdit(offset, indent + def+"\n"));
+        proposals.add(createCreateProposal(def, "Create enumerated " + desc, 
+                image, 0, offset, file, change));
     }
 
     private void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
@@ -909,7 +1045,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addImportProposals(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
-                node instanceof SimpleType) {
+                node instanceof Tree.SimpleType) {
             String brokenName = getIdentifyingNode(node).getText();
             Collection<Declaration> candidates = findImportCandidates(cu, brokenName);
             for (Declaration decl: candidates) {
@@ -966,7 +1102,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 " in package " + packageName, change, 50, CeylonLabelProvider.IMPORT);
     }
     
-    private int getBestImportInsertPosition(CompilationUnit cu) {
+    private int getBestImportInsertPosition(Tree.CompilationUnit cu) {
         Integer stopIndex = cu.getImportList().getStopIndex();
         if (stopIndex == null) return 0;
         return stopIndex+1;
@@ -990,13 +1126,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 return;
             }
 
-            List<Identifier> identifiers = that.getImportPath().getIdentifiers();
+            List<Tree.Identifier> identifiers = that.getImportPath().getIdentifiers();
             if (identifiersEqual(identifiers, packageNameComponents)) {
                 result = that;
             }
         }
 
-        private static boolean identifiersEqual(List<Identifier> identifiers,
+        private static boolean identifiersEqual(List<Tree.Identifier> identifiers,
                 String[] components) {
             if (identifiers.size() != components.length) {
                 return false;
@@ -1012,13 +1148,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private Import findImportNode(CompilationUnit cu, String packageName) {
+    private Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
         FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();
     }
 
-    private int getBestImportMemberInsertPosition(Import importNode,
+    private int getBestImportMemberInsertPosition(Tree.Import importNode,
             String declaration) {
         return importNode.getImportMemberOrTypeList().getStopIndex() - 1;
     }
