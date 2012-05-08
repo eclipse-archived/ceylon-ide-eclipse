@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class HierarchyPopup extends PopupDialog {
         Modules modules = editor.getParseController().getTypeChecker()
                 .getContext().getModules();
         for (Module m: modules.getListOfModules()) {
-            for (Package p: m.getPackages()) {
+            for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
                 for (Unit u: p.getUnits()) {
                     for (Declaration d: u.getDeclarations()) {
                         if (d instanceof ClassOrInterface) {
