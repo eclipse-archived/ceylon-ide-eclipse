@@ -20,7 +20,6 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
-import java.net.URLClassLoader;
 import java.util.List;
 
 import org.eclipse.jdt.core.IPackageFragmentRoot;

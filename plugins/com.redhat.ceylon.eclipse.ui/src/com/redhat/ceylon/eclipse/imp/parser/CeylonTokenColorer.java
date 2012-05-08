@@ -39,7 +39,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
             "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 
             "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
-            "this", "outer", "super", "is", "exists", "nonempty", "then"));
+            "this", "outer", "super", "is", "exists", "nonempty", "then", "module", "package"));
     
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 

@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.imp.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -218,10 +217,7 @@ public class CeylonParseController extends ParseControllerBase {
                     if (artifactName != null && version != null) {
                         RepositoryManager repositoryManager = CeylonBuilder.getProjectRepositoryManager(p);
                         File artifact = null;
-                        try {
-                            artifact = repositoryManager.getArtifact(artifactName, version);
-                        } catch (IOException e) {
-                        }
+                        artifact = repositoryManager.getArtifact(artifactName, version);
                         if (artifact != null) {
                             try {
                                 sourceProject = ModelFactory.open(p);

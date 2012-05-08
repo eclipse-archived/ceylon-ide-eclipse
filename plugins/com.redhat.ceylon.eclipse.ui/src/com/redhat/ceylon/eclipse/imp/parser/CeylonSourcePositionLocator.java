@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.imp.parser;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;

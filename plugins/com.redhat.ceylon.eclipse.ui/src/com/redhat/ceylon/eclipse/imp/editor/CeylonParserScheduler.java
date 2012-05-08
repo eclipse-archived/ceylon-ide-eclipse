@@ -1,14 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
-import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.language.Language;
@@ -17,11 +14,9 @@ import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.preferences.PreferenceCache;
 import org.eclipse.imp.runtime.RuntimePlugin;
-import org.eclipse.jdt.internal.core.search.processing.JobManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.internal.progress.ProgressManager;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserScheduler {

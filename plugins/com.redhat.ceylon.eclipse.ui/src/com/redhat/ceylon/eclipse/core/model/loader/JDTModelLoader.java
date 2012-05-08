@@ -66,6 +66,7 @@ import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;

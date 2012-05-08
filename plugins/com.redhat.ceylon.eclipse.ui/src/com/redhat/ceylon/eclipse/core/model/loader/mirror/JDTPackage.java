@@ -20,7 +20,6 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;

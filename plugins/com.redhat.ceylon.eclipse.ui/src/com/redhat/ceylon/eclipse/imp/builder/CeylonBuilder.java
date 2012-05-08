@@ -84,8 +84,6 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.ModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -94,7 +92,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -117,8 +114,6 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
-import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.zip.ZipFileIndex;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -1180,51 +1175,48 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
 
         com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
-        context.put(Log.outKey, printWriter);
+        context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
 
-        ZipFileIndex.clearCache();
+        //ZipFileIndex.clearCache();
+        //try {
+        CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+        
+        ArtifactContext ctx = null;
+        Modules projectModules = getProjectModules(project);
+        if (projectModules != null) {
+            Module languageModule = projectModules.getLanguageModule();
+            ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
+        }
+        else {
+            ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
+        }
+        ctx.setSuffix(ArtifactContext.CAR);
+        RepositoryManager repositoryManager = getProjectRepositoryManager(project);
+        if (repositoryManager != null) {
+            File languageModuleArchive;
+            languageModuleArchive = repositoryManager.getArtifact(ctx);
+            options.add("-classpath");
+            options.add(languageModuleArchive.getAbsolutePath());
+        }
+        
+        Iterable<? extends JavaFileObject> compilationUnits1 =
+                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+        CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
+                fileManager, null, options, null, compilationUnits1);
+        boolean success=false;
         try {
-            CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
-            
-            ArtifactContext ctx = null;
-            Modules projectModules = getProjectModules(project);
-            if (projectModules != null) {
-                Module languageModule = projectModules.getLanguageModule();
-                ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
-            } else {
-                ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
-            }
-            ctx.setSuffix(ArtifactContext.CAR);
-            RepositoryManager repositoryManager = getProjectRepositoryManager(project);
-            if (repositoryManager != null) {
-                File languageModuleArchive;
-                try {
-                    languageModuleArchive = repositoryManager.getArtifact(ctx);
-                    options.add("-classpath");
-                    options.add(languageModuleArchive.getAbsolutePath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            
-            Iterable<? extends JavaFileObject> compilationUnits1 =
-                    fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
-                    fileManager, null, options, null, compilationUnits1);
-            boolean success=false;
-            try {
-                success = task.call();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (!success) console.activate();
-            return success;
+            success = task.call();
         }
-        finally {
-            ZipFileIndex.clearCache();
+        catch (Exception e) {
+            e.printStackTrace();
         }
+        if (!success) console.activate();
+        return success;
+        //}
+        //finally {
+            //ZipFileIndex.clearCache();
+        //}
     }
 
 	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {

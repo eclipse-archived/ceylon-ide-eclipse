@@ -1,11 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
 import org.eclipse.core.resources.IProject;
-
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.builder.JavaBuilder;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 

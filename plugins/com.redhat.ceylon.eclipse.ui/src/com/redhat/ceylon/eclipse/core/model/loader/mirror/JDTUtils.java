@@ -21,27 +21,14 @@
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IAnnotatable;
-import org.eclipse.jdt.core.IAnnotation;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.compiler.CharOperation;
-import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
-import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
-import com.redhat.ceylon.compiler.java.loader.mirror.JavacAnnotation;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Attribute.Compound;
 
 public class JDTUtils {
 
