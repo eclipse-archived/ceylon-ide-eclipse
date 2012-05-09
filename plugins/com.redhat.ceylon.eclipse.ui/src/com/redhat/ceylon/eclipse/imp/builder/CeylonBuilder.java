@@ -488,7 +488,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         dumpSourceList(changeDependents);
                     }
 
-                    boolean changed= false;
+                    boolean changed = false;
                     do {
                         Collection<IFile> additions= new HashSet<IFile>();
                         for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
@@ -541,7 +541,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                             IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
                             if (fileToAdd.exists()) {
                                 fSourcesToCompile.add(fileToAdd);
-//                                fileToAdd.touch(monitor);  TODO : vérifier
                             }
                             for (Declaration duplicateDeclaration : duplicateDeclarations) {
                                 PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
@@ -549,7 +548,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
                                     if (duplicateDeclFile.exists()) {
                                         fSourcesToCompile.add(duplicateDeclFile);
-//                                        duplicateDeclFile.touch(monitor); TODO : vérifier
                                     }
                                 }
                             }
@@ -565,6 +563,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 fSourcesToCompile.add(f);
                             }
                             else {
+                                // If the file is moved : add a dependency on the new file
                                 if (currentDelta != null) {
                                     IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
                                     if (removedFile != null && 
@@ -574,10 +573,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     }
                                 }
                                     
-                                // If the file is moved : add a dependency on the new file
-                                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
-                                if (phasedUnitToDelete != null) {
-                                    phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+                                if(LANGUAGE.hasExtension(f.getRawLocation().getFileExtension())) {
+                                    // Remove the ceylon phasedUnit (which will also remove the unit from the package)
+                                    PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
+                                    if (phasedUnitToDelete != null) {
+                                        phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+                                    }
+                                }
+                                else {
+                                    // Remove the external unit from the package
+                                    Package pkg = retrievePackage(f.getParent());
+                                    if (pkg != null) {
+                                        Unit unitToRemove = null;
+                                        for (Unit unitToTest : pkg.getUnits()) {
+                                            if (unitToTest.getFilename().equals(f.getName())) {
+                                                unitToRemove = unitToTest;
+                                                break;
+                                            }
+                                        }
+                                        if (unitToRemove != null) {
+                                            pkg.removeUnit(unitToRemove);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -745,8 +762,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         ISourceProject sourceProject, IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         ModuleManager moduleManager = typeChecker.getPhasedUnits().getModuleManager(); 
+        JDTModelLoader modelLoader = getProjectModelLoader(project);
         Context context = typeChecker.getContext();
-
+        Set<String> cleanedPackages = new HashSet();
+        
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
             if (monitor.isCanceled()) {
@@ -755,8 +774,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             // skip non-ceylon files
             if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension())) {
                 Unit toRemove = getJavaUnit(project, fileToUpdate);
-                if(toRemove != null) // If the unit is not null, the package should never be null
+                if(toRemove != null) { // If the unit is not null, the package should never be null
                     toRemove.getPackage().removeUnit(toRemove);
+                }
+                else {
+                    String packageName = getPackageName(fileToUpdate);
+                    if (! cleanedPackages.contains(packageName)) {
+                        modelLoader.clearCachesOnPackage(packageName);
+                    }
+                }
                 continue;
             }
             
@@ -849,7 +875,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 Package pkg = projectModelLoader.findPackage(packageFragment.getElementName());
                 if (pkg != null) {
                     for (Unit unit : pkg.getUnits()) {
-                        return unit;
+                        if (unit.getFilename().equals(fileToUpdate.getName())) {
+                            return unit;
+                        }
                     }
                 }
             }
@@ -1718,13 +1746,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
     
     private Package retrievePackage(IResource folder) {
-        IPath folderPath = folder.getProjectRelativePath();
-        IPath sourceFolder = retrieveSourceFolder(folderPath);
-        if (sourceFolder == null) {
+        String packageName = getPackageName(folder);
+        if (packageName == null) {
             return null;
         }
-        IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
-        String packageName = relativeFolderPath.toString().replace('/', '.');
         TypeChecker typeChecker = typeCheckers.get(folder.getProject());
         Context context = typeChecker.getContext();
         Modules modules = context.getModules();
@@ -1736,6 +1761,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
         return null;
+    }
+
+    public String getPackageName(IResource resource) {
+        IContainer folder = null;
+        if (resource instanceof IFile) {
+            folder = resource.getParent();
+        }
+        else {
+            folder = (IContainer) resource;
+        }
+        String packageName = null;
+        IPath folderPath = folder.getProjectRelativePath();
+        IPath sourceFolder = retrieveSourceFolder(folderPath);
+        if (sourceFolder != null) {
+            IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
+            packageName = relativeFolderPath.toString().replace('/', '.');
+        }
+        return packageName;
     }
     
     private Package createNewPackage(IContainer folder) {
