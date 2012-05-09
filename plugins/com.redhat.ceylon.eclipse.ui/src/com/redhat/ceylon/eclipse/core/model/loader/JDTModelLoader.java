@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -517,5 +518,24 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
             });
         }
+    }
+
+    public void clearCachesOnPackage(String packageName) {
+        List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
+        for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
+            if (element.getValue() == null) {
+                String className = element.getKey();
+                if (className != null) {
+                    String classPackageName =className.replaceAll("\\.[^\\.]+$", "");
+                    if (classPackageName.equals(packageName)) {
+                        keysToRemove.add(className);
+                    }
+                }
+            }
+        }
+        for (String keyToRemove : keysToRemove) {
+            classMirrorCache.remove(keyToRemove);
+        }
+        loadedPackages.remove(packageName);
     }
 }
