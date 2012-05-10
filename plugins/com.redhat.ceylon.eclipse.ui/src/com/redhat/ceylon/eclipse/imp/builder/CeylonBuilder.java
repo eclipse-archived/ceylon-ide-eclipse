@@ -1185,10 +1185,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             boolean success = true;
             // first java source files
             if(!javaSourceFiles.isEmpty()){
-                success = compile(project, options, javaSourceFiles, printWriter, console);
+                compile(project, options, javaSourceFiles, printWriter, console);
             }
             // then ceylon source files if that last run worked
-            if(!sourceFiles.isEmpty() && success){
+            if(!sourceFiles.isEmpty()){
                 success = compile(project, options, sourceFiles, printWriter, console);
             }
             return success;
