@@ -438,6 +438,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
         List<IProject> requiredProjects = getRequiredProjects(project);
+        boolean binariesGenerationOK;
         if (mustDoFullBuild.value) {
             monitor.beginTask("Full Ceylon Build of project " + project.getName(), 9);
             
@@ -450,186 +451,189 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            generateBinaries(project, sourceProject, allSources, monitor);
+            binariesGenerationOK = generateBinaries(project, sourceProject, allSources, monitor);
             monitor.worked(1);
         }
         else
         {
-            try {
-                monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 6);
-                List<IResourceDelta> deltas = new ArrayList<IResourceDelta>();
-                deltas.add(currentDelta);
-                for (IProject requiredProject : requiredProjects) {
-                    deltas.add(getDelta(requiredProject));
+            monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 6);
+            List<IResourceDelta> deltas = new ArrayList<IResourceDelta>();
+            deltas.add(currentDelta);
+            for (IProject requiredProject : requiredProjects) {
+                deltas.add(getDelta(requiredProject));
+            }
+            
+            monitor.subTask("Scanning deltas"); 
+            for (IResourceDelta delta : deltas) {
+                if (delta != null) {
+                    if (emitDiags)
+                        getConsoleStream().println("==> Scanning resource delta for '" + delta.getResource().getName() + "'... <==");
+                    delta.accept(fDeltaVisitor);
+                    if (emitDiags)
+                        getConsoleStream().println("Delta scan completed for project '" + delta.getResource().getName() + "'...");
                 }
+            }
+            
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            monitor.worked(1);
+            monitor.subTask("Scanning dependencies of deltas"); 
+            if (fChangedSources.size() > 0) {
+                Collection<IFile> changeDependents= new HashSet<IFile>();
+
+                changeDependents.addAll(fChangedSources);
+                if (emitDiags) {
+                    getConsoleStream().println("Changed files:");
+                    dumpSourceList(changeDependents);
+                }
+
+                boolean changed = false;
+                do {
+                    Collection<IFile> additions= new HashSet<IFile>();
+                    for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
+                        IFile srcFile= iter.next();
+                        IProject currentFileProject = srcFile.getProject();
+                        TypeChecker currentFileTypeChecker = null;
+                        if (currentFileProject == project) {
+                            currentFileTypeChecker = typeChecker;
+                        } else {
+                            currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
+                        }
+                        
+                        Set<PhasedUnit> phasedUnitsDependingOn = Collections.emptySet();
+                        
+                        phasedUnitsDependingOn = getDependentsOf(srcFile,
+                                currentFileTypeChecker, currentFileProject);
+
+                        for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
+                            if (monitor.isCanceled()) {
+                                throw new OperationCanceledException();
+                            }
+                            IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
+                            IProject newDependencyProject = depFile.getProject();
+                            if (newDependencyProject == project || newDependencyProject == currentFileProject) {
+                                additions.add(depFile);
+                            } else {
+//                                            System.out.println("a depending resource is in a third-party project");
+                            }
+                            
+                        }
+                    }
+                    changed = changeDependents.addAll(additions);
+                } while (changed);
+
+                PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
                 
-                monitor.subTask("Scanning deltas"); 
-                for (IResourceDelta delta : deltas) {
-                    if (delta != null) {
-                        if (emitDiags)
-                            getConsoleStream().println("==> Scanning resource delta for '" + delta.getResource().getName() + "'... <==");
-                        delta.accept(fDeltaVisitor);
-                        if (emitDiags)
-                            getConsoleStream().println("Delta scan completed for project '" + delta.getResource().getName() + "'...");
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+                    Unit unit = phasedUnit.getUnit();
+                    if (unit.getUnresolvedReferences().size() > 0) {
+                        IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                        if (fileToAdd.exists()) {
+                            fSourcesToCompile.add(fileToAdd);
+                        }
+                    }
+                    Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
+                    if (duplicateDeclarations.size() > 0) {
+                        IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                        if (fileToAdd.exists()) {
+                            fSourcesToCompile.add(fileToAdd);
+                        }
+                        for (Declaration duplicateDeclaration : duplicateDeclarations) {
+                            PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
+                            if (duplicateDeclPU != null) {
+                                IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
+                                if (duplicateDeclFile.exists()) {
+                                    fSourcesToCompile.add(duplicateDeclFile);
+                                }
+                            }
+                        }
                     }
                 }
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                monitor.worked(1);
-                monitor.subTask("Scanning dependencies of deltas"); 
-                if (fChangedSources.size() > 0) {
-                    Collection<IFile> changeDependents= new HashSet<IFile>();
-
-                    changeDependents.addAll(fChangedSources);
-                    if (emitDiags) {
-                        getConsoleStream().println("Changed files:");
-                        dumpSourceList(changeDependents);
-                    }
-
-                    boolean changed = false;
-                    do {
-                        Collection<IFile> additions= new HashSet<IFile>();
-                        for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
-                            IFile srcFile= iter.next();
-                            IProject currentFileProject = srcFile.getProject();
-                            TypeChecker currentFileTypeChecker = null;
-                            if (currentFileProject == project) {
-                                currentFileTypeChecker = typeChecker;
-                            } else {
-                                currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
+                for(IFile f: changeDependents) {
+                    if (isSourceFile(f) && f.getProject() == project) {
+                        if (f.exists()) {
+                            fSourcesToCompile.add(f);
+                        }
+                        else {
+                            // If the file is moved : add a dependency on the new file
+                            if (currentDelta != null) {
+                                IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
+                                if (removedFile != null && 
+                                        (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
+                                        removedFile.getMovedToPath() != null) {
+                                    fSourcesToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
+                                }
                             }
-                            
-                            Set<PhasedUnit> phasedUnitsDependingOn = Collections.emptySet();
-                            
-                            phasedUnitsDependingOn = getDependentsOf(srcFile,
-                                    currentFileTypeChecker, currentFileProject);
-
-                            for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
-                                if (monitor.isCanceled()) {
-                                    throw new OperationCanceledException();
-                                }
-                                IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
-                                IProject newDependencyProject = depFile.getProject();
-                                if (newDependencyProject == project || newDependencyProject == currentFileProject) {
-                                    additions.add(depFile);
-                                } else {
-//                                            System.out.println("a depending resource is in a third-party project");
-                                }
                                 
-                            }
-                        }
-                        changed = changeDependents.addAll(additions);
-                    } while (changed);
-
-                    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-                    
-                    if (monitor.isCanceled()) {
-                        throw new OperationCanceledException();
-                    }
-                    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-                        Unit unit = phasedUnit.getUnit();
-                        if (unit.getUnresolvedReferences().size() > 0) {
-                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
-                            if (fileToAdd.exists()) {
-                                fSourcesToCompile.add(fileToAdd);
-                            }
-                        }
-                        Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
-                        if (duplicateDeclarations.size() > 0) {
-                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
-                            if (fileToAdd.exists()) {
-                                fSourcesToCompile.add(fileToAdd);
-                            }
-                            for (Declaration duplicateDeclaration : duplicateDeclarations) {
-                                PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
-                                if (duplicateDeclPU != null) {
-                                    IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
-                                    if (duplicateDeclFile.exists()) {
-                                        fSourcesToCompile.add(duplicateDeclFile);
-                                    }
+                            if(LANGUAGE.hasExtension(f.getRawLocation().getFileExtension())) {
+                                // Remove the ceylon phasedUnit (which will also remove the unit from the package)
+                                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
+                                if (phasedUnitToDelete != null) {
+                                    phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
                                 }
-                            }
-                        }
-                    }
-                    
-                    if (monitor.isCanceled()) {
-                        throw new OperationCanceledException();
-                    }
-                    for(IFile f: changeDependents) {
-                        if (isSourceFile(f) && f.getProject() == project) {
-                            if (f.exists()) {
-                                fSourcesToCompile.add(f);
                             }
                             else {
-                                // If the file is moved : add a dependency on the new file
-                                if (currentDelta != null) {
-                                    IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
-                                    if (removedFile != null && 
-                                            (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
-                                            removedFile.getMovedToPath() != null) {
-                                        fSourcesToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
-                                    }
-                                }
-                                    
-                                if(LANGUAGE.hasExtension(f.getRawLocation().getFileExtension())) {
-                                    // Remove the ceylon phasedUnit (which will also remove the unit from the package)
-                                    PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
-                                    if (phasedUnitToDelete != null) {
-                                        phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
-                                    }
-                                }
-                                else {
-                                    // Remove the external unit from the package
-                                    Package pkg = retrievePackage(f.getParent());
-                                    if (pkg != null) {
-                                        Unit unitToRemove = null;
-                                        for (Unit unitToTest : pkg.getUnits()) {
-                                            if (unitToTest.getFilename().equals(f.getName())) {
-                                                unitToRemove = unitToTest;
-                                                break;
-                                            }
+                                // Remove the external unit from the package
+                                Package pkg = retrievePackage(f.getParent());
+                                if (pkg != null) {
+                                    Unit unitToRemove = null;
+                                    for (Unit unitToTest : pkg.getUnits()) {
+                                        if (unitToTest.getFilename().equals(f.getName())) {
+                                            unitToRemove = unitToTest;
+                                            break;
                                         }
-                                        if (unitToRemove != null) {
-                                            pkg.removeUnit(unitToRemove);
-                                        }
+                                    }
+                                    if (unitToRemove != null) {
+                                        pkg.removeUnit(unitToRemove);
                                     }
                                 }
                             }
                         }
                     }
                 }
-                if (emitDiags) {
-                    getConsoleStream().println("All files to compile:");
-                    dumpSourceList(fSourcesToCompile);
-                }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                clearMarkersOn(fSourcesToCompile);
-                monitor.worked(1);
-                monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
-                builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
-                if (builtPhasedUnits== null)
-                    return new IProject[0];
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                monitor.worked(1);
-                monitor.subTask("Generating binaries");
-                generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                monitor.worked(1);
-                monitor.subTask("Updating referencing projects");
-                updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
-                monitor.worked(1);
-                
-            } catch (CoreException e) {
-                getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
             }
+            if (emitDiags) {
+                getConsoleStream().println("All files to compile:");
+                dumpSourceList(fSourcesToCompile);
+            }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            monitor.worked(1);
+            monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
+            builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
+            if (builtPhasedUnits== null)
+                return new IProject[0];
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            monitor.worked(1);
+            monitor.subTask("Generating binaries");
+            binariesGenerationOK = generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            monitor.worked(1);
+            monitor.subTask("Updating referencing projects");
+            updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
+            monitor.worked(1);
+        }
+        
+        if (!binariesGenerationOK) {
+            // Add a problem marker if binary generation went wrong for ceylon files
+            IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
+            marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files. Look at the Ceylon console for more information.");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
         }
         
         typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
@@ -764,7 +768,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         ModuleManager moduleManager = typeChecker.getPhasedUnits().getModuleManager(); 
         JDTModelLoader modelLoader = getProjectModelLoader(project);
         Context context = typeChecker.getContext();
-        Set<String> cleanedPackages = new HashSet();
+        Set<String> cleanedPackages = new HashSet<String>();
         
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
@@ -814,6 +818,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
+        if (phasedUnitsToUpdate.size() == 0) {
+            return phasedUnitsToUpdate;
+        }
+        
+        clearProjectMarkers(project);
+        clearMarkersOn(fSourcesToCompile);
+        
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(phasedUnit.getPathRelativeToSrcDir()) != null) {
                 typeChecker.getPhasedUnits().removePhasedUnitForRelativePath(phasedUnit.getPathRelativeToSrcDir());
@@ -1194,7 +1205,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return success;
         }
         else
-            return false;
+            return true;
     }
 
     private boolean compile(IProject project, List<String> options,
@@ -1362,6 +1373,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private static void clearProjectMarkers(IProject project) {
         try {
             project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+            project.deleteMarkers(PROBLEM_MARKER_ID, true, IResource.DEPTH_ZERO);
         } catch (CoreException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
