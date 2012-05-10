@@ -66,6 +66,7 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -151,9 +152,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final Language LANGUAGE = LanguageRegistry
             .findLanguage(LANGUAGE_NAME);
 
-    public static final String JAVA_LANGUAGE_NAME = "java";
-
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
+    private final static Map<IProject, List<IPath>> sourceFolders = new HashMap<IProject, List<IPath>>();
 
     public static final String CEYLON_CONSOLE= "Ceylon";
 
@@ -164,7 +164,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private final Collection<IFile> fChangedSources= new HashSet<IFile>();
 
     private final Collection<IFile> fSourcesToCompile= new HashSet<IFile>();
-
+    
     private final class SourceDeltaVisitor implements IResourceDeltaVisitor {
         public boolean visit(IResourceDelta delta) throws CoreException {
             return processResource(delta.getResource());
@@ -175,7 +175,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (resource instanceof IFile) {
             IFile file= (IFile) resource;
 
-            if (isSourceFile(file) || isNonRootSourceFile(file)) {
+            if (isSourceFile(file)) {
                 fChangedSources.add(file);
             }
             
@@ -184,30 +184,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return false;
         }
         return true;
-    }
-
-    private class AllSourcesVisitor implements IResourceVisitor {
-        private final Collection<IFile> fResult;
-
-        public AllSourcesVisitor(Collection<IFile> result) {
-            fResult= result;
-        }
-
-        public boolean visit(IResource resource) throws CoreException {
-            if (resource instanceof IFile) {
-                IFile file= (IFile) resource;
-
-                if (file.exists()) {
-                    if (isSourceFile(file) || isNonRootSourceFile(file)) {
-                        fResult.add(file);
-                    }
-                }
-                return false;
-            } else if (isOutputFolder(resource)) {
-                return false;
-            }
-            return true;
-        }
     }
 
     public static List<PhasedUnit> getUnits(IProject project) {
@@ -276,6 +252,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return sourceProject;
     }
 
+    public static boolean isCeylon(IFile file) {
+        return LANGUAGE.hasExtension(file.getFileExtension());
+    }
+
+    public static boolean isJava(IFile file) {
+        return JavaCore.isJavaLikeFileName(file.getName());
+    }
+
+    public static boolean isCeylonOrJava(IFile file) {
+        return isCeylon(file) || isJava(file);
+    }
+
     /**
      * Decide whether a file needs to be build using this builder. Note that
      * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
@@ -288,10 +276,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (path == null)
             return false;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension())
-                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
+        if (!isCeylonOrJava(file)) {
             return false;
-
+        }
+        
         IProject project = file.getProject();
         if (project != null) {
             for (IPath sourceFolder: getSourceFolders(project)) {
@@ -300,20 +288,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
             }
         }
-        return false;
-    }
-
-    /**
-     * Decide whether or not to scan a file for dependencies. Note:
-     * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
-     * never return true for the same file.
-     * 
-     * @return true iff the given file is a source file that this builder should
-     *         scan for dependencies, but not compile as a top-level compilation
-     *         unit.
-     * 
-     */
-    protected boolean isNonRootSourceFile(IFile resource) {
         return false;
     }
 
@@ -358,6 +332,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         MessageConsole console = findConsole();
         console.clearConsole();
+        sourceFolders.clear();
         
         boolean emitDiags= getDiagPreference();
 
@@ -573,14 +548,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 }
                             }
                                 
-                            if(LANGUAGE.hasExtension(f.getRawLocation().getFileExtension())) {
+                            if(isCeylon(f)) {
                                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
                                 PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
                                 if (phasedUnitToDelete != null) {
                                     phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
                                 }
                             }
-                            else {
+                            else if (isJava(f)) {
                                 // Remove the external unit from the package
                                 Package pkg = retrievePackage(f.getParent());
                                 if (pkg != null) {
@@ -776,15 +751,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 throw new OperationCanceledException();
             }
             // skip non-ceylon files
-            if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension())) {
-                Unit toRemove = getJavaUnit(project, fileToUpdate);
-                if(toRemove != null) { // If the unit is not null, the package should never be null
-                    toRemove.getPackage().removeUnit(toRemove);
-                }
-                else {
-                    String packageName = getPackageName(fileToUpdate);
-                    if (! cleanedPackages.contains(packageName)) {
-                        modelLoader.clearCachesOnPackage(packageName);
+            if(!isCeylon(fileToUpdate)) {
+                if (isJava(fileToUpdate)) {
+                    Unit toRemove = getJavaUnit(project, fileToUpdate);
+                    if(toRemove != null) { // If the unit is not null, the package should never be null
+                        toRemove.getPackage().removeUnit(toRemove);
+                    }
+                    else {
+                        String packageName = getPackageName(fileToUpdate);
+                        if (! cleanedPackages.contains(packageName)) {
+                            modelLoader.clearCachesOnPackage(packageName);
+                        }
                     }
                 }
                 continue;
@@ -952,8 +929,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
-        final Collection<IPath> sourceFolders = retrieveSourceFolders(project);
-        for (final IPath srcFolderPath : sourceFolders) {
+        final Collection<IPath> sourceFolders = getSourceFolders(project);
+        for (final IPath srcAbsoluteFolderPath : sourceFolders) {
+            final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
             final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
             IResource srcDirResource = srcDir.getResource();
@@ -1012,20 +990,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
 
                     if (resource instanceof IFile) {
-                        if (resource.exists()) {
-                            List<String> pkgName = Arrays.asList(resource.getParent().getProjectRelativePath().makeRelativeTo(srcFolderPath).segments());
+                        IFile file = (IFile) resource;
+                        if (file.exists() && isCeylonOrJava(file)) {
+                            List<String> pkgName = Arrays.asList(file.getParent().getProjectRelativePath().makeRelativeTo(srcFolderPath).segments());
                             String pkgNameAsString = formatPath(pkgName);
                             pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
                             
-                            if (LANGUAGE.hasExtension(resource.getFileExtension())) {
+                            if (isCeylon(file)) {
                                 if (scannedSources != null) {
-                                    scannedSources.add((IFile)resource);
+                                    scannedSources.add(file);
                                 }
-                                ResourceVirtualFile file = ResourceVirtualFile.createResourceVirtualFile(resource);
-                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, file, srcDir, pkg);
-                                phasedUnits.addPhasedUnit(file, newPhasedUnit);
+                                ResourceVirtualFile virtualFile = ResourceVirtualFile.createResourceVirtualFile(file);
+                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, virtualFile, srcDir, pkg);
+                                phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
                             }
-                            if (JAVA_LANGUAGE_NAME.equals(resource.getFileExtension())) {
+                            if (isJava((IFile)resource)) {
                                 if (scannedSources != null) {
                                     scannedSources.add((IFile)resource);
                                 }
@@ -1182,9 +1161,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
         java.util.List<File> sourceFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-            if(LANGUAGE.hasExtension(file.getFileExtension()))
+            if(isCeylon(file))
                 sourceFiles.add(file.getRawLocation().toFile());
-            else if(JAVA_LANGUAGE_NAME.equals(file.getFileExtension()))
+            else if(isJava(file))
                 javaSourceFiles.add(file.getRawLocation().toFile());
         }
 
@@ -1607,15 +1586,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         monitor.subTask("Clear project and source markers");
-        Collection<IFile> allSources= new ArrayList<IFile>();
-        try {
-            getProject().accept(new AllSourcesVisitor(allSources));
-        } 
-        catch (CoreException e) {
-            getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
-        }
         clearProjectMarkers(getProject());
-        clearMarkersOn(allSources);
+        clearMarkersOn(getProject());
     }
     
     public static IFile getFile(PhasedUnit phasedUnit) {
@@ -1672,17 +1644,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
      * build path accordingly.
      */
     public static List<IPath> getSourceFolders(IProject theProject) {
+        if (sourceFolders.containsKey(theProject)) {
+            return sourceFolders.get(theProject);
+        }
+        
         IJavaProject javaProject = JavaCore.create(theProject);
         if (javaProject.exists()) {
             try {
-                List<IPath> sourceFolders = new ArrayList<IPath>();
+                List<IPath> projectSourceFolders = new ArrayList<IPath>();
                 for (IClasspathEntry entry: javaProject.getResolvedClasspath(true)) {
                     IPath path = entry.getPath();
                     if (isCeylonSourceEntry(entry)) {
-                        sourceFolders.add(path);
+                        projectSourceFolders.add(path);
                     }
                 }
-                return sourceFolders;
+                sourceFolders.put(theProject, projectSourceFolders);
+                return projectSourceFolders;
             } 
             catch (JavaModelException e) {
                 ErrorHandler.reportError(e.getMessage(), e);
@@ -1711,44 +1688,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return true;
     }
 
-    private static Collection<IPath> retrieveSourceFolders(
-            IProject project) {
-        List<IPath> result = new ArrayList<IPath>();
-
-        List<IPath> workspaceRelativeFolders = getSourceFolders(project);
-        for (IPath folder : workspaceRelativeFolders) {
-            result.add(folder.makeRelativeTo(project.getFullPath()));
-        }
-        return result;
-    }
-
     private IPath retrieveSourceFolder(IFile file)
     {
         IPath path = file.getProjectRelativePath();
         if (path == null)
             return null;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension())
-                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
+        if (! isCeylonOrJava(file))
             return null;
 
         return retrieveSourceFolder(path);
     }
 
-    /*private IPath retrieveSourceFolder(IFolder folder)
-    {
-        IPath path = folder.getProjectRelativePath();
-        if (path == null)
-            return null;
-        
-        return retrieveSourceFolder(path);
-    }*/
-
+    // path is project-relative
     private IPath retrieveSourceFolder(IPath path) {
         IProject project = getProject();
         if (project != null) {
-            Collection<IPath> sourceFolders = retrieveSourceFolders(project);
-            for (IPath sourceFolder : sourceFolders) {
+            Collection<IPath> sourceFolders = getSourceFolders(project);
+            for (IPath sourceFolderAbsolute : sourceFolders) {
+                IPath sourceFolder = sourceFolderAbsolute.makeRelativeTo(project.getFullPath());
                 if (sourceFolder.isPrefixOf(path)) {
                     return sourceFolder;
                 }
