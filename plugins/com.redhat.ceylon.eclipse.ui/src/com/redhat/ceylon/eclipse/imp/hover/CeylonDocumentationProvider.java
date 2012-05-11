@@ -28,6 +28,12 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         else if (entity instanceof Tree.SimpleType) {
             return getDocumentation(((Tree.SimpleType) entity).getDeclarationModel());
         }
+        else if (entity instanceof Tree.ImportMemberOrType) {
+            return getDocumentation(((Tree.ImportMemberOrType) entity).getDeclarationModel());
+        }
+        else if (entity instanceof Tree.NamedArgument) {
+            return getDocumentation(((Tree.NamedArgument) entity).getParameter());
+        } 
         else {
             return null;
         }
@@ -85,9 +91,11 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
     private static void appendDeclaringType(StringBuilder documentation, Declaration model) {
         if (model.isClassOrInterfaceMember()) {
             TypeDeclaration declaring = (TypeDeclaration) model.getContainer();
-            documentation.append("<ul><li>declared by ").append(declaring.getName())
-                    //.append(" - ").append(getPackageLabel(declaring))
-                    .append("</li>");
+            documentation.append("<ul><li>declared by ").append(declaring.getName());
+            if (declaring.isToplevel()) {
+                documentation.append(" in ").append(getPackageLabel(declaring));
+            }
+            documentation.append("</li>");
             if (model.isActual()) {
                 documentation.append("<li>");
                 appendRefinement(documentation, model.getRefinedDeclaration());
@@ -103,7 +111,9 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         if (spkg.isEmpty()) spkg="default package";
         documentation.append("refines '").append(CeylonContentProposer.getDescriptionFor(refined)) 
                 .append("' declared by ").append(supertype.getName());
-                //.append(" - ").append(getPackageLabel(refined));
+        if (refined.isToplevel()) {
+            documentation.append(" in ").append(getPackageLabel(refined));
+        }
     }
 
     private static void appendInheritance(StringBuilder documentation, Declaration model) {
