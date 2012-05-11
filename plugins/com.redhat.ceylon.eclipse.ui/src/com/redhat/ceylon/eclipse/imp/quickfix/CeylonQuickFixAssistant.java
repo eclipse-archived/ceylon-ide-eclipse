@@ -142,6 +142,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     problem.getOffset() + problem.getLength());
             switch ( problem.getProblemId() ) {
             case 100:
+                addCreateEnumProposal(cu, node, problem, proposals, 
+                        project, tc, file);
                 addCreateProposals(cu, node, problem, proposals, 
                         project, tc, file);
                 if (tc!=null) {
@@ -523,42 +525,57 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }*/
     
     private void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
-        if (node instanceof Tree.BaseType) {
-            String brokenName = getIdentifyingNode(node).getText();
-            if (brokenName.isEmpty()) return;
-            Tree.BaseType bt = (Tree.BaseType) node;
-            FindContainerVisitor fdv = new FindContainerVisitor(node);
-            fdv.visit(cu);
-            Tree.Declaration dec = fdv.getDeclaration();
-            if (dec instanceof Tree.ClassDefinition) {
-                Tree.ClassDefinition cd = (Tree.ClassDefinition) dec;
-                if (cd.getCaseTypes()!=null) {
-                    if (cd.getCaseTypes().getTypes().contains(bt)) {
-                        addCreateEnumProposal(proposals, project, 
-                                "class " + brokenName + parameters(cd.getTypeParameterList()) +
-                                    parameters(cd.getParameterList()) +
-                                    " extends " + cd.getDeclarationModel().getName() + 
-                                    parameters(cd.getTypeParameterList()) + 
-                                    arguments(cd.getParameterList()) + " {}", 
-                                "class '"+ brokenName + parameters(cd.getTypeParameterList()) +
-                                parameters(cd.getParameterList()) + "'", 
-                                CeylonLabelProvider.CLASS, cu, cd);
-                    }
+        ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+        IProject project, TypeChecker tc, IFile file) {
+        String brokenName = getIdentifyingNode(node).getText();
+        if (brokenName.isEmpty()) return;
+        //Tree.BaseType bt = (Tree.BaseType) node;
+        FindContainerVisitor fdv = new FindContainerVisitor(node);
+        fdv.visit(cu);
+        Tree.Declaration dec = fdv.getDeclaration();
+        if (dec instanceof Tree.ClassDefinition) {
+            Tree.ClassDefinition cd = (Tree.ClassDefinition) dec;
+            if (cd.getCaseTypes()!=null) {
+                if (cd.getCaseTypes().getTypes().contains(node)) {
+                    addCreateEnumProposal(proposals, project, 
+                            "class " + brokenName + parameters(cd.getTypeParameterList()) +
+                                parameters(cd.getParameterList()) +
+                                " extends " + cd.getDeclarationModel().getName() + 
+                                parameters(cd.getTypeParameterList()) + 
+                                arguments(cd.getParameterList()) + " {}", 
+                            "class '"+ brokenName + parameters(cd.getTypeParameterList()) +
+                            parameters(cd.getParameterList()) + "'", 
+                            CeylonLabelProvider.CLASS, cu, cd);
+                }
+                if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
+                    addCreateEnumProposal(proposals, project, 
+                            "object " + brokenName + 
+                                " extends " + cd.getDeclarationModel().getName() + 
+                                parameters(cd.getTypeParameterList()) + 
+                                arguments(cd.getParameterList()) + " {}", 
+                            "object '"+ brokenName + "'", 
+                            CeylonLabelProvider.ATTRIBUTE, cu, cd);
                 }
             }
-            if (dec instanceof Tree.InterfaceDefinition) {
-                Tree.InterfaceDefinition cd = (Tree.InterfaceDefinition) dec;
-                if (cd.getCaseTypes()!=null) {
-                    if (cd.getCaseTypes().getTypes().contains(bt)) {
-                        addCreateEnumProposal(proposals, project, 
-                                "interface " + brokenName + parameters(cd.getTypeParameterList()) +
-                                    " satisfies " + cd.getDeclarationModel().getName() + 
-                                    parameters(cd.getTypeParameterList()) + " {}", 
-                                "interface '"+ brokenName + parameters(cd.getTypeParameterList()) +  "'", 
-                                CeylonLabelProvider.INTERFACE, cu, cd);
-                    }
+        }
+        if (dec instanceof Tree.InterfaceDefinition) {
+            Tree.InterfaceDefinition cd = (Tree.InterfaceDefinition) dec;
+            if (cd.getCaseTypes()!=null) {
+                if (cd.getCaseTypes().getTypes().contains(node)) {
+                    addCreateEnumProposal(proposals, project, 
+                            "interface " + brokenName + parameters(cd.getTypeParameterList()) +
+                                " satisfies " + cd.getDeclarationModel().getName() + 
+                                parameters(cd.getTypeParameterList()) + " {}", 
+                            "interface '"+ brokenName + parameters(cd.getTypeParameterList()) +  "'", 
+                            CeylonLabelProvider.INTERFACE, cu, cd);
+                }
+                if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
+                    addCreateEnumProposal(proposals, project, 
+                            "object " + brokenName + 
+                                " satisfies " + cd.getDeclarationModel().getName() + 
+                                parameters(cd.getTypeParameterList()) + " {}", 
+                            "object '"+ brokenName + "'", 
+                            CeylonLabelProvider.ATTRIBUTE, cu, cd);
                 }
             }
         }
@@ -939,9 +956,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             throw new RuntimeException(e);
         }
         String indent = getIndent(statement, doc);
+        String s = indent + def + "\n";
         int offset = statement.getStopIndex()+2;
+        if (offset>doc.getLength()) {
+            offset = doc.getLength();
+            s = "\n" + s;
+        }
         //def = def.replace("$indent", indent);
-        change.setEdit(new InsertEdit(offset, indent + def+"\n"));
+        change.setEdit(new InsertEdit(offset, s));
         proposals.add(createCreateProposal(def, "Create enumerated " + desc, 
                 image, 0, offset, file, change));
     }
