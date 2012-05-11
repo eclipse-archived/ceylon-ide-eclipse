@@ -1546,7 +1546,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     
     private String timedMessage(String message) {
         long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
-        return String.format("[%1$10d ms] %2$s", elapsedTimeMs, message);
+        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
     }
 
     /**
