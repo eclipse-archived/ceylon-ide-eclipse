@@ -28,6 +28,7 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -66,6 +67,7 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -146,65 +148,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final Language LANGUAGE = LanguageRegistry
             .findLanguage(LANGUAGE_NAME);
 
-    public static final String JAVA_LANGUAGE_NAME = "java";
-
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
+    private final static Map<IProject, List<IPath>> sourceFolders = new HashMap<IProject, List<IPath>>();
 
     public static final String CEYLON_CONSOLE= "Ceylon";
-
-    private final IResourceDeltaVisitor fDeltaVisitor= new SourceDeltaVisitor();
+    private long startTime;
 
     private IPreferencesService fPrefService;
 
-    private final Collection<IFile> fChangedSources= new HashSet<IFile>();
-
     private final Collection<IFile> fSourcesToCompile= new HashSet<IFile>();
-
-    private final class SourceDeltaVisitor implements IResourceDeltaVisitor {
-        public boolean visit(IResourceDelta delta) throws CoreException {
-            return processResource(delta.getResource());
-        }
-    }
-
-    private boolean processResource(IResource resource) {
-        if (resource instanceof IFile) {
-            IFile file= (IFile) resource;
-
-            if (isSourceFile(file) || isNonRootSourceFile(file)) {
-                fChangedSources.add(file);
-            }
-            
-            return false;
-        } else if (isOutputFolder(resource)) {
-            return false;
-        }
-        return true;
-    }
-
-    private class AllSourcesVisitor implements IResourceVisitor {
-        private final Collection<IFile> fResult;
-
-        public AllSourcesVisitor(Collection<IFile> result) {
-            fResult= result;
-        }
-
-        public boolean visit(IResource resource) throws CoreException {
-            if (resource instanceof IFile) {
-                IFile file= (IFile) resource;
-
-                if (file.exists()) {
-                    if (isSourceFile(file) || isNonRootSourceFile(file)) {
-                        fResult.add(file);
-                    }
-                }
-                return false;
-            } else if (isOutputFolder(resource)) {
-                return false;
-            }
-            return true;
-        }
-    }
-
+   
     public static List<PhasedUnit> getUnits(IProject project) {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         TypeChecker tc = typeCheckers.get(project);
@@ -271,6 +224,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return sourceProject;
     }
 
+    public static boolean isCeylon(IFile file) {
+        return LANGUAGE.hasExtension(file.getFileExtension());
+    }
+
+    public static boolean isJava(IFile file) {
+        return JavaCore.isJavaLikeFileName(file.getName());
+    }
+
+    public static boolean isCeylonOrJava(IFile file) {
+        return isCeylon(file) || isJava(file);
+    }
+
     /**
      * Decide whether a file needs to be build using this builder. Note that
      * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
@@ -283,10 +248,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (path == null)
             return false;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension())
-                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
+        if (!isCeylonOrJava(file)) {
             return false;
-
+        }
+        
         IProject project = file.getProject();
         if (project != null) {
             for (IPath sourceFolder: getSourceFolders(project)) {
@@ -295,20 +260,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
             }
         }
-        return false;
-    }
-
-    /**
-     * Decide whether or not to scan a file for dependencies. Note:
-     * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
-     * never return true for the same file.
-     * 
-     * @return true iff the given file is a source file that this builder should
-     *         scan for dependencies, but not compile as a top-level compilation
-     *         unit.
-     * 
-     */
-    protected boolean isNonRootSourceFile(IFile resource) {
         return false;
     }
 
@@ -351,139 +302,179 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             getPreferencesService().setProject(getProject());
         }
         
+        startTime = System.nanoTime();
         MessageConsole console = findConsole();
-        console.clearConsole();
-        
-        boolean emitDiags= getDiagPreference();
-
-        fChangedSources.clear();
-        fSourcesToCompile.clear();
-
-        IProject project = getProject();
-        ISourceProject sourceProject = getSourceProject();
-        if (sourceProject == null) {
-            return new IProject[0];
+        IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
+        if (buildConfsBefore.length == 0) {
+            console.clearConsole();
+            console.activate();
         }
-
-        TypeChecker typeChecker = typeCheckers.get(project);
-
-        final class BooleanHolder {
-            public boolean value;
-        };
-        final BooleanHolder mustDoFullBuild = new BooleanHolder();
-        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
-        
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        IResourceDelta currentDelta = null;
-        if (! mustDoFullBuild.value) {
-            currentDelta = getDelta(getProject());
-            if (currentDelta != null) {
-                try {
-                    currentDelta.accept(new IResourceDeltaVisitor() {
-                        @Override
-                        public boolean visit(IResourceDelta resourceDelta) throws CoreException {
-                            IResource resource = resourceDelta.getResource();
-                            if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
-                                if (resource instanceof IFolder) {
-                                    IFolder folder = (IFolder) resource; 
-                                    Package pkg = retrievePackage(folder);
-                                    // If a package has been removed, then trigger a full build
-                                    if (pkg != null) {
-                                        mustDoFullBuild.value = true;
-                                        return false;
-                                    }
-                                }
-                            }
-                            
-                            if (resource instanceof IFile) {
-                                if (resource.getName().equals(ModuleManager.MODULE_FILE) ||
-                                        resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
-                                    // If a module descriptor has been added, removed or changed, trigger a full build
-                                    mustDoFullBuild.value = true;
-                                    return false;
-                                } else {
-                                    if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
-                                        removeObsoleteClassFiles((IFile)resource);
-                                    }
-                                }
-                            }
-                            
-                            if (resource instanceof IProject && 
-                                    ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
-                                mustDoFullBuild.value = true;
-                                return false;
-                            }
-                            
-                            return true;
-                        }
-                    });
-                } catch (CoreException e) {
-                    getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
-                    mustDoFullBuild.value = true;
-                }
-            } else {
-                mustDoFullBuild.value = true;
+        getConsoleStream().println("\n===================================");
+        getConsoleStream().println(timedMessage("Starting Ceylon build on project : " + getProject()));
+        getConsoleStream().println("-----------------------------------");
+        try {
+            sourceFolders.clear();
+            
+            boolean emitDiags= getDiagPreference();
+    
+            fSourcesToCompile.clear();
+    
+            IProject project = getProject();
+            ISourceProject sourceProject = getSourceProject();
+            if (sourceProject == null) {
+                return new IProject[0];
             }
-        }
-
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
-        List<IProject> requiredProjects = getRequiredProjects(project);
-        if (mustDoFullBuild.value) {
-            monitor.beginTask("Full Ceylon Build of project " + project.getName(), 9);
+    
+            TypeChecker typeChecker = typeCheckers.get(project);
+    
+            final class BooleanHolder {
+                public boolean value;
+            };
+            final BooleanHolder mustDoFullBuild = new BooleanHolder();
+            mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
             
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            final List<IFile> allSources= new ArrayList<IFile>();
-            builtPhasedUnits = fullBuild(project, sourceProject, allSources, monitor);            
-            monitor.subTask("Generating binaries");
+            
+            getConsoleStream().println(timedMessage("Scanning deltas to detect project structure changes"));
+            final IResourceDelta currentDelta = getDelta(getProject());
+            if (! mustDoFullBuild.value) {
+                if (currentDelta != null) {
+                    try {
+                        currentDelta.accept(new IResourceDeltaVisitor() {
+                            @Override
+                            public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+                                IResource resource = resourceDelta.getResource();
+                                if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
+                                    if (resource instanceof IFolder) {
+                                        IFolder folder = (IFolder) resource; 
+                                        Package pkg = retrievePackage(folder);
+                                        // If a package has been removed, then trigger a full build
+                                        if (pkg != null) {
+                                            mustDoFullBuild.value = true;
+                                            return false;
+                                        }
+                                    }
+                                }
+                                
+                                if (resource instanceof IFile) {
+                                    if (resource.getName().equals(ModuleManager.MODULE_FILE) ||
+                                            resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
+                                        // If a module descriptor has been added, removed or changed, trigger a full build
+                                        mustDoFullBuild.value = true;
+                                        return false;
+                                    }
+                                }
+                                
+                                if (resource instanceof IProject && 
+                                        ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
+                                    mustDoFullBuild.value = true;
+                                    return false;
+                                }
+                                
+                                return true;
+                            }
+                        });
+                    } catch (CoreException e) {
+                        getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
+                        mustDoFullBuild.value = true;
+                    }
+                } else {
+                    mustDoFullBuild.value = true;
+                }
+            }
+    
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            generateBinaries(project, sourceProject, allSources, monitor);
-            monitor.worked(1);
-        }
-        else
-        {
-            try {
-                monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 6);
-                List<IResourceDelta> deltas = new ArrayList<IResourceDelta>();
-                deltas.add(currentDelta);
+            List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
+            List<IProject> requiredProjects = getRequiredProjects(project);
+            boolean binariesGenerationOK;
+            if (mustDoFullBuild.value) {
+                monitor.beginTask("Full Ceylon Build of project " + project.getName(), 9);
+                getConsoleStream().println(timedMessage("Full Build of Ceylon Model"));
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                final List<IFile> allSources= new ArrayList<IFile>();
+                builtPhasedUnits = fullBuild(project, sourceProject, allSources, monitor);            
+                getConsoleStream().println(timedMessage("Full Generation of Class Files"));
+                monitor.subTask("Generating binaries");
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                binariesGenerationOK = generateBinaries(project, sourceProject, allSources, monitor);
+                monitor.worked(1);
+                getConsoleStream().println();
+            }
+            else
+            {
+                monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 7);
+                getConsoleStream().println(timedMessage("Incremental Build of Ceylon Model"));
+                List<IResourceDelta> projectDeltas = new ArrayList<IResourceDelta>();
+                projectDeltas.add(currentDelta);
                 for (IProject requiredProject : requiredProjects) {
-                    deltas.add(getDelta(requiredProject));
+                    projectDeltas.add(getDelta(requiredProject));
                 }
                 
+                final List<IFile> filesToRemove = new ArrayList<IFile>();
+                final Set<IFile> fChangedSources = new HashSet<IFile>(); 
                 monitor.subTask("Scanning deltas"); 
-                for (IResourceDelta delta : deltas) {
-                    if (delta != null) {
-                        if (emitDiags)
-                            getConsoleStream().println("==> Scanning resource delta for '" + delta.getResource().getName() + "'... <==");
-                        delta.accept(fDeltaVisitor);
-                        if (emitDiags)
-                            getConsoleStream().println("Delta scan completed for project '" + delta.getResource().getName() + "'...");
+                for (final IResourceDelta projectDelta : projectDeltas) {
+                    if (projectDelta != null) {
+                        List<IPath> deltaSourceFolders = getSourceFolders((IProject) projectDelta.getResource());
+                        for (IResourceDelta sourceDelta : projectDelta.getAffectedChildren()) {
+                            if (! deltaSourceFolders.contains(sourceDelta.getResource().getFullPath())) {
+                                // Not a real Ceylon source folder : don't scan changes to it 
+                                continue;
+                            }
+                            if (emitDiags)
+                                getConsoleStream().println("==> Scanning resource delta for '" + projectDelta.getResource().getName() + "'... <==");
+                            sourceDelta.accept(new IResourceDeltaVisitor() {
+                                public boolean visit(IResourceDelta delta) throws CoreException {
+                                    IResource resource = delta.getResource();
+                                    if (resource instanceof IFile) {
+                                        IFile file= (IFile) resource;
+                                        if (isCeylonOrJava(file)) {
+                                            fChangedSources.add(file);
+                                            if (projectDelta == currentDelta) {
+                                                if (delta.getKind() == IResourceDelta.REMOVED) {
+                                                    filesToRemove.add((IFile) resource);
+                                                }
+                                            }
+                                        }
+                                        
+                                        return false;
+                                    }
+                                    return true;
+                                }
+                            });
+                            if (emitDiags)
+                                getConsoleStream().println("Delta scan completed for project '" + projectDelta.getResource().getName() + "'...");
+                        }
                     }
                 }
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+
+                PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
+                
                 monitor.worked(1);
                 monitor.subTask("Scanning dependencies of deltas"); 
                 if (fChangedSources.size() > 0) {
                     Collection<IFile> changeDependents= new HashSet<IFile>();
-
+    
                     changeDependents.addAll(fChangedSources);
                     if (emitDiags) {
                         getConsoleStream().println("Changed files:");
                         dumpSourceList(changeDependents);
                     }
-
-                    boolean changed= false;
+    
+                    boolean changed = false;
                     do {
                         Collection<IFile> additions= new HashSet<IFile>();
                         for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
@@ -500,7 +491,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                             
                             phasedUnitsDependingOn = getDependentsOf(srcFile,
                                     currentFileTypeChecker, currentFileProject);
-
+    
                             for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
                                 if (monitor.isCanceled()) {
                                     throw new OperationCanceledException();
@@ -510,16 +501,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 if (newDependencyProject == project || newDependencyProject == currentFileProject) {
                                     additions.add(depFile);
                                 } else {
-//                                            System.out.println("a depending resource is in a third-party project");
+    //                                            System.out.println("a depending resource is in a third-party project");
                                 }
                                 
                             }
                         }
                         changed = changeDependents.addAll(additions);
                     } while (changed);
-
-                    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-                    
+    
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
@@ -536,7 +525,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                             IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
                             if (fileToAdd.exists()) {
                                 fSourcesToCompile.add(fileToAdd);
-//                                fileToAdd.touch(monitor);  TODO : vérifier
                             }
                             for (Declaration duplicateDeclaration : duplicateDeclarations) {
                                 PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
@@ -544,7 +532,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
                                     if (duplicateDeclFile.exists()) {
                                         fSourcesToCompile.add(duplicateDeclFile);
-//                                        duplicateDeclFile.touch(monitor); TODO : vérifier
                                     }
                                 }
                             }
@@ -560,6 +547,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 fSourcesToCompile.add(f);
                             }
                             else {
+                                // If the file is moved : add a dependency on the new file
                                 if (currentDelta != null) {
                                     IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
                                     if (removedFile != null && 
@@ -568,26 +556,52 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                         fSourcesToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
                                     }
                                 }
-                                    
-                                // If the file is moved : add a dependency on the new file
-                                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(f));
-                                if (phasedUnitToDelete != null) {
-                                    phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
-                                }
                             }
                         }
                     }
                 }
+
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                monitor.worked(1);
+                monitor.subTask("Cleaning removed files"); 
+                for (IFile fileToRemove : filesToRemove) {
+                    removeObsoleteClassFiles(fileToRemove);
+                    if(isCeylon(fileToRemove)) {
+                        // Remove the ceylon phasedUnit (which will also remove the unit from the package)
+                        PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(fileToRemove));
+                        if (phasedUnitToDelete != null) {
+                            phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+                        }
+                    }
+                    else if (isJava(fileToRemove)) {
+                        // Remove the external unit from the package
+                        Package pkg = retrievePackage(fileToRemove.getParent());
+                        if (pkg != null) {
+                            Unit unitToRemove = null;
+                            for (Unit unitToTest : pkg.getUnits()) {
+                                if (unitToTest.getFilename().equals(fileToRemove.getName())) {
+                                    unitToRemove = unitToTest;
+                                    break;
+                                }
+                            }
+                            if (unitToRemove != null) {
+                                pkg.removeUnit(unitToRemove);
+                            }
+                        }
+                    }
+                }
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                monitor.worked(1);
+                monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
                 if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(fSourcesToCompile);
                 }
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                clearMarkersOn(fSourcesToCompile);
-                monitor.worked(1);
-                monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
@@ -596,40 +610,55 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 monitor.worked(1);
                 monitor.subTask("Generating binaries");
-                generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
+                getConsoleStream().println(timedMessage("Incremental Generation of Class Files"));
+                binariesGenerationOK = generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                getConsoleStream().println();
                 monitor.worked(1);
                 monitor.subTask("Updating referencing projects");
+                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
-                
-            } catch (CoreException e) {
-                getPlugin().writeErrorMsg("Build failed: " + e.getMessage());
             }
-        }
-        
-        typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
-        
-        monitor.subTask("Collecting dependencies");
-        List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
-        
-        for (IProject requiredProject : requiredProjects) {
-            TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(requiredProject);
-            if (requiredProjectTypeChecker != null) {
-                phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+            
+            if (!binariesGenerationOK) {
+                // Add a problem marker if binary generation went wrong for ceylon files
+                IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
+                marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files. Look at the Ceylon console for more information.");
+                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
             }
+            
+            typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
+            
+            monitor.subTask("Collecting dependencies");
+            getConsoleStream().println(timedMessage("Collecting dependencies"));
+            List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
+            
+            for (IProject requiredProject : requiredProjects) {
+                TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(requiredProject);
+                if (requiredProjectTypeChecker != null) {
+                    phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
+                }
+            }
+            
+            for (PhasedUnit pu : builtPhasedUnits) {
+                pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+            }
+    
+            
+            monitor.worked(1);
+            monitor.done();
+            return requiredProjects.toArray(new IProject[0]);
         }
-        
-        for (PhasedUnit pu : builtPhasedUnits) {
-            pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+        finally {
+            getConsoleStream().println("-----------------------------------");
+            getConsoleStream().println(timedMessage("End Ceylon build on project : " + getProject()));
+            getConsoleStream().println("===================================");
         }
-
-        
-        monitor.worked(1);
-        monitor.done();
-        return requiredProjects.toArray(new IProject[0]);
     }
 
     private Set<PhasedUnit> getDependentsOf(IFile srcFile,
@@ -740,18 +769,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         ISourceProject sourceProject, IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         ModuleManager moduleManager = typeChecker.getPhasedUnits().getModuleManager(); 
+        JDTModelLoader modelLoader = getProjectModelLoader(project);
         Context context = typeChecker.getContext();
-
+        Set<String> cleanedPackages = new HashSet<String>();
+        
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
             // skip non-ceylon files
-            if(!LANGUAGE.hasExtension(fileToUpdate.getRawLocation().getFileExtension())) {
-                Unit toRemove = getJavaUnit(project, fileToUpdate);
-                if(toRemove != null) // If the unit is not null, the package should never be null
-                    toRemove.getPackage().removeUnit(toRemove);
+            if(!isCeylon(fileToUpdate)) {
+                if (isJava(fileToUpdate)) {
+                    Unit toRemove = getJavaUnit(project, fileToUpdate);
+                    if(toRemove != null) { // If the unit is not null, the package should never be null
+                        toRemove.getPackage().removeUnit(toRemove);
+                    }
+                    else {
+                        String packageName = getPackageName(fileToUpdate);
+                        if (! cleanedPackages.contains(packageName)) {
+                            modelLoader.clearCachesOnPackage(packageName);
+                        }
+                    }
+                }
                 continue;
             }
             
@@ -783,6 +823,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
+        if (phasedUnitsToUpdate.size() == 0) {
+            return phasedUnitsToUpdate;
+        }
+        
+        clearProjectMarkers(project);
+        clearMarkersOn(fSourcesToCompile);
+        
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(phasedUnit.getPathRelativeToSrcDir()) != null) {
                 typeChecker.getPhasedUnits().removePhasedUnitForRelativePath(phasedUnit.getPathRelativeToSrcDir());
@@ -844,7 +891,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 Package pkg = projectModelLoader.findPackage(packageFragment.getElementName());
                 if (pkg != null) {
                     for (Unit unit : pkg.getUnits()) {
-                        return unit;
+                        if (unit.getFilename().equals(fileToUpdate.getName())) {
+                            return unit;
+                        }
                     }
                 }
             }
@@ -908,8 +957,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
-        final Collection<IPath> sourceFolders = retrieveSourceFolders(project);
-        for (final IPath srcFolderPath : sourceFolders) {
+        final Collection<IPath> sourceFolders = getSourceFolders(project);
+        for (final IPath srcAbsoluteFolderPath : sourceFolders) {
+            final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
             final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
             IResource srcDirResource = srcDir.getResource();
@@ -968,20 +1018,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
 
                     if (resource instanceof IFile) {
-                        if (resource.exists()) {
-                            List<String> pkgName = Arrays.asList(resource.getParent().getProjectRelativePath().makeRelativeTo(srcFolderPath).segments());
+                        IFile file = (IFile) resource;
+                        if (file.exists() && isCeylonOrJava(file)) {
+                            List<String> pkgName = Arrays.asList(file.getParent().getProjectRelativePath().makeRelativeTo(srcFolderPath).segments());
                             String pkgNameAsString = formatPath(pkgName);
                             pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
                             
-                            if (LANGUAGE.hasExtension(resource.getFileExtension())) {
+                            if (isCeylon(file)) {
                                 if (scannedSources != null) {
-                                    scannedSources.add((IFile)resource);
+                                    scannedSources.add(file);
                                 }
-                                ResourceVirtualFile file = ResourceVirtualFile.createResourceVirtualFile(resource);
-                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, file, srcDir, pkg);
-                                phasedUnits.addPhasedUnit(file, newPhasedUnit);
+                                ResourceVirtualFile virtualFile = ResourceVirtualFile.createResourceVirtualFile(file);
+                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, virtualFile, srcDir, pkg);
+                                phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
                             }
-                            if (JAVA_LANGUAGE_NAME.equals(resource.getFileExtension())) {
+                            if (isJava((IFile)resource)) {
                                 if (scannedSources != null) {
                                     scannedSources.add((IFile)resource);
                                 }
@@ -1138,34 +1189,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
         java.util.List<File> sourceFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-            if(LANGUAGE.hasExtension(file.getFileExtension()))
+            if(isCeylon(file))
                 sourceFiles.add(file.getRawLocation().toFile());
-            else if(JAVA_LANGUAGE_NAME.equals(file.getFileExtension()))
+            else if(isJava(file))
                 javaSourceFiles.add(file.getRawLocation().toFile());
         }
 
         if (sourceFiles.size() > 0 || javaSourceFiles.size() > 0)
         {
-            MessageConsole console = findConsole();
-            PrintWriter printWriter = new PrintWriter(console.newMessageStream(), true);
+            PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
 
             boolean success = true;
             // first java source files
             if(!javaSourceFiles.isEmpty()){
-                success = compile(project, options, javaSourceFiles, printWriter, console);
+                compile(project, options, javaSourceFiles, printWriter);
             }
             // then ceylon source files if that last run worked
-            if(!sourceFiles.isEmpty() && success){
-                success = compile(project, options, sourceFiles, printWriter, console);
+            if(!sourceFiles.isEmpty()){
+                success = compile(project, options, sourceFiles, printWriter);
             }
             return success;
         }
         else
-            return false;
+            return true;
     }
 
     private boolean compile(IProject project, List<String> options,
-            java.util.List<File> sourceFiles, PrintWriter printWriter, AbstractConsole console) throws VerifyError {
+            java.util.List<File> sourceFiles, PrintWriter printWriter) throws VerifyError {
         CeyloncTool compiler;
         try {
             compiler = new CeyloncTool();
@@ -1195,9 +1245,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         RepositoryManager repositoryManager = getProjectRepositoryManager(project);
         if (repositoryManager != null) {
             File languageModuleArchive;
-            languageModuleArchive = repositoryManager.getArtifact(ctx);
-            options.add("-classpath");
-            options.add(languageModuleArchive.getAbsolutePath());
+            try {
+                languageModuleArchive = repositoryManager.getArtifact(ctx);
+                options.add("-classpath");
+                options.add(languageModuleArchive.getAbsolutePath());
+            } catch (Exception e) {
+                getConsoleStream().println("ERROR : Exception while retrieving the artifact : " + ctx);
+            }
         }
         
         Iterable<? extends JavaFileObject> compilationUnits1 =
@@ -1326,6 +1380,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private static void clearProjectMarkers(IProject project) {
         try {
             project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+            project.deleteMarkers(PROBLEM_MARKER_ID, true, IResource.DEPTH_ZERO);
         } catch (CoreException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1483,6 +1538,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     protected static MessageConsoleStream getConsoleStream() {
         return findConsole().newMessageStream();
     }
+    
+    private String timedMessage(String message) {
+        long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
+        return String.format("[%1$10d ms] %2$s", elapsedTimeMs, message);
+    }
 
     /**
      * Find or create the console with the given name
@@ -1559,15 +1619,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         monitor.subTask("Clear project and source markers");
-        Collection<IFile> allSources= new ArrayList<IFile>();
-        try {
-            getProject().accept(new AllSourcesVisitor(allSources));
-        } 
-        catch (CoreException e) {
-            getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
-        }
         clearProjectMarkers(getProject());
-        clearMarkersOn(allSources);
+        clearMarkersOn(getProject());
     }
     
     public static IFile getFile(PhasedUnit phasedUnit) {
@@ -1624,17 +1677,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
      * build path accordingly.
      */
     public static List<IPath> getSourceFolders(IProject theProject) {
+        if (sourceFolders.containsKey(theProject)) {
+            return sourceFolders.get(theProject);
+        }
+        
         IJavaProject javaProject = JavaCore.create(theProject);
         if (javaProject.exists()) {
             try {
-                List<IPath> sourceFolders = new ArrayList<IPath>();
+                List<IPath> projectSourceFolders = new ArrayList<IPath>();
                 for (IClasspathEntry entry: javaProject.getResolvedClasspath(true)) {
                     IPath path = entry.getPath();
                     if (isCeylonSourceEntry(entry)) {
-                        sourceFolders.add(path);
+                        projectSourceFolders.add(path);
                     }
                 }
-                return sourceFolders;
+                sourceFolders.put(theProject, projectSourceFolders);
+                return projectSourceFolders;
             } 
             catch (JavaModelException e) {
                 ErrorHandler.reportError(e.getMessage(), e);
@@ -1663,44 +1721,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return true;
     }
 
-    private static Collection<IPath> retrieveSourceFolders(
-            IProject project) {
-        List<IPath> result = new ArrayList<IPath>();
-
-        List<IPath> workspaceRelativeFolders = getSourceFolders(project);
-        for (IPath folder : workspaceRelativeFolders) {
-            result.add(folder.makeRelativeTo(project.getFullPath()));
-        }
-        return result;
-    }
-
     private IPath retrieveSourceFolder(IFile file)
     {
         IPath path = file.getProjectRelativePath();
         if (path == null)
             return null;
 
-        if (!LANGUAGE.hasExtension(path.getFileExtension())
-                && !JAVA_LANGUAGE_NAME.equals(path.getFileExtension()))
+        if (! isCeylonOrJava(file))
             return null;
 
         return retrieveSourceFolder(path);
     }
 
-    /*private IPath retrieveSourceFolder(IFolder folder)
-    {
-        IPath path = folder.getProjectRelativePath();
-        if (path == null)
-            return null;
-        
-        return retrieveSourceFolder(path);
-    }*/
-
+    // path is project-relative
     private IPath retrieveSourceFolder(IPath path) {
         IProject project = getProject();
         if (project != null) {
-            Collection<IPath> sourceFolders = retrieveSourceFolders(project);
-            for (IPath sourceFolder : sourceFolders) {
+            Collection<IPath> sourceFolders = getSourceFolders(project);
+            for (IPath sourceFolderAbsolute : sourceFolders) {
+                IPath sourceFolder = sourceFolderAbsolute.makeRelativeTo(project.getFullPath());
                 if (sourceFolder.isPrefixOf(path)) {
                     return sourceFolder;
                 }
@@ -1710,13 +1749,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
     
     private Package retrievePackage(IResource folder) {
-        IPath folderPath = folder.getProjectRelativePath();
-        IPath sourceFolder = retrieveSourceFolder(folderPath);
-        if (sourceFolder == null) {
+        String packageName = getPackageName(folder);
+        if (packageName == null) {
             return null;
         }
-        IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
-        String packageName = relativeFolderPath.toString().replace('/', '.');
         TypeChecker typeChecker = typeCheckers.get(folder.getProject());
         Context context = typeChecker.getContext();
         Modules modules = context.getModules();
@@ -1728,6 +1764,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
         return null;
+    }
+
+    public String getPackageName(IResource resource) {
+        IContainer folder = null;
+        if (resource instanceof IFile) {
+            folder = resource.getParent();
+        }
+        else {
+            folder = (IContainer) resource;
+        }
+        String packageName = null;
+        IPath folderPath = folder.getProjectRelativePath();
+        IPath sourceFolder = retrieveSourceFolder(folderPath);
+        if (sourceFolder != null) {
+            IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
+            packageName = relativeFolderPath.toString().replace('/', '.');
+        }
+        return packageName;
     }
     
     private Package createNewPackage(IContainer folder) {
