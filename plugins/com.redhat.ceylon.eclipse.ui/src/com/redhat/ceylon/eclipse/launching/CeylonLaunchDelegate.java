@@ -8,8 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
@@ -104,5 +107,22 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         }
 
         return classpathList.toArray(new String [classpathList.size()]);
+    }
+
+    @Override
+    protected boolean isLaunchProblem(IMarker problemMarker)
+            throws CoreException {
+        if (super.isLaunchProblem(problemMarker)) {
+            return true; 
+        }
+        if (! problemMarker.getType().equals(CeylonBuilder.PROBLEM_MARKER_ID)) {
+            return false;
+        }
+        Integer severity = (Integer)problemMarker.getAttribute(IMarker.SEVERITY);
+        if (severity != null) {
+            return severity.intValue() >= IMarker.SEVERITY_ERROR;
+        } 
+        
+        return false;
     }
 }
