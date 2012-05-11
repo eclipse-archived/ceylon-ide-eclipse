@@ -239,4 +239,10 @@ public class JDTClass implements ClassMirror {
 	public boolean isAnonymous() {
 		return klass.isAnonymousType();
 	}
+
+    @Override
+    public boolean isJavaSource() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
