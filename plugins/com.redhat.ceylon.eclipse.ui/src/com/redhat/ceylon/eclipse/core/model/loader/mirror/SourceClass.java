@@ -117,4 +117,10 @@ public class SourceClass implements ClassMirror {
     public boolean isLoadedFromSource() {
         return true;
     }
+
+    @Override
+    public boolean isJavaSource() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
