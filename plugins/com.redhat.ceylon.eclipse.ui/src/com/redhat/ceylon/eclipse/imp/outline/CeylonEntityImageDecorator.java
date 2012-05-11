@@ -75,6 +75,10 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     }
 
     private static int getDecorationAttributes(Declaration model) {
+        if (model == null) {
+            return 0;
+        }
+        
         int result = 0;
         if (model.isFormal()) {
             result |= FORMAL;
@@ -88,5 +92,4 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
         }
         return result;
     }
-    
 }
