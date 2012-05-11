@@ -337,6 +337,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
         if (buildConfsBefore.length == 0) {
             console.clearConsole();
+            console.activate();
         }
         getConsoleStream().println("\n===================================");
         getConsoleStream().println(timedMessage("Starting Ceylon build on project : " + getProject()));
