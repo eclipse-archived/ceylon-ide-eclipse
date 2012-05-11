@@ -85,6 +85,7 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
+import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -116,6 +117,8 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
+import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Options;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -566,8 +569,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 monitor.worked(1);
                 monitor.subTask("Cleaning removed files"); 
+                removeObsoleteClassFiles(filesToRemove);
                 for (IFile fileToRemove : filesToRemove) {
-                    removeObsoleteClassFiles(fileToRemove);
                     if(isCeylon(fileToRemove)) {
                         // Remove the ceylon phasedUnit (which will also remove the unit from the package)
                         PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(fileToRemove));
@@ -1838,62 +1841,78 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
     
 
-    private void removeObsoleteClassFiles(IFile file) {
-        Package pkg = retrievePackage(file.getParent());
-        if (pkg == null) {
-            return;
-        }
-        IProject project = file.getProject();
-        Module module = pkg.getModule();
-        TypeChecker typeChecker = typeCheckers.get(project);
-        if (typeChecker == null) {
+    private void removeObsoleteClassFiles(List<IFile> filesToRemove) {
+        if (filesToRemove.size() == 0) {
             return;
         }
         
-        IJavaProject javaProject = JavaCore.create(project);
-        final File outputDirectory = getOutputDirectory(javaProject);
-        File moduleDir = Util.getModulePath(outputDirectory, module);
-        File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
-        if(moduleJar.exists()){
+        Set<File> moduleJars = new HashSet<File>();
+        
+        for (IFile file : filesToRemove) {
             IPath filePath = file.getProjectRelativePath();
             IPath sourceFolder = retrieveSourceFolder(filePath);
             if (sourceFolder == null) {
                 return;
             }
-            String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
             
-            try {
-                ZipFile zipFile = new ZipFile(moduleJar);
-                FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
-                List<String> entriesToDelete = new ArrayList<String>();
-                ZipInputStream zis = zipFile.getInputStream(fileHeader);
-                try {
-                    Properties mapping = new Properties();
-                    mapping.load(zis);
-                    for (String className : mapping.stringPropertyNames()) {
-                        String sourceFile = mapping.getProperty(className);
-                        if (relativeFilePath.equals(sourceFile)) {
-                            entriesToDelete.add(className);
-                        }
-                    }
-                } finally {
-                    zis.close();
-                }
-                for (String entryToDelete : entriesToDelete) {
-                    zipFile.removeFile(entryToDelete);
-                }
-            } catch (ZipException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            Package pkg = retrievePackage(file.getParent());
+            if (pkg == null) {
+                return;
+            }
+            IProject project = file.getProject();
+            Module module = pkg.getModule();
+            TypeChecker typeChecker = typeCheckers.get(project);
+            if (typeChecker == null) {
+                return;
             }
             
-            // Open it as Zip
-            // Load Mapping from properties
-            // for all the classes that have a source file with 
-            
+            IJavaProject javaProject = JavaCore.create(project);
+            final File outputDirectory = getOutputDirectory(javaProject);
+            File moduleDir = Util.getModulePath(outputDirectory, module);
+            File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
+            if(moduleJar.exists()){
+                moduleJars.add(moduleJar);
+                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+                
+                try {
+                    ZipFile zipFile = new ZipFile(moduleJar);
+                    FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
+                    List<String> entriesToDelete = new ArrayList<String>();
+                    ZipInputStream zis = zipFile.getInputStream(fileHeader);
+                    try {
+                        Properties mapping = new Properties();
+                        mapping.load(zis);
+                        for (String className : mapping.stringPropertyNames()) {
+                            String sourceFile = mapping.getProperty(className);
+                            if (relativeFilePath.equals(sourceFile)) {
+                                entriesToDelete.add(className);
+                            }
+                        }
+                    } finally {
+                        zis.close();
+                    }
+                    for (String entryToDelete : entriesToDelete) {
+                        zipFile.removeFile(entryToDelete);
+                    }
+                } catch (ZipException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
+        class MyLog extends Log {
+            public MyLog() {
+                super(dummyContext, new PrintWriter(getConsoleStream()));
+            }
+        }
+        Log log = new MyLog();
+        Options options = Options.instance(dummyContext);
+        for (File moduleJar : moduleJars) {
+            ShaSigner.sign(moduleJar, log, options);
         }
     }
 
