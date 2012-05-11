@@ -22,11 +22,31 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         if (entity instanceof Tree.Declaration) {
             return getDocumentation((Tree.Declaration) entity);
         }
+        else if (entity instanceof Tree.MemberOrTypeExpression) {
+            return getDocumentation(((Tree.MemberOrTypeExpression) entity).getDeclaration());
+        }
+        else if (entity instanceof Tree.SimpleType) {
+            return getDocumentation(((Tree.SimpleType) entity).getDeclarationModel());
+        }
         else {
             return null;
         }
     }
     
+    private static String getDocumentation(Declaration model) {
+        if (model==null) {
+            return null;
+        }
+        else {
+            StringBuilder documentation = new StringBuilder();
+            appendDescription(model, documentation);
+            appendInheritance(documentation, model);
+            appendDeclaringType(documentation, model);
+            appendContainingPackage(documentation, model);
+            return documentation.toString();
+        }
+    }
+
     public static String getDocumentation(Tree.Declaration decl) {
         StringBuilder documentation = new StringBuilder();
         if (decl!=null) {
@@ -41,6 +61,12 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             appendDocAnnotationContent(decl, documentation);
         }
         return documentation.toString();
+    }
+
+    private static void appendDescription(Declaration model, StringBuilder documentation) {
+        documentation.append("<p><b>")
+                .append(sanitize(CeylonContentProposer.getDescriptionFor(model)))
+                .append("</b></p>");
     }
 
     private static void appendDescription(Tree.Declaration decl, StringBuilder documentation) {
