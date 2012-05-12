@@ -159,6 +159,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 102:
                 addCreateEnumProposal(cu, node, problem, proposals, 
                         project, tc, file);
+                if (tc!=null) {
+                    addRenameProposals(cu, node, problem, proposals, file);
+                    addImportProposals(cu, node, proposals, file);
+                }
                 break;
             case 200:
                 addSpecifyTypeProposal(cu, node, problem, proposals, file);
