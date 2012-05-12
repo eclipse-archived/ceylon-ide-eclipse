@@ -80,6 +80,11 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         else if (node instanceof Tree.StaticMemberOrTypeExpression) {
             return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
         }
+        else if (node instanceof Tree.ExtendedTypeExpression) {
+            //TODO: whoah! this is really ugly!
+            return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
+                    .getIdentifier();
+        }
         else if (node instanceof Tree.SimpleType) {
             return ((Tree.SimpleType) node).getIdentifier();
         }
