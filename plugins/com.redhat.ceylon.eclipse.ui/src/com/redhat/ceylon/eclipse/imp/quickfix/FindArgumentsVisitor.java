@@ -9,19 +9,19 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class FindArgumentsVisitor extends Visitor 
         implements NaturalVisitor {
-    Tree.StaticMemberOrTypeExpression smte;
+    Tree.MemberOrTypeExpression smte;
     Tree.NamedArgumentList namedArgs;
     Tree.PositionalArgumentList positionalArgs;
     ProducedType currentType;
     ProducedType expectedType;
     boolean found = false;
     
-    FindArgumentsVisitor(Tree.StaticMemberOrTypeExpression smte) {
+    FindArgumentsVisitor(Tree.MemberOrTypeExpression smte) {
         this.smte = smte;
     }
     
     @Override
-    public void visit(Tree.StaticMemberOrTypeExpression that) {
+    public void visit(Tree.MemberOrTypeExpression that) {
         super.visit(that);
         if (that==smte) {
             expectedType = currentType;

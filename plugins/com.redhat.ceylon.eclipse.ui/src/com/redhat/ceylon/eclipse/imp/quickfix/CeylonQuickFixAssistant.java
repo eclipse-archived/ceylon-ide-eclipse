@@ -142,6 +142,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     problem.getOffset() + problem.getLength());
             switch ( problem.getProblemId() ) {
             case 100:
+            case 102:
                 addCreateEnumProposal(cu, node, problem, proposals, 
                         project, tc, file);
                 addCreateProposals(cu, node, problem, proposals, 
@@ -154,14 +155,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 101:
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
-                }
-                break;
-            case 102:
-                addCreateEnumProposal(cu, node, problem, proposals, 
-                        project, tc, file);
-                if (tc!=null) {
-                    addRenameProposals(cu, node, problem, proposals, file);
-                    addImportProposals(cu, node, proposals, file);
                 }
                 break;
             case 200:
@@ -659,8 +652,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
-        if (node instanceof Tree.StaticMemberOrTypeExpression) {
-            Tree.StaticMemberOrTypeExpression smte = (Tree.StaticMemberOrTypeExpression) node;
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
 
             String brokenName = getIdentifyingNode(node).getText();
             if (brokenName.isEmpty()) return;
@@ -827,7 +820,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
+            Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
@@ -841,7 +834,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.StaticMemberOrTypeExpression smte) {
+            Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
