@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.imp.core;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -17,6 +19,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -34,7 +39,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
     public IHyperlink[] detectHyperlinks(ITextViewer tv, IRegion region,
             boolean csmh) {
         CeylonParseController pc = editor.getParseController();
-        if (pc==null) {
+        if (pc==null||pc.getRootNode()==null) {
             return null;
         }
         else {
@@ -56,18 +61,19 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                     }
                     else {
                         try {
-                            final IType type = jp.findType(dec.getQualifiedNameString());
-                            if (type==null) {
+                            IJavaElement element = getJavaElement(dec, jp);
+                            if (element==null) {
                                 return null;
                             }
                             else {
+                                final IJavaElement elem = element;
                                 return new IHyperlink[] { new IHyperlink() {
                                     @Override
                                     public void open() {
                                         try {
-                                            IEditorPart part = EditorUtility.openInEditor(type, true);
+                                            IEditorPart part = EditorUtility.openInEditor(elem, true);
                                             if(part!=null) {
-                                                EditorUtility.revealInEditor(part, type);
+                                                EditorUtility.revealInEditor(part, elem);
                                             }
                                         } 
                                         catch (PartInitException e) {
@@ -96,6 +102,34 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private IJavaElement getJavaElement(Declaration dec, IJavaProject jp)
+            throws JavaModelException {
+        if (dec instanceof TypeDeclaration) {
+            return jp.findType(dec.getQualifiedNameString());
+        }
+        else {
+            IType type = jp.findType(dec.getContainer().getQualifiedNameString());
+            if (type==null) {
+                return null;
+            }
+            else {
+                for (IMethod method: type.getMethods()) {
+                    if (dec instanceof Value) {
+                        if (("get" + dec.getName()).equalsIgnoreCase(method.getElementName())) {
+                            return method;
+                        }
+                    }
+                    else if (dec instanceof Method) {
+                        if (dec.getName().equalsIgnoreCase(method.getElementName())) {
+                            return method;
+                        }
+                    }
+                }
+                return type;
             }
         }
     }
