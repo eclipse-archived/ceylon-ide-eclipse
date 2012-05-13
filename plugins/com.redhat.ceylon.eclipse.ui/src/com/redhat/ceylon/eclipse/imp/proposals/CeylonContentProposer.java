@@ -355,8 +355,11 @@ public class CeylonContentProposer implements IContentProposer {
         else if (node instanceof QualifiedMemberOrTypeExpression) {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isInvocationProposable(dec, EXPRESSION)) {
-                    addInvocationProposals(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
+                for (Declaration d: overloads(dec)) {
+                    if (isInvocationProposable(d, EXPRESSION)) {
+                        addInvocationProposals(offset, prefix, cpc, result, 
+                                new DeclarationWithProximity(d, dwp), d, EXPRESSION);
+                    }
                 }
                 addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
             }
@@ -377,8 +380,11 @@ public class CeylonContentProposer implements IContentProposer {
                 if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                 }
-                if (isInvocationProposable(dec, ol)) {
-                    addInvocationProposals(offset, prefix, cpc, result, dwp, dec, ol);
+                for (Declaration d: overloads(dec)) {
+                    if (isInvocationProposable(d, ol)) {
+                        addInvocationProposals(offset, prefix, cpc, result, 
+                                new DeclarationWithProximity(d, dwp), d, ol);
+                    }
                 }
                 if (isRefinementProposable(dec, ol)) {
                     addRefinementProposal(offset, prefix, cpc, node, result, dec, doc);
@@ -389,6 +395,17 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static List<Declaration> overloads(Declaration dec) {
+        List<Declaration> decs;
+        if (dec instanceof Functional && ((Functional)dec).isAbstraction()) {
+            decs = ((Functional)dec).getOverloads();
+        }
+        else {
+            decs = Collections.singletonList(dec);
+        }
+        return decs;
     }
 
     private static boolean isKeywordProposable(OccurrenceLocation ol) {
