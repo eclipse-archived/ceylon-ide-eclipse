@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.imp.core;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -55,7 +56,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                    IJavaProject jp = JavaCore.create(Util.getProject(editor));//dec.getUnit().getPackage().getModule();
+                    IJavaProject jp = JavaCore.create(Util.getProject(editor));
                     if (jp==null) {
                         return null;
                     }
@@ -106,7 +107,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
         }
     }
 
-    private IJavaElement getJavaElement(Declaration dec, IJavaProject jp)
+    public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp)
             throws JavaModelException {
         if (dec instanceof TypeDeclaration) {
             return jp.findType(dec.getQualifiedNameString());
@@ -127,6 +128,11 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                         if (dec.getName().equalsIgnoreCase(method.getElementName())) {
                             return method;
                         }
+                    }
+                }
+                for (IField field: type.getFields()) {
+                    if ((dec.getName()).equalsIgnoreCase(field.getElementName())) {
+                        return field;
                     }
                 }
                 return type;
