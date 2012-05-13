@@ -37,6 +37,7 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
@@ -66,6 +67,7 @@ import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter;
+import com.redhat.ceylon.eclipse.imp.core.JavaReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -200,6 +202,17 @@ public class CeylonEditor extends UniversalEditor {
             @Override
             public int getTabWidth(ISourceViewer sourceViewer) {
                 return getPreferenceStore().getInt(EDITOR_TAB_WIDTH);
+            }
+            @Override
+            public IHyperlinkDetector[] getHyperlinkDetectors(
+                    ISourceViewer sourceViewer) {
+                IHyperlinkDetector[] detectors = super.getHyperlinkDetectors(sourceViewer);
+                IHyperlinkDetector[] result = new IHyperlinkDetector[detectors.length+1];
+                for (int i=0; i<detectors.length; i++) {
+                    result[i]=detectors[i];
+                }
+                result[detectors.length] = new JavaReferenceResolver(CeylonEditor.this);
+                return result;
             }
         };
     }

@@ -150,7 +150,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         }
         else {
             Tree.CompilationUnit root = cpc.getRootNode();
-            if (root!=null && root.getUnit() != null && root.getUnit().equals(dec.getUnit())) {
+            if (root!=null && root.getUnit() != null && 
+                    root.getUnit().equals(dec.getUnit())) {
                 return root;
             }
             else {
