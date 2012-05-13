@@ -40,14 +40,16 @@ class FindArgumentsVisitor extends Visitor
     @Override
     public void visit(Tree.NamedArgument that) {
         ProducedType ct = currentType;
-        currentType = that.getParameter().getType();
+        currentType = that.getParameter()==null ? 
+                null : that.getParameter().getType();
         super.visit(that);
         currentType = ct;
     }
     @Override
     public void visit(Tree.PositionalArgument that) {
         ProducedType ct = currentType;
-        currentType = that.getParameter().getType();
+        currentType = that.getParameter()==null ? 
+                null : that.getParameter().getType();
         super.visit(that);
         currentType = ct;
     }
