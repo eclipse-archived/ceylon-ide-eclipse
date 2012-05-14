@@ -776,6 +776,15 @@ public class CeylonContentProposer implements IContentProposer {
                 return Collections.emptyMap();
             }
         }
+        else if (node instanceof Tree.ImportMemberOrType ||
+                node instanceof Tree.ImportMemberOrTypeList ||
+                node instanceof Tree.Alias) {
+            //TODO: propose member aliases if this is a nested ImportMemberOrTypeList
+            //      unfortunately the needed information is currently missing from
+            //      the model (we need a separate ImportList per ImportMemberOrTypeList)
+            return ((ImportList) node.getScope()).getImportedPackage().getMatchingDeclarations(null, prefix, 0);
+            //TODO: remove already-imported declarations from the results!
+        }
         else {
             Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
             result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
