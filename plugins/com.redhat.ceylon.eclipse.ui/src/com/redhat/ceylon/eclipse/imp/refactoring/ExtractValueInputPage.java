@@ -59,7 +59,8 @@ public class ExtractValueInputPage extends UserInputWizardPage {
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
-		});		
+		});
+        text.setFocus();
 	}
 
 	private ExtractValueRefactoring getExtractLocalRefactoring() {
