@@ -6,7 +6,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
 			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
@@ -19,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.2-ide.jar" sourcepath="/ceylon-compiler/src"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.2-ide.jar" sourcepath="/ceylon-module-resolver/api/src"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-0.2-ide.jar" sourcepath="/ceylon-spec/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

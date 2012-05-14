@@ -300,7 +300,7 @@ public class CeylonContentProposer implements IContentProposer {
                 if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
                     boolean already = false;
                     for (ImportList il: node.getUnit().getImportLists()) {
-                        if (il.getImportedPackage()==p) {
+                        if (il.getImportedScope()==p) {
                             already = true;
                             break;
                         }
@@ -779,26 +779,8 @@ public class CeylonContentProposer implements IContentProposer {
                 return Collections.emptyMap();
             }
         }
-        else if (node instanceof Tree.ImportMemberOrType ||
-                node instanceof Tree.ImportMemberOrTypeList ||
-                node instanceof Tree.Alias) { //TODO: would it be better to say just node.getScope() instanceof ImportList?
-            //TODO: propose member aliases if this is a nested ImportMemberOrTypeList
-            //      unfortunately the needed information is currently missing from
-            //      the model (we need a separate ImportList per ImportMemberOrTypeList)
-            ImportList il = (ImportList) node.getScope();
-            Map<String, DeclarationWithProximity> results = il.getMatchingDeclarations(null, prefix, 0);
-            Iterator<Map.Entry<String, DeclarationWithProximity>> iter = results.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, DeclarationWithProximity> e = iter.next();
-                for (Import i: il.getImports()) {
-                    if (!i.isWildcardImport() && 
-                            i.getDeclaration().equals(e.getValue().getDeclaration())) {
-                        iter.remove();
-                        break;
-                    }
-                }
-            }
-            return results;
+        else if (node.getScope() instanceof ImportList) {
+            return ((ImportList) node.getScope()).getMatchingDeclarations(null, prefix, 0);
         }
         else {
             Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);

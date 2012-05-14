@@ -51,7 +51,8 @@ public class CleanImportsHandler extends AbstractHandler {
             StringBuilder builder = new StringBuilder();
             for (Tree.Import ti: importList) {
                 List<Import> list = new ArrayList<Import>();
-                for (Import i: ti.getImportList().getImports()) {
+                for (Import i: ti.getImportMemberOrTypeList()
+                            .getImportList().getImports()) {
                     if (!duiv.getResult().contains(i.getDeclaration())) {
                         list.add(i);
                     }
@@ -97,7 +98,8 @@ public class CleanImportsHandler extends AbstractHandler {
     }
     
     private static String packageName(Tree.Import i) {
-        return i.getImportList().getImportedPackage()
+        return i.getImportMemberOrTypeList()
+                .getImportList().getImportedScope()
                 .getQualifiedNameString();
     }
     
