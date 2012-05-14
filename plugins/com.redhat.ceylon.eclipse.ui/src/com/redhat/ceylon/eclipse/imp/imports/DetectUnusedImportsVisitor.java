@@ -21,7 +21,8 @@ public class DetectUnusedImportsVisitor extends Visitor {
     @Override
     public void visit(Tree.Import that) {
         super.visit(that);
-        for (Import i: that.getImportList().getImports()) {
+        for (Import i: that.getImportMemberOrTypeList()
+                .getImportList().getImports()) {
             result.add(i.getDeclaration());
         }
     }
