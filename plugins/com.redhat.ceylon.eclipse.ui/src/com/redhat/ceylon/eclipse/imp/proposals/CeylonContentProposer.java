@@ -385,8 +385,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 for (Declaration d: overloads(dec)) {
                     if (isInvocationProposable(d, ol)) {
-                        ProducedReference pr = d.getProducedReference(null, //TODO: substitute type args of outer types!!!! 
-                                Collections.<ProducedType>emptyList());
+                        ProducedReference pr = getRefinedProducedReference(node, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), pr, ol);
                     }
@@ -474,7 +473,6 @@ public class CeylonContentProposer implements IContentProposer {
                 node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             ProducedReference pr = getRefinedProducedReference(node, d);
-            //TODO: substitute type arguments of subtype
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(sourceProposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
