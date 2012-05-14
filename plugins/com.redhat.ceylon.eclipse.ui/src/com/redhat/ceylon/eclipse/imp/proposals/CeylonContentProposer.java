@@ -534,7 +534,8 @@ public class CeylonContentProposer implements IContentProposer {
                     getPositionalInvocationDescriptionFor(dwp, ol), 
                     getPositionalInvocationTextFor(dwp, ol), true));
             List<ParameterList> pls = ((Functional) d).getParameterLists();
-            if (ol!=EXTENDS && !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
+            if (ol!=EXTENDS && !((Functional) d).isOverloaded() && 
+                    !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
                 //if there is more than one parameter, 
                 //suggest a named argument invocation 
                 result.add(sourceProposal(offset, prefix, 
