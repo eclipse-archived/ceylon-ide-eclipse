@@ -1008,11 +1008,14 @@ public class CeylonContentProposer implements IContentProposer {
                             FunctionalParameter fp = (FunctionalParameter) p;
                             for (ParameterList pl: fp.getParameterLists()) {
                                 result.append("(");
-                                for (Parameter pp: pl.getParameters()) {
-                                    result.append(pp.getType().getProducedTypeName(true))
-                                         .append(" ").append(pp.getName()).append(", ");
+                                if (!pl.getParameters().isEmpty()) {
+                                    for (Parameter pp: pl.getParameters()) {
+                                        //TODO: type arg substitution!
+                                        result.append(pp.getType().getProducedTypeName())
+                                             .append(" ").append(pp.getName()).append(", ");
+                                    }
+                                    result.setLength(result.length()-2);
                                 }
-                                result.setLength(result.length()-2);
                                 result.append(") ");
                             }
                         }
@@ -1037,8 +1040,27 @@ public class CeylonContentProposer implements IContentProposer {
                     result.append(" { ");
                     for (Parameter p: params.getParameters()) {
                         if (!p.isSequenced()) {
-                            result.append(p.getName()).append(" = ")
-                            .append(p.getName()).append("; ");
+                            if (p instanceof FunctionalParameter) {
+                                FunctionalParameter fp = (FunctionalParameter) p;
+                                result.append("function ").append(p.getName());
+                                for (ParameterList pl: fp.getParameterLists()) {
+                                    result.append("(");
+                                    if (!pl.getParameters().isEmpty()) {
+                                        for (Parameter pp: pl.getParameters()) {
+                                            //TODO: type arg substitution!
+                                            result.append(pp.getType().getProducedTypeName())
+                                                 .append(" ").append(pp.getName()).append(", ");
+                                        }
+                                        result.setLength(result.length()-2);
+                                    }
+                                    result.append(")");
+                                }
+                                result.append(" { return ").append(p.getName()).append("; } ");
+                            }
+                            else {
+                                result.append(p.getName()).append(" = ")
+                                        .append(p.getName()).append("; ");
+                            }
                         }
                     }
                     result.append("}");
