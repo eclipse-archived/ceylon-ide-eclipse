@@ -38,6 +38,11 @@ public class RenameRefactoring extends AbstractRefactoring {
             return super.isReference(ref) ||
                     ref!=null && ref.refines(getDeclaration());
         }
+        @Override
+        protected boolean isReference(Declaration ref, String id) {
+            return isReference(ref) && id!=null &&
+                    getDeclaration().getName().equals(id); //TODO: really lame way to tell if its an alias!
+        }
     }
 
 	private String newName;

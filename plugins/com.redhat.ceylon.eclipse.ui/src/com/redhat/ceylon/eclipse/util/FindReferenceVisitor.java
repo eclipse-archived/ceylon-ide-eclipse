@@ -38,6 +38,10 @@ public class FindReferenceVisitor extends Visitor {
 	    return ref!=null && declaration.refines(ref);
 	}
 	
+    protected boolean isReference(Declaration ref, String id) {
+        return isReference(ref);
+    }
+    
     private Tree.Variable getConditionVariable(Condition c) {
         if (c instanceof Tree.ExistsOrNonemptyCondition) {
             return ((Tree.ExistsOrNonemptyCondition) c).getVariable();
@@ -86,16 +90,16 @@ public class FindReferenceVisitor extends Visitor {
     
     @Override
     public void visit(Tree.ExtendedTypeExpression that) {}
-    
-	@Override
-	public void visit(Tree.MemberOrTypeExpression that) {
-		//TODO: handle refinement!
-		if (isReference(that.getDeclaration())) {
-			nodes.add(that);
-		}
-		super.visit(that);
-	}
-		
+    		
+    @Override
+    public void visit(Tree.StaticMemberOrTypeExpression that) {
+        if (isReference(that.getDeclaration(), 
+                id(that.getIdentifier()))) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
 	@Override
 	public void visit(Tree.NamedArgument that) {
 		if (isReference(that.getParameter())) {
@@ -106,7 +110,8 @@ public class FindReferenceVisitor extends Visitor {
 		
 	@Override
 	public void visit(Tree.SimpleType that) {
-		if (isReference(that.getTypeModel().getDeclaration())) {
+		if (isReference(that.getTypeModel().getDeclaration(), 
+		        id(that.getIdentifier()))) {
 			nodes.add(that);
 		}
 		super.visit(that);
@@ -121,6 +126,10 @@ public class FindReferenceVisitor extends Visitor {
 			nodes.add(that);
 		}
 		super.visit(that);
+	}
+	
+	private String id(Tree.Identifier that) {
+	    return that==null ? null : that.getText();
 	}
 		
 }
