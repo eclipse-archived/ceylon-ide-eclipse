@@ -786,8 +786,7 @@ public class CeylonContentProposer implements IContentProposer {
             //      unfortunately the needed information is currently missing from
             //      the model (we need a separate ImportList per ImportMemberOrTypeList)
             ImportList il = (ImportList) node.getScope();
-            Map<String, DeclarationWithProximity> results = il.getImportedPackage()
-                    .getMatchingDeclarations(null, prefix, 0);
+            Map<String, DeclarationWithProximity> results = il.getMatchingDeclarations(null, prefix, 0);
             Iterator<Map.Entry<String, DeclarationWithProximity>> iter = results.entrySet().iterator();
             while (iter.hasNext()) {
                 Map.Entry<String, DeclarationWithProximity> e = iter.next();
