@@ -23,6 +23,7 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
 import net.lingala.zip4j.model.FileHeader;
+import net.lingala.zip4j.model.UnzipParameters;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -1187,10 +1188,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         options.add("-g:lines,vars,source");
 
-        IPath outputDir = getProjectRelativeOutputDir(JavaCore.create(project));
+        IJavaProject javaProject = JavaCore.create(project);
+        final File outputDir = getOutputDirectory(javaProject);
         if (outputDir!=null) {
             options.add("-out");
-			options.add(toFile(project, outputDir).getAbsolutePath());
+            options.add(outputDir.getAbsolutePath());
         }
 
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
@@ -1215,6 +1217,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if(!sourceFiles.isEmpty()){
                 success = compile(project, options, sourceFiles, printWriter);
             }
+            if (outputDir != null) {
+                monitor.subTask("Unzipping class files in the JDT output folder");
+                List<String> extensionsToUnzip = Arrays.asList(".car");
+                new RepositoryLister(extensionsToUnzip).list(outputDir, new RepositoryLister.Actions() {
+                    @Override
+                    public void doWithFile(File path) {
+                        try {
+                            ZipFile carFile = new ZipFile(path);
+                            carFile.extractAll(outputDir.getAbsolutePath());
+                        } catch (ZipException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+            
             return success;
         }
         else
@@ -1896,6 +1914,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
+                        File classFile = new File(outputDirectory, entryToDelete.replace('/', File.separatorChar));
+                        classFile.delete();
                     }
                 } catch (ZipException e) {
                     // TODO Auto-generated catch block
