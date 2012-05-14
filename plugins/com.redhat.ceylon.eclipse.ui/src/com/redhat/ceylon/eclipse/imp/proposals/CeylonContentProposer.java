@@ -37,6 +37,7 @@ import static java.lang.Character.isUpperCase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.FunctionalParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -778,12 +780,25 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else if (node instanceof Tree.ImportMemberOrType ||
                 node instanceof Tree.ImportMemberOrTypeList ||
-                node instanceof Tree.Alias) {
+                node instanceof Tree.Alias) { //TODO: would it be better to say just node.getScope() instanceof ImportList?
             //TODO: propose member aliases if this is a nested ImportMemberOrTypeList
             //      unfortunately the needed information is currently missing from
             //      the model (we need a separate ImportList per ImportMemberOrTypeList)
-            return ((ImportList) node.getScope()).getImportedPackage().getMatchingDeclarations(null, prefix, 0);
-            //TODO: remove already-imported declarations from the results!
+            ImportList il = (ImportList) node.getScope();
+            Map<String, DeclarationWithProximity> results = il.getImportedPackage()
+                    .getMatchingDeclarations(null, prefix, 0);
+            Iterator<Map.Entry<String, DeclarationWithProximity>> iter = results.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<String, DeclarationWithProximity> e = iter.next();
+                for (Import i: il.getImports()) {
+                    if (!i.isWildcardImport() && 
+                            i.getDeclaration().equals(e.getValue().getDeclaration())) {
+                        iter.remove();
+                        break;
+                    }
+                }
+            }
+            return results;
         }
         else {
             Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
