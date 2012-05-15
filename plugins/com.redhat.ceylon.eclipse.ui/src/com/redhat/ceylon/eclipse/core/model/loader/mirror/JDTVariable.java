@@ -91,6 +91,9 @@ public class JDTVariable implements VariableMirror {
     }
     
     private String toParameterName(TypeBinding parameterType) {
-        return new String(parameterType.sourceName()).replaceAll("\\.", "_").toLowerCase();
+        return new String(parameterType.sourceName())
+                .replaceAll("\\.", "_")
+                .replaceAll("\\$", "_")
+                .replaceAll("\\[\\]", "s").toLowerCase();
     }
 }
