@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.wizard;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
