@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
@@ -33,23 +34,27 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         }
         //its coming from a binary or java project:
         else if (entity instanceof Tree.MemberOrTypeExpression) {
-            return getDocumentation(((Tree.MemberOrTypeExpression) entity).getDeclaration(), proj);
+            Tree.MemberOrTypeExpression node = (Tree.MemberOrTypeExpression) entity;
+            return getDocumentation(node.getDeclaration(), proj, node);
         }
         else if (entity instanceof Tree.SimpleType) {
-            return getDocumentation(((Tree.SimpleType) entity).getDeclarationModel(), proj);
+            Tree.SimpleType node = (Tree.SimpleType) entity;
+            return getDocumentation(node.getDeclarationModel(), proj, node);
         }
         else if (entity instanceof Tree.ImportMemberOrType) {
-            return getDocumentation(((Tree.ImportMemberOrType) entity).getDeclarationModel(), proj);
+            Tree.ImportMemberOrType node = (Tree.ImportMemberOrType) entity;
+            return getDocumentation(node.getDeclarationModel(), proj, node);
         }
         else if (entity instanceof Tree.NamedArgument) {
-            return getDocumentation(((Tree.NamedArgument) entity).getParameter(), proj);
+            Tree.NamedArgument node = (Tree.NamedArgument) entity;
+            return getDocumentation(node.getParameter(), proj, node);
         } 
         else {
             return null;
         }
     }
     
-    private static String getDocumentation(Declaration model, IProject project) {
+    private static String getDocumentation(Declaration model, IProject project, Node node) {
         if (model==null) {
             return null;
         }
@@ -59,17 +64,17 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
             appendInheritance(documentation, model);
             appendDeclaringType(documentation, model);
             appendContainingPackage(documentation, model);
-            appendJavadoc(model, project, documentation);
+            appendJavadoc(model, project, documentation, node);
             return documentation.toString();
         }
     }
 
     private static void appendJavadoc(Declaration model, IProject project,
-            StringBuilder documentation) {
+            StringBuilder documentation, Node node) {
         IJavaProject jp = JavaCore.create(project);
         if (jp!=null) {
             try {
-                IJavaElement je = getJavaElement(model, jp);
+                IJavaElement je = getJavaElement(model, jp, node);
                 if (je!=null) {
                     String javadoc = je.getAttachedJavadoc(new NullProgressMonitor());
                     if (javadoc!=null) {
