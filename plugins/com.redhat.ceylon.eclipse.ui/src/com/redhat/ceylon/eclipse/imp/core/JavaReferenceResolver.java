@@ -29,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -41,6 +42,45 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
         this.editor = editor;
     }
     
+    private final class JavaElementLink implements IHyperlink {
+        private final IJavaElement elem;
+        private final Node id;
+
+        private JavaElementLink(IJavaElement elem, Node id) {
+            this.elem = elem;
+            this.id = id;
+        }
+
+        @Override
+        public void open() {
+            try {
+                IEditorPart part = EditorUtility.openInEditor(elem, true);
+                if(part!=null) {
+                    EditorUtility.revealInEditor(part, elem);
+                }
+            } 
+            catch (PartInitException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return null;
+        }
+
+        @Override
+        public String getHyperlinkText() {
+            return null;
+        }
+
+        @Override
+        public IRegion getHyperlinkRegion() {
+            return new Region(id.getStartIndex(), 
+                    id.getStopIndex()-id.getStartIndex()+1);
+        }
+    }
+
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer tv, IRegion region,
             boolean csmh) {
@@ -67,39 +107,13 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                     }
                     else {
                         try {
-                            IJavaElement element = getJavaElement(dec, jp);
+                            IJavaElement element = getJavaElement(dec, jp, node);
                             if (element==null) {
                                 return null;
                             }
                             else {
                                 final IJavaElement elem = element;
-                                return new IHyperlink[] { new IHyperlink() {
-                                    @Override
-                                    public void open() {
-                                        try {
-                                            IEditorPart part = EditorUtility.openInEditor(elem, true);
-                                            if(part!=null) {
-                                                EditorUtility.revealInEditor(part, elem);
-                                            }
-                                        } 
-                                        catch (PartInitException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                    @Override
-                                    public String getTypeLabel() {
-                                        return null;
-                                    }
-                                    @Override
-                                    public String getHyperlinkText() {
-                                        return null;
-                                    }
-                                    @Override
-                                    public IRegion getHyperlinkRegion() {
-                                        return new Region(id.getStartIndex(), 
-                                                id.getStopIndex()-id.getStartIndex()+1);
-                                    }
-                                } };
+                                return new IHyperlink[] { new JavaElementLink(elem, id) };
                             }
                         }
                         catch (JavaModelException jme) {
@@ -112,7 +126,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
         }
     }
 
-    public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp)
+    public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp, Node node)
             throws JavaModelException {
         if (dec instanceof TypeDeclaration) {
             IType type = jp.findType(dec.getQualifiedNameString());
@@ -120,7 +134,9 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                 return null;
             }
             else {
-                if (dec instanceof Class && ((Class) dec).getParameterList()!=null) {
+                if (node instanceof Tree.MemberOrTypeExpression &&
+                        dec instanceof Class && 
+                        ((Class) dec).getParameterList()!=null) {
                     for (IMethod method: type.getMethods()) {
                         if (method.isConstructor()) {
                             if (((Class) dec).getParameterList().getParameters().size()==
