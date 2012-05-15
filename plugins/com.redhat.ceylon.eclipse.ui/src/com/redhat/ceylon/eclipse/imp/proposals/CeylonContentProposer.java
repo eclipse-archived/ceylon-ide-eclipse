@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.proposals;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
@@ -211,9 +212,11 @@ public class CeylonContentProposer implements IContentProposer {
         int tokenType = adjustedToken.getType();
         while (--tokenIndex>=0 && 
                 (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
+                || adjustedToken.getType()==EOF
                 || ((CommonToken) adjustedToken).getStartIndex()==offset)) { //don't consider the token to the right of the caret
             adjustedToken = tokens.get(tokenIndex);
-            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL) { //don't adjust to a ws/comment token
+            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
+                    adjustedToken.getType()!=EOF) { //don't adjust to a ws/comment token
                 adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
                 adjustedEnd = ((CommonToken) adjustedToken).getStopIndex()+1;
                 tokenType = adjustedToken.getType();
