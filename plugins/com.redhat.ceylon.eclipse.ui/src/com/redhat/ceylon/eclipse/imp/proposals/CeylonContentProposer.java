@@ -76,6 +76,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -86,6 +87,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -219,8 +221,9 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
                 
-        if (cpc.getRootNode() != null) {
-            Node node = findNode(cpc.getRootNode(), adjustedStart, adjustedEnd);
+        CompilationUnit rn = cpc.getRootNode();
+        if (rn != null) {
+            Node node = findNode(rn, adjustedStart, adjustedEnd);
             if (tokenType==RBRACE || tokenType==SEMICOLON) {
                 //We are to the right of a } or ;
                 //so the returned node is the previous
@@ -250,18 +253,18 @@ public class CeylonContentProposer implements IContentProposer {
                         }
                     }
                 }
-                BodyVisitor mv = new BodyVisitor(node, cpc.getRootNode());
-                mv.visit(cpc.getRootNode());
+                BodyVisitor mv = new BodyVisitor(node, rn);
+                mv.visit(rn);
                 node = mv.result;
             }
-            if (node==null) node = cpc.getRootNode(); //we're in whitespace at the start of the file
+            if (node==null) node = rn; //we're in whitespace at the start of the file
             
             RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
-            rtv.visit(cpc.getRootNode());
+            rtv.visit(rn);
             
             return constructCompletions(offset, prefix, tokenType,
                         sortProposals(prefix, rtv.requiredType, 
-                                getProposals(node, prefix, cpc.getRootNode())),
+                                getProposals(node, prefix, rn)),
                         cpc, node, viewer.getDocument());
         } 
         return null;
@@ -288,27 +291,30 @@ public class CeylonContentProposer implements IContentProposer {
       if (tc!=null) {
         for (Module m: tc.getContext().getModules().getListOfModules()) {*/
         //Set<Package> packages = new HashSet<Package>();
-        Module module = node.getUnit().getPackage().getModule();
-		for (Package p: module.getAllPackages()) {
-            //if (!packages.contains(p)) {
-                //packages.add(p);
-        	//if ( p.getModule().equals(module) || p.isShared() ) {
-                String pkg = p.getQualifiedNameString();
-                if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
-                    boolean already = false;
-                    for (ImportList il: node.getUnit().getImportLists()) {
-                        if (il.getImportedScope()==p) {
-                            already = true;
-                            break;
+        Unit unit = node.getUnit();
+        if (unit!=null) { //a null unit can occur if we have not finished parsing the file
+            Module module = unit.getPackage().getModule();
+    		for (Package p: module.getAllPackages()) {
+                //if (!packages.contains(p)) {
+                    //packages.add(p);
+            	//if ( p.getModule().equals(module) || p.isShared() ) {
+                    String pkg = p.getQualifiedNameString();
+                    if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
+                        boolean already = false;
+                        for (ImportList il: node.getUnit().getImportLists()) {
+                            if (il.getImportedScope()==p) {
+                                already = true;
+                                break;
+                            }
+                        }
+                        if (!already) {
+                            result.add(sourceProposal(offset, prefix, PACKAGE, 
+                                    "package " + pkg, pkg, 
+                                    pkg.substring(len), false));
                         }
                     }
-                    if (!already) {
-                        result.add(sourceProposal(offset, prefix, PACKAGE, 
-                                "package " + pkg, pkg, 
-                                pkg.substring(len), false));
-                    }
-                }
-            //}
+                //}
+            }
         }
     }
     
@@ -774,6 +780,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             Tree.CompilationUnit cu) {
+
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
@@ -782,14 +789,18 @@ public class CeylonContentProposer implements IContentProposer {
             else {
                 return Collections.emptyMap();
             }
-        }
-        else if (node.getScope() instanceof ImportList) {
-            return ((ImportList) node.getScope()).getMatchingDeclarations(null, prefix, 0);
-        }
-        else {
-            Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
-            result.putAll(node.getScope().getMatchingDeclarations(node.getUnit(), prefix, 0));
-            return result;
+        } else {
+            Scope scope = node.getScope();
+            if (scope instanceof ImportList) {
+                return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
+            }
+            else {
+                Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
+                if (scope!=null) { //a null scope occurs when we have not finished parsing the file
+                    result.putAll(scope.getMatchingDeclarations(node.getUnit(), prefix, 0));
+                }
+                return result;
+            }
         }
     }
 
@@ -828,15 +839,9 @@ public class CeylonContentProposer implements IContentProposer {
             for (Package languageScope: languageModule.getPackages() ) {
                 for (Map.Entry<String, DeclarationWithProximity> entry: 
                     languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
-                    try {
-                        if (entry.getValue().getDeclaration().isShared()) {
-                            result.put(entry.getKey(), entry.getValue());
-                        }
-                    }
-                    catch(RuntimeException e) {
-                        e.printStackTrace();
-                    }
-                    
+                    if (entry.getValue().getDeclaration().isShared()) {
+                        result.put(entry.getKey(), entry.getValue());
+                    }                    
                 }
             }
         }
