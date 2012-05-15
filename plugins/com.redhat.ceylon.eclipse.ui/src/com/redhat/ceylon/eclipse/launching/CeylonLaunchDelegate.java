@@ -10,8 +10,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
-import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
