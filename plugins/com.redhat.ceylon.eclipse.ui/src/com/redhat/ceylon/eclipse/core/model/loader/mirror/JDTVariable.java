@@ -20,7 +20,10 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
+import static java.lang.Character.toLowerCase;
+
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
@@ -91,9 +94,16 @@ public class JDTVariable implements VariableMirror {
     }
     
     private String toParameterName(TypeBinding parameterType) {
-        return new String(parameterType.sourceName())
-                .replaceAll("\\.", "_")
-                .replaceAll("\\$", "_")
-                .replaceAll("\\[\\]", "s").toLowerCase();
+        String typeName = new String(parameterType.sourceName());
+        StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
+        String result = null;
+        while (tokens.hasMoreTokens()) {
+            result = tokens.nextToken();
+        }
+        if (typeName.endsWith("[]")) {
+            result = result + "Array";
+        }
+        return toLowerCase(result.charAt(0)) + 
+                result.substring(1);
     }
 }
