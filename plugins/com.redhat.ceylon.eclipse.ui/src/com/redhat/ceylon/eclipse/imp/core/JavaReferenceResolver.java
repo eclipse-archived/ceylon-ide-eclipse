@@ -22,6 +22,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -114,7 +115,23 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
     public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp)
             throws JavaModelException {
         if (dec instanceof TypeDeclaration) {
-            return jp.findType(dec.getQualifiedNameString());
+            IType type = jp.findType(dec.getQualifiedNameString());
+            if (type==null) {
+                return null;
+            }
+            else {
+                if (dec instanceof Class && ((Class) dec).getParameterList()!=null) {
+                    for (IMethod method: type.getMethods()) {
+                        if (method.isConstructor()) {
+                            if (((Class) dec).getParameterList().getParameters().size()==
+                                                method.getNumberOfParameters()) {
+                                return method;
+                            }
+                        }
+                    }
+                }
+                return type;
+            }
         }
         else {
             IType type = jp.findType(dec.getContainer().getQualifiedNameString());
@@ -129,13 +146,15 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                         }
                     }
                     else if (dec instanceof Method) {
-                        //TODO: some kind of half-assed attempt to match up
-                        //      the parameter types for overloaded methods?
-                        List<ParameterList> pls = ((Method)dec).getParameterLists();
-                        if (dec.getName().equalsIgnoreCase(method.getElementName()) &&
-                                !pls.isEmpty() && pls.get(0).getParameters().size()==
-                                            method.getNumberOfParameters()) {
-                            return method;
+                        if (!method.isConstructor()) {
+                            //TODO: some kind of half-assed attempt to match up
+                            //      the parameter types for overloaded methods?
+                            List<ParameterList> pls = ((Method) dec).getParameterLists();
+                            if (dec.getName().equalsIgnoreCase(method.getElementName()) &&
+                                    !pls.isEmpty() && pls.get(0).getParameters().size()==
+                                                method.getNumberOfParameters()) {
+                                return method;
+                            }
                         }
                     }
                 }
