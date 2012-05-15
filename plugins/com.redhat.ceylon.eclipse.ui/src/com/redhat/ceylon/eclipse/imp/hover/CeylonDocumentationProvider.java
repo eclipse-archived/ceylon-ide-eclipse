@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.hover;
 
+import static com.redhat.ceylon.eclipse.imp.core.JavaReferenceResolver.getJavaElement;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 
 import java.util.List;
@@ -19,7 +20,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.eclipse.imp.core.JavaReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
@@ -69,7 +69,7 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         IJavaProject jp = JavaCore.create(project);
         if (jp!=null) {
             try {
-                IJavaElement je = JavaReferenceResolver.getJavaElement(model, jp);
+                IJavaElement je = getJavaElement(model, jp);
                 if (je!=null) {
                     String javadoc = je.getAttachedJavadoc(new NullProgressMonitor());
                     if (javadoc!=null) {

@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.core;
 
+import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
+
+import java.util.List;
 
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -21,6 +24,7 @@ import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -50,7 +54,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                 return null;
             }
             else {
-                final Node id = CeylonReferenceResolver.getIdentifyingNode(node);
+                final Node id = getIdentifyingNode(node);
                 Declaration dec = getReferencedDeclaration(node);
                 if (dec==null) {
                     return null;
@@ -125,7 +129,12 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                         }
                     }
                     else if (dec instanceof Method) {
-                        if (dec.getName().equalsIgnoreCase(method.getElementName())) {
+                        //TODO: some kind of half-assed attempt to match up
+                        //      the parameter types for overloaded methods?
+                        List<ParameterList> pls = ((Method)dec).getParameterLists();
+                        if (dec.getName().equalsIgnoreCase(method.getElementName()) &&
+                                !pls.isEmpty() && pls.get(0).getParameters().size()==
+                                            method.getNumberOfParameters()) {
                             return method;
                         }
                     }
