@@ -848,31 +848,41 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.validateTree();
+            if (! phasedUnit.isDeclarationsScanned()) {
+                phasedUnit.validateTree();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.scanDeclarations();
+            if (! phasedUnit.isDeclarationsScanned()) {
+                phasedUnit.scanDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.scanTypeDeclarations();
+            if (! phasedUnit.isTypeDeclarationsScanned()) {
+                phasedUnit.scanTypeDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.validateRefinement();
+            if (! phasedUnit.isRefinementValidated()) {
+                phasedUnit.validateRefinement();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.analyseTypes();
+            if (! phasedUnit.isFullyTyped()) {
+                phasedUnit.analyseTypes();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1105,26 +1115,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.validateTree();
-            pu.scanDeclarations();
+            if (! pu.isDeclarationsScanned()) {
+                pu.validateTree();
+                pu.scanDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.scanTypeDeclarations();
+            if (! pu.isTypeDeclarationsScanned()) {
+                pu.scanTypeDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu: listOfUnits) {
-            pu.validateRefinement();
+            if (! pu.isRefinementValidated()) {
+                pu.validateRefinement();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.analyseTypes();
+            if (! pu.isFullyTyped()) {
+                pu.analyseTypes();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1225,7 +1243,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     public void doWithFile(File path) {
                         try {
                             ZipFile carFile = new ZipFile(path);
-                            carFile.extractAll(outputDir.getAbsolutePath());
+                            carFile.extractAll(new File(outputDir, "../JDTClasses").getAbsolutePath());
                         } catch (ZipException e) {
                             e.printStackTrace();
                         }
@@ -1914,7 +1932,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
-                        File classFile = new File(outputDirectory, entryToDelete.replace('/', File.separatorChar));
+                        File classFile = new File(new File(outputDirectory, "../JDTClasses"), entryToDelete.replace('/', File.separatorChar));
                         classFile.delete();
                     }
                 } catch (ZipException e) {
