@@ -32,6 +32,7 @@ import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -271,26 +272,30 @@ public class JDTModelLoader extends AbstractModelLoader {
             IPackageFragment packageFragment = null;
             for (IPackageFragmentRoot root : roots) {
                 try {
-                    if (CeylonBuilder.isCeylonSourceEntry(root.getRawClasspathEntry())) {
-                        packageFragment = root.getPackageFragment(packageName);
-                        if(packageFragment.exists() && loadDeclarations) {
-                            try {
-                                for (IClassFile classFile : packageFragment.getClassFiles()) {
-                                    IType type = classFile.getType();
+                    IClasspathEntry entry = root.getRawClasspathEntry();
+                    
+                    if (entry.getContentKind() == IPackageFragmentRoot.K_SOURCE && ! CeylonBuilder.isCeylonSourceEntry(entry)) {
+                        continue;
+                    }
+                    
+                    packageFragment = root.getPackageFragment(packageName);
+                    if(packageFragment.exists() && loadDeclarations) {
+                        try {
+                            for (IClassFile classFile : packageFragment.getClassFiles()) {
+                                IType type = classFile.getType();
+                                if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
+                                    convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                }
+                            }
+                            for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
+                                for (IType type : compilationUnit.getTypes()) {
                                     if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
-                                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
-                                    for (IType type : compilationUnit.getTypes()) {
-                                        if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
-                                            convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
-                                        }
-                                    }
-                                }
-                            } catch (JavaModelException e) {
-                                e.printStackTrace();
                             }
+                        } catch (JavaModelException e) {
+                            e.printStackTrace();
                         }
                     }
                 } catch (JavaModelException e) {
