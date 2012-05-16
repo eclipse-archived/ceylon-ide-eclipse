@@ -28,27 +28,32 @@ import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 public class CeylonDocumentationProvider implements IDocumentationProvider {
     
     public String getDocumentation(Object entity, IParseController ctlr) {
-        IProject proj = ((CeylonParseController) ctlr).getProject().getRawProject();
         if (entity instanceof Tree.Declaration) {
             return getDocumentation((Tree.Declaration) entity);
         }
         //its coming from a binary or java project:
-        else if (entity instanceof Tree.MemberOrTypeExpression) {
-            Tree.MemberOrTypeExpression node = (Tree.MemberOrTypeExpression) entity;
-            return getDocumentation(node.getDeclaration(), proj, node);
+        else if (((CeylonParseController) ctlr).getProject()!=null) {
+            IProject proj = ((CeylonParseController) ctlr).getProject().getRawProject();
+            if (entity instanceof Tree.MemberOrTypeExpression) {
+                Tree.MemberOrTypeExpression node = (Tree.MemberOrTypeExpression) entity;
+                return getDocumentation(node.getDeclaration(), proj, node);
+            }
+            else if (entity instanceof Tree.SimpleType) {
+                Tree.SimpleType node = (Tree.SimpleType) entity;
+                return getDocumentation(node.getDeclarationModel(), proj, node);
+            }
+            else if (entity instanceof Tree.ImportMemberOrType) {
+                Tree.ImportMemberOrType node = (Tree.ImportMemberOrType) entity;
+                return getDocumentation(node.getDeclarationModel(), proj, node);
+            }
+            else if (entity instanceof Tree.NamedArgument) {
+                Tree.NamedArgument node = (Tree.NamedArgument) entity;
+                return getDocumentation(node.getParameter(), proj, node);
+            } 
+            else {
+                return null;
+            }
         }
-        else if (entity instanceof Tree.SimpleType) {
-            Tree.SimpleType node = (Tree.SimpleType) entity;
-            return getDocumentation(node.getDeclarationModel(), proj, node);
-        }
-        else if (entity instanceof Tree.ImportMemberOrType) {
-            Tree.ImportMemberOrType node = (Tree.ImportMemberOrType) entity;
-            return getDocumentation(node.getDeclarationModel(), proj, node);
-        }
-        else if (entity instanceof Tree.NamedArgument) {
-            Tree.NamedArgument node = (Tree.NamedArgument) entity;
-            return getDocumentation(node.getParameter(), proj, node);
-        } 
         else {
             return null;
         }
