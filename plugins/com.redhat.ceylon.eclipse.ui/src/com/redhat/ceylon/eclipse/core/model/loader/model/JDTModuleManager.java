@@ -39,6 +39,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.util.Util;
@@ -195,10 +196,12 @@ public class JDTModuleManager extends LazyModuleManager {
                 }
             } else {
                 for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    IClasspathEntry entry = root.getResolvedClasspathEntry();
-                    
-                    if (root.getPackageFragment(moduleNameString).exists()) {
-                        roots.add(root);
+                    if (moduleNameString.equals("java") || moduleNameString.equals("sun") || 
+                            ! (root instanceof JarPackageFragmentRoot)) {
+                        String packageToSearch = moduleNameString;
+                        if (root.getPackageFragment(packageToSearch).exists()) {
+                            roots.add(root);
+                        }
                     }
                 }
             }
