@@ -198,13 +198,19 @@ class FindNodeVisitor extends Visitor
         }
     }
     
+    private boolean isSynthetic(Tree.Declaration that) {
+        if (that instanceof Tree.TypedDeclaration) {
+            return ((Tree.TypedDeclaration) that).getType() instanceof Tree.SyntheticVariable;
+        }
+        else {
+            return false;
+        }
+    }
+    
     @Override
     public void visit(Tree.Declaration that) {
-        if (inBounds(that.getIdentifier())) {
-            if (node==null || //todo: awful, awful hack for case (is ...)
-                    !node.getLocation().equals(that.getLocation())) {
-                node = that;
-            }
+        if (inBounds(that.getIdentifier()) && !isSynthetic(that)) {
+            node = that;
         }
         else {
             super.visit(that);
