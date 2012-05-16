@@ -83,6 +83,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
@@ -479,7 +480,7 @@ public class CeylonContentProposer implements IContentProposer {
 
     private static boolean isParameterOfInvocation(Tree.NamedArgumentList node, Declaration d) {
         ParameterList pl = node.getNamedArgumentList().getParameterList();
-        return d instanceof FunctionalParameter && pl!=null &&
+        return d instanceof Parameter && pl!=null &&
                 pl.getParameters().contains(d);
     }
 
@@ -1103,7 +1104,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static void appendDeclarationText(Declaration d, ProducedReference pr, 
             StringBuilder result) {
         if (d instanceof Class) {
-            if (Character.isLowerCase(d.getName().charAt(0))) {
+            if (d.isAnonymous()) {
                 result.append("object");
             }
             else {
@@ -1198,19 +1199,25 @@ public class CeylonContentProposer implements IContentProposer {
   }*/
     
     private static void appendImpl(Declaration d, String indent, StringBuilder result) {
-        if (d instanceof Method) {
-            String extraIndent = indent.contains("\n") ?  indent + getDefaultIndent() : indent;
+        if (d instanceof Method || d instanceof FunctionalParameter) {
             result.append( ((Method) d).getTypeDeclaration().getName().equals("Void") ?
-                    " {}" : " {" + extraIndent + "return bottom;" + indent + "}" );
+                    " {}" : " {" + extraIndent(indent) + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
             result.append(" ")
                 .append(isVariable(d) ? ":=" : "=")
                 .append(" bottom;");
         }
+        else if (d instanceof ValueParameter) {
+            result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
+        }
         else {
             result.append(" {}");
         }
+    }
+
+    private static String extraIndent(String indent) {
+        return indent.contains("\n") ?  indent + getDefaultIndent() : indent;
     }
     
     private static void appendParameters(Declaration d, StringBuilder result) {
