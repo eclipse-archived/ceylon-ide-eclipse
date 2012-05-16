@@ -198,18 +198,22 @@ class FindNodeVisitor extends Visitor
         }
     }
     
-    private boolean isSynthetic(Tree.Declaration that) {
-        if (that instanceof Tree.TypedDeclaration) {
-            return ((Tree.TypedDeclaration) that).getType() instanceof Tree.SyntheticVariable;
+    //TODO: do we need to do this and the same thing for 
+    //      Conditions with synthetic variables?
+    /*@Override
+    public void visit(Tree.IsCase that) {
+        if (node!=that && inBounds(that)) {
+            node=that;
         }
-        else {
-            return false;
+        if (that.getType()!=null) {
+            that.getType().visit(this);
         }
-    }
+        super.visit(that);
+    }*/
     
     @Override
     public void visit(Tree.Declaration that) {
-        if (inBounds(that.getIdentifier()) && !isSynthetic(that)) {
+        if (inBounds(that.getIdentifier())) {
             node = that;
         }
         else {
