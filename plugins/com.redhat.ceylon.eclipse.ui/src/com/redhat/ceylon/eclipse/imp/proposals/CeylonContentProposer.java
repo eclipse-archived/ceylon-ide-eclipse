@@ -13,10 +13,10 @@ import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getRefe
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ANN_STYLER;
-import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
@@ -83,7 +83,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
@@ -376,6 +375,29 @@ public class CeylonContentProposer implements IContentProposer {
                 addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
             }
         }
+        else if (node instanceof Tree.NamedArgumentList) {
+            addKeywordProposals(offset, prefix, result);
+            for (DeclarationWithProximity dwp: set) {
+                Declaration dec = dwp.getDeclaration();
+                if (isProposable(dec, EXPRESSION)) {
+                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
+                }
+                Tree.NamedArgumentList nal = (Tree.NamedArgumentList)node;
+                if (isParameterOfInvocation(nal, dec)) {
+                    addInlineFunctionProposal(offset, prefix, cpc, 
+                            nal, result, dec, doc);
+                }
+                else {
+                    for (Declaration d: overloads(dec)) {
+                        if (isInvocationProposable(d, EXPRESSION)) {
+                            ProducedReference pr = getRefinedProducedReference(node, d);
+                            addInvocationProposals(offset, prefix, cpc, result, 
+                                    new DeclarationWithProximity(d, dwp), pr, EXPRESSION);
+                        }
+                    }
+                }
+            }
+        }
         else if (node instanceof Tree.ClassOrInterface || 
                 node instanceof Tree.VoidModifier ||
                 node instanceof Tree.ValueModifier ||
@@ -402,9 +424,6 @@ public class CeylonContentProposer implements IContentProposer {
                 if (isRefinementProposable(dec, ol)) {
                     addRefinementProposal(offset, prefix, cpc, node, result, dec, doc);
                 }
-                if (isAttributeProposable(dec, ol)) {
-                    addAttributeProposal(offset, prefix, cpc, result, dec);
-                }
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
@@ -428,11 +447,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static boolean isRefinementProposable(Declaration dec, OccurrenceLocation ol) {
         return ol==null && (dec instanceof MethodOrValue || dec instanceof Class);
     }
-
-    private static boolean isAttributeProposable(Declaration dec, OccurrenceLocation ol) {
-        return ol==null && dec instanceof ValueParameter && dec.isClassMember();
-    }
-
+    
     private static boolean isInvocationProposable(Declaration dec, OccurrenceLocation ol) {
         return dec instanceof Functional && !((Functional) dec).getParameterLists().isEmpty() &&
                 (ol==null || ol==EXPRESSION || ol==EXTENDS && dec instanceof Class);
@@ -452,28 +467,20 @@ public class CeylonContentProposer implements IContentProposer {
                         ((Tree.TypeConstraint) node).getDeclarationModel()!=null &&
                         ((TypeParameter) d).getContainer()==((Tree.TypeConstraint) node).getDeclarationModel().getContainer());
     }
+    
+    private static void addInlineFunctionProposal(int offset, String prefix, CeylonParseController cpc,
+            Tree.NamedArgumentList node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
+        //TODO: type argument substitution using the ProducedReference of the primary node
+        result.add(sourceProposal(offset, prefix, PARAMETER, 
+                        getDocumentationFor(cpc, d), 
+                        getInlineFunctionDescriptionFor(d, null), 
+                        getInlineFunctionTextFor(d, null, "\n" + getIndent(node, doc)), false));
+    }
 
-    private static void addAttributeProposal(int offset, String prefix, CeylonParseController cpc,
-            List<ICompletionProposal> result, Declaration d) {
-        Declaration member = d.getContainer().getMember(d.getName(), null); //TODO: pass signature?
-        if (member==null || member==d) {
-            result.add(sourceProposal(offset, prefix, ATTRIBUTE, 
-                            getDocumentationFor(cpc, d), 
-                            getAttributeDescriptionFor(d), 
-                            getAttributeTextFor(d), false));
-        }
-        //TODO: typechecker does not currently accept "super.x = x"
-        //      as legal syntax
-        /*else if (member instanceof TypedDeclaration && 
-                member.isFormal() && d.getContainer().isInherited(member)
-                && ((TypedDeclaration) member).getType()
-                        .isSupertypeOf(((ValueParameter)d).getType())) {
-            result.add(sourceProposal(offset, prefix, 
-                    CeylonLabelProvider.ATTRIBUTE, 
-                            getDocumentationFor(cpc, member), 
-                            getAttributeRefinementDescriptionFor(d), 
-                            getAttributeRefinementTextFor(d), false));
-        }*/
+    private static boolean isParameterOfInvocation(Tree.NamedArgumentList node, Declaration d) {
+        ParameterList pl = node.getNamedArgumentList().getParameterList();
+        return d instanceof FunctionalParameter && pl!=null &&
+                pl.getParameters().contains(d);
     }
 
     private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
@@ -934,17 +941,20 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
 
+    public static String getInlineFunctionTextFor(Declaration d, ProducedReference pr, 
+            String indent) {
+        StringBuilder result = new StringBuilder();
+        appendDeclarationText(d, pr, result);
+        appendTypeParameters(d, result);
+        appendParameters(d, pr, result);
+        appendImpl(d, indent, result);
+        return result.toString();
+    }
+
 	private static boolean isVariable(Declaration d) {
 		return d instanceof TypedDeclaration && ((TypedDeclaration) d).isVariable();
 	}
-    
-    private static String getAttributeTextFor(Declaration d) {
-        StringBuilder result = new StringBuilder("shared ");
-        appendDeclarationText(d, result);
-        result.append(" = ").append(d.getName()).append(";");
-        return result.toString();
-    }
-    
+        
     /*private static String getAttributeRefinementTextFor(Declaration d) {
         StringBuilder result = new StringBuilder();
         result.append("super.").append(d.getName())
@@ -965,20 +975,16 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
     
-    private static String getAttributeDescriptionFor(Declaration d) {
-        StringBuilder result = new StringBuilder("shared ");
-        appendDeclarationText(d, result);
-        result.append(" = ").append(d.getName()).append(";");
+    private static String getInlineFunctionDescriptionFor(Declaration d, ProducedReference pr) {
+        StringBuilder result = new StringBuilder();
+        appendDeclarationText(d, pr, result);
+        appendTypeParameters(d, result);
+        appendParameters(d, pr, result);
+        /*result.append(" - refine declaration in ") 
+            .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
-    
-    /*private static String getAttributeRefinementDescriptionFor(Declaration d) {
-        StringBuilder result = new StringBuilder();
-        result.append("super.").append(d.getName())
-            .append(" = ").append(d.getName()).append(";");
-        return result.toString();
-    }*/
-    
+        
     public static String getDescriptionFor(Declaration d) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
