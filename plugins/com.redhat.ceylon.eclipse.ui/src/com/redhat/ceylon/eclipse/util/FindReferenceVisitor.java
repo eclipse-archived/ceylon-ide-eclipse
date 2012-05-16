@@ -53,6 +53,23 @@ public class FindReferenceVisitor extends Visitor {
     }
     
     @Override
+    public void visit(Tree.CaseClause that) {
+        Tree.CaseItem ci = that.getCaseItem();
+        if (ci instanceof Tree.IsCase) {
+            Tree.Variable var = ((Tree.IsCase) ci).getVariable();
+            if (var.getDeclarationModel().getOriginalDeclaration()
+                    .equals(declaration)) {
+                Declaration d = declaration;
+                declaration = var.getDeclarationModel();
+                that.getBlock().visit(this);
+                declaration = d;
+                return;
+            }
+        }
+        super.visit(that);
+    }
+    
+    @Override
     public void visit(Tree.IfClause that) {
         Condition c = that.getCondition();
         Tree.Variable var = getConditionVariable(c);
@@ -117,9 +134,6 @@ public class FindReferenceVisitor extends Visitor {
 		super.visit(that);
 	}
 	
-	/*@Override
-	public void visit(Tree.SyntheticVariable that) {}*/
-
 	@Override
 	public void visit(Tree.ImportMemberOrType that) {
 		if (isReference(that.getDeclarationModel())) {
