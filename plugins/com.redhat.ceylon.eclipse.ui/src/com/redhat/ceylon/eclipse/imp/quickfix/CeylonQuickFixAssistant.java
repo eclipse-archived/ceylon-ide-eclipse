@@ -302,6 +302,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else if (node instanceof Tree.UnaryOperatorExpression) {
             term = ((Tree.PrefixOperatorExpression) node).getTerm();
         }
+        else if (node instanceof Tree.MemberOrTypeExpression) {
+            term = (Tree.MemberOrTypeExpression) node;
+        }
         else {
             return;
         }
