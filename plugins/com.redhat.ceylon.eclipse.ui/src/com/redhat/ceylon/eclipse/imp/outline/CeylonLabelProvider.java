@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.outline;
 
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.ANNOTATIONS;
+import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.KEYWORDS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.TYPES;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.color;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
@@ -386,13 +386,22 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return new StyledString("object ", KW_STYLER)
                     .append(name(ai.getIdentifier()), ID_STYLER);
         }
+        else if (n instanceof Tree.AttributeSetterDefinition) {
+            Tree.AttributeSetterDefinition ai = (Tree.AttributeSetterDefinition) n;
+            return new StyledString("assign ", KW_STYLER)
+            .append(name(ai.getIdentifier()), ID_STYLER);
+        }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            String type = type(td.getType());
-            Styler styler = TYPE_STYLER;
-            if (type.equals("Void")) {
-                type = "void"; //TODO: fix!
+            String type;
+            Styler styler;
+            if (td.getType() instanceof Tree.VoidModifier) {
+                type = "void";
                 styler = KW_STYLER;
+            }
+            else {
+                type = type(td.getType());
+                styler = TYPE_STYLER;
             }
             StyledString label = new StyledString(type, styler);
             label.append(" ").append(name(td.getIdentifier()), ID_STYLER);
