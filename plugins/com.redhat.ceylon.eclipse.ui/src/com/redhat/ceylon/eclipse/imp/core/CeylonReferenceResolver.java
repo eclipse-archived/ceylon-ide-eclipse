@@ -6,6 +6,8 @@ import org.eclipse.imp.services.IReferenceResolver;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -43,6 +45,16 @@ public class CeylonReferenceResolver implements IReferenceResolver {
 
     public static Tree.Declaration getReferencedNode(Object node, IParseController controller) {
         Declaration dec = getReferencedDeclaration((Node) node);
+        if (dec instanceof Parameter) {
+            Declaration pd = ((Parameter) dec).getDeclaration();
+            if (pd instanceof Setter) {
+                dec = pd;
+            }
+            else {
+                Declaration att = pd.getMemberOrParameter(dec.getUnit(), dec.getName(), null);
+                if (att!=null) dec = att;
+            }
+        }
         return getReferencedNode(dec, 
             getCompilationUnit((CeylonParseController) controller, dec));
     }
