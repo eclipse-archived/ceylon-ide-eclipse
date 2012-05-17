@@ -305,7 +305,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             return;
         }
-        Declaration dec = ((Tree.BaseMemberExpression) term).getDeclaration();
+        Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
         addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
                 dec, proposals, project);
     }
