@@ -161,6 +161,7 @@ public class CeylonContentProposer implements IContentProposer {
                     null : (CommonToken) tokens.get(index-1);
             token = (CommonToken) tokens.get(index);
         }
+        if (token==null) return null;
         char charAtOffset = viewer.getDocument().get().charAt(offset>0?offset-1:0);
         int offsetInToken = offset-token.getStartIndex();
 		Character charInTokenAtOffset = token==null ? 
