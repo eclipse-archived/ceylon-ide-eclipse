@@ -30,6 +30,7 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -66,14 +67,14 @@ public class JDTType implements TypeMirror {
     @Override
     public List<TypeMirror> getTypeArguments() {
         if (typeArguments == null) {
-            if(type instanceof ParameterizedTypeBinding){
+            if(type instanceof ParameterizedTypeBinding && ! (type instanceof RawTypeBinding)){
                 TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).arguments;
                 if (javaTypeArguments == null) {
                     javaTypeArguments = new TypeBinding[0];
                 }
                 typeArguments = new ArrayList<TypeMirror>(javaTypeArguments.length);
                 for(TypeBinding typeArgument : javaTypeArguments)
-                    typeArguments.add(new JDTType(typeArgument));
+                    typeArguments.add(typeArgument != type ? new JDTType(typeArgument) : this);
             }
             else  {
                 return Collections.emptyList();

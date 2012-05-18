@@ -29,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodVerifier;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
@@ -49,9 +50,11 @@ public class JDTMethod implements MethodMirror {
     private TypeMirror returnType;
     private List<TypeParameterMirror> typeParameters;
     Boolean isOverriding;
+    private LookupEnvironment lookupEnvironment;
     
     public JDTMethod(MethodBinding method, LookupEnvironment lookupEnvironment) {
         this.method = method;
+        this.lookupEnvironment = lookupEnvironment;
         this.methodVerifier = lookupEnvironment.methodVerifier();
     }
 
@@ -173,6 +176,10 @@ public class JDTMethod implements MethodMirror {
         if (superClass == null) {
             return false;
         }
+
+        superClass = JDTUtils.inferTypeParametersFromSuperClass(declaringClass,
+                superClass, lookupEnvironment);
+        
         if (isDefinedInType(superClass)) {
             return true;
         }

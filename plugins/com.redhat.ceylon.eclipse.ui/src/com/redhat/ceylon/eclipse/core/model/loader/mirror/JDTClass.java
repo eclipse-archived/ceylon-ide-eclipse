@@ -127,13 +127,15 @@ public class JDTClass implements ClassMirror {
     }
 
     @Override
-    public TypeMirror getSuperclass() {        
+    public TypeMirror getSuperclass() {
         if (! superClassSet) {
             if (klass.isInterface() || "java.lang.Object".equals(getQualifiedName())) {
                 superclass = null;
             } else {
-                TypeBinding superClassBinding = klass.superclass();
+                ReferenceBinding superClassBinding = klass.superclass();
                 if (superClassBinding != null) {
+                    superClassBinding = JDTUtils.inferTypeParametersFromSuperClass(klass,
+                            superClassBinding, lookupEnvironment);
                     superclass = new JDTType(superClassBinding);
                 }
             }
