@@ -577,6 +577,22 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
     public void initFromSelection() {
         IJavaElement je = getSelectedElement();
+        if (je instanceof IJavaProject) {
+            IJavaProject jp = (IJavaProject) je;
+            if (jp.isOpen()) {
+                //default to the first source dir 
+                //we find in the selected project
+                try {
+                    for (IPackageFragmentRoot pfr: jp.getAllPackageFragmentRoots()) {
+                        if (!pfr.isExternal() && !pfr.isArchive()) {
+                            je = pfr;
+                            break;
+                        }
+                    }
+                } 
+                catch (JavaModelException e) {}
+            }
+        }
         if (je instanceof IPackageFragmentRoot) {
             sourceDir = (IPackageFragmentRoot) je;
             packageFragment = sourceDir.getPackageFragment("");
