@@ -71,6 +71,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -377,29 +378,6 @@ public class CeylonContentProposer implements IContentProposer {
                 addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
             }
         }
-        else if (node instanceof Tree.NamedArgumentList) {
-            addKeywordProposals(offset, prefix, result);
-            for (DeclarationWithProximity dwp: set) {
-                Declaration dec = dwp.getDeclaration();
-                if (isProposable(dec, EXPRESSION)) {
-                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
-                }
-                Tree.NamedArgumentList nal = (Tree.NamedArgumentList)node;
-                if (isParameterOfInvocation(nal, dec)) {
-                    addInlineFunctionProposal(offset, prefix, cpc, 
-                            nal, result, dec, doc);
-                }
-                else {
-                    for (Declaration d: overloads(dec)) {
-                        if (isInvocationProposable(d, EXPRESSION)) {
-                            ProducedReference pr = getRefinedProducedReference(node, d);
-                            addInvocationProposals(offset, prefix, cpc, result, 
-                                    new DeclarationWithProximity(d, dwp), pr, EXPRESSION);
-                        }
-                    }
-                }
-            }
-        }
         else if (node instanceof Tree.ClassOrInterface || 
                 node instanceof Tree.VoidModifier ||
                 node instanceof Tree.ValueModifier ||
@@ -413,7 +391,12 @@ public class CeylonContentProposer implements IContentProposer {
             }
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isProposable(dec, ol)) {
+                if (isParameterOfInvocation(node, dec)) {
+                    addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    addInlineFunctionProposal(offset, prefix, cpc, 
+                            node, result, dec, doc);
+                }
+                else if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                 }
                 for (Declaration d: overloads(dec)) {
@@ -471,18 +454,31 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static void addInlineFunctionProposal(int offset, String prefix, CeylonParseController cpc,
-            Tree.NamedArgumentList node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
+            Node node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
         //TODO: type argument substitution using the ProducedReference of the primary node
-        result.add(sourceProposal(offset, prefix, PARAMETER, 
-                        getDocumentationFor(cpc, d), 
-                        getInlineFunctionDescriptionFor(d, null), 
-                        getInlineFunctionTextFor(d, null, "\n" + getIndent(node, doc)), false));
+        if (d instanceof Parameter) {
+            Parameter p = (Parameter) d;
+            result.add(sourceProposal(offset, prefix, PARAMETER, 
+                    getDocumentationFor(cpc, d), 
+                    getInlineFunctionDescriptionFor(p, null), 
+                    getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)), false));
+        }
     }
 
-    private static boolean isParameterOfInvocation(Tree.NamedArgumentList node, Declaration d) {
-        ParameterList pl = node.getNamedArgumentList().getParameterList();
-        return d instanceof Parameter && pl!=null &&
-                pl.getParameters().contains(d);
+    private static boolean isParameterOfInvocation(Node node, Declaration d) {
+        if (node instanceof Tree.NamedArgumentList) {
+            ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList().getParameterList();
+            return d instanceof Parameter && pl!=null &&
+                    pl.getParameters().contains(d);
+        }
+        else if (node.getScope() instanceof NamedArgumentList) {
+            ParameterList pl = ((NamedArgumentList) node.getScope()).getParameterList();
+            return d instanceof Parameter && pl!=null &&
+                    pl.getParameters().contains(d);
+        }
+        else {
+            return false;
+        }
     }
 
     private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
@@ -540,6 +536,16 @@ public class CeylonContentProposer implements IContentProposer {
                 getDocumentationFor(cpc, d), 
                 getDescriptionFor(dwp, ol), 
                 getTextFor(dwp, ol), true));
+    }
+
+    private static void addNamedArgumentProposal(int offset, String prefix, CeylonParseController cpc,
+            List<ICompletionProposal> result, DeclarationWithProximity dwp,
+            Declaration d, OccurrenceLocation ol) {
+        result.add(sourceProposal(offset, prefix, 
+                CeylonLabelProvider.PARAMETER,
+                getDocumentationFor(cpc, d), 
+                getDescriptionFor(dwp, ol), 
+                getTextFor(dwp, ol) + " = bottom;", true));
     }
 
     private static void addInvocationProposals(int offset, String prefix, CeylonParseController cpc, 
@@ -741,7 +747,7 @@ public class CeylonContentProposer implements IContentProposer {
             final Image image, String doc, String desc, final String text, 
             final boolean selectParams) {
         return new SourceProposal(desc, text, "", 
-                new Region(offset - prefix.length(), prefix.length()), 
+                new Region(offset-prefix.length(), prefix.length()), 
                 offset + text.length(), doc) { 
             @Override
             public Image getImage() {
@@ -749,7 +755,10 @@ public class CeylonContentProposer implements IContentProposer {
             }
             @Override
             public Point getSelection(IDocument document) {
-                if (selectParams) {
+                /*if (text.endsWith("= ")) {
+                    return new Point(offset-prefix.length()+text.length(), 0);
+                }
+                else*/ if (selectParams) {
                     int locOfTypeArgs = text.indexOf('<');
                     int loc = locOfTypeArgs;
                     if (loc<0) loc = text.indexOf('(');
@@ -943,13 +952,13 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
 
-    public static String getInlineFunctionTextFor(Declaration d, ProducedReference pr, 
+    public static String getInlineFunctionTextFor(Parameter p, ProducedReference pr, 
             String indent) {
         StringBuilder result = new StringBuilder();
-        appendDeclarationText(d, pr, result);
-        appendTypeParameters(d, result);
-        appendParameters(d, pr, result);
-        appendImpl(d, indent, result);
+        appendNamedArgumentText(p, pr, result);
+        appendTypeParameters(p, result);
+        appendParameters(p, pr, result);
+        appendImpl(p, indent, result);
         return result.toString();
     }
 
@@ -977,11 +986,11 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
     
-    private static String getInlineFunctionDescriptionFor(Declaration d, ProducedReference pr) {
+    private static String getInlineFunctionDescriptionFor(Parameter p, ProducedReference pr) {
         StringBuilder result = new StringBuilder();
-        appendDeclarationText(d, pr, result);
-        appendTypeParameters(d, result);
-        appendParameters(d, pr, result);
+        appendNamedArgumentText(p, pr, result);
+        appendTypeParameters(p, result);
+        appendParameters(p, pr, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
@@ -1102,6 +1111,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static void appendDeclarationText(Declaration d, StringBuilder result) {
         appendDeclarationText(d, null, result);
     }
+    
     private static void appendDeclarationText(Declaration d, ProducedReference pr, 
             StringBuilder result) {
         if (d instanceof Class) {
@@ -1142,6 +1152,17 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         result.append(" ").append(d.getName());
+    }
+    
+    private static void appendNamedArgumentText(Parameter p, ProducedReference pr, 
+            StringBuilder result) {
+        if (p instanceof ValueParameter) {
+            result.append("value");
+        }
+        else {
+            result.append("function");
+        }
+        result.append(" ").append(p.getName());
     }
     
     private static void appendDeclarationText(Declaration d, StyledString result) {
