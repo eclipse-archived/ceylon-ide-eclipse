@@ -132,13 +132,19 @@ public class CeylonContentProposer implements IContentProposer {
      */
     public ICompletionProposal[] getContentProposals(IParseController controller,
             final int offset, ITextViewer viewer) {
-        if (controller == null || viewer == null) {
+        
+        if (controller==null || viewer==null) {
             return null;
         }
         
         CeylonParseController cpc = (CeylonParseController) controller;
         List<CommonToken> tokens = cpc.getTokens(); 
         if (tokens == null) {
+            return null;
+        }
+        
+        CompilationUnit rn = cpc.getRootNode();
+        if (rn == null) {
             return null;
         }
         
@@ -211,70 +217,71 @@ public class CeylonContentProposer implements IContentProposer {
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         int adjustedStart = start;
         int adjustedEnd = end;
-        Token adjustedToken = tokens.get(tokenIndex); 
+        CommonToken adjustedToken = tokens.get(tokenIndex); 
         int tokenType = adjustedToken.getType();
         while (--tokenIndex>=0 && 
                 (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
                 || adjustedToken.getType()==EOF
-                || ((CommonToken) adjustedToken).getStartIndex()==offset)) { //don't consider the token to the right of the caret
+                || adjustedToken.getStartIndex()==offset)) { //don't consider the token to the right of the caret
             adjustedToken = tokens.get(tokenIndex);
             if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
                     adjustedToken.getType()!=EOF) { //don't adjust to a ws/comment token
-                adjustedStart = ((CommonToken) adjustedToken).getStartIndex();
-                adjustedEnd = ((CommonToken) adjustedToken).getStopIndex()+1;
+                adjustedStart = adjustedToken.getStartIndex();
+                adjustedEnd = adjustedToken.getStopIndex()+1;
                 tokenType = adjustedToken.getType();
                 break;
             }
         }
-                
-        CompilationUnit rn = cpc.getRootNode();
-        if (rn != null) {
-            Node node = findNode(rn, adjustedStart, adjustedEnd);
-            if (tokenType==RBRACE || tokenType==SEMICOLON) {
-                //We are to the right of a } or ;
-                //so the returned node is the previous
-                //statement/declaration. Look for the
-                //containing body.
-                class BodyVisitor extends Visitor {
-                    Node node, currentBody, result;
-                    BodyVisitor(Node node, Node root) {
-                        this.node = node;
-                        currentBody = root;
+       
+        //find the node at the token, and construct proposals
+        Node node = getTokenNode(adjustedStart, adjustedEnd, tokenType, rn);        
+        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+        rtv.visit(rn);
+        return constructCompletions(offset, prefix, tokenType,
+                    sortProposals(prefix, rtv.requiredType, 
+                            getProposals(node, prefix, rn)),
+                    cpc, node, viewer.getDocument());
+        
+    }
+
+    private static Node getTokenNode(int adjustedStart, int adjustedEnd,
+            int tokenType, CompilationUnit rn) {
+        Node node = findNode(rn, adjustedStart, adjustedEnd);
+        if (tokenType==RBRACE || tokenType==SEMICOLON) {
+            //We are to the right of a } or ;
+            //so the returned node is the previous
+            //statement/declaration. Look for the
+            //containing body.
+            class BodyVisitor extends Visitor {
+                Node node, currentBody, result;
+                BodyVisitor(Node node, Node root) {
+                    this.node = node;
+                    currentBody = root;
+                }
+                @Override
+                public void visitAny(Node that) {
+                    if (that==node) {
+                        result = currentBody;
                     }
-                    @Override
-                    public void visitAny(Node that) {
-                        if (that==node) {
-                            result = currentBody;
+                    else {
+                        Node cb = currentBody;
+                        if (that instanceof Tree.Body) {
+                            currentBody = that;
                         }
-                        else {
-                            Node cb = currentBody;
-                            if (that instanceof Tree.Body) {
-                                currentBody = that;
-                            }
-                            if (that instanceof Tree.NamedArgumentList) {
-                                currentBody = that;
-                            }
-                            super.visitAny(that);
-                            currentBody = cb;
+                        if (that instanceof Tree.NamedArgumentList) {
+                            currentBody = that;
                         }
+                        super.visitAny(that);
+                        currentBody = cb;
                     }
                 }
-                BodyVisitor mv = new BodyVisitor(node, rn);
-                mv.visit(rn);
-                node = mv.result;
             }
-            if (node==null) node = rn; //we're in whitespace at the start of the file
-            
-            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
-            rtv.visit(rn);
-            
-            return constructCompletions(offset, prefix, tokenType,
-                        sortProposals(prefix, rtv.requiredType, 
-                                getProposals(node, prefix, rn)),
-                        cpc, node, viewer.getDocument());
-        } 
-        return null;
-        
+            BodyVisitor mv = new BodyVisitor(node, rn);
+            mv.visit(rn);
+            node = mv.result;
+        }
+        if (node==null) node = rn; //we're in whitespace at the start of the file
+        return node;
     }
     
     private static void addPackageCompletions(CeylonParseController cpc, 
@@ -389,6 +396,7 @@ public class CeylonContentProposer implements IContentProposer {
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             if (isKeywordProposable(ol)) {
                 addKeywordProposals(offset, prefix, result);
+                //addTemplateProposal(offset, prefix, result);
             }
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
@@ -647,6 +655,45 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
     }
+    
+    /*private static void addTemplateProposal(int offset, String prefix, 
+            List<ICompletionProposal> result) {
+        if (!prefix.isEmpty()) {
+            if ("class".startsWith(prefix)) {
+                String prop = "class Class() {}";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+            if ("interface".startsWith(prefix)) {
+                String prop = "interface Interface {}";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+            if ("void".startsWith(prefix)) {
+                String prop = "void method() {}";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+            if ("function".startsWith(prefix)) {
+                String prop = "function method() { return bottom; }";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+            if ("value".startsWith(prefix)) {
+                String prop = "value attribute = bottom;";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+                prop = "value attribute { return bottom; }";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+            if ("object".startsWith(prefix)) {
+                String prop = "object instance {}";
+                result.add(sourceProposal(offset, prefix, null, 
+                        null, prop, prop, true));
+            }
+        }
+    }*/
     
     private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
         return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
