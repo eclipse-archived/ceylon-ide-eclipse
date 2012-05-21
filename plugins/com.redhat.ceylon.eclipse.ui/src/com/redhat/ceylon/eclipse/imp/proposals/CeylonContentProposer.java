@@ -65,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.FunctionalParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -398,6 +399,9 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    //TODO: only add if we are directly inside a block or classbody
+                    addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
                 }
                 for (Declaration d: overloads(dec)) {
                     if (isInvocationProposable(d, ol)) {
@@ -536,6 +540,46 @@ public class CeylonContentProposer implements IContentProposer {
                 getDocumentationFor(cpc, d), 
                 getDescriptionFor(dwp, ol), 
                 getTextFor(dwp, ol), true));
+    }
+
+    private static void addForProposal(int offset, String prefix, CeylonParseController cpc,
+            List<ICompletionProposal> result, DeclarationWithProximity dwp,
+            Declaration d, OccurrenceLocation ol) {
+        if (d instanceof Value || d instanceof Getter) {
+            if (d.getUnit().isIterableType(((TypedDeclaration) d).getType())) {
+                String elemName;
+                if (d.getName().length()==1) {
+                    elemName = "element";
+                }
+                else if (d.getName().endsWith("s")) {
+                    elemName = d.getName().substring(0, d.getName().length()-1);
+                }
+                else {
+                    elemName = d.getName().substring(0, 1);
+                }
+                result.add(sourceProposal(offset, prefix, 
+                        CeylonLabelProvider.getImage(d),
+                        getDocumentationFor(cpc, d), 
+                        "for (" + elemName + " in " + getDescriptionFor(dwp, ol) + ")", 
+                        "for (" + elemName + " in " + getTextFor(dwp, ol) + ") {}", true));
+            }
+        }
+    }
+
+    private static void addIfExistsProposal(int offset, String prefix, CeylonParseController cpc,
+            List<ICompletionProposal> result, DeclarationWithProximity dwp,
+            Declaration d, OccurrenceLocation ol) {
+        if (d instanceof Value) {
+            Value v = (Value) d;
+            if (d.getUnit().isOptionalType(v.getType()) && 
+                    !v.isVariable()) {
+                result.add(sourceProposal(offset, prefix, 
+                        CeylonLabelProvider.getImage(d),
+                        getDocumentationFor(cpc, d), 
+                        "if (exists " + getDescriptionFor(dwp, ol) + ")", 
+                        "if (exists " + getTextFor(dwp, ol) + ") {}", true));
+            }
+        }
     }
 
     private static void addNamedArgumentProposal(int offset, String prefix, CeylonParseController cpc,
@@ -767,7 +811,7 @@ public class CeylonContentProposer implements IContentProposer {
                     int length;
                     if (loc<=0 || locOfTypeArgs<0 &&
                             (text.contains("()") || text.contains("{}"))) {
-                        start = text.length();
+                        start = text.endsWith("{}") ? text.length()-1 : text.length();
                         length = 0;
                     }
                     else {
@@ -787,6 +831,7 @@ public class CeylonContentProposer implements IContentProposer {
                     int start;
                     if (loc<0) {
                         start = offset + text.length()-prefix.length();
+                        if (text.endsWith("{}")) start--;
                         length = 0;
                     }
                     else {
