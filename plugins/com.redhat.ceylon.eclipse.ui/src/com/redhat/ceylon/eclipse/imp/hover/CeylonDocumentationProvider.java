@@ -194,11 +194,12 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
                     if ("doc".equals(name))
                     {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
-                        List<Tree.PositionalArgument> args = argList.getPositionalArguments();
-                        if (!args.isEmpty())
-                        {
-                            String docLine = args.get(0).getExpression().getTerm().getText();
-                            documentation.append("<br/><p>" + docLine.subSequence(1, docLine.length()-1) + "</p>");
+                        if (argList!=null) {
+                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                            if (!args.isEmpty()) {
+                                String docLine = args.get(0).getExpression().getTerm().getText();
+                                documentation.append("<br/><p>" + docLine.subSequence(1, docLine.length()-1) + "</p>");
+                            }
                         }
                     }
                 }
