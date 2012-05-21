@@ -129,16 +129,56 @@ public class CeylonContentProposer implements IContentProposer {
         
         CeylonParseController cpc = (CeylonParseController) controller;
         List<CommonToken> tokens = cpc.getTokens(); 
-        if (tokens == null) {
+        if (tokens==null) {
             return null;
         }
         
         Tree.CompilationUnit rn = cpc.getRootNode();
-        if (rn == null) {
+        if (rn==null) {
             return null;
         }
         
-        //BEGIN HUGE BUG WORKAROUND
+        PositionedPrefix result = compensateForMissingCharacter(offset, viewer,
+                tokens);
+        if (result==null) {
+            return null;
+        }
+        
+        //adjust the token to account for unclosed blocks
+        //we search for the first non-whitespace/non-comment
+        //token to the left of the caret
+        int tokenIndex = getTokenIndexAtCharacter(tokens, result.start);
+        if (tokenIndex<0) tokenIndex = -tokenIndex;
+        //int adjustedStart = start;
+        //int adjustedEnd = end;
+        CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
+        int adjustedStart = adjustedToken.getStartIndex();
+        int adjustedEnd = adjustedToken.getStopIndex()+1;
+        int tokenType = adjustedToken.getType();
+        String prefix;
+        /*if (keywords.contains(adjustedToken.getText()) && 
+                result.start + result.prefix.length()==adjustedEnd) {
+            prefix=adjustedToken.getText() + result.prefix;
+        }
+        else {*/
+            prefix = result.prefix;
+        //}
+       
+        //find the node at the token, and construct proposals
+        Node node = getTokenNode(adjustedStart, adjustedEnd, tokenType, rn);
+        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+        rtv.visit(rn);
+        return constructCompletions(offset, prefix, 
+                    sortProposals(prefix, rtv.requiredType, 
+                            getProposals(node, prefix, rn)),
+                    cpc, node, adjustedToken, 
+                    viewer.getDocument());
+        
+    }
+
+    private PositionedPrefix compensateForMissingCharacter(final int offset,
+            ITextViewer viewer, List<CommonToken> tokens) {
+
         //What is going on here is that when I have a list of proposals open
         //and then I type a character, IMP sends us the old syntax tree and
         //doesn't bother to even send us the character I just typed, except
@@ -147,6 +187,8 @@ public class CeylonContentProposer implements IContentProposer {
         //corrective action. This should be fixed in IMP!
         final CommonToken token;
         final CommonToken previousToken;
+        //find the token under the caret and the token just 
+        //before that one
         int index = getTokenIndexAtCharacter(tokens, offset-1);
         if (index<0) {
             index = -index;
@@ -160,67 +202,57 @@ public class CeylonContentProposer implements IContentProposer {
             token = (CommonToken) tokens.get(index);
         }
         if (token==null) return null;
+        
+        //try to guess the character the user just typed
+        PositionedPrefix result = new PositionedPrefix();
         char charAtOffset = viewer.getDocument().get().charAt(offset>0?offset-1:0);
         int offsetInToken = offset-token.getStartIndex();
 		Character charInTokenAtOffset = token==null ? 
                 null : token.getText().charAt(offsetInToken>0?offsetInToken-1:0);
-        String prefix = "";
-        int start = offset;
-        int end = offset;
+		result.prefix = "";
+		result.start = offset;
+        //int end = offset;
         if (charInTokenAtOffset!=null && 
                 charAtOffset==charInTokenAtOffset) {
+            //then we're not missing the typed character 
+            //from the tree we were passed by IMP
             if (isIdentifier(token)) {
-                prefix = token.getText().substring(0, offsetInToken);
-                start = token.getStartIndex();
-                end = token.getStopIndex();
+                result.prefix = token.getText().substring(0, offsetInToken);
+                result.start = token.getStartIndex();
+                //end = token.getStopIndex();
             }
         } 
         else {
+            //then we are missing the typed character from
+            //the tree
             boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
             if (previousToken!=null) {
                 if (isIdentifierChar) {
                     if (previousToken.getType()==MEMBER_OP) {
-                        prefix = Character.toString(charAtOffset);
-                        start = previousToken.getStartIndex();
-                        end = previousToken.getStopIndex();
+                        result.prefix = Character.toString(charAtOffset);
+                        result.start = previousToken.getStartIndex();
+                        //end = previousToken.getStopIndex();
                     }
                     else if (isIdentifier(previousToken)) {
-                        prefix = previousToken.getText()+charAtOffset;
-                        start = previousToken.getStartIndex();
-                        end = previousToken.getStopIndex();
+                        result.prefix = previousToken.getText()+charAtOffset;
+                        result.start = previousToken.getStartIndex();
+                        //end = previousToken.getStopIndex();
                     }
                     else {
-                        prefix = Character.toString(charAtOffset);
+                        result.prefix = Character.toString(charAtOffset);
                     }
                 }
             }
             else if (isIdentifierChar) {
-                prefix = Character.toString(charAtOffset);
+                result.prefix = Character.toString(charAtOffset);
             }
         }
-        //END BUG WORKAROUND
-        
-        //adjust the token to account for unclosed blocks
-        //we search for the first non-whitespace/non-comment
-        //token to the left of the caret
-        int tokenIndex = getTokenIndexAtCharacter(tokens, start);
-        if (tokenIndex<0) tokenIndex = -tokenIndex;
-        //int adjustedStart = start;
-        //int adjustedEnd = end;
-        CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
-        int adjustedStart = adjustedToken.getStartIndex();
-        int adjustedEnd = adjustedToken.getStopIndex()+1;
-        int tokenType = adjustedToken.getType();
-       
-        //find the node at the token, and construct proposals
-        Node node = getTokenNode(adjustedStart, adjustedEnd, tokenType, rn);        
-        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
-        rtv.visit(rn);
-        return constructCompletions(offset, prefix, tokenType,
-                    sortProposals(prefix, rtv.requiredType, 
-                            getProposals(node, prefix, rn)),
-                    cpc, node, viewer.getDocument());
-        
+        return result;
+    }
+    
+    private class PositionedPrefix {
+        String prefix;
+        int start;
     }
     
     private static CommonToken adjust(int tokenIndex, int offset, List<CommonToken> tokens) {
@@ -238,8 +270,7 @@ public class CeylonContentProposer implements IContentProposer {
         return adjustedToken;
     }
     
-    private static Boolean isDirectlyInsideBlock(Node node, List<CommonToken> tokens) {
-        CommonToken token = (CommonToken) node.getToken();
+    private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
         if (!(node.getScope() instanceof Interface)) {
             if (token.getTokenIndex()==0) {
                 return false;
@@ -351,11 +382,13 @@ public class CeylonContentProposer implements IContentProposer {
         return type==LIDENTIFIER || 
                 type==UIDENTIFIER ||
                 type==AIDENTIFIER ||
-                type==PIDENTIFIER;
+                type==PIDENTIFIER ||
+                keywords.contains(token.getText());
     }
     
-    private static ICompletionProposal[] constructCompletions(int offset, String prefix, int tokenType,
-            Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, IDocument doc) {
+    private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
+            Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, 
+            CommonToken token, IDocument doc) {
         //System.out.println("proposals for a " + node.getNodeType());
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import) {
@@ -365,7 +398,9 @@ public class CeylonContentProposer implements IContentProposer {
             addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
         }
         else if (node instanceof Tree.TypedDeclaration && 
-                !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable)) {
+                !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable) &&
+                ((Tree.TypedDeclaration)node).getType()!=null &&
+                ((Tree.TypedDeclaration)node).getIdentifier()!=null) {
             addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypeConstraint) {
@@ -401,12 +436,12 @@ public class CeylonContentProposer implements IContentProposer {
                 addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
             }
         }
-        else if (node instanceof Tree.ClassOrInterface || 
+        /*else if (node instanceof Tree.ClassOrInterface || 
                 node instanceof Tree.VoidModifier ||
                 node instanceof Tree.ValueModifier ||
                 node instanceof Tree.FunctionModifier) {
             //no proposals 
-        }
+        }*/
         else {
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             if (isKeywordProposable(ol)) {
@@ -422,7 +457,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    if (isDirectlyInsideBlock(node, cpc.getTokens())) {
+                    if (isDirectlyInsideBlock(node, token, cpc.getTokens())) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     }
@@ -667,7 +702,7 @@ public class CeylonContentProposer implements IContentProposer {
             List<ICompletionProposal> result) {
         for (String keyword: keywords) {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
-                    && !keyword.equals(prefix)) {
+                    /*&& !keyword.equals(prefix)*/) {
                 result.add(sourceProposal(offset, prefix, null, 
                         keyword + " keyword", keyword, keyword + " ", 
                         true));
@@ -921,7 +956,8 @@ public class CeylonContentProposer implements IContentProposer {
             else {
                 return Collections.emptyMap();
             }
-        } else {
+        } 
+        else {
             Scope scope = node.getScope();
             if (scope instanceof ImportList) {
                 return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
