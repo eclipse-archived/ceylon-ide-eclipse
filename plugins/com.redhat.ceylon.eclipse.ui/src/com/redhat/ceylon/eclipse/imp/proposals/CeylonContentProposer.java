@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.proposals;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
@@ -88,17 +89,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -143,7 +133,7 @@ public class CeylonContentProposer implements IContentProposer {
             return null;
         }
         
-        CompilationUnit rn = cpc.getRootNode();
+        Tree.CompilationUnit rn = cpc.getRootNode();
         if (rn == null) {
             return null;
         }
@@ -215,23 +205,12 @@ public class CeylonContentProposer implements IContentProposer {
         //token to the left of the caret
         int tokenIndex = getTokenIndexAtCharacter(tokens, start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
-        int adjustedStart = start;
-        int adjustedEnd = end;
-        CommonToken adjustedToken = tokens.get(tokenIndex); 
+        //int adjustedStart = start;
+        //int adjustedEnd = end;
+        CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
+        int adjustedStart = adjustedToken.getStartIndex();
+        int adjustedEnd = adjustedToken.getStopIndex()+1;
         int tokenType = adjustedToken.getType();
-        while (--tokenIndex>=0 && 
-                (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
-                || adjustedToken.getType()==EOF
-                || adjustedToken.getStartIndex()==offset)) { //don't consider the token to the right of the caret
-            adjustedToken = tokens.get(tokenIndex);
-            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
-                    adjustedToken.getType()!=EOF) { //don't adjust to a ws/comment token
-                adjustedStart = adjustedToken.getStartIndex();
-                adjustedEnd = adjustedToken.getStopIndex()+1;
-                tokenType = adjustedToken.getType();
-                break;
-            }
-        }
        
         //find the node at the token, and construct proposals
         Node node = getTokenNode(adjustedStart, adjustedEnd, tokenType, rn);        
@@ -243,9 +222,45 @@ public class CeylonContentProposer implements IContentProposer {
                     cpc, node, viewer.getDocument());
         
     }
+    
+    private static CommonToken adjust(int tokenIndex, int offset, List<CommonToken> tokens) {
+        CommonToken adjustedToken = tokens.get(tokenIndex); 
+        while (--tokenIndex>=0 && 
+                (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
+                || adjustedToken.getType()==EOF
+                || adjustedToken.getStartIndex()==offset)) { //don't consider the token to the right of the caret
+            adjustedToken = tokens.get(tokenIndex);
+            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
+                    adjustedToken.getType()!=EOF) { //don't adjust to a ws/comment token
+                break;
+            }
+        }
+        return adjustedToken;
+    }
+    
+    private static Boolean isDirectlyInsideBlock(Node node, List<CommonToken> tokens) {
+        CommonToken token = (CommonToken) node.getToken();
+        if (!(node.getScope() instanceof Interface)) {
+            if (token.getTokenIndex()==0) {
+                return false;
+            }
+            else {
+                //TODO: check that it is not the opening/closing 
+                //      brace of a named argument list!
+                int previousTokenType = adjust(token.getTokenIndex()-1, 
+                        token.getStartIndex(), tokens).getType();
+                return previousTokenType==LBRACE || 
+                        previousTokenType==RBRACE || 
+                        previousTokenType==SEMICOLON;
+            }
+        }
+        else {
+            return false;
+        }
+    }
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
-            int tokenType, CompilationUnit rn) {
+            int tokenType, Tree.CompilationUnit rn) {
         Node node = findNode(rn, adjustedStart, adjustedEnd);
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
@@ -407,9 +422,10 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    //TODO: only add if we are directly inside a block or classbody
-                    addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    if (isDirectlyInsideBlock(node, cpc.getTokens())) {
+                        addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                        addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    }
                 }
                 for (Declaration d: overloads(dec)) {
                     if (isInvocationProposable(d, ol)) {
@@ -554,7 +570,9 @@ public class CeylonContentProposer implements IContentProposer {
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
         if (d instanceof Value || d instanceof Getter) {
-            if (d.getUnit().isIterableType(((TypedDeclaration) d).getType())) {
+            TypedDeclaration td = (TypedDeclaration) d;
+            if (td.getType()!=null && 
+                    d.getUnit().isIterableType(td.getType())) {
                 String elemName;
                 if (d.getName().length()==1) {
                     elemName = "element";
@@ -579,7 +597,8 @@ public class CeylonContentProposer implements IContentProposer {
             Declaration d, OccurrenceLocation ol) {
         if (d instanceof Value) {
             Value v = (Value) d;
-            if (d.getUnit().isOptionalType(v.getType()) && 
+            if (v.getType()!=null &&
+                    d.getUnit().isOptionalType(v.getType()) && 
                     !v.isVariable()) {
                 result.add(sourceProposal(offset, prefix, 
                         CeylonLabelProvider.getImage(d),
@@ -627,9 +646,9 @@ public class CeylonContentProposer implements IContentProposer {
 
     protected static void addMemberNameProposal(int offset, String prefix, Node node,
             List<ICompletionProposal> result) {
-        Type type = ((Tree.TypedDeclaration) node).getType();
-        if (type instanceof SimpleType) {
-            String suggestedName = ((SimpleType) type).getIdentifier().getText();
+        Tree.Type type = ((Tree.TypedDeclaration) node).getType();
+        if (type instanceof Tree.SimpleType) {
+            String suggestedName = ((Tree.SimpleType) type).getIdentifier().getText();
             if (suggestedName!=null) {
                 suggestedName = Character.toLowerCase(suggestedName.charAt(0)) + 
                         suggestedName.substring(1);
@@ -706,13 +725,13 @@ public class CeylonContentProposer implements IContentProposer {
             this.node = node;
         }
         @Override
-        public void visit(InvocationExpression that) {
+        public void visit(Tree.InvocationExpression that) {
             super.visit(that);
             if (that.getPositionalArgumentList()==node) {
                 int pos = that.getPositionalArgumentList().getPositionalArguments().size();
-                Primary p = that.getPrimary();
-                if (p instanceof MemberOrTypeExpression) {
-                    ProducedReference pr = ((MemberOrTypeExpression) p).getTarget();
+                Tree.Primary p = that.getPrimary();
+                if (p instanceof Tree.MemberOrTypeExpression) {
+                    ProducedReference pr = ((Tree.MemberOrTypeExpression) p).getTarget();
                     if (pr!=null) {
                         Parameter param = ((Functional) pr.getDeclaration()).getParameterLists()
                                 .get(0).getParameters().get(pos);
@@ -722,7 +741,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         @Override
-        public void visit(SpecifiedArgument that) {
+        public void visit(Tree.SpecifiedArgument that) {
             super.visit(that);
             if (that.getSpecifierExpression()==node) {
                 //TODO: does not substitute type args!
@@ -730,28 +749,28 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         @Override
-        public void visit(SpecifierStatement that) {
+        public void visit(Tree.SpecifierStatement that) {
             super.visit(that);
             if (that.getSpecifierExpression()==node) {
                 requiredType = that.getBaseMemberExpression().getTypeModel();
             }
         }
         @Override
-        public void visit(AttributeDeclaration that) {
+        public void visit(Tree.AttributeDeclaration that) {
             super.visit(that);
             if (that.getSpecifierOrInitializerExpression()==node) {
                 requiredType = that.getType().getTypeModel();
             }
         }
         @Override
-        public void visit(AssignOp that) {
+        public void visit(Tree.AssignOp that) {
             super.visit(that);
             if (that==node) {
                 requiredType = that.getLeftTerm().getTypeModel();
             }
         }
         @Override
-        public void visit(Return that) {
+        public void visit(Tree.Return that) {
             super.visit(that);
             if (that==node) {
                 requiredType = type(that.getDeclaration());
