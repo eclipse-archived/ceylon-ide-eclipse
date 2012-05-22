@@ -66,6 +66,7 @@ import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.TypeParser;
@@ -113,7 +114,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
-        this.typeFactory = new Unit() {
+        this.typeFactory = new TypeFactory(moduleManager.getContext()) {
             @Override
             public Package getPackage() {
                 if(super.getPackage() == null){
@@ -581,5 +582,9 @@ public class JDTModelLoader extends AbstractModelLoader {
             return (Interface) ((SourceClass) classMirror).getDeclarationModel();
         }
         return super.makeLazyInterface(classMirror);
+    }
+    
+    public TypeFactory getTypeFactory() {
+        return (TypeFactory) typeFactory;
     }
 }
