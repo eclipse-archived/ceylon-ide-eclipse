@@ -81,15 +81,17 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
+import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.ModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -135,6 +137,7 @@ import com.sun.tools.javac.zip.ZipFileIndex;
  */
 public class CeylonBuilder extends IncrementalProjectBuilder{
 
+    public static boolean compileWithJDTModelLoader = true;
     /**
      * Extension ID of the Ceylon builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
@@ -1226,9 +1229,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
 
             boolean success = true;
-            // first java source files
-            if(!javaSourceFiles.isEmpty()){
-                compile(project, options, javaSourceFiles, printWriter);
+            if (! compileWithJDTModelLoader) {
+                // first java source files
+                if(!javaSourceFiles.isEmpty()){
+                    compile(project, options, javaSourceFiles, printWriter);
+                }
+            } else {
+                sourceFiles.addAll(javaSourceFiles);
             }
             // then ceylon source files if that last run worked
             if(!sourceFiles.isEmpty()){
@@ -1256,7 +1263,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return true;
     }
 
-    private boolean compile(IProject project, List<String> options,
+    private boolean compile(final IProject project, List<String> options,
             java.util.List<File> sourceFiles, PrintWriter printWriter) throws VerifyError {
         CeyloncTool compiler;
         try {
@@ -1320,6 +1327,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             Iterable<? extends JavaFileObject> compilationUnits1 =
                     fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+            if (compileWithJDTModelLoader) {
+                context.put(LanguageCompiler.ceylonContextKey, getProjectTypeChecker(project).getContext());
+                context.put(LanguageCompiler.existingPhasedUnitsKey, getProjectTypeChecker(project).getPhasedUnits());
+                final JDTModelLoader modelLoader = getProjectModelLoader(project);
+                context.put(TypeFactory.class, modelLoader.getTypeFactory());
+                context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
+                    @Override
+                    public AbstractModelLoader createModelLoader(
+                            com.sun.tools.javac.util.Context context) {
+                        return modelLoader;
+                    }
+                    
+                });
+            }
             CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                     fileManager, null, options, null, compilationUnits1);
             boolean success=false;
