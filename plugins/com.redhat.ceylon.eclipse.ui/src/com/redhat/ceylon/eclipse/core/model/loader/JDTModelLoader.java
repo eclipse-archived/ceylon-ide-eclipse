@@ -242,8 +242,10 @@ public class JDTModelLoader extends AbstractModelLoader {
         if (currentModule.equals(modules.getDefaultModule()) && ! currentModule.equals(module)) {
             currentModule.getPackages().remove(pkg);
             pkg.setModule(null);
-            module.getPackages().add(pkg);
-            pkg.setModule(module);
+            if (module != null) {
+                module.getPackages().add(pkg);
+                pkg.setModule(module);
+            }
         }
         return pkg;
     }
