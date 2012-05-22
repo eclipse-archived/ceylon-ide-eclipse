@@ -1291,7 +1291,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             try {
                 languageModuleArchive = repositoryManager.getArtifact(ctx);
                 classpathElements.add(languageModuleArchive.getAbsolutePath());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
