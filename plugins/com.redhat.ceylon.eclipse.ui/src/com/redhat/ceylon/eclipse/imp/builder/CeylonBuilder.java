@@ -1282,18 +1282,41 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             } else {
                 ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
             }
+            List<String> classpathElements = new ArrayList<String>();
             ctx.setSuffix(ArtifactContext.CAR);
             RepositoryManager repositoryManager = getProjectRepositoryManager(project);
             if (repositoryManager != null) {
                 File languageModuleArchive;
                 try {
                     languageModuleArchive = repositoryManager.getArtifact(ctx);
-                    options.add("-classpath");
-                    options.add(languageModuleArchive.getAbsolutePath());
+                    classpathElements.add(languageModuleArchive.getAbsolutePath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+            
+            IJavaProject javaProject = JavaCore.create(project);
+            IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
+            try {
+                for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
+                    if (cpEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                        classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+                    }
+                }
+                classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
+            } catch (JavaModelException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            options.add("-classpath");
+            String classpath = "";
+            for (String cpElement : classpathElements) {
+                if (! classpath.isEmpty()) {
+                    classpath += File.pathSeparator;
+                }
+                classpath += cpElement;
+            }
+            options.add(classpath);
             
             Iterable<? extends JavaFileObject> compilationUnits1 =
                     fileManager.getJavaFileObjectsFromFiles(sourceFiles);
