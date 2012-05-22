@@ -23,6 +23,7 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
 import net.lingala.zip4j.model.FileHeader;
+import net.lingala.zip4j.model.UnzipParameters;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -78,13 +79,17 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
+import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.java.util.Util;
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -128,6 +133,7 @@ import com.sun.tools.javac.util.Options;
  */
 public class CeylonBuilder extends IncrementalProjectBuilder{
 
+    public static boolean compileWithJDTModelLoader = true;
     /**
      * Extension ID of the Ceylon builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
@@ -307,7 +313,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         MessageConsole console = findConsole();
         IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
         if (buildConfsBefore.length == 0) {
-            console.clearConsole();
             console.activate();
         }
         getConsoleStream().println("\n===================================");
@@ -841,31 +846,41 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.validateTree();
+            if (! phasedUnit.isDeclarationsScanned()) {
+                phasedUnit.validateTree();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.scanDeclarations();
+            if (! phasedUnit.isDeclarationsScanned()) {
+                phasedUnit.scanDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.scanTypeDeclarations();
+            if (! phasedUnit.isTypeDeclarationsScanned()) {
+                phasedUnit.scanTypeDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.validateRefinement();
+            if (! phasedUnit.isRefinementValidated()) {
+                phasedUnit.validateRefinement();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            phasedUnit.analyseTypes();
+            if (! phasedUnit.isFullyTyped()) {
+                phasedUnit.analyseTypes();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1098,26 +1113,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.validateTree();
-            pu.scanDeclarations();
+            if (! pu.isDeclarationsScanned()) {
+                pu.validateTree();
+                pu.scanDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.scanTypeDeclarations();
+            if (! pu.isTypeDeclarationsScanned()) {
+                pu.scanTypeDeclarations();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu: listOfUnits) {
-            pu.validateRefinement();
+            if (! pu.isRefinementValidated()) {
+                pu.validateRefinement();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
         for (PhasedUnit pu : listOfUnits) {
-            pu.analyseTypes();
+            if (! pu.isFullyTyped()) {
+                pu.analyseTypes();
+            }
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1181,10 +1204,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         options.add("-g:lines,vars,source");
 
-        IPath outputDir = getProjectRelativeOutputDir(JavaCore.create(project));
+        IJavaProject javaProject = JavaCore.create(project);
+        final File outputDir = getOutputDirectory(javaProject);
         if (outputDir!=null) {
             options.add("-out");
-			options.add(toFile(project, outputDir).getAbsolutePath());
+            options.add(outputDir.getAbsolutePath());
         }
 
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
@@ -1201,21 +1225,41 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
 
             boolean success = true;
-            // first java source files
-            if(!javaSourceFiles.isEmpty()){
-                compile(project, options, javaSourceFiles, printWriter);
+            if (! compileWithJDTModelLoader) {
+                // first java source files
+                if(!javaSourceFiles.isEmpty()){
+                    compile(project, options, javaSourceFiles, printWriter);
+                }
+            } else {
+                sourceFiles.addAll(javaSourceFiles);
             }
             // then ceylon source files if that last run worked
             if(!sourceFiles.isEmpty()){
                 success = compile(project, options, sourceFiles, printWriter);
             }
+            if (outputDir != null) {
+                monitor.subTask("Unzipping class files in the JDT output folder");
+                List<String> extensionsToUnzip = Arrays.asList(".car");
+                new RepositoryLister(extensionsToUnzip).list(outputDir, new RepositoryLister.Actions() {
+                    @Override
+                    public void doWithFile(File path) {
+                        try {
+                            ZipFile carFile = new ZipFile(path);
+                            carFile.extractAll(new File(outputDir, "../JDTClasses").getAbsolutePath());
+                        } catch (ZipException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+            
             return success;
         }
         else
             return true;
     }
 
-    private boolean compile(IProject project, List<String> options,
+    private boolean compile(final IProject project, List<String> options,
             java.util.List<File> sourceFiles, PrintWriter printWriter) throws VerifyError {
         CeyloncTool compiler;
         try {
@@ -1229,8 +1273,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
 
-        //ZipFileIndex.clearCache();
-        //try {
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
         
         ArtifactContext ctx = null;
@@ -1238,25 +1280,61 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (projectModules != null) {
             Module languageModule = projectModules.getLanguageModule();
             ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
-        }
-        else {
+        } else {
             ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
         }
+        List<String> classpathElements = new ArrayList<String>();
         ctx.setSuffix(ArtifactContext.CAR);
         RepositoryManager repositoryManager = getProjectRepositoryManager(project);
         if (repositoryManager != null) {
             File languageModuleArchive;
             try {
                 languageModuleArchive = repositoryManager.getArtifact(ctx);
-                options.add("-classpath");
-                options.add(languageModuleArchive.getAbsolutePath());
-            } catch (Exception e) {
-                getConsoleStream().println("ERROR : Exception while retrieving the artifact : " + ctx);
+                classpathElements.add(languageModuleArchive.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         
+        IJavaProject javaProject = JavaCore.create(project);
+        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
+        try {
+            for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
+                if (cpEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                    classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+                }
+            }
+            classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
+        } catch (JavaModelException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        options.add("-classpath");
+        String classpath = "";
+        for (String cpElement : classpathElements) {
+            if (! classpath.isEmpty()) {
+                classpath += File.pathSeparator;
+            }
+            classpath += cpElement;
+        }
+        options.add(classpath);
+        
         Iterable<? extends JavaFileObject> compilationUnits1 =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+        if (compileWithJDTModelLoader) {
+            context.put(LanguageCompiler.ceylonContextKey, getProjectTypeChecker(project).getContext());
+            context.put(LanguageCompiler.existingPhasedUnitsKey, getProjectTypeChecker(project).getPhasedUnits());
+            final JDTModelLoader modelLoader = getProjectModelLoader(project);
+            context.put(TypeFactory.class, modelLoader.getTypeFactory());
+            context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
+                @Override
+                public AbstractModelLoader createModelLoader(
+                        com.sun.tools.javac.util.Context context) {
+                    return modelLoader;
+                }
+                
+            });
+        }
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                 fileManager, null, options, null, compilationUnits1);
         boolean success=false;
@@ -1267,10 +1345,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             e.printStackTrace();
         }
         return success;
-        //}
-        //finally {
-            //ZipFileIndex.clearCache();
-        //}
     }
 
 	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
@@ -1541,7 +1615,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     
     private String timedMessage(String message) {
         long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
-        return String.format("[%1$10d ms] %2$s", elapsedTimeMs, message);
+        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
     }
 
     /**
@@ -1891,6 +1965,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
+                        File classFile = new File(new File(outputDirectory, "../JDTClasses"), entryToDelete.replace('/', File.separatorChar));
+                        classFile.delete();
                     }
                 } catch (ZipException e) {
                     // TODO Auto-generated catch block

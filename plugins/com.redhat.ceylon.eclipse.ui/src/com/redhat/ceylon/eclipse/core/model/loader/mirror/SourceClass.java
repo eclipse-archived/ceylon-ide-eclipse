@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
+import java.util.Collections;
 import java.util.List;
 
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.FieldMirror;
@@ -9,108 +11,160 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilerAnnotation;
+import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 
 public class SourceClass implements ClassMirror {
 
-    private String qualifiedName;
-    
-    public SourceClass(String qualifiedName) {
-        this.qualifiedName = qualifiedName; 
+    private CeylonDeclaration ceylonDeclaration;
+
+    public SourceClass(CeylonDeclaration ceylonDeclaration) {
+        this.ceylonDeclaration = ceylonDeclaration;
     }
     
     @Override
     public AnnotationMirror getAnnotation(String type) {
+        List<CompilerAnnotation> compilerAnnotations = getAstDeclaration().getCompilerAnnotations();
         throw new IllegalAccessError("Don't use a Source Class Mirror !");
     }
 
     @Override
     public boolean isPublic() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getModelDeclaration().isShared();
     }
 
     @Override
     public boolean isInterface() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getModelDeclaration() instanceof Interface;
     }
 
     @Override
     public boolean isAbstract() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        Declaration decl = getModelDeclaration();
+        if (! (decl instanceof Class)) {
+            return false;
+        }
+        return ((Class) decl).isAbstract();
     }
 
     @Override
     public boolean isStatic() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return false;
     }
 
     @Override
     public boolean isInnerClass() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getModelDeclaration().isClassOrInterfaceMember();
     }
 
     @Override
     public boolean isAnonymous() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return false; // TODO : is it really right ?
     }
 
     @Override
     public String getSimpleName() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getModelDeclaration().getName();
     }
 
     @Override
     public String getQualifiedName() {
-        return qualifiedName;
+        return getModelDeclaration().getQualifiedNameString();
     }
 
     @Override
     public PackageMirror getPackage() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        Declaration decl = getModelDeclaration();
+        Scope scope = decl.getContainer();
+        while (scope instanceof ClassOrInterface) {
+            scope = scope.getContainer();
+        }
+        final String fqn = scope.getQualifiedNameString();
+        
+        return new PackageMirror() {
+            @Override
+            public String getQualifiedName() {
+                return fqn;
+            }
+        };
     }
 
     @Override
     public List<MethodMirror> getDirectMethods() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectMethods() !!!!!!!!!!!!!!!!!!!!!!!");
+        return Collections.emptyList();
+//        ClassOrInterface decl = (ClassOrInterface) getDeclarationModel();
+//        // ...
+//        if (decl instanceof Class) {
+//            Class clazz = (Class) decl;
+//            clazz.getParameterList();
+//            => On ajoute un MethodMirror pour le constructeur 
+//        }
+//        
     }
 
     @Override
     public List<FieldMirror> getDirectFields() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectFields() !!!!!!!!!!!!!!!!!!!!!!!");
+        return Collections.emptyList();
     }
 
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getTypeParameters() !!!!!!!!!!!!!!!!!!!!!!!");
+        return Collections.emptyList();
     }
 
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectInnerClasses() !!!!!!!!!!!!!!!!!!!!!!!");
+        return Collections.emptyList();
     }
 
     @Override
     public TypeMirror getSuperclass() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getSuperclass() !!!!!!!!!!!!!!!!!!!!!!!");
+        return null;
     }
 
     @Override
     public List<TypeMirror> getInterfaces() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getInterface() !!!!!!!!!!!!!!!!!!!!!!!");
+        return Collections.emptyList();
     }
 
     @Override
     public boolean isCeylonToplevelAttribute() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getAstDeclaration() instanceof Tree.AttributeDeclaration 
+                && getModelDeclaration().isToplevel();
     }
 
     @Override
     public boolean isCeylonToplevelObject() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getAstDeclaration() instanceof Tree.ObjectDefinition
+                && getModelDeclaration().isToplevel();
     }
 
     @Override
     public boolean isCeylonToplevelMethod() {
-        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+        return getAstDeclaration() instanceof Tree.MethodDefinition
+                && getModelDeclaration().isToplevel();
+    }
+
+    public Declaration getModelDeclaration() {
+        return ceylonDeclaration.getModelDeclaration();
+    }
+
+    public Tree.Declaration getAstDeclaration() {
+        return ceylonDeclaration.getAstDeclaration();
     }
 
     @Override
