@@ -520,17 +520,20 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
-    public void setupSourceFileObjects(List<PhasedUnit> phasedUnits) {
-        for (final PhasedUnit unit : phasedUnits) {
-            final String pkgName = unit.getPackage().getQualifiedNameString();
-            unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
-                @Override
-                public void loadFromSource(Tree.Declaration decl) {
-                    String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
-                    String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-                        sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl));
-                }
-            });
+    public void setupSourceFileObjects(List<?> treeHolders) {
+        for (Object unitObject : treeHolders) {
+            if (unitObject instanceof PhasedUnit) {
+                final PhasedUnit unit = (PhasedUnit) unitObject;
+                final String pkgName = unit.getPackage().getQualifiedNameString();
+                unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
+                    @Override
+                    public void loadFromSource(Tree.Declaration decl) {
+                        String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
+                        String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+                            sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl));
+                    }
+                });
+            }
         }
     }
 
