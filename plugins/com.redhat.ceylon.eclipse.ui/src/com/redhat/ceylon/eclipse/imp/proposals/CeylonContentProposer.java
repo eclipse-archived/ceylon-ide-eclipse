@@ -138,6 +138,9 @@ public class CeylonContentProposer implements IContentProposer {
             return null;
         }
         
+        //compensate for the fact that we get sent an old
+        //tree that doesn't contain the characters the user
+        //just typed
         PositionedPrefix result = compensateForMissingCharacter(offset, viewer,
                 tokens);
         if (result==null) {
@@ -149,34 +152,29 @@ public class CeylonContentProposer implements IContentProposer {
         //token to the left of the caret
         int tokenIndex = getTokenIndexAtCharacter(tokens, result.start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
-        //int adjustedStart = start;
-        //int adjustedEnd = end;
         CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
-        int adjustedStart = adjustedToken.getStartIndex();
-        int adjustedEnd = adjustedToken.getStopIndex()+1;
-        int tokenType = adjustedToken.getType();
-        String prefix;
-        /*if (keywords.contains(adjustedToken.getText()) && 
-                result.start + result.prefix.length()==adjustedEnd) {
-            prefix=adjustedToken.getText() + result.prefix;
-        }
-        else {*/
-            prefix = result.prefix;
-        //}
-       
-        //find the node at the token, and construct proposals
-        Node node = getTokenNode(adjustedStart, adjustedEnd, tokenType, rn);
+
+        //find the node at the token
+        Node node = getTokenNode(adjustedToken.getStartIndex(), 
+                adjustedToken.getStopIndex()+1, 
+                adjustedToken.getType(), rn);
+        
+        //find the type that is expected in the current
+        //location so we can prioritize proposals of that
+        //type
         RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
         rtv.visit(rn);
-        return constructCompletions(offset, prefix, 
-                    sortProposals(prefix, rtv.requiredType, 
-                            getProposals(node, prefix, rn)),
+        
+        //finally, construct and sort proposals
+        return constructCompletions(offset, result.prefix, 
+                    sortProposals(result.prefix, rtv.requiredType, 
+                            getProposals(node, result.prefix, rn)),
                     cpc, node, adjustedToken, 
                     viewer.getDocument());
         
     }
 
-    private PositionedPrefix compensateForMissingCharacter(final int offset,
+    private static PositionedPrefix compensateForMissingCharacter(final int offset,
             ITextViewer viewer, List<CommonToken> tokens) {
 
         //What is going on here is that when I have a list of proposals open
@@ -185,74 +183,106 @@ public class CeylonContentProposer implements IContentProposer {
         //in the ITextViewer. So we need to do some guessing to figure out
         //that there is a missing character in the token stream and take
         //corrective action. This should be fixed in IMP!
-        final CommonToken token;
-        final CommonToken previousToken;
-        //find the token under the caret and the token just 
-        //before that one
-        int index = getTokenIndexAtCharacter(tokens, offset-1);
-        if (index<0) {
-            index = -index;
-            previousToken = (CommonToken) tokens.get(index);
-            token = index==tokens.size()-1 ? 
-                    null : (CommonToken) tokens.get(index+1);
-        }
-        else {
-            previousToken = index==0 ? 
-                    null : (CommonToken) tokens.get(index-1);
-            token = (CommonToken) tokens.get(index);
-        }
-        if (token==null) return null;
         
+        return getPositionedPrefix(offset, viewer, 
+                getTokenAtCaret(offset, viewer, tokens));
+    }
+
+    private static PositionedPrefix getPositionedPrefix(final int offset,
+            ITextViewer viewer, CommonToken token) {
         //try to guess the character the user just typed
-        PositionedPrefix result = new PositionedPrefix();
-        char charAtOffset = viewer.getDocument().get().charAt(offset>0?offset-1:0);
+        char charAtOffset = viewer.getDocument().get()
+                .charAt(offset>0?offset-1:0);
         int offsetInToken = offset-token.getStartIndex();
-		Character charInTokenAtOffset = token==null ? 
-                null : token.getText().charAt(offsetInToken>0?offsetInToken-1:0);
-		result.prefix = "";
-		result.start = offset;
+		Character charInTokenAtOffset = offsetInToken<=token.getText().length() ? 
+		        token.getText().charAt(offsetInToken>0?offsetInToken-1:0) : null;
         //int end = offset;
         if (charInTokenAtOffset!=null && 
                 charAtOffset==charInTokenAtOffset) {
             //then we're not missing the typed character 
             //from the tree we were passed by IMP
-            if (isIdentifier(token)) {
-                result.prefix = token.getText().substring(0, offsetInToken);
-                result.start = token.getStartIndex();
+            if (isIdentifierOrKeyword(token)) {
+                return new PositionedPrefix(
+                     token.getText().substring(0, offsetInToken),
+                     token.getStartIndex());
                 //end = token.getStopIndex();
+            }
+            else {
+                return new PositionedPrefix("", offset);
             }
         } 
         else {
             //then we are missing the typed character from
-            //the tree
+            //the tree, along with possibly some other
+            //previously typed characters
             boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
-            if (previousToken!=null) {
-                if (isIdentifierChar) {
-                    if (previousToken.getType()==MEMBER_OP) {
-                        result.prefix = Character.toString(charAtOffset);
-                        result.start = previousToken.getStartIndex();
-                        //end = previousToken.getStopIndex();
-                    }
-                    else if (isIdentifier(previousToken)) {
-                        result.prefix = previousToken.getText()+charAtOffset;
-                        result.start = previousToken.getStartIndex();
-                        //end = previousToken.getStopIndex();
-                    }
-                    else {
-                        result.prefix = Character.toString(charAtOffset);
-                    }
+            if (isIdentifierChar) {
+                if (offset<=token.getStopIndex()) {
+                    //start of file and perhaps some other cases
+                    return new PositionedPrefix("",offset);
+                }
+                String missing = viewer.getDocument().get()
+                        .substring(token.getStopIndex()+1, offset);
+                if (token.getType()==MEMBER_OP) {
+                    return new PositionedPrefix(missing,
+                        token.getStartIndex());
+                    //end = previousToken.getStopIndex();
+                }
+                else if (isIdentifierOrKeyword(token)) {
+                    return new PositionedPrefix(
+                        token.getText()+missing,
+                        token.getStartIndex());
+                    //end = previousToken.getStopIndex();
+                }
+                else {
+                    return new PositionedPrefix(missing,offset);
                 }
             }
-            else if (isIdentifierChar) {
-                result.prefix = Character.toString(charAtOffset);
+            else {
+                return new PositionedPrefix("", offset);
             }
         }
-        return result;
+    }
+
+    private static CommonToken getTokenAtCaret(final int offset, ITextViewer viewer,
+            List<CommonToken> tokens) {
+        //find the token under the caret, adjusting to an 
+        //earlier token if the token we find is not at the 
+        //same position in the current text (in which case 
+        //it is probably a token that actually comes after 
+        //what we are currently typing)
+        int index = getTokenIndexAtCharacter(tokens, offset-1);
+        while (true) {
+            CommonToken token;
+            if (index<0) {
+                index = -index;
+                token = index==tokens.size()-1 ? 
+                        null : (CommonToken) tokens.get(index+1);
+            }
+            else {
+                token = (CommonToken) tokens.get(index);
+            }
+            if (token==null || 0>index--) {
+                return null;
+            }
+            else {
+                String text = viewer.getDocument().get();
+                boolean tokenHasMoved = text.charAt(token.getStartIndex())!=
+                        token.getText().charAt(0);
+                if (!tokenHasMoved) {
+                    return token;
+                }
+            }
+        }
     }
     
-    private class PositionedPrefix {
+    private static class PositionedPrefix {
         String prefix;
         int start;
+        PositionedPrefix(String prefix, int start) {
+            this.prefix=prefix;
+            this.start=start;
+        }
     }
     
     private static CommonToken adjust(int tokenIndex, int offset, List<CommonToken> tokens) {
@@ -377,7 +407,7 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
     
-    private static boolean isIdentifier(Token token) {
+    private static boolean isIdentifierOrKeyword(Token token) {
         int type = token.getType();
         return type==LIDENTIFIER || 
                 type==UIDENTIFIER ||
