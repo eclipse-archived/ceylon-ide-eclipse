@@ -66,9 +66,6 @@ public class JDTMethod implements MethodMirror {
     @Override
     public String getName() {
         if (name == null) {
-            if (isConstructor() || isStaticInit()) {
-                name = new String(method.declaringClass.sourceName); 
-            }
             name = new String(method.selector);
         }
         return name;
