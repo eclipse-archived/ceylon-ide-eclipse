@@ -553,7 +553,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Declaration makeToplevelAttribute(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
-            return ((SourceClass) classMirror).getDeclarationModel();
+            return ((SourceClass) classMirror).getModelDeclaration();
         }
         return super.makeToplevelAttribute(classMirror);
     }
@@ -561,7 +561,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Declaration makeToplevelMethod(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
-            return ((SourceClass) classMirror).getDeclarationModel();
+            return ((SourceClass) classMirror).getModelDeclaration();
         }
         return super.makeToplevelMethod(classMirror);
     }
@@ -570,7 +570,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     protected Class makeLazyClass(ClassMirror classMirror, Class superClass,
             MethodMirror constructor, boolean forTopLevelObject) {
         if (classMirror instanceof SourceClass) {
-            return (Class) ((SourceClass) classMirror).getDeclarationModel();
+            return (Class) ((SourceClass) classMirror).getModelDeclaration();
         }
         return super.makeLazyClass(classMirror, superClass, constructor,
                 forTopLevelObject);
@@ -579,7 +579,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Interface makeLazyInterface(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
-            return (Interface) ((SourceClass) classMirror).getDeclarationModel();
+            return (Interface) ((SourceClass) classMirror).getModelDeclaration();
         }
         return super.makeLazyInterface(classMirror);
     }

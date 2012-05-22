@@ -17,6 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilerAnnotation;
 import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -24,34 +25,30 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 public class SourceClass implements ClassMirror {
 
     private CeylonDeclaration ceylonDeclaration;
-    private Tree.Declaration astDeclaration;
-    private PhasedUnit phasedUnit;
-    private Declaration modelDeclaration = null;
 
     public SourceClass(CeylonDeclaration ceylonDeclaration) {
         this.ceylonDeclaration = ceylonDeclaration;
-        astDeclaration = ceylonDeclaration.getAstDeclaration();
-        phasedUnit = ceylonDeclaration.getPhasedUnit();
     }
     
     @Override
     public AnnotationMirror getAnnotation(String type) {
+        List<CompilerAnnotation> compilerAnnotations = getAstDeclaration().getCompilerAnnotations();
         throw new IllegalAccessError("Don't use a Source Class Mirror !");
     }
 
     @Override
     public boolean isPublic() {
-        return getDeclarationModel().isShared();
+        return getModelDeclaration().isShared();
     }
 
     @Override
     public boolean isInterface() {
-        return getDeclarationModel() instanceof Interface;
+        return getModelDeclaration() instanceof Interface;
     }
 
     @Override
     public boolean isAbstract() {
-        Declaration decl = getDeclarationModel();
+        Declaration decl = getModelDeclaration();
         if (! (decl instanceof Class)) {
             return false;
         }
@@ -65,7 +62,7 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public boolean isInnerClass() {
-        return getDeclarationModel().isClassOrInterfaceMember();
+        return getModelDeclaration().isClassOrInterfaceMember();
     }
 
     @Override
@@ -75,17 +72,17 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public String getSimpleName() {
-        return getDeclarationModel().getName();
+        return getModelDeclaration().getName();
     }
 
     @Override
     public String getQualifiedName() {
-        return getDeclarationModel().getQualifiedNameString();
+        return getModelDeclaration().getQualifiedNameString();
     }
 
     @Override
     public PackageMirror getPackage() {
-        Declaration decl = getDeclarationModel();
+        Declaration decl = getModelDeclaration();
         Scope scope = decl.getContainer();
         while (scope instanceof ClassOrInterface) {
             scope = scope.getContainer();
@@ -102,6 +99,7 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public List<MethodMirror> getDirectMethods() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectMethods() !!!!!!!!!!!!!!!!!!!!!!!");
         return Collections.emptyList();
 //        ClassOrInterface decl = (ClassOrInterface) getDeclarationModel();
 //        // ...
@@ -115,65 +113,58 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public List<FieldMirror> getDirectFields() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectFields() !!!!!!!!!!!!!!!!!!!!!!!");
         return Collections.emptyList();
     }
 
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getTypeParameters() !!!!!!!!!!!!!!!!!!!!!!!");
         return Collections.emptyList();
     }
 
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectInnerClasses() !!!!!!!!!!!!!!!!!!!!!!!");
         return Collections.emptyList();
     }
 
     @Override
     public TypeMirror getSuperclass() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getSuperclass() !!!!!!!!!!!!!!!!!!!!!!!");
         return null;
     }
 
     @Override
     public List<TypeMirror> getInterfaces() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getInterface() !!!!!!!!!!!!!!!!!!!!!!!");
         return Collections.emptyList();
     }
 
     @Override
     public boolean isCeylonToplevelAttribute() {
-        return astDeclaration instanceof Tree.AttributeDeclaration 
-                && getDeclarationModel().isToplevel();
+        return getAstDeclaration() instanceof Tree.AttributeDeclaration 
+                && getModelDeclaration().isToplevel();
     }
 
     @Override
     public boolean isCeylonToplevelObject() {
-        return astDeclaration instanceof Tree.ObjectDefinition
-                && getDeclarationModel().isToplevel();
+        return getAstDeclaration() instanceof Tree.ObjectDefinition
+                && getModelDeclaration().isToplevel();
     }
 
     @Override
     public boolean isCeylonToplevelMethod() {
-        return astDeclaration instanceof Tree.MethodDefinition
-                && getDeclarationModel().isToplevel();
+        return getAstDeclaration() instanceof Tree.MethodDefinition
+                && getModelDeclaration().isToplevel();
     }
 
-    public Declaration getDeclarationModel() {
-        if (modelDeclaration != null) {
-            return modelDeclaration;
-        }
-        if (! phasedUnit.isDeclarationsScanned()) {
-            phasedUnit.scanDeclarations();
-        }
-        if (! phasedUnit.isTypeDeclarationsScanned()) {
-            phasedUnit.scanTypeDeclarations();
-        }
-        if (! phasedUnit.isRefinementValidated()) {
-            phasedUnit.validateRefinement();
-        }
-        if (! phasedUnit.isFullyTyped()) {
-            phasedUnit.analyseTypes();
-        }
-        modelDeclaration = astDeclaration.getDeclarationModel();
-        return modelDeclaration;
+    public Declaration getModelDeclaration() {
+        return ceylonDeclaration.getModelDeclaration();
+    }
+
+    public Tree.Declaration getAstDeclaration() {
+        return ceylonDeclaration.getAstDeclaration();
     }
 
     @Override
