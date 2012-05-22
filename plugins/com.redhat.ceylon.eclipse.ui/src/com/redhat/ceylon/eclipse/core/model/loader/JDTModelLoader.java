@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
@@ -66,23 +67,31 @@ import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
+import com.redhat.ceylon.compiler.loader.model.LazyClass;
+import com.redhat.ceylon.compiler.loader.model.LazyInterface;
+import com.redhat.ceylon.compiler.loader.model.LazyMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
+import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.SourceClass;
@@ -107,7 +116,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
-        this.typeFactory = new Unit() {
+        this.typeFactory = new TypeFactory(moduleManager.getContext()) {
             @Override
             public Package getPackage() {
                 if(super.getPackage() == null){
@@ -236,8 +245,10 @@ public class JDTModelLoader extends AbstractModelLoader {
         if (currentModule.equals(modules.getDefaultModule()) && ! currentModule.equals(module)) {
             currentModule.getPackages().remove(pkg);
             pkg.setModule(null);
-            module.getPackages().add(pkg);
-            pkg.setModule(module);
+            if (module != null) {
+                module.getPackages().add(pkg);
+                pkg.setModule(module);
+            }
         }
         return pkg;
     }
@@ -283,13 +294,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                         try {
                             for (IClassFile classFile : packageFragment.getClassFiles()) {
                                 IType type = classFile.getType();
-                                if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
+                                if (! type.isMember() && !sourceDeclarations.containsKey(type.getFullyQualifiedName())) {
                                     convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                 }
                             }
                             for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
                                 for (IType type : compilationUnit.getTypes()) {
-                                    if (! type.isMember() && !sourceDeclarations.contains(type.getFullyQualifiedName())) {
+                                    if (! type.isMember() && !sourceDeclarations.containsKey(type.getFullyQualifiedName())) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
@@ -339,8 +350,8 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public synchronized ClassMirror lookupNewClassMirror(String name) {
-        if (sourceDeclarations.contains(name)) {
-            return new SourceClass(name);
+        if (sourceDeclarations.containsKey(name)) {
+            return new SourceClass(sourceDeclarations.get(name));
         }
         
         try {
@@ -395,6 +406,9 @@ public class JDTModelLoader extends AbstractModelLoader {
             DeclarationType declarationType) {
         if (typeName.startsWith("ceylon.language")) {
             return typeFactory.getLanguageModuleDeclaration(typeName.substring(typeName.lastIndexOf('.') + 1));
+        }
+        if (sourceDeclarations.containsKey(typeName)) {
+            return sourceDeclarations.get(typeName).getModelDeclaration();
         }
         try {
             return super.convertToDeclaration(typeName, declarationType);
@@ -511,18 +525,21 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
     
-    private Set<String> sourceDeclarations = new TreeSet<String>();
-    public void setupSourceFileObjects(List<PhasedUnit> phasedUnits) {
-        for (PhasedUnit unit : phasedUnits) {
-            final String pkgName = unit.getPackage().getQualifiedNameString();
-            unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
-                @Override
-                public void loadFromSource(Tree.Declaration decl) {
-                    String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
-                    String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-                        sourceDeclarations.add(fqn);
-                }
-            });
+    private Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
+    public void setupSourceFileObjects(List<?> treeHolders) {
+        for (Object unitObject : treeHolders) {
+            if (unitObject instanceof PhasedUnit) {
+                final PhasedUnit unit = (PhasedUnit) unitObject;
+                final String pkgName = unit.getPackage().getQualifiedNameString();
+                unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
+                    @Override
+                    public void loadFromSource(Tree.Declaration decl) {
+                        String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
+                        String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+                            sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl));
+                    }
+                });
+            }
         }
     }
 
@@ -543,5 +560,43 @@ public class JDTModelLoader extends AbstractModelLoader {
             classMirrorCache.remove(keyToRemove);
         }
         loadedPackages.remove(packageName);
+    }
+
+    @Override
+    protected Declaration makeToplevelAttribute(ClassMirror classMirror) {
+        if (classMirror instanceof SourceClass) {
+            return ((SourceClass) classMirror).getModelDeclaration();
+        }
+        return super.makeToplevelAttribute(classMirror);
+    }
+
+    @Override
+    protected Declaration makeToplevelMethod(ClassMirror classMirror) {
+        if (classMirror instanceof SourceClass) {
+            return ((SourceClass) classMirror).getModelDeclaration();
+        }
+        return super.makeToplevelMethod(classMirror);
+    }
+
+    @Override
+    protected Class makeLazyClass(ClassMirror classMirror, Class superClass,
+            MethodMirror constructor, boolean forTopLevelObject) {
+        if (classMirror instanceof SourceClass) {
+            return (Class) ((SourceClass) classMirror).getModelDeclaration();
+        }
+        return super.makeLazyClass(classMirror, superClass, constructor,
+                forTopLevelObject);
+    }
+
+    @Override
+    protected Interface makeLazyInterface(ClassMirror classMirror) {
+        if (classMirror instanceof SourceClass) {
+            return (Interface) ((SourceClass) classMirror).getModelDeclaration();
+        }
+        return super.makeLazyInterface(classMirror);
+    }
+    
+    public TypeFactory getTypeFactory() {
+        return (TypeFactory) typeFactory;
     }
 }
