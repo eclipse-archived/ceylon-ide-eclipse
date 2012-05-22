@@ -314,7 +314,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         MessageConsole console = findConsole();
         IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
         if (buildConfsBefore.length == 0) {
-            console.clearConsole();
             console.activate();
         }
         getConsoleStream().println("\n===================================");
