@@ -30,6 +30,15 @@ public class CeylonDeclaration {
         if (modelDeclaration != null) {
             return modelDeclaration;
         }
+        
+        if (isSourceToCompile) {
+            modelDeclaration = astDeclaration.getDeclarationModel();
+        }
+        
+        if (phasedUnit.isScanningDeclarations()) {
+            return null;
+        }
+        
         if (! phasedUnit.isDeclarationsScanned()) {
             phasedUnit.scanDeclarations();
         }
