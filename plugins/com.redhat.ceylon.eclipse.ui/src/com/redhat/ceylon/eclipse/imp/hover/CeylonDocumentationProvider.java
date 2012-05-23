@@ -16,6 +16,8 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -95,19 +97,48 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
 
     public static String getDocumentation(Tree.Declaration decl) {
         StringBuilder documentation = new StringBuilder();
-        if (decl!=null) {
+        Declaration model = decl.getDeclarationModel();
+        if (model!=null && 
+                model.getName().equals("package")) {
+            appendPackageDocumentation(documentation, 
+                    model.getUnit().getPackage());
+        }
+        else if (model!=null && 
+                model.getName().equals("module")) {
+            appendModuleDocumentation(documentation, 
+                    model.getUnit().getPackage().getModule());
+        }
+        else if (decl!=null) {
             appendDescription(decl, documentation);
-            Declaration model = decl.getDeclarationModel();
             if (model!=null) {
                 appendInheritance(documentation, model);
                 appendDeclaringType(documentation, model);
                 appendContainingPackage(documentation, model);
             }
-            
             appendDocAnnotationContent(decl, documentation);
             
         }
         return documentation.toString();
+    }
+
+    private static void appendModuleDocumentation(StringBuilder documentation,
+            Module p) {
+        documentation.append("<p><b>module ")
+                .append(p.getNameAsString())
+                .append("</b></p>");
+        documentation.append("<br/><p>")
+                .append(sanitize(p.getDoc()))
+                .append("</p>");
+    }
+
+    private static void appendPackageDocumentation(StringBuilder documentation,
+            Package p) {
+        documentation.append("<p><b>package ")
+                .append(p.getNameAsString())
+                .append("</b></p>");
+        documentation.append("<br/><p>")
+                .append(sanitize(p.getDoc()))
+                .append("</p>");
     }
 
     private static void appendDescription(Declaration model, StringBuilder documentation) {
