@@ -29,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
@@ -243,7 +244,6 @@ public class JDTClass implements ClassMirror {
 
     @Override
     public boolean isJavaSource() {
-        // TODO Auto-generated method stub
-        return false;
+        return (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
     }
 }
