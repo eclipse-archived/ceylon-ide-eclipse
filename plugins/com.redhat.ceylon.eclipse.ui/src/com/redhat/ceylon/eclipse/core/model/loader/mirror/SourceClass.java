@@ -169,7 +169,7 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public boolean isLoadedFromSource() {
-        return true;
+        return ceylonDeclaration.isSourceToCompile();  
     }
 
     @Override
