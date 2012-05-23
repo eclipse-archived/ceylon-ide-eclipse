@@ -544,13 +544,13 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     public void setupSourceFileObjects(List<?> treeHolders) {
-        addSourcePhasedUnits(treeHolders);
+        addSourcePhasedUnits(treeHolders, true);
         if (additionalSourceFileObjectsManager != null) {
             additionalSourceFileObjectsManager.setupSourceFileObjects(treeHolders);
         }
     }
 
-    public void addSourcePhasedUnits(List<?> treeHolders) {
+    public void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
         for (Object treeHolder : treeHolders) {
             if (treeHolder instanceof PhasedUnit) {
                 final PhasedUnit unit = (PhasedUnit) treeHolder;
@@ -560,13 +560,17 @@ public class JDTModelLoader extends AbstractModelLoader {
                     public void loadFromSource(Tree.Declaration decl) {
                         String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
                         String fqn = getQualifiedName(pkgName, name);
-                            sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl));
+                            sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
                     }
                 });
             }
         }
     }
 
+    public void addSourceArchivePhasedUnits(List<PhasedUnit> sourceArchivePhasedUnits) {
+        addSourcePhasedUnits(sourceArchivePhasedUnits, false);
+    }
+    
     public void clearCachesOnPackage(String packageName) {
         List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
         for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
