@@ -274,7 +274,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                 try {
                     IClasspathEntry entry = root.getRawClasspathEntry();
                     
-                    if (entry.getContentKind() == IPackageFragmentRoot.K_SOURCE && ! CeylonBuilder.isCeylonSourceEntry(entry)) {
+                    //TODO: is the following really necessary?
+                    //Note that getContentKind() returns an undefined
+                    //value for a classpath container or variable
+                    if (entry.getEntryKind()!=IClasspathEntry.CPE_CONTAINER &&
+                            entry.getEntryKind()!=IClasspathEntry.CPE_VARIABLE &&
+                            entry.getContentKind()==IPackageFragmentRoot.K_SOURCE && 
+                            !CeylonBuilder.isCeylonSourceEntry(entry)) {
                         continue;
                     }
                     
