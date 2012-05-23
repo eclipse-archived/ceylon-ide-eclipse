@@ -1094,7 +1094,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             @Override
             protected void executeExternalModulePhases() {
                 for (PhasedUnits dependencyPhasedUnits : getPhasedUnitsOfDependencies()) {
-                    modelLoader.setupSourceFileObjects(dependencyPhasedUnits.getPhasedUnits());
+                    modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
                 }
                 super.executeExternalModulePhases();
             }
