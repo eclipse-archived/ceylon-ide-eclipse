@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.mirror;
 
+import static org.eclipse.jdt.internal.compiler.lookup.TypeBinding.VOID;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -207,5 +209,10 @@ public class JDTMethod implements MethodMirror {
     @Override
     public boolean isDefaultAccess() {
         return method.isDefault();
+    }
+    
+    @Override
+    public boolean isDeclaredVoid() {
+        return method.returnType==VOID;
     }
 }
