@@ -96,29 +96,34 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
     }
 
     public static String getDocumentation(Tree.Declaration decl) {
-        StringBuilder documentation = new StringBuilder();
-        Declaration model = decl.getDeclarationModel();
-        if (model!=null && 
-                model.getName().equals("package")) {
-            appendPackageDocumentation(documentation, 
-                    model.getUnit().getPackage());
+        if (decl==null) {
+            return null;
         }
-        else if (model!=null && 
-                model.getName().equals("module")) {
-            appendModuleDocumentation(documentation, 
-                    model.getUnit().getPackage().getModule());
-        }
-        else if (decl!=null) {
-            appendDescription(decl, documentation);
-            if (model!=null) {
-                appendInheritance(documentation, model);
-                appendDeclaringType(documentation, model);
-                appendContainingPackage(documentation, model);
+        else {
+            StringBuilder documentation = new StringBuilder();
+            Declaration model = decl.getDeclarationModel();
+            if (model!=null && 
+                    model.getName().equals("package")) {
+                appendPackageDocumentation(documentation, 
+                        model.getUnit().getPackage());
             }
-            appendDocAnnotationContent(decl, documentation);
-            
+            else if (model!=null && 
+                    model.getName().equals("module")) {
+                appendModuleDocumentation(documentation, 
+                        model.getUnit().getPackage().getModule());
+            }
+            else {
+                appendDescription(decl, documentation);
+                if (model!=null) {
+                    appendInheritance(documentation, model);
+                    appendDeclaringType(documentation, model);
+                    appendContainingPackage(documentation, model);
+                }
+                appendDocAnnotationContent(decl, documentation);
+                
+            }
+            return documentation.toString();
         }
-        return documentation.toString();
     }
 
     private static void appendModuleDocumentation(StringBuilder documentation,
