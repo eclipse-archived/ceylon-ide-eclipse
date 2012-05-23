@@ -267,6 +267,13 @@ public class JDTModelLoader extends AbstractModelLoader {
         loadPackage("com.redhat.ceylon.compiler.java.metadata", false);
     }
     
+    private String getQualifiedName(final String pkgName, String name) {
+        // FIXME: some refactoring needed
+        name = Util.quoteIfJavaKeyword(name);
+        String className = pkgName.isEmpty() ? name : Util.quoteJavaKeywords(pkgName) + "." + name;
+        return className;
+    }
+    
     @Override
     public void loadPackage(String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
@@ -294,13 +301,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                         try {
                             for (IClassFile classFile : packageFragment.getClassFiles()) {
                                 IType type = classFile.getType();
-                                if (! type.isMember() && !sourceDeclarations.containsKey(type.getFullyQualifiedName())) {
+                                if (! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                     convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                 }
                             }
                             for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
                                 for (IType type : compilationUnit.getTypes()) {
-                                    if (! type.isMember() && !sourceDeclarations.containsKey(type.getFullyQualifiedName())) {
+                                    if (! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
@@ -535,7 +542,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void loadFromSource(Tree.Declaration decl) {
                         String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
-                        String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+                        String fqn = getQualifiedName(pkgName, name);
                             sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl));
                     }
                 });
