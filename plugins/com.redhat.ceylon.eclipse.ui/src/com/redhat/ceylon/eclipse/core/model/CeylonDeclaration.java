@@ -10,10 +10,12 @@ public class CeylonDeclaration {
     private PhasedUnit phasedUnit;
     private Tree.Declaration astDeclaration;
     private Declaration modelDeclaration = null;
+    private boolean isSourceToCompile = true;
 
-    public CeylonDeclaration(PhasedUnit phasedUnit, Tree.Declaration astDeclaration) {
+    public CeylonDeclaration(PhasedUnit phasedUnit, Tree.Declaration astDeclaration, boolean isSourceToCompile) {
         this.phasedUnit = phasedUnit;
         this.astDeclaration = astDeclaration;
+        this.isSourceToCompile = isSourceToCompile;
     }
 
     public PhasedUnit getPhasedUnit() {
@@ -42,5 +44,13 @@ public class CeylonDeclaration {
         }
         modelDeclaration = astDeclaration.getDeclarationModel();
         return modelDeclaration;
+    }
+
+    public boolean isSourceToCompile() {
+        return isSourceToCompile;
+    }
+
+    public void setSourceToCompile(boolean isSourceToCompile) {
+        this.isSourceToCompile = isSourceToCompile;
     }
 }
