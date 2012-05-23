@@ -6,6 +6,7 @@ import org.eclipse.imp.services.IReferenceResolver;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -44,19 +45,33 @@ public class CeylonReferenceResolver implements IReferenceResolver {
     }
 
     public static Tree.Declaration getReferencedNode(Object node, IParseController controller) {
-        Declaration dec = getReferencedDeclaration((Node) node);
-        if (dec instanceof Parameter) {
-            Declaration pd = ((Parameter) dec).getDeclaration();
-            if (pd instanceof Setter) {
-                dec = pd;
-            }
-            else {
-                Declaration att = pd.getMemberOrParameter(dec.getUnit(), dec.getName(), null);
-                if (att!=null) dec = att;
+        return getReferencedNode(getReferencedDeclaration(node), 
+            getCompilationUnit((CeylonParseController) controller, getReferencedDeclaration(node)));
+    }
+
+    private static Declaration getReferencedDeclaration(Object node) {
+        Declaration dec;
+        if (node instanceof Tree.ImportPath) {
+            Package p = ((Tree.ImportPath) node).getPackageModel();
+            dec = p.getDirectMember("package", null);
+            if (dec==null) {
+                dec = p.getDirectMember("module", null);
             }
         }
-        return getReferencedNode(dec, 
-            getCompilationUnit((CeylonParseController) controller, dec));
+        else {
+            dec = getReferencedDeclaration((Node) node);
+            if (dec instanceof Parameter) {
+                Declaration pd = ((Parameter) dec).getDeclaration();
+                if (pd instanceof Setter) {
+                    dec = pd;
+                }
+                else {
+                    Declaration att = pd.getMemberOrParameter(dec.getUnit(), dec.getName(), null);
+                    if (att!=null) dec = att;
+                }
+            }
+        }
+        return dec;
     }
 
     private String getNodeDeclarationName(Node node) {
@@ -124,7 +139,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         } 
         else if (node instanceof Tree.NamedArgument) {
             return ((Tree.NamedArgument) node).getParameter();
-        } 
+        }
         else {
             return null;
         }

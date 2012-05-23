@@ -300,13 +300,15 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         for (IProject project: CeylonBuilder.getProjects()) {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
             for (Module m: tc.getContext().getModules().getListOfModules()) {
-                for (Package p: m.getPackages()) {
-                    for (Declaration dec: p.getMembers()) {
-                        if (isPresentable(dec)) {
-                            DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
-                            if (!set.contains(dwp)) {
-                                contentProvider.add(dwp, itemsFilter);
-                                nameOccurs(dec);
+                if (!m.isJava()) {
+                    for (Package p: m.getPackages()) {
+                        for (Declaration dec: p.getMembers()) {
+                            if (isPresentable(dec)) {
+                                DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
+                                if (!set.contains(dwp)) {
+                                    contentProvider.add(dwp, itemsFilter);
+                                    nameOccurs(dec);
+                                }
                             }
                         }
                     }
@@ -331,7 +333,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             Module module = dwp.getDeclaration().getUnit()
                     .getPackage().getModule();
             return " in module " + module.getNameAsString() +
-                  ":" + module.getVersion() +
+                  (module.getVersion()==null ? "" : ":" + module.getVersion()) +
                   " imported by project " + project.getName();
         }
     }
