@@ -533,10 +533,27 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
+    
+    public static interface SourceFileObjectManager {
+        void setupSourceFileObjects(List<?> treeHolders);
+    }
+    
+    private SourceFileObjectManager additionalSourceFileObjectsManager = null;
+    public void setSourceFileObjectManager(SourceFileObjectManager manager) {
+        additionalSourceFileObjectsManager = manager;
+    }
+    
     public void setupSourceFileObjects(List<?> treeHolders) {
-        for (Object unitObject : treeHolders) {
-            if (unitObject instanceof PhasedUnit) {
-                final PhasedUnit unit = (PhasedUnit) unitObject;
+        addSourcePhasedUnits(treeHolders);
+        if (additionalSourceFileObjectsManager != null) {
+            additionalSourceFileObjectsManager.setupSourceFileObjects(treeHolders);
+        }
+    }
+
+    public void addSourcePhasedUnits(List<?> treeHolders) {
+        for (Object treeHolder : treeHolders) {
+            if (treeHolder instanceof PhasedUnit) {
+                final PhasedUnit unit = (PhasedUnit) treeHolder;
                 final String pkgName = unit.getPackage().getQualifiedNameString();
                 unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
                     @Override
