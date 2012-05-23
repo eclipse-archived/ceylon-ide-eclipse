@@ -79,7 +79,10 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
+import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
@@ -90,6 +93,8 @@ import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
+import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
+import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -110,8 +115,10 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -121,6 +128,7 @@ import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Options;
 
 /**
@@ -1269,7 +1277,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw e;
         }
 
-        com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
+        final com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
 
@@ -1325,6 +1333,38 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             context.put(LanguageCompiler.ceylonContextKey, getProjectTypeChecker(project).getContext());
             context.put(LanguageCompiler.existingPhasedUnitsKey, getProjectTypeChecker(project).getPhasedUnits());
             final JDTModelLoader modelLoader = getProjectModelLoader(project);
+            modelLoader.setSourceFileObjectManager(new SourceFileObjectManager() {
+                @Override
+                public void setupSourceFileObjects(List<?> treeHolders) {
+                    for(Object treeHolder : treeHolders){
+                        if (!(treeHolder instanceof CeylonCompilationUnit)) {
+                            continue;
+                        }
+                        final CeylonCompilationUnit tree = (CeylonCompilationUnit)treeHolder;
+                        CompilationUnit ceylonTree = tree.ceylonTree;
+                        final String pkgName = tree.getPackageName() != null ? tree.getPackageName().toString() : "";
+                        ceylonTree.visit(new SourceDeclarationVisitor(){
+                            @Override
+                            public void loadFromSource(Tree.Declaration decl) {
+                                String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
+                                String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+                                try{
+                                    CeylonClassReader.instance(context).enterClass(Names.instance(context).fromString(fqn), tree.getSourceFile());
+                                }catch(AssertionError error){
+                                    // this happens when we have already registered a source file for this decl, so let's
+                                    // print out a helpful message
+                                    // see https://github.com/ceylon/ceylon-compiler/issues/250
+                                    ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
+                                    CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: "+fqn+" is declared twice: once in "
+                                            +tree.getSourceFile()+" and again in: "+
+                                            (previousClass != null ? ((JavacClass)previousClass).classSymbol.classfile : "another file"));
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
             context.put(TypeFactory.class, modelLoader.getTypeFactory());
             context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
                 @Override
