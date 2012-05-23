@@ -411,9 +411,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public Declaration convertToDeclaration(String typeName,
             DeclarationType declarationType) {
-        if (typeName.startsWith("ceylon.language")) {
-            return typeFactory.getLanguageModuleDeclaration(typeName.substring(typeName.lastIndexOf('.') + 1));
-        }
         if (sourceDeclarations.containsKey(typeName)) {
             return sourceDeclarations.get(typeName).getModelDeclaration();
         }
