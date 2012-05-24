@@ -23,7 +23,6 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
 import net.lingala.zip4j.model.FileHeader;
-import net.lingala.zip4j.model.UnzipParameters;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -406,27 +405,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             List<IProject> requiredProjects = getRequiredProjects(project);
             boolean binariesGenerationOK;
             if (mustDoFullBuild.value) {
-                monitor.beginTask("Full Ceylon Build of project " + project.getName(), 9);
-                getConsoleStream().println(timedMessage("Full Build of Ceylon Model"));
+                monitor.beginTask("Full Ceylon build of project " + project.getName(), 9);
+                getConsoleStream().println(timedMessage("Full build of model"));
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
                 final List<IFile> allSources= new ArrayList<IFile>();
                 builtPhasedUnits = fullBuild(project, sourceProject, allSources, monitor);            
-                getConsoleStream().println(timedMessage("Full Generation of Class Files"));
+                getConsoleStream().println(timedMessage("Full generation of class files..."));
                 monitor.subTask("Generating binaries");
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
                 binariesGenerationOK = generateBinaries(project, sourceProject, allSources, monitor);
                 monitor.worked(1);
-                getConsoleStream().println();
+                getConsoleStream().println(successMessage(binariesGenerationOK));
             }
             else
             {
-                monitor.beginTask("Incremental Ceylon Build of project " + project.getName(), 7);
-                getConsoleStream().println(timedMessage("Incremental Build of Ceylon Model"));
+                monitor.beginTask("Incremental Ceylon build of project " + project.getName(), 7);
+                getConsoleStream().println(timedMessage("Incremental build of model"));
                 List<IResourceDelta> projectDeltas = new ArrayList<IResourceDelta>();
                 projectDeltas.add(currentDelta);
                 for (IProject requiredProject : requiredProjects) {
@@ -445,7 +444,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 continue;
                             }
                             if (emitDiags)
-                                getConsoleStream().println("==> Scanning resource delta for '" + projectDelta.getResource().getName() + "'... <==");
+                                getConsoleStream().println("==> Scanning resource delta for '" + 
+                                        projectDelta.getResource().getName() + "'... <==");
                             sourceDelta.accept(new IResourceDeltaVisitor() {
                                 public boolean visit(IResourceDelta delta) throws CoreException {
                                     IResource resource = delta.getResource();
@@ -466,7 +466,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 }
                             });
                             if (emitDiags)
-                                getConsoleStream().println("Delta scan completed for project '" + projectDelta.getResource().getName() + "'...");
+                                getConsoleStream().println("Delta scan completed for project '" + 
+                                        projectDelta.getResource().getName() + "'...");
                         }
                     }
                 }
@@ -624,12 +625,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 monitor.worked(1);
                 monitor.subTask("Generating binaries");
-                getConsoleStream().println(timedMessage("Incremental Generation of Class Files"));
+                getConsoleStream().println(timedMessage("Incremental generation of class files..."));
                 binariesGenerationOK = generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                getConsoleStream().println();
+                getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 monitor.subTask("Updating referencing projects");
                 getConsoleStream().println(timedMessage("Updating model in referencing projects"));
@@ -673,6 +674,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             getConsoleStream().println(timedMessage("End Ceylon build on project : " + getProject()));
             getConsoleStream().println("===================================");
         }
+    }
+
+    private static String successMessage(boolean binariesGenerationOK) {
+        return "             " + (binariesGenerationOK ? 
+                "...binary generation succeeded" : "...binary generation FAILED");
     }
 
     private Set<PhasedUnit> getDependentsOf(IFile srcFile,
