@@ -424,6 +424,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         try {
             return super.convertToDeclaration(typeName, declarationType);
         } catch(RuntimeException e) {
+            e.printStackTrace();
             return null;
         }
     }
