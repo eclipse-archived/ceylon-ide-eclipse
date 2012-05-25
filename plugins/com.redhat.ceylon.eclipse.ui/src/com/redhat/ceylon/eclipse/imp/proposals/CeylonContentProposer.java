@@ -303,21 +303,26 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
         if (!(node.getScope() instanceof Interface)) {
-            if (token.getTokenIndex()==0) {
-                return false;
-            }
-            else {
-                //TODO: check that it is not the opening/closing 
-                //      brace of a named argument list!
-                int previousTokenType = adjust(token.getTokenIndex()-1, 
-                        token.getStartIndex(), tokens).getType();
-                return previousTokenType==LBRACE || 
-                        previousTokenType==RBRACE || 
-                        previousTokenType==SEMICOLON;
-            }
+            //TODO: check that it is not the opening/closing 
+            //      brace of a named argument list!
+            return occursAfterBraceOrSemicolon(token, tokens);
         }
         else {
             return false;
+        }
+    }
+
+    private static Boolean occursAfterBraceOrSemicolon(CommonToken token,
+            List<CommonToken> tokens) {
+        if (token.getTokenIndex()==0) {
+            return false;
+        }
+        else {
+            int previousTokenType = adjust(token.getTokenIndex()-1, 
+                    token.getStartIndex(), tokens).getType();
+            return previousTokenType==LBRACE || 
+                    previousTokenType==RBRACE || 
+                    previousTokenType==SEMICOLON;
         }
     }
 
@@ -481,7 +486,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isParameterOfInvocation(node, dec)) {
+                if (isParameterOfNamedArgInvocation(node, dec, token, cpc.getTokens())) {
                     addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     addInlineFunctionProposal(offset, prefix, cpc, 
                             node, result, dec, doc);
@@ -559,13 +564,16 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    private static boolean isParameterOfInvocation(Node node, Declaration d) {
+    private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d, 
+            CommonToken token, List<CommonToken> tokens) {
         if (node instanceof Tree.NamedArgumentList) {
-            ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList().getParameterList();
+            ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList()
+                    .getParameterList();
             return d instanceof Parameter && pl!=null &&
                     pl.getParameters().contains(d);
         }
-        else if (node.getScope() instanceof NamedArgumentList) {
+        else if (node.getScope() instanceof NamedArgumentList &&
+                occursAfterBraceOrSemicolon(token, tokens)) {
             ParameterList pl = ((NamedArgumentList) node.getScope()).getParameterList();
             return d instanceof Parameter && pl!=null &&
                     pl.getParameters().contains(d);
