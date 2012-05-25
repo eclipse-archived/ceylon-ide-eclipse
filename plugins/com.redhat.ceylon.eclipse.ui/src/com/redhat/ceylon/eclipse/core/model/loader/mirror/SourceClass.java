@@ -84,10 +84,10 @@ public class SourceClass implements ClassMirror {
     public PackageMirror getPackage() {
         Declaration decl = getModelDeclaration();
         Scope scope = decl.getContainer();
-        while (scope instanceof ClassOrInterface) {
+        while ((scope != null) && ! (scope instanceof Package)) {
             scope = scope.getContainer();
         }
-        final String fqn = scope.getQualifiedNameString();
+        final String fqn = scope == null ? "" : scope.getQualifiedNameString();
         
         return new PackageMirror() {
             @Override
@@ -100,7 +100,8 @@ public class SourceClass implements ClassMirror {
     @Override
     public List<MethodMirror> getDirectMethods() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectMethods() !!!!!!!!!!!!!!!!!!!!!!!");
-        return Collections.emptyList();
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return Collections.emptyList();
 //        ClassOrInterface decl = (ClassOrInterface) getDeclarationModel();
 //        // ...
 //        if (decl instanceof Class) {
@@ -114,31 +115,36 @@ public class SourceClass implements ClassMirror {
     @Override
     public List<FieldMirror> getDirectFields() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectFields() !!!!!!!!!!!!!!!!!!!!!!!");
-        return Collections.emptyList();
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return Collections.emptyList();
     }
 
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getTypeParameters() !!!!!!!!!!!!!!!!!!!!!!!");
-        return Collections.emptyList();
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return Collections.emptyList();
     }
 
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectInnerClasses() !!!!!!!!!!!!!!!!!!!!!!!");
-        return Collections.emptyList();
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return Collections.emptyList();
     }
 
     @Override
     public TypeMirror getSuperclass() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getSuperclass() !!!!!!!!!!!!!!!!!!!!!!!");
-        return null;
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return null;
     }
 
     @Override
     public List<TypeMirror> getInterfaces() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getInterface() !!!!!!!!!!!!!!!!!!!!!!!");
-        return Collections.emptyList();
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+//        return Collections.emptyList();
     }
 
     @Override
@@ -174,7 +180,6 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public boolean isJavaSource() {
-        // TODO Auto-generated method stub
         return false;
     }
 }
