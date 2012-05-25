@@ -1777,6 +1777,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                 }
             });
+            
+            new RepositoryLister(Arrays.asList(".*")).list(new File(outputDirectory, "../JDTClasses"), new RepositoryLister.Actions() {
+                @Override
+                public void doWithFile(File path) {
+                    path.delete();
+                }
+                
+                public void exitDirectory(File path) {
+                    if (path.list().length == 0 && ! path.equals(outputDirectory)) {
+                        path.delete();
+                    }
+                }
+            });
         }
         
         monitor.subTask("Clear project and source markers");
