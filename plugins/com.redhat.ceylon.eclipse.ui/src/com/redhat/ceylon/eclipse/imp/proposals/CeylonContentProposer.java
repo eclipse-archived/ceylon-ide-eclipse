@@ -437,13 +437,19 @@ public class CeylonContentProposer implements IContentProposer {
         else if (node instanceof Tree.ImportPath) {
             addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
         }
-        else if (node instanceof Tree.TypedDeclaration && 
+        /*else if (node instanceof Tree.TypedDeclaration && 
                 !(node instanceof Tree.Parameter && 
                         ((Tree.TypedDeclaration)node).getType() instanceof Tree.ValueModifier) &&
                 !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable) &&
                 ((Tree.TypedDeclaration)node).getType()!=null &&
                 ((Tree.TypedDeclaration)node).getIdentifier()!=null) {
             addMemberNameProposal(offset, prefix, node, result);
+        }*/
+        else if ((node instanceof Tree.SimpleType || 
+                node instanceof Tree.BaseTypeExpression ||
+                node instanceof Tree.QualifiedTypeExpression) 
+                && prefix.isEmpty()) {
+            addMemberNameProposal(offset, node, result);
         }
         else if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: set) {
@@ -735,22 +741,31 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    protected static void addMemberNameProposal(int offset, String prefix, Node node,
-            List<ICompletionProposal> result) {
-        Tree.Type type = ((Tree.TypedDeclaration) node).getType();
-        if (type instanceof Tree.SimpleType) {
-            String suggestedName = ((Tree.SimpleType) type).getIdentifier().getText();
-            if (suggestedName!=null) {
-                suggestedName = Character.toLowerCase(suggestedName.charAt(0)) + 
-                        suggestedName.substring(1);
-                if (suggestedName.startsWith(prefix) && 
-                        !suggestedName.equals(prefix) && 
-                        !keywords.contains(suggestedName)) {
-                    result.add(new Proposal(offset, prefix, null, 
-                            "proposed name for new declaration", 
-                            suggestedName, suggestedName, false));
-                }
+    protected static void addMemberNameProposal(int offset,
+            Node node, List<ICompletionProposal> result) {
+        String suggestedName=null;
+        if (node instanceof Tree.SimpleType) {
+            suggestedName = ((Tree.SimpleType) node).getIdentifier().getText();
+        }
+        else if (node instanceof Tree.BaseTypeExpression) {
+            suggestedName = ((Tree.BaseTypeExpression) node).getIdentifier().getText();
+        }
+        else if (node instanceof Tree.QualifiedTypeExpression) {
+            suggestedName = ((Tree.QualifiedTypeExpression) node).getIdentifier().getText();
+        }
+        if (suggestedName!=null) {
+            suggestedName = Character.toLowerCase(suggestedName.charAt(0)) + 
+                    suggestedName.substring(1);
+            String text;;
+            if (keywords.contains(suggestedName)) {
+                text = "\\i" + suggestedName;
             }
+            else {
+                text = suggestedName;
+            }
+            result.add(new Proposal(offset, "", null, 
+                    "proposed name for new declaration", 
+                    suggestedName, text, false));
         }
     }
     
