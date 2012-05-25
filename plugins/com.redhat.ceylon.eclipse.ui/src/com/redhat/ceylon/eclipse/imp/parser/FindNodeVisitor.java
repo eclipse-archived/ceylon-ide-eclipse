@@ -226,6 +226,9 @@ class FindNodeVisitor extends Visitor
     
     @Override
     public void visit(Tree.Declaration that) {
+        if (inBounds(that)) {
+            occurrence=null;
+        }
         if (inBounds(that.getIdentifier())) {
             node = that;
         }
