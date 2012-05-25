@@ -958,16 +958,36 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
     
+    private static String name(DeclarationWithProximity d) {
+        return name(d.getDeclaration());
+    }
+    
+    private static String name(Declaration d) {
+        String n = d.getName();
+        char c = n.charAt(0);
+        if (d instanceof TypedDeclaration &&
+                Character.isUpperCase(c)) {
+            return "\\i" + n;
+        }
+        else if (d instanceof TypeDeclaration &&
+                Character.isLowerCase(c)) {
+            return "\\I" + n;
+        }
+        else {
+            return n;
+        }
+    }
+    
     private static String getTextFor(DeclarationWithProximity d, 
             OccurrenceLocation ol) {
-        StringBuilder result = new StringBuilder(d.getName());
+        StringBuilder result = new StringBuilder(name(d));
         if (ol!=IMPORT) appendTypeParameters(d.getDeclaration(), result);
         return result.toString();
     }
     
     private static String getPositionalInvocationTextFor(DeclarationWithProximity d,
             OccurrenceLocation ol, ProducedReference pr) {
-        StringBuilder result = new StringBuilder(d.getName());
+        StringBuilder result = new StringBuilder(name(d));
         if (forceExplicitTypeArgs(d.getDeclaration(), ol))
             appendTypeParameters(d.getDeclaration(), result);
         appendPositionalArgs(d.getDeclaration(), pr, result);
@@ -976,7 +996,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static String getNamedInvocationTextFor(DeclarationWithProximity d, 
             ProducedReference pr) {
-        StringBuilder result = new StringBuilder(d.getName());
+        StringBuilder result = new StringBuilder(name(d));
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
         appendNamedArgs(d.getDeclaration(), pr, result);
@@ -1021,7 +1041,7 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
 
-    public static String getInlineFunctionTextFor(Parameter p, ProducedReference pr, 
+    private static String getInlineFunctionTextFor(Parameter p, ProducedReference pr, 
             String indent) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
@@ -1208,7 +1228,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else if (d instanceof Method || 
                         d instanceof FunctionalParameter) {
-                    if (typeName.equals("Void")) { //TODO: fix this!
+                    if (((Functional) d).isDeclaredVoid()) {
                         result.append("void");
                     }
                     else {
@@ -1220,7 +1240,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
             }
         }
-        result.append(" ").append(d.getName());
+        result.append(" ").append(name(d));
     }
     
     private static void appendNamedArgumentText(Parameter p, ProducedReference pr, 
@@ -1256,7 +1276,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else if (d instanceof Method || 
                         d instanceof FunctionalParameter) {
-                    if (typeName.equals("Void")) { //TODO: fix this!
+                    if (((Functional)d).isDeclaredVoid()) {
                         result.append("void", KW_STYLER);
                     }
                     else {
@@ -1291,7 +1311,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static void appendImpl(Declaration d, String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
-            result.append( ((Method) d).getTypeDeclaration().getName().equals("Void") ?
+            result.append( ((Method) d).isDeclaredVoid() ?
                     " {}" : " {" + extraIndent(indent) + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
