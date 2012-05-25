@@ -348,22 +348,27 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		
 		String type;
 		String ending;
-		if ("Void".equals(term.getTypeModel().getProducedTypeName())) {
-	         type = "void";
-	         ending = "";
+		ProducedType tt = term.getTypeModel();
+		if (tt!=null) {
+            boolean isVoid = tt.getDeclaration()
+    		        .equals(term.getUnit().getVoidDeclaration());
+            if (isVoid) {
+    	         type = "void";
+    	         ending = "";
+    		}
+    		else {
+                type = explicitType || dec.isToplevel() ? 
+                        tt.getProducedTypeName() : "function";
+                ending = "return ";
+    		}
+    		
+            tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
+    		        type + " " + newName + typeParams + "(" + params + ")" + 
+                    constraints + 
+    				" {" + extraIndent + ending + exp + ";" + indent + "}" 
+    				+ indent + indent));
+    		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
 		}
-		else {
-            type = explicitType || dec.isToplevel() ? 
-                    term.getTypeModel().getProducedTypeName() : "function";
-            ending = "return ";
-		}
-		
-        tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-		        type + " " + newName + typeParams + "(" + params + ")" + 
-                constraints + 
-				" {" + extraIndent + ending + exp + ";" + indent + "}" 
-				+ indent + indent));
-		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
     }
 
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
