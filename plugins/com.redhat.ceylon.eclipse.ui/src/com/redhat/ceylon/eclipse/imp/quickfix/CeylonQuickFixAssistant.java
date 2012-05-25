@@ -1,11 +1,9 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
@@ -17,7 +15,6 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
@@ -30,13 +27,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -51,16 +45,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
-import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
@@ -158,11 +149,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 break;
             case 200:
-                addSpecifyTypeProposal(cu, node, problem, proposals, file);
+                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, problem, proposals, file);
                 break;
             case 300:
                 if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-                    addImplementFormalMembersProposal(cu, node, proposals, file,
+                    ImplementFormalMembersProposal.addImplementFormalMembersProposal(cu, node, proposals, file,
                             context.getSourceViewer().getDocument());
                 }
                 break;
@@ -196,78 +187,18 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addMakeAbstractProposal(problem, proposals, project, node);
                 break;
             case 1000:
-                addAddParenthesesProposal(problem, file, proposals, node);
-                addChangeDeclarationProposal(problem, file, proposals, node);
+                AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
+                ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
                 break;
             }
         }
-    }
-
-    private void addAddParenthesesProposal(ProblemLocation problem, IFile file,
-            Collection<ICompletionProposal> proposals, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        TextFileChange change = new TextFileChange("Add Empty Parameter List", file);
-        int offset = decNode.getIdentifier().getStopIndex();
-        change.setEdit(new InsertEdit(offset+1, "()"));
-        proposals.add(createAddParenthesesProposal(decNode.getDeclarationModel(), 
-                offset+2, file, change));
-    }
-
-    private ChangeCorrectionProposal createAddParenthesesProposal(Declaration dec,
-            final int offset, final IFile file, TextFileChange change) {
-        String desc = "Add empty parameter list to '" + dec.getName() + "'";
-        if (dec.getContainer() instanceof TypeDeclaration) {
-            desc += "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'";
-        }
-        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, offset, 0);
-            }
-        };
-    }
-
-    private void addChangeDeclarationProposal(ProblemLocation problem, IFile file,
-            Collection<ICompletionProposal> proposals, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        CommonToken token = (CommonToken) decNode.getMainToken();
-        String keyword;
-        if (decNode instanceof Tree.AnyClass){
-            keyword = "interface";
-        }
-        else if (decNode instanceof Tree.AnyMethod) {
-            if (token.getText().equals("void")) return;
-            keyword = "value";
-        }
-        else {
-            return;
-        }
-        TextFileChange change = new TextFileChange("Change Declaration", file);
-        change.setEdit(new ReplaceEdit(token.getStartIndex(), token.getText().length(), 
-                keyword));
-        proposals.add(createChangeDeclarationProposal(decNode.getDeclarationModel(), 
-                keyword, token, file, change));
-    }
-
-    private ChangeCorrectionProposal createChangeDeclarationProposal(Declaration dec,
-            final String kw, final CommonToken token, final IFile file, TextFileChange change) {
-        String desc = "Change declaration to '" + kw + "'";
-        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, token.getStartIndex(), 
-                        kw.length());
-            }
-        };
     }
 
     private void addMakeActualProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
-        addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
+        AddAnnotionProposal.addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
                 shared ? "Make Actual" : "Make Shared Actual", problem, 
                 decNode.getDeclarationModel(), proposals, project);
     }
@@ -275,7 +206,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeDefaultProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "default ", "Make Default", problem, 
+        AddAnnotionProposal.addAddAnnotationProposal(node, "default ", "Make Default", problem, 
                 getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
                 proposals, project);
     }
@@ -289,7 +220,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
+        AddAnnotionProposal.addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
                 proposals, project);
     }
 
@@ -309,7 +240,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             return;
         }
         Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
+        AddAnnotionProposal.addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
                 dec, proposals, project);
     }
     
@@ -328,25 +259,26 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         GetInitializedVisitor v = new GetInitializedVisitor();
         v.visit(cu);
-        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
+        AddAnnotionProposal.addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
                 proposals, project);
     }
     
     private void addFixSpecificationProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
-        proposals.add(createFixAssignmentProposal("=", ((CommonToken) node.getMainToken()).getStartIndex(), file));
+        addFixAssignmentProposal(proposals, "=", ((CommonToken) node.getMainToken()).getStartIndex(), file);
     }
     
     private void addFixAssignmentProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
-        proposals.add(createFixAssignmentProposal(":=", ((CommonToken) node.getMainToken()).getStartIndex(), file));
+        addFixAssignmentProposal(proposals, ":=", ((CommonToken) node.getMainToken()).getStartIndex(), file);
     }
     
-    private ChangeCorrectionProposal createFixAssignmentProposal(String op, int offset, IFile file) {
+    private void addFixAssignmentProposal(Collection<ICompletionProposal> proposals, 
+            String op, int offset, IFile file) {
         String desc = "Change to '" + op + "'";
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new ReplaceEdit(offset, op.length()==1 ? 2 : 1, op));
-        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION);
+        proposals.add(new ChangeCorrectionProposal(desc, change, 10, CORRECTION));
     }
 
     private void addMakeSharedProposal(ProblemLocation problem,
@@ -365,7 +297,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             dec = imt.getDeclarationModel();
         }
         if (dec!=null) {
-            addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
+            AddAnnotionProposal.addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
                     proposals, project);
         }
     }
@@ -373,142 +305,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeSharedDecProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "shared ", "Make Shared", problem, 
+        AddAnnotionProposal.addAddAnnotationProposal(node, "shared ", "Make Shared", problem, 
                 decNode.getDeclarationModel(), proposals, project);
     }
     
-    private void addAddAnnotationProposal(Node node, String annotation, String desc, ProblemLocation problem, 
-            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
-                    //TODO: "object" declarations?
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
-                    unit.getCompilationUnit().visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        IFile file = CeylonBuilder.getFile(unit);
-                        TextFileChange change = new TextFileChange(desc, file);
-                        change.setEdit(new MultiTextEdit());
-                        Integer offset = decNode.getStartIndex();
-                        change.addEdit(new InsertEdit(offset, annotation));
-                        if (decNode instanceof Tree.TypedDeclaration) {
-                            Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
-                            if (type instanceof Tree.FunctionModifier 
-                                    || type instanceof Tree.ValueModifier) {
-                                String explicitType = type.getTypeModel().getProducedTypeName();
-                                change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
-                                        explicitType));
-                            }
-                        }
-                        proposals.add(createAddAnnotionProposal(dec, annotation, offset, file, change));
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private ChangeCorrectionProposal createAddAnnotionProposal(Declaration dec, String annotation,
-            final int offset, final IFile file, TextFileChange change) {
-        String desc = "Make '" + dec.getName() + "' " + annotation;
-        if (dec.getContainer() instanceof TypeDeclaration) {
-            desc += "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'";
-        }
-        return new ChangeCorrectionProposal(desc, change, 10, CORRECTION) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, offset, 0);
-            }
-        };
-    }
-
-    private void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
-            Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
-        Tree.ClassBody body;
-        if (node instanceof Tree.ClassDefinition) {
-            Tree.ClassDefinition def = (Tree.ClassDefinition) node;
-            body = def.getClassBody();
-        }
-        else if (node instanceof Tree.ObjectDefinition) {
-            Tree.ObjectDefinition def = (Tree.ObjectDefinition) node;
-            body = def.getClassBody();
-        }
-        else {
-            return;
-        }
-        List<Tree.Statement> statements = body.getStatements();
-        int offset;
-        String indent;
-        String indentAfter;
-        if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(body, doc);
-            indent = indentAfter + getDefaultIndent();
-            offset = body.getStartIndex()+1;
-        }
-        else {
-            Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, doc);
-            indentAfter = "";
-            offset = statement.getStopIndex()+1;
-        }
-        StringBuilder result = new StringBuilder();
-        for (DeclarationWithProximity dwp: getProposals(node, "", cu).values()) {
-            Declaration d = dwp.getDeclaration();
-            if (d.isFormal() && 
-                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-            	ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(node, d);
-                result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
-            }
-        }
-        TextFileChange change = new TextFileChange("Refine Formal Members", file);
-        change.setEdit(new InsertEdit(offset, result.toString()));
-        proposals.add(createImplementFormalMembersProposal(offset, file, change));
-    }
-    
-    private void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file) {
-        final Tree.Type type = (Tree.Type) node;
-        class InferTypeVisitor extends Visitor {
-            Declaration dec;
-            ProducedType inferredType;
-            @Override public void visit(Tree.TypedDeclaration that) {
-                super.visit(that);
-                if (that.getType()==type) {
-                    dec = that.getDeclarationModel();
-                    inferredType = type.getTypeModel();
-                }
-            }
-            @Override public void visit(Tree.SpecifierStatement that) {
-                super.visit(that);
-                Tree.Term bme = that.getBaseMemberExpression();
-                if (bme instanceof Tree.BaseMemberExpression) {
-                	if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
-                		inferredType = that.getSpecifierExpression().getExpression().getTypeModel();
-                	}
-                }
-            }
-            @Override public void visit(Tree.AssignmentOp that) {
-                super.visit(that);
-                if (that.getLeftTerm() instanceof Tree.BaseMemberExpression) {
-                    Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) that.getLeftTerm();
-                    if (bme.getDeclaration().equals(dec)) {
-                        //TODO: take a union if there are multiple assignments
-                        inferredType = that.getRightTerm().getTypeModel();
-                    }
-                }
-            }
-        }
-        InferTypeVisitor itv = new InferTypeVisitor();
-        itv.visit(cu);
-        String explicitType = itv.inferredType.getProducedTypeName();
-        TextFileChange change =  new TextFileChange("Specify Type", file);
-        change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
-                explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(createSpecifyTypeProposal(problem, file, explicitType, change));
-    }
-
     /*public void addRefactoringProposals(IQuickFixInvocationContext context,
             Collection<ICompletionProposal> proposals, Node node) {
         try {
@@ -728,16 +528,17 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte);
                 ClassOrInterface container = findClassContainer(cu, smte);
                 if(container != null){
-                    do{
+                    do {
                         addCreateMemberProposals(proposals, project, def, desc, image, container);
                         if(container.getContainer() instanceof Declaration)
                             container = findClassContainer((Declaration) container.getContainer());
                         else 
                             break;
-                    }while(container != null);
+                    }
+                    while(container != null);
                 }
                 addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte);
-                addCreateToplevelProposal(proposals, def.replace("$indent", ""), 
+                CreateInNewUnitProposal.addCreateToplevelProposal(proposals, def.replace("$indent", ""), 
                         desc, image, file, brokenName);
             }
             
@@ -747,7 +548,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node n){
         FindContainerVisitor visitor = new FindContainerVisitor(n);
         visitor.visit(cu);
-        com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration declaration = visitor.getDeclaration();
+        Tree.Declaration declaration = visitor.getDeclaration();
         if(declaration == null || declaration == n)
             return null;
         if(declaration instanceof Tree.ClassOrInterface)
@@ -760,7 +561,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
     
     private ClassOrInterface findClassContainer(Declaration declarationModel) {
-        do{
+        do {
             if(declarationModel == null)
                 return null;
             if(declarationModel instanceof ClassOrInterface)
@@ -769,7 +570,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 declarationModel = (Declaration)declarationModel.getContainer();
             else
                 return null;
-        }while(true);
+        }
+        while(true);
     }
 
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
@@ -790,18 +592,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
                     unit.getCompilationUnit().visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
-                    Tree.Body body=null;
-                    if (decNode instanceof Tree.ClassDefinition) {
-                        body = ((Tree.ClassDefinition) decNode).getClassBody();
-                    }
-                    else if (decNode instanceof Tree.InterfaceDefinition){
-                        body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
-                    }
-                    else if (decNode instanceof Tree.ObjectDefinition){
-                        body = ((Tree.ObjectDefinition) decNode).getClassBody();
-                    }
+                    Tree.Body body = getBody(decNode);
                     if (body!=null) {
-                        addCreateMemberProposal(proposals, def, desc, image, typeDec, unit, 
+                        CreateProposal.addCreateMemberProposal(proposals, def, desc, image, typeDec, unit, 
                                 decNode, body);
                         break;
                     }
@@ -810,12 +603,26 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
+    private static Tree.Body getBody(Tree.Declaration decNode) {
+        Tree.Body body=null;
+        if (decNode instanceof Tree.ClassDefinition) {
+            body = ((Tree.ClassDefinition) decNode).getClassBody();
+        }
+        else if (decNode instanceof Tree.InterfaceDefinition){
+            body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+        }
+        else if (decNode instanceof Tree.ObjectDefinition){
+            body = ((Tree.ObjectDefinition) decNode).getClassBody();
+        }
+        return body;
+    }
+
     private void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Tree.TypeDeclaration cd) {
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                addCreateEnumProposal(proposals, def, desc, image, unit, cd);
+                CreateProposal.addCreateEnumProposal(proposals, def, desc, image, unit, cd);
                 break;
             }
         }
@@ -829,7 +636,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
                 cu.visit(fsv);
                 Tree.Statement statement = fsv.getStatement();
-                addCreateProposal(proposals, def, true, desc, image, unit, statement);
+                CreateProposal.addCreateProposal(proposals, def, true, desc, image, unit, statement);
                 break;
             }
         }
@@ -843,7 +650,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
                 cu.visit(fsv);
                 Tree.Statement statement = fsv.getStatement();
-                addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
+                CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
                 break;
             }
         }
@@ -879,191 +686,21 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, final String def,
-            final String desc, final Image image, final IFile file, final String unitName) {
-        proposals.add(new ICompletionProposal() {
-			@Override
-			public Point getSelection(IDocument doc) {
-				return null;
-			}
-			@Override
-			public Image getImage() {
-				return image;
-			}
-			@Override
-			public String getDisplayString() {
-				return "Create toplevel " + desc + " in new unit";
-			}
-			@Override
-			public IContextInformation getContextInformation() {
-				return null;
-			}
-			@Override
-			public String getAdditionalProposalInfo() {
-				return null;
-			}
-			@Override
-			public void apply(IDocument doc) {
-				NewUnitWizard.open(def, file, unitName, 
-				        "Create Missing Declaration in New Unit",
-				        "Create a new Ceylon compilation unit with the missing declaration.");
-			}
-		});
-    }
-
-    private void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, Declaration typeDec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.Body body) {
-        IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange("Create Member", file);
-        IDocument doc;
-        try {
-            doc = change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-        String indent;
-        String indentAfter;
-        int offset;
-        List<Tree.Statement> statements = body.getStatements();
-        if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(decNode, doc);
-            indent = indentAfter + getDefaultIndent();
-            offset = body.getStartIndex()+1;
-        }
-        else {
-            Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, doc);
-            offset = statement.getStopIndex()+1;
-            indentAfter = "";
-        }
-        change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
-        proposals.add(createCreateProposal(def, 
-                "Create " + desc + " in '" + typeDec.getName() + "'", 
-                image, indent.length(), offset, file, change));
-    }
-
-    private void addCreateEnumProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
-        IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange("Create Enumerated", file);
-        IDocument doc;
-        try {
-            doc = change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-        String indent = getIndent(statement, doc);
-        String s = indent + def + "\n";
-        int offset = statement.getStopIndex()+2;
-        if (offset>doc.getLength()) {
-            offset = doc.getLength();
-            s = "\n" + s;
-        }
-        //def = def.replace("$indent", indent);
-        change.setEdit(new InsertEdit(offset, s));
-        proposals.add(createCreateProposal(def, "Create enumerated " + desc, 
-                image, 0, offset, file, change));
-    }
-
-    private void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
-            boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
-        IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
-        IDocument doc;
-        try {
-            doc = change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-        String indent = getIndent(statement, doc);
-        int offset = statement.getStartIndex();
-        def = def.replace("$indent", indent);
-        change.setEdit(new InsertEdit(offset, def+"\n"+indent));
-        proposals.add(createCreateProposal(def, (local ? "Create local " : "Create toplevel ") + desc, 
-                image, 0, offset, file, change));
-    }
-
-    private ChangeCorrectionProposal createCreateProposal(final String def, 
-            String desc, Image image, final int indentLength, final int offset, 
-            final IFile file, TextFileChange change) {
-        return new ChangeCorrectionProposal(desc, 
-                change, 50, image) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                int loc = def.indexOf("bottom;");
-                int len;
-                if (loc<0) {
-                    loc = def.indexOf("{}")+1;
-                    len=0;
-                }
-                else {
-                    len=6;
-                }
-                Util.gotoLocation(file, offset + loc + indentLength, len);
-            }
-        };
-    }
-
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
           for (DeclarationWithProximity dwp: getProposals(node, "", cu).values()) {
-            int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
-            //TODO: would it be better to just sort by dist, and
-            //      then select the 3 closest possibilities?
-            if (dist<=brokenName.length()/3+1) {
-                TextFileChange change = new TextFileChange("Change Reference", file);
-                change.setEdit(new ReplaceEdit(problem.getOffset(), 
-                        brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
-                proposals.add(createRenameProposal(problem, file, dwp.getName(), 
-                        dwp.getDeclaration(), dist, change));
-            }
+              int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
+              //TODO: would it be better to just sort by dist, and
+              //      then select the 3 closest possibilities?
+              if (dist<=brokenName.length()/3+1) {
+                  RenameProposal.addRenameProposal(problem, proposals, file, brokenName, dwp,
+                        dist);
+              }
           }
     }
 
-    private ChangeCorrectionProposal createRenameProposal(final ProblemLocation problem,
-            final IFile file, final String name, Declaration dec, int dist,
-            TextFileChange change) {
-        return new ChangeCorrectionProposal("Change reference to '" + name + "'", 
-                change, dist+10, CORRECTION/*CeylonLabelProvider.getImage(dec)*/) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, problem.getOffset(), name.length());
-            }
-        };
-    }
-    
-    private ChangeCorrectionProposal createSpecifyTypeProposal(final ProblemLocation problem,
-            final IFile file, final String type, TextFileChange change) {
-        return new ChangeCorrectionProposal("Specify type '" + type + "'", 
-                change, 10, CORRECTION) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, problem.getOffset(), type.length());
-            }
-        };
-    }
-    
-    private ChangeCorrectionProposal createImplementFormalMembersProposal(final int loc,
-            final IFile file, TextFileChange change) {
-        return new ChangeCorrectionProposal("Refine formal members", 
-                change, 10, FORMAL_REFINEMENT) {
-            @Override
-            public void apply(IDocument document) {
-                super.apply(document);
-                Util.gotoLocation(file, loc, 0);
-            }
-        };
-    }
-    
     private void addImportProposals(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
@@ -1128,46 +765,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         Integer stopIndex = cu.getImportList().getStopIndex();
         if (stopIndex == null) return 0;
         return stopIndex+1;
-    }
-
-    private static class FindImportNodeVisitor extends Visitor {
-        private final String[] packageNameComponents;
-        private Tree.Import result;
-        
-        public FindImportNodeVisitor(String packageName) {
-            super();
-            this.packageNameComponents = packageName.split("\\.");
-        }
-        
-        public Tree.Import getResult() {
-            return result;
-        }
-
-        public void visit(Tree.Import that) {
-            if (result != null) {
-                return;
-            }
-
-            List<Tree.Identifier> identifiers = that.getImportPath().getIdentifiers();
-            if (identifiersEqual(identifiers, packageNameComponents)) {
-                result = that;
-            }
-        }
-
-        private static boolean identifiersEqual(List<Tree.Identifier> identifiers,
-                String[] components) {
-            if (identifiers.size() != components.length) {
-                return false;
-            }
-            
-            for (int i = 0; i < components.length; i++) {
-                if (!identifiers.get(i).getText().equals(components[i])) {
-                    return false;
-                }
-            }
-            
-            return true;
-        }
     }
 
     private Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
