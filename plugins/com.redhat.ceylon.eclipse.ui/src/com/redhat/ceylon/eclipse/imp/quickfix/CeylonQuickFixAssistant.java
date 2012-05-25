@@ -473,7 +473,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
             cu.visit(fav);
             ProducedType t = fav.expectedType;
-            boolean isVoid = t==null;
+            final boolean isVoid = t==null;
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
