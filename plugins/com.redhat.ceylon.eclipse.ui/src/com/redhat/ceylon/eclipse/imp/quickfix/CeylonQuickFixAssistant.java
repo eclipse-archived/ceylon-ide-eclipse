@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -45,12 +46,17 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
@@ -198,7 +204,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
-        AddAnnotionProposal.addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
+        addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
                 shared ? "Make Actual" : "Make Shared Actual", problem, 
                 decNode.getDeclarationModel(), proposals, project);
     }
@@ -206,7 +212,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeDefaultProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        AddAnnotionProposal.addAddAnnotationProposal(node, "default ", "Make Default", problem, 
+        addAddAnnotationProposal(node, "default ", "Make Default", problem, 
                 getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
                 proposals, project);
     }
@@ -220,7 +226,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             dec = (Declaration) node.getScope();
         }
-        AddAnnotionProposal.addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
+        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
                 proposals, project);
     }
 
@@ -240,7 +246,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             return;
         }
         Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-        AddAnnotionProposal.addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
+        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
                 dec, proposals, project);
     }
     
@@ -259,7 +265,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         GetInitializedVisitor v = new GetInitializedVisitor();
         v.visit(cu);
-        AddAnnotionProposal.addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
+        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
                 proposals, project);
     }
     
@@ -297,7 +303,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             dec = imt.getDeclarationModel();
         }
         if (dec!=null) {
-            AddAnnotionProposal.addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
+            addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
                     proposals, project);
         }
     }
@@ -305,7 +311,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeSharedDecProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        AddAnnotionProposal.addAddAnnotationProposal(node, "shared ", "Make Shared", problem, 
+        addAddAnnotationProposal(node, "shared ", "Make Shared", problem, 
                 decNode.getDeclarationModel(), proposals, project);
     }
     
@@ -590,7 +596,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
-                    unit.getCompilationUnit().visit(fdv);
+                    getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.Body body = getBody(decNode);
                     if (body!=null) {
@@ -601,6 +607,23 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
             }
         }
+    }
+
+    private Tree.CompilationUnit getRootNode(PhasedUnit unit) {
+        IEditorPart ce = Util.getCurrentEditor();
+        if (ce instanceof CeylonEditor) {
+            CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
+            if (cpc!=null) {
+                CompilationUnit rn = cpc.getRootNode();
+                if (rn!=null) {
+                    Unit u = rn.getUnit();
+                    if (u.equals(unit.getUnit())) {
+                        return rn;
+                    }
+                }
+            }
+        }       
+        return unit.getCompilationUnit();
     }
 
     private static Tree.Body getBody(Tree.Declaration decNode) {
@@ -631,11 +654,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
+        FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
+        cu.visit(fsv);
+        Tree.Statement statement = fsv.getStatement();
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
-                cu.visit(fsv);
-                Tree.Statement statement = fsv.getStatement();
                 CreateProposal.addCreateProposal(proposals, def, true, desc, image, unit, statement);
                 break;
             }
@@ -645,11 +668,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
+        FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
+        cu.visit(fsv);
+        Tree.Statement statement = fsv.getStatement();
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
-                cu.visit(fsv);
-                Tree.Statement statement = fsv.getStatement();
                 CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
                 break;
             }
@@ -776,6 +799,25 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private int getBestImportMemberInsertPosition(Tree.Import importNode,
             String declaration) {
         return importNode.getImportMemberOrTypeList().getStopIndex() - 1;
+    }
+
+    private void addAddAnnotationProposal(Node node, String annotation, String desc, ProblemLocation problem, 
+            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec!=null) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    //TODO: "object" declarations?
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+                    getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        AddAnnotionProposal.addAddAnnotationProposal(annotation, desc, dec,
+                                proposals, unit, decNode);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
 }
