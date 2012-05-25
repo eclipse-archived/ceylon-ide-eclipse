@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -47,7 +48,7 @@ class RequiredTypeVisitor extends Visitor
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
-                if (params.size()>pos) {
+                if (params!=null && params.size()>pos) {
                     Parameter param = params.get(pos);
                     requiredType = pr.getTypedParameter(param).getType();
                     if (param.isSequenced()) {
@@ -84,8 +85,8 @@ class RequiredTypeVisitor extends Visitor
     }
     
     private static List<Parameter> getParameters(ProducedReference pr) {
-        return ((Functional) pr.getDeclaration()).getParameterLists()
-                .get(0).getParameters();
+        List<ParameterList> pls = ((Functional) pr.getDeclaration()).getParameterLists();
+        return pls.isEmpty() ? null : pls.get(0).getParameters();
     }
     
     @Override

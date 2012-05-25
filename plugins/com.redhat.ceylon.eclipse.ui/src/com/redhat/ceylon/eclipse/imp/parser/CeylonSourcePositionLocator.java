@@ -75,37 +75,13 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     
     public static Node findNode(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindNodeVisitor visitor = new FindNodeVisitor(startOffset, endOffset);
-        //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
         cu.visit(visitor);
-        //System.out.println("selected node: " + visitor.getNode());
         return visitor.getNode();
-    }
-    
-    public static enum OccurrenceLocation { 
-        EXTENDS, 
-        SATISFIES, 
-        UPPER_BOUND, 
-        IMPORT, 
-        EXPRESSION,
-        PARAMETER_LIST,
-        TYPE_PARAMETER_LIST,
-        TYPE_ARGUMENT_LIST
-    }
-    
-    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
-        if (node.getToken()==null) return null;
-        FindNodeVisitor visitor = new FindNodeVisitor(node.getStartIndex(), node.getStopIndex()+1);
-        //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
-        cu.visit(visitor);
-        //System.out.println("selected node: " + visitor.getNode());
-        return visitor.getOccurrenceLocation();
     }
     
     public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
-        //System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);    
         cu.visit(visitor);
-        //System.out.println("selected node: " + visitor.getNode());
         return visitor.getNode();
     }
     

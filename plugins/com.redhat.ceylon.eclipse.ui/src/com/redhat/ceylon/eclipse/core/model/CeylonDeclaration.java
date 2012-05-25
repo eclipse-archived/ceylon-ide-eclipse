@@ -39,20 +39,11 @@ public class CeylonDeclaration {
             return null;
         }
         
-        if (! phasedUnit.isDeclarationsScanned()) {
-            phasedUnit.scanDeclarations();
-        }
-        if (! phasedUnit.isTypeDeclarationsScanned()) {
-            phasedUnit.scanTypeDeclarations();
-        }
-        if (! phasedUnit.isRefinementValidated()) {
-            phasedUnit.validateRefinement();
-        }
-        /*
-        if (! phasedUnit.isFullyTyped()) {
-            phasedUnit.analyseTypes();
-        }
-        */
+        phasedUnit.scanDeclarations();
+        phasedUnit.scanTypeDeclarations();
+        phasedUnit.validateRefinement();
+        phasedUnit.analyseTypes();
+        
         modelDeclaration = astDeclaration.getDeclarationModel();
         return modelDeclaration;
     }
