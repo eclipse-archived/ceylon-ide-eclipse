@@ -141,9 +141,11 @@ public class CeylonDocumentationProvider implements IDocumentationProvider {
         documentation.append("<p><b>package ")
                 .append(p.getNameAsString())
                 .append("</b></p>");
-        documentation.append("<br/><p>")
-                .append(sanitize(p.getDoc()))
-                .append("</p>");
+        if (p.getDoc()!=null) {
+            documentation.append("<br/><p>")
+                    .append(sanitize(p.getDoc()))
+                    .append("</p>");
+        }
     }
 
     private static void appendDescription(Declaration model, StringBuilder documentation) {
