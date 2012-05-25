@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
@@ -108,11 +109,14 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         this.contents = contents;
     }
     
-    public static void open(String def, IFile file, String unitName, 
+    public static boolean open(String def, IFile file, String unitName, 
             String title, String description) {
         IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
                 .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
-        if (descriptor!=null) {
+        if (descriptor==null) {
+            return false;
+        }
+        else {
             try {
                 NewUnitWizard wizard = (NewUnitWizard) descriptor.createWizard();
                 wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(file));
@@ -123,10 +127,11 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                 WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
                         wizard);
                 wd.setTitle(title);
-                wd.open();
+                return wd.open()!=Window.CANCEL;
             }
             catch (CoreException e) {
                 e.printStackTrace();
+                return false;
             }
         }
     }

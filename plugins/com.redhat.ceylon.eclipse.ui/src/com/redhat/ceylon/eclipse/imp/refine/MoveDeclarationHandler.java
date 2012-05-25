@@ -41,27 +41,29 @@ public class MoveDeclarationHandler extends AbstractHandler {
             try {
                 IDocument document = editor.getDocumentProvider()
                         .getDocument(editor.getEditorInput());
-                final TextChange tc;
-                if (editor.isDirty()) {
-                    tc = new DocumentChange("Move to New Unit", document);
-                }
-                else {
-                    tc = new TextFileChange("Move to New Unit", 
-                            Util.getFile(editor.getEditorInput()));
-                }
                 int start = node.getStartIndex();
                 int length = node.getStopIndex()-start+1;
                 contents = document.get(start, length);
-                tc.setEdit(new DeleteEdit(start, length));
-                NewUnitWizard.open(contents, Util.getFile(editor.getEditorInput()), 
+                boolean success = NewUnitWizard.open(contents, Util.getFile(editor.getEditorInput()), 
                         ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
                         "Create a new Ceylon compilation unit containing the selected declaration.");
-                tc.initializeValidationData(null);
-                AbstractOperation op = new TextChangeOperation(tc);
-				IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
-				op.addContext(os.getUndoContext());
-	            os.getOperationHistory().execute(op, new NullProgressMonitor(), 
-                        		getUIInfoAdapter(editor.getSite().getShell()));
+                if (success) {
+                    final TextChange tc;
+                    if (editor.isDirty()) {
+                        tc = new DocumentChange("Move to New Unit", document);
+                    }
+                    else {
+                        tc = new TextFileChange("Move to New Unit", 
+                                Util.getFile(editor.getEditorInput()));
+                    }
+                    tc.setEdit(new DeleteEdit(start, length));
+                    tc.initializeValidationData(null);
+                    AbstractOperation op = new TextChangeOperation(tc);
+    				IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
+    				op.addContext(os.getUndoContext());
+    	            os.getOperationHistory().execute(op, new NullProgressMonitor(), 
+                            		getUIInfoAdapter(editor.getSite().getShell()));
+                }
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
