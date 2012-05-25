@@ -47,16 +47,13 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import org.eclipse.imp.editor.SourceProposal;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IContentProposer;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -397,7 +394,7 @@ public class CeylonContentProposer implements IContentProposer {
                             }
                         }
                         if (!already) {
-                            result.add(sourceProposal(offset, prefix, PACKAGE, 
+                            result.add(new Proposal(offset, prefix, PACKAGE, 
                                     "package " + pkg, pkg, 
                                     pkg.substring(len), false));
                         }
@@ -551,7 +548,7 @@ public class CeylonContentProposer implements IContentProposer {
         //TODO: type argument substitution using the ProducedReference of the primary node
         if (d instanceof Parameter) {
             Parameter p = (Parameter) d;
-            result.add(sourceProposal(offset, prefix, PARAMETER, 
+            result.add(new Proposal(offset, prefix, PARAMETER, 
                     getDocumentationFor(cpc, d), 
                     getInlineFunctionDescriptionFor(p, null), 
                     getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)), false));
@@ -581,7 +578,7 @@ public class CeylonContentProposer implements IContentProposer {
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: if it is equals() or hash, fill in the implementation
-            result.add(sourceProposal(offset, prefix, 
+            result.add(new Proposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
                             getDocumentationFor(cpc, d), 
                             getRefinementDescriptionFor(d, pr), 
@@ -624,7 +621,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
-        result.add(sourceProposal(offset, prefix, 
+        result.add(new Proposal(offset, prefix, 
                 CeylonLabelProvider.getImage(d),
                 getDocumentationFor(cpc, d), 
                 getDescriptionFor(dwp, ol), 
@@ -648,7 +645,7 @@ public class CeylonContentProposer implements IContentProposer {
                 else {
                     elemName = d.getName().substring(0, 1);
                 }
-                result.add(sourceProposal(offset, prefix, 
+                result.add(new Proposal(offset, prefix, 
                         CeylonLabelProvider.getImage(d),
                         getDocumentationFor(cpc, d), 
                         "for (" + elemName + " in " + getDescriptionFor(dwp, ol) + ")", 
@@ -665,7 +662,7 @@ public class CeylonContentProposer implements IContentProposer {
             if (v.getType()!=null &&
                     d.getUnit().isOptionalType(v.getType()) && 
                     !v.isVariable()) {
-                result.add(sourceProposal(offset, prefix, 
+                result.add(new Proposal(offset, prefix, 
                         CeylonLabelProvider.getImage(d),
                         getDocumentationFor(cpc, d), 
                         "if (exists " + getDescriptionFor(dwp, ol) + ")", 
@@ -677,7 +674,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static void addNamedArgumentProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
-        result.add(sourceProposal(offset, prefix, 
+        result.add(new Proposal(offset, prefix, 
                 CeylonLabelProvider.PARAMETER,
                 getDocumentationFor(cpc, d), 
                 getDescriptionFor(dwp, ol), 
@@ -690,7 +687,7 @@ public class CeylonContentProposer implements IContentProposer {
         Declaration d = pr.getDeclaration();
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
         if (!isAbstractClass || ol==EXTENDS) {
-            result.add(sourceProposal(offset, prefix, 
+            result.add(new Proposal(offset, prefix, 
                     CeylonLabelProvider.getImage(d),
                     getDocumentationFor(cpc, d), 
                     getPositionalInvocationDescriptionFor(dwp, ol, pr), 
@@ -700,7 +697,7 @@ public class CeylonContentProposer implements IContentProposer {
                     !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
                 //if there is more than one parameter, 
                 //suggest a named argument invocation 
-                result.add(sourceProposal(offset, prefix, 
+                result.add(new Proposal(offset, prefix, 
                         CeylonLabelProvider.getImage(d),
                         getDocumentationFor(cpc, d), 
                         getNamedInvocationDescriptionFor(dwp, pr), 
@@ -720,7 +717,7 @@ public class CeylonContentProposer implements IContentProposer {
                 if (suggestedName.startsWith(prefix) && 
                         !suggestedName.equals(prefix) && 
                         !keywords.contains(suggestedName)) {
-                    result.add(sourceProposal(offset, prefix, null, 
+                    result.add(new Proposal(offset, prefix, null, 
                             "proposed name for new declaration", 
                             suggestedName, suggestedName, false));
                 }
@@ -733,7 +730,7 @@ public class CeylonContentProposer implements IContentProposer {
         for (String keyword: keywords) {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
                     /*&& !keyword.equals(prefix)*/) {
-                result.add(sourceProposal(offset, prefix, null, 
+                result.add(new Proposal(offset, prefix, null, 
                         keyword + " keyword", keyword, keyword + " ", 
                         true));
             }
@@ -781,66 +778,6 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
         return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
-    }
-    
-    private static class RequiredTypeVisitor extends Visitor {
-        private Node node;
-        ProducedType requiredType = null;
-        RequiredTypeVisitor(Node node) {
-            this.node = node;
-        }
-        @Override
-        public void visit(Tree.InvocationExpression that) {
-            super.visit(that);
-            if (that.getPositionalArgumentList()==node) {
-                int pos = that.getPositionalArgumentList().getPositionalArguments().size();
-                Tree.Primary p = that.getPrimary();
-                if (p instanceof Tree.MemberOrTypeExpression) {
-                    ProducedReference pr = ((Tree.MemberOrTypeExpression) p).getTarget();
-                    if (pr!=null) {
-                        Parameter param = ((Functional) pr.getDeclaration()).getParameterLists()
-                                .get(0).getParameters().get(pos);
-                        requiredType = pr.getTypedParameter(param).getType();
-                    }
-                }
-            }
-        }
-        @Override
-        public void visit(Tree.SpecifiedArgument that) {
-            super.visit(that);
-            if (that.getSpecifierExpression()==node) {
-                //TODO: does not substitute type args!
-                requiredType = that.getParameter().getType();
-            }
-        }
-        @Override
-        public void visit(Tree.SpecifierStatement that) {
-            super.visit(that);
-            if (that.getSpecifierExpression()==node) {
-                requiredType = that.getBaseMemberExpression().getTypeModel();
-            }
-        }
-        @Override
-        public void visit(Tree.AttributeDeclaration that) {
-            super.visit(that);
-            if (that.getSpecifierOrInitializerExpression()==node) {
-                requiredType = that.getType().getTypeModel();
-            }
-        }
-        @Override
-        public void visit(Tree.AssignOp that) {
-            super.visit(that);
-            if (that==node) {
-                requiredType = that.getLeftTerm().getTypeModel();
-            }
-        }
-        @Override
-        public void visit(Tree.Return that) {
-            super.visit(that);
-            if (that==node) {
-                requiredType = type(that.getDeclaration());
-            }
-        }
     }
     
     private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
@@ -901,7 +838,7 @@ public class CeylonContentProposer implements IContentProposer {
         return set;
     }
     
-    private static ProducedType type(Declaration d) {
+    static ProducedType type(Declaration d) {
         if (d instanceof TypeDeclaration) {
             if (d instanceof Class) {
                 if (!((Class) d).isAbstract()) {
@@ -916,63 +853,6 @@ public class CeylonContentProposer implements IContentProposer {
         else {
             return null;//impossible
         }
-    }
-    
-    private static SourceProposal sourceProposal(final int offset, final String prefix,
-            final Image image, String doc, String desc, final String text, 
-            final boolean selectParams) {
-        return new SourceProposal(desc, text, "", 
-                new Region(offset-prefix.length(), prefix.length()), 
-                offset + text.length(), doc) { 
-            @Override
-            public Image getImage() {
-                return image;
-            }
-            @Override
-            public Point getSelection(IDocument document) {
-                /*if (text.endsWith("= ")) {
-                    return new Point(offset-prefix.length()+text.length(), 0);
-                }
-                else*/ if (selectParams) {
-                    int locOfTypeArgs = text.indexOf('<');
-                    int loc = locOfTypeArgs;
-                    if (loc<0) loc = text.indexOf('(');
-                    if (loc<0) loc = text.indexOf('=')+1;
-                    int start;
-                    int length;
-                    if (loc<=0 || locOfTypeArgs<0 &&
-                            (text.contains("()") || text.contains("{}"))) {
-                        start = text.endsWith("{}") ? text.length()-1 : text.length();
-                        length = 0;
-                    }
-                    else {
-                        int endOfTypeArgs = text.indexOf('>'); 
-                        int end = text.indexOf(',');
-                        if (end<0) end = text.indexOf(';');
-                        if (end<0) end = text.length()-1;
-                        if (endOfTypeArgs>0) end = end < endOfTypeArgs ? end : endOfTypeArgs;
-                        start = loc+1;
-                        length = end-loc-1;
-                    }
-                    return new Point(offset-prefix.length() + start, length);
-                }
-                else {
-                    int loc = text.indexOf("bottom;");
-                    int length;
-                    int start;
-                    if (loc<0) {
-                        start = offset + text.length()-prefix.length();
-                        if (text.endsWith("{}")) start--;
-                        length = 0;
-                    }
-                    else {
-                        start = offset + loc-prefix.length();
-                        length = 6;
-                    }
-                    return new Point(start, length);
-                }
-            }
-        };
     }
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
