@@ -159,6 +159,10 @@ public class CeylonContentProposer implements IContentProposer {
         //find the type that is expected in the current
         //location so we can prioritize proposals of that
         //type
+        //TODO: this breaks as soon as the user starts typing
+        //      an expression, since RequiredTypeVisitor
+        //      doesn't know how to search up the tree for
+        //      the containing InvocationExpression
         RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
         rtv.visit(rn);
         
