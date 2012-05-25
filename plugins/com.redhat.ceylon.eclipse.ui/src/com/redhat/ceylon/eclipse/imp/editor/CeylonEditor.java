@@ -312,24 +312,28 @@ public class CeylonEditor extends UniversalEditor {
                 IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
 
                 if (rd != null) {
-                    try {
-                        ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
-                        if (scheduler != null) {
-                            scheduler.cancel();
-                            scheduler.schedule(50);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    scheduleParsing();
                 }
             }
         }, IResourceChangeEvent.POST_BUILD);
     }
     
+    public void scheduleParsing() {
+        try {
+            ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
+            if (scheduler != null) {
+                scheduler.cancel();
+                scheduler.schedule(50);
+            }
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     class CeylonGenerateActionGroup extends GenerateActionGroup {
         public CeylonGenerateActionGroup(UniversalEditor editor) {
             super(editor, "");
