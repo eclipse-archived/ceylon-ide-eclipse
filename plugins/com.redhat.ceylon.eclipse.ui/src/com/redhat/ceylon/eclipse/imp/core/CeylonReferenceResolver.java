@@ -53,9 +53,14 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         Declaration dec;
         if (node instanceof Tree.ImportPath) {
             Package p = ((Tree.ImportPath) node).getPackageModel();
-            dec = p.getDirectMember("package", null);
-            if (dec==null) {
-                dec = p.getDirectMember("module", null);
+            if (p==null) {
+                return null;
+            }
+            else {
+                dec = p.getDirectMember("package", null);
+                if (dec==null) {
+                    dec = p.getDirectMember("module", null);
+                }
             }
         }
         else {
