@@ -192,8 +192,8 @@ public class CeylonContentProposer implements IContentProposer {
     private static PositionedPrefix getPositionedPrefix(final int offset,
             ITextViewer viewer, CommonToken token) {
         //try to guess the character the user just typed
-        char charAtOffset = viewer.getDocument().get()
-                .charAt(offset>0?offset-1:0);
+        String text = viewer.getDocument().get();
+        char charAtOffset = text.charAt(offset>0?offset-1:0);
         int offsetInToken = offset-token.getStartIndex();
 		Character charInTokenAtOffset = offsetInToken<=token.getText().length() ? 
 		        token.getText().charAt(offsetInToken>0?offsetInToken-1:0) : null;
@@ -218,12 +218,12 @@ public class CeylonContentProposer implements IContentProposer {
             //previously typed characters
             boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
             if (isIdentifierChar) {
-                if (offset<=token.getStopIndex()) {
-                    //start of file and perhaps some other cases
-                    return new PositionedPrefix("",offset);
+                int start = token.getStopIndex()+1;
+                if (offset<=start) {
+                    //start of file or in whitespace
+                    return new PositionedPrefix(Character.toString(charAtOffset), offset);
                 }
-                String missing = viewer.getDocument().get()
-                        .substring(token.getStopIndex()+1, offset);
+                String missing = text.substring(start, offset);
                 if (token.getType()==MEMBER_OP) {
                     return new PositionedPrefix(missing,
                         token.getStartIndex());
