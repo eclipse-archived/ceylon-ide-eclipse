@@ -70,8 +70,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -122,6 +120,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
+import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
+import com.redhat.ceylon.eclipse.core.model.loader.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -1381,14 +1381,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
                                 try{
                                     CeylonClassReader.instance(context).enterClass(Names.instance(context).fromString(fqn), tree.getSourceFile());
-                                }catch(AssertionError error){
+                                }
+                                catch (AssertionError error){
                                     // this happens when we have already registered a source file for this decl, so let's
                                     // print out a helpful message
                                     // see https://github.com/ceylon/ceylon-compiler/issues/250
                                     ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
-                                    CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: "+fqn+" is declared twice: once in "
-                                            +tree.getSourceFile()+" and again in: "+
-                                            (previousClass != null ? ((JavacClass)previousClass).classSymbol.classfile : "another file"));
+                                    CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
+                                            fqn + " is declared twice: once in " + tree.getSourceFile() + 
+                                            " and again in: " + fileName(previousClass));
                                 }
                             }
                         });
@@ -1418,6 +1419,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return success;
     }
 
+    public static String fileName(ClassMirror c) {
+        if (c instanceof JavacClass) {
+            return ((JavacClass) c).classSymbol.classfile.getName();
+        }
+        else if (c instanceof JDTClass) {
+            return ((JDTClass) c).getFileName();
+        }
+        else if (c instanceof SourceClass) {
+            return ((SourceClass) c).getModelDeclaration().getUnit().getFilename();
+        }
+        else {
+            return "another file";
+        }
+    }
+    
 	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
 	    List<IProject> requiredProjects = new ArrayList<IProject>();
         try {
