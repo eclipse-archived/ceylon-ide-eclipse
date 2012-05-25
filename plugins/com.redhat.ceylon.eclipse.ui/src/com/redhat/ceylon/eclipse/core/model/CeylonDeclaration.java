@@ -48,9 +48,11 @@ public class CeylonDeclaration {
         if (! phasedUnit.isRefinementValidated()) {
             phasedUnit.validateRefinement();
         }
+        /*
         if (! phasedUnit.isFullyTyped()) {
             phasedUnit.analyseTypes();
         }
+        */
         modelDeclaration = astDeclaration.getDeclarationModel();
         return modelDeclaration;
     }
