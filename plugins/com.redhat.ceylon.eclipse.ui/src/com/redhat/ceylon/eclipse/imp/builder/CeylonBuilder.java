@@ -283,30 +283,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return false;
     }
 
-    /**
-     * @return true iff this resource identifies the output folder
-     */
-    protected static boolean isOutputFolder(IResource resource) {
-        IPath outputDirectory = getProjectRelativeOutputDir(JavaCore.create(resource.getProject()));
-        if (outputDirectory==null) {
-        	return false;
-        }
-        else {
-            return resource.getProjectRelativePath().equals(outputDirectory);
-        }
-    }
-
-	private static IPath getProjectRelativeOutputDir(IJavaProject javaProject) {
-		if (!javaProject.exists()) return null;
-		try {
-			return javaProject.getOutputLocation()
-					.makeRelativeTo(javaProject.getProject().getFullPath());
-		} 
-		catch (JavaModelException e) {
-			return null;
-		}
-	}
-
 	public static JDTModelLoader getProjectModelLoader(IProject project) {
 	    TypeChecker typeChecker = getProjectTypeChecker(project);
 	    if (typeChecker == null) {
@@ -1034,7 +1010,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             });
 
         List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, getOutputDirectory(javaProject).getAbsolutePath(), new EclipseLogger()));
+        typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, getModulesOutputDirectory(javaProject).getAbsolutePath(), new EclipseLogger()));
         final TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
         final PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
         final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager(); 
@@ -1244,10 +1220,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         options.add("-g:lines,vars,source");
 
         IJavaProject javaProject = JavaCore.create(project);
-        final File outputDir = getOutputDirectory(javaProject);
-        if (outputDir!=null) {
+        final File modulesOutputDir = getModulesOutputDirectory(javaProject);
+        final File ceylonOutputDir = getCeylonOutputDirectory(javaProject);
+        if (modulesOutputDir!=null) {
             options.add("-out");
-            options.add(outputDir.getAbsolutePath());
+            options.add(modulesOutputDir.getAbsolutePath());
         }
 
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
@@ -1276,15 +1253,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if(!sourceFiles.isEmpty()){
                 success = compile(project, options, sourceFiles, printWriter);
             }
-            if (outputDir != null) {
-                monitor.subTask("Unzipping class files in the JDT output folder");
+            if (modulesOutputDir != null) {
+                monitor.subTask("Unzipping archives files in the Ceylon output folder");
                 List<String> extensionsToUnzip = Arrays.asList(".car");
-                new RepositoryLister(extensionsToUnzip).list(outputDir, new RepositoryLister.Actions() {
+                new RepositoryLister(extensionsToUnzip).list(modulesOutputDir, new RepositoryLister.Actions() {
                     @Override
                     public void doWithFile(File path) {
                         try {
                             ZipFile carFile = new ZipFile(path);
-                            carFile.extractAll(new File(outputDir, "../JDTClasses").getAbsolutePath());
+                            carFile.extractAll(ceylonOutputDir.getAbsolutePath());
                         } catch (ZipException e) {
                             e.printStackTrace();
                         }
@@ -1482,7 +1459,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (requiredJavaProject == null) {
                     continue;
                 }
-                userRepos.add(getOutputDirectory(requiredJavaProject).getAbsolutePath());
+                userRepos.add(getModulesOutputDirectory(requiredJavaProject).getAbsolutePath());
             }
             
             /*userRepos.add(project.getLocation().append("modules").toOSString());
@@ -1761,31 +1738,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         super.clean(monitor);
         
         IJavaProject javaProject = JavaCore.create(getProject());
-        final File outputDirectory = getOutputDirectory(javaProject);
-        if (outputDirectory != null) {
+        final File modulesOutputDirectory = getModulesOutputDirectory(javaProject);
+        if (modulesOutputDirectory != null) {
             monitor.subTask("Cleaning existing artifacts");
             List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
-            new RepositoryLister(extensionsToDelete).list(outputDirectory, new RepositoryLister.Actions() {
+            new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, new RepositoryLister.Actions() {
                 @Override
                 public void doWithFile(File path) {
                     path.delete();
                 }
                 
                 public void exitDirectory(File path) {
-                    if (path.list().length == 0 && ! path.equals(outputDirectory)) {
+                    if (path.list().length == 0 && ! path.equals(modulesOutputDirectory)) {
                         path.delete();
                     }
                 }
             });
-            
-            new RepositoryLister(Arrays.asList(".*")).list(new File(outputDirectory, "../JDTClasses"), new RepositoryLister.Actions() {
+        }
+
+        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+        if (ceylonOutputDirectory != null) {
+            new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, new RepositoryLister.Actions() {
                 @Override
                 public void doWithFile(File path) {
                     path.delete();
                 }
                 
                 public void exitDirectory(File path) {
-                    if (path.list().length == 0 && ! path.equals(outputDirectory)) {
+                    if (path.list().length == 0 && ! path.equals(ceylonOutputDirectory)) {
                         path.delete();
                     }
                 }
@@ -2045,8 +2025,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             
             IJavaProject javaProject = JavaCore.create(project);
-            final File outputDirectory = getOutputDirectory(javaProject);
-            File moduleDir = Util.getModulePath(outputDirectory, module);
+            final File modulesOutputDirectory = getModulesOutputDirectory(javaProject);
+            final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+
+            File moduleDir = Util.getModulePath(modulesOutputDirectory, module);
             File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
             if(moduleJar.exists()){
                 moduleJars.add(moduleJar);
@@ -2071,7 +2053,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
-                        File classFile = new File(new File(outputDirectory, "../JDTClasses"), entryToDelete.replace('/', File.separatorChar));
+                        File classFile = new File(ceylonOutputDirectory, entryToDelete.replace('/', File.separatorChar));
                         classFile.delete();
                     }
                 } catch (ZipException e) {
@@ -2096,10 +2078,37 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-    public static File getOutputDirectory(IJavaProject javaProject) {
+    private static IPath getProjectRelativeOutputDir(IJavaProject javaProject) {
+        if (!javaProject.exists()) return null;
+        try {
+            return javaProject.getOutputLocation()
+                    .makeRelativeTo(javaProject.getProject().getFullPath());
+        } 
+        catch (JavaModelException e) {
+            return null;
+        }
+    }
+
+    public static File getJavaOutputDirectory(IJavaProject javaProject) {
         return toFile(javaProject.getProject(), getProjectRelativeOutputDir(javaProject));
     }
 
+    public static File getCeylonOutputDirectory(IJavaProject javaProject) {
+        File ceylonOutputDir = javaProject.getProject().getFolder("JDTClasses").getRawLocation().toFile();
+        if (! ceylonOutputDir.exists()) {
+            ceylonOutputDir.mkdirs();
+        }
+        return ceylonOutputDir;
+    }
+
+    public static File getModulesOutputDirectory(IJavaProject javaProject) {
+        File modulesOutputDir = javaProject.getProject().getFolder("modules").getRawLocation().toFile();
+        if (! modulesOutputDir.exists()) {
+            modulesOutputDir.mkdirs();
+        }
+        return modulesOutputDir;
+    }
+    
     /**
      * String representation for debugging purposes
      */

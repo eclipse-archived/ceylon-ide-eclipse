@@ -319,7 +319,7 @@ public class CeylonParseController extends ParseControllerBase {
                     for (String repo : CeylonBuilder.getUserRepositories(project)) {
                         repos.add(repo);
                     }
-                    repos.add(CeylonBuilder.getOutputDirectory(JavaCore.create(project)).getAbsolutePath());
+                    repos.add(CeylonBuilder.getModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
                 }
             } 
             catch (CoreException e) {
