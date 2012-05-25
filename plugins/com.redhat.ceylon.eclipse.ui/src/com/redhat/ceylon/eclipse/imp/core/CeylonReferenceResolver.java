@@ -182,8 +182,9 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 return root;
             }
             else {
-                PhasedUnit pu = cpc.getTypeChecker()
-                        .getPhasedUnitFromRelativePath(getRelativePath(dec));
+                PhasedUnit pu = cpc.getTypeChecker()==null ? null : 
+                        cpc.getTypeChecker()
+                                .getPhasedUnitFromRelativePath(getRelativePath(dec));
                 return pu==null ? null : pu.getCompilationUnit();
             }
         }
