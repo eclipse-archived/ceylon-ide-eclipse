@@ -36,8 +36,8 @@ class RequiredTypeVisitor extends Visitor {
             }
         }
         NamedArgumentList nal = that.getNamedArgumentList();
-        if (nal==node || (nal!=null &&
-            nal.getSequencedArgument().getExpressionList()==node)) {
+        if (nal==node || (nal!=null && nal.getSequencedArgument()!=null &&
+                nal.getSequencedArgument().getExpressionList()==node)) {
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
