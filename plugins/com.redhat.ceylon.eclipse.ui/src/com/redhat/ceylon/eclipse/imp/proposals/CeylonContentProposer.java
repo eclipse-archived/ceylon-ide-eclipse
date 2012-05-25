@@ -20,17 +20,16 @@ import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.keywords;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.TYPE_ARGUMENT_LIST;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.imp.proposals.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
@@ -88,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -172,6 +170,13 @@ public class CeylonContentProposer implements IContentProposer {
                     cpc, node, adjustedToken, 
                     viewer.getDocument());
         
+    }
+
+    private static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
+        if (node.getToken()==null) return null;
+        FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
+        cu.visit(visitor);
+        return visitor.getOccurrenceLocation();
     }
 
     private static PositionedPrefix compensateForMissingCharacter(final int offset,
@@ -433,6 +438,8 @@ public class CeylonContentProposer implements IContentProposer {
             addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
         }
         else if (node instanceof Tree.TypedDeclaration && 
+                !(node instanceof Tree.Parameter && 
+                        ((Tree.TypedDeclaration)node).getType() instanceof Tree.ValueModifier) &&
                 !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable) &&
                 ((Tree.TypedDeclaration)node).getType()!=null &&
                 ((Tree.TypedDeclaration)node).getIdentifier()!=null) {
@@ -547,7 +554,9 @@ public class CeylonContentProposer implements IContentProposer {
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
-                (dec instanceof TypeDeclaration || dec instanceof Method && dec.isToplevel() || ol!=PARAMETER_LIST) &&
+                (dec instanceof TypeDeclaration || 
+                        dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
+                        ol!=PARAMETER_LIST) &&
                 ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
     }
 

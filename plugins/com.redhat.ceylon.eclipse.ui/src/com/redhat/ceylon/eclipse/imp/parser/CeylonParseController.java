@@ -347,6 +347,7 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit.scanDeclarations();
             phasedUnit.scanTypeDeclarations();
             phasedUnit.validateRefinement();
+            phasedUnit.analyseTypes();
         }
         else {
             Package pkg = null;

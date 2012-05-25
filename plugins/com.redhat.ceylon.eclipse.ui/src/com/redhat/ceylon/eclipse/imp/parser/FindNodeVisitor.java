@@ -1,21 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation.UPPER_BOUND;
-
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.OccurrenceLocation;
 
 class FindNodeVisitor extends Visitor
         implements NaturalVisitor {
@@ -29,54 +19,30 @@ class FindNodeVisitor extends Visitor
     private int startOffset;
     private int endOffset;
     
-    //TODO: write a specialized visitor that handles OccurrenceLocation
-    //      determination, just for CeylonContentProposer. Other clients
-    //      don't care about this.
-    private OccurrenceLocation occurrence;
-    private boolean inTypeConstraint = false;
-    
     public Node getNode() {
         return node;
     }
     
-    OccurrenceLocation getOccurrenceLocation() {
-        return occurrence;
-    }
-    
-    public void visit(Tree.TypeConstraint that) {
-        inTypeConstraint=true;
-        super.visit(that);
-        inTypeConstraint=false;
-    }
-    
     public void visit(Tree.ImportMemberOrTypeList that) {
-        if (inBounds(that)) {
-            occurrence = IMPORT;
-        }
         super.visit(that);
     }
     
     public void visit(Tree.ExtendedType that) {
-        if (inBounds(that)) {
-            occurrence = EXTENDS;
-        }
         super.visit(that);
     }
     
     public void visit(Tree.SatisfiedTypes that) {
-        if (inBounds(that)) {
-            occurrence = inTypeConstraint? 
-                    UPPER_BOUND : SATISFIES;
-        }
         super.visit(that);
     }
     
     @Override
     public void visitAny(Node that) {
-        if (node!=that && inBounds(that)) {
+        if (inBounds(that))  {
             node=that;
+            super.visitAny(that);
         }
-        super.visitAny(that);
+        //otherwise, as a performance optimization
+        //don't go any further down this branch
     }
     
     @Override
@@ -100,7 +66,6 @@ class FindNodeVisitor extends Visitor
             left = that;
         }
         if (inBounds(left, right)) {
-            occurrence = EXPRESSION;
             node=that;
         }
         super.visit(that);
@@ -113,7 +78,6 @@ class FindNodeVisitor extends Visitor
             term = that;
         }
         if (inBounds(that, term) || inBounds(term, that)) {
-            occurrence = EXPRESSION;
             node=that;
         }
         super.visit(that);
@@ -122,7 +86,6 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.ParameterList that) {
         if (inBounds(that)) {
-            occurrence = PARAMETER_LIST;
             node=that;
         }
         super.visit(that);
@@ -131,7 +94,6 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.TypeParameterList that) {
         if (inBounds(that)) {
-            occurrence = TYPE_PARAMETER_LIST;
             node=that;
         }
         super.visit(that);
@@ -140,7 +102,6 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.ArgumentList that) {
         if (inBounds(that)) {
-            occurrence = EXPRESSION;
             node=that;
         }
         super.visit(that);
@@ -149,7 +110,6 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.TypeArgumentList that) {
         if (inBounds(that)) {
-            occurrence = TYPE_ARGUMENT_LIST;
             node=that;
         }
         super.visit(that);
@@ -158,7 +118,6 @@ class FindNodeVisitor extends Visitor
     @Override
     public void visit(QualifiedMemberOrTypeExpression that) {
         if (inBounds(that.getMemberOperator(), that.getIdentifier())) {
-            occurrence = EXPRESSION;
             node=that;
         }
         else {
@@ -226,9 +185,6 @@ class FindNodeVisitor extends Visitor
     
     @Override
     public void visit(Tree.Declaration that) {
-        if (inBounds(that)) {
-            occurrence=null;
-        }
         if (inBounds(that.getIdentifier())) {
             node = that;
         }
