@@ -168,7 +168,7 @@ public class CeylonContentProposer implements IContentProposer {
         
         //finally, construct and sort proposals
         return constructCompletions(offset, result.prefix, 
-                    sortProposals(result.prefix, rtv.requiredType, 
+                    sortProposals(result.prefix, rtv.getType(), 
                             getProposals(node, result.prefix, rn)),
                     cpc, node, adjustedToken, 
                     viewer.getDocument());
