@@ -50,7 +50,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         
         List<RepositoryManager> repositoryManagers = new ArrayList<RepositoryManager>();
         
-        File outputDirectory = CeylonBuilder.getOutputDirectory(javaProject);
+        File outputDirectory = CeylonBuilder.getModulesOutputDirectory(javaProject);
         if (outputDirectory != null) {
         	RepositoryManager outputRepo = new SimpleRepositoryManager(new FileContentStore(outputDirectory), new EclipseLogger());
             repositoryManagers.add(outputRepo);
