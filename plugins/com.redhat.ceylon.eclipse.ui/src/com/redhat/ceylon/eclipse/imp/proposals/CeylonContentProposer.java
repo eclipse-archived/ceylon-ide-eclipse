@@ -486,10 +486,13 @@ public class CeylonContentProposer implements IContentProposer {
             }
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isParameterOfNamedArgInvocation(node, dec, token, cpc.getTokens())) {
-                    addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    addInlineFunctionProposal(offset, prefix, cpc, 
-                            node, result, dec, doc);
+                if (isParameterOfNamedArgInvocation(node, dec)) {
+                    if (node instanceof Tree.NamedArgumentList ||
+                            occursAfterBraceOrSemicolon(token, cpc.getTokens())) {
+                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                        addInlineFunctionProposal(offset, prefix, cpc, 
+                                node, result, dec, doc);
+                    }
                 }
                 else if (isProposable(dec, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -564,16 +567,14 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d, 
-            CommonToken token, List<CommonToken> tokens) {
+    private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d) {
         if (node instanceof Tree.NamedArgumentList) {
             ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList()
                     .getParameterList();
             return d instanceof Parameter && pl!=null &&
                     pl.getParameters().contains(d);
         }
-        else if (node.getScope() instanceof NamedArgumentList &&
-                occursAfterBraceOrSemicolon(token, tokens)) {
+        else if (node.getScope() instanceof NamedArgumentList) {
             ParameterList pl = ((NamedArgumentList) node.getScope()).getParameterList();
             return d instanceof Parameter && pl!=null &&
                     pl.getParameters().contains(d);
