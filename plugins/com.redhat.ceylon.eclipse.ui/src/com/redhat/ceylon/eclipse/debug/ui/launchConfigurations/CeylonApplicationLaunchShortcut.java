@@ -469,7 +469,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             else {
                 if (declarationToRun instanceof Method) {
                     Method method = (Method) declarationToRun;
-                    if (method.getTypeDeclaration().getName().equals("Void")) {
+                    if (method.isDeclaredVoid()) {
                         configurationName += "void ";
                     }
                     else {
