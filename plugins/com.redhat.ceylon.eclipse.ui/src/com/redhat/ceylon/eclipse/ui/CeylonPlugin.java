@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.IPackageFragmentExtraInfo;
+import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.PreferenceStoreInfo;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -18,6 +20,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -32,6 +35,7 @@ import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.osgi.framework.Bundle;
@@ -56,6 +60,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 	protected static CeylonPlugin pluginInstance;
 	
 	private File ceylonRepository = null;
+
+    private BundleContext bundleContext;
+
 
 	/**
      * - If the 'ceylon.repo' property exist, returns the corresponding file
@@ -82,6 +89,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
         ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
 	    super.start(context);
+        this.bundleContext = context;
 //        copyDefaultRepoIfNecessary();
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
@@ -235,10 +243,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                     }
 */
                     for (IProject project : interestingProjects) {
-                        ISourceProject sourceProject = ModelFactory.open(project);
-                        CeylonBuilder.buildCeylonModel(project, sourceProject, null, monitor);
+                        CeylonBuilder.buildCeylonModelWithoutTypechecking(project, monitor);
                     }
-                    
+/*
                     for (IProject project : interestingProjects) {
                         TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
                         if (typeChecker != null) {
@@ -256,10 +263,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                             }
                         }
                     }
+*/
                     monitor.done();
                 } catch (CoreException e) {
-                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
-                } catch (ModelException e) {
                     return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                 }
                 return Status.OK_STATUS;
@@ -309,11 +315,8 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                             public IStatus run(IProgressMonitor monitor) {
                                                 try {
                                                     monitor.beginTask("Building Ceylon Model", 3);
-                                                    ISourceProject sourceProject = ModelFactory.open(projectToBuild);
-                                                    CeylonBuilder.buildCeylonModel(projectToBuild, sourceProject, null, 
+                                                    CeylonBuilder.buildCeylonModelWithoutTypechecking(projectToBuild, 
                                                             monitor);
-                                                } catch (ModelException e) {
-                                                    return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                                                 } catch (CoreException e) {
                                                     return new Status(IStatus.ERROR, getID(), "Job '" + this.getName() + "' failed", e);
                                                 }
@@ -325,6 +328,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                         buildJob.schedule();
                                     }
                                 }
+/*                                
                                 for (IProject projectToBuild : projectsToBuild) {
                                     TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
                                     if (typeChecker != null) {
@@ -342,6 +346,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                         }
                                     }
                                 }
+*/                                
                             } catch (CoreException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
@@ -357,61 +362,55 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         }
     };
     
-    /*private void copyDefaultRepoIfNecessary() {
-        File home = new File( System.getProperty("user.home") );
-        File ceylon = new File( home, ".ceylon" );
-        File repo = new File( ceylon, "repo" );
-        repo.mkdirs();
-        if (repo.list().length == 0) {
-            try {
-                Bundle bundle = Platform.getBundle(CeylonPlugin.PLUGIN_ID);
-                Path path = new Path("defaultRepository");
-                URL eclipseUrl = FileLocator.find(bundle, path, null);
-                URL fileURL = FileLocator.resolve(eclipseUrl);
-                File internalRepoCopy;
-                String urlPath = fileURL.getPath();
-                URI fileURI = new URI("file", null, urlPath, null);
-                internalRepoCopy = new File(fileURI);
-                if (internalRepoCopy.exists()) {
-                    copyDirectory(internalRepoCopy, repo);
-                }
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }*/
+    private IPackageFragmentExtraInfo packageExtraInfo;
     
-    /*public void copyDirectory(File sourceLocation , File targetLocation)
-    throws IOException {
-        
-        if (sourceLocation.isDirectory()) {
-            if (!targetLocation.exists()) {
-                targetLocation.mkdir();
-            }
-            
-            String[] children = sourceLocation.list();
-            for (int i=0; i<children.length; i++) {
-                copyDirectory(new File(sourceLocation, children[i]),
-                        new File(targetLocation, children[i]));
-            }
-        } else {
-            
-            InputStream in = new FileInputStream(sourceLocation);
-            OutputStream out = new FileOutputStream(targetLocation);
-            
-            // Copy the bits from instream to outstream
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            in.close();
-            out.close();
+    public BundleContext getBundleContext() {
+        return this.bundleContext;
+    }
+
+    /**
+     * Utility class that tries to adapt a non null object to the specified type
+     * 
+     * @param object
+     *            the object to adapt
+     * @param type
+     *            the class to adapt to
+     * @return the adapted object
+     */
+
+    public static Object adapt(Object object, Class type) {
+        if (type.isInstance(object)) {
+            return object;
+        } else if (object instanceof IAdaptable) {
+            return ((IAdaptable) object).getAdapter(type);
         }
-    }*/
-    
+        return Platform.getAdapterManager().getAdapter(object, type);
+    }
+
+    public static void log(Exception e) {
+        getInstance().logException("Ceylon IDE internal error", e);
+    }
+
+    public static void log(IStatus status) {
+        getInstance().getLog().log(status);
+    }
+
+    public static void log(CoreException e) {
+        log(e.getStatus().getSeverity(), "Ceylon IDE internal error", e);
+    }
+
+    /**
+     * Log the given exception along with the provided message and severity indicator
+     */
+    public static void log(int severity, String message, Throwable e) {
+        log(new Status(severity, PLUGIN_ID, 0, message, e));
+    }
+
+    public IPackageFragmentExtraInfo getPackageFragmentExtraInfo() {
+        if (packageExtraInfo == null) {
+            packageExtraInfo = new PreferenceStoreInfo(getPreferenceStore());
+        }
+        return packageExtraInfo;
+    }
 }
+

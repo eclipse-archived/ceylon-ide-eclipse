@@ -30,6 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -126,10 +128,18 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
         }
     }
 
+    private static IType findType(IJavaProject jp, String fullyQualifiedName) throws JavaModelException {
+        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(jp.getProject());
+        if (modelLoader.getSourceDeclarations().contains(fullyQualifiedName)) {
+            return null;
+        }
+        return jp.findType(fullyQualifiedName);
+    }
+    
     public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp, Node node)
             throws JavaModelException {
         if (dec instanceof TypeDeclaration) {
-            IType type = jp.findType(dec.getQualifiedNameString());
+            IType type = findType(jp, dec.getQualifiedNameString());
             if (type==null) {
                 return null;
             }
@@ -150,7 +160,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
             }
         }
         else {
-            IType type = jp.findType(dec.getContainer().getQualifiedNameString());
+            IType type = findType(jp, dec.getContainer().getQualifiedNameString());
             if (type==null) {
                 return null;
             }

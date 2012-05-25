@@ -69,12 +69,16 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -120,6 +124,7 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
@@ -164,6 +169,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IPath>> sourceFolders = new HashMap<IProject, List<IPath>>();
+    private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
 
     public static final String CEYLON_CONSOLE= "Ceylon";
     private long startTime;
@@ -411,13 +417,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                final List<IFile> allSources= new ArrayList<IFile>();
-                builtPhasedUnits = fullBuild(project, sourceProject, allSources, monitor);            
+                builtPhasedUnits = fullBuild(project, sourceProject, monitor);
                 getConsoleStream().println(timedMessage("Full generation of class files..."));
                 monitor.subTask("Generating binaries");
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                final List<IFile> allSources = getProjectSources(project);
                 binariesGenerationOK = generateBinaries(project, sourceProject, allSources, monitor);
                 monitor.worked(1);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
@@ -931,28 +937,85 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return null;
     }
 
-    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, List<IFile> allSources, IProgressMonitor monitor) throws CoreException {
+    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
         System.out.println("Starting ceylon full build of project " + project.getName());
 
-        TypeChecker typeChecker = buildCeylonModel(project, sourceProject, allSources, 
-                monitor);
-
-        System.out.println("Finished ceylon full build of project " + project.getName());
-        return typeChecker.getPhasedUnits().getPhasedUnits();
-    }
-
-    public static TypeChecker buildCeylonModel(final IProject project,
-            ISourceProject sourceProject, final List<IFile> scannedSources, IProgressMonitor monitor) throws CoreException {
-        monitor.subTask("Collecting Ceylon source files for project " 
-                    + project.getName());
-
-        typeCheckers.remove(project);
+        final TypeChecker typeChecker = buildCeylonModelWithoutTypechecking(
+                project, monitor);
 
         monitor.subTask("Clearing existing markers");
         clearProjectMarkers(project);
         clearMarkersOn(project);
         monitor.worked(1);
         
+        final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
+
+        monitor.subTask("Compiling Ceylon source files for project " 
+                + project.getName());
+
+        for (PhasedUnit pu : listOfUnits) {
+            if (! pu.isDeclarationsScanned()) {
+                pu.validateTree();
+                pu.scanDeclarations();
+            }
+        }
+        
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        for (PhasedUnit pu : listOfUnits) {
+            if (! pu.isTypeDeclarationsScanned()) {
+                pu.scanTypeDeclarations();
+            }
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        for (PhasedUnit pu: listOfUnits) {
+            if (! pu.isRefinementValidated()) {
+                pu.validateRefinement();
+            }
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        for (PhasedUnit pu : listOfUnits) {
+            if (! pu.isFullyTyped()) {
+                pu.analyseTypes();
+            }
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        for (PhasedUnit pu: listOfUnits) {
+            pu.analyseFlow();
+        }
+
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        
+        monitor.worked(1);
+        monitor.subTask("Collecting Ceylon problems for project " 
+                + project.getName());
+    
+        addProblemAndTaskMarkers(typeChecker.getPhasedUnits().getPhasedUnits());
+        monitor.worked(1);
+
+        System.out.println("Finished ceylon full build of project " + project.getName());
+        return typeChecker.getPhasedUnits().getPhasedUnits();
+    }
+
+    public static TypeChecker buildCeylonModelWithoutTypechecking(
+            final IProject project,
+            IProgressMonitor monitor) throws CoreException {
+        monitor.subTask("Collecting Ceylon source files for project " 
+                    + project.getName());
+
+        typeCheckers.remove(project);
+        projectSources.remove(project);
+        final List<IFile> scannedSources = new ArrayList<IFile>();
+
         monitor.subTask("Setting up typechecker for project " 
                 + project.getName());
 
@@ -978,7 +1041,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final Context context = typeChecker.getContext();
         final JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
         final Module defaultModule = context.getModules().getDefaultModule();
-        
+
         monitor.worked(1);
         
         monitor.subTask("Parsing Ceylon source files for project " 
@@ -1076,9 +1139,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         monitor.worked(1);
         
-        monitor.subTask("Compiling Ceylon source files for project " 
-                    + project.getName());
-
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
@@ -1087,8 +1147,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.worked(1);
         
         // Parsing of ALL units in the source folder should have been done
-
-        final List<PhasedUnit> listOfUnits = phasedUnits.getPhasedUnits();
 
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1110,7 +1168,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 for (PhasedUnits dependencyPhasedUnits : getPhasedUnitsOfDependencies()) {
                     modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
                 }
-                super.executeExternalModulePhases();
+//                super.executeExternalModulePhases();
             }
             
         };
@@ -1123,58 +1181,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         moduleValidator.verifyModuleDependencyTree();
         typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
 
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        for (PhasedUnit pu : listOfUnits) {
-            if (! pu.isDeclarationsScanned()) {
-                pu.validateTree();
-                pu.scanDeclarations();
-            }
-        }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        for (PhasedUnit pu : listOfUnits) {
-            if (! pu.isTypeDeclarationsScanned()) {
-                pu.scanTypeDeclarations();
-            }
-        }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        for (PhasedUnit pu: listOfUnits) {
-            if (! pu.isRefinementValidated()) {
-                pu.validateRefinement();
-            }
-        }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        for (PhasedUnit pu : listOfUnits) {
-            if (! pu.isFullyTyped()) {
-                pu.analyseTypes();
-            }
-        }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        for (PhasedUnit pu: listOfUnits) {
-            pu.analyseFlow();
-        }
-
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
         typeCheckers.put(project, typeChecker);
+        projectSources.put(project, scannedSources);
         
-        monitor.worked(1);
-        monitor.subTask("Collecting Ceylon problems for project " 
-                + project.getName());
-    
-        addProblemAndTaskMarkers(typeChecker.getPhasedUnits().getPhasedUnits());
-        monitor.worked(1);
-
+        UIJob refreshJob = new UIJob("Refresh Current Ceylon Editor") {
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                IEditorPart currentEditor = com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor();
+                if (currentEditor instanceof CeylonEditor) {
+                    ((CeylonEditor) currentEditor).scheduleParsing();
+                }
+                return Status.OK_STATUS;
+            }
+            
+        };
+        refreshJob.schedule();
+        
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
         return typeChecker;
     }
 
@@ -1763,6 +1788,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
+    private static List<IFile> getProjectSources(IProject project) {
+        return projectSources.get(project);
+    }
+
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
     }
@@ -1789,6 +1818,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     public static void removeProjectTypeChecker(IProject project) {
         typeCheckers.remove(project);
+        sourceFolders.remove(project);
+        projectSources.remove(project);
     }
     
 

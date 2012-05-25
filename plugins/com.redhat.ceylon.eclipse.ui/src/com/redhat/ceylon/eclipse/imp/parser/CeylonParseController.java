@@ -129,28 +129,6 @@ public class CeylonParseController extends ParseControllerBase {
         return null;
     }
     
-    private synchronized void rescheduleJobIfNecessary() {
-        final CeylonParserScheduler parsingJob = getScheduler();
-        if (parsingJob != null) {
-            if (retryJob == null) {
-                retryJob = new Job("Retry Parsing for " + getPath()) {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        if (CeylonBuilder.getProjectTypeChecker(getProject().getRawProject()) != null) {
-                            parsingJob.schedule();
-                        }
-                        else {
-                            retryJob.schedule(1000);
-                        }
-                        return Status.OK_STATUS;
-                    }
-                };
-                retryJob.setRule(null);
-            }
-            retryJob.schedule(1000);
-        }
-    }
-    
     public Object parse(String contents, IProgressMonitor monitor) {
         
         IPath path = getPath();
@@ -241,18 +219,7 @@ public class CeylonParseController extends ParseControllerBase {
         if (sourceProject != null) {
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker == null) {
-                try {
-                    if (project != null && project.hasNature(CeylonNature.NATURE_ID)) {
-                        IMarker[] projectMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
-                        if (projectMarkers.length==0) {
-                            if (! isCanceling(monitor)) {
-                                rescheduleJobIfNecessary();
-                            }
-                            return fCurrentAst;
-                        }
-                    }
-                } 
-                catch (CoreException e) {}
+                return fCurrentAst;
             } else {
                 modelLoader = CeylonBuilder.getProjectModelLoader(project);
             }
@@ -377,14 +344,9 @@ public class CeylonParseController extends ParseControllerBase {
             cu = builtPhasedUnit.getCompilationUnit();
             fCurrentAst = cu;
             phasedUnit = builtPhasedUnit;
-            // the type checker doesn't run all phases
-            // on external modules, so we need to run
-            // type analysis here the first time we
-            // use it
-            if (!phasedUnit.isFullyTyped()) {
-                phasedUnit.validateRefinement();
-                phasedUnit.analyseTypes();
-            }
+            phasedUnit.scanDeclarations();
+            phasedUnit.scanTypeDeclarations();
+            phasedUnit.validateRefinement();
         }
         else {
             Package pkg = null;

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -535,7 +536,15 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
     
-    private Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
+    private final Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
+    
+    public Set<String> getSourceDeclarations() {
+        Set<String> declarations  = new HashSet<String>();
+        synchronized (sourceDeclarations) {
+            declarations.addAll(sourceDeclarations.keySet());
+        }
+        return declarations;
+    }
     
     public static interface SourceFileObjectManager {
         void setupSourceFileObjects(List<?> treeHolders);
@@ -563,7 +572,11 @@ public class JDTModelLoader extends AbstractModelLoader {
                     public void loadFromSource(Tree.Declaration decl) {
                         String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
                         String fqn = getQualifiedName(pkgName, name);
-                            sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
+                        if (! sourceDeclarations.containsKey(fqn)) {
+                            synchronized (sourceDeclarations) {
+                                sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
+                            }
+                        }
                     }
                 });
             }

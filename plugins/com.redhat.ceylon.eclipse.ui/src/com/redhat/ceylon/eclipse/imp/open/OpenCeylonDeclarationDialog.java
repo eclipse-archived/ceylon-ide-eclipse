@@ -180,7 +180,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
                 if (unit.getUnit().getFilename().equals(unitFileName)
                         && unit.getPackage().getQualifiedNameString().equals(packageName)) {
-                    for (Declaration dec: unit.getUnit().getDeclarations()) {
+                    for (Declaration dec: unit.getDeclarations()) {
                         if (dec.getQualifiedNameString().equals(qualifiedName)) {
                             return new DeclarationWithProject(dec, 
                                     CeylonBuilder.getFile(unit).getProject(), path);
@@ -286,7 +286,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         usedNames.clear();
         Set<DeclarationWithProject> set = new HashSet<DeclarationWithProject>();
         for (PhasedUnit unit: CeylonBuilder.getUnits()) {
-            for (Declaration dec: unit.getUnit().getDeclarations()) {
+            for (Declaration dec: unit.getDeclarations()) {
                 if (dec.isToplevel() && isPresentable(dec)) {
                     DeclarationWithProject dwp = new DeclarationWithProject(dec, 
                             CeylonBuilder.getFile(unit).getProject(),

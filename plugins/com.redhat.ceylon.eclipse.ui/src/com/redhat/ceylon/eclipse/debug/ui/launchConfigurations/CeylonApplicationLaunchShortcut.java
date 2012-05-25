@@ -126,7 +126,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
                         .getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
                 if (phasedUnit!=null) {
-                    List<Declaration> declarations = phasedUnit.getUnit().getDeclarations();
+                    List<Declaration> declarations = phasedUnit.getDeclarations();
                     for (Declaration d : declarations) {
                         boolean candidateDeclaration = true;
                         if (!d.isToplevel()) {
