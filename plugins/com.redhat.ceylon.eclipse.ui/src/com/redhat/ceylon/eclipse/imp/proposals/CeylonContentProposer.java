@@ -70,7 +70,6 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -451,7 +450,7 @@ public class CeylonContentProposer implements IContentProposer {
                 node instanceof Tree.IntersectionType) {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isProposable(dec, null) && dec instanceof TypeDeclaration) {
+                if (isProposable(dwp, null) && dec instanceof TypeDeclaration) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, null);
                 }
             }
@@ -460,8 +459,8 @@ public class CeylonContentProposer implements IContentProposer {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                for (Declaration d: overloads(dec)) {
-                    if (isInvocationProposable(d, EXPRESSION)) {
+                if (isInvocationProposable(dwp, EXPRESSION)) {
+                    for (Declaration d: overloads(dec)) {
                         ProducedReference pr = d.getProducedReference(qmte.getPrimary().getTypeModel(), 
                                 Collections.<ProducedType>emptyList());
                         addInvocationProposals(offset, prefix, cpc, result, 
@@ -486,7 +485,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
-                if (isParameterOfNamedArgInvocation(node, dec)) {
+                if (isParameterOfNamedArgInvocation(node, dwp)) {
                     if (node instanceof Tree.NamedArgumentList ||
                             occursAfterBraceOrSemicolon(token, cpc.getTokens())) {
                         addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -494,15 +493,15 @@ public class CeylonContentProposer implements IContentProposer {
                                 node, result, dec, doc);
                     }
                 }
-                else if (isProposable(dec, ol)) {
+                if (isProposable(dwp, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     if (isDirectlyInsideBlock(node, token, cpc.getTokens())) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     }
                 }
-                for (Declaration d: overloads(dec)) {
-                    if (isInvocationProposable(d, ol)) {
+                if (isInvocationProposable(dwp, ol)) {
+                    for (Declaration d: overloads(dec)) {
                         ProducedReference pr = getRefinedProducedReference(node, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), pr, ol);
@@ -535,17 +534,21 @@ public class CeylonContentProposer implements IContentProposer {
         return ol==null && (dec instanceof MethodOrValue || dec instanceof Class);
     }
     
-    private static boolean isInvocationProposable(Declaration dec, OccurrenceLocation ol) {
-        return dec instanceof Functional && !((Functional) dec).getParameterLists().isEmpty() &&
-                (ol==null || ol==EXPRESSION || ol==EXTENDS && dec instanceof Class);
+    private static boolean isInvocationProposable(DeclarationWithProximity dwp, OccurrenceLocation ol) {
+        Declaration dec = dwp.getDeclaration();
+        return dec instanceof Functional && 
+                //!((Functional) dec).getParameterLists().isEmpty() &&
+                (ol==null || ol==EXPRESSION || ol==EXTENDS && dec instanceof Class) &&
+                dwp.getNamedArgumentList()==null;
     }
 
-    private static boolean isProposable(Declaration dec, OccurrenceLocation ol) {
+    private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol) {
+        Declaration dec = dwp.getDeclaration();
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || dec instanceof Method && dec.isToplevel() || ol!=PARAMETER_LIST) &&
-                ol!=TYPE_PARAMETER_LIST;
+                ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
     }
 
     private static boolean isTypeParameterOfCurrentDeclaration(Node node, Declaration d) {
@@ -567,7 +570,7 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d) {
+    /*private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d) {
         if (node instanceof Tree.NamedArgumentList) {
             ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList()
                     .getParameterList();
@@ -582,6 +585,10 @@ public class CeylonContentProposer implements IContentProposer {
         else {
             return false;
         }
+    }*/
+    
+    private static boolean isParameterOfNamedArgInvocation(Node node, DeclarationWithProximity d) {
+        return node.getScope()==d.getNamedArgumentList();
     }
 
     private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
