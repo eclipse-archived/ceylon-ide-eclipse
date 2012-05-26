@@ -73,7 +73,7 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
             offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
-        for (DeclarationWithProximity dwp: getProposals(node, "", cu).values()) {
+        for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
