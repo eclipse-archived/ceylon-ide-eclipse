@@ -1033,6 +1033,7 @@ public class CeylonContentProposer implements IContentProposer {
             return "\\i" + n;
         }
         else if (d instanceof TypeDeclaration &&
+                !(d instanceof Class && d.isAnonymous()) &&
                 Character.isLowerCase(c)) {
             return "\\I" + n;
         }
