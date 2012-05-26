@@ -226,12 +226,12 @@ public class CeylonContentProposer implements IContentProposer {
                 int start = token.getStopIndex()+1;
                 if (offset<=start) {
                     //start of file or in whitespace
-                    return new PositionedPrefix(Character.toString(charAtOffset), offset);
+                    return new PositionedPrefix(Character.toString(charAtOffset), 
+                            offset-1);
                 }
                 String missing = text.substring(start, offset);
                 if (token.getType()==MEMBER_OP) {
-                    return new PositionedPrefix(missing,
-                        token.getStartIndex());
+                    return new PositionedPrefix(missing,start);
                     //end = previousToken.getStopIndex();
                 }
                 else if (isIdentifierOrKeyword(token)) {
@@ -241,11 +241,11 @@ public class CeylonContentProposer implements IContentProposer {
                     //end = previousToken.getStopIndex();
                 }
                 else {
-                    return new PositionedPrefix(missing,offset);
+                    return new PositionedPrefix(missing,start-1);
                 }
             }
             else {
-                return new PositionedPrefix("", offset);
+                return new PositionedPrefix("", offset-1);
             }
         }
     }
@@ -454,7 +454,8 @@ public class CeylonContentProposer implements IContentProposer {
             }
             
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            if (isKeywordProposable(ol)) {
+            if (isKeywordProposable(ol) && 
+                    !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
                 addKeywordProposals(offset, prefix, result);
                 //addTemplateProposal(offset, prefix, result);
             }
