@@ -122,6 +122,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil;
+import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
@@ -769,9 +770,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-    private static PhasedUnit parseFileToPhasedUnit(ModuleManager moduleManager, Context context,
+    private static PhasedUnit parseFileToPhasedUnit(ModuleManager moduleManager, TypeChecker typeChecker,
             ResourceVirtualFile file, ResourceVirtualFile srcDir,
             Package pkg) {
+        Context context = typeChecker.getContext();
         ANTLRInputStream input;
         try {
             input = new ANTLRInputStream(file.getInputStream());
@@ -808,8 +810,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         parserErrors.clear();
         
-        PhasedUnit newPhasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
-                moduleManager, context, tokens);
+        
+        PhasedUnit newPhasedUnit = new CeylonSourceFile(file, srcDir, cu, pkg, 
+                moduleManager, typeChecker, tokens);
         
         return newPhasedUnit;
     }
@@ -817,9 +820,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private List<PhasedUnit> incrementalBuild(IProject project,
         ISourceProject sourceProject, IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
-        ModuleManager moduleManager = typeChecker.getPhasedUnits().getModuleManager(); 
+        JDTModuleManager moduleManager = (JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager(); 
         JDTModelLoader modelLoader = getProjectModelLoader(project);
-        Context context = typeChecker.getContext();
         Set<String> cleanedPackages = new HashSet<String>();
         
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
@@ -864,7 +866,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     pkg = createNewPackage(packageFolder);
                 }
             }
-            PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, file, srcDir, pkg);
+            PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, file, srcDir, pkg);
             newPhasedUnit.getDependentsOf().addAll(dependentsOf);
             phasedUnitsToUpdate.add(newPhasedUnit);
             
@@ -1062,7 +1064,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, getModulesOutputDirectory(javaProject).getAbsolutePath(), new EclipseLogger()));
         final TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
         final PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-        final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager(); 
+        final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
+        moduleManager.setTypeChecker(typeChecker);
         final Context context = typeChecker.getContext();
         final JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
         final Module defaultModule = context.getModules().getDefaultModule();
@@ -1147,7 +1150,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     scannedSources.add(file);
                                 }
                                 ResourceVirtualFile virtualFile = ResourceVirtualFile.createResourceVirtualFile(file);
-                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, context, virtualFile, srcDir, pkg);
+                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
                                 phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
                             }
                             if (isJava((IFile)resource)) {

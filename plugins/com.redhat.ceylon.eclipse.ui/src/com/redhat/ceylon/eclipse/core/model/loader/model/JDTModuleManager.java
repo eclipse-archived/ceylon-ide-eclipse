@@ -33,6 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -49,12 +52,20 @@ import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.parser.LexError;
+import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
@@ -68,6 +79,7 @@ public class JDTModuleManager extends LazyModuleManager {
     private IJavaProject javaProject;
     private Set<String> sourceModules;
     private Set<File> classpath;
+    private TypeChecker typeChecker;
 
     public Set<File> getClasspath() {
         return classpath;
@@ -292,12 +304,58 @@ public class JDTModuleManager extends LazyModuleManager {
     
     @Override
     protected PhasedUnits createPhasedUnits() {
-        return new PhasedUnits(getContext(), new ModuleManagerFactory() {
+        ModuleManagerFactory moduleManagerFactory = new ModuleManagerFactory() {
             @Override
             public ModuleManager createModuleManager(Context context) {
                 return JDTModuleManager.this;
             }
-        });
+        };
+        
+        return new PhasedUnits(getContext(), moduleManagerFactory) {
+
+            @Override
+            protected void parseFile(VirtualFile file, VirtualFile srcDir)
+                    throws Exception {
+                if (file.getName().endsWith(".ceylon")) {
+
+                    //System.out.println("Parsing " + file.getName());
+                    CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(), System.getProperty("file.encoding")));
+                    CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+                    CeylonParser parser = new CeylonParser(tokenStream);
+                    Tree.CompilationUnit cu = parser.compilationUnit();
+                    List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+                    tokens.addAll(tokenStream.getTokens());
+                    PhasedUnit phasedUnit = new CeylonSourceFile(file, srcDir, cu, 
+                            getModuleManager().getCurrentPackage(), getModuleManager(),
+                            getTypeChecker(), tokens);
+                    addPhasedUnit(file, phasedUnit);
+
+                    List<LexError> lexerErrors = lexer.getErrors();
+                    for (LexError le : lexerErrors) {
+                        //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
+                        cu.addLexError(le);
+                    }
+                    lexerErrors.clear();
+
+                    List<ParseError> parserErrors = parser.getErrors();
+                    for (ParseError pe : parserErrors) {
+                        //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
+                        cu.addParseError(pe);
+                    }
+                    parserErrors.clear();
+
+                }
+            }
+            
+        };
+    }
+
+    public TypeChecker getTypeChecker() {
+        return typeChecker;
+    }
+
+    public void setTypeChecker(TypeChecker typeChecker) {
+        this.typeChecker = typeChecker;
     }
 
 }
