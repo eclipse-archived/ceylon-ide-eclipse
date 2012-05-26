@@ -231,7 +231,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 String missing = text.substring(start, offset);
                 if (token.getType()==MEMBER_OP) {
-                    return new PositionedPrefix(missing,start);
+                    return new PositionedPrefix(missing,start-1);
                     //end = previousToken.getStopIndex();
                 }
                 else if (isIdentifierOrKeyword(token)) {
