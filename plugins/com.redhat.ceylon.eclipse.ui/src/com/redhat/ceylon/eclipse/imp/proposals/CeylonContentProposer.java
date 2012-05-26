@@ -68,6 +68,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -322,13 +323,15 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
         if (node.getScope() instanceof Interface || 
-                node.getScope() instanceof Package) {
+                node.getScope() instanceof Package ||
+                node.getScope() instanceof NamedArgumentList) {
             return false;
         }
         else {
             //TODO: check that it is not the opening/closing 
             //      brace of a named argument list!
-            return occursAfterBraceOrSemicolon(token, tokens);
+            return !(node instanceof Tree.SequenceEnumeration) && 
+                    occursAfterBraceOrSemicolon(token, tokens);
         }
     }
 
@@ -483,8 +486,7 @@ public class CeylonContentProposer implements IContentProposer {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isParameterOfNamedArgInvocation(node, dwp)) {
-                    if (node instanceof Tree.NamedArgumentList ||
-                            occursAfterBraceOrSemicolon(token, cpc.getTokens())) {
+                    if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
                         addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addInlineFunctionProposal(offset, prefix, cpc, 
                                 node, result, dec, doc);
@@ -512,6 +514,13 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static boolean isDirectlyInsideNamedArgumentList(
+            CeylonParseController cpc, Node node, CommonToken token) {
+        return node instanceof Tree.NamedArgumentList ||
+                (!(node instanceof Tree.SequenceEnumeration) &&
+                        occursAfterBraceOrSemicolon(token, cpc.getTokens()));
     }
     
     private static boolean isMemberOperator(Token token) {
@@ -831,8 +840,6 @@ public class CeylonContentProposer implements IContentProposer {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
                 new Comparator<DeclarationWithProximity>() {
                     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
-                        String xName = x.getName();
-                        String yName = y.getName();
                         ProducedType xtype = type(x.getDeclaration());
                         ProducedType ytype = type(y.getDeclaration());
                         boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof BottomType;
@@ -843,15 +850,16 @@ public class CeylonContentProposer implements IContentProposer {
                         if (ybottom && !xbottom) {
                             return -1;
                         }
-                        if (!prefix.isEmpty()) {
-                            int lowers = isLowerCase(prefix.charAt(0)) ? -1 : 1;
+                        String xName = x.getName();
+                        String yName = y.getName();
+                        if (!prefix.isEmpty() && isUpperCase(prefix.charAt(0))) {
                             if (isLowerCase(xName.charAt(0)) && 
                                     isUpperCase(yName.charAt(0))) {
-                                return lowers;
+                                return 1;
                             }
                             else if (isUpperCase(xName.charAt(0)) && 
                                     isLowerCase(yName.charAt(0))) {
-                                return -lowers;
+                                return -1;
                             }
                         }
                         if (type!=null) {
@@ -876,6 +884,15 @@ public class CeylonContentProposer implements IContentProposer {
                         }
                         if (x.getProximity()!=y.getProximity()) {
                             return new Integer(x.getProximity()).compareTo(y.getProximity());
+                        }
+                        //if (!prefix.isEmpty() && isLowerCase(prefix.charAt(0))) {
+                        if (isLowerCase(xName.charAt(0)) && 
+                                isUpperCase(yName.charAt(0))) {
+                            return -1;
+                        }
+                        else if (isUpperCase(xName.charAt(0)) && 
+                                isLowerCase(yName.charAt(0))) {
+                            return 1;
                         }
                         return xName.compareTo(yName);
                     }
