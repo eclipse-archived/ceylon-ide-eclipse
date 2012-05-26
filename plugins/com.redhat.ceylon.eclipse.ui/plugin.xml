@@ -1135,5 +1135,14 @@
     </fontDefinition>
 
 </extension>
-   
+<extension
+      id="com.redhat.ceylon.eclipse.ui.cpcontainer.Container"
+      name="Ceylon Classpath Container"
+      point="org.eclipse.jdt.core.classpathContainerInitializer">
+  <classpathContainerInitializer
+        class="com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathInitializer"
+        id="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
+  </classpathContainerInitializer>
+   </extension>
+
 </plugin>
