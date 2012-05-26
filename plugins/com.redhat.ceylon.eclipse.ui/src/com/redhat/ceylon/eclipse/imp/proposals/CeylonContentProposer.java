@@ -325,13 +325,14 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
-        if (!(node.getScope() instanceof Interface)) {
+        if (node.getScope() instanceof Interface || 
+                node.getScope() instanceof Package) {
+            return false;
+        }
+        else {
             //TODO: check that it is not the opening/closing 
             //      brace of a named argument list!
             return occursAfterBraceOrSemicolon(token, tokens);
-        }
-        else {
-            return false;
         }
     }
 
@@ -341,6 +342,12 @@ public class CeylonContentProposer implements IContentProposer {
             return false;
         }
         else {
+            int tokenType = token.getType();
+            if (tokenType==LBRACE || 
+                    tokenType==RBRACE || 
+                    tokenType==SEMICOLON) {
+                return true;
+            }
             int previousTokenType = adjust(token.getTokenIndex()-1, 
                     token.getStartIndex(), tokens).getType();
             return previousTokenType==LBRACE || 
@@ -662,7 +669,9 @@ public class CeylonContentProposer implements IContentProposer {
     private static void addForProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
-        if (d instanceof Value || d instanceof Getter) {
+        if (d instanceof Value || 
+                d instanceof Getter || 
+                d instanceof ValueParameter) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null && 
                     d.getUnit().isIterableType(td.getType())) {
@@ -688,8 +697,9 @@ public class CeylonContentProposer implements IContentProposer {
     private static void addIfExistsProposal(int offset, String prefix, CeylonParseController cpc,
             List<ICompletionProposal> result, DeclarationWithProximity dwp,
             Declaration d, OccurrenceLocation ol) {
-        if (d instanceof Value) {
-            Value v = (Value) d;
+        if (d instanceof Value || 
+                d instanceof ValueParameter) {
+            TypedDeclaration v = (TypedDeclaration) d;
             if (v.getType()!=null &&
                     d.getUnit().isOptionalType(v.getType()) && 
                     !v.isVariable()) {
