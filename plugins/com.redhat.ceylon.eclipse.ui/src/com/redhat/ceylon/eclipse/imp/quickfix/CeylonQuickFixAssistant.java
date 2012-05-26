@@ -51,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -766,8 +767,19 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
         if (importNode != null) {
             int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
-            edit = new InsertEdit(insertPosition, ", " + declaration);
-        } else {
+            String text;
+            if (importNode.getImportMemberOrTypeList().getImportWildcard()!=null) {
+                text = declaration + ", ";
+            }
+            else if (importNode.getImportMemberOrTypeList().getImportMemberOrTypes().isEmpty()) {
+                text = declaration;
+            }
+            else {
+                text = ", " + declaration;
+            }
+            edit = new InsertEdit(insertPosition, text);
+        } 
+        else {
             int insertPosition = getBestImportInsertPosition(cu);
             String text = "import " + packageName + " { " + declaration + " }";
             if (insertPosition==0) {
@@ -798,7 +810,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private int getBestImportMemberInsertPosition(Tree.Import importNode,
             String declaration) {
-        return importNode.getImportMemberOrTypeList().getStopIndex() - 1;
+        ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+        if (imtl.getImportWildcard()!=null) {
+            return imtl.getImportWildcard().getStartIndex();
+        }
+        else {
+            return imtl.getStopIndex();
+        }
     }
 
     private void addAddAnnotationProposal(Node node, String annotation, String desc, ProblemLocation problem, 
