@@ -75,12 +75,12 @@ public abstract class AbstractRefactoring extends Refactoring {
         }
         if (identifyingNode instanceof Tree.StaticMemberOrTypeExpression) {
             String id = ((Tree.StaticMemberOrTypeExpression) identifyingNode).getIdentifier().getText();
-            return Character.toLowerCase(id.charAt(0)) + 
-                    id.substring(1);
+            if (!id.isEmpty()) {
+                return Character.toLowerCase(id.charAt(0)) + 
+                        id.substring(1);
+            }
         }
-        else {
-            return "temp";
-        }
+        return "temp";
     }
 
     String toString(Node term) {
