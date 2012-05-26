@@ -20,6 +20,7 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader.model;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -43,13 +44,34 @@ public class JDTModule extends LazyModule {
 
     private JDTModuleManager moduleManager;
     private List<IPackageFragmentRoot> packageFragmentRoots;
+    private File jarPath;
 
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
         this.packageFragmentRoots = packageFragmentRoots;
     }
 
-    public List<IPackageFragmentRoot> getPackageFragmentRoots() {
+    public synchronized List<IPackageFragmentRoot> getPackageFragmentRoots() {
+        if (packageFragmentRoots == null) {
+            try {
+                for (IPackageFragmentRoot root : moduleManager.getJavaProject().getPackageFragmentRoots()) {
+                    if (root instanceof JarPackageFragmentRoot) {
+                        JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+                        try {
+                            if (jarRoot.getJar().getName().equals(jarPath)) {
+                                packageFragmentRoots.add(root);
+                            }
+                        } catch (CoreException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } catch (JavaModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         return packageFragmentRoots;
     }
 
@@ -102,24 +124,6 @@ public class JDTModule extends LazyModule {
     @Override
     public void loadPackageList(ArtifactResult artifact) {
         super.loadPackageList(artifact);
-        String jarPath = artifact.artifact().getAbsolutePath();
-        try {
-            for (IPackageFragmentRoot root : moduleManager.getJavaProject().getPackageFragmentRoots()) {
-                if (root instanceof JarPackageFragmentRoot) {
-                    JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
-                    try {
-                        if (jarRoot.getJar().getName().equals(jarPath)) {
-                            packageFragmentRoots.add(root);
-                        }
-                    } catch (CoreException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-        } catch (JavaModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        jarPath = artifact.artifact();
     }    
 }
