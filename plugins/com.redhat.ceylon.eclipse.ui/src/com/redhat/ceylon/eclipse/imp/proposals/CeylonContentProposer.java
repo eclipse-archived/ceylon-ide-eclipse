@@ -4,7 +4,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MEMBER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
@@ -229,47 +228,37 @@ public class CeylonContentProposer implements IContentProposer {
             //previously typed characters
             boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
             if (isIdentifierChar) {
-                int start = token.getStopIndex()+1;
-                if (offset<=start) {
-                    //if we are typing in the middle of a
-                    //pre-existing token
-                    if (token.getType()==CeylonLexer.WS) {
-                        //in whitespace
-                        String prefix = text.substring(token.getStartIndex(), offset).trim();
-                        return new PositionedPrefix(prefix, offset-prefix.length()-1);
-                    }
-                    else if (isIdentifierOrKeyword(token)) {
-                        //within an identifier or keyword
-                        String prefix = text.substring(token.getStartIndex(), offset);
-                        return new PositionedPrefix(prefix, token.getStartIndex());
-                    }
-                    else if (isJavaIdentifierPart(text.charAt(offset-2))) {
-                        //in comment blocks, and maybe some
-                        //other cases
-                        //TODO: figure out the other cases
-                        //      so we can return more than
-                        //      just one character
-                        return new PositionedPrefix(
-                                Character.toString(charAtOffset), 
-                                offset-1);
-                    }
-                }
-                String missing = text.substring(start, offset);
-                if (token.getType()==MEMBER_OP) {
-                    //after a member dereference
-                    return new PositionedPrefix(missing,start-1);
+                if (token.getType()==CeylonLexer.WS) {
+                    //we are typing in or after whitespace
+                    String prefix = text.substring(token.getStartIndex(), offset).trim();
+                    return new PositionedPrefix(prefix, offset-prefix.length()-1);
                 }
                 else if (isIdentifierOrKeyword(token)) {
-                    //at the end of an identifier
+                    //we are typing in or after within an 
+                    //identifier or keyword
+                    String prefix = text.substring(token.getStartIndex(), offset);
+                    return new PositionedPrefix(prefix, token.getStartIndex());
+                }
+                else if (offset<=token.getStopIndex()+1) {
+                    //we are typing in or after a comment 
+                    //block or strings, etc - not much 
+                    //useful compensation we can do here
                     return new PositionedPrefix(
-                        token.getText()+missing,
-                        token.getStartIndex());
+                            Character.toString(charAtOffset), 
+                            offset-1);
                 }
                 else {
-                    return new PositionedPrefix(missing,start-1);
+                    //after a member dereference and other
+                    //misc cases of punctuation, etc
+                    return new PositionedPrefix(
+                            text.substring(token.getStopIndex()+1, offset),
+                            token.getStopIndex());
                 }
             }
             else {
+                //TODO: what if it is a typed "."? Is there
+                //      any way we can arrange to propose
+                //      members?
                 return new PositionedPrefix("", offset-1);
             }
         }
