@@ -207,8 +207,8 @@ public class CeylonContentProposer implements IContentProposer {
         //the caret, i.e. at offset-1)
         char charAtOffset = text.charAt(offset-1);
         int offsetInToken = offset-1-token.getStartIndex();
-		boolean inToken = offsetInToken>=0 && 
-		        offsetInToken<token.getText().length();
+        boolean inToken = offsetInToken>=0 && 
+                offsetInToken<token.getText().length();
         //int end = offset;
         if (inToken && 
                 charAtOffset==token.getText().charAt(offsetInToken)) {
@@ -412,10 +412,10 @@ public class CeylonContentProposer implements IContentProposer {
         Unit unit = node.getUnit();
         if (unit!=null) { //a null unit can occur if we have not finished parsing the file
             Module module = unit.getPackage().getModule();
-    		for (Package p: module.getAllPackages()) {
+            for (Package p: module.getAllPackages()) {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
-            	//if ( p.getModule().equals(module) || p.isShared() ) {
+                //if ( p.getModule().equals(module) || p.isShared() ) {
                     String pkg = p.getQualifiedNameString();
                     if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
                         boolean already = false;
@@ -617,9 +617,9 @@ public class CeylonContentProposer implements IContentProposer {
                 Collections.<ProducedType>emptyList());
     }
 
-	public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
-		return refinedProducedReference(node.getScope().getDeclaringType(d), d);
-	}
+    public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
+        return refinedProducedReference(node.getScope().getDeclaringType(d), d);
+    }
 
     public static ProducedReference getRefinedProducedReference(ProducedType superType, 
             Declaration d) {
@@ -641,12 +641,12 @@ public class CeylonContentProposer implements IContentProposer {
     private static ProducedReference refinedProducedReference(ProducedType outerType, 
             Declaration d) {
         List<ProducedType> params = new ArrayList<ProducedType>();
-		if (d instanceof Generic) {
-		    for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
-			    params.add(tp.getType());
-		    }
-		}
-		return d.getProducedReference(outerType, params);
+        if (d instanceof Generic) {
+            for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
+                params.add(tp.getType());
+            }
+        }
+        return d.getProducedReference(outerType, params);
     }
     
     private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
@@ -1060,7 +1060,7 @@ public class CeylonContentProposer implements IContentProposer {
             String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d)) {
-        	result.append("variable ");
+            result.append("variable ");
         }
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
@@ -1079,9 +1079,9 @@ public class CeylonContentProposer implements IContentProposer {
         return result.toString();
     }
 
-	private static boolean isVariable(Declaration d) {
-		return d instanceof TypedDeclaration && ((TypedDeclaration) d).isVariable();
-	}
+    private static boolean isVariable(Declaration d) {
+        return d instanceof TypedDeclaration && ((TypedDeclaration) d).isVariable();
+    }
         
     /*private static String getAttributeRefinementTextFor(Declaration d) {
         StringBuilder result = new StringBuilder();
@@ -1093,7 +1093,7 @@ public class CeylonContentProposer implements IContentProposer {
     private static String getRefinementDescriptionFor(Declaration d, ProducedReference pr) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d)) {
-        	result.append("variable ");
+            result.append("variable ");
         }
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
@@ -1245,10 +1245,10 @@ public class CeylonContentProposer implements IContentProposer {
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null) {
-            	ProducedType type = td.getType();
-            	if (pr!=null) {
-            	    type = type.substitute(pr.getTypeArguments());
-            	}
+                ProducedType type = td.getType();
+                if (pr!=null) {
+                    type = type.substitute(pr.getTypeArguments());
+                }
                 String typeName = type.getProducedTypeName();
                 if (td instanceof Value && 
                         td.getTypeDeclaration().isAnonymous()) {
@@ -1379,10 +1379,10 @@ public class CeylonContentProposer implements IContentProposer {
                                     null : pr.getTypedParameter(p);
                             appendDeclarationText(p, ppr, result);
                             appendParameters(p, ppr, result);
-                        	/*ProducedType type = p.getType();
-                        	if (pr!=null) {
-                        		type = type.substitute(pr.getTypeArguments());
-                        	}
+                            /*ProducedType type = p.getType();
+                            if (pr!=null) {
+                                type = type.substitute(pr.getTypeArguments());
+                            }
                             result.append(type.getProducedTypeName()).append(" ")
                                 .append(p.getName());
                             if (p instanceof FunctionalParameter) {
