@@ -196,22 +196,28 @@ public class CeylonContentProposer implements IContentProposer {
 
     private static PositionedPrefix getPositionedPrefix(final int offset,
             ITextViewer viewer, CommonToken token) {
-        //try to guess the character the user just typed
         String text = viewer.getDocument().get();
-        char charAtOffset = text.charAt(offset>0?offset-1:0);
-        int offsetInToken = offset-token.getStartIndex();
-		Character charInTokenAtOffset = offsetInToken<=token.getText().length() ? 
-		        token.getText().charAt(offsetInToken>0?offsetInToken-1:0) : null;
+        if (token==null || offset==0) {
+            //no earlier token, so we're typing at the 
+            //start of an empty file
+            return new PositionedPrefix(text.substring(0, offset), 0);
+        }
+        //try to guess the character the user just typed
+        //(it would be the character immediately behind
+        //the caret, i.e. at offset-1)
+        char charAtOffset = text.charAt(offset-1);
+        int offsetInToken = offset-1-token.getStartIndex();
+		boolean inToken = offsetInToken>=0 && 
+		        offsetInToken<token.getText().length();
         //int end = offset;
-        if (charInTokenAtOffset!=null && 
-                charAtOffset==charInTokenAtOffset) {
+        if (inToken && 
+                charAtOffset==token.getText().charAt(offsetInToken)) {
             //then we're not missing the typed character 
             //from the tree we were passed by IMP
             if (isIdentifierOrKeyword(token)) {
                 return new PositionedPrefix(
-                     token.getText().substring(0, offsetInToken),
+                     token.getText().substring(0, offsetInToken+1),
                      token.getStartIndex());
-                //end = token.getStopIndex();
             }
             else {
                 return new PositionedPrefix("", offset);
@@ -225,20 +231,39 @@ public class CeylonContentProposer implements IContentProposer {
             if (isIdentifierChar) {
                 int start = token.getStopIndex()+1;
                 if (offset<=start) {
-                    //start of file or in whitespace
-                    return new PositionedPrefix(Character.toString(charAtOffset), 
-                            offset-1);
+                    //if we are typing in the middle of a
+                    //pre-existing token
+                    if (token.getType()==CeylonLexer.WS) {
+                        //in whitespace
+                        String prefix = text.substring(token.getStartIndex(), offset).trim();
+                        return new PositionedPrefix(prefix, offset-prefix.length()-1);
+                    }
+                    else if (isIdentifierOrKeyword(token)) {
+                        //within an identifier or keyword
+                        String prefix = text.substring(token.getStartIndex(), offset);
+                        return new PositionedPrefix(prefix, token.getStartIndex());
+                    }
+                    else if (isJavaIdentifierPart(text.charAt(offset-2))) {
+                        //in comment blocks, and maybe some
+                        //other cases
+                        //TODO: figure out the other cases
+                        //      so we can return more than
+                        //      just one character
+                        return new PositionedPrefix(
+                                Character.toString(charAtOffset), 
+                                offset-1);
+                    }
                 }
                 String missing = text.substring(start, offset);
                 if (token.getType()==MEMBER_OP) {
+                    //after a member dereference
                     return new PositionedPrefix(missing,start-1);
-                    //end = previousToken.getStopIndex();
                 }
                 else if (isIdentifierOrKeyword(token)) {
+                    //at the end of an identifier
                     return new PositionedPrefix(
                         token.getText()+missing,
                         token.getStartIndex());
-                    //end = previousToken.getStopIndex();
                 }
                 else {
                     return new PositionedPrefix(missing,start-1);
@@ -252,34 +277,27 @@ public class CeylonContentProposer implements IContentProposer {
 
     private static CommonToken getTokenAtCaret(final int offset, ITextViewer viewer,
             List<CommonToken> tokens) {
-        //find the token under the caret, adjusting to an 
+        //find the token behind the caret, adjusting to an 
         //earlier token if the token we find is not at the 
         //same position in the current text (in which case 
         //it is probably a token that actually comes after 
         //what we are currently typing)
-        int index = getTokenIndexAtCharacter(tokens, offset-1);
-        while (true) {
-            CommonToken token;
-            if (index<0) {
-                index = -index;
-                token = index==tokens.size()-1 ? 
-                        null : (CommonToken) tokens.get(index+1);
-            }
-            else {
-                token = (CommonToken) tokens.get(index);
-            }
-            if (token==null || 0>index--) {
-                return null;
-            }
-            else {
-                String text = viewer.getDocument().get();
-                boolean tokenHasMoved = text.charAt(token.getStartIndex())!=
-                        token.getText().charAt(0);
-                if (!tokenHasMoved) {
-                    return token;
-                }
-            }
+        if (offset==0) {
+            return null;
         }
+        int index = getTokenIndexAtCharacter(tokens, offset-1);
+        if (index<0) index = -index;
+        while (index>=0) {
+            CommonToken token = (CommonToken) tokens.get(index);
+            String text = viewer.getDocument().get();
+            boolean tokenHasMoved = text.charAt(token.getStartIndex())!=
+                    token.getText().charAt(0);
+            if (!tokenHasMoved) {
+                return token;
+            }
+            index--;
+        }
+        return null;
     }
     
     private static class PositionedPrefix {
@@ -431,7 +449,7 @@ public class CeylonContentProposer implements IContentProposer {
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, 
             CommonToken token, IDocument doc) {
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        if (node instanceof Tree.Import) {
+        if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
         else if (node instanceof Tree.ImportPath) {
@@ -454,7 +472,7 @@ public class CeylonContentProposer implements IContentProposer {
             }
             
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            if (isKeywordProposable(ol) && 
+            if (//isKeywordProposable(ol) && 
                     !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
                 addKeywordProposals(offset, prefix, result);
                 //addTemplateProposal(offset, prefix, result);
@@ -511,9 +529,9 @@ public class CeylonContentProposer implements IContentProposer {
         return decs;
     }
 
-    private static boolean isKeywordProposable(OccurrenceLocation ol) {
+    /*private static boolean isKeywordProposable(OccurrenceLocation ol) {
         return ol==null || ol==EXPRESSION;
-    }
+    }*/
     
     private static boolean isRefinementProposable(Declaration dec, OccurrenceLocation ol) {
         return ol==null && (dec instanceof MethodOrValue || dec instanceof Class);
