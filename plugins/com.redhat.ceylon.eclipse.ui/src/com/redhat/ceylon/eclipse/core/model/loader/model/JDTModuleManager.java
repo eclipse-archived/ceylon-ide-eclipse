@@ -22,6 +22,7 @@ package com.redhat.ceylon.eclipse.core.model.loader.model;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -66,6 +67,11 @@ public class JDTModuleManager extends LazyModuleManager {
     private AbstractModelLoader modelLoader;
     private IJavaProject javaProject;
     private Set<String> sourceModules;
+    private Set<File> classpath;
+
+    public Set<File> getClasspath() {
+        return classpath;
+    }
 
     public Set<String> getSourceModules() {
         return sourceModules;
@@ -80,6 +86,7 @@ public class JDTModuleManager extends LazyModuleManager {
         this.javaProject = javaProject;
         sourceModules = new HashSet<String>();
         sourceModules.add("ceylon.language");
+        classpath = new HashSet<File>();
     }
     /*
      * TODO : Remove when the package creation (and module binding) in ModuleManager will be done with a method 
@@ -217,9 +224,12 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
 		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
+        File file = artifact.artifact();
 		if (artifact.artifact().getName().endsWith(".src")) {
 		    sourceModules.add(module.getNameAsString());
+		    file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
 		}
+		classpath.add(file);
         super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies);
     }
 
