@@ -118,6 +118,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
@@ -291,6 +293,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	    return (JDTModelLoader) ((JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager()).getModelLoader();
 	}
 
+    final static class BooleanHolder {
+        public boolean value;
+    };
 	
 	@Override
     protected IProject[] build(final int kind, Map args, IProgressMonitor monitor) throws CoreException {
@@ -298,94 +303,62 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             getPreferencesService().setProject(getProject());
         }
         
-        startTime = System.nanoTime();
-        MessageConsole console = findConsole();
-        IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
-        if (buildConfsBefore.length == 0) {
-            console.activate();
+        boolean emitDiags= getDiagPreference();
+
+        fSourcesToCompile.clear();
+
+        IProject project = getProject();
+        ISourceProject sourceProject = getSourceProject();
+        if (sourceProject == null) {
+            return new IProject[0];
         }
-        getConsoleStream().println("\n===================================");
-        getConsoleStream().println(timedMessage("Starting Ceylon build on project : " + getProject()));
-        getConsoleStream().println("-----------------------------------");
+
+        TypeChecker typeChecker = typeCheckers.get(project);
+
+        List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
+        List<IProject> requiredProjects = getRequiredProjects(project);
+        
+        final BooleanHolder mustDoFullBuild = new BooleanHolder();
+        final BooleanHolder mustResolveClasspathContainer = new BooleanHolder();
+        final IResourceDelta currentDelta = getDelta(getProject());
+        
+        boolean somethingToDo = chooseBuildTypeFromDeltas(kind, currentDelta,
+                monitor, typeChecker, mustDoFullBuild,
+                mustResolveClasspathContainer);
+
+        if (! somethingToDo) {
+            return requiredProjects.toArray(new IProject[0]);
+        }
+        
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        
+        if (mustResolveClasspathContainer.value) {
+            IJavaProject javaProject = JavaCore.create(project);
+            if (javaProject != null) {
+                List<CeylonClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+                for (CeylonClasspathContainer container : cpContainers) {
+                    container.launchResolve(false, null);
+                }
+                return requiredProjects.toArray(new IProject[0]);
+            }
+        }
+        
         try {
+            startTime = System.nanoTime();
+            MessageConsole console = findConsole();
+            IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
+            if (buildConfsBefore.length == 0) {
+                console.activate();
+            }
+            getConsoleStream().println("\n===================================");
+            getConsoleStream().println(timedMessage("Starting Ceylon build on project : " + getProject()));
+            getConsoleStream().println("-----------------------------------");
+            boolean binariesGenerationOK;
+            
             sourceFolders.clear();
             
-            boolean emitDiags= getDiagPreference();
-    
-            fSourcesToCompile.clear();
-    
-            IProject project = getProject();
-            ISourceProject sourceProject = getSourceProject();
-            if (sourceProject == null) {
-                return new IProject[0];
-            }
-    
-            TypeChecker typeChecker = typeCheckers.get(project);
-    
-            final class BooleanHolder {
-                public boolean value;
-            };
-            final BooleanHolder mustDoFullBuild = new BooleanHolder();
-            mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
-            
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-            
-            getConsoleStream().println(timedMessage("Scanning deltas to detect project structure changes"));
-            final IResourceDelta currentDelta = getDelta(getProject());
-            if (! mustDoFullBuild.value) {
-                if (currentDelta != null) {
-                    try {
-                        currentDelta.accept(new IResourceDeltaVisitor() {
-                            @Override
-                            public boolean visit(IResourceDelta resourceDelta) throws CoreException {
-                                IResource resource = resourceDelta.getResource();
-                                if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
-                                    if (resource instanceof IFolder) {
-                                        IFolder folder = (IFolder) resource; 
-                                        Package pkg = retrievePackage(folder);
-                                        // If a package has been removed, then trigger a full build
-                                        if (pkg != null) {
-                                            mustDoFullBuild.value = true;
-                                            return false;
-                                        }
-                                    }
-                                }
-                                
-                                if (resource instanceof IFile) {
-                                    if (resource.getName().equals(ModuleManager.MODULE_FILE) ||
-                                            resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
-                                        // If a module descriptor has been added, removed or changed, trigger a full build
-                                        mustDoFullBuild.value = true;
-                                        return false;
-                                    }
-                                }
-                                
-                                if (resource instanceof IProject && 
-                                        ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
-                                    mustDoFullBuild.value = true;
-                                    return false;
-                                }
-                                
-                                return true;
-                            }
-                        });
-                    } catch (CoreException e) {
-                        getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
-                        mustDoFullBuild.value = true;
-                    }
-                } else {
-                    mustDoFullBuild.value = true;
-                }
-            }
-    
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-            List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
-            List<IProject> requiredProjects = getRequiredProjects(project);
-            boolean binariesGenerationOK;
             if (mustDoFullBuild.value) {
                 monitor.beginTask("Full Ceylon build of project " + project.getName(), 9);
                 getConsoleStream().println(timedMessage("Full build of model"));
@@ -602,6 +575,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
                 if (builtPhasedUnits== null)
                     return new IProject[0];
+                
+                if (builtPhasedUnits.isEmpty() && fSourcesToCompile.isEmpty()) {
+                    return requiredProjects.toArray(new IProject[0]);
+                }
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -656,6 +633,74 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             getConsoleStream().println(timedMessage("End Ceylon build on project : " + getProject()));
             getConsoleStream().println("===================================");
         }
+    }
+
+    public boolean chooseBuildTypeFromDeltas(final int kind, final IResourceDelta currentDelta,
+            IProgressMonitor monitor, TypeChecker typeChecker,
+            final CeylonBuilder.BooleanHolder mustDoFullBuild,
+            final CeylonBuilder.BooleanHolder mustResolveClasspathContainer) {
+        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
+        mustResolveClasspathContainer.value = false;
+        final BooleanHolder sourceModified = new BooleanHolder();
+        sourceModified.value = false;
+        
+        boolean somethingToDo = false;
+        
+        if (! mustDoFullBuild.value) {
+            if (currentDelta != null) {
+                try {
+                    currentDelta.accept(new IResourceDeltaVisitor() {
+                        @Override
+                        public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+                            IResource resource = resourceDelta.getResource();
+                            if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
+                                if (resource instanceof IFolder) {
+                                    IFolder folder = (IFolder) resource; 
+                                    Package pkg = retrievePackage(folder);
+                                    // If a package has been removed, then trigger a full build
+                                    if (pkg != null) {
+                                        mustDoFullBuild.value = true;
+                                        return true;
+                                    }
+                                }
+                            }
+                            
+                            if (resource instanceof IFile) {
+                                if (resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
+                                    // If a package descriptor has been added, removed or changed, trigger a full build
+                                    mustDoFullBuild.value = true;
+                                    return false;
+                                }
+                                if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
+                                    // If a module descriptor has been added, removed or changed, resolve the Ceylon classpath container
+                                    mustResolveClasspathContainer.value = true;
+                                    return false;
+                                }
+                                if ( isCeylonOrJava((IFile)resource) ) {
+                                    sourceModified.value = true;
+                                }
+                            }
+                            
+                            if (resource instanceof IProject && 
+                                    ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
+                                mustDoFullBuild.value = true;
+                                return false;
+                            }
+                            
+                            return true;
+                        }
+                    });
+                } catch (CoreException e) {
+                    getPlugin().getLog().log(new Status(IStatus.ERROR, getPlugin().getID(), e.getLocalizedMessage(), e));
+                    mustDoFullBuild.value = true;
+                }
+            } else {
+                mustDoFullBuild.value = true;
+            }
+        }
+        return mustDoFullBuild.value || 
+                mustResolveClasspathContainer.value ||
+                sourceModified.value;
     }
 
     private static String successMessage(boolean binariesGenerationOK) {
@@ -916,14 +961,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
         System.out.println("Starting ceylon full build of project " + project.getName());
 
-        final TypeChecker typeChecker = buildCeylonModelWithoutTypechecking(
-                project, monitor);
-
         monitor.subTask("Clearing existing markers");
         clearProjectMarkers(project);
         clearMarkersOn(project);
         monitor.worked(1);
         
+        TypeChecker alreadyExistingTypeChecker = getProjectTypeChecker(project);
+        final TypeChecker typeChecker = alreadyExistingTypeChecker != null ?
+                                             alreadyExistingTypeChecker : 
+                                                 buildCeylonModelWithoutTypechecking(project, monitor);
+
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
         monitor.subTask("Compiling Ceylon source files for project " 
