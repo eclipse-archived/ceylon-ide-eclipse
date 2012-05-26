@@ -41,8 +41,10 @@ public class CeylonDeclaration {
         
         phasedUnit.scanDeclarations();
         phasedUnit.scanTypeDeclarations();
+/*        
         phasedUnit.validateRefinement();
         //phasedUnit.analyseTypes();
+*/
         
         modelDeclaration = astDeclaration.getDeclarationModel();
         return modelDeclaration;
