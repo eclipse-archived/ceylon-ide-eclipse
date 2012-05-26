@@ -1362,11 +1362,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         IJavaProject javaProject = JavaCore.create(project);
         IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
         try {
-            for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
-                if (cpEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                    classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+            List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+            for (CeylonClasspathContainer container : containers) {
+                for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
+                    classpathElements.add(cpEntry.getPath().toOSString());
                 }
             }
+            
             classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
         } catch (JavaModelException e1) {
             // TODO Auto-generated catch block
