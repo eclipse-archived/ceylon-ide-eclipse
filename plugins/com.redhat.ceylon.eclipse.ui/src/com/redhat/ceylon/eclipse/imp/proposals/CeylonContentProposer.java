@@ -166,8 +166,8 @@ public class CeylonContentProposer implements IContentProposer {
         //finally, construct and sort proposals
         return constructCompletions(offset, result.prefix, 
                     sortProposals(result.prefix, rtv.getType(), 
-                            getProposals(node, result.prefix, rn)),
-                    cpc, node, adjustedToken, 
+                            getProposals(node, result.prefix, result.isMemberOp, rn)),
+                    cpc, node, adjustedToken, result.isMemberOp,
                     viewer.getDocument());
         
     }
@@ -219,7 +219,7 @@ public class CeylonContentProposer implements IContentProposer {
                      token.getStartIndex());
             }
             else {
-                return new PositionedPrefix("", offset);
+                return new PositionedPrefix(offset, false);
             }
         } 
         else {
@@ -255,11 +255,11 @@ public class CeylonContentProposer implements IContentProposer {
                             token.getStopIndex());
                 }
             }
+            else if (charAtOffset=='.') {
+                return new PositionedPrefix(offset-2, true);
+            }
             else {
-                //TODO: what if it is a typed "."? Is there
-                //      any way we can arrange to propose
-                //      members?
-                return new PositionedPrefix("", offset-1);
+                return new PositionedPrefix(offset-1, false);
             }
         }
     }
@@ -292,8 +292,15 @@ public class CeylonContentProposer implements IContentProposer {
     private static class PositionedPrefix {
         String prefix;
         int start;
+        boolean isMemberOp;
         PositionedPrefix(String prefix, int start) {
             this.prefix=prefix;
+            this.start=start;
+            this.isMemberOp=false;
+        }
+        PositionedPrefix(int start, boolean isMemberOp) {
+            this.prefix="";
+            this.isMemberOp=isMemberOp;
             this.start=start;
         }
     }
@@ -443,7 +450,7 @@ public class CeylonContentProposer implements IContentProposer {
     
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, 
-            CommonToken token, IDocument doc) {
+            CommonToken token, boolean memberOp, IDocument doc) {
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
@@ -485,7 +492,7 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 if (isProposable(dwp, ol)) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    if (isDirectlyInsideBlock(node, token, cpc.getTokens())) {
+                    if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     }
@@ -836,7 +843,7 @@ public class CeylonContentProposer implements IContentProposer {
                         if (ybottom && !xbottom) {
                             return -1;
                         }
-                        if (prefix.length()!=0) {
+                        if (!prefix.isEmpty()) {
                             int lowers = isLowerCase(prefix.charAt(0)) ? -1 : 1;
                             if (isLowerCase(xName.charAt(0)) && 
                                     isUpperCase(yName.charAt(0))) {
@@ -894,9 +901,21 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
     
-    public static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
-            Tree.CompilationUnit cu) {
-
+    public static Map<String, DeclarationWithProximity> getProposals(Node node, Tree.CompilationUnit cu) {
+       return getProposals(node, "", false, cu); 
+    }
+    
+    private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
+            boolean memberOp, Tree.CompilationUnit cu) {
+        if (memberOp && node instanceof Tree.Term) {
+            ProducedType type = ((Tree.Term)node).getTypeModel();
+            if (type!=null) {
+                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
+            }
+            else {
+                return Collections.emptyMap();
+            }
+        }
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
