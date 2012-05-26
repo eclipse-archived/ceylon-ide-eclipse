@@ -82,6 +82,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -429,27 +430,12 @@ public class CeylonContentProposer implements IContentProposer {
     private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, 
             CommonToken token, IDocument doc) {
-        //System.out.println("proposals for a " + node.getNodeType());
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
         else if (node instanceof Tree.ImportPath) {
             addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
-        }
-        /*else if (node instanceof Tree.TypedDeclaration && 
-                !(node instanceof Tree.Parameter && 
-                        ((Tree.TypedDeclaration)node).getType() instanceof Tree.ValueModifier) &&
-                !(((Tree.TypedDeclaration)node).getType() instanceof Tree.SyntheticVariable) &&
-                ((Tree.TypedDeclaration)node).getType()!=null &&
-                ((Tree.TypedDeclaration)node).getIdentifier()!=null) {
-            addMemberNameProposal(offset, prefix, node, result);
-        }*/
-        else if ((node instanceof Tree.SimpleType || 
-                node instanceof Tree.BaseTypeExpression ||
-                node instanceof Tree.QualifiedTypeExpression) 
-                && prefix.isEmpty()) {
-            addMemberNameProposal(offset, node, result);
         }
         else if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: set) {
@@ -459,38 +445,14 @@ public class CeylonContentProposer implements IContentProposer {
                 }
             }
         }
-        else if (node instanceof Tree.UnionType || 
-                node instanceof Tree.IntersectionType) {
-            for (DeclarationWithProximity dwp: set) {
-                Declaration dec = dwp.getDeclaration();
-                if (isProposable(dwp, null) && dec instanceof TypeDeclaration) {
-                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, null);
-                }
-            }
-        }
-        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
-            for (DeclarationWithProximity dwp: set) {
-                Declaration dec = dwp.getDeclaration();
-                if (isInvocationProposable(dwp, EXPRESSION)) {
-                    for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = d.getProducedReference(qmte.getPrimary().getTypeModel(), 
-                                Collections.<ProducedType>emptyList());
-                        addInvocationProposals(offset, prefix, cpc, result, 
-                                new DeclarationWithProximity(d, dwp), pr, 
-                                EXPRESSION);
-                    }
-                }
-                addBasicProposal(offset, prefix, cpc, result, dwp, dec, EXPRESSION);
-            }
-        }
-        /*else if (node instanceof Tree.ClassOrInterface || 
-                node instanceof Tree.VoidModifier ||
-                node instanceof Tree.ValueModifier ||
-                node instanceof Tree.FunctionModifier) {
-            //no proposals 
-        }*/
         else {
+            if ((node instanceof Tree.SimpleType || 
+                    node instanceof Tree.BaseTypeExpression ||
+                    node instanceof Tree.QualifiedTypeExpression) 
+                    && prefix.isEmpty() && !isMemberOperator(token)) {
+                addMemberNameProposal(offset, node, result);
+            }
+            
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             if (isKeywordProposable(ol)) {
                 addKeywordProposals(offset, prefix, result);
@@ -515,7 +477,9 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 if (isInvocationProposable(dwp, ol)) {
                     for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = getRefinedProducedReference(node, d);
+                        ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+                                getQualifiedProducedReference(node, d) :
+                                getRefinedProducedReference(node, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), pr, ol);
                     }
@@ -526,6 +490,13 @@ public class CeylonContentProposer implements IContentProposer {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+    
+    private static boolean isMemberOperator(Token token) {
+        int type = token.getType();
+        return type==CeylonLexer.MEMBER_OP || 
+                type==CeylonLexer.SPREAD_OP ||
+                type==CeylonLexer.SAFE_MEMBER_OP;
     }
 
     private static List<Declaration> overloads(Declaration dec) {
@@ -619,6 +590,12 @@ public class CeylonContentProposer implements IContentProposer {
                             getRefinementDescriptionFor(d, pr), 
                             getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), false));
         }
+    }
+    
+    public static ProducedReference getQualifiedProducedReference(Node node, Declaration d) {
+        return d.getProducedReference(((Tree.QualifiedMemberOrTypeExpression) node)
+                    .getPrimary().getTypeModel(), 
+                Collections.<ProducedType>emptyList());
     }
 
 	public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
