@@ -89,11 +89,13 @@ public class CeylonResolveJob extends Job {
                             for (File archive : moduleManager.getClasspath()) {
                                 if (archive.exists()) {
                                     Path classpathArtifact = new Path(archive.getCanonicalPath());
-                                    paths.add(JavaCore.newLibraryEntry(classpathArtifact, null, null));
+                                    IPath srcArtifact = classpathArtifact.removeFileExtension().addFileExtension("src");
+                                    paths.add(JavaCore.newLibraryEntry(classpathArtifact, srcArtifact, null));
                                 }
                             }
                             IPath ceylonOutputDirectory = new Path(CeylonBuilder.getCeylonOutputDirectory(container.getJavaProject()).getCanonicalPath());
-                            paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, null, null));
+                            IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
+                            paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null));
                         }
                         else {
                             setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed"));
