@@ -256,12 +256,14 @@ public class CeylonContentProposer implements IContentProposer {
                             token.getStopIndex());
                 }
             }
-            else if (charAtOffset=='.') {
+            //disable this for now cos it causes problem in
+            //import statements
+            /*else if (charAtOffset=='.') {
                 return new PositionedPrefix(offset-2, true);
             }
-            else {
+            else {*/
                 return new PositionedPrefix(offset-1, false);
-            }
+            //}
         }
     }
 
