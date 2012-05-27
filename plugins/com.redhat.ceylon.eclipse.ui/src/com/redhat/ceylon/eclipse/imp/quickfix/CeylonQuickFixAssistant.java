@@ -173,8 +173,17 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 600:
                 addMakeActualProposal(proposals, project, node);
                 break;
-            case 700:
+            case 701:
                 addMakeSharedDecProposal(proposals, project, node);
+                addRemoveAnnotationDecProposal(proposals, "actual", project, node);
+                break;
+            case 702:
+                addMakeSharedDecProposal(proposals, project, node);
+                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+                break;
+            case 703:
+                addMakeSharedDecProposal(proposals, project, node);
+                addRemoveAnnotationDecProposal(proposals, "default", project, node);
                 break;
             case 800:
                 addMakeVariableProposal(proposals, project, node);
@@ -198,7 +207,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
                 break;
             case 1100:
-                addMakeNonformalDecProposal(proposals, project, node);
+                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
                 break;
             }
         }
@@ -319,10 +328,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 decNode.getDeclarationModel(), proposals, project);
     }
     
-    private void addMakeNonformalDecProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+    private void addRemoveAnnotationDecProposal(Collection<ICompletionProposal> proposals, 
+            String annotation, IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addRemoveAnnotationProposal(node, "formal", "Make Nonformal",  
+        addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
                 decNode.getDeclarationModel(), proposals, project);
     }
     
