@@ -186,6 +186,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addRemoveAnnotationDecProposal(proposals, "default", project, node);
                 break;
             case 800:
+            case 804:
                 addMakeVariableProposal(proposals, project, node);
                 break;
             case 803:
