@@ -209,6 +209,22 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 1100:
                 addRemoveAnnotationDecProposal(proposals, "formal", project, node);
                 break;
+            case 1200:
+                addRemoveAnnotationDecProposal(proposals, "shared", project, node);
+                break;
+            case 1300:
+            case 1301:
+                addRemoveAnnotationDecProposal(proposals, "actual", project, node);
+                break;
+            case 1302:
+                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+                break;
+            case 1303:
+                addRemoveAnnotationDecProposal(proposals, "default", project, node);
+                break;
+            case 1400:
+                addMakeFormalProposal(proposals, project, node);
+                break;
             }
         }
     }
@@ -228,6 +244,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         addAddAnnotationProposal(node, "default ", "Make Default",
                 getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
                 proposals, project);
+    }
+
+    private void addMakeFormalProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        boolean shared = decNode.getDeclarationModel().isShared();
+        addAddAnnotationProposal(node, shared ? "formal " : "shared formal ", 
+                shared ? "Make Formal" : "Make Shared Formal",
+                decNode.getDeclarationModel(), proposals, project);
     }
 
     private void addMakeAbstractProposal(Collection<ICompletionProposal> proposals, 
