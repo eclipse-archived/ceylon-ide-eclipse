@@ -15,7 +15,9 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -41,10 +43,9 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, 0);
     }
 
-    static void addAddAnnotationProposal(String annotation,
-            String desc, Declaration dec,
-            Collection<ICompletionProposal> proposals, PhasedUnit unit,
-            Tree.Declaration decNode) {
+    static void addAddAnnotationProposal(String annotation, String desc, 
+            Declaration dec, Collection<ICompletionProposal> proposals, 
+            PhasedUnit unit, Tree.Declaration decNode) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
@@ -54,9 +55,12 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
             Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
             if (type instanceof Tree.FunctionModifier 
                     || type instanceof Tree.ValueModifier) {
-                String explicitType = type.getTypeModel().getProducedTypeName();
-                change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
-                        explicitType));
+                ProducedType it = type.getTypeModel();
+                if (it!=null && !(it.getDeclaration() instanceof UnknownType)) {
+                    String explicitType = it.getProducedTypeName();
+                    change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
+                            explicitType));
+                }
             }
         }
         proposals.add(new AddAnnotionProposal(dec, annotation, offset, file, change));
