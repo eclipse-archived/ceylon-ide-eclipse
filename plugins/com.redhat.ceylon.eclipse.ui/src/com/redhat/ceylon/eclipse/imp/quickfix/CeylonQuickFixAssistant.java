@@ -211,6 +211,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addRemoveAnnotationDecProposal(proposals, "formal", project, node);
                 break;
             case 1200:
+            case 1201:
                 addRemoveAnnotationDecProposal(proposals, "shared", project, node);
                 break;
             case 1300:
@@ -218,13 +219,21 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 addRemoveAnnotationDecProposal(proposals, "actual", project, node);
                 break;
             case 1302:
+            case 1312:
                 addRemoveAnnotationDecProposal(proposals, "formal", project, node);
                 break;
             case 1303:
+            case 1313:
                 addRemoveAnnotationDecProposal(proposals, "default", project, node);
                 break;
             case 1400:
                 addMakeFormalProposal(proposals, project, node);
+                break;
+            case 1500:
+                addRemoveAnnotationDecProposal(proposals, "variable", project, node);
+                break;
+            case 1600:
+                addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
                 break;
             }
         }
