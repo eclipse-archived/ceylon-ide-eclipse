@@ -402,19 +402,23 @@ public class CeylonContentProposer implements IContentProposer {
             List<ICompletionProposal> result) {
         StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            int ids = path.getIdentifiers().size();
-            if (!prefix.isEmpty()) ids--; //when the path does not end in a .
-            for (int i=0; i<ids; i++) {
+            for (int i=0; i<path.getIdentifiers().size(); i++) {
                 fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
             }
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }
         int len = fullPath.length();
         fullPath.append(prefix);
+        String pfp = fullPath.toString();
+        addPackageCompletions(offset, prefix, node, result, len, pfp);
+    }
+
+    private static void addPackageCompletions(int offset, String prefix,
+            Node node, List<ICompletionProposal> result, int len, String pfp) {
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
-      if (tc!=null) {
+        if (tc!=null) {
         for (Module m: tc.getContext().getModules().getListOfModules()) {*/
         //Set<Package> packages = new HashSet<Package>();
         Unit unit = node.getUnit();
@@ -425,12 +429,16 @@ public class CeylonContentProposer implements IContentProposer {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {
                     String pkg = p.getQualifiedNameString();
-                    if (!pkg.isEmpty() && pkg.startsWith(fullPath.toString())) {
+                    if (!pkg.isEmpty() && pkg.startsWith(pfp)) {
                         boolean already = false;
-                        for (ImportList il: node.getUnit().getImportLists()) {
-                            if (il.getImportedScope()==p) {
-                                already = true;
-                                break;
+                        if (!pfp.equals(pkg)) {
+                            //don't add already imported packages, unless
+                            //it is an exact match to the typed path
+                            for (ImportList il: node.getUnit().getImportLists()) {
+                                if (il.getImportedScope()==p) {
+                                    already = true;
+                                    break;
+                                }
                             }
                         }
                         if (!already) {
