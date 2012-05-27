@@ -165,61 +165,64 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 break;
             case 400:
-                addMakeSharedProposal(problem, proposals, project, node);
+                addMakeSharedProposal(proposals, project, node);
                 break;
             case 500:
-                addMakeDefaultProposal(problem, proposals, project, node);
+                addMakeDefaultProposal(proposals, project, node);
                 break;
             case 600:
-                addMakeActualProposal(problem, proposals, project, node);
+                addMakeActualProposal(proposals, project, node);
                 break;
             case 700:
-                addMakeSharedDecProposal(problem, proposals, project, node);
+                addMakeSharedDecProposal(proposals, project, node);
                 break;
             case 800:
-                addMakeVariableProposal(problem, proposals, project, node);
+                addMakeVariableProposal(proposals, project, node);
                 break;
             case 803:
-                addMakeVariableProposal(problem, proposals, project, node);
+                addMakeVariableProposal(proposals, project, node);
                 addFixSpecificationProposal(problem, proposals, project, file, node);
                 break;
             case 801:
-                addMakeVariableDecProposal(cu, problem, proposals, project, node);
+                addMakeVariableDecProposal(cu, proposals, project, node);
                 addFixSpecificationProposal(problem, proposals, project, file, node);
                 break;
             case 802:
                 addFixAssignmentProposal(problem, proposals, project, file, node);
                 break;
             case 900:
-                addMakeAbstractProposal(problem, proposals, project, node);
+                addMakeAbstractProposal(proposals, project, node);
                 break;
             case 1000:
                 AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
                 ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
                 break;
+            case 1100:
+                addMakeNonformalDecProposal(proposals, project, node);
+                break;
             }
         }
     }
 
-    private void addMakeActualProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeActualProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
         addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
-                shared ? "Make Actual" : "Make Shared Actual", problem, 
+                shared ? "Make Actual" : "Make Shared Actual",
                 decNode.getDeclarationModel(), proposals, project);
     }
 
-    private void addMakeDefaultProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "default ", "Make Default", problem, 
+        addAddAnnotationProposal(node, "default ", "Make Default",
                 getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
                 proposals, project);
     }
 
-    private void addMakeAbstractProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeAbstractProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
             dec = (Declaration) ((Tree.Declaration) node).getDeclarationModel().getContainer();
@@ -227,12 +230,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract ", "Make Abstract", problem, dec, 
+        addAddAnnotationProposal(node, "abstract ", "Make Abstract", dec, 
                 proposals, project);
     }
 
-    private void addMakeVariableProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeVariableProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Tree.Term term;
         if (node instanceof Tree.AssignmentOp) {
             term = ((Tree.AssignOp) node).getLeftTerm();
@@ -247,11 +250,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             return;
         }
         Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, 
+        addAddAnnotationProposal(node, "variable ", "Make Variable", 
                 dec, proposals, project);
     }
     
-    private void addMakeVariableDecProposal(Tree.CompilationUnit cu, ProblemLocation problem,
+    private void addMakeVariableDecProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IProject project, Node node) {
         final Tree.SpecifierOrInitializerExpression sie = (Tree.SpecifierOrInitializerExpression) node;
         class GetInitializedVisitor extends Visitor {
@@ -266,7 +269,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         GetInitializedVisitor v = new GetInitializedVisitor();
         v.visit(cu);
-        addAddAnnotationProposal(node, "variable ", "Make Variable", problem, v.dec, 
+        addAddAnnotationProposal(node, "variable ", "Make Variable", v.dec, 
                 proposals, project);
     }
     
@@ -288,8 +291,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         proposals.add(new ChangeCorrectionProposal(desc, change, 10, CORRECTION));
     }
 
-    private void addMakeSharedProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Declaration dec = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = (Tree.StaticMemberOrTypeExpression) node;
@@ -304,15 +307,22 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             dec = imt.getDeclarationModel();
         }
         if (dec!=null) {
-            addAddAnnotationProposal(node, "shared ", "Make Shared", problem, dec, 
+            addAddAnnotationProposal(node, "shared ", "Make Shared", dec, 
                     proposals, project);
         }
     }
     
-    private void addMakeSharedDecProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, Node node) {
+    private void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "shared ", "Make Shared", problem, 
+        addAddAnnotationProposal(node, "shared ", "Make Shared",  
+                decNode.getDeclarationModel(), proposals, project);
+    }
+    
+    private void addMakeNonformalDecProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        addRemoveAnnotationProposal(node, "formal", "Make Nonformal",  
                 decNode.getDeclarationModel(), proposals, project);
     }
     
@@ -819,7 +829,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addAddAnnotationProposal(Node node, String annotation, String desc, ProblemLocation problem, 
+    private void addAddAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
         if (dec!=null) {
             for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
@@ -830,6 +840,25 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
                         AddAnnotionProposal.addAddAnnotationProposal(annotation, desc, dec,
+                                proposals, unit, decNode);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private void addRemoveAnnotationProposal(Node node, String annotation, String desc,
+            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec!=null) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    //TODO: "object" declarations?
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+                    getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        RemoveAnnotionProposal.addRemoveAnnotationProposal(annotation, desc, dec,
                                 proposals, unit, decNode);
                     }
                     break;

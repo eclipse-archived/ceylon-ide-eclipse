@@ -39,12 +39,12 @@ public class CeylonDeclaration {
             return null;
         }
         
-        phasedUnit.scanDeclarations();
-        phasedUnit.scanTypeDeclarations();
-/*        
-        phasedUnit.validateRefinement();
-        //phasedUnit.analyseTypes();
-*/
+        if (!phasedUnit.isDeclarationsScanned()) {
+            phasedUnit.scanDeclarations();
+        }
+        if (!phasedUnit.isTypeDeclarationsScanned()) {
+            phasedUnit.scanTypeDeclarations();
+        }
         
         modelDeclaration = astDeclaration.getDeclarationModel();
         return modelDeclaration;
