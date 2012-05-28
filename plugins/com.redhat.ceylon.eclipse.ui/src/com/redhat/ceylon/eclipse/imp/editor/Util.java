@@ -106,8 +106,13 @@ public class Util {
     }
 
     public static IWorkbenchPage getActivePage() {
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        return window==null ? null : window.getActivePage();
+        try {
+            IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            return window==null ? null : window.getActivePage();
+        }
+        catch (IllegalStateException ise) {
+            return null;
+        }
     }
     
 }
