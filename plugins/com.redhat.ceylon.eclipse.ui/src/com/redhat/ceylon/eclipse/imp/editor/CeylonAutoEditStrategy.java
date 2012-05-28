@@ -7,12 +7,16 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
+import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.imp.services.IAutoEditStrategy;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -232,6 +236,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             throws BadLocationException {
         int start = getStartOfCurrentLine(d, c);
         int end = getEndOfCurrentLine(d, c);
+        //System.out.println(d.get(start, end-start));
         int endOfWs = firstEndOfWhitespace(d, start, end);
         if (c.offset<endOfWs || 
                 c.offset==start && c.shiftsCaret==false) { //Test for IMP's "Correct Indent"
@@ -246,10 +251,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
                 char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
                         getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
-                char startOfCurrentLineChar = c.text.equals("{") ? '{' : getNextNonWhitespaceCharacter(d, start);
+                char startOfCurrentLineChar = c.text.equals("{") ? 
+                        '{' : getNextNonWhitespaceCharacter(d, start, end);
                 //TODO: improve this 'cos should check tabs vs spaces
                 boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev
-                		&& !isLineComment(endOfPrev);
+                		&& !isLineComment(endOfPrev) && startOfCurrentLineChar!='\n';
                 
                 StringBuilder buf = new StringBuilder();
                 appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
@@ -260,6 +266,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 c.text = buf.toString();
                 c.offset=start;
                 c.length=endOfWs-start;
+                //System.out.println(c.text);
             }
         }
     }
@@ -304,7 +311,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         if (endsWithSpaces(indent,spaces)) {
             buf.setLength(buf.length()-spaces);
         }
-        else if (indent.endsWith("\t")) {
+        else if (endsWithTab(indent)) {
             buf.setLength(buf.length()-1);
         }
     }
@@ -334,25 +341,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             boolean isEnding,  boolean correctContinuation, int start, int end,
             StringBuilder buf) throws BadLocationException {
         String indent = getIndent(d, start, end, isContinuation&&!correctContinuation);
-        if (!indent.isEmpty()) {
-            buf.append(indent);
-            if (isBeginning) {
-                //increment the indent level
-                incrementIndent(buf, indent);
-            }
-            else if (isContinuation&&correctContinuation) {
-                incrementIndent(buf, indent);
-                incrementIndent(buf, indent);
-            }
+        buf.append(indent);
+        if (isBeginning) {
+            //increment the indent level
+            incrementIndent(buf, indent);
         }
-        else {
-            if (isBeginning) {
-                initialIndent(buf);
-            }
-            else if (isContinuation&&correctContinuation) {
-                initialIndent(buf);
-                initialIndent(buf);
-            }
+        else if (isContinuation&&correctContinuation) {
+            incrementIndent(buf, indent);
+            incrementIndent(buf, indent);
         }
         if (isEnding) {
             decrementIndent(buf, indent);
@@ -362,18 +358,23 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private String getIndent(IDocument d, int start, int end, boolean isUncorrectedContinuation) 
             throws BadLocationException {
+        //System.out.println(d.get());
         if (!isUncorrectedContinuation) while (true) {
             //System.out.println(d.get(start, end-start));
             if (start==0) {
-                return "";
+                break;
+                //return "";
             }
             else {
+                //System.out.println("trying: " + d.get(start, end-start));
                 char ch1 = getNextNonWhitespaceCharacterInLine(d, start);
                 if (ch1=='}') break;
-                char ch = getLastNonWhitespaceCharacterInLine(d, start, end);
+                int end1 = getEndOfPreviousLine(d, start);
+                int start1 = getStartOfPreviousLine(d, start);
+                char ch = getLastNonWhitespaceCharacterInLine(d, start1, end1);
                 if (ch==';' || ch=='{' || ch=='}') break;
-                end = getEndOfPreviousLine(d, start);
-                start = getStartOfPreviousLine(d, start); 
+                end = end1;
+                start=start1;
             }
         }
         int endOfWs = firstEndOfWhitespace(d, start, end);
@@ -392,16 +393,22 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     private void incrementIndent(StringBuilder buf, String indent) {
         int spaces = getIndentSpaces();
-        if (indent.length()>=spaces && 
-                endsWithSpaces(indent,spaces)) {
+        if (endsWithSpaces(indent,spaces)) {
             for (int i=1; i<=spaces; i++) {
                 buf.append(' ');                            
             }
         }
-        else if (indent.length()>=0 &&
-                indent.charAt(indent.length()-1)=='\t') {
+        else if (endsWithTab(indent)) {
             buf.append('\t');
         }
+        else {
+            initialIndent(buf);
+        }
+    }
+
+    private boolean endsWithTab(String indent) {
+        return !indent.isEmpty() &&
+                indent.charAt(indent.length()-1)=='\t';
     }
     
     private char getPreviousNonWhitespaceCharacter(IDocument d, int offset)
@@ -439,9 +446,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return '\n';
     }
 
-    private char getNextNonWhitespaceCharacter(IDocument d, int offset)
+    private char getNextNonWhitespaceCharacter(IDocument d, int offset, int end)
             throws BadLocationException {
-        for (;offset<d.getLength(); offset++) {
+        for (;offset<end; offset++) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0))) {
                 return ch.charAt(0);
@@ -499,13 +506,15 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
  
     private static int getIndentSpaces() {
-        return Platform.getPreferencesService()
-                .getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
+        IPreferencesService ps = Platform.getPreferencesService();
+        return ps==null ? 4 :
+            ps.getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
     }
     
     private static boolean getIndentWithSpaces() {
-        return Platform.getPreferencesService()
-                .getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
+        IPreferencesService ps = Platform.getPreferencesService();
+        return ps==null ? false :
+            ps.getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
     }
     
     public static String getDefaultIndent() {
@@ -544,4 +553,112 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
         return false;
     }
+    
+    public static void main(String[] args) {
+        CeylonAutoEditStrategy instance = new CeylonAutoEditStrategy();
+        
+        //failing:
+        Document doc = new Document("class Test()\n\t\textends Super(){\n\nvoid method(){\n\nfor (x in xs){}\n\n}\n\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t\t\n\t\tfor (x in xs){}\n\t\t\n\t}\n\t\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super(){\n\nvoid method(){}\n\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super(){\n\n\t\tvoid method(){}\n\t\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super(){\nvoid method(){}\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super(){\nvoid method(){\nfor (x in xs){}\n}\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\tvoid method(){\n\t\tfor (x in xs){}\n\t}\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super(){\n\t\tvoid method(){}\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
+        
+        doc = new Document("class Test()\nextends Super(){\n\nvoid method(){}\n\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\nextends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+        
+        doc = new Document("class Test() extends Super(){\n\nvoid method(){}\n\t\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test() extends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+        
+        doc = new Document("class Test()\n\t\textends Super()\n{\n\nvoid method(){}\n\t\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class Test()\n\t\textends Super()\n{\n\t\n\tvoid method(){}\n\t\n}");
+        
+        //failing:
+        doc = new Document("\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\t\n\t\tvoid method(){\n\t\t}\n\t\t\n\t}");
+
+        doc = new Document("\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+    }
+
+    private static void assertResult(Document doc, String result) {
+        if (!doc.get().equals(result)) {
+            System.out.println(doc.get());
+        }
+    }
+    
+    private void doCorrectIndentation(IDocument doc) {
+        Point p = new Point(0, doc.getLength());
+        try {
+            final int selStart= p.x;
+            final int selLen= p.y;
+            final int selEnd= selStart + selLen;
+            final int startLine= doc.getLineOfOffset(selStart);
+            int endLine= doc.getLineOfOffset(selEnd);
+
+            // If the selection extends just to the beginning of the next line, don't indent that one too
+            if (selLen > 0 && lookingAtLineEnd(doc, selEnd)) {
+                endLine--;
+            }
+
+            // Indent each line using the AutoEditStrategy
+            for(int line= startLine; line <= endLine; line++) {
+                int lineStartOffset= doc.getLineOffset(line);
+
+                // Replace the existing indentation with the desired indentation.
+                // Use the language-specific AutoEditStrategy, which requires a DocumentCommand.
+                DocumentCommand cmd= new DocumentCommand() { };
+                cmd.offset= lineStartOffset;
+                cmd.length= 0;
+                cmd.text= Character.toString('\t');
+                cmd.doit= true;
+                cmd.shiftsCaret= false;
+//              boolean saveMode= fAutoEditStrategy.setFixMode(true);
+                customizeDocumentCommand(doc, cmd);
+//              fAutoEditStrategy.setFixMode(saveMode);
+                doc.replace(cmd.offset, cmd.length, cmd.text);
+            }
+        } catch (BadLocationException e) {
+            RuntimePlugin.getInstance().logException("Correct Indentation command failed", e);
+        }
+    }
+    
+    private boolean lookingAtLineEnd(IDocument doc, int pos) {
+        String[] legalLineTerms= doc.getLegalLineDelimiters();
+        try {
+            for(String lineTerm: legalLineTerms) {
+                int len= lineTerm.length();
+                if (pos > len && doc.get(pos - len, len).equals(lineTerm)) {
+                    return true;
+                }
+            }
+        } catch (BadLocationException e) {
+            //RuntimePlugin.getInstance().logException("Error examining document for line termination", e);
+        }
+        return false;
+    }
+    
 }
