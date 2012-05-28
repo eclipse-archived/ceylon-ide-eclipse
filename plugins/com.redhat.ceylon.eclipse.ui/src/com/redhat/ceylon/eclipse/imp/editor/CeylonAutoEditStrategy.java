@@ -129,8 +129,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
             if (tokenIndex>=0) {
   	            CommonToken token = pc.getTokens().get(tokenIndex);
-                return token!=null && (token.getType()==CeylonLexer.STRING_LITERAL || 
-                        token.getType()==CeylonLexer.MULTI_COMMENT) &&
+                int type = token.getType();
+                return token!=null && (type==CeylonLexer.STRING_LITERAL || 
+                        type==CeylonLexer.ASTRING_LITERAL ||
+                        type==CeylonLexer.MULTI_COMMENT) &&
                         token.getStartIndex()<offset;
             }
         }
@@ -557,7 +559,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     public static void main(String[] args) {
         CeylonAutoEditStrategy instance = new CeylonAutoEditStrategy();
         
-        //failing:
         Document doc = new Document("class Test()\n\t\textends Super(){\n\nvoid method(){\n\nfor (x in xs){}\n\n}\n\n}");
         instance.doCorrectIndentation(doc);
         assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t\t\n\t\tfor (x in xs){}\n\t\t\n\t}\n\t\n}");
@@ -602,6 +603,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         doc = new Document("\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n");
         instance.doCorrectIndentation(doc);
         assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+        
+        doc = new Document("doc \"Hello\n     World\n     !\"\n void hello(){}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "doc \"Hello\n     World\n     !\"\n void hello(){}");
     }
 
     private static void assertResult(Document doc, String result) {
