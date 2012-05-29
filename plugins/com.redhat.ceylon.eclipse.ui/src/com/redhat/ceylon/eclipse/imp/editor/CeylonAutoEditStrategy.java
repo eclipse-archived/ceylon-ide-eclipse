@@ -233,6 +233,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, getStartOfCurrentLine(d, c), c.offset);
             if (lastNonWhitespaceCharAccountingForComments!='\n') {
                 lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
+                endOfLastLineChar = lastNonWhitespaceCharAccountingForComments;
             }
             
             StringBuilder buf = new StringBuilder(c.text);
