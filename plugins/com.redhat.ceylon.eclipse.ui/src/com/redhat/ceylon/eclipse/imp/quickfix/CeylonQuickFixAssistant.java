@@ -529,6 +529,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             cu.visit(fav);
             ProducedType t = fav.expectedType;
             final boolean isVoid = t==null;
+            String stn = t.getProducedTypeName();
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
@@ -541,11 +542,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 if (isUpperCase) {
                     String supertype = "";
                     if (!isVoid) {
-                        if (t.getDeclaration() instanceof Class) {
-                            supertype = " extends " + t.getProducedTypeName() + "()"; //TODO: arguments!
-                        }
-                        else {
-                            supertype = " satisfies " + t.getProducedTypeName();
+                        if (!stn.equals("unknown")) {
+                            if (t.getDeclaration() instanceof Class) {
+                                supertype = " extends " + stn + "()"; //TODO: arguments!
+                            }
+                            else {
+                                supertype = " satisfies " + stn;
+                            }
                         }
                     }
                     def = "class " + brokenName + params + supertype + " {\n";
@@ -563,7 +566,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     image = CeylonLabelProvider.CLASS;
                 }
                 else {
-                    String type = isVoid ? "void" : t.getProducedTypeName();
+                    String type = isVoid ? "void" : 
+                        stn.equals("unknown") ? "function" : stn;
                     String impl = isVoid ? " {}" : " { return bottom; }";
                     def = type + " " + brokenName + params + impl;
                     desc = "function '" + brokenName + params + "'";
@@ -572,7 +576,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             else if (!isUpperCase) {
                 String type = isVoid ? "Void" : 
-                    t.getProducedTypeName();
+                    stn.equals("unknown") ? "value" : stn;
                 def = type + " " + brokenName + " = bottom;";
                 desc = "value '" + brokenName + "'";
                 image = CeylonLabelProvider.ATTRIBUTE;
@@ -603,6 +607,22 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                         desc, image, file, brokenName);
             }
             
+        }
+        else if (node instanceof Tree.BaseType) {
+            Tree.BaseType bt = (Tree.BaseType) node;
+            String brokenName = bt.getIdentifier().getText();
+            String idef = "interface " + brokenName + " {}";
+            String idesc = "interface '" + brokenName + "'";
+            String cdef = "class " + brokenName + "() {}";
+            String cdesc = "class '" + brokenName + "()'";
+            //addCreateLocalProposals(proposals, project, idef, idesc, CeylonLabelProvider.INTERFACE, cu, bt);
+            addCreateLocalProposals(proposals, project, cdef, cdesc, CeylonLabelProvider.CLASS, cu, bt);
+            addCreateToplevelProposals(proposals, project, idef, idesc, CeylonLabelProvider.INTERFACE, cu, bt);
+            addCreateToplevelProposals(proposals, project, cdef, cdesc, CeylonLabelProvider.CLASS, cu, bt);
+            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
+                    CeylonLabelProvider.INTERFACE, file, brokenName);
+            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
+                    CeylonLabelProvider.CLASS, file, brokenName);
         }
     }
 
@@ -708,22 +728,24 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
-        FindStatementVisitor fsv = new FindStatementVisitor(smte, false);
+            Tree.CompilationUnit cu, Node node) {
+        FindStatementVisitor fsv = new FindStatementVisitor(node, false);
         cu.visit(fsv);
-        Tree.Statement statement = fsv.getStatement();
-        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
-            if (unit.getUnit().equals(cu.getUnit())) {
-                CreateProposal.addCreateProposal(proposals, def, true, desc, image, unit, statement);
-                break;
+        if (!fsv.isToplevel()) {
+            Tree.Statement statement = fsv.getStatement();
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (unit.getUnit().equals(cu.getUnit())) {
+                    CreateProposal.addCreateProposal(proposals, def, true, desc, image, unit, statement);
+                    break;
+                }
             }
         }
     }
 
     private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Tree.MemberOrTypeExpression smte) {
-        FindStatementVisitor fsv = new FindStatementVisitor(smte, true);
+            Tree.CompilationUnit cu, Node node) {
+        FindStatementVisitor fsv = new FindStatementVisitor(node, true);
         cu.visit(fsv);
         Tree.Statement statement = fsv.getStatement();
         for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {

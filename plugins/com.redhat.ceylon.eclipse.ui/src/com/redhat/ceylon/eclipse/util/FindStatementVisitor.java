@@ -8,35 +8,33 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public class FindStatementVisitor extends Visitor 
 		implements NaturalVisitor {
 	
-	private final Tree.Term term;
+	private final Node term;
 	private Tree.Statement statement;
 	private Tree.Statement currentStatement;
 	private final boolean toplevel;
 	private boolean currentlyToplevel=true;
+	private boolean resultIsToplevel;
 	
 	public Tree.Statement getStatement() {
 		return statement;
 	}
 	
-	public FindStatementVisitor(Tree.Term term, boolean toplevel) {
+	public boolean isToplevel() {
+        return resultIsToplevel;
+    }
+	
+	public FindStatementVisitor(Node term, boolean toplevel) {
 		this.term = term;
 		this.toplevel = toplevel;
 	}
-	
-	@Override
-	public void visit(Tree.Term that) {
-		if (that==term) {
-			statement=currentStatement;
-		}
-		super.visit(that);
-	}
-	
+
 	@Override
 	public void visit(Tree.Statement that) {
     	if (!toplevel || currentlyToplevel) {
     		if (!(that instanceof Tree.Variable || 
     				that instanceof Tree.Parameter)) {
     			currentStatement = that;
+                resultIsToplevel = currentlyToplevel;
 	    	}
 	    }
 	    boolean octl = currentlyToplevel;
@@ -46,6 +44,10 @@ public class FindStatementVisitor extends Visitor
 	}
 	
 	public void visitAny(Node node) {
+        if (node==term) {
+            statement = currentStatement;
+            resultIsToplevel = currentlyToplevel;
+        }
 		if (statement==null) {
 			super.visitAny(node);
 		}
