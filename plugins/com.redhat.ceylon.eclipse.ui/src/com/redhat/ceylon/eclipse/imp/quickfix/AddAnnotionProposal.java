@@ -26,6 +26,8 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
     
     final int offset; 
     final IFile file;
+    final Declaration dec;
+    final String annotation;
     
     AddAnnotionProposal(Declaration dec, String annotation,
             int offset, IFile file, TextFileChange change) {
@@ -35,12 +37,31 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
                     change, 10, CORRECTION);
         this.offset=offset;
         this.file=file;
+        this.dec = dec;
+        this.annotation = annotation;
     }
     
     @Override
     public void apply(IDocument document) {
         super.apply(document);
         Util.gotoLocation(file, offset, 0);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AddAnnotionProposal) {
+            AddAnnotionProposal that = (AddAnnotionProposal) obj;
+            return that.dec.equals(dec) && 
+                    that.annotation.equals(annotation);
+        }
+        else {
+            return super.equals(obj);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return dec.hashCode();
     }
 
     static void addAddAnnotationProposal(String annotation, String desc, 
@@ -63,7 +84,10 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
                 }
             }
         }
-        proposals.add(new AddAnnotionProposal(dec, annotation, offset, file, change));
+        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, offset, file, change);
+        if (!proposals.contains(p)) {
+            proposals.add(p);
+        }
     }
     
 }

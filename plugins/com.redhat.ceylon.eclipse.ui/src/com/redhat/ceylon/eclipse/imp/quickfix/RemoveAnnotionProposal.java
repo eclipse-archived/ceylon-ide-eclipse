@@ -24,6 +24,8 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
     
     final int offset; 
     final IFile file;
+    final Declaration dec;
+    final String annotation;
     
     RemoveAnnotionProposal(Declaration dec, String annotation,
             int offset, IFile file, TextFileChange change) {
@@ -33,12 +35,31 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
                     change, 10, CORRECTION);
         this.offset=offset;
         this.file=file;
+        this.dec = dec;
+        this.annotation = annotation;
     }
     
     @Override
     public void apply(IDocument document) {
         super.apply(document);
         Util.gotoLocation(file, offset, 0);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RemoveAnnotionProposal) {
+            RemoveAnnotionProposal that = (RemoveAnnotionProposal) obj;
+            return that.dec.equals(dec) && 
+                    that.annotation.equals(annotation);
+        }
+        else {
+            return super.equals(obj);
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return dec.hashCode();
     }
 
     static void addRemoveAnnotationProposal(String annotation,
@@ -57,7 +78,10 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
                 }
             }
         }
-        proposals.add(new RemoveAnnotionProposal(dec, annotation, offset, file, change));
+        RemoveAnnotionProposal p = new RemoveAnnotionProposal(dec, annotation, offset, file, change);
+        if (!proposals.contains(p)) {
+            proposals.add(p);
+        }
     }
     
 }
