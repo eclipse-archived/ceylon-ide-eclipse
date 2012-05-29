@@ -226,10 +226,19 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
             char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
             char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
+
+            //let's attempt to account for line ending comments in determining if it is a
+            //continuation, but only by looking at the previous line
+            //TODO: make this handle line ending comments further back
+            char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, getStartOfCurrentLine(d, c), c.offset);
+            if (lastNonWhitespaceCharAccountingForComments!='\n') {
+                lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
+            }
+            
             StringBuilder buf = new StringBuilder(c.text);
             appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    false, buf);
+                    false, buf); //false, because otherwise it indents after annotations, which I guess we don't want
             c.text = buf.toString();
         }
     }
@@ -257,8 +266,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                         '{' : getNextNonWhitespaceCharacter(d, start, end);
                 //TODO: improve this 'cos should check tabs vs spaces
                 boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev
-                		&& !isLineComment(endOfPrev) && startOfCurrentLineChar!='\n';
+                		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
                 
+                //let's attempt to account for line ending comments in determining if it is a
+                //continuation, but only by looking at the previous line
+                //TODO: make this handle line ending comments further back
+                char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
+                if (lastNonWhitespaceCharAccountingForComments!='\n') {
+                    lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
+                }
+
                 StringBuilder buf = new StringBuilder();
                 appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
                         lastNonWhitespaceChar, correctContinuation, buf);
@@ -360,15 +377,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private String getIndent(IDocument d, int start, int end, boolean isUncorrectedContinuation) 
             throws BadLocationException {
-        //System.out.println(d.get());
-        if (!isUncorrectedContinuation) while (true) {
-            //System.out.println(d.get(start, end-start));
-            if (start==0) {
-                break;
-                //return "";
-            }
-            else {
-                //System.out.println("trying: " + d.get(start, end-start));
+        if (!isUncorrectedContinuation) {
+            while (true) {
+                if (start==0) break;
+                //We're searching for an earlier line whose 
+                //immediately preceding line ends cleanly 
+                //with a {, }, or ; or which itelf starts 
+                //with a }. We will use that to infer the 
+                //indent for the current line
                 char ch1 = getNextNonWhitespaceCharacterInLine(d, start);
                 if (ch1=='}') break;
                 int end1 = getEndOfPreviousLine(d, start);
@@ -386,9 +402,29 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private char getLastNonWhitespaceCharacterInLine(IDocument d, int offset, int end) 
             throws BadLocationException {
         char result = '\n'; //ahem, ugly null!
+        int commentDepth=0;
         for (;offset<end; offset++) {
             char ch = d.getChar(offset);
-            if (!isWhitespace(ch)) result=ch;
+            char next = d.getLength()>offset+1 ? 
+                    d.getChar(offset+1) : '\n'; //another ugly null
+            if (commentDepth==0) {
+                if (ch=='/') {
+                    if (next=='*') {
+                        commentDepth++;
+                    }
+                    else if  (next=='/') {
+                        return result;
+                    }
+                }
+                else if (!isWhitespace(ch)) {
+                    result=ch;
+                }
+            }
+            else {
+                if (ch=='*' && next=='/') {
+                    commentDepth--;
+                }
+            }
         }
         return result;
     }
@@ -426,6 +462,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private char getPreviousNonWhitespaceCharacterInLine(IDocument d, int offset)
             throws BadLocationException {
+        //TODO: handle end-of-line comments
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) ||
@@ -603,6 +640,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         doc = new Document("\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n");
         instance.doCorrectIndentation(doc);
         assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+        
+        doc = new Document("\tclass Test()\n\t\textends Super(){//foo\nvoid method(){//bar\n}//baz\n}\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
         
         /*doc = new Document("doc \"Hello\n     World\n     !\"\n void hello(){}");
         instance.doCorrectIndentation(doc);
