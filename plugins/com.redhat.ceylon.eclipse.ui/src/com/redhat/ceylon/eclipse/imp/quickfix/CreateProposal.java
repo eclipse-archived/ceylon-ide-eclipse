@@ -118,14 +118,14 @@ class CreateProposal extends ChangeCorrectionProposal {
     }
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, Declaration typeDec, PhasedUnit unit,
+            String desc, Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.ParameterList paramList) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         int offset = paramList.getStopIndex();
         change.setEdit(new InsertEdit(offset, def));
         proposals.add(new CreateProposal(def, 
-                "Create " + desc + " in '" + typeDec.getName() + "'", 
+                "Add " + desc + " to '" + dec.getName() + "'", 
                 image, 0, offset, file, change));
     }
 
