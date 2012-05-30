@@ -51,9 +51,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -153,6 +157,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 break;
             case 101:
+                addCreateParameterProposals(cu, node, problem, proposals, 
+                        project, tc, file);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
                 }
@@ -690,64 +696,87 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addCreateParameterProposals(Tree.CompilationUnit cu, Node node, 
+    private void addCreateParameterProposals(Tree.CompilationUnit cu, final Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
-        if (node instanceof Tree.Term) {
-            final Tree.Term term = (Tree.Term) node;
-            class FindArgumentVisitor extends Visitor {
-                Tree.InvocationExpression result;
-                Tree.InvocationExpression current; 
-                @Override
-                public void visit(Tree.Term that) {
-                    if (term==that) {
-                        result=current;
-                    }
-                    super.visit(that);
+        class FindArgumentVisitor extends Visitor {
+            Tree.InvocationExpression result;
+            Tree.InvocationExpression current; 
+            @Override
+            public void visit(Tree.PositionalArgument that) {
+                Expression e = that.getExpression();
+                if (e!=null && node==e.getTerm()) {
+                    result=current;
                 }
-                @Override
-                public void visit(Tree.InvocationExpression that) { 
-                    Tree.InvocationExpression oc=current;
-                    current = that;
-                    super.visit(that);
-                    current=oc;
-                }
+                super.visit(that);
             }
-            FindArgumentVisitor fav = new FindArgumentVisitor();
-            fav.visit(cu);
-            Primary prim = fav.result.getPrimary();
-            if (prim instanceof Tree.BaseMemberOrTypeExpression) {
-                ProducedReference pr = ((Tree.BaseMemberOrTypeExpression) prim).getTarget();
-                if (pr!=null) {
-                    Declaration d = pr.getDeclaration();
-                    ProducedType t = term.getTypeModel();
-                    String n = t.getDeclaration().getName();
-                    if (t!=null && n!=null) {
-                        String name = Character.toLowerCase(n.charAt(0)) + 
-                                n.substring(1).replace("?", "").replace("[]", "");
-                        String def = t.getProducedTypeName() + " " + name + " = ";
-                        String tn = t.getProducedTypeQualifiedName();
-                        if (tn.equals("ceylon.language.Boolean")) {
-                            def += "false";
-                        }
-                        else if (tn.equals("ceylon.language.Integer")) {
-                            def += "0";
-                        }
-                        else if (tn.equals("ceylon.language.Float")) {
-                            def += "0.0";
-                        }
-                        else if (prim.getUnit().isOptionalType(t)) {
-                            def += "null";
-                        }
-                        else if (tn.equals("ceylon.language.String")) {
-                            def += "\"\"";
-                        }
-                        else {
-                            def += "bottom";
-                        }
-                        String desc = "parameter '" + name +"'";
-                        addCreateParameterProposals(proposals, project, def, desc, d);
+            @Override
+            public void visit(Tree.NamedArgument that) {
+                if (node==that) {
+                    result=current;
+                }
+                super.visit(that);
+            }
+            @Override
+            public void visit(Tree.InvocationExpression that) { 
+                Tree.InvocationExpression oc=current;
+                current = that;
+                super.visit(that);
+                current=oc;
+            }
+        }
+        FindArgumentVisitor fav = new FindArgumentVisitor();
+        fav.visit(cu);
+        Primary prim = fav.result.getPrimary();
+        if (prim instanceof Tree.BaseMemberOrTypeExpression) {
+            ProducedReference pr = ((Tree.BaseMemberOrTypeExpression) prim).getTarget();
+            if (pr!=null) {
+                Declaration d = pr.getDeclaration();
+                ProducedType t=null;
+                String n=null;
+                if (node instanceof Tree.Term) {
+                    t = ((Tree.Term) node).getTypeModel();
+                    n = t.getDeclaration().getName();
+                }
+                else if (node instanceof Tree.SpecifiedArgument) {
+                    SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
+                    SpecifierExpression se = sa.getSpecifierExpression();
+                    if (se!=null && se.getExpression()!=null) {
+                        t = se.getExpression().getTypeModel();
                     }
+                    n = sa.getIdentifier().getText();
+                }
+                else if (node instanceof Tree.TypedArgument) {
+                    TypedArgument ta = (Tree.TypedArgument) node;
+                    t = ta.getType().getTypeModel();
+                    n = ta.getIdentifier().getText();
+                }
+                if (t!=null && n!=null) {
+                    t = node.getUnit().denotableType(t);
+                    String name = Character.toLowerCase(n.charAt(0)) + 
+                            n.substring(1).replace("?", "").replace("[]", "");
+                    String def = t.getProducedTypeName() + " " + name + " = ";
+                    String tn = t.getProducedTypeQualifiedName();
+                    if (tn.equals("ceylon.language.Boolean")) {
+                        def += "false";
+                    }
+                    else if (tn.equals("ceylon.language.Integer")) {
+                        def += "0";
+                    }
+                    else if (tn.equals("ceylon.language.Float")) {
+                        def += "0.0";
+                    }
+                    else if (prim.getUnit().isOptionalType(t)) {
+                        def += "null";
+                    }
+                    else if (tn.equals("ceylon.language.String")) {
+                        def += "\"\"";
+                    }
+                    else {
+                        def += "bottom";
+                    }
+                    String desc = "parameter '" + name +"'";
+                    addCreateParameterProposals(proposals, project, def, desc, d);
                 }
             }
         }
