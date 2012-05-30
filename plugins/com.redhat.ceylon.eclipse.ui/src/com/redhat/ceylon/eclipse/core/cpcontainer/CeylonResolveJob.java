@@ -80,7 +80,7 @@ public class CeylonResolveJob extends Job {
                 @Override
                 public void run(IProgressMonitor monitor) {
                     try {
-                        CeylonBuilder.buildCeylonModelWithoutTypechecking(container.getJavaProject().getProject(), monitor);
+                        CeylonBuilder.parseCeylonModel(container.getJavaProject().getProject(), monitor);
                         IProject project = container.getJavaProject().getProject();
                         final TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
                         if (typeChecker != null) {
