@@ -541,7 +541,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             cu.visit(fav);
             ProducedType t = fav.expectedType;
             final boolean isVoid = t==null;
-            String stn = t.getProducedTypeName();
+            String stn = isVoid ? null : t.getProducedTypeName();
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
@@ -699,7 +699,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateParameterProposals(Tree.CompilationUnit cu, final Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
-        class FindArgumentVisitor extends Visitor {
+        class FindInvocationVisitor extends Visitor {
             Tree.InvocationExpression result;
             Tree.InvocationExpression current; 
             @Override
@@ -725,7 +725,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 current=oc;
             }
         }
-        FindArgumentVisitor fav = new FindArgumentVisitor();
+        FindInvocationVisitor fav = new FindInvocationVisitor();
         fav.visit(cu);
         Primary prim = fav.result.getPrimary();
         if (prim instanceof Tree.BaseMemberOrTypeExpression) {
@@ -737,6 +737,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 if (node instanceof Tree.Term) {
                     t = ((Tree.Term) node).getTypeModel();
                     n = t.getDeclaration().getName();
+                    if (n!=null) {
+                        n = Character.toLowerCase(n.charAt(0)) + n.substring(1)
+                                .replace("?", "").replace("[]", "");
+                        if ("string".equals(n)) {
+                            n = "text";
+                        }
+                    }
                 }
                 else if (node instanceof Tree.SpecifiedArgument) {
                     SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
@@ -753,32 +760,40 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 if (t!=null && n!=null) {
                     t = node.getUnit().denotableType(t);
-                    String name = Character.toLowerCase(n.charAt(0)) + 
-                            n.substring(1).replace("?", "").replace("[]", "");
-                    String def = t.getProducedTypeName() + " " + name + " = ";
-                    String tn = t.getProducedTypeQualifiedName();
-                    if (tn.equals("ceylon.language.Boolean")) {
-                        def += "false";
-                    }
-                    else if (tn.equals("ceylon.language.Integer")) {
-                        def += "0";
-                    }
-                    else if (tn.equals("ceylon.language.Float")) {
-                        def += "0.0";
-                    }
-                    else if (prim.getUnit().isOptionalType(t)) {
-                        def += "null";
-                    }
-                    else if (tn.equals("ceylon.language.String")) {
-                        def += "\"\"";
-                    }
-                    else {
-                        def += "bottom";
-                    }
-                    String desc = "parameter '" + name +"'";
+                    String dv = defaultValue(prim.getUnit(), t);
+                    String tn = t.getProducedTypeName();
+                    String def = tn + " " + n + " = " + dv;
+                    String desc = "parameter '" + n +"'";
                     addCreateParameterProposals(proposals, project, def, desc, d);
+                    String pdef = n + " = " + dv;
+                    String adef = tn + " " + n + ";";
+                    String padesc = "attribute '" + n +"'";
+                    addCreateParameterAndAttributeProposals(proposals, project, 
+                            pdef, adef, padesc, d);
                 }
             }
+        }
+    }
+
+    private static String defaultValue(Unit unit, ProducedType t) {
+        String tn = t.getProducedTypeQualifiedName();
+        if (tn.equals("ceylon.language.Boolean")) {
+            return "false";
+        }
+        else if (tn.equals("ceylon.language.Integer")) {
+            return "0";
+        }
+        else if (tn.equals("ceylon.language.Float")) {
+            return "0.0";
+        }
+        else if (unit.isOptionalType(t)) {
+            return "null";
+        }
+        else if (tn.equals("ceylon.language.String")) {
+            return "\"\"";
+        }
+        else {
+            return "bottom";
         }
     }
     
@@ -791,13 +806,36 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
-                    if (!paramList.getParameters().isEmpty()) {
-                        def = ", " + def;
-                    }
                     if (paramList!=null) {
+                        if (!paramList.getParameters().isEmpty()) {
+                            def = ", " + def;
+                        }
                         CreateProposal.addCreateParameterProposal(proposals, def, desc, 
                                 CeylonLabelProvider.PARAMETER, typeDec, unit, decNode, paramList);
                         break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void addCreateParameterAndAttributeProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String pdef, String adef, String desc, Declaration typeDec) {
+        if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (typeDec.getUnit().equals(unit.getUnit())) {
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.ParameterList paramList = getParameters(decNode);
+                    Tree.Body body = getBody(decNode);
+                    if (body!=null && paramList!=null) {
+                        if (!paramList.getParameters().isEmpty()) {
+                            pdef = ", " + pdef;
+                        }
+                        CreateProposal.addCreateParameterAndAttributeProposal(proposals, pdef, 
+                                adef, desc, CeylonLabelProvider.ATTRIBUTE, typeDec, unit, decNode, 
+                                paramList, body);
                     }
                 }
             }
