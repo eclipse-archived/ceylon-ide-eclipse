@@ -52,6 +52,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -234,6 +236,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 break;
             case 1600:
                 addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
+                break;
+            case 2000:
+                addCreateParameterProposals(cu, node, problem, proposals, 
+                        project, tc, file);
                 break;
             }
         }
@@ -675,8 +681,93 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.Body body = getBody(decNode);
                     if (body!=null) {
-                        CreateProposal.addCreateMemberProposal(proposals, def, desc, image, typeDec, unit, 
-                                decNode, body);
+                        CreateProposal.addCreateMemberProposal(proposals, def, desc, 
+                                image, typeDec, unit, decNode, body);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void addCreateParameterProposals(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IProject project, TypeChecker tc, IFile file) {
+        if (node instanceof Tree.Term) {
+            final Tree.Term term = (Tree.Term) node;
+            class FindArgumentVisitor extends Visitor {
+                Tree.InvocationExpression result;
+                Tree.InvocationExpression current; 
+                @Override
+                public void visit(Tree.Term that) {
+                    if (term==that) {
+                        result=current;
+                    }
+                    super.visit(that);
+                }
+                @Override
+                public void visit(Tree.InvocationExpression that) { 
+                    Tree.InvocationExpression oc=current;
+                    current = that;
+                    super.visit(that);
+                    current=oc;
+                }
+            }
+            FindArgumentVisitor fav = new FindArgumentVisitor();
+            fav.visit(cu);
+            Primary prim = fav.result.getPrimary();
+            if (prim instanceof Tree.BaseMemberOrTypeExpression) {
+                ProducedReference pr = ((Tree.BaseMemberOrTypeExpression) prim).getTarget();
+                if (pr!=null) {
+                    Declaration d = pr.getDeclaration();
+                    ProducedType t = term.getTypeModel();
+                    String n = t.getDeclaration().getName();
+                    if (t!=null && n!=null) {
+                        String name = Character.toLowerCase(n.charAt(0)) + 
+                                n.substring(1).replace("?", "").replace("[]", "");
+                        String def = t.getProducedTypeName() + " " + name + " = ";
+                        String tn = t.getProducedTypeQualifiedName();
+                        if (tn.equals("ceylon.language.Boolean")) {
+                            def += "false";
+                        }
+                        else if (tn.equals("ceylon.language.Integer")) {
+                            def += "0";
+                        }
+                        else if (tn.equals("ceylon.language.Float")) {
+                            def += "0.0";
+                        }
+                        else if (prim.getUnit().isOptionalType(t)) {
+                            def += "null";
+                        }
+                        else if (tn.equals("ceylon.language.String")) {
+                            def += "\"\"";
+                        }
+                        else {
+                            def += "bottom";
+                        }
+                        String desc = "parameter '" + name +"'";
+                        addCreateParameterProposals(proposals, project, def, desc, d);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void addCreateParameterProposals(Collection<ICompletionProposal> proposals,
+            IProject project, String def, String desc, Declaration typeDec) {
+        if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (typeDec.getUnit().equals(unit.getUnit())) {
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.ParameterList paramList = getParameters(decNode);
+                    if (!paramList.getParameters().isEmpty()) {
+                        def = ", " + def;
+                    }
+                    if (paramList!=null) {
+                        CreateProposal.addCreateParameterProposal(proposals, def, desc, 
+                                CeylonLabelProvider.PARAMETER, typeDec, unit, decNode, paramList);
                         break;
                     }
                 }
@@ -702,17 +793,28 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
 
     private static Tree.Body getBody(Tree.Declaration decNode) {
-        Tree.Body body=null;
         if (decNode instanceof Tree.ClassDefinition) {
-            body = ((Tree.ClassDefinition) decNode).getClassBody();
+            return ((Tree.ClassDefinition) decNode).getClassBody();
         }
         else if (decNode instanceof Tree.InterfaceDefinition){
-            body = ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+            return ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
         }
         else if (decNode instanceof Tree.ObjectDefinition){
-            body = ((Tree.ObjectDefinition) decNode).getClassBody();
+            return ((Tree.ObjectDefinition) decNode).getClassBody();
         }
-        return body;
+        return null;
+    }
+
+    private static Tree.ParameterList getParameters(Tree.Declaration decNode) {
+        Tree.ParameterList body=null;
+        if (decNode instanceof Tree.AnyClass) {
+            return ((Tree.AnyClass) decNode).getParameterList();
+        }
+        else if (decNode instanceof Tree.AnyMethod){
+            List<ParameterList> pls = ((Tree.AnyMethod) decNode).getParameterLists();
+            return pls.isEmpty() ? null : pls.get(0);
+        }
+        return null;
     }
 
     private void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
