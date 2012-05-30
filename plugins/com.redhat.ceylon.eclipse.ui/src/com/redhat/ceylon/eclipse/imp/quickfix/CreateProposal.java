@@ -13,6 +13,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -29,12 +30,20 @@ class CreateProposal extends ChangeCorrectionProposal {
     CreateProposal(String def, String desc, Image image, int indentLength, 
             int offset, IFile file, TextFileChange change) {
         super(desc, change, 50, image);
-        int loc = def.indexOf("bottom;");
+        int loc = def.indexOf("= bottom");
         if (loc<0) {
-            loc = def.indexOf("{}")+1;
-            length=0;
+            loc = def.indexOf("= ");
+            if (loc<0) {
+                loc = def.indexOf("{}")+1;
+                length=0;
+            }
+            else {
+                loc += 2;
+                length = def.length()-loc;
+            }
         }
         else {
+            loc += 2;
             length=6;
         }
         this.offset=offset+indentLength + loc;
@@ -117,14 +126,45 @@ class CreateProposal extends ChangeCorrectionProposal {
                 image, 0, offset, file, change));
     }
 
-    static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, Declaration dec, PhasedUnit unit,
+    static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
+            String def, String desc, Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.ParameterList paramList) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         int offset = paramList.getStopIndex();
         change.setEdit(new InsertEdit(offset, def));
         proposals.add(new CreateProposal(def, 
+                "Add " + desc + " to '" + dec.getName() + "'", 
+                image, 0, offset, file, change));
+    }
+
+    static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
+            String pdef, String adef, String desc, Image image, Declaration dec, PhasedUnit unit,
+            Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body) {
+        IFile file = CeylonBuilder.getFile(unit);
+        TextFileChange change = new TextFileChange("Add Attribute", file);
+        MultiTextEdit edit = new MultiTextEdit();
+        change.setEdit(edit);
+        int offset = paramList.getStopIndex();
+        IDocument doc = CreateProposal.getDocument(change);
+        String indent;
+        String indentAfter;
+        int offset2;
+        List<Tree.Statement> statements = body.getStatements();
+        if (statements.isEmpty()) {
+            indentAfter = "\n" + CeylonQuickFixAssistant.getIndent(decNode, doc);
+            indent = indentAfter + getDefaultIndent();
+            offset2 = body.getStartIndex()+1;
+        }
+        else {
+            Tree.Statement statement = statements.get(statements.size()-1);
+            indent = "\n" + CeylonQuickFixAssistant.getIndent(statement, doc);
+            offset2 = statement.getStopIndex()+1;
+            indentAfter = "";
+        }
+        edit.addChild(new InsertEdit(offset, pdef));
+        edit.addChild(new InsertEdit(offset2, indent+adef+indentAfter));
+        proposals.add(new CreateProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
                 image, 0, offset, file, change));
     }
