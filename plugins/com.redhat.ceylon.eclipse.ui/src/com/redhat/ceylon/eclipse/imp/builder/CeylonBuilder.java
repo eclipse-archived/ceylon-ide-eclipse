@@ -172,6 +172,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final Language LANGUAGE = LanguageRegistry
             .findLanguage(LANGUAGE_NAME);
 
+    public static enum ModelState {
+        Missing,
+        Parsing,
+        Parsed,
+        TypeChecking,
+        Available
+    };
+    
+    private final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IPath>> sourceFolders = new HashMap<IProject, List<IPath>>();
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
@@ -183,7 +192,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private final Collection<IFile> fSourcesToCompile= new HashSet<IFile>();
    
+    public static ModelState getModelState(IProject project) {
+        ModelState modelState = modelStates.get(project);
+        if (modelState == null) {
+            return ModelState.Missing;
+        }
+        return modelState;
+    }
+    
     public static List<PhasedUnit> getUnits(IProject project) {
+        if (! getModelState(project).equals(ModelState.Available)) {
+            return Collections.emptyList();
+        }
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         TypeChecker tc = typeCheckers.get(project);
         if (tc!=null) {
@@ -196,9 +216,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     public static List<PhasedUnit> getUnits() {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
-        for (TypeChecker tc: typeCheckers.values()) {
-            for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
-                result.add(pu);
+        for (IProject project : typeCheckers.keySet()) {
+            if (getModelState(project).equals(ModelState.Available)) {
+                TypeChecker tc = typeCheckers.get(project);
+                for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
+                    result.add(pu);
+                }
             }
         }
         return result;
@@ -316,8 +339,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return new IProject[0];
         }
 
-        TypeChecker typeChecker = typeCheckers.get(project);
-
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
         List<IProject> requiredProjects = getRequiredProjects(project);
         
@@ -326,7 +347,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final IResourceDelta currentDelta = getDelta(getProject());
         
         boolean somethingToDo = chooseBuildTypeFromDeltas(kind, currentDelta,
-                monitor, typeChecker, mustDoFullBuild,
+                monitor, mustDoFullBuild,
                 mustResolveClasspathContainer);
 
         if (! somethingToDo) {
@@ -369,7 +390,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                builtPhasedUnits = fullBuild(project, sourceProject, monitor);
+                monitor.subTask("Clearing existing markers");
+                clearProjectMarkers(project);
+                clearMarkersOn(project);
+                monitor.worked(1);
+                
+                if (! getModelState(project).equals(ModelState.Parsed)) {
+                    parseCeylonModel(project, monitor);
+                }
+                final TypeChecker typeChecker = getProjectTypeChecker(project);
+                
+                modelStates.put(project, ModelState.TypeChecking);
+                builtPhasedUnits = fullTypeCheck(project, sourceProject, typeChecker, monitor);
+                modelStates.put(project, ModelState.Available);
+                
                 getConsoleStream().println(timedMessage("Full generation of class files..."));
                 monitor.subTask("Generating binaries");
                 if (monitor.isCanceled()) {
@@ -434,6 +468,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
 
+                TypeChecker typeChecker = typeCheckers.get(project);
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
                 
                 monitor.worked(1);
@@ -609,7 +644,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
             }
             
-            typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
+            TypeChecker typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
             
             monitor.subTask("Collecting dependencies");
             getConsoleStream().println(timedMessage("Collecting dependencies"));
@@ -639,15 +674,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public boolean chooseBuildTypeFromDeltas(final int kind, final IResourceDelta currentDelta,
-            IProgressMonitor monitor, TypeChecker typeChecker,
+            IProgressMonitor monitor,
             final CeylonBuilder.BooleanHolder mustDoFullBuild,
             final CeylonBuilder.BooleanHolder mustResolveClasspathContainer) {
-        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || typeChecker == null;
+        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || getModelState(getProject()) != ModelState.Available;
         mustResolveClasspathContainer.value = false;
         final BooleanHolder sourceModified = new BooleanHolder();
         sourceModified.value = false;
-        
-        boolean somethingToDo = false;
         
         if (! mustDoFullBuild.value) {
             if (currentDelta != null) {
@@ -962,22 +995,32 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return null;
     }
 
-    private List<PhasedUnit> fullBuild(IProject project, ISourceProject sourceProject, IProgressMonitor monitor) throws CoreException {
+    private List<PhasedUnit> fullTypeCheck(IProject project, ISourceProject sourceProject, TypeChecker typeChecker, IProgressMonitor monitor) throws CoreException {
         System.out.println("Starting ceylon full build of project " + project.getName());
 
-        monitor.subTask("Clearing existing markers");
-        clearProjectMarkers(project);
-        clearMarkersOn(project);
-        monitor.worked(1);
-        
-        TypeChecker alreadyExistingTypeChecker = getProjectTypeChecker(project);
-        final TypeChecker typeChecker = alreadyExistingTypeChecker != null ?
-                                             alreadyExistingTypeChecker : 
-                                                 buildCeylonModelWithoutTypechecking(project, monitor);
+        monitor.subTask("Typechecking Ceylon source archives for project " 
+                + project.getName());
 
+        List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
+        for (PhasedUnits units : phasedUnitsOfDependencies) {
+            for (PhasedUnit pu : units.getPhasedUnits()) {
+                pu.scanDeclarations();
+            }
+        }
+        for (PhasedUnits units : phasedUnitsOfDependencies) {
+            for (PhasedUnit pu : units.getPhasedUnits()) {
+                pu.scanTypeDeclarations();
+            }
+        }
+        for (PhasedUnits units : phasedUnitsOfDependencies) {
+            for (PhasedUnit pu : units.getPhasedUnits()) {
+                pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+            }
+        }
+        
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
-        monitor.subTask("Compiling Ceylon source files for project " 
+        monitor.subTask("Typechecking Ceylon source files for project " 
                 + project.getName());
 
         for (PhasedUnit pu : listOfUnits) {
@@ -1033,12 +1076,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
-    public static TypeChecker buildCeylonModelWithoutTypechecking(
+    public static TypeChecker parseCeylonModel(
             final IProject project,
             IProgressMonitor monitor) throws CoreException {
         monitor.subTask("Collecting Ceylon source files for project " 
                     + project.getName());
 
+        modelStates.put(project, ModelState.Parsing);
         typeCheckers.remove(project);
         projectSources.remove(project);
         final List<IFile> scannedSources = new ArrayList<IFile>();
@@ -1064,6 +1108,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         typeCheckerBuilder.setRepositoryManager(Util.makeRepositoryManager(repos, getModulesOutputDirectory(javaProject).getAbsolutePath(), new EclipseLogger()));
         final TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
         final PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
+
         final JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
         moduleManager.setTypeChecker(typeChecker);
         final Context context = typeChecker.getContext();
@@ -1211,7 +1256,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         typeCheckers.put(project, typeChecker);
         projectSources.put(project, scannedSources);
+        modelStates.put(project, ModelState.Parsed);
         
+/*
         UIJob refreshJob = new UIJob("Refresh Current Ceylon Editor") {
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
@@ -1224,10 +1271,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
         };
         refreshJob.schedule();
-        
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
+*/        
         return typeChecker;
     }
 
@@ -1882,10 +1926,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return typeCheckers.keySet();
     }
 
-    public static void removeProjectTypeChecker(IProject project) {
+    public static void removeProject(IProject project) {
         typeCheckers.remove(project);
         sourceFolders.remove(project);
         projectSources.remove(project);
+        modelStates.remove(project);
     }
     
 

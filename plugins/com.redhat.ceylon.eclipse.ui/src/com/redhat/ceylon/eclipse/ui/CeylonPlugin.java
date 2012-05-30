@@ -249,7 +249,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                             try {
                                 if (project.hasNature(CeylonNature.NATURE_ID)) {
                                     if (! project.isOpen()) {
-                                        CeylonBuilder.removeProjectTypeChecker(project);
+                                        CeylonBuilder.removeProject(project);
                                     }
                                     else {
                                         IJavaProject javaProject = JavaCore.create(project);

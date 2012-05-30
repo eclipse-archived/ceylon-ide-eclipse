@@ -64,6 +64,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.TemporaryFile;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.ModelState;
 
 public class CeylonParseController extends ParseControllerBase {
     
@@ -103,8 +104,6 @@ public class CeylonParseController extends ParseControllerBase {
     public IAnnotationTypeInfo getAnnotationTypeInfo() {
         return simpleAnnotationTypeInfo;
     }
-    
-    private Job retryJob = null;
     
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
@@ -153,6 +152,36 @@ public class CeylonParseController extends ParseControllerBase {
         if (! file.getName().endsWith(".ceylon")) {
             return fCurrentAst;
         }
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
+        ANTLRInputStream input;
+        try {
+            input = new ANTLRInputStream(file.getInputStream());
+        } 
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        CeylonLexer lexer = new CeylonLexer(input);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        
+        if (isCanceling(monitor)) {
+            return fCurrentAst;
+        }
+        
+        CeylonParser parser = new CeylonParser(tokenStream);
+        Tree.CompilationUnit cu;
+        try {
+            cu = parser.compilationUnit();
+        }
+        catch (RecognitionException e) {
+            throw new RuntimeException(e);
+        }
+        
+        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+        tokens.addAll(tokenStream.getTokens());
+
         if (isCanceling(monitor)) {
             return fCurrentAst;
         }
@@ -216,14 +245,12 @@ public class CeylonParseController extends ParseControllerBase {
             return fCurrentAst;
         }
 
-        if (sourceProject != null) {
-            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            if (typeChecker == null) {
-                return fCurrentAst;
-            } else {
-                modelLoader = CeylonBuilder.getProjectModelLoader(project);
+        if (project != null) {
+            if (! CeylonBuilder.getModelState(project).equals(ModelState.Available)) {
+                return fCurrentAst; // TypeChecking has not been performed.
             }
-            
+            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+            modelLoader = CeylonBuilder.getProjectModelLoader(project);
         }
         
         //System.out.println("Compiling " + file.getPath());
@@ -232,36 +259,6 @@ public class CeylonParseController extends ParseControllerBase {
             return fCurrentAst;
         }
 
-        ANTLRInputStream input;
-        try {
-            input = new ANTLRInputStream(file.getInputStream());
-        } 
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        CeylonLexer lexer = new CeylonLexer(input);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        
-        if (isCanceling(monitor)) {
-            return fCurrentAst;
-        }
-        
-        CeylonParser parser = new CeylonParser(tokenStream);
-        Tree.CompilationUnit cu;
-        try {
-            cu = parser.compilationUnit();
-        }
-        catch (RecognitionException e) {
-            throw new RuntimeException(e);
-        }
-        
-        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-        tokens.addAll(tokenStream.getTokens());
-
-        if (isCanceling(monitor)) {
-            return fCurrentAst;
-        }
-        
         List<LexError> lexerErrors = lexer.getErrors();
         for (LexError le : lexerErrors) {
             //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
@@ -281,10 +278,7 @@ public class CeylonParseController extends ParseControllerBase {
         if (typeChecker == null) {
         	TypeCheckerBuilder tcb = new TypeCheckerBuilder().verbose(false);
         	
-            if (sourceProject != null) {
-                project = sourceProject.getRawProject();
-            } 
-            else if (path!=null) { //path==null in structured compare editor
+        	if (path!=null) { //path==null in structured compare editor
                 for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
                     if (p.getLocation().isPrefixOf(path)) {
                         project = p;
@@ -344,9 +338,6 @@ public class CeylonParseController extends ParseControllerBase {
             cu = builtPhasedUnit.getCompilationUnit();
             fCurrentAst = cu;
             phasedUnit = builtPhasedUnit;
-            phasedUnit.scanDeclarations();
-            phasedUnit.scanTypeDeclarations();
-            phasedUnit.validateRefinement();
             phasedUnit.analyseTypes();
         }
         else {

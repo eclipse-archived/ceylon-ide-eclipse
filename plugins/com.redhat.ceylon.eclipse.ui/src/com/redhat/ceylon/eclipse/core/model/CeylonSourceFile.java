@@ -16,6 +16,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 public class CeylonSourceFile extends PhasedUnit {
 
     private TypeChecker typeChecker;
+    private boolean validatingTree = false; 
+    private boolean scanningDeclarations = false; 
+    private boolean scanningTypeDeclarations = false; 
+    private boolean validatingRefinement = false; 
+    private boolean analysingTypes = false; 
+    private boolean analyzingFlow = false; 
     
     public CeylonSourceFile(VirtualFile unitFile, VirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
@@ -32,13 +38,17 @@ public class CeylonSourceFile extends PhasedUnit {
     }
 
     @Override
-    public synchronized void validateTree() {
-        super.validateTree();
+    public void validateTree() {
+        if (! isTreeValidated() && ! validatingTree) {
+            validatingTree = true;
+            super.validateTree();
+        }
     }
 
     @Override
     public synchronized void scanDeclarations() {
-        if (! isDeclarationsScanned()) {
+        if (! isDeclarationsScanned() && !scanningDeclarations) {
+            scanningDeclarations = true;
             for (PhasedUnit phasedUnit : typeChecker.getPhasedUnits().getPhasedUnits()) {
                 phasedUnit.validateTree();
             }
@@ -48,7 +58,8 @@ public class CeylonSourceFile extends PhasedUnit {
 
     @Override
     public synchronized void scanTypeDeclarations() {
-        if (! isTypeDeclarationsScanned()) {
+        if (! isTypeDeclarationsScanned() && ! scanningTypeDeclarations) {
+            scanningTypeDeclarations = true; 
             for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
                 for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                     phasedUnit.scanDeclarations();
@@ -63,7 +74,8 @@ public class CeylonSourceFile extends PhasedUnit {
 
     @Override
     public synchronized void validateRefinement() {
-        if (! isRefinementValidated()) {
+        if (! isRefinementValidated() && validatingRefinement) {
+            validatingRefinement = true;
             for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
                 for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                     phasedUnit.scanTypeDeclarations();
@@ -78,7 +90,8 @@ public class CeylonSourceFile extends PhasedUnit {
 
     @Override
     public synchronized void analyseTypes() {
-        if (! isFullyTyped()) {
+        if (! isFullyTyped() && ! analysingTypes) {
+            analysingTypes = true;
             for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
                 for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                     phasedUnit.validateRefinement();
@@ -93,7 +106,8 @@ public class CeylonSourceFile extends PhasedUnit {
 
     @Override
     public synchronized void analyseFlow() {
-        if (! isFlowAnalyzed()) {
+        if (! isFlowAnalyzed() && ! analyzingFlow) {
+            analyzingFlow = true;
             for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
                 for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                     phasedUnit.analyseTypes();
