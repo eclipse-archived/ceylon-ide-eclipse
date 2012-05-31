@@ -72,7 +72,8 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         change.setEdit(new MultiTextEdit());
         Integer offset = decNode.getStartIndex();
         change.addEdit(new InsertEdit(offset, annotation));
-        if (decNode instanceof Tree.TypedDeclaration) {
+        if (decNode instanceof Tree.TypedDeclaration &&
+                !(decNode instanceof Tree.ObjectDefinition)) {
             Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
             if (type instanceof Tree.FunctionModifier 
                     || type instanceof Tree.ValueModifier) {
