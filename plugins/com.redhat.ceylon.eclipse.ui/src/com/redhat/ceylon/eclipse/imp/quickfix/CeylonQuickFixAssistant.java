@@ -1,12 +1,19 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.INTERFACE;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.METHOD;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.imp.quickfix.Util.getLevenshteinDistance;
+import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +26,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.services.IQuickFixAssistant;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.NullMessageHandler;
@@ -83,7 +89,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         else if (annotation instanceof MarkerAnnotation) {
             code = ((MarkerAnnotation) annotation).getMarker()
-                   .getAttribute(IMessageHandler.ERROR_CODE_KEY, 0);
+                   .getAttribute(ERROR_CODE_KEY, 0);
         }
         else {
             return false;
@@ -104,7 +110,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     @Override
     public String[] getSupportedMarkerTypes() {
-        return new String[] { CeylonBuilder.PROBLEM_MARKER_ID };
+        return new String[] { PROBLEM_MARKER_ID };
     }
 
     public static String getIndent(Node node, IDocument doc) {
@@ -427,7 +433,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                                 parameters(cd.getTypeParameterList()) + 
                                 arguments(cd.getParameterList()) + " {}", 
                             "object '"+ brokenName + "'", 
-                            CeylonLabelProvider.ATTRIBUTE, cu, cd);
+                            ATTRIBUTE, cu, cd);
                 }
             }
         }
@@ -440,7 +446,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                                 " satisfies " + cd.getDeclarationModel().getName() + 
                                 parameters(cd.getTypeParameterList()) + " {}", 
                             "interface '"+ brokenName + parameters(cd.getTypeParameterList()) +  "'", 
-                            CeylonLabelProvider.INTERFACE, cu, cd);
+                            INTERFACE, cu, cd);
                 }
                 if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
                     addCreateEnumProposal(proposals, project, 
@@ -448,7 +454,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                                 " satisfies " + cd.getDeclarationModel().getName() + 
                                 parameters(cd.getTypeParameterList()) + " {}", 
                             "object '"+ brokenName + "'", 
-                            CeylonLabelProvider.ATTRIBUTE, cu, cd);
+                            ATTRIBUTE, cu, cd);
                 }
             }
         }
@@ -583,7 +589,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     String impl = isVoid ? " {}" : " { return bottom; }";
                     def = type + " " + brokenName + params + impl;
                     desc = "function '" + brokenName + params + "'";
-                    image = CeylonLabelProvider.METHOD;
+                    image = METHOD;
                 }
             }
             else if (!isUpperCase) {
@@ -591,7 +597,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     stn.equals("unknown") ? "value" : stn;
                 def = type + " " + brokenName + " = bottom;";
                 desc = "value '" + brokenName + "'";
-                image = CeylonLabelProvider.ATTRIBUTE;
+                image = ATTRIBUTE;
             }
             else {
                 return;
@@ -627,14 +633,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             String idesc = "interface '" + brokenName + "'";
             String cdef = "class " + brokenName + "() {}";
             String cdesc = "class '" + brokenName + "()'";
-            //addCreateLocalProposals(proposals, project, idef, idesc, CeylonLabelProvider.INTERFACE, cu, bt);
-            addCreateLocalProposals(proposals, project, cdef, cdesc, CeylonLabelProvider.CLASS, cu, bt);
-            addCreateToplevelProposals(proposals, project, idef, idesc, CeylonLabelProvider.INTERFACE, cu, bt);
-            addCreateToplevelProposals(proposals, project, cdef, cdesc, CeylonLabelProvider.CLASS, cu, bt);
+            //addCreateLocalProposals(proposals, project, idef, idesc, INTERFACE, cu, bt);
+            addCreateLocalProposals(proposals, project, cdef, cdesc, CLASS, cu, bt);
+            addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt);
+            addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
-                    CeylonLabelProvider.INTERFACE, file, brokenName);
+                    INTERFACE, file, brokenName);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
-                    CeylonLabelProvider.CLASS, file, brokenName);
+                    CLASS, file, brokenName);
         }
     }
 
@@ -811,7 +817,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                             def = ", " + def;
                         }
                         CreateProposal.addCreateParameterProposal(proposals, def, desc, 
-                                CeylonLabelProvider.PARAMETER, typeDec, unit, decNode, paramList);
+                                PARAMETER, typeDec, unit, decNode, paramList);
                         break;
                     }
                 }
@@ -834,7 +840,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                             pdef = ", " + pdef;
                         }
                         CreateProposal.addCreateParameterAndAttributeProposal(proposals, pdef, 
-                                adef, desc, CeylonLabelProvider.ATTRIBUTE, typeDec, unit, decNode, 
+                                adef, desc, ATTRIBUTE, typeDec, unit, decNode, 
                                 paramList, body);
                     }
                 }
@@ -873,7 +879,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
 
     private static Tree.ParameterList getParameters(Tree.Declaration decNode) {
-        Tree.ParameterList body=null;
         if (decNode instanceof Tree.AnyClass) {
             return ((Tree.AnyClass) decNode).getParameterList();
         }
@@ -1069,7 +1074,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         if (dec!=null) {
             for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
-                    //TODO: "object" declarations?
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();

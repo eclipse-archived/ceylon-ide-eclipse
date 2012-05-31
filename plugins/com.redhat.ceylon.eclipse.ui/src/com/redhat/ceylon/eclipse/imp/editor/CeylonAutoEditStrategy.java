@@ -1,12 +1,15 @@
 package com.redhat.ceylon.eclipse.imp.editor;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
+import static org.eclipse.core.runtime.Platform.getPreferencesService;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.imp.services.IAutoEditStrategy;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,7 +19,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
@@ -127,16 +129,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             if (tokenIndex>=0) {
   	            CommonToken token = pc.getTokens().get(tokenIndex);
                 int type = token.getType();
-                return token!=null && (type==CeylonLexer.STRING_LITERAL || 
-                        type==CeylonLexer.ASTRING_LITERAL ||
-                        type==CeylonLexer.MULTI_COMMENT) &&
+                return token!=null && (type==STRING_LITERAL || 
+                        type==ASTRING_LITERAL ||
+                        type==MULTI_COMMENT) &&
                         token.getStartIndex()<offset;
             }
         }
         return false;
     }
 
-    private boolean isLineComment(int offset) {
+    /*private boolean isLineComment(int offset) {
         IEditorPart editor = Util.getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonParseController pc = ((CeylonEditor) editor).getParseController();
@@ -150,7 +152,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
         }
         return false;
-    }
+    }*/
 
     private int getStringIndent(int offset) {
         IEditorPart editor = Util.getCurrentEditor();
@@ -160,7 +162,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
             if (tokenIndex>=0) {
                 CommonToken token = pc.getTokens().get(tokenIndex);
-                if (token!=null && token.getType()==CeylonLexer.STRING_LITERAL &&
+                if (token!=null && token.getType()==STRING_LITERAL &&
                         token.getStartIndex()<offset) {
                     return token.getCharPositionInLine()+1;
                 }
@@ -543,13 +545,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
  
     private static int getIndentSpaces() {
-        IPreferencesService ps = Platform.getPreferencesService();
+        IPreferencesService ps = getPreferencesService();
         return ps==null ? 4 :
             ps.getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
     }
     
     private static boolean getIndentWithSpaces() {
-        IPreferencesService ps = Platform.getPreferencesService();
+        IPreferencesService ps = getPreferencesService();
         return ps==null ? false :
             ps.getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
     }
