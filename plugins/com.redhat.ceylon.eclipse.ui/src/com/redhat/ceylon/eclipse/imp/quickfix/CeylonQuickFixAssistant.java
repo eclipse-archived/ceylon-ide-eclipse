@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService.getRefinedDeclaration;
@@ -52,12 +53,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -252,6 +254,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 2000:
                 addCreateParameterProposals(cu, node, problem, proposals, 
                         project, tc, file);
+                break;
+            case 2100:
+                addChangeTypeProposals(cu, node, problem, proposals, project);
                 break;
             }
         }
@@ -682,8 +687,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
     
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
-            IProject project, String def, String desc, Image image, 
-            Declaration typeDec) {
+            IProject project, String def, String desc, Image image, Declaration typeDec) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
@@ -702,36 +706,48 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
     }
 
-    private void addCreateParameterProposals(Tree.CompilationUnit cu, final Node node, 
+    private void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
-        class FindInvocationVisitor extends Visitor {
-            Tree.InvocationExpression result;
-            Tree.InvocationExpression current; 
-            @Override
-            public void visit(Tree.PositionalArgument that) {
-                Expression e = that.getExpression();
-                if (e!=null && node==e.getTerm()) {
-                    result=current;
+            IProject project) {
+        if (node instanceof Tree.Term) {
+            ProducedType type = ((Tree.Term) node).getTypeModel();
+            FindInvocationVisitor fav = new FindInvocationVisitor(node);
+            fav.visit(cu);
+            TypedDeclaration td = fav.parameter;
+            if (td instanceof ValueParameter) {
+                ValueParameter vp = (ValueParameter)td;
+                if (vp.isHidden()) {
+                    td = (TypedDeclaration) vp.getDeclaration()
+                            .getMember(td.getName(), null);
                 }
-                super.visit(that);
             }
-            @Override
-            public void visit(Tree.NamedArgument that) {
-                if (node==that) {
-                    result=current;
+            addChangeTypeProposals(proposals, problem, project, type, td);
+        }
+    }
+    
+    private void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
+            ProblemLocation problem, IProject project, ProducedType type, 
+            TypedDeclaration typedDec) {
+        if (typedDec!=null) {
+            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+                if (typedDec.getUnit().equals(unit.getUnit())) {
+                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
+                    getRootNode(unit).visit(fdv);
+                    Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
+                    Tree.Type typeNode = decNode.getType();
+                    ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
+                    IFile file = CeylonBuilder.getFile(unit);
+                    ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
+                            newType, file);
                 }
-                super.visit(that);
-            }
-            @Override
-            public void visit(Tree.InvocationExpression that) { 
-                Tree.InvocationExpression oc=current;
-                current = that;
-                super.visit(that);
-                current=oc;
             }
         }
-        FindInvocationVisitor fav = new FindInvocationVisitor();
+    }
+
+    private void addCreateParameterProposals(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IProject project, TypeChecker tc, IFile file) {
+        FindInvocationVisitor fav = new FindInvocationVisitor(node);
         fav.visit(cu);
         Primary prim = fav.result.getPrimary();
         if (prim instanceof Tree.BaseMemberOrTypeExpression) {
