@@ -37,8 +37,9 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file) {
+    static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IFile file) {
         final Tree.Type type = (Tree.Type) node;
         InferTypeVisitor itv = new InferTypeVisitor() {
             { unit = type.getUnit(); }
