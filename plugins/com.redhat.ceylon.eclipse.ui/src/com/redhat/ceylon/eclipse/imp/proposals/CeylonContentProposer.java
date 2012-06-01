@@ -1032,23 +1032,26 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static String name(DeclarationWithProximity d) {
-        return name(d.getDeclaration());
+        return name(d.getDeclaration(), d.getName());
     }
     
     private static String name(Declaration d) {
-        String n = d.getName();
-        char c = n.charAt(0);
+        return name(d, d.getName());
+    }
+
+    private static String name(Declaration d, String alias) {
+        char c = alias.charAt(0);
         if (d instanceof TypedDeclaration &&
                 Character.isUpperCase(c)) {
-            return "\\i" + n;
+            return "\\i" + alias;
         }
         else if (d instanceof TypeDeclaration &&
                 !(d instanceof Class && d.isAnonymous()) &&
                 Character.isLowerCase(c)) {
-            return "\\I" + n;
+            return "\\I" + alias;
         }
         else {
-            return n;
+            return alias;
         }
     }
     
