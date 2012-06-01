@@ -371,6 +371,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 builtPhasedUnits = fullBuild(project, sourceProject, monitor);
                 getConsoleStream().println(timedMessage("Full generation of class files..."));
+                getConsoleStream().println("compiling: " + allSources);
                 monitor.subTask("Generating binaries");
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -397,7 +398,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     if (projectDelta != null) {
                         List<IPath> deltaSourceFolders = getSourceFolders((IProject) projectDelta.getResource());
                         for (IResourceDelta sourceDelta : projectDelta.getAffectedChildren()) {
-                            if (! deltaSourceFolders.contains(sourceDelta.getResource().getFullPath())) {
+                            boolean found = false;
+                            for (IPath ip: deltaSourceFolders) {
+                                if (sourceDelta.getResource().getFullPath().isPrefixOf(ip)) {
+                                    found=true; break;
+                                }
+                            }
+                            if (!found) {
                                 // Not a real Ceylon source folder : don't scan changes to it 
                                 continue;
                             }
@@ -588,6 +595,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.worked(1);
                 monitor.subTask("Generating binaries");
                 getConsoleStream().println(timedMessage("Incremental generation of class files..."));
+                getConsoleStream().println("compiling: " + fSourcesToCompile);
                 binariesGenerationOK = generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
