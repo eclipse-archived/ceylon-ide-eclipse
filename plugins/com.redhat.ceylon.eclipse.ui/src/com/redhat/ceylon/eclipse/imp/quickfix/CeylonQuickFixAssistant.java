@@ -744,11 +744,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
                     getRootNode(unit).visit(fdv);
                     Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
-                    Tree.Type typeNode = decNode.getType();
-                    ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
-                    IFile file = CeylonBuilder.getFile(unit);
-                    ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
-                            newType, file);
+                    if (decNode!=null) {
+                        Tree.Type typeNode = decNode.getType();
+                        ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
+                        IFile file = CeylonBuilder.getFile(unit);
+                        ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
+                                newType, file);
+                    }
                 }
             }
         }
