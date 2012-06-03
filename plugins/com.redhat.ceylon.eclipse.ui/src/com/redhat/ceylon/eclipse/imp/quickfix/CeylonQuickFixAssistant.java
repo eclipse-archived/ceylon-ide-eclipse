@@ -716,6 +716,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 node = e.getTerm();
             }
         }
+        if (node instanceof Tree.Expression) {
+            node = ((Tree.Expression) node).getTerm();
+        }
         if (node instanceof Tree.Term) {
             ProducedType type = ((Tree.Term) node).getTypeModel();
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
