@@ -60,6 +60,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -709,6 +710,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project) {
+        if (node instanceof Tree.SpecifierExpression) {
+            Expression e = ((Tree.SpecifierExpression) node).getExpression();
+            if (e!=null) {
+                node = e.getTerm();
+            }
+        }
         if (node instanceof Tree.Term) {
             ProducedType type = ((Tree.Term) node).getTypeModel();
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
