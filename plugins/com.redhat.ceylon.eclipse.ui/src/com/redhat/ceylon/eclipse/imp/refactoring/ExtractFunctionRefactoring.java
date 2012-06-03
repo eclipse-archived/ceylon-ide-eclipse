@@ -310,15 +310,15 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		term.visit(flrv);
 		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
 		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-			addLocalType(dec, bme.getTypeModel(), localTypes, 
-					new ArrayList<ProducedType>());
+			addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
+			        localTypes, new ArrayList<ProducedType>());
 		}
 		
 		String params = "";
 		String args = "";
 		if (!flrv.getLocalReferences().isEmpty()) {
 			for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-				params += bme.getTypeModel().getProducedTypeName() + 
+				params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName() + 
 						" " + bme.getIdentifier().getText() + ", ";
 				args += bme.getIdentifier().getText() + ", ";
 			}
@@ -358,7 +358,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     		}
     		else {
                 type = explicitType || dec.isToplevel() ? 
-                        tt.getProducedTypeName() : "function";
+                        node.getUnit().denotableType(tt).getProducedTypeName() : "function";
                 ending = "return ";
     		}
     		
@@ -405,8 +405,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     }
                 }
                 if (v.refs>0) {
-                    addLocalType(dec, bme.getTypeModel(), localTypes, 
-                            new ArrayList<ProducedType>());
+                    addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
+                            localTypes, new ArrayList<ProducedType>());
                     localRefs.add(bme);
                 }
             }
@@ -418,7 +418,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: localRefs) {
             if (done.add(bme.getDeclaration())) {
-                params += bme.getTypeModel().getProducedTypeName() + 
+                params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName() + 
                         " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
                 nonempty = true;
@@ -449,8 +449,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        String content = result==null ? "void" : result.getDeclarationModel()
-                .getType().getProducedTypeName();
+        String content = result==null ? "void" : node.getUnit().denotableType(result.getDeclarationModel()
+                .getType()).getProducedTypeName();
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
         for (Statement s: statements) {
@@ -465,8 +465,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null) {
             String modifs;
             if (result.getDeclarationModel().isShared()) {
-                modifs = "shared " + result.getDeclarationModel()
-                        .getType().getProducedTypeName() + " ";
+                modifs = "shared " + node.getUnit().denotableType(result.getDeclarationModel()
+                        .getType()).getProducedTypeName() + " ";
             }
             else {
                 modifs = "value ";

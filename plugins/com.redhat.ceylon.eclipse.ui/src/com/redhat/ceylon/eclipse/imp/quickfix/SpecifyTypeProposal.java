@@ -53,7 +53,7 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         };
         itv.visit(cu);
         ProducedType it = itv.inferredType;
-        String explicitType = it==null ? "Object" : it.getProducedTypeName();
+        String explicitType = it==null ? "Object" : node.getUnit().denotableType(it).getProducedTypeName();
         TextFileChange change =  new TextFileChange("Specify Type", file);
         change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
                 explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
