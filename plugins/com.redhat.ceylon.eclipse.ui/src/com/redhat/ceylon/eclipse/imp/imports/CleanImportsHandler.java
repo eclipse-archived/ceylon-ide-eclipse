@@ -50,29 +50,68 @@ public class CleanImportsHandler extends AbstractHandler {
             });
             StringBuilder builder = new StringBuilder();
             for (Tree.Import ti: importList) {
-                List<Import> list = new ArrayList<Import>();
-                for (Import i: ti.getImportMemberOrTypeList()
-                            .getImportList().getImports()) {
-                    if (!duiv.getResult().contains(i.getDeclaration())) {
-                        list.add(i);
+                List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
+                for (Tree.ImportMemberOrType i: ti.getImportMemberOrTypeList()
+                            .getImportMemberOrTypes()) {
+                    if (i.getDeclarationModel()!=null) {
+                        if (!duiv.getResult().contains(i.getDeclarationModel())) {
+                            list.add(i);
+                        }
+                        else {
+                            if (i.getImportMemberOrTypeList()!=null) {
+                                for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
+                                        .getImportMemberOrTypes()) {
+                                    if (!duiv.getResult().contains(j.getDeclarationModel())) {
+                                        list.add(i);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 if (!list.isEmpty()) {
                     builder.append("import ")
                             .append(packageName(ti))
                             .append(" { ");
-                    for (Import i: list) {
-                        if ( !i.getAlias().equals(i.getDeclaration().getName()) ) {
-                            builder.append(i.getAlias()).append("=");
+                    for (Tree.ImportMemberOrType i: list) {
+                        if (i.getDeclarationModel()!=null) {
+                            if ( !i.getImportModel().getAlias().equals(i.getDeclarationModel().getName()) ) {
+                                builder.append(i.getImportModel().getAlias()).append("=");
+                            }
+                            builder.append(i.getDeclarationModel().getName());
+                            if (i.getImportMemberOrTypeList()!=null) {
+                                builder.append(" { ");
+                                boolean found=false;
+                                for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
+                                        .getImportMemberOrTypes()) {
+                                    if (j.getDeclarationModel()!=null) {
+                                        if (!duiv.getResult().contains(j.getDeclarationModel())) {
+                                            found=true;
+                                            if (!j.getImportModel().getAlias().equals(j.getDeclarationModel().getName())) {
+                                                builder.append(j.getImportModel().getAlias()).append("=");
+                                            }
+                                            builder.append(j.getDeclarationModel().getName()).append(", ");
+                                        }
+                                    }
+                                }
+                                if (found) builder.setLength(builder.length()-2);
+                                builder.append(" }");
+                                if (!found) builder.setLength(builder.length()-5);
+                            }
+                            builder.append(", ");
                         }
-                        builder.append(i.getDeclaration().getName())
-                                .append(", ");
                     }
                     /*if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
                         builder.append(" ... ");
                     }*/
                     builder.setLength(builder.length()-2);
                     builder.append(" }\n");
+                }
+                if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
+                    builder.append("import ")
+                        .append(packageName(ti))
+                        .append(" { ... }\n");
                 }
             }
             if (builder.length()!=0) {
