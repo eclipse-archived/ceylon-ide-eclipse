@@ -80,7 +80,7 @@ public class CreateSubtypeHandler extends AbstractHandler {
         		for (Parameter p: c.getParameterList().getParameters()) {
         			ProducedTypedReference ptr = type.getTypedParameter(p);
         			def.append(ptr.getType().getProducedTypeName())
-        			.append(" ").append(p.getName()).append(", ");
+        			    .append(" ").append(p.getName()).append(", ");
         		}
         		def.setLength(def.length()-2);
         		def.append(")");

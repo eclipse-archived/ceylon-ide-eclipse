@@ -553,7 +553,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             cu.visit(fav);
             ProducedType t = fav.expectedType;
             final boolean isVoid = t==null;
-            String stn = isVoid ? null : t.getProducedTypeName();
+            String stn = isVoid ? null : node.getUnit().denotableType(t).getProducedTypeName();
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
@@ -720,7 +720,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             node = ((Tree.Expression) node).getTerm();
         }
         if (node instanceof Tree.Term) {
-            ProducedType type = ((Tree.Term) node).getTypeModel();
+            ProducedType type = node.getUnit().denotableType(((Tree.Term) node).getTypeModel());
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
@@ -962,7 +962,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
             if (a instanceof Tree.SpecifiedArgument) {
                 Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
-                params.append( na.getSpecifierExpression().getExpression().getTypeModel()
+                params.append( a.getUnit().denotableType(na.getSpecifierExpression().getExpression().getTypeModel())
                             .getProducedTypeName() )
                     .append(" ")
                     .append(na.getIdentifier().getText());
@@ -973,7 +973,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
 
     private void appendPositionalArgs(FindArgumentsVisitor fav, StringBuilder params) {
         for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
-            params.append( pa.getExpression().getTypeModel().getProducedTypeName() )
+            params.append( pa.getUnit().denotableType(pa.getExpression().getTypeModel()).getProducedTypeName() )
                 .append(" ");
             if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
                 params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())

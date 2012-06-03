@@ -84,10 +84,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 				statNode = anns.getAnnotations().get(0);
 			}
 		}*/
-		tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
-				( explicitType ? term.getTypeModel().getProducedTypeName() : "value") + " " + 
-				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";") + 
-				"\n" + getIndent(statNode, doc)));
+		String dec = (explicitType ? node.getUnit().denotableType(term.getTypeModel()).getProducedTypeName() : "value") + " " + 
+        				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
+        tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
+				dec + "\n" + getIndent(statNode, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
     }
 
