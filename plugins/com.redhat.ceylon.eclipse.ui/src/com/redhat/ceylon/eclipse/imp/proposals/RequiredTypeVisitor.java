@@ -70,10 +70,12 @@ class RequiredTypeVisitor extends Visitor
             namedArgTarget = getTarget(that);
             if (namedArgTarget!=null) {
                 List<Parameter> params = getParameters(namedArgTarget);
-                Parameter param = params.get(params.size()-1);
-                if (param.isSequenced()) {
-                    requiredType = namedArgTarget.getTypedParameter(param).getType();
-                    requiredType = that.getUnit().getElementType(requiredType);
+                if (params!=null && !params.isEmpty()) {
+                    Parameter param = params.get(params.size()-1);
+                    if (param.isSequenced()) {
+                        requiredType = namedArgTarget.getTypedParameter(param).getType();
+                        requiredType = that.getUnit().getElementType(requiredType);
+                    }
                 }
             }
         }
