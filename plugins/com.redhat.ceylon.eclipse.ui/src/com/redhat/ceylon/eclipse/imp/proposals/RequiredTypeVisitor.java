@@ -45,6 +45,14 @@ class RequiredTypeVisitor extends Visitor
         PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
             int pos = pal.getPositionalArguments().size();
+            for (int i=0; i<pos; i++) {
+                Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+                if (node.getStartIndex()>=pa.getStartIndex() && 
+                        node.getStopIndex()<=pa.getStopIndex()) {
+                    pos = i;
+                    break;
+                }
+            }
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
