@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -21,9 +20,17 @@ public class DetectUnusedImportsVisitor extends Visitor {
     @Override
     public void visit(Tree.Import that) {
         super.visit(that);
-        for (Import i: that.getImportMemberOrTypeList()
-                .getImportList().getImports()) {
-            result.add(i.getDeclaration());
+        for (Tree.ImportMemberOrType i: that.getImportMemberOrTypeList()
+                .getImportMemberOrTypes()) {
+            if (i.getDeclarationModel()!=null)
+                result.add(i.getDeclarationModel());
+            if (i.getImportMemberOrTypeList()!=null) {
+                for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
+                        .getImportMemberOrTypes()) {
+                    if (j.getDeclarationModel()!=null)
+                        result.add(j.getDeclarationModel());
+                }
+            }
         }
     }
     
