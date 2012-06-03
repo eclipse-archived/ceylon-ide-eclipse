@@ -671,9 +671,10 @@ public class CeylonContentProposer implements IContentProposer {
         return d.getProducedReference(outerType, params);
     }
     
-    private static void addBasicProposal(int offset, String prefix, CeylonParseController cpc,
-            List<ICompletionProposal> result, DeclarationWithProximity dwp,
-            Declaration d, OccurrenceLocation ol) {
+    private static void addBasicProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
+            OccurrenceLocation ol) {
         result.add(new Proposal(offset, prefix, 
                 CeylonLabelProvider.getImage(d),
                 getDocumentationFor(cpc, d), 
@@ -681,9 +682,10 @@ public class CeylonContentProposer implements IContentProposer {
                 getTextFor(dwp, ol), true));
     }
 
-    private static void addForProposal(int offset, String prefix, CeylonParseController cpc,
-            List<ICompletionProposal> result, DeclarationWithProximity dwp,
-            Declaration d, OccurrenceLocation ol) {
+    private static void addForProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
+            OccurrenceLocation ol) {
         if (d instanceof Value || 
                 d instanceof Getter || 
                 d instanceof ValueParameter) {
@@ -709,9 +711,10 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    private static void addIfExistsProposal(int offset, String prefix, CeylonParseController cpc,
-            List<ICompletionProposal> result, DeclarationWithProximity dwp,
-            Declaration d, OccurrenceLocation ol) {
+    private static void addIfExistsProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
+            OccurrenceLocation ol) {
         if (d instanceof Value || 
                 d instanceof ValueParameter) {
             TypedDeclaration v = (TypedDeclaration) d;
@@ -727,9 +730,10 @@ public class CeylonContentProposer implements IContentProposer {
         }
     }
 
-    private static void addNamedArgumentProposal(int offset, String prefix, CeylonParseController cpc,
-            List<ICompletionProposal> result, DeclarationWithProximity dwp,
-            Declaration d, OccurrenceLocation ol) {
+    private static void addNamedArgumentProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
+            OccurrenceLocation ol) {
         result.add(new Proposal(offset, prefix, 
                 CeylonLabelProvider.PARAMETER,
                 getDocumentationFor(cpc, d), 
@@ -737,27 +741,54 @@ public class CeylonContentProposer implements IContentProposer {
                 getTextFor(dwp, ol) + " = bottom;", true));
     }
 
-    private static void addInvocationProposals(int offset, String prefix, CeylonParseController cpc, 
-            List<ICompletionProposal> result, DeclarationWithProximity dwp, 
-            ProducedReference pr, OccurrenceLocation ol) {
+    private static void addInvocationProposals(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, ProducedReference pr, 
+            OccurrenceLocation ol) {
         Declaration d = pr.getDeclaration();
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-        if (!isAbstractClass || ol==EXTENDS) {
-            result.add(new Proposal(offset, prefix, 
-                    CeylonLabelProvider.getImage(d),
-                    getDocumentationFor(cpc, d), 
-                    getPositionalInvocationDescriptionFor(dwp, ol, pr), 
-                    getPositionalInvocationTextFor(dwp, ol, pr), true));
-            List<ParameterList> pls = ((Functional) d).getParameterLists();
-            if (ol!=EXTENDS && !((Functional) d).isOverloaded() && 
-                    !pls.isEmpty() && pls.get(0).getParameters().size()>1) {
-                //if there is more than one parameter, 
-                //suggest a named argument invocation 
+        Functional fd = (Functional) d;
+        List<ParameterList> pls = fd.getParameterLists();
+        if (!pls.isEmpty()) {
+            List<Parameter> ps = pls.get(0).getParameters();
+            int defaulted = 0;
+            for (Parameter p: ps) {
+                if (p.isDefaulted()) {
+                    defaulted ++;
+                }
+            }
+            if (!isAbstractClass || ol==EXTENDS) {
+                if (defaulted>0) {
+                    result.add(new Proposal(offset, prefix, 
+                            CeylonLabelProvider.getImage(d),
+                            getDocumentationFor(cpc, d), 
+                            getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
+                            getPositionalInvocationTextFor(dwp, ol, pr, false), true));
+                }
                 result.add(new Proposal(offset, prefix, 
                         CeylonLabelProvider.getImage(d),
                         getDocumentationFor(cpc, d), 
-                        getNamedInvocationDescriptionFor(dwp, pr), 
-                        getNamedInvocationTextFor(dwp, pr), true));
+                        getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
+                        getPositionalInvocationTextFor(dwp, ol, pr, true), true));
+            }
+            if (!isAbstractClass && ol!=EXTENDS && 
+                    !fd.isOverloaded()) {
+                //if there is more than one parameter, 
+                //suggest a named argument invocation 
+                if (defaulted>0 && ps.size()-defaulted>1) {
+                    result.add(new Proposal(offset, prefix, 
+                            CeylonLabelProvider.getImage(d),
+                            getDocumentationFor(cpc, d), 
+                            getNamedInvocationDescriptionFor(dwp, pr, false), 
+                            getNamedInvocationTextFor(dwp, pr, false), true));
+                }
+                if (ps.size()>1) {
+                    result.add(new Proposal(offset, prefix, 
+                            CeylonLabelProvider.getImage(d),
+                            getDocumentationFor(cpc, d), 
+                            getNamedInvocationDescriptionFor(dwp, pr, true), 
+                            getNamedInvocationTextFor(dwp, pr, true), true));
+                }
             }
         }
     }
@@ -1063,20 +1094,20 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static String getPositionalInvocationTextFor(DeclarationWithProximity d,
-            OccurrenceLocation ol, ProducedReference pr) {
+            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
         if (forceExplicitTypeArgs(d.getDeclaration(), ol))
             appendTypeParameters(d.getDeclaration(), result);
-        appendPositionalArgs(d.getDeclaration(), pr, result);
+        appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
         return result.toString();
     }
     
     private static String getNamedInvocationTextFor(DeclarationWithProximity d, 
-            ProducedReference pr) {
+            ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result);
+        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted);
         return result.toString();
     }
     
@@ -1088,20 +1119,20 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static String getPositionalInvocationDescriptionFor(DeclarationWithProximity d, 
-            OccurrenceLocation ol, ProducedReference pr) {
+            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(d.getName());
         if (forceExplicitTypeArgs(d.getDeclaration(), ol))
             appendTypeParameters(d.getDeclaration(), result);
-        appendPositionalArgs(d.getDeclaration(), pr, result);
+        appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
         return result/*.append(" - invoke with positional arguments")*/.toString();
     }
     
     private static String getNamedInvocationDescriptionFor(DeclarationWithProximity d, 
-            ProducedReference pr) {
+            ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(d.getName());
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result);
+        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted);
         return result/*.append(" - invoke with named arguments")*/.toString();
     }
     
@@ -1191,56 +1222,68 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static void appendPositionalArgs(Declaration d, ProducedReference pr, 
-            StringBuilder result) {
+            StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
-            List<ParameterList> plists = ((Functional) d).getParameterLists();
-            if (plists!=null && !plists.isEmpty()) {
-                ParameterList params = plists.get(0);
-                if (params.getParameters().isEmpty()) {
-                    result.append("()");
-                }
-                else {
-                    result.append("(");
-                    for (Parameter p: params.getParameters()) {
-                        appendParameters(p, pr.getTypedParameter(p), result);
-                        if (p instanceof FunctionalParameter) {
-                            result.append(" ");
-                        }
-                        result.append(p.getName()).append(", ");
-                    }
-                    result.setLength(result.length()-2);
-                    result.append(")");
-                }
+            List<Parameter> params = getParameters((Functional) d, includeDefaulted);
+            if (params.isEmpty()) {
+                result.append("()");
             }
+            else {
+                result.append("(");
+                for (Parameter p: params) {
+                    appendParameters(p, pr.getTypedParameter(p), result);
+                    if (p instanceof FunctionalParameter) {
+                        result.append(" ");
+                    }
+                    result.append(p.getName()).append(", ");
+                }
+                result.setLength(result.length()-2);
+                result.append(")");
+            }
+        }
+    }
+
+    private static List<Parameter> getParameters(Functional fd, boolean includeDefaults) {
+        List<ParameterList> plists = fd.getParameterLists();
+        if (plists==null || plists.isEmpty()) {
+            return Collections.<Parameter>emptyList();
+        }
+        List<Parameter> pl = plists.get(0).getParameters();
+        if (includeDefaults) {
+            return pl;
+        }
+        else {
+            List<Parameter> list = new ArrayList<Parameter>();
+            for (Parameter p: pl) {
+                if (!p.isDefaulted()) list.add(p);
+            }
+            return list;
         }
     }
     
     private static void appendNamedArgs(Declaration d, ProducedReference pr, 
-            StringBuilder result) {
+            StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
-            List<ParameterList> plists = ((Functional) d).getParameterLists();
-            if (plists!=null && !plists.isEmpty()) {
-                ParameterList params = plists.get(0);
-                if (params.getParameters().isEmpty()) {
-                    result.append(" {}");
-                }
-                else {
-                    result.append(" { ");
-                    for (Parameter p: params.getParameters()) {
-                        if (!p.isSequenced()) {
-                            if (p instanceof FunctionalParameter) {
-                                result.append("function ").append(p.getName());
-                                appendParameters(p, pr.getTypedParameter(p), result);
-                                result.append(" { return ").append(p.getName()).append("; } ");
-                            }
-                            else {
-                                result.append(p.getName()).append(" = ")
-                                        .append(p.getName()).append("; ");
-                            }
+            List<Parameter> params = getParameters((Functional) d, includeDefaulted);
+            if (params.isEmpty()) {
+                result.append(" {}");
+            }
+            else {
+                result.append(" { ");
+                for (Parameter p: params) {
+                    if (!p.isSequenced()) {
+                        if (p instanceof FunctionalParameter) {
+                            result.append("function ").append(p.getName());
+                            appendParameters(p, pr.getTypedParameter(p), result);
+                            result.append(" { return ").append(p.getName()).append("; } ");
+                        }
+                        else {
+                            result.append(p.getName()).append(" = ")
+                            .append(p.getName()).append("; ");
                         }
                     }
-                    result.append("}");
                 }
+                result.append("}");
             }
         }
     }
