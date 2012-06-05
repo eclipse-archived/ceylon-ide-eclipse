@@ -205,7 +205,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             String fileName = unit.getFilename();
             String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
             String fileRelativePath = packagePath + "/" + fileName;
-            PhasedUnit phasedUnit = typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+            PhasedUnit phasedUnit = typeChecker==null ? 
+                    null : typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
             if (phasedUnit != null) {
                 if (! phasedUnit.isFullyTyped()) {
                     IProject currentProject = null;
