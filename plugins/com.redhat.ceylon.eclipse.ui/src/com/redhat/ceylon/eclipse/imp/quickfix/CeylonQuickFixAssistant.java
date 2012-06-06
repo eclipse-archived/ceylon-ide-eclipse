@@ -61,6 +61,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -1046,10 +1047,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         if (importNode != null) {
             int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
             String text;
-            if (importNode.getImportMemberOrTypeList().getImportWildcard()!=null) {
+            ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+            if (imtl.getImportWildcard()!=null) {
                 text = declaration + ", ";
             }
-            else if (importNode.getImportMemberOrTypeList().getImportMemberOrTypes().isEmpty()) {
+            else if (imtl.getImportMemberOrTypes().isEmpty()) {
                 text = declaration;
             }
             else {
@@ -1093,7 +1095,13 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             return imtl.getImportWildcard().getStartIndex();
         }
         else {
-            return imtl.getStopIndex();
+            List<ImportMemberOrType> imts = imtl.getImportMemberOrTypes();
+            if (imts.isEmpty()) {
+                return imtl.getStartIndex()+1;
+            }
+            else {
+                return imts.get(imts.size()-1).getStopIndex()+1;
+            }
         }
     }
 
