@@ -20,7 +20,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
-import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -48,14 +47,19 @@ public class CleanImportsHandler extends AbstractHandler {
                     return packageName(i1).compareTo(packageName(i2));
                 }
             });
+            String lastToplevel=null;
             StringBuilder builder = new StringBuilder();
             for (Tree.Import ti: importList) {
+                boolean hasWildcard = ti.getImportMemberOrTypeList().getImportWildcard()!=null;
                 List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
                 for (Tree.ImportMemberOrType i: ti.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
                     if (i.getDeclarationModel()!=null) {
                         if (!duiv.getResult().contains(i.getDeclarationModel())) {
-                            list.add(i);
+                            if (!hasWildcard || i.getAlias()!=null || 
+                                    i.getImportMemberOrTypeList()!=null) {
+                                list.add(i);
+                            }
                         }
                         else {
                             if (i.getImportMemberOrTypeList()!=null) {
@@ -70,7 +74,19 @@ public class CleanImportsHandler extends AbstractHandler {
                         }
                     }
                 }
-                if (!list.isEmpty()) {
+                String topLevel = ti.getImportPath().getIdentifiers().get(0).getText();
+                if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
+                    builder.append("\n");
+                }
+                lastToplevel=topLevel;
+                if (list.isEmpty()) {
+                    if (hasWildcard) {
+                        builder.append("import ")
+                            .append(packageName(ti))
+                            .append(" { ... }\n");
+                    }
+                }
+                else {
                     builder.append("import ")
                             .append(packageName(ti))
                             .append(" { ");
@@ -102,16 +118,13 @@ public class CleanImportsHandler extends AbstractHandler {
                             builder.append(", ");
                         }
                     }
-                    /*if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
+                    if (hasWildcard) {
                         builder.append(" ... ");
-                    }*/
-                    builder.setLength(builder.length()-2);
+                    }
+                    else {
+                        builder.setLength(builder.length()-2);
+                    }
                     builder.append(" }\n");
-                }
-                if (ti.getImportMemberOrTypeList().getImportWildcard()!=null) {
-                    builder.append("import ")
-                        .append(packageName(ti))
-                        .append(" { ... }\n");
                 }
             }
             if (builder.length()!=0) {
