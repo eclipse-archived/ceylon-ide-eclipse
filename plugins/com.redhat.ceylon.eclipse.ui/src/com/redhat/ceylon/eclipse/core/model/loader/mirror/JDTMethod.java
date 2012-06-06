@@ -215,4 +215,9 @@ public class JDTMethod implements MethodMirror {
     public boolean isDeclaredVoid() {
         return method.returnType==VOID;
     }
+
+    @Override
+    public boolean isVariadic() {
+        return method.isVarargs();
+    }
 }
