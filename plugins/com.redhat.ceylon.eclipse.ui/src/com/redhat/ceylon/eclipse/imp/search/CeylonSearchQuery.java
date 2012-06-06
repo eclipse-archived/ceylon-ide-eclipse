@@ -82,16 +82,6 @@ class CeylonSearchQuery implements ISearchQuery {
 	    monitor.beginTask("Ceylon Search", units.size());
         if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 
-        for (PhasedUnit pu : units) {
-            pu.scanDeclarations();
-        }
-        for (PhasedUnit pu : units) {
-            pu.scanTypeDeclarations();
-        }
-        for (PhasedUnit pu : units) {
-            pu.validateRefinement();
-        }
-        
         for (final PhasedUnit pu: units) {
             if (isWithinSelection(pu)) {
                 monitor.subTask("Searching source file " + pu.getUnitFile().getPath());

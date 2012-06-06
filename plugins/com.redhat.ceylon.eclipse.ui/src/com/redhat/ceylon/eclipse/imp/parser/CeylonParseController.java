@@ -246,7 +246,7 @@ public class CeylonParseController extends ParseControllerBase {
         }
 
         if (project != null) {
-            if (! CeylonBuilder.getModelState(project).equals(ModelState.Available)) {
+            if (! CeylonBuilder.isModelAvailable(project)) {
                 return fCurrentAst; // TypeChecking has not been performed.
             }
             typeChecker = CeylonBuilder.getProjectTypeChecker(project);

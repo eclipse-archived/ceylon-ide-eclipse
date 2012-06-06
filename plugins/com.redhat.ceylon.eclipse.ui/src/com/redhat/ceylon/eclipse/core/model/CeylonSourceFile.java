@@ -42,6 +42,7 @@ public class CeylonSourceFile extends PhasedUnit {
         if (! isTreeValidated() && ! validatingTree) {
             validatingTree = true;
             super.validateTree();
+            validatingTree = false;
         }
     }
 
@@ -53,6 +54,7 @@ public class CeylonSourceFile extends PhasedUnit {
                 phasedUnit.validateTree();
             }
             super.scanDeclarations();
+            scanningDeclarations = false;
         }
     }
 
@@ -69,12 +71,13 @@ public class CeylonSourceFile extends PhasedUnit {
                 phasedUnit.scanDeclarations();
             }
             super.scanTypeDeclarations();
+            scanningTypeDeclarations = false; 
         }
     }
 
     @Override
     public synchronized void validateRefinement() {
-        if (! isRefinementValidated() && validatingRefinement) {
+        if (! isRefinementValidated() && ! validatingRefinement) {
             validatingRefinement = true;
             for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
                 for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
@@ -85,6 +88,7 @@ public class CeylonSourceFile extends PhasedUnit {
                 phasedUnit.scanTypeDeclarations();
             }
             super.validateRefinement();
+            validatingRefinement = false;
         }
     }
 
@@ -101,6 +105,7 @@ public class CeylonSourceFile extends PhasedUnit {
                 phasedUnit.validateRefinement();
             }
             super.analyseTypes();
+            analysingTypes = false;
         }
     }
 
@@ -117,6 +122,7 @@ public class CeylonSourceFile extends PhasedUnit {
                 phasedUnit.analyseTypes();
             }
             super.analyseFlow();
+            analyzingFlow = false;
         }
     }
 }
