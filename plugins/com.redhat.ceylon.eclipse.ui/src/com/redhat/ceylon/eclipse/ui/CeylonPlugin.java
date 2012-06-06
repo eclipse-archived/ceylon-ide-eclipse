@@ -247,11 +247,11 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                         if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                             final IProject project = (IProject) resource;
                             try {
-                                if (project.hasNature(CeylonNature.NATURE_ID)) {
-                                    if (! project.isOpen()) {
-                                        CeylonBuilder.removeProject(project);
-                                    }
-                                    else {
+                                if (! project.isOpen()) {
+                                    CeylonBuilder.removeProject(project);
+                                }
+                                else {
+                                    if (project.hasNature(CeylonNature.NATURE_ID)) {
                                         IJavaProject javaProject = JavaCore.create(project);
                                         if (javaProject != null) {
                                             List<CeylonClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);

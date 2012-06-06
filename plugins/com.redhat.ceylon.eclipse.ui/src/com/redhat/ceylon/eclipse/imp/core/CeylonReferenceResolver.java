@@ -1,9 +1,13 @@
 package com.redhat.ceylon.eclipse.imp.core;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IReferenceResolver;
 
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -11,6 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
@@ -187,10 +192,54 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 return root;
             }
             else {
+                TypeChecker typeChecker = cpc.getTypeChecker();
                 PhasedUnit pu = cpc.getTypeChecker()==null ? null : 
                         cpc.getTypeChecker()
                                 .getPhasedUnitFromRelativePath(getRelativePath(dec));
-                return pu==null ? null : pu.getCompilationUnit();
+                if (pu != null) {
+                    return pu.getCompilationUnit();
+                }
+                
+                IProject currentProject = null;
+                for (IProject project : CeylonBuilder.getProjects()) {
+                    TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                    if (alternateTypeChecker == typeChecker) {
+                        currentProject = project;
+                        break;
+                    }
+                }
+                
+                if (currentProject != null) {
+                    List<IProject> requiredProjects;
+                    requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
+                    for (IProject project : requiredProjects) {
+                        JDTModelLoader requiredProjectLoader = CeylonBuilder.getProjectModelLoader(project);
+                        if (requiredProjectLoader == null) {
+                            continue;
+                        }
+                        Declaration originalDecl = requiredProjectLoader.getDeclaration(dec.getQualifiedNameString(), DeclarationType.TYPE);
+                        if (originalDecl != null) {
+                            String fileName = originalDecl.getUnit().getFilename();
+                            String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
+                            String fileRelativePath = packagePath + "/" + fileName;
+
+                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                            if (requiredProjectTypeChecker == null) {
+                                continue;
+                            }
+                            PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+                            if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+                                pu = requiredProjectPhasedUnit;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (pu != null) {
+                    return pu.getCompilationUnit();
+                }
+                return null;
             }
         }
     }

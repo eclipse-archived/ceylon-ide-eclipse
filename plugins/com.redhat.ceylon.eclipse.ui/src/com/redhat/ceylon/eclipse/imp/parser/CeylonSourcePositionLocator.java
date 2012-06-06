@@ -25,6 +25,7 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -206,22 +207,20 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
             String fileRelativePath = packagePath + "/" + fileName;
             PhasedUnit phasedUnit = typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-            if (phasedUnit != null) {
-                if (! phasedUnit.isFullyTyped()) {
-                    IProject currentProject = null;
-                    for (IProject project : CeylonBuilder.getProjects()) {
-                        TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
-                        if (alternateTypeChecker == typeChecker) {
-                            currentProject = project;
-                            break;
-                        }
+            if (phasedUnit == null || (phasedUnit != null && (phasedUnit.getSrcDir() instanceof ZipFileVirtualFile))) {
+                IProject currentProject = null;
+                for (IProject project : CeylonBuilder.getProjects()) {
+                    TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                    if (alternateTypeChecker == typeChecker) {
+                        currentProject = project;
+                        break;
                     }
                     
                     if (currentProject != null) {
                         List<IProject> requiredProjects;
                         requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
-                        for (IProject project : requiredProjects) {
-                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                        for (IProject requiredProject : requiredProjects) {
+                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
                             if (requiredProjectTypeChecker == null) {
                                 continue;
                             }

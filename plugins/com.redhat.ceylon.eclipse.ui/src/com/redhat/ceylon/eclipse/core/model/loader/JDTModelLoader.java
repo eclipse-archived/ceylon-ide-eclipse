@@ -114,9 +114,25 @@ public class JDTModelLoader extends AbstractModelLoader {
     private LookupEnvironment lookupEnvironment;
     private boolean mustResetLookupEnvironment = false;
     
+    private Map<String, Declaration> languageModuledeclarations;
+    
     public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
+        javaProject = ((JDTModuleManager)moduleManager).getJavaProject();
+        compilerOptions = new CompilerOptions(javaProject.getOptions(true));
+        compilerOptions.ignoreMethodBodies = true;
+        compilerOptions.storeAnnotations = true;
+        problemReporter = new ProblemReporter(
+                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+                compilerOptions,
+                new DefaultProblemFactory());
+        
+        internalCreate();
+    }
+
+    private void internalCreate() {
+        this.languageModuledeclarations = new HashMap<String, Declaration>();
         this.typeFactory = new TypeFactory(moduleManager.getContext()) {
             @Override
             public Package getPackage() {
@@ -128,8 +144,6 @@ public class JDTModelLoader extends AbstractModelLoader {
             /**
              * Search for a declaration in the language module. 
              */
-            private Map<String, Declaration> languageModuledeclarations = new HashMap<String, Declaration>();
-            
             public Declaration getLanguageModuleDeclaration(String name) {
                 if (languageModuledeclarations.containsKey(name)) {
                     return languageModuledeclarations.get(name);
@@ -142,15 +156,10 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         };
         this.typeParser = new TypeParser(this, typeFactory);
-        javaProject = ((JDTModuleManager)moduleManager).getJavaProject();
+        createLookupEnvironment();
+    }
 
-        compilerOptions = new CompilerOptions(javaProject.getOptions(true));
-        compilerOptions.ignoreMethodBodies = true;
-        compilerOptions.storeAnnotations = true;
-        problemReporter = new ProblemReporter(
-                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-                compilerOptions,
-                new DefaultProblemFactory());
+    public void createLookupEnvironment() {
         try {
             lookupEnvironment = new LookupEnvironment(new ITypeRequestor() {
                 
@@ -265,7 +274,6 @@ public class JDTModelLoader extends AbstractModelLoader {
         javaLangPackage.setShared(true);
         
         loadPackage("java.lang", false);
-        loadPackage("com.redhat.ceylon.compiler.java.metadata", false);
     }
     
     private String getQualifiedName(final String pkgName, String name) {
@@ -424,7 +432,6 @@ public class JDTModelLoader extends AbstractModelLoader {
         try {
             return super.convertToDeclaration(typeName, declarationType);
         } catch(RuntimeException e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -643,5 +650,14 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public TypeFactory getTypeFactory() {
         return (TypeFactory) typeFactory;
+    }
+    
+    public void reset() {
+        internalCreate();
+        declarationsByName.clear();
+        unitsByPackage.clear();
+        loadedPackages.clear();
+        packageDescriptorsNeedLoading = false;
+        classMirrorCache.clear();
     }
 }

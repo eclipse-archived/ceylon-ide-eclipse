@@ -91,6 +91,7 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
+import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.PhasedUnitsManager;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.java.util.Util;
@@ -106,6 +107,8 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.impl.Helper;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -177,7 +180,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         Parsing,
         Parsed,
         TypeChecking,
-        Available
+        TypeChecked,
+        Compiled
     };
     
     private final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
@@ -200,8 +204,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return modelState;
     }
     
+    public static boolean isModelAvailable(IProject project) {
+        ModelState modelState = getModelState(project);
+        return modelState.ordinal() >= ModelState.TypeChecked.ordinal();
+    }
+    
     public static List<PhasedUnit> getUnits(IProject project) {
-        if (! getModelState(project).equals(ModelState.Available)) {
+        if (! isModelAvailable(project)) {
             return Collections.emptyList();
         }
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
@@ -217,7 +226,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static List<PhasedUnit> getUnits() {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         for (IProject project : typeCheckers.keySet()) {
-            if (getModelState(project).equals(ModelState.Available)) {
+            if (isModelAvailable(project)) {
                 TypeChecker tc = typeCheckers.get(project);
                 for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
                     result.add(pu);
@@ -233,7 +242,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
                 for (String pname: projects) {
                     if (me.getKey().getName().equals(pname)) {
-                        result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+                        IProject project = me.getKey();
+                        if (isModelAvailable(project)) {
+                            result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+                        }
                     }
                 }
             }
@@ -390,6 +402,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+                
                 monitor.subTask("Clearing existing markers");
                 clearProjectMarkers(project);
                 clearMarkersOn(project);
@@ -398,11 +411,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (! getModelState(project).equals(ModelState.Parsed)) {
                     parseCeylonModel(project, monitor);
                 }
+                
+                project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
                 final TypeChecker typeChecker = getProjectTypeChecker(project);
                 
                 modelStates.put(project, ModelState.TypeChecking);
                 builtPhasedUnits = fullTypeCheck(project, sourceProject, typeChecker, monitor);
-                modelStates.put(project, ModelState.Available);
+                modelStates.put(project, ModelState.TypeChecked);
                 
                 getConsoleStream().println(timedMessage("Full generation of class files..."));
                 monitor.subTask("Generating binaries");
@@ -677,7 +692,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             IProgressMonitor monitor,
             final CeylonBuilder.BooleanHolder mustDoFullBuild,
             final CeylonBuilder.BooleanHolder mustResolveClasspathContainer) {
-        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || getModelState(getProject()) != ModelState.Available;
+        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || ! isModelAvailable(getProject());
         mustResolveClasspathContainer.value = false;
         final BooleanHolder sourceModified = new BooleanHolder();
         sourceModified.value = false;
@@ -1002,22 +1017,38 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 + project.getName());
 
         List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
-        for (PhasedUnits units : phasedUnitsOfDependencies) {
-            for (PhasedUnit pu : units.getPhasedUnits()) {
-                pu.scanDeclarations();
+
+        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+ 
+        for (PhasedUnits phasedUnits : phasedUnitsOfDependencies) {
+            for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+                dependencies.add(phasedUnit);
             }
         }
-        for (PhasedUnits units : phasedUnitsOfDependencies) {
-            for (PhasedUnit pu : units.getPhasedUnits()) {
-                pu.scanTypeDeclarations();
-            }
-        }
-        for (PhasedUnits units : phasedUnitsOfDependencies) {
-            for (PhasedUnit pu : units.getPhasedUnits()) {
-                pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-            }
+
+        JDTModelLoader loader = getProjectModelLoader(project);
+        loader.reset();
+        
+        for (PhasedUnits dependencyPhasedUnits : phasedUnitsOfDependencies) {
+            loader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
         }
         
+        for (PhasedUnit pu : dependencies) {
+            pu.scanDeclarations();
+        }
+        for (PhasedUnit pu : dependencies) {
+            pu.scanTypeDeclarations();
+        }
+        for (PhasedUnit pu : dependencies) {
+            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+
+        
+        loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
+        loader.loadPackage("ceylon.language", true);
+        loader.loadPackage("ceylon.language.descriptor", true);
+        loader.loadPackageDescriptors();
+
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
         monitor.subTask("Typechecking Ceylon source files for project " 
@@ -1093,7 +1124,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        
         final IJavaProject javaProject = JavaCore.create(project);
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
             .verbose(false)
@@ -1238,10 +1269,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
             @Override
             protected void executeExternalModulePhases() {
-                for (PhasedUnits dependencyPhasedUnits : getPhasedUnitsOfDependencies()) {
-                    modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
-                }
-//                super.executeExternalModulePhases();
             }
             
         };
@@ -1258,20 +1285,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         projectSources.put(project, scannedSources);
         modelStates.put(project, ModelState.Parsed);
         
-/*
-        UIJob refreshJob = new UIJob("Refresh Current Ceylon Editor") {
-            @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
-                IEditorPart currentEditor = com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor();
-                if (currentEditor instanceof CeylonEditor) {
-                    ((CeylonEditor) currentEditor).scheduleParsing();
-                }
-                return Status.OK_STATUS;
-            }
-            
-        };
-        refreshJob.schedule();
-*/        
         return typeChecker;
     }
 
@@ -1436,12 +1449,61 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         options.add(classpath);
         
+        final JDTModelLoader modelLoader = getProjectModelLoader(project);
+        
         Iterable<? extends JavaFileObject> compilationUnits1 =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
         if (compileWithJDTModelLoader) {
-            context.put(LanguageCompiler.ceylonContextKey, getProjectTypeChecker(project).getContext());
-            context.put(LanguageCompiler.existingPhasedUnitsKey, getProjectTypeChecker(project).getPhasedUnits());
-            final JDTModelLoader modelLoader = getProjectModelLoader(project);
+            final TypeChecker typeChecker = getProjectTypeChecker(project);
+            context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
+            context.put(TypeFactory.class, modelLoader.getTypeFactory());
+            context.put(LanguageCompiler.phasedUnitsManagerKey, new PhasedUnitsManager() {
+                @Override
+                public ModuleManager getModuleManager() {
+                    return typeChecker.getPhasedUnits().getModuleManager();
+                }
+
+                @Override
+                public void resolveDependencies() {
+                }
+
+                @Override
+                public PhasedUnit getExternalSourcePhasedUnit(
+                        VirtualFile srcDir, VirtualFile file) {
+                    return typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(Helper.computeRelativePath(file, srcDir));
+                }
+
+                @Override
+                public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
+                        List<PhasedUnit> sourceUnits) {
+                    if (getModelState(project).equals(ModelState.Compiled)) {
+                        return sourceUnits;
+                    }
+                    List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+                    for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
+                        for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+                            dependencies.add(phasedUnit);
+                        }
+                    }
+                    
+                    for (PhasedUnit dependency : dependencies) {
+                        dependency.analyseTypes();
+                    }
+                    for (PhasedUnit dependency : dependencies) {
+                        dependency.analyseFlow();
+                    }
+                    List<PhasedUnit> allPhasedUnits = new ArrayList<PhasedUnit>();
+                    allPhasedUnits.addAll(dependencies);
+                    allPhasedUnits.addAll(sourceUnits);
+                    return allPhasedUnits;
+                }
+                @Override
+                public void extraPhasesApplied() {
+                    modelStates.put(project, ModelState.Compiled);
+                }
+                
+            });
+            
             modelLoader.setSourceFileObjectManager(new SourceFileObjectManager() {
                 @Override
                 public void setupSourceFileObjects(List<?> treeHolders) {
