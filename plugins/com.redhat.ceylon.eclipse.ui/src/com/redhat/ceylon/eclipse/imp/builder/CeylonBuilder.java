@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
+import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathContainers;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,14 +70,12 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -130,7 +129,6 @@ import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
@@ -371,7 +369,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (mustResolveClasspathContainer.value) {
             IJavaProject javaProject = JavaCore.create(project);
             if (javaProject != null) {
-                List<CeylonClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+                List<CeylonClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
                 for (CeylonClasspathContainer container : cpContainers) {
                     container.launchResolve(false, null);
                 }

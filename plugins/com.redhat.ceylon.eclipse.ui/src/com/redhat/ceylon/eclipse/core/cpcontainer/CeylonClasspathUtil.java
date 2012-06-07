@@ -105,9 +105,9 @@ public final class CeylonClasspathUtil {
      *            the project to search into
      * @return the Ivy classpath container if found
      */
-    public static List/* <CeylonClasspathContainer> */getCeylonClasspathContainers(
+    public static List <CeylonClasspathContainer> getCeylonClasspathContainers(
             IJavaProject javaProject) {
-        List/* <CeylonClasspathContainer> */containers = new ArrayList();
+        List<CeylonClasspathContainer> containers = new ArrayList<CeylonClasspathContainer>();
         if (FakeProjectManager.isFake(javaProject) || !javaProject.exists()) {
             return containers;
         }
@@ -120,7 +120,7 @@ public final class CeylonClasspathUtil {
                     if (isCeylonClasspathContainer(path)) {
                         IClasspathContainer cp = JavaCore.getClasspathContainer(path, javaProject);
                         if (cp instanceof CeylonClasspathContainer) {
-                            containers.add(cp);
+                            containers.add((CeylonClasspathContainer) cp);
                         }
                     }
                 }
@@ -133,9 +133,9 @@ public final class CeylonClasspathUtil {
     }
 
 
-    public static List split(String str) {
+    public static List<String> split(String str) {
         String[] terms = str.split(",");
-        List ret = new ArrayList();
+        List<String> ret = new ArrayList<String>();
         for (int i = 0; i < terms.length; i++) {
             String t = terms[i].trim();
             if (t.length() > 0) {
@@ -145,12 +145,12 @@ public final class CeylonClasspathUtil {
         return ret;
     }
 
-    public static String concat(Collection/* <String> */list) {
+    public static String concat(Collection<String> list) {
         if (list == null) {
             return "";
         }
         StringBuffer b = new StringBuffer();
-        Iterator it = list.iterator();
+        Iterator<String> it = list.iterator();
         while (it.hasNext()) {
             b.append(it.next());
             if (it.hasNext()) {
@@ -224,11 +224,11 @@ public final class CeylonClasspathUtil {
         return null;
     }
 
-    public static List/* <CeylonClasspathContainer> */getCeylonClasspathContainers(IProject project) {
+    public static List<CeylonClasspathContainer> getCeylonClasspathContainers(IProject project) {
         IJavaProject javaProject = JavaCore.create(project);
         if (javaProject != null && javaProject.exists()) {
             return getCeylonClasspathContainers(javaProject);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.<CeylonClasspathContainer>emptyList();
     }
 }
