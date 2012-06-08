@@ -386,12 +386,18 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
             
-            
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
             if (type.isBinary()) {
                 ClassFile classFile = (ClassFile) type.getClassFile();
                 
                 if (classFile != null) {
+                    IPackageFragmentRoot fragmentRoot = classFile.getPackageFragmentRoot();
+                    if (fragmentRoot != null) {
+                        if (fragmentRoot.getPath().toFile().equals(CeylonBuilder.getCeylonOutputDirectory(javaProject))) {
+                            return null;
+                        }
+                    }
+
                     IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getCorrespondingResource(), true);
                     BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
                     if (binaryTypeBinding == null) {
