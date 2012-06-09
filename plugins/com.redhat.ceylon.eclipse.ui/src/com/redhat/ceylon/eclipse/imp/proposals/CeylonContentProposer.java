@@ -634,9 +634,12 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     public static ProducedReference getQualifiedProducedReference(Node node, Declaration d) {
-        return d.getProducedReference(((Tree.QualifiedMemberOrTypeExpression) node)
-                    .getPrimary().getTypeModel(), 
-                Collections.<ProducedType>emptyList());
+        ProducedType pt = ((Tree.QualifiedMemberOrTypeExpression) node)
+                    .getPrimary().getTypeModel();
+        if (pt!=null && d.isClassOrInterfaceMember()) {
+            pt = pt.getSupertype((TypeDeclaration)d.getContainer());
+        }
+        return d.getProducedReference(pt, Collections.<ProducedType>emptyList());
     }
 
     public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
