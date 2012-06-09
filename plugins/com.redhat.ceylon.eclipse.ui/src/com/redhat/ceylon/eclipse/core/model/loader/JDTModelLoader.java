@@ -582,11 +582,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                 unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
                     @Override
                     public void loadFromSource(Tree.Declaration decl) {
-                        String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
-                        String fqn = getQualifiedName(pkgName, name);
-                        if (! sourceDeclarations.containsKey(fqn)) {
-                            synchronized (sourceDeclarations) {
-                                sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
+                        if (decl.getIdentifier()!=null) {
+                            String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
+                            String fqn = getQualifiedName(pkgName, name);
+                            if (! sourceDeclarations.containsKey(fqn)) {
+                                synchronized (sourceDeclarations) {
+                                    sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
+                                }
                             }
                         }
                     }
