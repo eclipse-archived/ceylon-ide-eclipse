@@ -386,12 +386,18 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
             
-            
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
             if (type.isBinary()) {
                 ClassFile classFile = (ClassFile) type.getClassFile();
                 
                 if (classFile != null) {
+                    IPackageFragmentRoot fragmentRoot = classFile.getPackageFragmentRoot();
+                    if (fragmentRoot != null) {
+                        if (fragmentRoot.getPath().toFile().equals(CeylonBuilder.getCeylonOutputDirectory(javaProject))) {
+                            return null;
+                        }
+                    }
+
                     IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getCorrespondingResource(), true);
                     BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
                     if (binaryTypeBinding == null) {
@@ -532,9 +538,18 @@ public class JDTModelLoader extends AbstractModelLoader {
     public void removeDeclarations(List<Declaration> declarations) {
         List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
         allDeclarations.addAll(declarations);
+
         for (Declaration declaration : declarations) {
             retrieveInnerDeclarations(declaration, allDeclarations);
         }
+        
+        for (Declaration decl : allDeclarations) {
+            String fqn = getQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
+            if(sourceDeclarations.remove(fqn) != null) {
+                System.out.println("Trying to remove unexisting declaratuon from the JDTModelLoader source declarations");
+            }
+        }
+        
         super.removeDeclarations(allDeclarations);
         mustResetLookupEnvironment = true;
     }
