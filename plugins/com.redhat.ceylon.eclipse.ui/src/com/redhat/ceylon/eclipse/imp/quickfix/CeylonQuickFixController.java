@@ -21,15 +21,11 @@ import org.eclipse.imp.editor.EditorUtility;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.ServiceFactory;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.services.IQuickFixAssistant;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
-import org.eclipse.imp.services.base.DefaultQuickFixAssistant;
 import org.eclipse.imp.utils.AnnotationUtils;
-import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -39,7 +35,6 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
@@ -50,39 +45,17 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
     private IQuickFixAssistant fAssistant;
     private ICompilationUnit fCU;
 
-    public CeylonQuickFixController(IMarker marker) {
-        this(MarkerUtils.getLanguage(marker), null);
-
-        IFileEditorInput input = MarkerUtils.getInput(marker);
-
-        if (input != null) {
-            fCU = ModelFactory.open(input.getFile(), EditorUtility.getSourceProject(input));
-        }
-    }
-
     public CeylonQuickFixController(UniversalEditor editor) {
-        this(editor.getLanguage(), null);
-
+        this.fCU = null;
+        fAssistant = new CeylonQuickFixAssistant();
+        setQuickAssistProcessor(this);        
+        
         if (editor.getEditorInput() instanceof FileEditorInput) {
             FileEditorInput input = (FileEditorInput) editor.getEditorInput();
             fCU = ModelFactory.open(input.getFile(), EditorUtility.getSourceProject(input));
         }
     }
     
-    public CeylonQuickFixController(Language lang, ICompilationUnit cu) {
-        super();
-        this.fCU = cu;
-        setQuickAssistProcessor(this);
-
-        if (lang != null) {
-            fAssistant = ServiceFactory.getInstance().getQuickFixAssistant(lang);
-        }
-
-        if (fAssistant == null) {
-            fAssistant = new DefaultQuickFixAssistant();
-        }
-    }
-
     public IQuickFixInvocationContext getContext(IQuickAssistInvocationContext quickAssistContext) {
         return new DefaultQuickFixInvocationContext(quickAssistContext, fCU);
     }
@@ -150,8 +123,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
             Position pos = model.getPosition((Annotation) annotation);
             if (pos != null) {
                 return new ProblemLocation(pos.getOffset(), pos.getLength(),
-                        annotation); // java problems all handled by the quick
-                // assist processors
+                        annotation); // java problems all handled by the quick assist processors
             }
         }
         return null;
@@ -159,6 +131,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
 
     public static void collectAssists(IQuickAssistInvocationContext context,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
+        //TODO: add quick assists!!!!!
         return;
     }
 
@@ -222,15 +195,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
             return model;
         }
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * IAssistProcessor#getCorrections(org.eclipse.jdt.internal.ui.text.correction
-     * .IAssistContext,
-     * org.eclipse.jdt.internal.ui.text.correction.IProblemLocation[])
-     */
+    
     public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
         if (locations == null || locations.length == 0) {
