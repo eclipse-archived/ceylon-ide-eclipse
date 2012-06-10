@@ -657,7 +657,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (!binariesGenerationOK) {
                 // Add a problem marker if binary generation went wrong for ceylon files
                 IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
-                marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files. Look at the Ceylon console for more information.");
+                marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files in project " + 
+                        project.getName() + ". Look at the Ceylon console for more information.");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
