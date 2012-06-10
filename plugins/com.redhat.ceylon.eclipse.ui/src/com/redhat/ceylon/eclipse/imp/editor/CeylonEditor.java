@@ -44,6 +44,7 @@ import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -71,6 +72,7 @@ import com.redhat.ceylon.eclipse.imp.core.JavaReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixController;
 
 public class CeylonEditor extends UniversalEditor {
     private static final String TEXT_FONT_PREFERENCE = "com.redhat.ceylon.eclipse.ui.editorFont";
@@ -213,6 +215,11 @@ public class CeylonEditor extends UniversalEditor {
                 }
                 result[detectors.length] = new JavaReferenceResolver(CeylonEditor.this);
                 return result;
+            }
+            @Override
+            public IQuickAssistAssistant getQuickAssistAssistant(
+                    ISourceViewer sourceViewer) {
+                return new CeylonQuickFixController(fEditor);
             }
         };
     }
