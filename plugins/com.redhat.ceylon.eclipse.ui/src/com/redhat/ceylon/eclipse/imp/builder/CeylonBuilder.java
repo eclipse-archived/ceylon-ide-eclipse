@@ -1306,6 +1306,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     public int getSeverity(Message error, boolean expected) {
                         return expected ? IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
                     }
+                    @Override
+                    //workaround for bug in IMP's MarkerCreator
+                    protected int adjust(int stopIndex) {
+                        return stopIndex+1;
+                    }
                 });
             addTaskMarkers(file, tokens);
         }

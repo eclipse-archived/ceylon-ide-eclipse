@@ -78,9 +78,13 @@ public abstract class ErrorVisitor extends Visitor {
             attributes.put(SEVERITY_KEY, getSeverity(error, warnForErrors));
             attributes.put(ERROR_CODE_KEY, error.getCode());
 
-            handler.handleSimpleMessage(errorMessage, startOffset, endOffset,
+            handler.handleSimpleMessage(errorMessage, startOffset, adjust(endOffset),
                     startCol, startCol, startLine, startLine, attributes);
         }
+    }
+    
+    protected int adjust(int stopIndex) {
+        return stopIndex;
     }
     
     @Override
