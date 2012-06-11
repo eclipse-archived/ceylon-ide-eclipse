@@ -16,8 +16,9 @@ import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
@@ -30,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.refactoring.AbstractHandler;
 
@@ -71,7 +71,8 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     public void apply(IDocument doc) {
         try {
             RefineFormalMembersProposal.refineFormalMembers(editor);
-        } catch (ExecutionException e) {
+        } 
+        catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
@@ -88,15 +89,9 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return;
         Node node = AbstractHandler.getSelectedNode(editor);
-        TextFileChange change = new TextFileChange("Refine Formal Members", 
-                Util.getFile(editor.getEditorInput()));
-        IDocument doc;
-        try {
-            doc = change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
+        IDocument document = editor.getDocumentProvider()
+                .getDocument(editor.getEditorInput());
+        final TextChange change = new DocumentChange("Refine Formal Members", document);
         //TODO: copy/pasted from CeylonQuickFixAssisitant
         Tree.Body body;
         int offset;
@@ -125,13 +120,13 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         String indent;
         String indentAfter;
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(body, doc);
+            indentAfter = "\n" + getIndent(body, document);
             indent = indentAfter + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
             Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, doc);
+            indent = "\n" + getIndent(statement, document);
             indentAfter = "";
             if (offset<0) offset = statement.getStopIndex()+1;
         }
