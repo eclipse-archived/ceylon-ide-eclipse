@@ -15,7 +15,6 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -24,7 +23,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.refactoring.AbstractRefactoring;
@@ -94,17 +92,10 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
         if (pal!=null) {
             IDocument document = editor.getDocumentProvider()
                     .getDocument(editor.getEditorInput());
-            final TextChange tc;
-            if (editor.isDirty()) {
-                tc = new DocumentChange("Convert To Named Arguments", document);
-            }
-            else {
-                tc = new TextFileChange("Convert To Named Arguments", 
-                        Util.getFile(editor.getEditorInput()));
-            }
+            final TextChange tc = new DocumentChange("Convert To Named Arguments", document);
             tc.setEdit(new MultiTextEdit());
-            Integer start = node.getStartIndex();
-            int length = node.getStopIndex()-start+1;
+            Integer start = pal.getStartIndex();
+            int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder().append(" {");
             boolean sequencedArgs = false;
             for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
