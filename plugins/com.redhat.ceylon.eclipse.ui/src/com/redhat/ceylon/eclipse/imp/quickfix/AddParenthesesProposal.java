@@ -36,7 +36,7 @@ class AddParenthesesProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, 0);
+        Util.gotoLocation(file, offset);
     }
 
     static void addAddParenthesesProposal(ProblemLocation problem, IFile file,

@@ -40,7 +40,7 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, 0);
+        Util.gotoLocation(file, offset);
     }
     
     static void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 

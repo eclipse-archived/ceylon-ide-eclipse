@@ -35,7 +35,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, 0);
+        Util.gotoLocation(file, offset);
     }
 
     static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
