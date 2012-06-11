@@ -52,8 +52,8 @@ public class InlineRefactoring extends AbstractRefactoring {
 	            !declaration.isDefault() &&
 	            !declaration.isFormal() &&
 	            (declaration.isToplevel() || !declaration.isShared()); //TODO temporary restriction!
-	            //TODO && !declaration is a value with lazy init
-	            
+	            //TODO: && !declatation is a control structure variable 
+	            //TODO: && !declaration is a value with lazy init
 	}
 	
 	public int getCount() {
