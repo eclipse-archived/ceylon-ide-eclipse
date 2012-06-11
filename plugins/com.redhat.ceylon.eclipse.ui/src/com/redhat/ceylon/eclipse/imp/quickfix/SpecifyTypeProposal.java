@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.CORRECTI
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -23,10 +22,10 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
     final int length;
     final IFile file;
     
-    SpecifyTypeProposal(ProblemLocation problem, IFile file, 
+    SpecifyTypeProposal(int offset, IFile file, 
             String type, TextFileChange change) {
         super("Specify type '" + type + "'", change, 10, CORRECTION);
-        offset = problem.getOffset();
+        this.offset = offset;
         length = type.length();
         this.file = file;
     }
@@ -37,9 +36,8 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IFile file) {
+    static void addSpecifyTypeProposal(Tree.CompilationUnit cu,
+            Node node, Collection<ICompletionProposal> proposals, IFile file) {
         final Tree.Type type = (Tree.Type) node;
         InferTypeVisitor itv = new InferTypeVisitor() {
             { unit = type.getUnit(); }
@@ -55,9 +53,9 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         ProducedType it = itv.inferredType;
         String explicitType = it==null ? "Object" : node.getUnit().denotableType(it).getProducedTypeName();
         TextFileChange change =  new TextFileChange("Specify Type", file);
-        change.setEdit(new ReplaceEdit(problem.getOffset(), type.getText().length(), 
+        change.setEdit(new ReplaceEdit(node.getStartIndex(), type.getText().length(), 
                 explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new SpecifyTypeProposal(problem, file, explicitType, change));
+        proposals.add(new SpecifyTypeProposal(node.getStartIndex(), file, explicitType, change));
     }
     
 }

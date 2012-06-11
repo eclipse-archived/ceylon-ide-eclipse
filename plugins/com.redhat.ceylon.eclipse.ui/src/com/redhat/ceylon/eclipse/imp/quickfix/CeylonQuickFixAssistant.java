@@ -24,6 +24,7 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
@@ -34,6 +35,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
@@ -49,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
@@ -67,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -109,7 +113,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 .getAST(new NullMessageHandler(), new NullProgressMonitor());
         return CeylonSourcePositionLocator.findNode(cu, context.getOffset(), 
                 context.getOffset()+context.getLength()) instanceof Tree.Term;*/
-        return false;
+        return true;
     }
 
     @Override
@@ -131,6 +135,38 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         }
         catch (BadLocationException ble) {
             return "";
+        }
+    }
+    
+    public void addProposals(IQuickAssistInvocationContext context, 
+            UniversalEditor editor, Collection<ICompletionProposal> proposals) {
+        IProject project = Util.getProject(editor.getEditorInput());
+        IFile file = Util.getFile(editor.getEditorInput());
+        Tree.CompilationUnit cu = (Tree.CompilationUnit) editor.getParseController().getCurrentAst();
+        if (cu!=null) {
+            Node node = findNode(cu, context.getOffset(), 
+                    context.getOffset() + context.getLength());
+            if (node instanceof Tree.Declaration) {
+                Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+                if ((d.isClassOrInterfaceMember()||d.isToplevel()) && !d.isShared()) {
+                    addMakeSharedDecProposal(proposals, project, node);
+                }
+                if (d.isClassOrInterfaceMember() && 
+                        d.isShared() &&
+                        !d.isDefault() && !d.isFormal() &&
+                        !(d instanceof Interface)) {
+                    addMakeDefaultProposal(proposals, project, node);
+                }
+            }
+            if (node instanceof Tree.TypedDeclaration) {
+                Type type = ((Tree.TypedDeclaration) node).getType();
+                if (type instanceof Tree.LocalModifier) {
+                    SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
+                }
+            }
+            if (node instanceof Tree.LocalModifier) {
+                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
+            }
         }
     }
     
@@ -174,7 +210,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 break;
             case 200:
-                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, problem, proposals, file);
+                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
                 break;
             case 300:
                 if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
@@ -276,8 +312,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "default ", "Make Default",
-                getRefinedDeclaration(decNode.getDeclarationModel()), //TODO: this is wrong!
+        Declaration d = getRefinedDeclaration(decNode.getDeclarationModel()); //TODO: this is wrong!
+        if (d==null) d = decNode.getDeclarationModel();
+        addAddAnnotationProposal(node, "default ", "Make Default", d, 
                 proposals, project);
     }
 
