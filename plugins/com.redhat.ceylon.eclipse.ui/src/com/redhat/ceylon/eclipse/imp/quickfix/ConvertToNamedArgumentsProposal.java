@@ -1,18 +1,33 @@
 package com.redhat.ceylon.eclipse.imp.quickfix;
 
+import static com.redhat.ceylon.eclipse.imp.refactoring.AbstractHandler.getSelectedNode;
+
 import java.util.Collection;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsHandler;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.refactoring.AbstractRefactoring;
 
 class ConvertToNamedArgumentsProposal implements ICompletionProposal {
 
@@ -50,7 +65,7 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
     @Override
     public void apply(IDocument doc) {
         try {
-            ConvertToNamedArgumentsHandler.convertToNamedArguments(editor);
+            convertToNamedArguments(editor);
         } 
         catch (ExecutionException e) {
             e.printStackTrace();
@@ -58,9 +73,69 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
     }
     
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        if (ConvertToNamedArgumentsHandler.canConvert((CeylonEditor)editor)) {
+        if (canConvert((CeylonEditor)editor)) {
             proposals.add(new ConvertToNamedArgumentsProposal((CeylonEditor)editor));
         }
+    }
+
+    public static void convertToNamedArguments(CeylonEditor editor)
+            throws ExecutionException {
+        CeylonParseController cpc = editor.getParseController();
+        Tree.CompilationUnit cu = cpc.getRootNode();
+        if (cu==null) return;
+        Node node = getSelectedNode(editor);
+        Tree.PositionalArgumentList pal = null;
+        if (node instanceof Tree.PositionalArgumentList) {
+            pal = (Tree.PositionalArgumentList) node;
+        }
+        else if (node instanceof Tree.InvocationExpression) {
+            pal = ((Tree.InvocationExpression) node).getPositionalArgumentList();
+        }
+        if (pal!=null) {
+            IDocument document = editor.getDocumentProvider()
+                    .getDocument(editor.getEditorInput());
+            final TextChange tc;
+            if (editor.isDirty()) {
+                tc = new DocumentChange("Convert To Named Arguments", document);
+            }
+            else {
+                tc = new TextFileChange("Convert To Named Arguments", 
+                        Util.getFile(editor.getEditorInput()));
+            }
+            tc.setEdit(new MultiTextEdit());
+            Integer start = node.getStartIndex();
+            int length = node.getStopIndex()-start+1;
+            StringBuilder result = new StringBuilder().append(" {");
+            boolean sequencedArgs = false;
+            for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
+                if (arg.getParameter().isSequenced() && pal.getEllipsis()==null) {
+                    if (sequencedArgs) result.append(",");
+                    sequencedArgs=true;
+                    result.append(" " + AbstractRefactoring.toString(arg.getExpression().getTerm(), cpc.getTokens()));
+                }
+                else {
+                    result.append(" " + arg.getParameter().getName() + "=" + 
+                            AbstractRefactoring.toString(arg.getExpression().getTerm(), cpc.getTokens()) + ";");
+                }
+            }
+            result.append(" }");
+            tc.addEdit(new ReplaceEdit(start, length, result.toString()));
+            tc.initializeValidationData(null);
+            try {
+                ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tc), 
+                        new NullProgressMonitor());
+            }
+            catch (CoreException ce) {
+                throw new ExecutionException("Error cleaning imports", ce);
+            }
+        }
+    }
+    
+    public static boolean canConvert(CeylonEditor editor) {
+        Node node = getSelectedNode(editor);
+        return node instanceof Tree.PositionalArgumentList ||
+                node instanceof Tree.InvocationExpression &&
+                ((Tree.InvocationExpression) node).getPositionalArgumentList()!=null;
     }
 
 }

@@ -497,11 +497,6 @@
             description="Convert selected anonymous class to a class"
             name="Convert to Class"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Convert selected positional arguments to named arguments"
-            name="Convert to Named Arguments"/>
-       <command
              id="org.eclipse.imp.runtime.editor.folding.collapseComments"
              name="Collapse Comments"/>
        <command
@@ -559,9 +554,6 @@
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToClassHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"/>
    </extension>
    
    <extension
@@ -636,11 +628,6 @@
        <key
            sequence="M3+F"
            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+A"
-           commandId="com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
    </extension>

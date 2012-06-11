@@ -87,7 +87,7 @@ public abstract class AbstractRefactoring extends Refactoring {
         return toString(term, tokens);
     }
     
-    static String toString(Node term, List<CommonToken> theTokens) {
+    public static String toString(Node term, List<CommonToken> theTokens) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
         Region region = new Region(start, length);
