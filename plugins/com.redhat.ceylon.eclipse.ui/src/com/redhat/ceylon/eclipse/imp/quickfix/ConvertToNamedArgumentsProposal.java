@@ -16,10 +16,10 @@ import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsHandler;
 
 class ConvertToNamedArgumentsProposal implements ICompletionProposal {
 
-    private ConvertToNamedArgumentsHandler action;
+    private CeylonEditor editor;
     
     public ConvertToNamedArgumentsProposal(CeylonEditor editor) {
-        action = new ConvertToNamedArgumentsHandler(editor);
+       this.editor = editor;
     }
     
     @Override
@@ -50,20 +50,16 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
     @Override
     public void apply(IDocument doc) {
         try {
-            action.execute(null);
-        } catch (ExecutionException e) {
+            ConvertToNamedArgumentsHandler.convertToNamedArguments(editor);
+        } 
+        catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
     
-    boolean isEnabled() {
-        return action.isEnabled();
-    }
-    
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        ConvertToNamedArgumentsProposal prop = new ConvertToNamedArgumentsProposal((CeylonEditor)editor);
-        if (prop.isEnabled()) {
-            proposals.add(prop);
+        if (ConvertToNamedArgumentsHandler.canConvert((CeylonEditor)editor)) {
+            proposals.add(new ConvertToNamedArgumentsProposal((CeylonEditor)editor));
         }
     }
 
