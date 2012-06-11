@@ -52,8 +52,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
             String explicitType = SpecifyTypeProposal.inferType(cu, type);
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }
-        SplitDeclarationProposal p = new SplitDeclarationProposal(dec, offset, file, change);
-        proposals.add(p);
+        proposals.add(new SplitDeclarationProposal(dec, offset, file, change));
     }
     
 }
