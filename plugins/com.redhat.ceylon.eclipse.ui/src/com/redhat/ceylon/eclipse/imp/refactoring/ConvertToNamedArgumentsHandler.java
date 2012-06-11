@@ -48,7 +48,7 @@ public class ConvertToNamedArgumentsHandler extends AbstractHandler {
     //TODO: copy/pasted from RefineFormalMembersHandler
     @Override
     public boolean isEnabled() {
-        if (super.isEnabled() && 
+        if (super.isEnabled() && editor!=null &&
                 editor.getEditorInput() instanceof IFileEditorInput) {
             Node node = getSelectedNode((CeylonEditor) editor);
             return node instanceof Tree.PositionalArgumentList;
