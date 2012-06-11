@@ -30,9 +30,18 @@ import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 
 public class MoveDeclarationHandler extends AbstractHandler {
 
+    private CeylonEditor editor;
+    
+    public MoveDeclarationHandler() {
+        editor = (CeylonEditor) getCurrentEditor();
+    }
+    
+    public MoveDeclarationHandler(CeylonEditor editor) {
+        this.editor = editor;
+    }
+    
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         Node node = getSelectedNode(editor);

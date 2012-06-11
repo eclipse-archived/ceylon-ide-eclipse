@@ -30,9 +30,18 @@ import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 
 public class CreateSubtypeHandler extends AbstractHandler {
 
+    private CeylonEditor editor;
+    
+    public CreateSubtypeHandler() {
+        editor = (CeylonEditor) getCurrentEditor();
+    }
+    
+    public CreateSubtypeHandler(CeylonEditor editor) {
+        this.editor = editor;
+    }
+    
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         Node node = getSelectedNode(editor);

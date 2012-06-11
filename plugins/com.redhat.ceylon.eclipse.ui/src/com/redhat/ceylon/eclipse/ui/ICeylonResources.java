@@ -30,6 +30,8 @@ public interface ICeylonResources {
     public static final String CEYLON_SEARCH_RESULTS = "search_results";
     
     public static final String CEYLON_CORRECTION = "correction";
+    public static final String CEYLON_CHANGE = "change";
+    public static final String CEYLON_RENAME = "rename";
     
     public static final String CEYLON_NEW_FILE = "ceylon_new_file";
     public static final String CEYLON_NEW_MODULE = "ceylon_new_module";

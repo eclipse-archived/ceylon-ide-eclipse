@@ -5,23 +5,6 @@ import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.IDENTIFIER
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.KEYWORDS;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer.color;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CLASS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CORRECTION;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_ERROR;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_FILE_WARNING;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_IMPORT_LIST;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_INTERFACE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_CLASS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_INTERFACE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_LOCAL_METHOD;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_METHOD;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PACKAGE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PARAMETER;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_PROJECT;
 import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
@@ -62,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.eclipse.imp.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
@@ -73,7 +57,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  */
 public class CeylonLabelProvider extends StyledCellLabelProvider 
-        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider, ICeylonResources {
     
     private static CeylonLabelDecorator DECORATOR = new CeylonLabelDecorator(LanguageRegistry.findLanguage(CeylonPlugin.LANGUAGE_ID));
     
@@ -88,18 +72,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
     public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
-    private static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
+    public static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
     private static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
     public static Image METHOD = imageRegistry.get(CEYLON_METHOD);
     public static Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
-    private static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
-    private static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
+    public static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
+    public static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
     public static Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
-    public static  Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
+    public static Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
+    public static Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
+    public static Image RENAME = imageRegistry.get(CEYLON_RENAME);
     
     private static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
             .getThemeManager().getCurrentTheme().getColorRegistry();

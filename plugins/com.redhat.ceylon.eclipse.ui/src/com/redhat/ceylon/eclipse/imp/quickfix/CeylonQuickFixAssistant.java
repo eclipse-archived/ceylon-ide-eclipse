@@ -140,6 +140,17 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     
     public void addProposals(IQuickAssistInvocationContext context, 
             UniversalEditor editor, Collection<ICompletionProposal> proposals) {
+        
+        RenameRefactoringProposal.add(proposals, editor);
+        InlineRefactoringProposal.add(proposals, editor);
+        ExtractValueProposal.add(proposals, editor);
+        ExtractFunctionProposal.add(proposals, editor);
+        ConvertToClassProposal.add(proposals, editor);
+        ConvertToNamedArgumentsProposal.add(proposals, editor);
+        RefineFormalMembersProposal.add(proposals, editor);
+        CreateSubtypeProposal.add(proposals, editor);
+        MoveDeclarationProposal.add(proposals, editor);
+        
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
         Tree.CompilationUnit cu = (Tree.CompilationUnit) editor.getParseController().getCurrentAst();
