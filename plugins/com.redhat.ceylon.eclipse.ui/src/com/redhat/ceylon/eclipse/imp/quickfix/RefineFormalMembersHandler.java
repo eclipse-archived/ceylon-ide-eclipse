@@ -1,27 +1,22 @@
-package com.redhat.ceylon.eclipse.imp.refine;
+package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant.getIndent;
 
 import java.util.List;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -32,25 +27,19 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class RefineFormalMembersHandler extends AbstractHandler {
     
-    private CeylonEditor editor;
-    
-    public RefineFormalMembersHandler() {
-        editor = (CeylonEditor) getCurrentEditor();
-    }
-    
-    public RefineFormalMembersHandler(CeylonEditor editor) {
-        this.editor = editor;
-    }
-    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        refineFormalMembers((CeylonEditor) getCurrentEditor());
+        return null;
+    }
+
+    public static void refineFormalMembers(CeylonEditor editor) throws ExecutionException {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu==null) return null;
+        if (cu==null) return;
         Node node = getSelectedNode(editor);
         TextFileChange change = new TextFileChange("Refine Formal Members", 
                 Util.getFile(editor.getEditorInput()));
@@ -83,7 +72,7 @@ public class RefineFormalMembersHandler extends AbstractHandler {
         }
         else {
             //TODO run a visitor to find the containing body!
-            return null;//TODO popup error dialog
+            return;//TODO popup error dialog
         }
         List<Statement> statements = body.getStatements();
         String indent;
@@ -117,33 +106,19 @@ public class RefineFormalMembersHandler extends AbstractHandler {
         catch (CoreException ce) {
             throw new ExecutionException("Error cleaning imports", ce);
         }
-        return null;
     }
     
-    //TODO: copy/pasted from AbstractFindAction
-    private static Node getSelectedNode(CeylonEditor editor) {
-        CeylonParseController cpc = editor.getParseController();
-        return cpc.getRootNode()==null ? null : 
-            findNode(cpc.getRootNode(), 
-                (ITextSelection) editor.getSelectionProvider().getSelection());
+    @Override
+    protected boolean isEnabled(CeylonEditor editor) {
+        return canRefine(editor);
     }
 
-    //TODO: copy/pasted from CleanImportsHandler
-    @Override
-    public boolean isEnabled() {
-        IEditorPart editor = getCurrentEditor();
-        if (super.isEnabled() && 
-                editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput) {
-            Node node = getSelectedNode((CeylonEditor) editor);
-            return node instanceof Tree.ClassBody ||
-                    node instanceof Tree.InterfaceBody ||
-                    node instanceof Tree.ClassDefinition ||
-                    node instanceof Tree.InterfaceDefinition ||
-                    node instanceof Tree.ObjectDefinition;
-        }
-        else {
-            return false;
-        }
+    public static boolean canRefine(CeylonEditor editor) {
+        Node node = getSelectedNode(editor);
+        return node instanceof Tree.ClassBody ||
+                node instanceof Tree.InterfaceBody ||
+                node instanceof Tree.ClassDefinition ||
+                node instanceof Tree.InterfaceDefinition ||
+                node instanceof Tree.ObjectDefinition;
     }
 }

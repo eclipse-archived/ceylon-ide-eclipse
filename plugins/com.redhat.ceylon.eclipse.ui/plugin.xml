@@ -552,13 +552,13 @@
             class="com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler"
+            class="com.redhat.ceylon.eclipse.imp.quickfix.RefineFormalMembersHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler"
+            class="com.redhat.ceylon.eclipse.imp.quickfix.CreateSubtypeHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refine.MoveDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.imp.quickfix.MoveDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"

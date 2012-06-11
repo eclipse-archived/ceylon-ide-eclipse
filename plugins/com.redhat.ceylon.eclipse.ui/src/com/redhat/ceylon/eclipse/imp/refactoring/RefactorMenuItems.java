@@ -9,8 +9,8 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler;
-import com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler;
-import com.redhat.ceylon.eclipse.imp.refine.MoveDeclarationHandler;
+import com.redhat.ceylon.eclipse.imp.quickfix.CreateSubtypeHandler;
+import com.redhat.ceylon.eclipse.imp.quickfix.MoveDeclarationHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     

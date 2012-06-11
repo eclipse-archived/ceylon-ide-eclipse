@@ -12,14 +12,13 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
-import com.redhat.ceylon.eclipse.imp.refine.RefineFormalMembersHandler;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
 
-    private RefineFormalMembersHandler action;
+    private CeylonEditor editor;
     
     public RefineFormalMembersProposal(CeylonEditor editor) {
-        action = new RefineFormalMembersHandler(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -50,21 +49,15 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     @Override
     public void apply(IDocument doc) {
         try {
-            action.execute(null);
+            RefineFormalMembersHandler.refineFormalMembers(editor);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
-    
-    boolean isEnabled() {
-        return action.isEnabled();
-    }
-    
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
         if (editor instanceof CeylonEditor) {
-            RefineFormalMembersProposal prop = new RefineFormalMembersProposal((CeylonEditor)editor);
-            if (prop.isEnabled()) {
-                proposals.add(prop);
+            if (RefineFormalMembersHandler.canRefine((CeylonEditor) editor)) {
+                proposals.add(new RefineFormalMembersProposal((CeylonEditor) editor));
             }
         }
     }
