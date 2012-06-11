@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.imp.refactoring.MoveDeclarationHandler;
 
 class MoveDeclarationProposal implements ICompletionProposal {
 

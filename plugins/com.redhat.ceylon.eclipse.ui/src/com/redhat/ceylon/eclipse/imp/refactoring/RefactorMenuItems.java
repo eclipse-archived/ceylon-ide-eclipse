@@ -9,8 +9,6 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler;
-import com.redhat.ceylon.eclipse.imp.quickfix.CreateSubtypeHandler;
-import com.redhat.ceylon.eclipse.imp.quickfix.MoveDeclarationHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     
@@ -39,23 +37,12 @@ public class RefactorMenuItems extends CompoundContributionItem {
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
                             "Extract Value...",
                             editor!=null && new ExtractValueRefactoringAction(editor).isEnabled()),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
+                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
                             "Extract Function...",
                             editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled()),
                             new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
                                     "Convert to Class...",
-                                    editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),
-                    new Separator(),
-                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToNamedArguments", 
-                            "Convert to Named Arguments...",
-                            editor!=null && new ConvertToNamedArgumentsHandler().isEnabled()),
-                    new Separator(),*/
-                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.refineFormals", 
-                            "Refine Formal Members",
-                            new RefineFormalMembersHandler().isEnabled()),*/
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.createSubtype", 
-                            "Create Subtype...",
-                            new CreateSubtypeHandler().isEnabled()),
+                                    editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
                             "Clean Imports",
