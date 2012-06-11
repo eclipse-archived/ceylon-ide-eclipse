@@ -169,7 +169,9 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     addMakeDefaultProposal(proposals, project, node);
                 }
             }
-            if (node instanceof Tree.TypedDeclaration) {
+            if (node instanceof Tree.TypedDeclaration && 
+                    !(node instanceof Tree.ObjectDefinition) &&
+                    !(node instanceof Tree.Variable)) {
                 Type type = ((Tree.TypedDeclaration) node).getType();
                 if (type instanceof Tree.LocalModifier) {
                     SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
