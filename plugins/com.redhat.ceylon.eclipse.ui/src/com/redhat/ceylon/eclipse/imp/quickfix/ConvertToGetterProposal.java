@@ -57,8 +57,7 @@ class ConvertToGetterProposal extends ChangeCorrectionProposal {
             }
             change.addEdit(new ReplaceEdit(offset, 1, space + "{ return" + spaceAfter));
             change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
-            ConvertToGetterProposal p = new ConvertToGetterProposal(dec, offset, file, change);
-            proposals.add(p);
+            proposals.add(new ConvertToGetterProposal(dec, offset + space.length() + 2 , file, change));
         }
     }
     
