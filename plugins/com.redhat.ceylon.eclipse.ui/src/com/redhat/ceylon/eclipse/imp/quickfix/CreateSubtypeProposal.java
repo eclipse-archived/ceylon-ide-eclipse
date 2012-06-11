@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import java.util.Collection;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -12,14 +11,13 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.refine.CreateSubtypeHandler;
 
 class CreateSubtypeProposal implements ICompletionProposal {
 
-    private CreateSubtypeHandler action;
+    private CeylonEditor editor;
     
     public CreateSubtypeProposal(CeylonEditor editor) {
-        action = new CreateSubtypeHandler(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -49,22 +47,13 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        try {
-            action.execute(null);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    boolean isEnabled() {
-        return action.isEnabled();
+        CreateSubtypeHandler.createSubtype(editor);
     }
     
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
         if (editor instanceof CeylonEditor) {
-            CreateSubtypeProposal prop = new CreateSubtypeProposal((CeylonEditor)editor);
-            if (prop.isEnabled()) {
-                proposals.add(prop);
+            if (CreateSubtypeHandler.canCreateSubtype((CeylonEditor) editor)) {
+                proposals.add(new CreateSubtypeProposal((CeylonEditor) editor));
             }
         }
     }

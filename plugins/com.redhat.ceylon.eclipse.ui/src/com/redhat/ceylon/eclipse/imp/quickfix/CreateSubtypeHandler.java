@@ -1,15 +1,10 @@
-package com.redhat.ceylon.eclipse.imp.refine;
+package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getRefinementTextFor;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -24,26 +19,20 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
-import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 
 public class CreateSubtypeHandler extends AbstractHandler {
 
-    private CeylonEditor editor;
-    
-    public CreateSubtypeHandler() {
-        editor = (CeylonEditor) getCurrentEditor();
-    }
-    
-    public CreateSubtypeHandler(CeylonEditor editor) {
-        this.editor = editor;
-    }
-    
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+	    createSubtype((CeylonEditor) getCurrentEditor());
+		return null;
+	}
+
+    public static void createSubtype(CeylonEditor editor) {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu==null) return null;
+        if (cu==null) return;
         Node node = getSelectedNode(editor);
         ProducedType type;
         if (node instanceof Tree.BaseType) {
@@ -59,7 +48,7 @@ public class CreateSubtypeHandler extends AbstractHandler {
         	type = ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
         }
         else {
-        	return null;
+        	return;
         }
         
         StringBuilder def = new StringBuilder();
@@ -145,33 +134,18 @@ public class CreateSubtypeHandler extends AbstractHandler {
         NewUnitWizard.open(def.toString(), Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName(), "Create Subtype", 
         		"Create a new Ceylon compilation unit containing the new class.");
-        
-		return null;
-	}
-
-    //TODO: copy/pasted from AbstractFindAction
-    private static Node getSelectedNode(CeylonEditor editor) {
-        CeylonParseController cpc = editor.getParseController();
-        return cpc.getRootNode()==null ? null : 
-            findNode(cpc.getRootNode(), 
-                (ITextSelection) editor.getSelectionProvider().getSelection());
     }
 
-    //TODO: copy/pasted from RefineFormalMembersHandler
     @Override
-    public boolean isEnabled() {
-        IEditorPart editor = getCurrentEditor();
-        if (super.isEnabled() && 
-                editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput) {
-            Node node = getSelectedNode((CeylonEditor) editor);
-            return node instanceof Tree.BaseType || 
-                    node instanceof Tree.BaseTypeExpression ||
-                    node instanceof Tree.ExtendedTypeExpression ||
-            		node instanceof Tree.ClassOrInterface;
-        }
-        else {
-            return false;
-        }
+    protected boolean isEnabled(CeylonEditor editor) {
+        return canCreateSubtype(editor);
+    }
+
+    public static boolean canCreateSubtype(CeylonEditor editor) {
+        Node node = getSelectedNode(editor);
+        return node instanceof Tree.BaseType || 
+                node instanceof Tree.BaseTypeExpression ||
+                node instanceof Tree.ExtendedTypeExpression ||
+        		node instanceof Tree.ClassOrInterface;
     }
 }

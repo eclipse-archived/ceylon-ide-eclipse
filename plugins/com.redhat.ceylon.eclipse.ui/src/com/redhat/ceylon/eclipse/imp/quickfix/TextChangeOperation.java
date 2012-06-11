@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.imp.refine;
+package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;

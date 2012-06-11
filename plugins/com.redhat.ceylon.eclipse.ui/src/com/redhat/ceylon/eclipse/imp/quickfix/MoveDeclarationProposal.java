@@ -12,14 +12,13 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.refine.MoveDeclarationHandler;
 
 class MoveDeclarationProposal implements ICompletionProposal {
 
-    private MoveDeclarationHandler action;
+    private CeylonEditor editor;
     
     public MoveDeclarationProposal(CeylonEditor editor) {
-        action = new MoveDeclarationHandler(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -50,21 +49,16 @@ class MoveDeclarationProposal implements ICompletionProposal {
     @Override
     public void apply(IDocument doc) {
         try {
-            action.execute(null);
+            MoveDeclarationHandler.moveDeclaration(editor);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
     
-    boolean isEnabled() {
-        return action.isEnabled();
-    }
-    
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
         if (editor instanceof CeylonEditor) {
-            MoveDeclarationProposal prop = new MoveDeclarationProposal((CeylonEditor)editor);
-            if (prop.isEnabled()) {
-                proposals.add(prop);
+            if (MoveDeclarationHandler.canMoveDeclaration((CeylonEditor) editor)) {
+                proposals.add(new MoveDeclarationProposal((CeylonEditor) editor));
             }
         }
     }
