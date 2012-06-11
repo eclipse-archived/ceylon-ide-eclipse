@@ -44,10 +44,12 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
     private IQuickFixAssistant fAssistant;
     private ICompilationUnit fCU;
+    private UniversalEditor editor;
 
     public CeylonQuickFixController(UniversalEditor editor) {
         this.fCU = null;
         fAssistant = new CeylonQuickFixAssistant();
+        this.editor = editor;
         setQuickAssistProcessor(this);        
         
         if (editor.getEditorInput() instanceof FileEditorInput) {
@@ -129,10 +131,11 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         return null;
     }
 
-    public static void collectAssists(IQuickAssistInvocationContext context,
+    public void collectAssists(IQuickAssistInvocationContext context,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        //TODO: add quick assists!!!!!
-        return;
+        if (locations.length==0) {
+            ((CeylonQuickFixAssistant) fAssistant).addProposals(context, editor, proposals);
+        }
     }
 
     private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
