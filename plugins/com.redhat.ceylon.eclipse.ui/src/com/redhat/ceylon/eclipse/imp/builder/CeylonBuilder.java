@@ -513,15 +513,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
                             }
                             
-                            Set<PhasedUnit> phasedUnitsDependingOn = Collections.emptySet();
+                            Set<String> filesDependingOn = Collections.emptySet();
                             
-                            phasedUnitsDependingOn = getDependentsOf(srcFile,
+                            filesDependingOn = getDependentsOf(srcFile,
                                     currentFileTypeChecker, currentFileProject);
     
-                            for(PhasedUnit dependingPhasedUnit : phasedUnitsDependingOn ) {
+                            for(String dependingFile : filesDependingOn ) {
                                 if (monitor.isCanceled()) {
                                     throw new OperationCanceledException();
                                 }
+                                
+                                
+                                IFile depFile= (IFile) project.findMember(dependingFile);
+                                if (depFile == null) {
+                                    depFile= (IFile) currentFileProject.findMember(dependingFile);
+                                }
+                                if (depFile != null) {
+                                    additions.add(depFile);
+                                }
+                                else {
+                                    // System.out.println("a depending resource is in a third-party project");
+                                }
+                                
+/*                                
                                 IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
                                 IProject newDependencyProject = depFile.getProject();
                                 if (newDependencyProject == project || newDependencyProject == currentFileProject) {
@@ -529,7 +543,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 } else {
     //                                            System.out.println("a depending resource is in a third-party project");
                                 }
-                                
+                                */
                             }
                         }
                         changed = changeDependents.addAll(additions);
@@ -764,13 +778,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 "...binary generation succeeded" : "...binary generation FAILED");
     }
 
-    private Set<PhasedUnit> getDependentsOf(IFile srcFile,
+    private Set<String> getDependentsOf(IFile srcFile,
             TypeChecker currentFileTypeChecker,
             IProject currentFileProject) {
         if(LANGUAGE.hasExtension(srcFile.getRawLocation().getFileExtension())) {
             PhasedUnit phasedUnit = currentFileTypeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(srcFile));
-            if (phasedUnit != null) {
-                return phasedUnit.getDependentsOf();
+            if (phasedUnit != null && phasedUnit.getUnit() != null) {
+                return phasedUnit.getUnit().getDependentsOf();
             }
         } else {
             Unit unit = getJavaUnit(currentFileProject, srcFile);
@@ -877,7 +891,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         JDTModelLoader modelLoader = getProjectModelLoader(project);
         Set<String> cleanedPackages = new HashSet<String>();
         
-        List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();        
+        List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
         for (IFile fileToUpdate : fSourcesToCompile) {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -906,11 +920,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             PhasedUnit alreadyBuiltPhasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(file);
 
             Package pkg = null;
-            Set<PhasedUnit> dependentsOf = Collections.emptySet();
+            Set<String> dependentsOf = Collections.emptySet();
             if (alreadyBuiltPhasedUnit!=null) {
                 // Editing an already built file
                 pkg = alreadyBuiltPhasedUnit.getPackage();
-                dependentsOf = alreadyBuiltPhasedUnit.getDependentsOf();
+                if (alreadyBuiltPhasedUnit.getUnit() != null) {
+                    dependentsOf = alreadyBuiltPhasedUnit.getUnit().getDependentsOf();
+                }
             }
             else {
                 IContainer packageFolder = file.getResource().getParent();
@@ -920,7 +936,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
             }
             PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, file, srcDir, pkg);
-            newPhasedUnit.getDependentsOf().addAll(dependentsOf);
+//            newPhasedUnit.getDependentsOf().addAll(dependentsOf);
             phasedUnitsToUpdate.add(newPhasedUnit);
             
         }
