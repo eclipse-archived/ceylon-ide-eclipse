@@ -507,6 +507,7 @@ public class CeylonContentProposer implements IContentProposer {
                     if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                        addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
                     }
                 }
                 if (isInvocationProposable(dwp, ol)) {
@@ -729,6 +730,36 @@ public class CeylonContentProposer implements IContentProposer {
                         getDocumentationFor(cpc, d), 
                         "if (exists " + getDescriptionFor(dwp, ol) + ")", 
                         "if (exists " + getTextFor(dwp, ol) + ") {}", true));
+            }
+        }
+    }
+
+    private static void addSwitchProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
+            OccurrenceLocation ol, Node node, IDocument doc) {
+        if (d instanceof Value || 
+                d instanceof ValueParameter) {
+            TypedDeclaration v = (TypedDeclaration) d;
+            if (v.getType()!=null &&
+                    v.getType().getCaseTypes()!=null && 
+                    !v.isVariable()) {
+                StringBuilder body = new StringBuilder();
+                String indent = getIndent(node, doc);
+                for (ProducedType pt: v.getType().getCaseTypes()) {
+                    body.append(indent).append("case (");
+                    if (!pt.getDeclaration().isAnonymous()) {
+                        body.append("is ");
+                    }
+                    body.append(pt.getProducedTypeName());
+                    body.append(") {}\n");
+                }
+                body.append(indent);
+                result.add(new Proposal(offset, prefix, 
+                        CeylonLabelProvider.getImage(d),
+                        getDocumentationFor(cpc, d), 
+                        "switch (" + getDescriptionFor(dwp, ol) + ")", 
+                        "switch (" + getTextFor(dwp, ol) + ")\n" + body, true));
             }
         }
     }
