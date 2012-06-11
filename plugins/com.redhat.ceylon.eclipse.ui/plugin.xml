@@ -467,16 +467,6 @@
             description="Clean unused imports from current file"
             name="Clean Imports"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.refineFormals"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Implement all inherited formal members"
-            name="Refine Formal Members"/>
-       <command
-            id="com.redhat.ceylon.eclipse.ui.action.createSubtype"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Create a subtype of the selected type"
-            name="Create Subtype"/>
-       <command
             id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Move selected declaration to new unit"
@@ -552,13 +542,7 @@
             class="com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.quickfix.RefineFormalMembersHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.imp.quickfix.CreateSubtypeHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.imp.quickfix.MoveDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.imp.refactoring.MoveDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
       <handler
             class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
@@ -627,16 +611,6 @@
        <key
            sequence="M3+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+M"
-           commandId="com.redhat.ceylon.eclipse.ui.action.refineFormals"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+B"
-           commandId="com.redhat.ceylon.eclipse.ui.action.createSubtype"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.imp.quickfix;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;

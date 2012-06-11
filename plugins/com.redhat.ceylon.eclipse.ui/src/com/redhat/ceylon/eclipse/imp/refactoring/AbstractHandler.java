@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.imp.quickfix;
+package com.redhat.ceylon.eclipse.imp.refactoring;
 
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
@@ -14,7 +14,7 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 public abstract class AbstractHandler extends org.eclipse.core.commands.AbstractHandler {
     
     //TODO: copy/pasted from AbstractFindAction
-    protected static Node getSelectedNode(CeylonEditor editor) {
+    public static Node getSelectedNode(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
         return cpc.getRootNode()==null ? null : 
             findNode(cpc.getRootNode(), 
