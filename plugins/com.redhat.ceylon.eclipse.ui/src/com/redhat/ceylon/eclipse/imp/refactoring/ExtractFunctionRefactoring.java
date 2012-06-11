@@ -229,7 +229,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     @Override
     boolean isEnabled() {
         return node instanceof Tree.Term || 
-                node instanceof Tree.Body;
+                node instanceof Tree.Body && 
+                    !statements.isEmpty();
     }
 
     /*public ExtractFunctionRefactoring(IQuickFixInvocationContext context) {

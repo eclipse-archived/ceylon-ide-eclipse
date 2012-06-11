@@ -51,7 +51,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&
 	            !declaration.isFormal() &&
-	            !declaration.isShared(); //TODO temporary restriction!
+	            (declaration.isToplevel() || !declaration.isShared()); //TODO temporary restriction!
 	            //TODO && !declaration is a value with lazy init
 	            
 	}
