@@ -22,8 +22,7 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
     final int length;
     final IFile file;
     
-    SpecifyTypeProposal(int offset, IFile file, 
-            String type, TextFileChange change) {
+    SpecifyTypeProposal(int offset, IFile file, String type, TextFileChange change) {
         super("Specify type '" + type + "'", change, 10, CORRECTION);
         this.offset = offset;
         length = type.length();
@@ -36,9 +35,19 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addSpecifyTypeProposal(Tree.CompilationUnit cu,
-            Node node, Collection<ICompletionProposal> proposals, IFile file) {
+    static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node,
+            Collection<ICompletionProposal> proposals, IFile file) {
         final Tree.Type type = (Tree.Type) node;
+        TextFileChange change =  new TextFileChange("Specify Type", file);
+        Integer offset = node.getStartIndex();
+        String explicitType = inferType(cu, type);
+        change.setEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
+            //Note: don't use problem.getLength() because it's wrong from the problem list
+        proposals.add(new SpecifyTypeProposal(offset, file, explicitType, change));
+    }
+
+    static String inferType(Tree.CompilationUnit cu,
+            final Tree.Type type) {
         InferTypeVisitor itv = new InferTypeVisitor() {
             { unit = type.getUnit(); }
             @Override public void visit(Tree.TypedDeclaration that) {
@@ -51,11 +60,9 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         };
         itv.visit(cu);
         ProducedType it = itv.inferredType;
-        String explicitType = it==null ? "Object" : node.getUnit().denotableType(it).getProducedTypeName();
-        TextFileChange change =  new TextFileChange("Specify Type", file);
-        change.setEdit(new ReplaceEdit(node.getStartIndex(), type.getText().length(), 
-                explicitType)); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new SpecifyTypeProposal(node.getStartIndex(), file, explicitType, change));
+        String explicitType = it==null ? "Object" : 
+                type.getUnit().denotableType(it).getProducedTypeName();
+        return explicitType;
     }
     
 }

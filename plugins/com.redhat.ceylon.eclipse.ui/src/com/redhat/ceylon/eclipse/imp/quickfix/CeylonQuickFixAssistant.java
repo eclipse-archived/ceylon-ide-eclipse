@@ -180,6 +180,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             if (node instanceof Tree.LocalModifier) {
                 SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
             }
+            if (node instanceof Tree.AttributeDeclaration) {
+                if (((Tree.AttributeDeclaration) node).getSpecifierOrInitializerExpression()!=null) {
+                    IDocument doc = context.getSourceViewer().getDocument();
+                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, proposals, 
+                            file, (Tree.AttributeDeclaration) node);
+                    ConvertToGetterProposal.addConvertToGetterProposal(doc, proposals, 
+                            file, (Tree.AttributeDeclaration) node);
+                }
+            }
         }
     }
     
