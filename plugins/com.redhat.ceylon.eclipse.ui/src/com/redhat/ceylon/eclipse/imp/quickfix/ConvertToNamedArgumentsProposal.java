@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.quickfix;
 
 import java.util.Collection;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -9,15 +10,16 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsRefactoringAction;
+import com.redhat.ceylon.eclipse.imp.refactoring.ConvertToNamedArgumentsHandler;
 
 class ConvertToNamedArgumentsProposal implements ICompletionProposal {
 
-    private ConvertToNamedArgumentsRefactoringAction action;
+    private ConvertToNamedArgumentsHandler action;
     
-    public ConvertToNamedArgumentsProposal(UniversalEditor editor) {
-        action = new ConvertToNamedArgumentsRefactoringAction(editor);
+    public ConvertToNamedArgumentsProposal(CeylonEditor editor) {
+        action = new ConvertToNamedArgumentsHandler(editor);
     }
     
     @Override
@@ -47,7 +49,11 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        action.run();
+        try {
+            action.execute(null);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
     
     boolean isEnabled() {
@@ -55,7 +61,7 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
     }
     
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        ConvertToNamedArgumentsProposal prop = new ConvertToNamedArgumentsProposal(editor);
+        ConvertToNamedArgumentsProposal prop = new ConvertToNamedArgumentsProposal((CeylonEditor)editor);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }
