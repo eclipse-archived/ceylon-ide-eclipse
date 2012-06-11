@@ -37,9 +37,18 @@ import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
 
 public class RefineFormalMembersHandler extends AbstractHandler {
     
+    private CeylonEditor editor;
+    
+    public RefineFormalMembersHandler() {
+        editor = (CeylonEditor) getCurrentEditor();
+    }
+    
+    public RefineFormalMembersHandler(CeylonEditor editor) {
+        this.editor = editor;
+    }
+    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         Node node = getSelectedNode(editor);

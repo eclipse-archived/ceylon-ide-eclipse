@@ -2,17 +2,11 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
-import java.awt.Container;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathContainer;
-import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil;
-import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.IPackageFragmentExtraInfo;
-import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.PreferenceStoreInfo;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -20,7 +14,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
@@ -33,23 +26,19 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.runtime.PluginBase;
-import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil;
+import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.IPackageFragmentExtraInfo;
+import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.PreferenceStoreInfo;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
@@ -216,6 +205,8 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
+        reg.put(CEYLON_CHANGE, image("change.gif"));
+        reg.put(CEYLON_RENAME, image("wordassist_co.gif"));
         reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
         reg.put(CEYLON_NEW_MODULE, image("newftrprj_wiz.png"));
         reg.put(CEYLON_NEW_PACKAGE, image("newpack_wiz.png"));

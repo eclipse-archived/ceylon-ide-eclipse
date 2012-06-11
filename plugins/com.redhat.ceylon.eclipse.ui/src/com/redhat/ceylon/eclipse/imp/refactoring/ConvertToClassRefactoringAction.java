@@ -23,5 +23,13 @@ public class ConvertToClassRefactoringAction extends AbstractRefactoringAction {
 	String message() {
 	    return "No declaration name selected";
 	}
+
+    public String currentName() {
+        return ((ConvertToClassRefactoring) refactoring).getDeclaration().getName();
+    }
 	
+    public boolean isShared() {
+        return ((ConvertToClassRefactoring) refactoring).getDeclaration().isShared();
+    }
+    
 }

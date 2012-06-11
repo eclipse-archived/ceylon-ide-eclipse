@@ -23,4 +23,8 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     String message() {
         return "No function or value name selected";
     }
+
+    public String currentName() {
+        return ((InlineRefactoring) refactoring).getDeclaration().getName();
+    }
 }
