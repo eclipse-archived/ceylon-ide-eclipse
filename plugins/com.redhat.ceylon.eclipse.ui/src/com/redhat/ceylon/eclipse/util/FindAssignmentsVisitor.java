@@ -11,6 +11,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PostfixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
@@ -69,6 +70,16 @@ public class FindAssignmentsVisitor extends Visitor {
     }
 
     @Override
+    public void visit(Parameter that) {
+        super.visit(that);
+        if (that.getDefaultArgument()!=null) {
+            if (isReference(that.getDeclarationModel())) {
+                nodes.add(that.getDefaultArgument());
+            }
+        }
+    }
+
+    @Override
     public void visit(AssignmentOp that) {
         super.visit(that);
         Term lhs = that.getLeftTerm();
@@ -107,7 +118,12 @@ public class FindAssignmentsVisitor extends Visitor {
     @Override
     public void visit(Tree.NamedArgument that) {
         if (isReference(that.getParameter())) {
-            nodes.add(that);
+            if (that instanceof Tree.SpecifiedArgument) {
+                nodes.add(((Tree.SpecifiedArgument) that).getSpecifierExpression());
+            }
+            else {
+                nodes.add(that);
+            }
         }
         super.visit(that);
     }
