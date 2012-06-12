@@ -13,7 +13,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
@@ -24,7 +23,7 @@ class ChangeDeclarationProposal extends ChangeCorrectionProposal {
     final int offset;
     final int length;
     
-    ChangeDeclarationProposal(Declaration dec, String kw, CommonToken token, 
+    ChangeDeclarationProposal(String kw, CommonToken token, 
             IFile file, TextFileChange change) {
         super("Change declaration to '" + kw + "'", change, 10, CORRECTION);
         this.file=file;
@@ -56,7 +55,6 @@ class ChangeDeclarationProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Change Declaration", file);
         change.setEdit(new ReplaceEdit(token.getStartIndex(), token.getText().length(), 
                 keyword));
-        proposals.add(new ChangeDeclarationProposal(decNode.getDeclarationModel(), 
-                keyword, token, file, change));
+        proposals.add(new ChangeDeclarationProposal(keyword, token, file, change));
     }
 }

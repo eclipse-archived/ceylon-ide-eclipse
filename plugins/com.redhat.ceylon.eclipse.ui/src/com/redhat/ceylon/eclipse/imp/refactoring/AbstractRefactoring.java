@@ -28,12 +28,16 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer;
 
 public abstract class AbstractRefactoring extends Refactoring {
     
@@ -78,21 +82,40 @@ public abstract class AbstractRefactoring extends Refactoring {
     
     abstract boolean isEnabled();
     
-    String guessName() {
+    public static String guessName(Node node) {
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {
             identifyingNode = ((Tree.Expression) identifyingNode).getTerm();
         }
         if (identifyingNode instanceof Tree.InvocationExpression) {
-            identifyingNode = ((Tree.InvocationExpression) identifyingNode).getPrimary();
+            identifyingNode = ((Tree.InvocationExpression) identifyingNode)
+                    .getPrimary();
         }
-        if (identifyingNode instanceof Tree.StaticMemberOrTypeExpression) {
-            String id = ((Tree.StaticMemberOrTypeExpression) identifyingNode).getIdentifier().getText();
+        
+        //don't do this for unqualified member refs, because the guessed
+        //name will just hide the original name, resulting in errors
+        if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression ||
+                identifyingNode instanceof Tree.BaseTypeExpression) {
+            String id = ((Tree.StaticMemberOrTypeExpression) identifyingNode)
+                    .getIdentifier().getText();
             if (!id.isEmpty()) {
-                return Character.toLowerCase(id.charAt(0)) + 
+                String name = Character.toLowerCase(id.charAt(0)) + 
                         id.substring(1);
+                if (!CeylonTokenColorer.keywords.contains(name)) return name;
             }
         }
+        
+        if (node instanceof Tree.Term) {
+            ProducedType type = ((Tree.Term) node).getTypeModel();
+            if (type!=null && (type.getDeclaration() instanceof ClassOrInterface || 
+                    type.getDeclaration() instanceof TypeParameter)) {
+                String tn = type.getDeclaration().getName();
+                String name = Character.toLowerCase(tn.charAt(0)) + 
+                        tn.substring(1);
+                if (!CeylonTokenColorer.keywords.contains(name)) return name;
+            }
+        }
+        
         return "temp";
     }
 

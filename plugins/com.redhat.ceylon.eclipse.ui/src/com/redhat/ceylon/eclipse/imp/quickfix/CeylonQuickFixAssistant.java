@@ -155,6 +155,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
+            AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+                    file, cu, proposals, node);
             if (node instanceof Tree.Declaration) {
                 Declaration d = ((Tree.Declaration) node).getDeclarationModel();
                 if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
@@ -324,6 +326,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 break;
             case 2100:
                 addChangeTypeProposals(cu, node, problem, proposals, project);
+                break;
+            case 3000:
+                if (context.getSourceViewer()!=null) {
+                    AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+                            file, cu, proposals, node);
+                }
                 break;
             }
         }
