@@ -29,7 +29,7 @@ class MoveDeclarationProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.CHANGE;
+    	return CeylonLabelProvider.MOVE;
     }
 
     @Override
