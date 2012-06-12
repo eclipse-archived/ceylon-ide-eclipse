@@ -665,13 +665,13 @@
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
-            <menu
-                  label="Source"
-                  id="com.redhat.ceylon.eclipse.ui.menu.find">
-                <!--dynamic id="find"
-                      class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
-                <dynamic id="refactor"
-                      class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+          <menu
+                label="Source"
+                id="com.redhat.ceylon.eclipse.ui.menu.find">
+            <!--dynamic id="find"
+                  class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
             <separator
                   visible="true"
                   name="sep2"/>
@@ -683,29 +683,29 @@
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
                   label="Show Hierarchy"/>
-                <separator
-                      name="sep3" 
-                      visible="true"/>
-                <command
-                      id="shiftRight"
-                      commandId="org.eclipse.ui.edit.text.shiftRight"
-                      label="Shift Right"/>
-                <command
-                      id="shiftLeft"
-                      commandId="org.eclipse.ui.edit.text.shiftLeft"
-                      label="Shift Left"/>
-                <command
-                      id="correctIndentation"
-                      commandId="org.eclipse.imp.runtime.editor.correctIndentation"
-                      label="Correct Indentation"/>
-                <separator 
-                      name="sep4" 
-                      visible="true"/>
-                <command
-                      id="toggleComment"
-                      commandId="org.eclipse.imp.runtime.editor.toggleComment"
-                      label="Toggle Comment"/>
-            </menu>
+            <separator
+                  name="sep3" 
+                  visible="true"/>
+            <command
+                  id="shiftRight"
+                  commandId="org.eclipse.ui.edit.text.shiftRight"
+                  label="Shift Right"/>
+            <command
+                  id="shiftLeft"
+                  commandId="org.eclipse.ui.edit.text.shiftLeft"
+                  label="Shift Left"/>
+            <command
+                  id="correctIndentation"
+                  commandId="org.eclipse.imp.runtime.editor.correctIndentation"
+                  label="Correct Indentation"/>
+            <separator 
+                  name="sep4" 
+                  visible="true"/>
+            <command
+                  id="toggleComment"
+                  commandId="org.eclipse.imp.runtime.editor.toggleComment"
+                  label="Toggle Comment"/>
+          </menu>
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=ShiftRight">
