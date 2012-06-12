@@ -502,7 +502,7 @@ public class CeylonContentProposer implements IContentProposer {
                                 node, result, dec, doc);
                     }
                 }
-                if (isProposable(dwp, ol)) {
+                if (isProposable(dwp, ol, node.getScope())) {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -568,13 +568,14 @@ public class CeylonContentProposer implements IContentProposer {
                 dwp.getNamedArgumentList()==null;
     }
 
-    private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol) {
+    private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol, Scope scope) {
         Declaration dec = dwp.getDeclaration();
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || 
                         dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
+                        dec instanceof Value && dec.getContainer().equals(scope) ||
                         ol!=PARAMETER_LIST) &&
                 ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
     }

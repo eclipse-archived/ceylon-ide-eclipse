@@ -112,6 +112,14 @@ class FindOccurrenceLocationVisitor extends Visitor
         }
         super.visit(that);
     }
+
+    @Override
+    public void visit(Tree.DefaultArgument that) {
+        if (inBounds(that)) {
+            occurrence = EXPRESSION;
+        }
+        super.visit(that);
+    }
     
     @Override
     public void visit(Tree.ArgumentList that) {
