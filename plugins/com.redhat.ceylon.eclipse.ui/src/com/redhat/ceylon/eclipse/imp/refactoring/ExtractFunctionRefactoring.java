@@ -208,7 +208,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 	        newName = result.getDeclarationModel().getName();
 	    }
 	    else {
-		    newName = guessName();
+		    newName = guessName(node);
 	    }
 	}
 

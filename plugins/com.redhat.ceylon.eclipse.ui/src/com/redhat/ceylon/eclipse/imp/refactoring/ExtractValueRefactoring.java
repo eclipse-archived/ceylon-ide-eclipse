@@ -26,7 +26,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 
 	public ExtractValueRefactoring(ITextEditor editor) {
 	    super(editor);
-	    newName = guessName();
+	    newName = guessName(node);
 	}
 	
 	/*public ExtractValueRefactoring(IQuickFixInvocationContext context) {
