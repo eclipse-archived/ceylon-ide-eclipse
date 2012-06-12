@@ -331,24 +331,24 @@
             presentationLayer="4"
             contributesToHeader="false"
             includeOnPreferencePage="true"
-
+            
             isGoToNextNavigationTarget="true"
             isGoToNextNavigationTargetKey="occurrenceAnnotationIsGotoNextKey"
             isGoToPreviousNavigationTarget="true"
             isGoToPreviousNavigationTargetKey="occurrenceAnnotationIsGotoPrevKey"
             showInNextPrevDropdownToolbarAction="true"
-
+            
             colorPreferenceKey="occurrenceColorPreference"
             textPreferenceKey="occurrenceTextPreference"
             textStylePreferenceKey="occurrenceAnnotationTextStyleKey"
             highlightPreferenceKey="occurrenceHighlightKey"
             verticalRulerPreferenceKey="occurrenceVerticalRulerPreference"
             overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
-
-            colorPreferenceValue="0,64,128"
+            
+            colorPreferenceValue="224,240,224"
             textPreferenceValue="true"
-            textStylePreferenceValue="UNDERLINE"
-            highlightPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/>
             
