@@ -1,11 +1,15 @@
 package com.redhat.ceylon.eclipse.imp.search;
 
 import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DECS;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_REFS;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.IEditorPart;
@@ -17,6 +21,9 @@ import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 abstract class AbstractFindAction extends Action {
+    
+    public static ImageDescriptor REFS = imageRegistry.getDescriptor(CEYLON_REFS);
+    public static ImageDescriptor DECS = imageRegistry.getDescriptor(CEYLON_DECS);
     
     private final IEditorPart editor;
     protected Declaration declaration;

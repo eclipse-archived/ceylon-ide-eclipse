@@ -33,11 +33,15 @@ public interface ICeylonResources {
     public static final String CEYLON_CHANGE = "change";
     public static final String CEYLON_RENAME = "rename";
     public static final String CEYLON_MOVE = "move";
+    public static final String CEYLON_DELETE_IMPORT = "delete_import";
     
     public static final String CEYLON_NEW_FILE = "ceylon_new_file";
     public static final String CEYLON_NEW_MODULE = "ceylon_new_module";
     public static final String CEYLON_NEW_PACKAGE = "ceylon_new_package";
     public static final String CEYLON_EXPORT_CAR = "ceylon_export_car";
+    
+    public static final String CEYLON_DECS = "ceylon_decs";
+    public static final String CEYLON_REFS = "ceylon_refs";
     
     public static final String ELE32="ceylon_ele32";
     

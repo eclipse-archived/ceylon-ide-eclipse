@@ -27,26 +27,27 @@ public class RefactorMenuItems extends CompoundContributionItem {
             return new IContributionItem[] {
                     //new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
-                            editor!=null && new RenameRefactoringAction(editor).isEnabled()),
+                            editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
+                            AbstractRefactoring.RENAME),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit", 
-                            "Move to New Unit...",
-                            new MoveDeclarationHandler().isEnabled()),
+                            "Move to New Unit...", new MoveDeclarationHandler().isEnabled(), 
+                            AbstractRefactoring.MOVE),
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
                             editor!=null && new InlineRefactoringAction(editor).isEnabled()),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
                             "Extract Value...",
                             editor!=null && new ExtractValueRefactoringAction(editor).isEnabled()),
-                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
+                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
                             "Extract Function...",
                             editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled()),
-                            new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
+                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
                                     "Convert to Class...",
                                     editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
                     new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
-                            "Clean Imports",
-                            new CleanImportsHandler().isEnabled())
+                            "Clean Imports", new CleanImportsHandler().isEnabled(), 
+                            AbstractRefactoring.DELETE_IMPORT)
                 };
         /*}
         else {
