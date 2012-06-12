@@ -1,7 +1,11 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIterator;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_MOVE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_RENAME;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DELETE_IMPORT;
 
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +13,7 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
@@ -29,6 +34,10 @@ import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public abstract class AbstractRefactoring extends Refactoring {
+    
+    public static ImageDescriptor MOVE = imageRegistry.getDescriptor(CEYLON_MOVE);
+    public static ImageDescriptor RENAME = imageRegistry.getDescriptor(CEYLON_RENAME);
+    public static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);
     
     IProject project;
     IFile sourceFile;

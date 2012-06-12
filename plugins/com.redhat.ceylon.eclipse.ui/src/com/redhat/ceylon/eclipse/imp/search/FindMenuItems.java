@@ -26,13 +26,13 @@ public class FindMenuItems extends CompoundContributionItem {
             return new IContributionItem[] {
                     //new Separator(),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findReferences", "Find References",
-                            new FindReferencesAction(editor).isEnabled()),
+                            new FindReferencesAction(editor).isEnabled(), AbstractFindAction.REFS),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findAssignments", "Find Assignments",
-                            new FindAssignmentsAction(editor).isEnabled()),
+                            new FindAssignmentsAction(editor).isEnabled(), AbstractFindAction.REFS),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findRefinements", "Find Refinements",
-                            new FindRefinementsAction(editor).isEnabled()),
+                            new FindRefinementsAction(editor).isEnabled(), AbstractFindAction.DECS),
                     new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.findSubtypes", "Find Subtypes",
-                            new FindSubtypesAction(editor).isEnabled())
+                            new FindSubtypesAction(editor).isEnabled(), AbstractFindAction.DECS)
                     //new Separator()
                 };
         /*}
