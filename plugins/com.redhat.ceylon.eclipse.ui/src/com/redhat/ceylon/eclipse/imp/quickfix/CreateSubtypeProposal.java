@@ -44,7 +44,7 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.CLASS;
+    	return CeylonLabelProvider.MOVE;
     }
 
     @Override

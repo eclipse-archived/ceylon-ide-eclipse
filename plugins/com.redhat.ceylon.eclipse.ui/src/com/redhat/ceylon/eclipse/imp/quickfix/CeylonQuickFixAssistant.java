@@ -54,6 +54,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -159,19 +160,23 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     context.getOffset() + context.getLength());
             if (node instanceof Tree.Declaration) {
                 Declaration d = ((Tree.Declaration) node).getDeclarationModel();
-                if ((d.isClassOrInterfaceMember()||d.isToplevel()) && !d.isShared()) {
+                if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
+                        !d.isShared() && 
+                        !(d instanceof Parameter)) {
                     addMakeSharedDecProposal(proposals, project, node);
                 }
                 if (d.isClassOrInterfaceMember() && 
                         d.isShared() &&
                         !d.isDefault() && !d.isFormal() &&
-                        !(d instanceof Interface)) {
-                    addMakeDefaultProposal(proposals, project, node);
+                        !(d instanceof Interface) && 
+                        !(d instanceof Parameter)) {
+                    addMakeDefaultDecProposal(proposals, project, node);
                 }
             }
             if (node instanceof Tree.TypedDeclaration && 
                     !(node instanceof Tree.ObjectDefinition) &&
-                    !(node instanceof Tree.Variable)) {
+                    !(node instanceof Tree.Variable) &&
+                    !(node instanceof Tree.Parameter)) {
                 Type type = ((Tree.TypedDeclaration) node).getType();
                 if (type instanceof Tree.LocalModifier) {
                     SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
@@ -336,6 +341,14 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         Tree.Declaration decNode = (Tree.Declaration) node;
         Declaration d = getRefinedDeclaration(decNode.getDeclarationModel()); //TODO: this is wrong!
         if (d==null) d = decNode.getDeclarationModel();
+        addAddAnnotationProposal(node, "default ", "Make Default", d, 
+                proposals, project);
+    }
+
+    private void addMakeDefaultDecProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        Declaration d = decNode.getDeclarationModel();
         addAddAnnotationProposal(node, "default ", "Make Default", d, 
                 proposals, project);
     }

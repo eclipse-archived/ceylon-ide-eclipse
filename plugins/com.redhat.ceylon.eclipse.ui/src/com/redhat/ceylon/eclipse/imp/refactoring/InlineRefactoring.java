@@ -86,7 +86,31 @@ public class InlineRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
-		// Check parameters retrieved from editor context
+        Tree.Declaration declarationNode=null;
+        CompilationUnit declarationUnit=null;
+        if (searchInEditor()) {
+            CompilationUnit cu = editor.getParseController().getRootNode();
+            if (cu.getUnit().equals(declaration.getUnit())) {
+                declarationUnit = cu;
+            }
+        }
+        if (declarationUnit==null) {
+            for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+                if (pu.getUnit().equals(declaration.getUnit())) {
+                    declarationUnit = pu.getCompilationUnit();
+                    break;
+                }
+            }
+        }
+        FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+        declarationUnit.visit(fdv);
+        declarationNode = fdv.getDeclarationNode();
+        if (declarationNode instanceof Tree.AttributeDeclaration &&
+                ((Tree.AttributeDeclaration) declarationNode).getSpecifierOrInitializerExpression()==null ||
+            declarationNode instanceof Tree.MethodDeclaration &&
+                ((Tree.MethodDeclaration) declarationNode).getSpecifierExpression()==null) {
+            return RefactoringStatus.createFatalErrorStatus("Cannot inline forward declaration " + declaration.getName());
+        }
 		return new RefactoringStatus();
 	}
 
