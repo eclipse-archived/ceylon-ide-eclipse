@@ -185,13 +185,16 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
             }
             if (node instanceof Tree.AttributeDeclaration) {
-                if (((Tree.AttributeDeclaration) node).getSpecifierOrInitializerExpression()!=null) {
-                    IDocument doc = context.getSourceViewer().getDocument();
+                Tree.AttributeDeclaration dec = (Tree.AttributeDeclaration) node;
+                IDocument doc = context.getSourceViewer().getDocument();
+                if (dec.getSpecifierOrInitializerExpression()!=null) {
                     SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, proposals, 
-                            file, (Tree.AttributeDeclaration) node);
+                            file, dec);
                     ConvertToGetterProposal.addConvertToGetterProposal(doc, proposals, 
-                            file, (Tree.AttributeDeclaration) node);
+                            file, dec);
                 }
+                AddParameterProposal.addParameterProposal(doc, cu, proposals, 
+                        file, dec, editor);
             }
         }
 
