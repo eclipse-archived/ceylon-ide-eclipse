@@ -23,6 +23,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
@@ -47,6 +48,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	@Override
 	boolean isEnabled() {
 	    return declaration!=null && 
+	            !(declaration.getUnit() instanceof ExternalUnit) &&
 	            declaration instanceof MethodOrValue &&
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&

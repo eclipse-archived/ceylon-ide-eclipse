@@ -21,6 +21,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -62,7 +63,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	
 	@Override
 	boolean isEnabled() {
-	    return declaration!=null;
+	    return declaration!=null &&
+	            !(declaration.getUnit() instanceof ExternalUnit);
 	}
 	
 	public int getCount() {
