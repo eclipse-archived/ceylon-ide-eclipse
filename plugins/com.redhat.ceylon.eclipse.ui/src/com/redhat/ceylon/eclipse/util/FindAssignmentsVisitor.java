@@ -5,7 +5,9 @@ import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
@@ -15,12 +17,17 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+//TODO: fix all the copy/paste from FindReferenceVisitor
 public class FindAssignmentsVisitor extends Visitor {
 	
 	private Declaration declaration;
 	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public FindAssignmentsVisitor(Declaration declaration) {
+        if (declaration instanceof ValueParameter 
+                && ((ValueParameter) declaration).isHidden()) {
+            declaration = declaration.getContainer().getMember(declaration.getName(), null);
+        }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
 	        while (od!=null) {
@@ -40,6 +47,10 @@ public class FindAssignmentsVisitor extends Visitor {
 	}
 	
 	protected boolean isReference(Declaration ref) {
+        if (ref instanceof ValueParameter 
+                && ((ValueParameter) ref).isHidden()) {
+            ref = ref.getContainer().getMember(ref.getName(), null);
+        }
 	    return ref!=null && declaration.refines(ref);
 	}
 	
@@ -91,6 +102,22 @@ public class FindAssignmentsVisitor extends Visitor {
                 isReference(that.getDeclarationModel())) {
             nodes.add(that.getSpecifierOrInitializerExpression());
         }
+    }
+        
+    @Override
+    public void visit(Tree.NamedArgument that) {
+        if (isReference(that.getParameter())) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
+    @Override
+    public void visit(Tree.PositionalArgument that) {
+        if (isReference(that.getParameter())) {
+            nodes.add(that);
+        }
+        super.visit(that);
     }
         
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
@@ -16,6 +17,10 @@ public class FindReferenceVisitor extends Visitor {
 	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public FindReferenceVisitor(Declaration declaration) {
+        if (declaration instanceof ValueParameter 
+                && ((ValueParameter) declaration).isHidden()) {
+            declaration = declaration.getContainer().getMember(declaration.getName(), null);
+        }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
 	        while (od!=null) {
@@ -35,6 +40,10 @@ public class FindReferenceVisitor extends Visitor {
 	}
 	
 	protected boolean isReference(Declaration ref) {
+	    if (ref instanceof ValueParameter 
+	            && ((ValueParameter) ref).isHidden()) {
+	        ref = ref.getContainer().getMember(ref.getName(), null);
+	    }
 	    return ref!=null && declaration.refines(ref);
 	}
 	
@@ -142,6 +151,16 @@ public class FindReferenceVisitor extends Visitor {
 		super.visit(that);
 	}
 	
+    @Override
+    public void visit(Tree.ValueParameterDeclaration that) {
+        if(that.getType() instanceof Tree.LocalModifier) {
+            if (isReference(that.getDeclarationModel())) {
+                nodes.add(that);
+            }
+        }
+        super.visit(that);
+    }
+    
 	private String id(Tree.Identifier that) {
 	    return that==null ? null : that.getText();
 	}
