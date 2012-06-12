@@ -27,7 +27,7 @@ class ExtractValueProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.LOCAL_ATTRIBUTE;
+    	return CeylonLabelProvider.CHANGE;
     }
 
     @Override

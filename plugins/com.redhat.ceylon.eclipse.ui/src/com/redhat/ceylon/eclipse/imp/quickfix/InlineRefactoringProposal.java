@@ -27,7 +27,7 @@ class InlineRefactoringProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.CORRECTION;
+    	return CeylonLabelProvider.COMPOSITE_CHANGE;
     }
 
     @Override
