@@ -148,9 +148,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         ExtractFunctionProposal.add(proposals, editor);
         ConvertToClassProposal.add(proposals, editor);
         ConvertToNamedArgumentsProposal.add(proposals, editor);
-        RefineFormalMembersProposal.add(proposals, editor);
-        CreateSubtypeProposal.add(proposals, editor);
-        MoveDeclarationProposal.add(proposals, editor);
         
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
@@ -195,6 +192,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
             }
         }
+
+        CreateSubtypeProposal.add(proposals, editor);
+        MoveDeclarationProposal.add(proposals, editor);
+        
+        RefineFormalMembersProposal.add(proposals, editor);
     }
     
     @Override

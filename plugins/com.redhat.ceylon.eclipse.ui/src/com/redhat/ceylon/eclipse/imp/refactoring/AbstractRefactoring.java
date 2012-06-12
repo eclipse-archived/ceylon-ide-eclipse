@@ -3,9 +3,11 @@ package com.redhat.ceylon.eclipse.imp.refactoring;
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.imp.parser.CeylonSourcePositionLocator.getTokenIterator;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_COMPOSITE_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DELETE_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_MOVE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_RENAME;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DELETE_IMPORT;
 
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +37,8 @@ import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 public abstract class AbstractRefactoring extends Refactoring {
     
+    public static ImageDescriptor CHANGE = imageRegistry.getDescriptor(CEYLON_CHANGE);
+    public static ImageDescriptor COMP_CHANGE = imageRegistry.getDescriptor(CEYLON_COMPOSITE_CHANGE);
     public static ImageDescriptor MOVE = imageRegistry.getDescriptor(CEYLON_MOVE);
     public static ImageDescriptor RENAME = imageRegistry.getDescriptor(CEYLON_RENAME);
     public static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);

@@ -85,6 +85,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
     public static Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
+    public static Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
     public static Image RENAME = imageRegistry.get(CEYLON_RENAME);
     public static Image MOVE = imageRegistry.get(CEYLON_MOVE);
     

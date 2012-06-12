@@ -31,6 +31,7 @@ public interface ICeylonResources {
     
     public static final String CEYLON_CORRECTION = "correction";
     public static final String CEYLON_CHANGE = "change";
+    public static final String CEYLON_COMPOSITE_CHANGE = "composite_change";
     public static final String CEYLON_RENAME = "rename";
     public static final String CEYLON_MOVE = "move";
     public static final String CEYLON_DELETE_IMPORT = "delete_import";

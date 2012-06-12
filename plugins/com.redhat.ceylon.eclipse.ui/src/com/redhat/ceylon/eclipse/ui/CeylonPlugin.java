@@ -206,7 +206,8 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
         reg.put(CEYLON_DELETE_IMPORT, image("correction_delete_import.png"));
-        reg.put(CEYLON_CHANGE, image("change.gif"));
+        reg.put(CEYLON_CHANGE, image("change.png"));
+        reg.put(CEYLON_COMPOSITE_CHANGE, image("composite_change.png"));
         reg.put(CEYLON_RENAME, image("correction_rename.png"));
         reg.put(CEYLON_MOVE, image("file_change.png"));
         reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
