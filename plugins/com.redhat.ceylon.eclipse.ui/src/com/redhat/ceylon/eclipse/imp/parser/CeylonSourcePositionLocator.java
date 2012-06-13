@@ -218,20 +218,20 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
                         currentProject = project;
                         break;
                     }
-                    
-                    if (currentProject != null) {
-                        List<IProject> requiredProjects;
-                        requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
-                        for (IProject requiredProject : requiredProjects) {
-                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
-                            if (requiredProjectTypeChecker == null) {
-                                continue;
-                            }
-                            PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-                            if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
-                                phasedUnit = requiredProjectPhasedUnit;
-                                break;
-                            }
+                }
+                
+                if (currentProject != null) {
+                    List<IProject> requiredProjects;
+                    requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
+                    for (IProject requiredProject : requiredProjects) {
+                        TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
+                        if (requiredProjectTypeChecker == null) {
+                            continue;
+                        }
+                        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+                        if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+                            phasedUnit = requiredProjectPhasedUnit;
+                            break;
                         }
                     }
                 }
