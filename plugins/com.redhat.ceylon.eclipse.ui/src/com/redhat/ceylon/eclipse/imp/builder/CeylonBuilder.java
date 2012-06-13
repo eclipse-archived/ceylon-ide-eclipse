@@ -111,6 +111,8 @@ import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -1524,6 +1526,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     List<PhasedUnit> allPhasedUnits = new ArrayList<PhasedUnit>();
                     allPhasedUnits.addAll(dependencies);
                     allPhasedUnits.addAll(sourceUnits);
+                    
+                    ClassMirror objectMirror = modelLoader.lookupClassMirror("ceylon.language.Object");
+                    if (objectMirror instanceof SourceClass) {
+                        Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
+                        if (objectClass != null) {
+                            Declaration hashMethod = objectClass.getDirectMember("hash", Collections.<ProducedType>emptyList());
+                            if (hashMethod instanceof TypedDeclaration) {
+                                ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
+                            }
+                        }
+                        
+                    }
                     return allPhasedUnits;
                 }
                 @Override
