@@ -75,7 +75,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 if (pd instanceof Setter) {
                     dec = pd;
                 }
-                else {
+                else if (dec.getName()!=null) {
                     Declaration att = pd.getMemberOrParameter(dec.getUnit(), dec.getName(), null);
                     if (att!=null) dec = att;
                 }
