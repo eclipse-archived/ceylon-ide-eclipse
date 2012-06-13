@@ -9,6 +9,7 @@ import org.eclipse.imp.services.IReferenceResolver;
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -186,16 +187,16 @@ public class CeylonReferenceResolver implements IReferenceResolver {
             return null;
         }
         else {
-            Tree.CompilationUnit root = cpc.getRootNode();
+            Tree.CompilationUnit root = cpc.getRootNode();            
             if (root!=null && root.getUnit() != null && 
                     root.getUnit().equals(dec.getUnit())) {
                 return root;
             }
             else {
                 TypeChecker typeChecker = cpc.getTypeChecker();
-                PhasedUnit pu = cpc.getTypeChecker()==null ? null : 
-                        cpc.getTypeChecker()
-                                .getPhasedUnitFromRelativePath(getRelativePath(dec));
+                String relativePath = getRelativePath(dec);
+                PhasedUnit pu = typeChecker==null ? null : 
+                    typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(relativePath);
                 if (pu != null) {
                     return pu.getCompilationUnit();
                 }
@@ -236,6 +237,14 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                     }
                 }
                 
+                if (pu == null && typeChecker != null) {
+                    for (PhasedUnits dependencies : typeChecker.getPhasedUnitsOfDependencies()) {
+                        pu = dependencies.getPhasedUnitFromRelativePath(relativePath);
+                        if (pu != null) {
+                            break;
+                        }
+                    }
+                }
                 if (pu != null) {
                     return pu.getCompilationUnit();
                 }
