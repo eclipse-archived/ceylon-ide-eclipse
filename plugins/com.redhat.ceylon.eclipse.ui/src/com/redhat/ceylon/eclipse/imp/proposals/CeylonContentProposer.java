@@ -324,9 +324,13 @@ public class CeylonContentProposer implements IContentProposer {
     }
     
     private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
-        if (node.getScope() instanceof Interface || 
-                node.getScope() instanceof Package ||
-                node.getScope() instanceof NamedArgumentList) {
+        Scope scope = node.getScope();
+        if (scope instanceof Interface || 
+                scope instanceof Package) {
+            return false;
+        }
+        else if (scope instanceof NamedArgumentList &&
+                !((NamedArgumentList) scope).isSynthetic()) {
             return false;
         }
         else {
