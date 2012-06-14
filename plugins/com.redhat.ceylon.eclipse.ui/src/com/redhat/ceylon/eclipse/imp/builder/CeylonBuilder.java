@@ -348,7 +348,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (sourceProject == null) {
             return new IProject[0];
         }
-
+        
+        IJavaProject javaProject = JavaCore.create(project);
+        List<CeylonClasspathContainer> cpContainers = null;
+        if (javaProject != null) {
+            cpContainers = getCeylonClasspathContainers(javaProject);
+        }
+        
+        if (cpContainers.isEmpty()) {
+            // Add a problem marker if binary generation went wrong for ceylon files
+            IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container is not set on the project " + 
+                    project.getName() + ". Try to Enable Ceylon Nature again.");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+            return new IProject[0];
+        }
+        
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
         List<IProject> requiredProjects = getRequiredProjects(project);
         
@@ -374,9 +391,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         if (mustResolveClasspathContainer.value) {
-            IJavaProject javaProject = JavaCore.create(project);
-            if (javaProject != null) {
-                List<CeylonClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
+            if (cpContainers != null) {
                 for (CeylonClasspathContainer container : cpContainers) {
                     container.launchResolve(false, null);
                 }
@@ -536,16 +551,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 else {
                                     // System.out.println("a depending resource is in a third-party project");
                                 }
-                                
-/*                                
-                                IFile depFile= (IFile) ((IFileVirtualFile) dependingPhasedUnit.getUnitFile()).getResource();
-                                IProject newDependencyProject = depFile.getProject();
-                                if (newDependencyProject == project || newDependencyProject == currentFileProject) {
-                                    additions.add(depFile);
-                                } else {
-    //                                            System.out.println("a depending resource is in a third-party project");
-                                }
-                                */
                             }
                         }
                         changed = changeDependents.addAll(additions);
