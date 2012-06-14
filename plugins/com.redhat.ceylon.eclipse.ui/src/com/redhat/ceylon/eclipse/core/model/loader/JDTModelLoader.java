@@ -71,6 +71,7 @@ import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -273,7 +274,7 @@ public class JDTModelLoader extends AbstractModelLoader {
          * We start by loading java.lang and ceylon.language because we will need them no matter what.
          */
         
-        Module javaModule = findOrCreateModule("java.lang");
+        Module javaModule = findOrCreateModule(AbstractModelLoader.JDK_MODULE);
         Package javaLangPackage = findOrCreatePackage(javaModule, "java.lang");
         javaLangPackage.setShared(true);
         
@@ -470,11 +471,11 @@ public class JDTModelLoader extends AbstractModelLoader {
         if(pkgName == null){
             moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
             defaultModule = true;
-        }else if(pkgName.startsWith("java.")){
-            moduleName = Arrays.asList("java");
+        } else if(pkgName.equals(JDK_MODULE) || JDKPackageList.isJDKPackage(pkgName)){
+            moduleName = Arrays.asList(JDK_MODULE);
             isJava = true;
-        } else if(pkgName.startsWith("sun.")){
-            moduleName = Arrays.asList("sun");
+        } else if(pkgName.equals(ORACLE_JDK_MODULE) || JDKPackageList.isOracleJDKPackage(pkgName)){
+        	moduleName = Arrays.asList(ORACLE_JDK_MODULE);
             isJava = true;
         } else if(pkgName.startsWith("ceylon.language."))
             moduleName = Arrays.asList("ceylon","language");
