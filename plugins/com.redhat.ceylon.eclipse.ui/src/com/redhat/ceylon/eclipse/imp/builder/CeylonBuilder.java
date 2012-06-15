@@ -39,6 +39,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -430,7 +432,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     parseCeylonModel(project, monitor);
                 }
                 
-                project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
                 final TypeChecker typeChecker = getProjectTypeChecker(project);
                 
                 modelStates.put(project, ModelState.TypeChecking);
@@ -673,6 +674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
+                doRefresh(project.getFolder("JDTClasses"));
             }
             
             if (!binariesGenerationOK) {
@@ -850,7 +852,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private static PhasedUnit parseFileToPhasedUnit(ModuleManager moduleManager, TypeChecker typeChecker,
             ResourceVirtualFile file, ResourceVirtualFile srcDir,
             Package pkg) {
-        Context context = typeChecker.getContext();
         ANTLRInputStream input;
         try {
             input = new ANTLRInputStream(file.getInputStream());
@@ -1270,8 +1271,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     scannedSources.add(file);
                                 }
                                 ResourceVirtualFile virtualFile = ResourceVirtualFile.createResourceVirtualFile(file);
-                                PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
-                                phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
+                                try {
+                                    PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
+                                    phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
+                                } catch(Exception e) {
+                                    CeylonPlugin.log(e);
+                                }
                             }
                             if (isJava((IFile)resource)) {
                                 if (scannedSources != null) {
@@ -1413,6 +1418,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             if (modulesOutputDir != null) {
                 monitor.subTask("Unzipping archives files in the Ceylon output folder");
+                new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDir, new RepositoryLister.Actions() {
+                    @Override
+                    public void doWithFile(File path) {
+                        path.delete();
+                    }
+                    
+                    public void exitDirectory(File path) {
+                        if (path.list().length == 0 && ! path.equals(ceylonOutputDir)) {
+                            path.delete();
+                        }
+                    }
+                });
                 List<String> extensionsToUnzip = Arrays.asList(".car");
                 new RepositoryLister(extensionsToUnzip).list(modulesOutputDir, new RepositoryLister.Actions() {
                     @Override
@@ -1426,8 +1443,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                 });
                 monitor.subTask("Refreshing the Ceylon output folder");
-                javaProject.getProject().getFolder("JDTClasses")
-                        .refreshLocal(IResource.DEPTH_INFINITE, null);
             }
             
             return success;
@@ -1473,20 +1488,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
         
-        IJavaProject javaProject = JavaCore.create(project);
+        List<IJavaProject> javaProjects = new ArrayList<IJavaProject>();
+        javaProjects.add(JavaCore.create(project));
+        for (IProject requiredProject : getRequiredProjects(project)) {
+            javaProjects.add(JavaCore.create(requiredProject));
+        }
+
         IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        try {
-            List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
-            for (CeylonClasspathContainer container : containers) {
-                for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
-                    classpathElements.add(cpEntry.getPath().toOSString());
+        for (IJavaProject javaProject : javaProjects) {
+            try {
+                List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+                for (CeylonClasspathContainer container : containers) {
+                    for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
+                        if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+                            classpathElements.add(cpEntry.getPath().toOSString());
+                        }
+                    }
                 }
+                
+                classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
+                for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
+                    if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+                        classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+                    }
+                }
+            } catch (JavaModelException e1) {
+                CeylonPlugin.log(e1);
             }
-            
-            classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
-        } catch (JavaModelException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
         }
         options.add("-classpath");
         String classpath = "";
@@ -1786,7 +1814,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
      * Refreshes all resources in the entire project tree containing the given resource.
      * Crude but effective.
      */
-    /*protected void doRefresh(final IResource resource) {
+    protected void doRefresh(final IResource resource) {
         IWorkspaceRunnable r= new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
                 resource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -1797,7 +1825,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         } catch (CoreException e) {
             getPlugin().logException("Error while refreshing after a build", e);
         }
-    }*/
+    }
 
     /**
      * @return the ID of the marker type for the given marker severity (one of
