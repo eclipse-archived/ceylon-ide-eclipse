@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -93,9 +94,10 @@ public class CeylonResolveJob extends Job {
                                     paths.add(JavaCore.newLibraryEntry(classpathArtifact, srcArtifact, null));
                                 }
                             }
-                            IPath ceylonOutputDirectory = new Path(CeylonBuilder.getCeylonOutputDirectory(container.getJavaProject()).getCanonicalPath());
+                            IFolder outputFolder = project.getFolder("JDTClasses");
+                            IPath ceylonOutputDirectory = outputFolder.getFullPath();
                             IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
-                            paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null));
+                            paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
                         }
                         else {
                             setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed"));

@@ -169,7 +169,13 @@ public class JDTModuleManager extends LazyModuleManager {
         if (sourceModules.contains(moduleName)) {
             return true;
         }
-        
+        if (isModuleLoadedFromCompiledSource(moduleName)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isModuleLoadedFromCompiledSource(String moduleName) {
         IProject project = javaProject.getProject();
         if (moduleFileInProject(moduleName, project)) {
             return true;
@@ -237,12 +243,14 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
 		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
-        File file = artifact.artifact();
-		if (artifact.artifact().getName().endsWith(".src")) {
-		    sourceModules.add(module.getNameAsString());
-		    file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
-		}
-		classpath.add(file);
+        if (! isModuleLoadedFromCompiledSource(module.getNameAsString())) {
+            File file = artifact.artifact();
+            if (artifact.artifact().getName().endsWith(".src")) {
+                sourceModules.add(module.getNameAsString());
+                file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
+            }
+            classpath.add(file);
+        }
         super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies);
     }
 
