@@ -26,15 +26,18 @@ import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer;
+import com.redhat.ceylon.eclipse.imp.proposals.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.imp.refactoring.AbstractHandler;
 import com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard;
 
 class CreateSubtypeProposal implements ICompletionProposal {
 
     private CeylonEditor editor;
+    private ProducedType type;
     
-    public CreateSubtypeProposal(CeylonEditor editor) {
+    public CreateSubtypeProposal(CeylonEditor editor, ProducedType type) {
         this.editor = editor;
+        this.type = type;
     }
     
     @Override
@@ -49,7 +52,9 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     @Override
     public String getDisplayString() {
-    	return "Create subtype in new unit";
+    	return "Create subtype of '" + 
+    	        type.getProducedTypeName() + 
+    	        "' in new unit";
     }
 
     @Override
@@ -64,38 +69,10 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        CreateSubtypeProposal.createSubtype(editor);
-    }
-    
-    public static boolean canCreateSubtype(CeylonEditor editor) {
-        Node node = AbstractHandler.getSelectedNode(editor);
-        return node instanceof Tree.BaseType || 
-                node instanceof Tree.BaseTypeExpression ||
-                node instanceof Tree.ExtendedTypeExpression ||
-        		node instanceof Tree.ClassOrInterface;
+        createSubtype(editor);
     }
 
-    public static void createSubtype(CeylonEditor editor) {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu==null) return;
-        Node node = AbstractHandler.getSelectedNode(editor);
-        ProducedType type;
-        if (node instanceof Tree.BaseType) {
-        	type = ((Tree.BaseType) node).getTypeModel();
-        }
-        else if (node instanceof Tree.BaseTypeExpression) {
-            type = ((Tree.BaseTypeExpression) node).getTypeModel();
-        }
-        else if (node instanceof Tree.ExtendedTypeExpression) {
-            type = ((Tree.ExtendedTypeExpression) node).getTypeModel();
-        }
-        else if (node instanceof Tree.ClassOrInterface) {
-        	type = ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
-        }
-        else {
-        	return;
-        }
-        
+    public void createSubtype(CeylonEditor editor) {        
         StringBuilder def = new StringBuilder();
         TypeDeclaration td = type.getDeclaration();
         def.append("class $className");
@@ -182,10 +159,36 @@ class CreateSubtypeProposal implements ICompletionProposal {
         		"Create a new Ceylon compilation unit containing the new class.");
     }
 
+    public static ProducedType getType(CeylonEditor editor) {
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
+        if (cu==null) return null;
+        Node node = AbstractHandler.getSelectedNode(editor);
+        ProducedType type;
+        if (node instanceof Tree.BaseType) {
+        	type = ((Tree.BaseType) node).getTypeModel();
+        }
+        else if (node instanceof Tree.BaseTypeExpression) {
+            type = ((Tree.BaseTypeExpression) node).getTypeModel();
+        }
+        else if (node instanceof Tree.ExtendedTypeExpression) {
+            type = ((Tree.ExtendedTypeExpression) node).getTypeModel();
+        }
+        else if (node instanceof Tree.ClassOrInterface) {
+        	type = ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
+        }
+        else {
+            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+            rtv.visit(editor.getParseController().getRootNode());
+            type = rtv.getType();
+        }
+        return type;
+    }
+
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
         if (editor instanceof CeylonEditor) {
-            if (CreateSubtypeProposal.canCreateSubtype((CeylonEditor) editor)) {
-                proposals.add(new CreateSubtypeProposal((CeylonEditor) editor));
+            ProducedType type = getType((CeylonEditor)editor);
+            if (type!=null) {
+                proposals.add(new CreateSubtypeProposal((CeylonEditor) editor, type));
             }
         }
     }

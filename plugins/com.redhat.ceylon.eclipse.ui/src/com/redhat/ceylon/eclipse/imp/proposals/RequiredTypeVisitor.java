@@ -14,7 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class RequiredTypeVisitor extends Visitor 
+public class RequiredTypeVisitor extends Visitor 
         implements NaturalVisitor {
     
     private Node node;
@@ -22,11 +22,11 @@ class RequiredTypeVisitor extends Visitor
     private ProducedType finalResult = null;
     private ProducedReference namedArgTarget = null;
     
-    ProducedType getType() {
+    public ProducedType getType() {
         return finalResult;
     }
     
-    RequiredTypeVisitor(Node node) {
+    public RequiredTypeVisitor(Node node) {
         this.node = node;
     }
     
