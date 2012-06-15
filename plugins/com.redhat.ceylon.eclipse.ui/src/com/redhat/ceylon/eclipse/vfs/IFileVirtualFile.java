@@ -38,9 +38,7 @@ public class IFileVirtualFile extends ResourceVirtualFile {
         try {
             return file.getContents(true);
         } catch (CoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
