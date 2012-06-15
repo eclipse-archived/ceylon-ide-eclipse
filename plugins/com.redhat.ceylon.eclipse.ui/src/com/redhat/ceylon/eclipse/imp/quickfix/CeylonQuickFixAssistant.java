@@ -227,13 +227,15 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             switch ( problem.getProblemId() ) {
             case 100:
             case 102:
+                if (tc!=null) {
+                    addImportProposals(cu, node, proposals, file);
+                }
                 addCreateEnumProposal(cu, node, problem, proposals, 
                         project, tc, file);
                 addCreateProposals(cu, node, problem, proposals, 
                         project, tc, file);
                 if (tc!=null) {
                     addRenameProposals(cu, node, problem, proposals, file);
-                    addImportProposals(cu, node, proposals, file);
                 }
                 break;
             case 101:
@@ -333,6 +335,12 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             case 3000:
                 if (context.getSourceViewer()!=null) {
                     AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+                            file, cu, proposals, node);
+                }
+                break;
+            case 3100:
+                if (context.getSourceViewer()!=null) {
+                    ShadowReferenceProposal.addShadowReferenceProposal(context.getSourceViewer().getDocument(),
                             file, cu, proposals, node);
                 }
                 break;
