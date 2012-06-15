@@ -126,10 +126,12 @@ class CreateSubtypeProposal implements ICompletionProposal {
         if (td instanceof Class) {
         	Class c = (Class) td;
         	def.append(" extends ").append(td.getName());
-        	if (!td .getTypeParameters().isEmpty()) {
+        	if (!td.getTypeParameters().isEmpty()) {
         		def.append("<");
         		for (ProducedType ta: type.getTypeArgumentList()) {
-        			def.append(ta.getProducedTypeName()).append(", ");
+        		    if (ta!=null) {
+        		        def.append(ta.getProducedTypeName()).append(", ");
+        		    }
         		}
         		def.setLength(def.length()-2);
         		def.append(">");
@@ -151,7 +153,9 @@ class CreateSubtypeProposal implements ICompletionProposal {
         	if (!td.getTypeParameters().isEmpty()) {
         		def.append("<");
         		for (ProducedType ta: type.getTypeArgumentList()) {
-        			def.append(ta.getProducedTypeName()).append(", ");
+                    if (ta!=null) {
+                        def.append(ta.getProducedTypeName()).append(", ");
+                    }
         		}
         		def.setLength(def.length()-2);
         		def.append(">");
