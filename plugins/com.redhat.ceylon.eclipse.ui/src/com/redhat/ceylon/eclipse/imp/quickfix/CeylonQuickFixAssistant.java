@@ -149,6 +149,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         ConvertToClassProposal.add(proposals, editor);
         ConvertToNamedArgumentsProposal.add(proposals, editor);
         
+        IDocument doc = context.getSourceViewer().getDocument();
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
         Tree.CompilationUnit cu = (Tree.CompilationUnit) editor.getParseController().getCurrentAst();
@@ -186,7 +187,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             }
             if (node instanceof Tree.AttributeDeclaration) {
                 Tree.AttributeDeclaration dec = (Tree.AttributeDeclaration) node;
-                IDocument doc = context.getSourceViewer().getDocument();
                 if (dec.getSpecifierOrInitializerExpression()!=null) {
                     SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, proposals, 
                             file, dec);
@@ -196,6 +196,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, 
                         file, dec, editor);
             }
+            CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
+            CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
         }
 
         CreateSubtypeProposal.add(proposals, editor);

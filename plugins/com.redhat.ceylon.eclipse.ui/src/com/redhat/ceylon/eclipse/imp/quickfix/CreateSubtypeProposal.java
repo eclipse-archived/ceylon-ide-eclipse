@@ -72,43 +72,56 @@ class CreateSubtypeProposal implements ICompletionProposal {
         createSubtype(editor);
     }
 
-    public void createSubtype(CeylonEditor editor) {        
-        StringBuilder def = new StringBuilder();
+    public void createSubtype(CeylonEditor editor) {
         TypeDeclaration td = type.getDeclaration();
-        def.append("class $className");
-        boolean first = true;
-        for (ProducedType ta: type.getTypeArgumentList()) {
-            if (ta.getDeclaration() instanceof TypeParameter) {
-                if (first) {
-                    def.append("<");
-                    first=false;
-                }
-                else {
-                    def.append(", ");
-                }
-                def.append(ta.getDeclaration().getName());
-            }
-        }
-        if (!first) def.append(">");
-        if (td instanceof Class) {
-        	Class c = (Class) td;
-        	if (c.getParameterList()==null ||
-        	        c.getParameterList().getParameters().isEmpty()) {
-        		def.append("()");
-        	}
-        	else {
-        		def.append("(");
-        		for (Parameter p: c.getParameterList().getParameters()) {
-        			ProducedTypedReference ptr = type.getTypedParameter(p);
-        			def.append(ptr.getType().getProducedTypeName())
-        			    .append(" ").append(p.getName()).append(", ");
-        		}
-        		def.setLength(def.length()-2);
-        		def.append(")");
-        	}
+        NewUnitWizard.open(subtypeDeclaration(type, false), 
+                Util.getFile(editor.getEditorInput()), 
+        		"My" + td.getName(), "Create Subtype", 
+        		"Create a new Ceylon compilation unit containing the new class.");
+    }
+
+    public static String subtypeDeclaration(ProducedType type, boolean object) {
+        TypeDeclaration td = type.getDeclaration();
+        StringBuilder def = new StringBuilder();
+        if (object) {
+            def.append("object $className");
         }
         else {
-        	def.append("()");
+            def.append("class $className");
+            boolean first = true;
+            for (ProducedType ta: type.getTypeArgumentList()) {
+                if (ta.getDeclaration() instanceof TypeParameter) {
+                    if (first) {
+                        def.append("<");
+                        first=false;
+                    }
+                    else {
+                        def.append(", ");
+                    }
+                    def.append(ta.getDeclaration().getName());
+                }
+            }
+            if (!first) def.append(">");
+            if (td instanceof Class) {
+            	Class c = (Class) td;
+            	if (c.getParameterList()==null ||
+            	        c.getParameterList().getParameters().isEmpty()) {
+            		def.append("()");
+            	}
+            	else {
+            		def.append("(");
+            		for (Parameter p: c.getParameterList().getParameters()) {
+            			ProducedTypedReference ptr = type.getTypedParameter(p);
+            			def.append(ptr.getType().getProducedTypeName())
+            			    .append(" ").append(p.getName()).append(", ");
+            		}
+            		def.setLength(def.length()-2);
+            		def.append(")");
+            	}
+            }
+            else {
+            	def.append("()");
+            }
         }
         if (td instanceof Class) {
         	Class c = (Class) td;
@@ -154,34 +167,35 @@ class CreateSubtypeProposal implements ICompletionProposal {
         	}
         }
         def.append("}");
-        NewUnitWizard.open(def.toString(), Util.getFile(editor.getEditorInput()), 
-        		"My" + td.getName(), "Create Subtype", 
-        		"Create a new Ceylon compilation unit containing the new class.");
+        String result = def.toString();
+        return result;
     }
 
     public static ProducedType getType(CeylonEditor editor) {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
-        Node node = AbstractHandler.getSelectedNode(editor);
-        ProducedType type;
+        return getType(editor.getParseController().getRootNode(), 
+                AbstractHandler.getSelectedNode(editor));
+    }
+
+    public static ProducedType getType(Tree.CompilationUnit cu, Node node) {
         if (node instanceof Tree.BaseType) {
-        	type = ((Tree.BaseType) node).getTypeModel();
+        	return ((Tree.BaseType) node).getTypeModel();
         }
         else if (node instanceof Tree.BaseTypeExpression) {
-            type = ((Tree.BaseTypeExpression) node).getTypeModel();
+            return ((Tree.BaseTypeExpression) node).getTypeModel();
         }
         else if (node instanceof Tree.ExtendedTypeExpression) {
-            type = ((Tree.ExtendedTypeExpression) node).getTypeModel();
+            return ((Tree.ExtendedTypeExpression) node).getTypeModel();
         }
         else if (node instanceof Tree.ClassOrInterface) {
-        	type = ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
+            return ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
         }
         else {
             RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
-            rtv.visit(editor.getParseController().getRootNode());
-            type = rtv.getType();
+            rtv.visit(cu);
+            return rtv.getType();
         }
-        return type;
     }
 
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
