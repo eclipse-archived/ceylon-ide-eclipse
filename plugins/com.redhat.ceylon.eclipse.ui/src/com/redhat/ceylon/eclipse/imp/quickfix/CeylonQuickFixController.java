@@ -133,9 +133,9 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
 
     public void collectAssists(IQuickAssistInvocationContext context,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        if (locations.length==0) {
+        //if (locations.length==0) {
             ((CeylonQuickFixAssistant) fAssistant).addProposals(context, editor, proposals);
-        }
+        //}
     }
 
     private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
