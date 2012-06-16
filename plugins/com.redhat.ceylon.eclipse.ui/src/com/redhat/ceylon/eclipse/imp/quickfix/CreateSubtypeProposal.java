@@ -201,7 +201,8 @@ class CreateSubtypeProposal implements ICompletionProposal {
         	def.setLength(def.length()-2);
         	def.append(">");
         }
-        if (c.getParameterList().getParameters().isEmpty()) {
+        if (c.getParameterList()==null ||
+                c.getParameterList().getParameters().isEmpty()) {
         	def.append("()");
         }
         else {
