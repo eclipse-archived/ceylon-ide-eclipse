@@ -226,12 +226,12 @@ class CreateSubtypeProposal implements ICompletionProposal {
         if (node instanceof Tree.BaseType) {
         	return ((Tree.BaseType) node).getTypeModel();
         }
-        else if (node instanceof Tree.BaseTypeExpression) {
+        /*else if (node instanceof Tree.BaseTypeExpression) {
             return ((Tree.BaseTypeExpression) node).getTypeModel();
         }
         else if (node instanceof Tree.ExtendedTypeExpression) {
             return ((Tree.ExtendedTypeExpression) node).getTypeModel();
-        }
+        }*/
         else if (node instanceof Tree.ClassOrInterface) {
             return ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
         }
@@ -247,7 +247,8 @@ class CreateSubtypeProposal implements ICompletionProposal {
             ProducedType type = getType((CeylonEditor)editor);
             if (type!=null && 
                     (type.getDeclaration() instanceof ClassOrInterface ||
-                     type.getDeclaration() instanceof IntersectionType)) {
+                     type.getDeclaration() instanceof IntersectionType) &&
+                     type.getDeclaration().isExtendable()) {
                 proposals.add(new CreateSubtypeProposal((CeylonEditor) editor, type));
             }
         }
