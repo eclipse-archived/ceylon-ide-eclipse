@@ -48,21 +48,23 @@ class FileCreationOp implements IRunnableWithProgress {
         IPath path = packageFragment.getPath().append(unitName + ".ceylon");
         IProject project = sourceDir.getJavaProject().getProject();
         result = project.getFile(path.makeRelativeTo(project.getFullPath()));
-        if (!result.exists()) {
-            InputStream stream = new ByteArrayInputStream(contents.getBytes());
-            CreateFileOperation op = new CreateFileOperation(result, null, 
-                    getHeader(project), "Create Ceylon Unit");
-            try {
-                PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
+        try {
+            if (!result.exists()) {
+                CreateFileOperation op = new CreateFileOperation(result, null, 
+                        getHeader(project), "Create Ceylon Unit");
+                try {
+                    PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
                     .execute(op, monitor, getUIInfoAdapter(shell));
-                result.appendContents(stream, false, false, monitor);
-            } 
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            catch (CoreException e) {
-                e.printStackTrace();
-            }
+                } 
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }        
+            result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
+                    false, false, monitor);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
     
