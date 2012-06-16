@@ -12,6 +12,7 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -29,12 +30,12 @@ abstract class FindSearchQuery implements ISearchQuery {
 	//private final IProject project;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
-	private IEditorPart editor;
+	private IWorkbenchPage page;
 
 	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		//this.project = project;
-		this.editor = Util.getCurrentEditor();
+		this.page = Util.getActivePage();
 	}
 
 	@Override
@@ -67,11 +68,13 @@ abstract class FindSearchQuery implements ISearchQuery {
 	}
 
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {
-        if (editor instanceof CeylonEditor) {
-            CeylonParseController cpc = ((CeylonEditor)editor).getParseController();
-            if ( editor.isDirty() &&
-                    pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
-                return cpc.getRootNode();
+        for (IEditorPart editor: page.getDirtyEditors()) {
+            if (editor instanceof CeylonEditor) {
+                CeylonParseController cpc = ((CeylonEditor)editor).getParseController();
+                if ( /*editor.isDirty() &&*/
+                        pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
+                    return cpc.getRootNode();
+                }
             }
         }
         return pu.getCompilationUnit();
