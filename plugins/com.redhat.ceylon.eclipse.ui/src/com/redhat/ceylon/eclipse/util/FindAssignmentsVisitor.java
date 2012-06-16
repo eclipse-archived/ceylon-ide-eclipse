@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.PostfixOperatorExpressio
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 //TODO: fix all the copy/paste from FindReferenceVisitor
@@ -112,6 +113,15 @@ public class FindAssignmentsVisitor extends Visitor {
         if (that.getSpecifierOrInitializerExpression()!=null && 
                 isReference(that.getDeclarationModel())) {
             nodes.add(that.getSpecifierOrInitializerExpression());
+        }
+    }
+        
+    @Override
+    public void visit(Variable that) {
+        super.visit(that);
+        if (that.getSpecifierExpression()!=null && 
+                isReference(that.getDeclarationModel())) {
+            nodes.add(that.getSpecifierExpression());
         }
     }
         
