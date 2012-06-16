@@ -53,7 +53,8 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
             ProducedType type = CreateSubtypeProposal.getType(cu, node);
             if (type!=null &&
                     (type.getDeclaration() instanceof ClassOrInterface ||
-                     type.getDeclaration() instanceof IntersectionType)) {
+                     type.getDeclaration() instanceof IntersectionType) &&
+                     type.getDeclaration().isExtendable()) {
                 TextChange change = new DocumentChange("Create Subtype", doc);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = s.getStartIndex();
