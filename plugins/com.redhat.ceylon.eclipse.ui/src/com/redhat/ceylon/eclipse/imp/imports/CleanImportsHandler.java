@@ -90,7 +90,9 @@ public class CleanImportsHandler extends AbstractHandler {
                 List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
                 for (Tree.ImportMemberOrType i: ti.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
-                    if (i.getDeclarationModel()!=null) {
+                    if (i.getDeclarationModel()!=null && 
+                            i.getIdentifier().getErrors().isEmpty() && 
+                            i.getErrors().isEmpty()) {
                         if (!duiv.getResult().contains(i.getDeclarationModel())) {
                             if (!hasWildcard || i.getAlias()!=null || 
                                     i.getImportMemberOrTypeList()!=null) {
@@ -101,9 +103,13 @@ public class CleanImportsHandler extends AbstractHandler {
                             if (i.getImportMemberOrTypeList()!=null) {
                                 for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
                                         .getImportMemberOrTypes()) {
-                                    if (!duiv.getResult().contains(j.getDeclarationModel())) {
-                                        list.add(i);
-                                        break;
+                                    if (j.getDeclarationModel()!=null && 
+                                            j.getIdentifier().getErrors().isEmpty() && 
+                                            j.getErrors().isEmpty()) {
+                                        if (!duiv.getResult().contains(j.getDeclarationModel())) {
+                                            list.add(i);
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -131,7 +137,9 @@ public class CleanImportsHandler extends AbstractHandler {
                         .append(" { ");
                     }
                     for (Tree.ImportMemberOrType i: list) {
-                        if (i.getDeclarationModel()!=null) {
+                        if (i.getDeclarationModel()!=null && 
+                                i.getIdentifier().getErrors().isEmpty() &&
+                                i.getErrors().isEmpty()) {
                             if ( !i.getImportModel().getAlias().equals(i.getDeclarationModel().getName()) ) {
                                 builder.append(i.getImportModel().getAlias()).append("=");
                             }
@@ -141,7 +149,9 @@ public class CleanImportsHandler extends AbstractHandler {
                                 boolean found=false;
                                 for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
                                         .getImportMemberOrTypes()) {
-                                    if (j.getDeclarationModel()!=null) {
+                                    if (j.getDeclarationModel()!=null && 
+                                            j.getIdentifier().getErrors().isEmpty() &&
+                                            j.getErrors().isEmpty()) {
                                         if (!duiv.getResult().contains(j.getDeclarationModel())) {
                                             found=true;
                                             if (!j.getImportModel().getAlias().equals(j.getDeclarationModel().getName())) {
