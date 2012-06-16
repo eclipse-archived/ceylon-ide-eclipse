@@ -127,6 +127,10 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
         return node instanceof Tree.PositionalArgumentList ||
                 node instanceof Tree.InvocationExpression &&
                 ((Tree.InvocationExpression) node).getPositionalArgumentList()!=null;
+        //TODO: if it is an indirect invocations, or an 
+        //      invocation of an overloaded Java method
+        //      or constructor, we can't call it using
+        //      named arguments!
     }
 
 }
