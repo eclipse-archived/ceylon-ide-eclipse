@@ -20,6 +20,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
@@ -31,15 +32,45 @@ public class CleanImportsHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu==null) return null;
+        if (cu!=null) {
+            String imports = imports(cu);
+            if (imports!=null) {
+                TextFileChange tfc = new TextFileChange("Clean Imports", 
+                        ((IFileEditorInput) editor.getEditorInput()).getFile());
+                tfc.setEdit(new MultiTextEdit());
+                ImportList til = cu.getImportList();
+                tfc.addEdit(new ReplaceEdit(til.getStartIndex(), 
+                        til.getStopIndex()-til.getStartIndex()+1, 
+                        imports));
+                tfc.initializeValidationData(null);
+                try {
+                    ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tfc), 
+                            new NullProgressMonitor());
+                }
+                catch (CoreException ce) {
+                    throw new ExecutionException("Error cleaning imports", ce);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String imports(Node node, ImportList til) {
+        DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
+        til.visit(duiv);
+        node.visit(duiv);
+        return imports(til, duiv);
+    }
+    
+    public static String imports(Tree.CompilationUnit cu) {
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         cu.visit(duiv);
-        TextFileChange tfc = new TextFileChange("Clean Imports", 
-                ((IFileEditorInput) editor.getEditorInput()).getFile());
-        tfc.setEdit(new MultiTextEdit());
-        List<Tree.Import> importList = new ArrayList<Tree.Import>();
-        ImportList til = cu.getImportList();
+        return imports(cu.getImportList(), duiv);
+    }
+    
+    public static String imports(ImportList til, DetectUnusedImportsVisitor duiv) {
         if (til!=null && til.getStartIndex()!=null && til.getStopIndex()!=null) {
+            List<Tree.Import> importList = new ArrayList<Tree.Import>();
             importList.addAll(til.getImports());
             Collections.sort(importList, new Comparator<Tree.Import>() {
                 @Override
@@ -130,23 +161,11 @@ public class CleanImportsHandler extends AbstractHandler {
             if (builder.length()!=0) {
                 builder.setLength(builder.length()-1);
             }
-            tfc.addEdit(new ReplaceEdit(til.getStartIndex(), 
-                    til.getStopIndex()-til.getStartIndex()+1, 
-                    builder.toString()));
-            /*for (ImportMemberOrType imt: duiv.getResult()) {
-                tfc.addEdit( new DeleteEdit(imt.getStartIndex(), 
-                        imt.getStopIndex()-imt.getStartIndex()+1) );
-            }*/
-            tfc.initializeValidationData(null);
-            try {
-                ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tfc), 
-                        new NullProgressMonitor());
-            }
-            catch (CoreException ce) {
-                throw new ExecutionException("Error cleaning imports", ce);
-            }
+            return builder.toString();
         }
-        return null;
+        else{
+            return null;
+        }
     }
     
     private static String packageName(Tree.Import i) {

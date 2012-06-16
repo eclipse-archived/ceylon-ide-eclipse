@@ -9,13 +9,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class DetectUnusedImportsVisitor extends Visitor {
-    //private List<ImportMemberOrType> result = new ArrayList<ImportMemberOrType>();
-    private List<Declaration> result = new ArrayList<Declaration>();
     
-    /*@Override
-    public void visit(ImportMemberOrType that) {
-        result.add(that.getDeclarationModel());
-    }*/
+    private List<Declaration> result = new ArrayList<Declaration>();
     
     @Override
     public void visit(Tree.Import that) {
