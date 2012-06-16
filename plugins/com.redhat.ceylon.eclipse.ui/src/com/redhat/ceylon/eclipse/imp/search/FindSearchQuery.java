@@ -20,6 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -55,6 +56,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                     //a synthetic node inserted in the tree
                 }
                 else {
+                    node = CeylonReferenceResolver.getIdentifyingNode(node);
         			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
         			        CeylonBuilder.getFile(pu), 
         					node.getStartIndex(), 

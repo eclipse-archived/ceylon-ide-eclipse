@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.imp.editor.Util;
 import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
@@ -98,6 +99,7 @@ class CeylonSearchQuery implements ISearchQuery {
     	            public void matchingNode(Node node) {
     	                FindContainerVisitor fcv = new FindContainerVisitor(node);
     	                cu.visit(fcv);
+    	                node = CeylonReferenceResolver.getIdentifyingNode(node);
     	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
     	                        CeylonBuilder.getFile(pu), 
     	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
