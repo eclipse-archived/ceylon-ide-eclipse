@@ -12,8 +12,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -76,8 +78,8 @@ class CreateSubtypeProposal implements ICompletionProposal {
         TypeDeclaration td = type.getDeclaration();
         NewUnitWizard.open(subtypeDeclaration(type, false), 
                 Util.getFile(editor.getEditorInput()), 
-        		"My" + td.getName(), "Create Subtype", 
-        		"Create a new Ceylon compilation unit containing the new class.");
+        		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
+        		"Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
     }
 
     public static String subtypeDeclaration(ProducedType type, boolean object) {
@@ -102,64 +104,43 @@ class CreateSubtypeProposal implements ICompletionProposal {
                 }
             }
             if (!first) def.append(">");
-            if (td instanceof Class) {
-            	Class c = (Class) td;
-            	if (c.getParameterList()==null ||
-            	        c.getParameterList().getParameters().isEmpty()) {
-            		def.append("()");
-            	}
-            	else {
-            		def.append("(");
-            		for (Parameter p: c.getParameterList().getParameters()) {
-            			ProducedTypedReference ptr = type.getTypedParameter(p);
-            			def.append(ptr.getType().getProducedTypeName())
-            			    .append(" ").append(p.getName()).append(", ");
-            		}
-            		def.setLength(def.length()-2);
-            		def.append(")");
-            	}
+            boolean foundClass = false;
+            if (td instanceof IntersectionType) {
+                for (ProducedType pt: td.getSatisfiedTypes()) {
+                    if (pt.getDeclaration() instanceof Class) {
+                        foundClass = true;
+                        appendParameters(pt, (Class) pt.getDeclaration(), def);
+                        break;
+                    }
+                }
             }
-            else {
+            if (td instanceof Class) {
+                foundClass = true;
+            	appendParameters(type, (Class) td, def);
+            }
+            if (!foundClass) {
             	def.append("()");
             }
         }
-        if (td instanceof Class) {
-        	Class c = (Class) td;
-        	def.append(" extends ").append(td.getName());
-        	if (!td.getTypeParameters().isEmpty()) {
-        		def.append("<");
-        		for (ProducedType ta: type.getTypeArgumentList()) {
-        		    if (ta!=null) {
-        		        def.append(ta.getProducedTypeName()).append(", ");
-        		    }
-        		}
-        		def.setLength(def.length()-2);
-        		def.append(">");
-        	}
-        	if (c.getParameterList().getParameters().isEmpty()) {
-        		def.append("()");
-        	}
-        	else {
-        		def.append("(");
-        		for (Parameter p: c.getParameterList().getParameters()) {
-        			def.append(p.getName()).append(", ");
-        		}
-        		def.setLength(def.length()-2);
-        		def.append(")");
-        	}
+        if (td instanceof IntersectionType) {
+            for (ProducedType pt: td.getSatisfiedTypes()) {
+                if (pt.getDeclaration() instanceof Class) {
+                    appendClass(pt, (Class) pt.getDeclaration(), def);
+                }
+            }
+            boolean first=true;
+            for (ProducedType pt: td.getSatisfiedTypes()) {
+                if (!(pt.getDeclaration() instanceof Class)) {
+                    appendInterface(pt, pt.getDeclaration(), def, first);
+                    first=false;
+                }
+            }
+        }
+        else if (td instanceof Class) {
+        	appendClass(type, (Class) td, def);
         }
         else {
-        	def.append(" satisfies ").append(td.getName());
-        	if (!td.getTypeParameters().isEmpty()) {
-        		def.append("<");
-        		for (ProducedType ta: type.getTypeArgumentList()) {
-                    if (ta!=null) {
-                        def.append(ta.getProducedTypeName()).append(", ");
-                    }
-        		}
-        		def.setLength(def.length()-2);
-        		def.append(">");
-        	}
+        	appendInterface(type, td, def, true);
         }
         def.append(" {\n");
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations("", 0).values()) {
@@ -173,6 +154,64 @@ class CreateSubtypeProposal implements ICompletionProposal {
         def.append("}");
         String result = def.toString();
         return result;
+    }
+
+    public static void appendParameters(ProducedType type, Class c,
+            StringBuilder def) {
+        if (c.getParameterList()==null ||
+                c.getParameterList().getParameters().isEmpty()) {
+        	def.append("()");
+        }
+        else {
+        	def.append("(");
+        	for (Parameter p: c.getParameterList().getParameters()) {
+        		ProducedTypedReference ptr = type.getTypedParameter(p);
+        		def.append(ptr.getType().getProducedTypeName())
+        		    .append(" ").append(p.getName()).append(", ");
+        	}
+        	def.setLength(def.length()-2);
+        	def.append(")");
+        }
+    }
+
+    private static void appendInterface(ProducedType type, TypeDeclaration td,
+            StringBuilder def, boolean first) {
+        def.append(first?" satisfies ":"&").append(td.getName());
+        if (!td.getTypeParameters().isEmpty()) {
+        	def.append("<");
+        	for (ProducedType ta: type.getTypeArgumentList()) {
+                if (ta!=null) {
+                    def.append(ta.getProducedTypeName()).append(", ");
+                }
+        	}
+        	def.setLength(def.length()-2);
+        	def.append(">");
+        }
+    }
+
+    private static void appendClass(ProducedType type, Class c, StringBuilder def) {
+        def.append(" extends ").append(c.getName());
+        if (!c.getTypeParameters().isEmpty()) {
+        	def.append("<");
+        	for (ProducedType ta: type.getTypeArgumentList()) {
+        	    if (ta!=null) {
+        	        def.append(ta.getProducedTypeName()).append(", ");
+        	    }
+        	}
+        	def.setLength(def.length()-2);
+        	def.append(">");
+        }
+        if (c.getParameterList().getParameters().isEmpty()) {
+        	def.append("()");
+        }
+        else {
+        	def.append("(");
+        	for (Parameter p: c.getParameterList().getParameters()) {
+        		def.append(p.getName()).append(", ");
+        	}
+        	def.setLength(def.length()-2);
+        	def.append(")");
+        }
     }
 
     public static ProducedType getType(CeylonEditor editor) {
@@ -205,7 +244,9 @@ class CreateSubtypeProposal implements ICompletionProposal {
     public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
         if (editor instanceof CeylonEditor) {
             ProducedType type = getType((CeylonEditor)editor);
-            if (type!=null) {
+            if (type!=null && 
+                    (type.getDeclaration() instanceof ClassOrInterface ||
+                     type.getDeclaration() instanceof IntersectionType)) {
                 proposals.add(new CreateSubtypeProposal((CeylonEditor) editor, type));
             }
         }
