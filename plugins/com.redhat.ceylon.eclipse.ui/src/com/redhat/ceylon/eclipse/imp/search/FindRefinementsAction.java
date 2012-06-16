@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -33,9 +32,9 @@ public class FindRefinementsAction extends AbstractFindAction {
     public FindSearchQuery createSearchQuery() {
         return new FindSearchQuery(declaration, project) {
             @Override
-            protected Set<Node> getNodes(PhasedUnit pu) {
+            protected Set<Node> getNodes(Tree.CompilationUnit cu) {
                 FindRefinementsVisitor frv = new FindRefinementsVisitor(new FindReferenceVisitor(declaration).getDeclaration());
-                pu.getCompilationUnit().visit(frv);
+                cu.visit(frv);
                 Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
                 return Collections.<Node>unmodifiableSet(nodes);
             }
