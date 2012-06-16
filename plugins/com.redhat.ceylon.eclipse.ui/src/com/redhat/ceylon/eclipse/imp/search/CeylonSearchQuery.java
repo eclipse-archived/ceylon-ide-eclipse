@@ -14,10 +14,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 
@@ -60,6 +66,7 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean regex;
     private final boolean includeReferences;
     private final boolean includeDeclarations;
+    private IWorkbenchPage page;
 
 	CeylonSearchQuery(String string, String[] projects, IResource[] resources,
 			boolean includeReferences, boolean includeDeclarations,
@@ -71,6 +78,7 @@ class CeylonSearchQuery implements ISearchQuery {
 		this.includeReferences = includeReferences;
 		this.regex = regex;
 		this.resources = resources;
+        this.page = Util.getActivePage();
 	}
 
 	@Override
@@ -83,13 +91,13 @@ class CeylonSearchQuery implements ISearchQuery {
 
         for (final PhasedUnit pu: units) {
             if (isWithinSelection(pu)) {
+                final Tree.CompilationUnit cu = getRootNode(pu);
                 monitor.subTask("Searching source file " + pu.getUnitFile().getPath());
     	        SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
     	            @Override
     	            public void matchingNode(Node node) {
     	                FindContainerVisitor fcv = new FindContainerVisitor(node);
-    	                pu.getDeclarations();
-    	                pu.getCompilationUnit().visit(fcv);
+    	                cu.visit(fcv);
     	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
     	                        CeylonBuilder.getFile(pu), 
     	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
@@ -97,7 +105,7 @@ class CeylonSearchQuery implements ISearchQuery {
     	                count++;
     	            }
     	        };
-                pu.getCompilationUnit().visit(sv);
+                cu.visit(sv);
             }
             monitor.worked(1);
             if (monitor.isCanceled()) return Status.CANCEL_STATUS;
@@ -106,6 +114,20 @@ class CeylonSearchQuery implements ISearchQuery {
 		return Status.OK_STATUS;
 	}
 
+	//TODO: copy/pasted from FindSearchQuery!
+    Tree.CompilationUnit getRootNode(PhasedUnit pu) {
+        for (IEditorPart editor: page.getDirtyEditors()) {
+            if (editor instanceof CeylonEditor) {
+                CeylonParseController cpc = ((CeylonEditor)editor).getParseController();
+                if ( /*editor.isDirty() &&*/
+                        pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
+                    return cpc.getRootNode();
+                }
+            }
+        }
+        return pu.getCompilationUnit();
+    }
+    
     public boolean isWithinSelection(PhasedUnit pu) {
         if (resources==null) {
             return true;
