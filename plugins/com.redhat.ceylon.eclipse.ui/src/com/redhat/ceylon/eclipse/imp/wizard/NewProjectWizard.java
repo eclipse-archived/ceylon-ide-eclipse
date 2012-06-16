@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.imp.wizard;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_MARGIN;
 import static org.eclipse.jface.dialogs.IDialogConstants.HORIZONTAL_SPACING;
 import static org.eclipse.jface.dialogs.IDialogConstants.VERTICAL_MARGIN;
@@ -27,6 +28,9 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.IVMInstall2;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.IPackagesViewPart;
 import org.eclipse.jdt.ui.actions.ShowInPackageViewAction;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
@@ -259,6 +263,26 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
 
     public boolean performFinish() {
+        for (IClasspathEntry cpe: fFirstPage.getDefaultClasspathEntries()) {
+            if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
+                IPath path = cpe.getPath();
+                if (path.segment(0).equals(JRE_CONTAINER)) {
+                    IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
+                    if (!((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
+                        fFirstPage.setErrorMessage("Please select a Java 1.7 JRE");
+                        return false;
+                    }
+                    if (path.segmentCount()==3) {
+                        String s = path.segment(2);
+                        if ((s.startsWith("JavaSE-")||s.startsWith("J2SE-")) &&
+                                !s.contains("1.7")) {
+                            fFirstPage.setErrorMessage("Please select a Java 1.7 JRE");
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
         if (!isRepoValid()) return false;
         boolean res= super.performFinish();
         if (res) {
