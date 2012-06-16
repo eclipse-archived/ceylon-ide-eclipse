@@ -80,8 +80,13 @@ public class CleanImportsHandler extends AbstractHandler {
             });
             String lastToplevel=null;
             StringBuilder builder = new StringBuilder();
+            String last = null;
+            boolean lastHasWildcard = false;
             for (Tree.Import ti: importList) {
-                boolean hasWildcard = ti.getImportMemberOrTypeList().getImportWildcard()!=null;
+                String pn = packageName(ti);
+                boolean appendingToLast = last!=null && last.equals(pn);
+                boolean hasWildcard = ti.getImportMemberOrTypeList().getImportWildcard()!=null || 
+                        appendingToLast&&lastHasWildcard;
                 List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
                 for (Tree.ImportMemberOrType i: ti.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
@@ -110,17 +115,21 @@ public class CleanImportsHandler extends AbstractHandler {
                     builder.append("\n");
                 }
                 lastToplevel=topLevel;
-                if (list.isEmpty()) {
-                    if (hasWildcard) {
-                        builder.append("import ")
-                            .append(packageName(ti))
-                            .append(" { ... }\n");
+                if (hasWildcard || !list.isEmpty()) {
+                    if (appendingToLast) {
+                        builder.setLength(builder.length()-3);
+                        if (lastHasWildcard) {
+                            builder.setLength(builder.length()-3);                        
+                        }
+                        else {
+                            builder.append(", ");
+                        }
                     }
-                }
-                else {
-                    builder.append("import ")
-                            .append(packageName(ti))
-                            .append(" { ");
+                    else  {
+                        builder.append("import ")
+                        .append(pn)
+                        .append(" { ");
+                    }
                     for (Tree.ImportMemberOrType i: list) {
                         if (i.getDeclarationModel()!=null) {
                             if ( !i.getImportModel().getAlias().equals(i.getDeclarationModel().getName()) ) {
@@ -150,12 +159,17 @@ public class CleanImportsHandler extends AbstractHandler {
                         }
                     }
                     if (hasWildcard) {
-                        builder.append(" ... ");
+                        builder.append("...");
                     }
                     else {
                         builder.setLength(builder.length()-2);
                     }
                     builder.append(" }\n");
+                    last = pn;
+                    lastHasWildcard= hasWildcard;
+                }
+                else {
+                    last=null;
                 }
             }
             if (builder.length()!=0) {
