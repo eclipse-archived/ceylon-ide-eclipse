@@ -49,44 +49,46 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.AttributeDeclaration decNode, UniversalEditor editor) {
         Value dec = decNode.getDeclarationModel();
-        TextChange change = new DocumentChange("Add Parameter", doc);
-        change.setEdit(new MultiTextEdit());
-        FindContainerVisitor fcv = new FindContainerVisitor(decNode);
-        fcv.visit(cu);
-        Tree.Declaration container = fcv.getDeclaration();
-        if (container instanceof Tree.ClassDefinition) {
-            ParameterList pl = ((Tree.ClassDefinition) container).getParameterList();
-            SpecifierOrInitializerExpression sie = decNode.getSpecifierOrInitializerExpression();
-            String def;
-            if (sie==null) {
-                def = " = bottom";
-            }
-            else {
-                def = AbstractRefactoring.toString(sie, 
-                        ((CeylonEditor) editor).getParseController().getTokens());
-                int start = sie.getStartIndex();
-                try {
-                    if (doc.get(start-1,1).equals(" ")) {
-                        start--;
-                        def = " " + def;
-                    }
-                } 
-                catch (BadLocationException e) {
-                    e.printStackTrace();
+        if (dec.getInitializerParameter()==null && !dec.isFormal()) {
+            TextChange change = new DocumentChange("Add Parameter", doc);
+            change.setEdit(new MultiTextEdit());
+            FindContainerVisitor fcv = new FindContainerVisitor(decNode);
+            fcv.visit(cu);
+            Tree.Declaration container = fcv.getDeclaration();
+            if (container instanceof Tree.ClassDefinition) {
+                ParameterList pl = ((Tree.ClassDefinition) container).getParameterList();
+                SpecifierOrInitializerExpression sie = decNode.getSpecifierOrInitializerExpression();
+                String def;
+                if (sie==null) {
+                    def = " = bottom";
                 }
-                change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
+                else {
+                    def = AbstractRefactoring.toString(sie, 
+                            ((CeylonEditor) editor).getParseController().getTokens());
+                    int start = sie.getStartIndex();
+                    try {
+                        if (doc.get(start-1,1).equals(" ")) {
+                            start--;
+                            def = " " + def;
+                        }
+                    } 
+                    catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                    change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
+                }
+                String param = (pl.getParameters().isEmpty() ? "" : ", ") + dec.getName() + def;
+                Integer offset = pl.getStopIndex();
+                change.addEdit(new InsertEdit(offset, param));
+                Type type = decNode.getType();
+                if (type instanceof Tree.LocalModifier) {
+                    Integer typeOffset = type.getStartIndex();
+                    String explicitType = SpecifyTypeProposal.inferType(cu, type);
+                    change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
+                }
+                proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
+                        offset+param.length(), file, change));
             }
-            String param = (pl.getParameters().isEmpty() ? "" : ", ") + dec.getName() + def;
-            Integer offset = pl.getStopIndex();
-            change.addEdit(new InsertEdit(offset, param));
-            Type type = decNode.getType();
-            if (type instanceof Tree.LocalModifier) {
-                Integer typeOffset = type.getStartIndex();
-                String explicitType = SpecifyTypeProposal.inferType(cu, type);
-                change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
-            }
-            proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
-                    offset+param.length(), file, change));
         }
     }
     
