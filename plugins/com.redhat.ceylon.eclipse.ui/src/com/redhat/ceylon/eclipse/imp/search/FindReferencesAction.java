@@ -4,8 +4,8 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
@@ -24,9 +24,9 @@ public class FindReferencesAction extends AbstractFindAction {
 	public FindSearchQuery createSearchQuery() {
 	    return new FindSearchQuery(declaration, project) {
 	        @Override
-	        protected Set<Node> getNodes(PhasedUnit pu) {
+	        protected Set<Node> getNodes(Tree.CompilationUnit cu) {
 	            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-	            pu.getCompilationUnit().visit(frv);
+	            cu.visit(frv);
 	            return frv.getNodes();
 	        }
 	        @Override

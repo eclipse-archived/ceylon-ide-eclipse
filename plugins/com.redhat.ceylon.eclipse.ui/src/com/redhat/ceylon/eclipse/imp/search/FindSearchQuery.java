@@ -11,11 +11,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.imp.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.imp.editor.Util;
+import com.redhat.ceylon.eclipse.imp.parser.CeylonParseController;
 
 abstract class FindSearchQuery implements ISearchQuery {
 	
@@ -23,23 +29,27 @@ abstract class FindSearchQuery implements ISearchQuery {
 	//private final IProject project;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
+	private IEditorPart editor;
 
 	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		//this.project = project;
+		this.editor = Util.getCurrentEditor();
 	}
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 	    //List<PhasedUnit> units = CeylonBuilder.getUnits(project);
 	    //if (units==null) units = CeylonBuilder.getUnits();
+	    
 	    List<PhasedUnit> units = CeylonBuilder.getUnits();
         for (PhasedUnit pu: units) {
-	        Set<Node> nodes = getNodes(pu);
+	        CompilationUnit cu = getRootNode(pu);
+            Set<Node> nodes = getNodes(cu);
 	        //TODO: should really add these as we find them:
             for (Node node: nodes) {
     			FindContainerVisitor fcv = new FindContainerVisitor(node);
-    			pu.getCompilationUnit().visit(fcv);
+    			cu.visit(fcv);
                 if (node.getToken()==null) {
                     //a synthetic node inserted in the tree
                 }
@@ -56,7 +66,18 @@ abstract class FindSearchQuery implements ISearchQuery {
 		return Status.OK_STATUS;
 	}
 
-    protected abstract Set<Node> getNodes(PhasedUnit pu);
+    Tree.CompilationUnit getRootNode(PhasedUnit pu) {
+        if (editor instanceof CeylonEditor) {
+            CeylonParseController cpc = ((CeylonEditor)editor).getParseController();
+            if ( editor.isDirty() &&
+                    pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
+                return cpc.getRootNode();
+            }
+        }
+        return pu.getCompilationUnit();
+    }
+    
+    protected abstract Set<Node> getNodes(Tree.CompilationUnit cu);
     
     protected abstract String labelString();
 

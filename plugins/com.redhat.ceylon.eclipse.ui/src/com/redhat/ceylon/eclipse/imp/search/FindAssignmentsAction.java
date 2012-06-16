@@ -4,11 +4,11 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 
 public class FindAssignmentsAction extends AbstractFindAction {
@@ -29,9 +29,9 @@ public class FindAssignmentsAction extends AbstractFindAction {
 	public FindSearchQuery createSearchQuery() {
 	    return new FindSearchQuery(declaration, project) {
 	        @Override
-	        protected Set<Node> getNodes(PhasedUnit pu) {
+	        protected Set<Node> getNodes(Tree.CompilationUnit cu) {
 	            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(declaration);
-	            pu.getCompilationUnit().visit(frv);
+	            cu.visit(frv);
 	            return frv.getNodes();
 	        }
 	        @Override
