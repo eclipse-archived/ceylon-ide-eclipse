@@ -88,7 +88,7 @@ public class JDTClass implements ClassMirror {
     }
 
     @Override
-    public String getSimpleName() {
+    public String getName() {
         if (simpleName == null) {
             simpleName = new String(klass.sourceName());
         }
