@@ -1,8 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.refactoring;
 
+import static com.redhat.ceylon.eclipse.imp.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.imp.editor.Util.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -20,42 +22,48 @@ public class RefactorMenuItems extends CompoundContributionItem {
     
     @Override
     protected IContributionItem[] getContributionItems() {
-        /*IEditorPart editor = getCurrentEditor();
-        if (editor instanceof UniversalEditor) {
-            UniversalEditor universalEditor = (UniversalEditor) editor;*/
-            IEditorPart editor = getCurrentEditor();
-            return new IContributionItem[] {
-                    //new Separator(),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
-                            editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
-                            AbstractRefactoring.RENAME),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit", 
-                            "Move to New Unit...", new MoveDeclarationHandler().isEnabled(), 
-                            AbstractRefactoring.MOVE),
-                    new Separator(),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
-                            editor!=null && new InlineRefactoringAction(editor).isEnabled(),
-                            AbstractRefactoring.COMP_CHANGE),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
-                            "Extract Value...",
-                            editor!=null && new ExtractValueRefactoringAction(editor).isEnabled(),
-                            AbstractRefactoring.CHANGE),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
-                            "Extract Function...",
-                            editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled(),
-                            AbstractRefactoring.CHANGE),
-                    /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
-                                    "Convert to Class...",
-                                    editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
-                    new Separator(),
-                    new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
-                            "Clean Imports", new CleanImportsHandler().isEnabled(), 
-                            AbstractRefactoring.DELETE_IMPORT)
-                };
-        /*}
+        IContributionItem[] items = getItems(getCurrentEditor());
+        if (collapseMenuItems(getParent())) {
+            MenuManager submenu = new MenuManager("Refactor");
+            for (IContributionItem item: items) {
+                submenu.add(item);
+            }
+            return new IContributionItem[] { submenu };
+        }
         else {
-            return new IContributionItem[0];
-        }*/
+            return items;
+        }
+    }
+
+    private IContributionItem[] getItems(IEditorPart editor) {
+        return new IContributionItem[] {
+                //new Separator(),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
+                        editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
+                        AbstractRefactoring.RENAME),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit", 
+                        "Move to New Unit...", new MoveDeclarationHandler().isEnabled(), 
+                        AbstractRefactoring.MOVE),
+                new Separator(),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
+                        editor!=null && new InlineRefactoringAction(editor).isEnabled(),
+                        AbstractRefactoring.COMP_CHANGE),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
+                        "Extract Value...",
+                        editor!=null && new ExtractValueRefactoringAction(editor).isEnabled(),
+                        AbstractRefactoring.CHANGE),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
+                        "Extract Function...",
+                        editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled(),
+                        AbstractRefactoring.CHANGE),
+                /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
+                                "Convert to Class...",
+                                editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
+                new Separator(),
+                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
+                        "Clean Imports", new CleanImportsHandler().isEnabled(), 
+                        AbstractRefactoring.DELETE_IMPORT)
+            };
     }
     
 }

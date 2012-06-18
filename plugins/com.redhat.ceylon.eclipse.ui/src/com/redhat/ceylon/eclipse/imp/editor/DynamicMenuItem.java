@@ -2,7 +2,10 @@ package com.redhat.ceylon.eclipse.imp.editor;
 
 import java.util.Collections;
 
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -34,4 +37,14 @@ public class DynamicMenuItem extends CommandContributionItem {
         return super.isEnabled() && enabled; 
     }
     
+    public static boolean collapseMenuItems(IContributionManager parent) {
+        return isContextMenu(parent) && 
+                Display.getCurrent().getBounds().height < 1024;
+    }
+    
+    private static boolean isContextMenu(IContributionManager parent) {
+        return parent instanceof IContributionItem && 
+                ((IContributionItem) parent).getId().equals("#TextEditorContext");
+    }
+
 }
