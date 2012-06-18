@@ -667,7 +667,7 @@
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
                 label="Source"
-                id="com.redhat.ceylon.eclipse.ui.menu.find">
+                id="com.redhat.ceylon.eclipse.ui.menu.source">
             <!--dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
             <dynamic id="refactor"
