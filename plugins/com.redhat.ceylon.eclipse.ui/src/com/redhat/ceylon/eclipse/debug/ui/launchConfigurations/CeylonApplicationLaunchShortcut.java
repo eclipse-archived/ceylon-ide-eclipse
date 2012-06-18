@@ -129,8 +129,19 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                         Node node = CeylonSourcePositionLocator.findNode(cu, (ITextSelection) selection);
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
-                            if (method.isDeclaredVoid()) {
+                            if (method.isToplevel() && 
+                                    !method.getParameterLists().isEmpty() &&
+                                    method.getParameterLists().get(0).getParameters().isEmpty()) {
                                 launch(method, file, mode);
+                                return;
+                            }
+                        }
+                        if (node instanceof Tree.AnyClass) {
+                            Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
+                            if (clazz.isToplevel() && !clazz.isAbstract() &&
+                                    clazz.getParameterList()!=null &&
+                                    clazz.getParameterList().getParameters().isEmpty()) {
+                                launch(clazz, file, mode);
                                 return;
                             }
                         }
