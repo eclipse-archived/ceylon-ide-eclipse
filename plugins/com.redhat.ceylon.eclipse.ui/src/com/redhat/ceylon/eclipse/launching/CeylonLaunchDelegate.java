@@ -52,7 +52,8 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         
         File outputDirectory = CeylonBuilder.getModulesOutputDirectory(javaProject);
         if (outputDirectory != null) {
-        	RepositoryManager outputRepo = new SimpleRepositoryManager(new FileContentStore(outputDirectory), new EclipseLogger());
+        	RepositoryManager outputRepo = new SimpleRepositoryManager(new FileContentStore(outputDirectory), 
+        	        new EclipseLogger());
             repositoryManagers.add(outputRepo);
         }
         
@@ -82,12 +83,14 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
                         break;
                     } 
                     else {
-                        System.out.println("Ignoring non-existing module artifact (" + modulePath + ") for launching classpath");
+                        System.out.println("Ignoring non-existing module artifact (" + modulePath + 
+                                ") for launching classpath");
                     }
                 }
             }
             if (!artifactFound) {
-                System.out.println("Artifact not found for module '" + module.getNameAsString() + "/" + module.getVersion() + "' for launching classpath");
+                System.out.println("Artifact not found for module '" + module.getNameAsString() + 
+                        "/" + module.getVersion() + "' for launching classpath");
             }
         }
 
