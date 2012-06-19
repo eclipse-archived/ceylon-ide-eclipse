@@ -82,6 +82,6 @@ public class JDTAnnotation implements AnnotationMirror {
 
     @Override
     public Object getValue() {
-        return getValue("default");
+        return getValue("value");
     }
 }
