@@ -780,7 +780,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private boolean mustCompleteFromClasses(CeylonDeclaration d) {
-        return d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString().startsWith("ceylon.language");
+        return !d.isSourceToCompile() && d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString().startsWith("ceylon.language");
     }
  
 }

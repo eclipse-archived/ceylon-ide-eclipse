@@ -153,7 +153,8 @@ import com.sun.tools.javac.util.Options;
  */
 public class CeylonBuilder extends IncrementalProjectBuilder{
 
-    public static boolean compileWithJDTModelLoader = true;
+    private static boolean compileWithJDTModelLoader = true;
+    
     /**
      * Extension ID of the Ceylon builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
@@ -1087,13 +1088,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             pu.scanTypeDeclarations();
         }
         
-        
-        loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
-        loader.loadPackage("ceylon.language", true);
-        loader.loadPackage("ceylon.language.descriptor", true);
-        loader.loadPackageDescriptors();
-
-        if (compileWithJDTModelLoader) {
+        if (compileWithJDTModelLoader()) {
             loader.completeFromClasses();
         }
         
@@ -1101,6 +1096,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
 
+        loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
+        loader.loadPackage("ceylon.language", true);
+        loader.loadPackage("ceylon.language.descriptor", true);
+        loader.loadPackageDescriptors();
+        
+        
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
         monitor.subTask("Typechecking Ceylon source files for project " 
@@ -1157,6 +1158,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         System.out.println("Finished ceylon full build of project " + project.getName());
         return typeChecker.getPhasedUnits().getPhasedUnits();
+    }
+
+    private boolean compileWithJDTModelLoader() {
+        return compileWithJDTModelLoader;
     }
 
     public static TypeChecker parseCeylonModel(
@@ -1411,7 +1416,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
 
             boolean success = true;
-            if (! compileWithJDTModelLoader) {
+            if (! compileWithJDTModelLoader()) {
                 // first java source files
                 if(!javaSourceFiles.isEmpty()){
                     compile(project, options, javaSourceFiles, printWriter);
@@ -1537,7 +1542,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         Iterable<? extends JavaFileObject> compilationUnits1 =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-        if (compileWithJDTModelLoader) {
+        if (compileWithJDTModelLoader()) {
             final TypeChecker typeChecker = getProjectTypeChecker(project);
             context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
             context.put(TypeFactory.class, modelLoader.getTypeFactory());
