@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,6 +75,7 @@ import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyClass;
@@ -88,11 +90,18 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
@@ -321,13 +330,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                         try {
                             for (IClassFile classFile : packageFragment.getClassFiles()) {
                                 IType type = classFile.getType();
-                                if (! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                     convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                 }
                             }
                             for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
                                 for (IType type : compilationUnit.getTypes()) {
-                                    if (! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                    if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
@@ -381,6 +390,10 @@ public class JDTModelLoader extends AbstractModelLoader {
             return new SourceClass(sourceDeclarations.get(name));
         }
         
+        return buildClassMirror(name);
+    }
+
+    public synchronized ClassMirror buildClassMirror(String name) {
         try {
             IType type = javaProject.findType(name);
             if (type == null) {
@@ -603,7 +616,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                             String fqn = getQualifiedName(pkgName, name);
                             if (! sourceDeclarations.containsKey(fqn)) {
                                 synchronized (sourceDeclarations) {
-                                    sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
+                                    sourceDeclarations.put(fqn, new CeylonDeclaration(JDTModelLoader.this, unit, decl, isSourceToCompile));
                                 }
                             }
                         }
@@ -682,4 +695,115 @@ public class JDTModelLoader extends AbstractModelLoader {
         packageDescriptorsNeedLoading = false;
         classMirrorCache.clear();
     }
+    
+    public void completeFromClasses() {
+        for (Entry<String, CeylonDeclaration> entry : sourceDeclarations.entrySet()) {
+            CeylonDeclaration declaration = entry.getValue();
+            if (mustCompleteFromClasses(declaration)) {
+                ClassMirror classMirror = buildClassMirror(entry.getKey());
+                if (classMirror == null) {
+                    continue;
+                }
+                final Declaration binaryDeclaration = getOrCreateDeclaration(classMirror,
+                        DeclarationType.TYPE,
+                        new ArrayList<Declaration>(), new boolean[1]);
+
+                if (binaryDeclaration == null) {
+                    continue;
+                }
+                
+                declaration.getAstDeclaration().visit(new Visitor() {
+                    @Override
+                    public void visit(Tree.AnyAttribute that) {
+                        super.visit(that);
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        if (binaryMember != null) {
+                            String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
+                            if (underlyingType != null) {
+                                ProducedType typeToComplete = that.getDeclarationModel().getType();
+                                if (typeToComplete != null) {
+                                    typeToComplete.setUnderlyingType(underlyingType);
+                                }
+                            }
+                        }
+                    }
+                    
+                    @Override
+                    public void visit(Tree.AttributeSetterDefinition that) {
+                        super.visit(that);
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        if (binaryMember != null) {
+                            String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
+                            if (underlyingType != null) {
+                                ProducedType typeToComplete = that.getDeclarationModel().getType();
+                                if (typeToComplete != null) {
+                                    typeToComplete.setUnderlyingType(underlyingType);
+                                }
+                            }
+                            
+                        }
+                    }
+
+                    @Override
+                    public void visit(Tree.AnyMethod that) {
+                        super.visit(that);
+                        Method method = that.getDeclarationModel();
+                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList());
+                        if (binaryMethod != null) {
+                            String underlyingType = ((TypedDeclaration)binaryMethod).getType().getUnderlyingType();
+                            if (underlyingType != null) {
+                                ProducedType typeToComplete = that.getDeclarationModel().getType();
+                                if (typeToComplete != null) {
+                                    typeToComplete.setUnderlyingType(underlyingType);
+                                }
+                            }
+                            
+                            Iterator<ParameterList> binaryParamLists = binaryMethod.getParameterLists().iterator();
+                            for (ParameterList paramList : method.getParameterLists()) {
+                                if (binaryParamLists.hasNext()) {
+                                    ParameterList binaryParamList = binaryParamLists.next();
+                                    Iterator<Parameter> binaryParams = binaryParamList.getParameters().iterator();
+                                    for (Parameter param : paramList.getParameters()) {
+                                        if (binaryParams.hasNext()) {
+                                            Parameter binaryParam = binaryParams.next();
+                                            String paramUnderlyingType = binaryParam.getType().getUnderlyingType();
+                                            if (paramUnderlyingType != null) {
+                                                ProducedType typeToComplete = param.getType();
+                                                if (typeToComplete != null) {
+                                                    typeToComplete.setUnderlyingType(paramUnderlyingType);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void visit(Tree.ObjectDefinition that) {
+                        super.visit(that);
+                    }
+
+                    @Override
+                    public void visit(Tree.Parameter that) {
+                        super.visit(that);
+                    }
+
+                    @Override
+                    public void visit(Tree.Term that) {
+                        super.visit(that);
+                        ProducedType thatType = that.getTypeModel();
+                        Scope thatScope = that.getScope();
+                        System.out.println(thatScope);
+                    }
+                });
+            }
+        }
+    }
+
+    private boolean mustCompleteFromClasses(CeylonDeclaration d) {
+        return d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString().startsWith("ceylon.language");
+    }
+ 
 }

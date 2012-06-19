@@ -357,9 +357,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             cpContainers = getCeylonClasspathContainers(javaProject);
         }
         
+        project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
         if (cpContainers.isEmpty()) {
             // Add a problem marker if binary generation went wrong for ceylon files
-            IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
             marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container is not set on the project " + 
                     project.getName() + ". Try to Enable Ceylon Nature again.");
             marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
@@ -1061,6 +1062,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         monitor.subTask("Typechecking Ceylon source archives for project " 
                 + project.getName());
 
+//        doRefresh(project);
         List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
 
         List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
@@ -1084,15 +1086,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (PhasedUnit pu : dependencies) {
             pu.scanTypeDeclarations();
         }
-        for (PhasedUnit pu : dependencies) {
-            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-        }
-
+        
         
         loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
         loader.loadPackage("ceylon.language", true);
         loader.loadPackage("ceylon.language.descriptor", true);
         loader.loadPackageDescriptors();
+
+        if (compileWithJDTModelLoader) {
+            loader.completeFromClasses();
+        }
+        
+        for (PhasedUnit pu : dependencies) {
+            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
 
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
