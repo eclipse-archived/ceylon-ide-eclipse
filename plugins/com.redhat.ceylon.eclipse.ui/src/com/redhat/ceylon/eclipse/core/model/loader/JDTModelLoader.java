@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
@@ -75,7 +74,6 @@ import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
-import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyClass;
@@ -89,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -97,7 +94,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -468,7 +464,6 @@ public class JDTModelLoader extends AbstractModelLoader {
         return ((JDTMethod)methodSymbol).isOverridingMethod();
     }
 
-    
     @Override
     public Module findOrCreateModule(String pkgName) {
         java.util.List<String> moduleName;
@@ -778,24 +773,6 @@ public class JDTModelLoader extends AbstractModelLoader {
                                 }
                             }
                         }
-                    }
-
-                    @Override
-                    public void visit(Tree.ObjectDefinition that) {
-                        super.visit(that);
-                    }
-
-                    @Override
-                    public void visit(Tree.Parameter that) {
-                        super.visit(that);
-                    }
-
-                    @Override
-                    public void visit(Tree.Term that) {
-                        super.visit(that);
-                        ProducedType thatType = that.getTypeModel();
-                        Scope thatScope = that.getScope();
-                        System.out.println(thatScope);
                     }
                 });
             }
