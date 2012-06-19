@@ -43,7 +43,21 @@ public class CeylonNature extends ProjectNatureBase {
                 new IClasspathContainer[] {ceyloncp}, null);
             IClasspathEntry[] entries = javaProject.getRawClasspath();
             List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
-            newEntries.add(newEntry);
+            int index = 0;
+            boolean mustReplace = false;
+            for (IClasspathEntry entry : newEntries) {
+                if (entry.getPath().equals(newEntry.getPath()) ) {
+                    mustReplace = true;
+                    break;
+                }
+                index ++;
+            }
+            if (mustReplace) {
+                newEntries.set(index, newEntry);
+            }
+            else {
+                newEntries.add(newEntry);
+            }
             entries = (IClasspathEntry[]) newEntries
                     .toArray(new IClasspathEntry[newEntries.size()]);
             javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
