@@ -154,7 +154,7 @@ import com.sun.tools.javac.util.Options;
  */
 public class CeylonBuilder extends IncrementalProjectBuilder{
 
-    private static boolean compileWithJDTModelLoader = true;
+    private static boolean compileWithJDTModelLoader = false;
     
     /**
      * Extension ID of the Ceylon builder, which matches the ID in the
