@@ -139,6 +139,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
+import com.sun.tools.javac.file.ZipFileIndexCache;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Options;
@@ -1648,6 +1649,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 
             });
         }
+        ZipFileIndexCache.getSharedInstance().clearCache();
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                 fileManager, null, options, null, compilationUnits1);
         boolean success=false;
