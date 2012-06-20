@@ -43,7 +43,8 @@ public class MoveDeclarationHandler extends AbstractHandler {
                 int length = node.getStopIndex()-start+1;
                 String contents = document.get(start, length);
                 String imports = CleanImportsHandler.imports(node, cu.getImportList());
-                boolean success = NewUnitWizard.open(imports + "\n" + contents, 
+                boolean success = NewUnitWizard.open(imports==null ? 
+                            contents : imports + "\n" + contents, 
                         Util.getFile(editor.getEditorInput()), 
                         ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
                         "Create a new Ceylon compilation unit containing the selected declaration.");

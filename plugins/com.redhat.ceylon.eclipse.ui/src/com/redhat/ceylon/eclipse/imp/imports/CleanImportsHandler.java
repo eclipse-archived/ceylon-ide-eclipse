@@ -187,7 +187,7 @@ public class CleanImportsHandler extends AbstractHandler {
             }
             return builder.toString();
         }
-        else{
+        else {
             return null;
         }
     }
