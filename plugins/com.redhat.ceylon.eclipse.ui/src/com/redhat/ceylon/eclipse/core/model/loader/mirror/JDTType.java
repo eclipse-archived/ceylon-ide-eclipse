@@ -59,7 +59,11 @@ public class JDTType implements TypeMirror {
     @Override
     public String getQualifiedName() {
         if (qualifiedName == null) {
-            qualifiedName = JDTUtils.getFullyQualifiedName(type);
+        	// type params are not qualified
+        	if(type instanceof TypeVariableBinding)
+        		qualifiedName = new String(type.qualifiedSourceName());
+        	else
+        		qualifiedName = JDTUtils.getFullyQualifiedName(type);
         }
         return qualifiedName;
     }
