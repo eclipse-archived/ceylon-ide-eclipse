@@ -713,7 +713,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                         super.visit(that);
                         Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
                         if (binaryMember != null) {
-                            String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
+                        	ProducedType type = ((TypedDeclaration)binaryMember).getType();
+                        	if(type == null)
+                        		return;
+                            String underlyingType = type.getUnderlyingType();
                             if (underlyingType != null) {
                                 ProducedType typeToComplete = that.getDeclarationModel().getType();
                                 if (typeToComplete != null) {
