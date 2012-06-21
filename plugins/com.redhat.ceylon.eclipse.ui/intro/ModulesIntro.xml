@@ -4,8 +4,10 @@
     <intro>
         <description>
             This cheat sheet shows you how to create a new Ceylon project, a
-            Ceylon module contained in that project, and finally export the
-            module to an external Ceylon module repository.
+            Ceylon module contained in that project, add a dependency to a 
+            Ceylon platform module in Ceylon Herd, and finally export the
+            module to an external Ceylon module repository. You will need
+            an Internet connection to connect to Herd.
         </description>
     </intro>
 
@@ -28,7 +30,7 @@
             <b>File > New > Ceylon Project</b> or click below.
             <br/>
             <br/>
-            Call the project "modules", or whatever you like, and click 
+            Call the project "dice", or whatever you like, and click 
             <b>Finish</b>.
         </description>
         <command required="false"
@@ -42,21 +44,40 @@
             <b>File > New > Ceylon Module</b> or click below.
             <br/>
             <br/>
-            Call the module "hello", or whatever you like, choose the 
-            source folder of the project we just created, and finally click 
+            Call the module "dice", or whatever you like, choose the source 
+            folder of the project we just created, and finally click 
             <b>Finish</b>.
         </description>
         <command required="false"
             serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newModuleWizard)" />
     </item>
 
+    <item title="Add a module dependency">
+        <description>
+            Open the file "module.ceylon", and add the following line to
+            the module descriptor, just before the closing brace:
+            <br/>
+            <br/>
+            <b>Import { name='ceylon.math'; version='0.3.1'; }</b>
+            <br/>
+            <br/>
+            Remember to save the file.
+        </description>
+    </item>
+
     <item title="Add code to the run method">
         <description>
             Next, in the Ceylon editor that opened automatically, add the
-            following code to the body of the "run" method:
+            following "import" statement, at the top of the file:
             <br/>
             <br/>
-            <b>print("hello world");</b>
+            <b>import ceylon.math.float { random }</b>
+            <br/>
+            <br/>
+            Now add the following code to the body of the "run" method:
+            <br/>
+            <br/>
+            <b>print("You rolled " (random()*6).integer+1 " " (random()*6).integer+1 "");</b>
             <br/>
             <br/>
             Remember to save the file.
