@@ -3,9 +3,17 @@ package com.redhat.ceylon.eclipse.imp.builder;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathContainers;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +26,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -79,6 +91,8 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import sun.tools.jar.resources.jar;
+
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
@@ -89,6 +103,7 @@ import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
+import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.PhasedUnitsManager;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
@@ -139,6 +154,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.vfs.ResourceVirtualFile;
+import com.sun.tools.javac.file.RelativePath.RelativeFile;
 import com.sun.tools.javac.file.ZipFileIndexCache;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
@@ -1405,9 +1421,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         java.util.List<File> javaSourceFiles = new ArrayList<File>();
         java.util.List<File> sourceFiles = new ArrayList<File>();
+        java.util.List<File> moduleFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-            if(isCeylon(file))
+            if(isCeylon(file)) {
                 sourceFiles.add(file.getRawLocation().toFile());
+                if (file.getName().equals(ModuleManager.MODULE_FILE)) {
+                    moduleFiles.add(file.getRawLocation().toFile());
+                }
+            }
             else if(isJava(file))
                 javaSourceFiles.add(file.getRawLocation().toFile());
         }
@@ -1420,6 +1441,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (! compileWithJDTModelLoader()) {
                 // first java source files
                 if(!javaSourceFiles.isEmpty()){
+                    javaSourceFiles.addAll(moduleFiles);
                     compile(project, options, javaSourceFiles, printWriter);
                 }
             } else {
@@ -1429,6 +1451,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if(!sourceFiles.isEmpty()){
                 success = compile(project, options, sourceFiles, printWriter);
             }
+/*            
             if (modulesOutputDir != null) {
                 monitor.subTask("Unzipping archives files in the Ceylon output folder");
                 new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDir, new RepositoryLister.Actions() {
@@ -1457,7 +1480,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 });
                 monitor.subTask("Refreshing the Ceylon output folder");
             }
-            
+*/            
             return success;
         }
         else
@@ -1478,7 +1501,108 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
 
-        CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null); //(CeyloncFileManager)compiler.getStandardFileManager(null, null, null);
+        IJavaProject javaProject = JavaCore.create(project);
+        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+        
+        CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
+            @Override
+            protected JavaFileObject getFileForOutput(Location location,
+                    final RelativeFile fileName, FileObject sibling)
+                    throws IOException {
+                final JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
+                if (javaFileObject instanceof JarEntryFileObject) {
+                    return new JavaFileObject() {
+                        @Override
+                        public boolean delete() {
+                            return javaFileObject.delete();
+                        }
+                        @Override
+                        public CharSequence getCharContent(boolean arg0)
+                                throws IOException {
+                            return javaFileObject.getCharContent(arg0);
+                        }
+                        @Override
+                        public long getLastModified() {
+                            return javaFileObject.getLastModified();
+                        }
+                        @Override
+                        public String getName() {
+                            return javaFileObject.getName();
+                        }
+                        @Override
+                        public InputStream openInputStream() throws IOException {
+                            return javaFileObject.openInputStream();
+                        }
+                        @Override
+                        public OutputStream openOutputStream()
+                                throws IOException {
+                            final OutputStream jarStream = javaFileObject.openOutputStream();
+                            File classFile = fileName.getFile(ceylonOutputDirectory);
+                            classFile.getParentFile().mkdirs();
+                            final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
+                            return new FilterOutputStream(jarStream){
+                                @Override
+                                public void write(int b) throws IOException {
+                                    jarStream.write(b);
+                                    classFileStream.write(b);
+                                }
+                                @Override
+                                public void close() throws IOException {
+                                    classFileStream.close();
+                                }
+                                @Override
+                                public void flush() throws IOException {
+                                    super.flush();
+                                    classFileStream.flush();
+                                }
+                                @Override
+                                public void write(byte[] b, int off, int len)
+                                        throws IOException {
+                                    jarStream.write(b, off, len);
+                                    classFileStream.write(b);
+                                }
+                                @Override
+                                public void write(byte[] b) throws IOException {
+                                    jarStream.write(b);
+                                    classFileStream.write(b);
+                                }
+                            };
+                        }
+                        @Override
+                        public Reader openReader(boolean arg0)
+                                throws IOException {
+                            return javaFileObject.openReader(arg0);
+                        }
+                        @Override
+                        public Writer openWriter() throws IOException {
+                            return javaFileObject.openWriter();
+                        }
+                        @Override
+                        public URI toUri() {
+                            return javaFileObject.toUri();
+                        }
+                        @Override
+                        public Modifier getAccessLevel() {
+                            return javaFileObject.getAccessLevel();
+                        }
+                        @Override
+                        public Kind getKind() {
+                            return javaFileObject.getKind();
+                        }
+                        @Override
+                        public NestingKind getNestingKind() {
+                            return javaFileObject.getNestingKind();
+                        }
+                        @Override
+                        public boolean isNameCompatible(String simpleName,
+                                Kind kind) {
+                            return javaFileObject.isNameCompatible(simpleName, kind);
+                        }
+                    };
+                }
+                return javaFileObject;
+            }
+        };
         
         ArtifactContext ctx = null;
         Modules projectModules = getProjectModules(project);
@@ -1508,9 +1632,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
 
         IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        for (IJavaProject javaProject : javaProjects) {
+        for (IJavaProject javaProj : javaProjects) {
             try {
-                List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+                List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProj);
                 for (CeylonClasspathContainer container : containers) {
                     for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
                         if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
@@ -1519,8 +1643,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                 }
                 
-                classpathElements.add(workspaceLocation.append(javaProject.getOutputLocation()).toOSString());
-                for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
+                classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+                for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
                     if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
                         classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
                     }
