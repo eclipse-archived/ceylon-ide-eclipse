@@ -1511,94 +1511,104 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throws IOException {
                 final JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
                 if (javaFileObject instanceof JarEntryFileObject) {
-                    return new JavaFileObject() {
-                        @Override
-                        public boolean delete() {
-                            return javaFileObject.delete();
-                        }
-                        @Override
-                        public CharSequence getCharContent(boolean arg0)
-                                throws IOException {
-                            return javaFileObject.getCharContent(arg0);
-                        }
-                        @Override
-                        public long getLastModified() {
-                            return javaFileObject.getLastModified();
-                        }
-                        @Override
-                        public String getName() {
-                            return javaFileObject.getName();
-                        }
-                        @Override
-                        public InputStream openInputStream() throws IOException {
-                            return javaFileObject.openInputStream();
-                        }
-                        @Override
-                        public OutputStream openOutputStream()
-                                throws IOException {
-                            final OutputStream jarStream = javaFileObject.openOutputStream();
-                            File classFile = fileName.getFile(ceylonOutputDirectory);
-                            classFile.getParentFile().mkdirs();
-                            final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
-                            return new FilterOutputStream(jarStream){
-                                @Override
-                                public void write(int b) throws IOException {
-                                    jarStream.write(b);
-                                    classFileStream.write(b);
+                    try {
+                        final File classFile = fileName.getFile(ceylonOutputDirectory);
+                        classFile.getParentFile().mkdirs();
+                        return new JavaFileObject() {
+                            @Override
+                            public boolean delete() {
+                                return javaFileObject.delete();
+                            }
+                            @Override
+                            public CharSequence getCharContent(boolean arg0)
+                                    throws IOException {
+                                return javaFileObject.getCharContent(arg0);
+                            }
+                            @Override
+                            public long getLastModified() {
+                                return javaFileObject.getLastModified();
+                            }
+                            @Override
+                            public String getName() {
+                                return javaFileObject.getName();
+                            }
+                            @Override
+                            public InputStream openInputStream() throws IOException {
+                                return javaFileObject.openInputStream();
+                            }
+                            @Override
+                            public OutputStream openOutputStream()
+                                    throws IOException {
+                                final OutputStream jarStream = javaFileObject.openOutputStream();
+                                try {
+                                    final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
+                                    return new FilterOutputStream(jarStream){
+                                        @Override
+                                        public void write(int b) throws IOException {
+                                            jarStream.write(b);
+                                            classFileStream.write(b);
+                                        }
+                                        @Override
+                                        public void write(byte[] b, int off, int len)
+                                                throws IOException {
+                                            jarStream.write(b, off, len);
+                                            classFileStream.write(b, off, len);
+                                        }
+                                        @Override
+                                        public void write(byte[] b) throws IOException {
+                                            jarStream.write(b);
+                                            classFileStream.write(b);
+                                        }
+                                        @Override
+                                        public void close() throws IOException {
+                                            classFileStream.close();
+                                        }
+                                        @Override
+                                        public void flush() throws IOException {
+                                            super.flush();
+                                            classFileStream.flush();
+                                        }
+                                    };
                                 }
-                                @Override
-                                public void close() throws IOException {
-                                    classFileStream.close();
+                                catch(Exception e) {
+                                    CeylonPlugin.log(e);
                                 }
-                                @Override
-                                public void flush() throws IOException {
-                                    super.flush();
-                                    classFileStream.flush();
-                                }
-                                @Override
-                                public void write(byte[] b, int off, int len)
-                                        throws IOException {
-                                    jarStream.write(b, off, len);
-                                    classFileStream.write(b);
-                                }
-                                @Override
-                                public void write(byte[] b) throws IOException {
-                                    jarStream.write(b);
-                                    classFileStream.write(b);
-                                }
-                            };
-                        }
-                        @Override
-                        public Reader openReader(boolean arg0)
-                                throws IOException {
-                            return javaFileObject.openReader(arg0);
-                        }
-                        @Override
-                        public Writer openWriter() throws IOException {
-                            return javaFileObject.openWriter();
-                        }
-                        @Override
-                        public URI toUri() {
-                            return javaFileObject.toUri();
-                        }
-                        @Override
-                        public Modifier getAccessLevel() {
-                            return javaFileObject.getAccessLevel();
-                        }
-                        @Override
-                        public Kind getKind() {
-                            return javaFileObject.getKind();
-                        }
-                        @Override
-                        public NestingKind getNestingKind() {
-                            return javaFileObject.getNestingKind();
-                        }
-                        @Override
-                        public boolean isNameCompatible(String simpleName,
-                                Kind kind) {
-                            return javaFileObject.isNameCompatible(simpleName, kind);
-                        }
-                    };
+                                return jarStream;
+                            }
+                            @Override
+                            public Reader openReader(boolean arg0)
+                                    throws IOException {
+                                return javaFileObject.openReader(arg0);
+                            }
+                            @Override
+                            public Writer openWriter() throws IOException {
+                                return javaFileObject.openWriter();
+                            }
+                            @Override
+                            public URI toUri() {
+                                return javaFileObject.toUri();
+                            }
+                            @Override
+                            public Modifier getAccessLevel() {
+                                return javaFileObject.getAccessLevel();
+                            }
+                            @Override
+                            public Kind getKind() {
+                                return javaFileObject.getKind();
+                            }
+                            @Override
+                            public NestingKind getNestingKind() {
+                                return javaFileObject.getNestingKind();
+                            }
+                            @Override
+                            public boolean isNameCompatible(String simpleName,
+                                    Kind kind) {
+                                return javaFileObject.isNameCompatible(simpleName, kind);
+                            }
+                        };
+                    } catch(Exception e) {
+                        CeylonPlugin.log(e);
+                    }
                 }
                 return javaFileObject;
             }
