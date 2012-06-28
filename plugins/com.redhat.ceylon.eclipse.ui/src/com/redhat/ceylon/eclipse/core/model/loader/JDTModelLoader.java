@@ -408,7 +408,12 @@ public class JDTModelLoader extends AbstractModelLoader {
                         }
                     }
 
-                    IBinaryType binaryType = classFile.getBinaryTypeInfo((IFile) classFile.getCorrespondingResource(), true);
+                    IFile underlyingResource = (IFile) classFile.getCorrespondingResource();
+                    if (underlyingResource == null || !underlyingResource.exists()) {
+                        return null;
+                    }
+                    
+                    IBinaryType binaryType = classFile.getBinaryTypeInfo(underlyingResource, true);
                     BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
                     if (binaryTypeBinding == null) {
                         char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
