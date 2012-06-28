@@ -29,7 +29,6 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.FileObject;
-import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -90,8 +89,6 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-
-import sun.tools.jar.resources.jar;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -1399,6 +1396,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         options.add("-src");
         options.add(srcPath);
+        options.add("-encoding");
+        options.add(project.getDefaultCharset());
         
         for (String repository : getUserRepositories(project)) {
             options.add("-rep");
@@ -2181,7 +2180,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return (IFile) ((ResourceVirtualFile) phasedUnit.getUnitFile()).getResource();
     }
 
-    // TODO penser à : doRefresh(file.getParent()); // N.B.: Assumes all
+    // TODO think: doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
 
     public static int priority(Token token) {
