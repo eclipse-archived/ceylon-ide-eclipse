@@ -277,7 +277,8 @@ public class JDTModuleManager extends LazyModuleManager {
     private void addErrorToModule(List<String> moduleName, String error) {
         if (addErrorToModuleMethod == null) {
             try {
-                addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", new Class[] {List.class, String.class});
+                addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", 
+                		new Class[] {List.class, String.class});
                 addErrorToModuleMethod.setAccessible(true);
                 addErrorToModuleMethod.invoke(this, new Object[] {moduleName, error});
             } catch (SecurityException e) {
@@ -298,9 +299,11 @@ public class JDTModuleManager extends LazyModuleManager {
     
     // Todo : to push into the base ModelManager class
     public void addTopLevelModuleError() {
-        addErrorToModule(new ArrayList<String>(), "A module cannot be defined at the top level of the hierarchy");
+        addErrorToModule(new ArrayList<String>(), 
+        		"A module cannot be defined at the top level of the hierarchy");
     }
-    public void addTwoModulesInHierarchyError(List<String> existingModuleName, List<String> newModulePackageName) {
+    public void addTwoModulesInHierarchyError(List<String> existingModuleName, 
+    		List<String> newModulePackageName) {
         StringBuilder error = new StringBuilder("Found two modules within the same hierarchy: '");
         error.append( formatPath( existingModuleName ) )
             .append( "' and '" )
@@ -325,9 +328,11 @@ public class JDTModuleManager extends LazyModuleManager {
             protected void parseFile(VirtualFile file, VirtualFile srcDir)
                     throws Exception {
                 if (file.getName().endsWith(".ceylon")) {
-
-                    //System.out.println("Parsing " + file.getName());
-                    CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(), System.getProperty("file.encoding")));
+                    CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(),
+                    		//TODO: is this correct? does this file actually
+                    		//      live in the project, or is it external?
+                    		//       should VirtualFile have a getCharset()?
+                    		javaProject.getProject().getDefaultCharset()));
                     CommonTokenStream tokenStream = new CommonTokenStream(lexer);
                     CeylonParser parser = new CeylonParser(tokenStream);
                     Tree.CompilationUnit cu = parser.compilationUnit();
