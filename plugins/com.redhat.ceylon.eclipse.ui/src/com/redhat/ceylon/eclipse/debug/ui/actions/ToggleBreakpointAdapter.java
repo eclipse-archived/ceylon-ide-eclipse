@@ -78,7 +78,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     public void setLineBreakpoint(IFile file, int lineNumber) throws CoreException {
         String srcFileName= file.getName();
         String typeName= srcFileName.substring(0, srcFileName.lastIndexOf('.'));
-        Map<String,String> bkptAttributes= new HashMap<String, String>();
+        Map<String,Object> bkptAttributes= new HashMap<String, Object>();
         bkptAttributes.put("org.eclipse.jdt.debug.core.sourceName", srcFileName);
         bkptAttributes.put("org.eclipse.jdt.debug.core.typeName", typeName);
 
