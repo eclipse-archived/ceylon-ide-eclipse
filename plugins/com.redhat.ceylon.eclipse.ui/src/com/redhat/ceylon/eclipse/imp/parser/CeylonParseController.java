@@ -1,5 +1,14 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
+import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getModulesOutputDirectory;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectModelLoader;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectRepositoryManager;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getUserRepositories;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.isModelAvailable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +42,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -193,13 +201,13 @@ public class CeylonParseController extends ParseControllerBase {
                 //the repo by iterating all repos referenced
                 //by all projects
 
-                String osFileString = path.toOSString();
+                String pathString = path.toString();
                 String artifactName = null;
                 String version = null;
-                int lastColonIdx = osFileString.lastIndexOf('!');
+                int lastColonIdx = pathString.lastIndexOf('!');
                 if (lastColonIdx > 0) {
-                    String srcArchivePath= osFileString.substring(0, lastColonIdx);
-                    String separator = Pattern.quote(File.separator);
+                    String srcArchivePath= pathString.substring(0, lastColonIdx);
+                    String separator = Pattern.quote("/");
                     String hyphen = Pattern.quote("-");
                     String dot = Pattern.quote(".");
                     Pattern pattern = Pattern.compile(".*" + separator + "([^" + separator + "]+)" + hyphen + "(.+)" + dot + "src");
@@ -208,14 +216,15 @@ public class CeylonParseController extends ParseControllerBase {
                         artifactName = matcher.group(1);
                         version = matcher.group(2);
                     }
+                    srcDir = new TemporaryFile(srcArchivePath+'!');
                 }
                 
                 for (IProject p: CeylonBuilder.getProjects()) {
                     boolean found = false;
-                    RepositoryManager manager = CeylonBuilder.getProjectRepositoryManager(project);
+                    //RepositoryManager manager = getProjectRepositoryManager(project);
                     
                     if (artifactName != null && version != null) {
-                        RepositoryManager repositoryManager = CeylonBuilder.getProjectRepositoryManager(p);
+                        RepositoryManager repositoryManager = getProjectRepositoryManager(p);
                         File artifact = null;
                         artifact = repositoryManager.getArtifact(artifactName, version);
                         if (artifact != null) {
@@ -239,11 +248,11 @@ public class CeylonParseController extends ParseControllerBase {
         }
 
         if (project != null) {
-            if (! CeylonBuilder.isModelAvailable(project)) {
+            if (!isModelAvailable(project)) {
                 return fCurrentAst; // TypeChecking has not been performed.
             }
-            typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-            modelLoader = CeylonBuilder.getProjectModelLoader(project);
+            typeChecker = getProjectTypeChecker(project);
+            modelLoader = getProjectModelLoader(project);
         }
         
         //System.out.println("Compiling " + file.getPath());
@@ -288,9 +297,9 @@ public class CeylonParseController extends ParseControllerBase {
                         //the repo by iterating all repos referenced
                         //by all projects
 
-                        for (IProject p: CeylonBuilder.getProjects()) {
+                        for (IProject p: getProjects()) {
                             boolean found = false;
-                            for (String repo: CeylonBuilder.getUserRepositories(p)) {
+                            for (String repo: getUserRepositories(p)) {
                                 if (path.toString().startsWith(repo)) {
                                     repos.add(repo);
                                     found=true;
@@ -303,16 +312,16 @@ public class CeylonParseController extends ParseControllerBase {
                     }
                 }
                 else {
-                    for (String repo : CeylonBuilder.getUserRepositories(project)) {
+                    for (String repo: getUserRepositories(project)) {
                         repos.add(repo);
                     }
-                    repos.add(CeylonBuilder.getModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
+                    repos.add(getModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
                 }
             } 
             catch (CoreException e) {
                 return fCurrentAst; 
             }
-        	tcb.setRepositoryManager(Util.makeRepositoryManager(repos, null, new EclipseLogger()));
+        	tcb.setRepositoryManager(makeRepositoryManager(repos, null, new EclipseLogger()));
             
         	TypeChecker tc = tcb.getTypeChecker();
             tc.process();
@@ -370,14 +379,16 @@ public class CeylonParseController extends ParseControllerBase {
                                 pkg = p;
                                 break;
                             }
-                            if (pkg != null) {
-                                break;
-                            }
+                        }
+                        if (pkg != null) {
+                            break;
                         }
                     }
+                    //TODO: is this better?
+                    //pkg = modelLoader.findPackage(packageName);
                 }
                 if (pkg == null) {
-                    // Add the default package
+                    // assume the default package
                     pkg = modules.getDefaultModule().getPackages().get(0);
                     
                     // TODO : iterate through parents to get the sub-package 
