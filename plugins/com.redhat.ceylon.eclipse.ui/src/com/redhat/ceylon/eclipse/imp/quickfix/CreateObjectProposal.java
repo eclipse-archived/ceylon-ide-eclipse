@@ -52,9 +52,9 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
         if (s!=null) {
             ProducedType type = CreateSubtypeProposal.getType(cu, node);
             if (type!=null && 
-                    (type.getDeclaration() instanceof ClassOrInterface ||
-                     type.getDeclaration() instanceof IntersectionType) &&
-                     type.getDeclaration().isExtendable()) {
+                    (type.getDeclaration() instanceof ClassOrInterface &&
+                            type.getDeclaration().isExtendable() ||
+                     type.getDeclaration() instanceof IntersectionType)) {
                 TextChange change = new DocumentChange("Create Object", doc);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = s.getStartIndex();
