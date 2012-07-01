@@ -1412,7 +1412,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         IJavaProject javaProject = JavaCore.create(project);
         final File modulesOutputDir = getModulesOutputDirectory(javaProject);
-        final File ceylonOutputDir = getCeylonOutputDirectory(javaProject);
+        //final File ceylonOutputDir = getCeylonOutputDirectory(javaProject);
         if (modulesOutputDir!=null) {
             options.add("-out");
             options.add(modulesOutputDir.getAbsolutePath());
@@ -1499,11 +1499,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
-
-        IJavaProject javaProject = JavaCore.create(project);
-        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
         
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
+        	final IJavaProject javaProject = JavaCore.create(project);
+            final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
             @Override
             protected JavaFileObject getFileForOutput(Location location,
                     final RelativeFile fileName, FileObject sibling)
@@ -1540,8 +1539,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     throws IOException {
                                 final OutputStream jarStream = javaFileObject.openOutputStream();
                                 try {
-                                    final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
-                                    return new FilterOutputStream(jarStream){
+                                    return new OutputStream() {
+                                        final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
                                         @Override
                                         public void write(int b) throws IOException {
                                             jarStream.write(b);
@@ -1561,18 +1560,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                         @Override
                                         public void close() throws IOException {
                                             classFileStream.close();
+                                            jarStream.close();
                                         }
                                         @Override
                                         public void flush() throws IOException {
-                                            super.flush();
                                             classFileStream.flush();
+                                            jarStream.flush();
                                         }
                                     };
                                 }
-                                catch(Exception e) {
+                                catch (Exception e) {
                                     CeylonPlugin.log(e);
+                                    return jarStream;
                                 }
-                                return jarStream;
                             }
                             @Override
                             public Reader openReader(boolean arg0)
