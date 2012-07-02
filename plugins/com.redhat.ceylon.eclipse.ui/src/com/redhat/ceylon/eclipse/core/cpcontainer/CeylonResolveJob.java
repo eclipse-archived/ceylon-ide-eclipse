@@ -19,20 +19,14 @@ package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -41,17 +35,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
-import ceylon.language.descriptor.Module;
-
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -67,7 +58,7 @@ public class CeylonResolveJob extends Job {
     }
 
     public CeylonResolveJob(CeylonClasspathContainer container) {
-        super("Ceylon resolve job of project " + container.getJavaProject().getElementName());
+        super("Ceylon resolve job for project " + container.getJavaProject().getElementName());
         this.container = container;
     }
 
@@ -94,10 +85,15 @@ public class CeylonResolveJob extends Job {
                                     paths.add(JavaCore.newLibraryEntry(classpathArtifact, srcArtifact, null));
                                 }
                             }
-                            IFolder outputFolder = project.getFolder("JDTClasses");
-                            IPath ceylonOutputDirectory = outputFolder.getFullPath();
-                            IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
-                            paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
+                            IEclipsePreferences node = new ProjectScope(project)
+                                    .getNode(CeylonPlugin.PLUGIN_ID);
+                            final boolean enabedJdtClassesDir = node.getBoolean("jdtClasses", false);
+                            if (enabedJdtClassesDir) {
+                            	IFolder outputFolder = project.getFolder("JDTClasses");
+                            	IPath ceylonOutputDirectory = outputFolder.getFullPath();
+                            	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
+                            	paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
+                            }
                         }
                         else {
                             setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed"));

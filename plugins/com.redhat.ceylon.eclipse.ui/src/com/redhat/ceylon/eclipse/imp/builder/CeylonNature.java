@@ -58,8 +58,7 @@ public class CeylonNature extends ProjectNatureBase {
             else {
                 newEntries.add(newEntry);
             }
-            entries = (IClasspathEntry[]) newEntries
-                    .toArray(new IClasspathEntry[newEntries.size()]);
+            entries = (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
             javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
             ceyloncp.launchResolve(true, null);
         } catch (JavaModelException e) {

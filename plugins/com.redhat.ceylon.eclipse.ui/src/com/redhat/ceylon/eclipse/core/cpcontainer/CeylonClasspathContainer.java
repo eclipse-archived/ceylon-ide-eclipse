@@ -17,11 +17,6 @@
  */
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Comparator;
-
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,7 +40,6 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -95,7 +89,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     }
 
     public String getDescription() {
-        return "Ceylon libraries";
+        return "Ceylon Modules";
     }
 
     public int getKind() {

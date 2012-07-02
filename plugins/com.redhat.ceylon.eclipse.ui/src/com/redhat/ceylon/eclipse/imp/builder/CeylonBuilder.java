@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.get
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,6 +59,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.core.ErrorHandler;
 import org.eclipse.imp.language.Language;
@@ -690,9 +690,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
-                doRefresh(project.getFolder("JDTClasses"));
             }
             
+            doRefresh(project.getFolder("JDTClasses"));
+
             if (!binariesGenerationOK) {
                 // Add a problem marker if binary generation went wrong for ceylon files
                 IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
@@ -771,6 +772,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                     if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
                                         // If a module descriptor has been added, removed or changed, resolve the Ceylon classpath container
                                         mustResolveClasspathContainer.value = true;
+                                        //mustDoFullBuild.value = true;
                                         return false;
                                     }
                                     if ( isCeylonOrJava((IFile)resource) ) {
@@ -1500,6 +1502,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
         
+        IEclipsePreferences node = new ProjectScope(project)
+                .getNode(CeylonPlugin.PLUGIN_ID);
+        final boolean enabedJdtClassesDir = node.getBoolean("jdtClasses", false);        
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
         	final IJavaProject javaProject = JavaCore.create(project);
             final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
@@ -1511,7 +1516,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 if (javaFileObject instanceof JarEntryFileObject) {
                     try {
                         final File classFile = fileName.getFile(ceylonOutputDirectory);
-                        classFile.getParentFile().mkdirs();
+                        if (enabedJdtClassesDir) {
+                        	classFile.getParentFile().mkdirs();
+                        }
                         return new JavaFileObject() {
                             @Override
                             public boolean delete() {
@@ -1538,6 +1545,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                             public OutputStream openOutputStream()
                                     throws IOException {
                                 final OutputStream jarStream = javaFileObject.openOutputStream();
+                                if (!enabedJdtClassesDir) return jarStream;
                                 try {
                                     return new OutputStream() {
                                         final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
@@ -1575,9 +1583,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 }
                             }
                             @Override
-                            public Reader openReader(boolean arg0)
+                            public Reader openReader(boolean b)
                                     throws IOException {
-                                return javaFileObject.openReader(arg0);
+                                return javaFileObject.openReader(b);
                             }
                             @Override
                             public Writer openWriter() throws IOException {
@@ -1640,28 +1648,31 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             javaProjects.add(JavaCore.create(requiredProject));
         }
 
-        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        for (IJavaProject javaProj : javaProjects) {
-            try {
-                List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProj);
-                for (CeylonClasspathContainer container : containers) {
-                    for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
-                        if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
-                            classpathElements.add(cpEntry.getPath().toOSString());
-                        }
-                    }
-                }
-                
-                classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
-                for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
-                    if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
-                        classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
-                    }
-                }
-            } catch (JavaModelException e1) {
-                CeylonPlugin.log(e1);
-            }
+        if (enabedJdtClassesDir) {
+        	IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
+        	for (IJavaProject javaProj : javaProjects) {
+        		try {
+        			List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProj);
+        			for (CeylonClasspathContainer container : containers) {
+        				for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
+        					if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+        						classpathElements.add(cpEntry.getPath().toOSString());
+        					}
+        				}
+        			}
+
+        			classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+        			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
+        				if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+        					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+        				}
+        			}
+        		} catch (JavaModelException e1) {
+        			CeylonPlugin.log(e1);
+        		}
+        	}
         }
+        
         options.add("-classpath");
         String classpath = "";
         for (String cpElement : classpathElements) {
@@ -1872,9 +1883,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static File getCeylonRepository(IProject project) {
-        String repoPath = new ProjectScope(project)
-                .getNode(CeylonPlugin.PLUGIN_ID)
-                .get("repo", null);
+        IEclipsePreferences node = new ProjectScope(project)
+                .getNode(CeylonPlugin.PLUGIN_ID);
+		String repoPath = node.get("repo", null);
         //project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID,"repo"));
         File repo;
         if (repoPath==null) {
@@ -1964,7 +1975,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     protected void doRefresh(final IResource resource) {
         IWorkspaceRunnable r= new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
-                resource.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                resource.refreshLocal(IResource.DEPTH_INFINITE, null);
             }
         };
         try {
@@ -2495,6 +2506,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     public static File getCeylonOutputDirectory(IJavaProject javaProject) {
         File ceylonOutputDir = javaProject.getProject().getFolder("JDTClasses").getRawLocation().toFile();
+        //TODO: don't auto-create it!
+        //      at least not when it's not enabled
         if (! ceylonOutputDir.exists()) {
             ceylonOutputDir.mkdirs();
         }
