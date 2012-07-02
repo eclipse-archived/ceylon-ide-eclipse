@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -35,8 +35,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
-import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathContainer;
-import com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.IPackageFragmentExtraInfo;
 import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.PreferenceStoreInfo;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
@@ -250,15 +248,15 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                                     if (project.hasNature(CeylonNature.NATURE_ID)) {
                                         IJavaProject javaProject = JavaCore.create(project);
                                         if (javaProject != null) {
-                                            List<CeylonClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
-                                            for (CeylonClasspathContainer container : cpContainers) {
+                                            //List<CeylonClasspathContainer> cpContainers = 
+                                            getCeylonClasspathContainers(javaProject);
+                                            /*for (CeylonClasspathContainer container : cpContainers) {
                                                 container.launchResolve(false, null);
-                                            }
+                                            }*/
                                         }
                                     }
                                 }
                             } catch (CoreException e) {
-                                // TODO Auto-generated catch block
                                 e.printStackTrace();
                             }
                         }
@@ -266,7 +264,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                     }
                 });
             } catch (CoreException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
