@@ -71,6 +71,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     private String repositoryPath;
     private boolean useEmbeddedRepo=true;
+    private boolean enableJdtClassesDir=false;
     
     public NewProjectWizard() {
         this(null, null);
@@ -161,6 +162,11 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     
     //TODO: fix copy/paste!
     void addSelectRepo(Composite parent) {
+        final Button enableJdtClasses = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableJdtClasses.setSelection(false);
+        enableJdtClasses.setEnabled(true);
+
         //final Composite composite= new Composite(parent, SWT.NONE);
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
         composite.setText("Ceylon module repository");
@@ -242,6 +248,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        enableJdtClasses.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	enableJdtClassesDir = !enableJdtClassesDir;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
     }
     
     public boolean isRepoValid() {
@@ -284,6 +299,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             }
         }
         if (!isRepoValid()) return false;
+        
         boolean res= super.performFinish();
         if (res) {
             final IJavaElement newElement= getCreatedElement();
@@ -296,6 +312,27 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
             selectAndReveal(fSecondPage.getJavaProject().getProject());             
 
+            IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
+                    .getNode(CeylonPlugin.PLUGIN_ID);
+
+            if (enableJdtClassesDir) {
+            	node.putBoolean("jdtClasses", true);
+            }
+            
+            if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
+                node.put("repo", repositoryPath);
+                try {
+                    node.flush();
+                } 
+                catch (BackingStoreException e) {
+                    e.printStackTrace();
+                }
+                /*getCreatedElement().getProject()
+                        .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
+                                repositoryPath);*/
+                ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+            }
+            
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
                     IWorkbenchPart activePart= getActivePart();
@@ -305,22 +342,6 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             });
             new CeylonNature().addToProject(getCreatedElement().getProject());
-        }
-        
-        if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
-            IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
-                    .getNode(CeylonPlugin.PLUGIN_ID);
-            node.put("repo", repositoryPath);
-            try {
-                node.flush();
-            } 
-            catch (BackingStoreException e) {
-                e.printStackTrace();
-            }
-            /*getCreatedElement().getProject()
-                    .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
-                            repositoryPath);*/
-            ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
         }
         
         /*IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())

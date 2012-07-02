@@ -1,17 +1,15 @@
 package com.redhat.ceylon.eclipse.imp.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -39,9 +37,11 @@ public class CeylonPreferencesPage extends PropertyPage {
 
     private String repositoryPath;
     private boolean useEmbeddedRepo;
+    private boolean enableJdtClassesDir;
     
     private Button useEmbedded;
-    
+    private Button enableJdtClasses;
+
     //TODO: fix copy/paste!
     public boolean isRepoValid() {
         if (useEmbeddedRepo) {
@@ -82,13 +82,16 @@ public class CeylonPreferencesPage extends PropertyPage {
     protected void performDefaults() {
         useEmbeddedRepo=true;
         useEmbedded.setSelection(true);
+        enableJdtClassesDir=false;
+        enableJdtClasses.setSelection(false);
         selectFolder.setEnabled(false);
         folder.setEnabled(false);
         super.performDefaults();
     }
     
     private void store() {
-        IEclipsePreferences node = new ProjectScope(getSelectedProject())
+        final IProject project = getSelectedProject();
+		IEclipsePreferences node = new ProjectScope(project)
                 .getNode(CeylonPlugin.PLUGIN_ID);
         if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
             node.put("repo", repositoryPath);
@@ -100,13 +103,31 @@ public class CeylonPreferencesPage extends PropertyPage {
         else if (useEmbeddedRepo) {
             node.remove("repo");
         }
+        if (enableJdtClassesDir) {
+        	node.putBoolean("jdtClasses", true);;
+        }
+        else {
+        	node.remove("jdtClasses");
+            IWorkspaceRunnable r= new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException {
+                	project.getFolder("JDTClasses").delete(true, null);
+                }
+            };
+            try {
+                project.getWorkspace().run(r, project, IWorkspace.AVOID_UPDATE, null);
+            } 
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
         try {
             node.flush();
         } 
         catch (BackingStoreException e) {
             e.printStackTrace();
         }
-        Job buildJob = new Job("Rebuilding Ceylon project " + getSelectedProject().getName()) {
+    	new CeylonNature().addToProject(project);
+        /*Job buildJob = new Job("Rebuilding Ceylon project " + getSelectedProject().getName()) {
             @Override
             public IStatus run(IProgressMonitor monitor) {
                 try {
@@ -120,7 +141,7 @@ public class CeylonPreferencesPage extends PropertyPage {
             }
 
         };
-        buildJob.schedule();
+        buildJob.schedule();*/
     }
 
     private IProject getSelectedProject() {
@@ -148,6 +169,11 @@ public class CeylonPreferencesPage extends PropertyPage {
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
 
+        enableJdtClasses = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableJdtClasses.setSelection(enableJdtClassesDir);
+        enableJdtClasses.setEnabled(builderEnabled);
+
         Label title = new Label(parent, SWT.LEFT | SWT.WRAP);
         title.setText("The Ceylon module repository contains dependencies:");
         //final Composite composite= new Composite(parent, SWT.NONE);
@@ -165,9 +191,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         igd.horizontalSpan = 4;
         igd.grabExcessHorizontalSpace = true;
         useEmbedded.setLayoutData(igd);
-
         useEmbedded.setSelection(useEmbeddedRepo);
-        
         useEmbedded.setEnabled(builderEnabled);
 
         Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
@@ -245,12 +269,22 @@ public class CeylonPreferencesPage extends PropertyPage {
                 new CeylonNature().addToProject(getSelectedProject());
                 enableBuilder.setEnabled(false);
                 useEmbedded.setEnabled(true);
+                enableJdtClasses.setEnabled(true);
                 builderEnabled=true;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
     
+        enableJdtClasses.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	enableJdtClassesDir = !enableJdtClassesDir;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
         if (useEmbeddedRepo) {
             setErrorMessage(null);
         }
@@ -272,10 +306,11 @@ public class CeylonPreferencesPage extends PropertyPage {
             e.printStackTrace();
         }
         
-        repositoryPath = new ProjectScope(getSelectedProject())
-                .getNode(CeylonPlugin.PLUGIN_ID)
-                .get("repo", null);
+        IEclipsePreferences node = new ProjectScope(getSelectedProject())
+                .getNode(CeylonPlugin.PLUGIN_ID);
+		repositoryPath = node.get("repo", null);
         useEmbeddedRepo = repositoryPath==null;
+        enableJdtClassesDir = node.getBoolean("jdtClasses", false);
 
         addSelectRepo(composite);
         return composite;
