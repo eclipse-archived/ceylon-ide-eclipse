@@ -692,7 +692,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.worked(1);
             }
             
-            doRefresh(project.getFolder("JDTClasses"));
+            if (getJdtClassesEnabled(project)) {
+            	doRefresh(project.getFolder("JDTClasses"));
+            }
 
             if (!binariesGenerationOK) {
                 // Add a problem marker if binary generation went wrong for ceylon files
@@ -1502,12 +1504,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
         
-        IEclipsePreferences node = new ProjectScope(project)
-                .getNode(CeylonPlugin.PLUGIN_ID);
-        final boolean enabedJdtClassesDir = node.getBoolean("jdtClasses", false);        
+        final boolean enabedJdtClassesDir = getJdtClassesEnabled(project);        
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
         	final IJavaProject javaProject = JavaCore.create(project);
-            final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+            final File ceylonOutputDirectory = enabedJdtClassesDir ? getCeylonOutputDirectory(javaProject) : null;
             @Override
             protected JavaFileObject getFileForOutput(Location location,
                     final RelativeFile fileName, FileObject sibling)
@@ -1515,9 +1515,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 final JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
                 if (javaFileObject instanceof JarEntryFileObject) {
                     try {
-                        final File classFile = fileName.getFile(ceylonOutputDirectory);
+                        final File classFile;
                         if (enabedJdtClassesDir) {
+                        	classFile = fileName.getFile(ceylonOutputDirectory);
                         	classFile.getParentFile().mkdirs();
+                        }
+                        else {
+                        	classFile = null;
                         }
                         return new JavaFileObject() {
                             @Override
@@ -1545,7 +1549,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                             public OutputStream openOutputStream()
                                     throws IOException {
                                 final OutputStream jarStream = javaFileObject.openOutputStream();
-                                if (!enabedJdtClassesDir) return jarStream;
+                                if (!enabedJdtClassesDir) {
+                                	return jarStream;
+                                }
                                 try {
                                     return new OutputStream() {
                                         final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
@@ -1805,6 +1811,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         return success;
     }
+
+	public static boolean getJdtClassesEnabled(final IProject project) {
+		IEclipsePreferences node = new ProjectScope(project)
+                .getNode(CeylonPlugin.PLUGIN_ID);
+        return node.getBoolean("jdtClasses", false);
+	}
 
     public static String fileName(ClassMirror c) {
         if (c instanceof JavacClass) {
@@ -2152,7 +2164,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (modulesOutputDirectory != null) {
             monitor.subTask("Cleaning existing artifacts");
             List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
-            new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, new RepositoryLister.Actions() {
+            new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
+            		new RepositoryLister.Actions() {
                 @Override
                 public void doWithFile(File path) {
                     path.delete();
@@ -2166,20 +2179,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             });
         }
 
-        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
-        if (ceylonOutputDirectory != null) {
-            new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, new RepositoryLister.Actions() {
-                @Override
-                public void doWithFile(File path) {
-                    path.delete();
-                }
-                
-                public void exitDirectory(File path) {
-                    if (path.list().length == 0 && ! path.equals(ceylonOutputDirectory)) {
-                        path.delete();
-                    }
-                }
-            });
+        if (getJdtClassesEnabled(getProject())) {
+	        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+	        new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, 
+	        		new RepositoryLister.Actions() {
+	        	@Override
+	        	public void doWithFile(File path) {
+	        		path.delete();
+	        	}
+
+	        	public void exitDirectory(File path) {
+	        		if (path.list().length == 0 && !path.equals(ceylonOutputDirectory)) {
+	        			path.delete();
+	        		}
+	        	}
+	        });
         }
         
         monitor.subTask("Clear project and source markers");
@@ -2437,7 +2451,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             IJavaProject javaProject = JavaCore.create(project);
             final File modulesOutputDirectory = getModulesOutputDirectory(javaProject);
-            final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
+            boolean jdtClassesEnabled = getJdtClassesEnabled(project);
+			final File ceylonOutputDirectory = jdtClassesEnabled ? 
+            		getCeylonOutputDirectory(javaProject) : null;
 
             File moduleDir = Util.getModulePath(modulesOutputDirectory, module);
             File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
@@ -2464,8 +2480,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
-                        File classFile = new File(ceylonOutputDirectory, entryToDelete.replace('/', File.separatorChar));
-                        classFile.delete();
+                        if (jdtClassesEnabled) {
+	                        new File(ceylonOutputDirectory, 
+	                        		entryToDelete.replace('/', File.separatorChar))
+	                                .delete();
+                        }
                     }
                 } catch (ZipException e) {
                     // TODO Auto-generated catch block
@@ -2505,13 +2524,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static File getCeylonOutputDirectory(IJavaProject javaProject) {
-        File ceylonOutputDir = javaProject.getProject().getFolder("JDTClasses").getRawLocation().toFile();
-        //TODO: don't auto-create it!
-        //      at least not when it's not enabled
-        if (! ceylonOutputDir.exists()) {
-            ceylonOutputDir.mkdirs();
-        }
-        return ceylonOutputDir;
+        return javaProject.getProject().getFolder("JDTClasses").getRawLocation().toFile();
     }
 
     public static File getModulesOutputDirectory(IJavaProject javaProject) {

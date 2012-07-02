@@ -17,6 +17,8 @@
  */
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -85,10 +87,7 @@ public class CeylonResolveJob extends Job {
                                     paths.add(JavaCore.newLibraryEntry(classpathArtifact, srcArtifact, null));
                                 }
                             }
-                            IEclipsePreferences node = new ProjectScope(project)
-                                    .getNode(CeylonPlugin.PLUGIN_ID);
-                            final boolean enabedJdtClassesDir = node.getBoolean("jdtClasses", false);
-                            if (enabedJdtClassesDir) {
+                            if (getJdtClassesEnabled(project)) {
                             	IFolder outputFolder = project.getFolder("JDTClasses");
                             	IPath ceylonOutputDirectory = outputFolder.getFullPath();
                             	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();

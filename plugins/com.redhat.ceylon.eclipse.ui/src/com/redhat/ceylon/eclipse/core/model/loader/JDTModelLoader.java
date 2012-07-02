@@ -403,7 +403,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 if (classFile != null) {
                     IPackageFragmentRoot fragmentRoot = classFile.getPackageFragmentRoot();
                     if (fragmentRoot != null) {
-                        if (fragmentRoot.getPath().toFile().equals(CeylonBuilder.getCeylonOutputDirectory(javaProject))) {
+                        if (fragmentRoot.getPath().lastSegment().equals("JDTClasses")) {
                             return null;
                         }
                     }
