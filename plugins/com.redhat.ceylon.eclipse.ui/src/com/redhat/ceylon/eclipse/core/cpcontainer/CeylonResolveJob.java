@@ -26,10 +26,6 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,7 +33,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -67,12 +62,12 @@ public class CeylonResolveJob extends Job {
     protected IStatus run(IProgressMonitor monitor) {
 
         try {
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            //final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
 
-            final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
+            /*final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
                 @Override
-                public void run(IProgressMonitor monitor) {
+                public void run(IProgressMonitor monitor) {*/
                     try {
                         CeylonBuilder.parseCeylonModel(container.getJavaProject().getProject(), monitor);
                         IProject project = container.getJavaProject().getProject();
@@ -103,13 +98,13 @@ public class CeylonResolveJob extends Job {
                         setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed", e));
                     }
                     setStatus(Status.OK_STATUS);
-                }
+             /*   }
             };
             try {
                 workspace.run(buildJob, monitor);
             } catch (CoreException e) {
                 setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed", e));
-            }
+            }*/
             
             IClasspathEntry[] entries = (IClasspathEntry[]) paths.toArray(new IClasspathEntry[paths.size()]);
             
