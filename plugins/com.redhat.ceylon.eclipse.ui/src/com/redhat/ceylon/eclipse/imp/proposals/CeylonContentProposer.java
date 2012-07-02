@@ -1375,10 +1375,15 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
-            if (td.getType()!=null) {
-                ProducedType type = td.getType();
+            ProducedType type = td.getType();
+            if (type!=null) {
+                boolean isSequenced = (d instanceof Parameter) && 
+                		((Parameter) d).isSequenced();
                 if (pr!=null) {
                     type = type.substitute(pr.getTypeArguments());
+                }
+                if (isSequenced) {
+                	type = d.getUnit().getIteratedType(type);
                 }
                 String typeName = type.getProducedTypeName();
                 if (td instanceof Value && 
@@ -1396,6 +1401,9 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else {
                     result.append(typeName);
+                }
+                if (isSequenced) {
+                	result.append("...");
                 }
             }
         }
@@ -1427,8 +1435,14 @@ public class CeylonContentProposer implements IContentProposer {
         }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
-            if (td.getType()!=null) {
-                String typeName = td.getType().getProducedTypeName();
+            ProducedType type = td.getType();
+			if (type!=null) {
+                boolean isSequenced = (d instanceof Parameter) && 
+                		((Parameter) d).isSequenced();
+                if (isSequenced) {
+                	type = d.getUnit().getIteratedType(type);
+                }
+                String typeName = type.getProducedTypeName();
                 if (td instanceof Value &&
                         td.getTypeDeclaration().isAnonymous()) {
                     result.append("object", KW_STYLER);
@@ -1444,6 +1458,9 @@ public class CeylonContentProposer implements IContentProposer {
                 }
                 else {
                     result.append(typeName, TYPE_STYLER);
+                }
+                if (isSequenced) {
+                	result.append("...");
                 }
             }
         }

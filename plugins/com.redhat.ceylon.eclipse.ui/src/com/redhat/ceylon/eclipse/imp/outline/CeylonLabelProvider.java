@@ -449,7 +449,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else {
             ProducedType tm = type.getTypeModel();
-            return tm==null ? "<Unknown>" : tm.getProducedTypeName();
+        	if (tm==null) {
+        		return "<Unknown>";
+        	}
+        	else {
+        		boolean sequenced = type instanceof Tree.SequencedType;
+        		if (sequenced) {
+        			tm = type.getUnit().getIteratedType(tm);
+        		}
+        		String tn = tm.getProducedTypeName();
+        		if (sequenced) {
+        			tn+="...";
+        		}
+				return tn;
+        	}
         }
     }
     
@@ -472,9 +485,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             int len = pl.getParameters().size(), i=0;
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
-                    label.append(type(p.getType()), TYPE_STYLER) 
-                            .append(" ")
-                            .append(name(p.getIdentifier()), ID_STYLER);
+                    label.append(type(p.getType()), TYPE_STYLER)
+                        .append(" ")
+                        .append(name(p.getIdentifier()), ID_STYLER);
                     if (p instanceof Tree.FunctionalParameterDeclaration) {
                         Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
                         for (Tree.ParameterList ipl: fp.getParameterLists()) {
