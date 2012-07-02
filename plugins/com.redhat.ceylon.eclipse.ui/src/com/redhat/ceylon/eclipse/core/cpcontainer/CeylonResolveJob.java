@@ -26,6 +26,9 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -60,14 +63,14 @@ public class CeylonResolveJob extends Job {
     }
 
     protected IStatus run(IProgressMonitor monitor) {
-
         try {
-            //final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
-
-            /*final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
+            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
+            	//The following code requires a lock on the workspace to
+            	//avoid concurrent access to the model
                 @Override
-                public void run(IProgressMonitor monitor) {*/
+                public void run(IProgressMonitor monitor) {
                     try {
                         CeylonBuilder.parseCeylonModel(container.getJavaProject().getProject(), monitor);
                         IProject project = container.getJavaProject().getProject();
@@ -88,6 +91,7 @@ public class CeylonResolveJob extends Job {
                             	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
                             	paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
                             }
+                            setStatus(Status.OK_STATUS);
                         }
                         else {
                             setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed"));
@@ -97,19 +101,16 @@ public class CeylonResolveJob extends Job {
                     } catch (IOException e) {
                         setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed", e));
                     }
-                    setStatus(Status.OK_STATUS);
-             /*   }
+                }
             };
             try {
                 workspace.run(buildJob, monitor);
             } catch (CoreException e) {
                 setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed", e));
-            }*/
-            
-            IClasspathEntry[] entries = (IClasspathEntry[]) paths.toArray(new IClasspathEntry[paths.size()]);
-            
+            }
+                        
             if (status == Status.OK_STATUS) {
-                container.updateClasspathEntries(entries);
+                container.updateClasspathEntries(paths.toArray(new IClasspathEntry[paths.size()]));
             }
             setResolveStatus(status);
             return status;
