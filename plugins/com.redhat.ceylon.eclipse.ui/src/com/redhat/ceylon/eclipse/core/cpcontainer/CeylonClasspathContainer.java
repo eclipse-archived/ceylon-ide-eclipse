@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -104,7 +103,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         return classpathEntries;
     }
 
-    private static final ISchedulingRule RESOLVE_EVENT_RULE = new ISchedulingRule() {
+    /*private static final ISchedulingRule RESOLVE_EVENT_RULE = new ISchedulingRule() {
         public boolean contains(ISchedulingRule rule) {
             return rule == this;
         }
@@ -112,7 +111,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         public boolean isConflicting(ISchedulingRule rule) {
             return rule == this;
         }
-    };
+    };*/
 
     private CeylonResolveJob createResolveJob(boolean isUser) {
         synchronized (this) {

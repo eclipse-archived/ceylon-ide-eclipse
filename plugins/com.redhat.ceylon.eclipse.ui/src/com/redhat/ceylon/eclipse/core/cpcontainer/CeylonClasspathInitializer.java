@@ -89,12 +89,12 @@ public class CeylonClasspathInitializer extends ClasspathContainerInitializer {
                 JavaCore.setClasspathContainer(containerPath, new IJavaProject[] {project},
                     new IClasspathContainer[] {ceyloncp}, null);
 
-                int startupMode = ON_STARTUP_REFRESH; // TODO : To be configured in the future ?
+                //int startupMode = ON_STARTUP_REFRESH; // TODO : To be configured in the future ?
 
-                if (startupMode == ON_STARTUP_NOTHING) {
-                    return;
-                }
-                boolean refresh = startupMode == ON_STARTUP_REFRESH;
+                //if (startupMode == ON_STARTUP_NOTHING) {
+                    //return;
+                //}
+                //boolean refresh = startupMode == ON_STARTUP_REFRESH;
 
                 ceyloncp.launchResolve(false, null);
             } catch (Exception ex) {
