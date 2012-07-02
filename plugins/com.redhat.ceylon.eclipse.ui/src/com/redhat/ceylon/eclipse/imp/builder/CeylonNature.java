@@ -39,8 +39,6 @@ public class CeylonNature extends ProjectNatureBase {
             IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, new IClasspathAttribute[0], false);
             CeylonClasspathContainer ceyloncp = new CeylonClasspathContainer(javaProject, path,
                     new IClasspathEntry[0], new IClasspathAttribute[0]);
-            JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
-                new IClasspathContainer[] {ceyloncp}, null);
             IClasspathEntry[] entries = javaProject.getRawClasspath();
             List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
             int index = 0;
@@ -60,6 +58,8 @@ public class CeylonNature extends ProjectNatureBase {
             }
             entries = (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
             javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
+            JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
+                    new IClasspathContainer[] {ceyloncp}, null);
             ceyloncp.launchResolve(true, null);
         } catch (JavaModelException e) {
             CeylonPlugin.log(e);
