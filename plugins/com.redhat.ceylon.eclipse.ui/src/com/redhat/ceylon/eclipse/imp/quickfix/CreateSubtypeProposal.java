@@ -92,7 +92,7 @@ class CreateSubtypeProposal implements ICompletionProposal {
             def.append("class $className");
             boolean first = true;
             for (ProducedType ta: type.getTypeArgumentList()) {
-                if (ta.getDeclaration() instanceof TypeParameter) {
+                if (ta!=null && ta.getDeclaration() instanceof TypeParameter) {
                     if (first) {
                         def.append("<");
                         first=false;
