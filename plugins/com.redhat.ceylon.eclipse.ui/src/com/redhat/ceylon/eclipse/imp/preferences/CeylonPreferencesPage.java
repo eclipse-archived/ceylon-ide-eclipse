@@ -5,11 +5,9 @@ import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -108,17 +106,6 @@ public class CeylonPreferencesPage extends PropertyPage {
         }
         else {
         	node.remove("jdtClasses");
-            IWorkspaceRunnable r= new IWorkspaceRunnable() {
-                public void run(IProgressMonitor monitor) throws CoreException {
-                	project.getFolder("JDTClasses").delete(true, null);
-                }
-            };
-            try {
-                project.getWorkspace().run(r, project, IWorkspace.AVOID_UPDATE, null);
-            } 
-            catch (CoreException e) {
-                e.printStackTrace();
-            }
         }
         try {
             node.flush();
@@ -126,22 +113,23 @@ public class CeylonPreferencesPage extends PropertyPage {
         catch (BackingStoreException e) {
             e.printStackTrace();
         }
-    	new CeylonNature().addToProject(project);
-        /*Job buildJob = new Job("Rebuilding Ceylon project " + getSelectedProject().getName()) {
-            @Override
-            public IStatus run(IProgressMonitor monitor) {
-                try {
-                    getSelectedProject().build(FULL_BUILD, monitor);
-                } 
-                catch (CoreException e) {
-                    return new Status(IStatus.ERROR, CeylonPlugin.getInstance().getID(), 
-                            "Job '" + this.getName() + "' failed", e);
-                }
-                return Status.OK_STATUS;
-            }
-
-        };
-        buildJob.schedule();*/
+    	new CeylonNature() {
+    		protected void setUpClasspath(IProject project) {
+    			try {
+					project.getFolder("JDTClasses").delete(true, null);
+				} 
+    			catch (CoreException e) {
+					e.printStackTrace();
+				}
+    			super.setUpClasspath(project);
+    			try {
+    				project.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+    			}
+    			catch (CoreException e) {
+    				e.printStackTrace();
+    			}
+    		}
+    	}.addToProject(project);
     }
 
     private IProject getSelectedProject() {
