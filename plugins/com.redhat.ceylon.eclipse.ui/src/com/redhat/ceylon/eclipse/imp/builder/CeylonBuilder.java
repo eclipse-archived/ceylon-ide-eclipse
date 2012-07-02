@@ -411,7 +411,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
                 for (CeylonClasspathContainer container : cpContainers) {
-                    container.launchResolve(false, null);
+                    container.launchResolve(false, monitor);
                 }
                 return requiredProjects.toArray(new IProject[0]);
             }
