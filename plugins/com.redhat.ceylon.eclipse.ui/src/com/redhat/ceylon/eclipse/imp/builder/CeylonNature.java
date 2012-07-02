@@ -1,18 +1,20 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -37,53 +39,68 @@ public class CeylonNature extends ProjectNatureBase {
         return CeylonBuilder.BUILDER_ID;
     }
     
+	protected void setUpClasspath(final IProject project) {
+		IJavaProject javaProject = JavaCore.create(project);
+        try {
+            IPath path = new Path(CeylonClasspathContainer.CONTAINER_ID + "/default");
+            IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, new IClasspathAttribute[0], false);
+            CeylonClasspathContainer ceyloncp = new CeylonClasspathContainer(javaProject, path,
+                    new IClasspathEntry[0], new IClasspathAttribute[0]);
+            IClasspathEntry[] entries = javaProject.getRawClasspath();
+            List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
+            int index = 0;
+            boolean mustReplace = false;
+            for (IClasspathEntry entry : newEntries) {
+                if (entry.getPath().equals(newEntry.getPath()) ) {
+                    mustReplace = true;
+                    break;
+                }
+                index ++;
+            }
+            if (mustReplace) {
+                newEntries.set(index, newEntry);
+            }
+            else {
+                newEntries.add(newEntry);
+            }
+            entries = (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
+            javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
+            JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
+                    new IClasspathContainer[] {ceyloncp}, null);
+            ceyloncp.launchResolve(true, null);
+			/*try {
+				project.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+			} 
+			catch (CoreException e) {
+				e.printStackTrace();
+			}*/
+            
+        } catch (JavaModelException e) {
+            CeylonPlugin.log(e);
+        }
+	}
+	
     public void addToProject(final IProject project) {
         super.addToProject(project);
-        final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
-        	//The following code requires a lock on the workspace to
-        	//avoid lots of builds
-            @Override
-            public void run(IProgressMonitor monitor) {
-		        IJavaProject javaProject = JavaCore.create(project);
+        new Job("Enable Ceylon builder") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
 		        try {
-		            IPath path = new Path(CeylonClasspathContainer.CONTAINER_ID + "/default");
-		            IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, new IClasspathAttribute[0], false);
-		            CeylonClasspathContainer ceyloncp = new CeylonClasspathContainer(javaProject, path,
-		                    new IClasspathEntry[0], new IClasspathAttribute[0]);
-		            IClasspathEntry[] entries = javaProject.getRawClasspath();
-		            List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
-		            int index = 0;
-		            boolean mustReplace = false;
-		            for (IClasspathEntry entry : newEntries) {
-		                if (entry.getPath().equals(newEntry.getPath()) ) {
-		                    mustReplace = true;
-		                    break;
-		                }
-		                index ++;
-		            }
-		            if (mustReplace) {
-		                newEntries.set(index, newEntry);
-		            }
-		            else {
-		                newEntries.add(newEntry);
-		            }
-		            entries = (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
-		            javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
-		            JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
-		                    new IClasspathContainer[] {ceyloncp}, null);
-		            ceyloncp.launchResolve(true, null);
-		        } catch (JavaModelException e) {
-		            CeylonPlugin.log(e);
+		            getWorkspace().run(new IWorkspaceRunnable() {
+						//The following code requires a lock on 
+		            	//the workspace to avoid lots of builds
+					    @Override
+					    public void run(IProgressMonitor monitor) {
+					        setUpClasspath(project);
+					    }
+					}, monitor);
+		        } 
+		        catch (CoreException e) {
+		            e.printStackTrace();
 		        }
-            }
-        };
-        try {
-            workspace.run(buildJob, new NullProgressMonitor());
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
+				return Status.OK_STATUS;
+			}
+		}.schedule();
     }
     
     protected void refreshPrefs() {
