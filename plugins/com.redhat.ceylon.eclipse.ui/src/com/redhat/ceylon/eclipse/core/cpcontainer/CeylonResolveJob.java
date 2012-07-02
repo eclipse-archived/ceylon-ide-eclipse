@@ -18,6 +18,7 @@
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,9 +27,7 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -65,7 +64,6 @@ public class CeylonResolveJob extends Job {
     protected IStatus run(IProgressMonitor monitor) {
         try {
             final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final IWorkspaceRunnable buildJob = new IWorkspaceRunnable() {
             	//The following code requires a lock on the workspace to
             	//avoid concurrent access to the model
@@ -91,6 +89,9 @@ public class CeylonResolveJob extends Job {
                             	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
                             	paths.add(JavaCore.newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
                             }
+                            
+                            container.updateClasspathEntries(paths.toArray(new IClasspathEntry[paths.size()]));
+                            
                             setStatus(Status.OK_STATUS);
                         }
                         else {
@@ -104,15 +105,13 @@ public class CeylonResolveJob extends Job {
                 }
             };
             try {
-                workspace.run(buildJob, monitor);
+                getWorkspace().run(buildJob, monitor);
             } catch (CoreException e) {
                 setStatus(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Job '" + getName() + "' failed", e));
             }
                         
-            if (status == Status.OK_STATUS) {
-                container.updateClasspathEntries(paths.toArray(new IClasspathEntry[paths.size()]));
-            }
             setResolveStatus(status);
+            
             return status;
         } finally {
             container.resetJob();
