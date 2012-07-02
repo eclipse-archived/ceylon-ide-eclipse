@@ -88,9 +88,14 @@ public class SourceArchiveDocumentProvider extends StorageDocumentProvider {
             int lastColonIdx = path.lastIndexOf('!');
             String jarPath= path.substring(0, lastColonIdx);
             String entryPath= path.substring(lastColonIdx + 2);
-            ZipFile zipFile = new ZipFile(new File(jarPath));            
-            ZipEntry entry= zipFile.getEntry(entryPath);
-            return readStreamContents(zipFile.getInputStream(entry));
+            ZipFile zipFile = new ZipFile(new File(jarPath));
+            try {
+	            ZipEntry entry= zipFile.getEntry(entryPath);
+	            return readStreamContents(zipFile.getInputStream(entry));
+            }
+            finally {
+            	zipFile.close();
+            }
         } 
         catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, 0, 
