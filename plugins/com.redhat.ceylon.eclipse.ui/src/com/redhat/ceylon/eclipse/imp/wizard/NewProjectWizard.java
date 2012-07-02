@@ -321,18 +321,19 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
                 node.put("repo", repositoryPath);
-                try {
-                    node.flush();
-                } 
-                catch (BackingStoreException e) {
-                    e.printStackTrace();
-                }
                 /*getCreatedElement().getProject()
                         .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
                                 repositoryPath);*/
                 ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
             }
             
+            try {
+                node.flush();
+            } 
+            catch (BackingStoreException e) {
+                e.printStackTrace();
+            }
+
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
                     IWorkbenchPart activePart= getActivePart();
@@ -341,6 +342,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                     }
                 }
             });
+            
             new CeylonNature().addToProject(getCreatedElement().getProject());
         }
         
