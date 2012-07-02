@@ -2454,13 +2454,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             boolean jdtClassesEnabled = getJdtClassesEnabled(project);
 			final File ceylonOutputDirectory = jdtClassesEnabled ? 
             		getCeylonOutputDirectory(javaProject) : null;
-
             File moduleDir = Util.getModulePath(modulesOutputDirectory, module);
+            
+            //Remove the classes belonging to the source file from the
+            //module archive and from the JDTClasses directory
             File moduleJar = new File(moduleDir, Util.getModuleArchiveName(module));
             if(moduleJar.exists()){
                 moduleJars.add(moduleJar);
                 String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
-                
                 try {
                     ZipFile zipFile = new ZipFile(moduleJar);
                     FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
@@ -2487,13 +2488,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         }
                     }
                 } catch (ZipException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
+            //Remove the source file from the source archive
+	        File moduleSrc = new File(moduleDir, Util.getSourceArchiveName(module));
+	        if(moduleSrc.exists()){
+	        	moduleJars.add(moduleSrc);
+	            String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+	            try {
+	                ZipFile zipFile = new ZipFile(moduleSrc);
+	                zipFile.removeFile(relativeFilePath);
+	            } catch (ZipException e) {
+	                e.printStackTrace();
+	            }
+	        }
         }
         final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
         class MyLog extends Log {
