@@ -46,6 +46,7 @@ import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -341,6 +342,7 @@ public class CeylonParseController extends ParseControllerBase {
             fCurrentAst = cu;
             phasedUnit = builtPhasedUnit;
             phasedUnit.analyseTypes();
+            phasedUnit.analyseUsage();
         }
         else {
             Package pkg = null;
@@ -413,6 +415,7 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit.scanTypeDeclarations();
             phasedUnit.validateRefinement();
             phasedUnit.analyseTypes();
+            phasedUnit.analyseUsage();
             phasedUnit.analyseFlow();
         }
             
@@ -425,7 +428,8 @@ public class CeylonParseController extends ParseControllerBase {
             cu.visit(new ErrorVisitor(handler) {
                 @Override
                 public int getSeverity(Message error, boolean expected) {
-                    return expected ? IAnnotation.WARNING : IAnnotation.ERROR;
+                    return expected || error instanceof UsageWarning ? 
+                    		IAnnotation.WARNING : IAnnotation.ERROR;
                 }
             });      
         }

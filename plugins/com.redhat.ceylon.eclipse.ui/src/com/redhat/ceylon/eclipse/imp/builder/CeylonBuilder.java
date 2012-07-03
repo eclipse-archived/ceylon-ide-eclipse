@@ -115,6 +115,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -1031,6 +1032,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isFullyTyped()) {
                 phasedUnit.analyseTypes();
+                phasedUnit.analyseUsage();
             }
         }
         if (monitor.isCanceled()) {
@@ -1154,6 +1156,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isFullyTyped()) {
                 pu.analyseTypes();
+                pu.analyseUsage();
             }
         }
         if (monitor.isCanceled()) {
@@ -1375,7 +1378,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 .visit(new ErrorVisitor(new MarkerCreator(file, PROBLEM_MARKER_ID)) {
                     @Override
                     public int getSeverity(Message error, boolean expected) {
-                        return expected ? IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
+                        return expected || error instanceof UsageWarning ? 
+                        		IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
                     }
                     @Override
                     //workaround for bug in IMP's MarkerCreator
