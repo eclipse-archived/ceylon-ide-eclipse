@@ -456,6 +456,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         		boolean sequenced = type instanceof Tree.SequencedType;
         		if (sequenced) {
         			tm = type.getUnit().getIteratedType(tm);
+                	if (tm==null) {
+                		return "<Unknown>";
+                	}
         		}
         		String tn = tm.getProducedTypeName();
         		if (sequenced) {
