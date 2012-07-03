@@ -1,14 +1,10 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -82,10 +78,12 @@ public class CeylonNature extends ProjectNatureBase {
 	
     public void addToProject(final IProject project) {
         super.addToProject(project);
-        new Job("Enable Ceylon builder") {
+        Job job = new Job("Enable Ceylon builder for project" + 
+                project.getName()) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-		        try {
+	        	setUpClasspath(project);
+		        /*try {
 		            getWorkspace().run(new IWorkspaceRunnable() {
 						//The following code requires a lock on 
 		            	//the workspace to avoid lots of builds
@@ -97,10 +95,12 @@ public class CeylonNature extends ProjectNatureBase {
 		        } 
 		        catch (CoreException e) {
 		            e.printStackTrace();
-		        }
+		        }*/
 				return Status.OK_STATUS;
 			}
-		}.schedule();
+		};
+		job.setRule(project.getWorkspace().getRoot());
+		job.schedule();
     }
     
     protected void refreshPrefs() {
