@@ -57,7 +57,8 @@ public class CeylonResolveJob extends Job {
     }
 
     public CeylonResolveJob(CeylonClasspathContainer container) {
-        super("Ceylon resolve job for project " + container.getJavaProject().getElementName());
+        super("Ceylon dependency resolution for project " + 
+                container.getJavaProject().getElementName());
         this.container = container;
     }
 
