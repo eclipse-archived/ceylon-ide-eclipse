@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -67,7 +66,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     private IClasspathEntry[] classpathEntries;
     private IPath path;
-    private CeylonResolveJob job;
+    //private CeylonResolveJob job;
     private String jdtVersion;
     private IJavaProject javaProject;
 
@@ -125,12 +124,12 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         }
     };*/
 
-    private synchronized CeylonResolveJob createResolveJob(boolean isUser) {
-    	if (job != null) {
+    private /*synchronized*/ CeylonResolveJob createResolveJob(boolean isUser) {
+    	/*if (job != null) {
     		// resolve job already running
     		return job;
-    	}
-    	job = new CeylonResolveJob(this);
+    	}*/
+    	CeylonResolveJob job = new CeylonResolveJob(this);
     	job.setUser(isUser);
     	job.setRule(getWorkspace().getRoot());
     	return job;
@@ -223,9 +222,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         return jdtVersion;
     }
 
-    public synchronized void resetJob() {
+    /*public synchronized void resetJob() {
         job = null;
-    }
+    }*/
 
 	boolean resolveClasspath(IProgressMonitor monitor)//, boolean skippable)
 			throws CoreException {

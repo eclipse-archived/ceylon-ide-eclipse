@@ -43,7 +43,7 @@ public class CeylonResolveJob extends Job {
     }
 
     protected IStatus run(IProgressMonitor monitor) {
-        try {
+        //try {
             try {
                 getWorkspace().run(new IWorkspaceRunnable() {
 					//The following code requires a lock on the workspace to
@@ -61,10 +61,10 @@ public class CeylonResolveJob extends Job {
                 return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
                 		"could not resolve dependencies", e);
             }            
-        } 
+        /*} 
         finally {
             container.resetJob();
-        }
+        }*/
     }
 
 }
