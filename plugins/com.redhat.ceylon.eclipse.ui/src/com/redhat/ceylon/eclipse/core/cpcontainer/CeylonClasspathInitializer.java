@@ -38,9 +38,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonClasspathInitializer extends ClasspathContainerInitializer {
 
     public static final int ON_STARTUP_NOTHING = 0;
-
     public static final int ON_STARTUP_REFRESH = 1;
-
     public static final int ON_STARTUP_RESOLVE = 2;
 
     /**
@@ -96,7 +94,7 @@ public class CeylonClasspathInitializer extends ClasspathContainerInitializer {
                 //}
                 //boolean refresh = startupMode == ON_STARTUP_REFRESH;
 
-                ceyloncp.launchResolve(false, null);
+                ceyloncp.runResolve(false);
             } catch (Exception ex) {
                 IStatus status = new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, IStatus.OK,
                         "Unable to set container for " + containerPath.toString(), ex);
