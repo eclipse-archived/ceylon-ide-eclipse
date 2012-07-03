@@ -49,8 +49,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -694,7 +692,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             
             if (getJdtClassesEnabled(project)) {
-            	doRefresh(project.getFolder("JDTClasses"));
+            	refresh(project.getFolder("JDTClasses"));
             }
 
             if (!binariesGenerationOK) {
@@ -1984,19 +1982,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return msgs;
     }
 
-    /**
-     * Refreshes all resources in the entire project tree containing the given resource.
-     * Crude but effective.
-     */
-    protected void doRefresh(final IResource resource) {
-        IWorkspaceRunnable r= new IWorkspaceRunnable() {
-            public void run(IProgressMonitor monitor) throws CoreException {
-                resource.refreshLocal(IResource.DEPTH_INFINITE, null);
-            }
-        };
+    private void refresh(final IResource resource) {
         try {
-            getProject().getWorkspace().run(r, resource.getProject(), IWorkspace.AVOID_UPDATE, null);
-        } catch (CoreException e) {
+        	resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+        	//not necessary because builds run with a lock, I think
+            /*getProject().getWorkspace().run(new IWorkspaceRunnable() {
+			    public void run(IProgressMonitor monitor) throws CoreException {
+			        resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+			    }
+			}, resource.getProject(), IWorkspace.AVOID_UPDATE, null);*/
+        } 
+        catch (CoreException e) {
             getPlugin().logException("Error while refreshing after a build", e);
         }
     }

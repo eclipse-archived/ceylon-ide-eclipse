@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -124,25 +125,55 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         }
     };*/
 
-    private /*synchronized*/ CeylonResolveJob createResolveJob(boolean isUser) {
+    private /*synchronized*/ Job createResolveJob(boolean isUser) {
     	/*if (job != null) {
     		// resolve job already running
     		return job;
     	}*/
-    	CeylonResolveJob job = new CeylonResolveJob(this);
+    	//An asynchronous Job that sets up the classpath entries of
+    	//the Ceylon Modules classpath container.
+    	Job job = new Job("Resolve Ceylon dependencies for project " + 
+                getJavaProject().getElementName()) {
+    	    protected IStatus run(IProgressMonitor monitor) {
+    	        //try {
+    	            try {
+    	            	resolveClasspath(monitor, !isUser());
+    	            	//not necessary because the Job is run with
+    	            	//a scheduling rule already
+    	                /*getWorkspace().run(new IWorkspaceRunnable() {
+    						//The following code requires a lock on the workspace to
+    						//avoid concurrent access to the model
+    					    @Override
+    					    public void run(IProgressMonitor monitor) throws CoreException {
+    					    	container.resolveClasspath(monitor, !isUser());
+    					    }
+
+    					}, monitor);*/
+    	                return Status.OK_STATUS;
+    	            } 
+    	            catch (CoreException e) {
+    	                e.printStackTrace();
+    	                return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    	                		"could not resolve dependencies", e);
+    	            }            
+    	        /*} 
+    	        finally {
+    	            container.resetJob();
+    	        }*/
+    	    }    		
+    	};
     	job.setUser(isUser);
     	job.setRule(getWorkspace().getRoot());
     	return job;
     }
 
-    public IStatus runResolve(boolean isUser) {
+    public void runResolve(boolean isUser) {
         createResolveJob(isUser).schedule();
-        return Status.OK_STATUS;
     }
 
     public boolean resolve(IProgressMonitor monitor) {
         try {
-			return resolveClasspath(monitor);//, true);
+			return resolveClasspath(monitor, true);
 		} 
         catch (CoreException e) {
 			e.printStackTrace();
@@ -226,7 +257,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         job = null;
     }*/
 
-	boolean resolveClasspath(IProgressMonitor monitor)//, boolean skippable)
+	boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)
 			throws CoreException {
 		IProject project = getJavaProject().getProject();
 		
@@ -237,7 +268,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		//      - as a side effect we throw away the whole
 		//        model, forcing us to have to do a full 
 		//        build even if nothing interesting changed!
-		CeylonBuilder.parseCeylonModel(project, monitor);
+		if (reparse) CeylonBuilder.parseCeylonModel(project, monitor);
 		
 		TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
 		if (typeChecker != null) {
