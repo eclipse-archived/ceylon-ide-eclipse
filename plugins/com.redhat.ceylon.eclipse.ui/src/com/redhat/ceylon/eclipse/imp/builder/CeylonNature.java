@@ -67,7 +67,7 @@ public class CeylonNature extends ProjectNatureBase {
             javaProject.setRawClasspath(entries, javaProject.getOutputLocation(), null);
             JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
                     new IClasspathContainer[] {ceyloncp}, null);
-            ceyloncp.launchResolve(true, null);
+            ceyloncp.runResolve(true);
 			/*try {
 				project.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
 			} 

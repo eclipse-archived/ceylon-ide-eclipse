@@ -17,10 +17,22 @@
  */
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -39,6 +51,10 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -50,13 +66,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         "com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER";
 
     private IClasspathEntry[] classpathEntries;
-
     private IPath path;
-
     private CeylonResolveJob job;
-
     private String jdtVersion;
-    
     private IJavaProject javaProject;
 
     public IJavaProject getJavaProject() {
@@ -113,27 +125,30 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         }
     };*/
 
-    private CeylonResolveJob createResolveJob(boolean isUser) {
-        synchronized (this) {
-            if (job != null) {
-                // resolve job already running
-                return job;
-            }
-            job = new CeylonResolveJob(this);
-            job.setUser(isUser);
-            job.setRule(ResourcesPlugin.getWorkspace().getRoot());
-            return job;
-        }
+    private synchronized CeylonResolveJob createResolveJob(boolean isUser) {
+    	if (job != null) {
+    		// resolve job already running
+    		return job;
+    	}
+    	job = new CeylonResolveJob(this);
+    	job.setUser(isUser);
+    	job.setRule(getWorkspace().getRoot());
+    	return job;
     }
 
-    public IStatus launchResolve(boolean isUser,
-            IProgressMonitor monitor) {
-        CeylonResolveJob j = createResolveJob(isUser);
-        if (monitor != null) {
-            return j.run(monitor);
-        }
-        j.schedule();
+    public IStatus runResolve(boolean isUser) {
+        createResolveJob(isUser).schedule();
         return Status.OK_STATUS;
+    }
+
+    public boolean resolve(IProgressMonitor monitor) {
+        try {
+			return resolveClasspath(monitor);//, true);
+		} 
+        catch (CoreException e) {
+			e.printStackTrace();
+		}
+        return false;
     }
 
     void updateClasspathEntries(final IClasspathEntry[] newEntries) {
@@ -208,7 +223,57 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         return jdtVersion;
     }
 
-    public void resetJob() {
+    public synchronized void resetJob() {
         job = null;
     }
+
+	boolean resolveClasspath(IProgressMonitor monitor)//, boolean skippable)
+			throws CoreException {
+		IProject project = getJavaProject().getProject();
+		
+		//TODO: the following is terrible for two reasons:
+		//      - we don't really need to parse all the 
+		//        source of the whole project (just the
+		//        module descriptors)
+		//      - as a side effect we throw away the whole
+		//        model, forcing us to have to do a full 
+		//        build even if nothing interesting changed!
+		CeylonBuilder.parseCeylonModel(project, monitor);
+		
+		TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+		if (typeChecker != null) {
+			Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+		    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
+		    JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
+		    for (File archive : moduleManager.getClasspath()) {
+		        if (archive.exists()) {
+					try {
+						Path classpathArtifact = new Path(archive.getCanonicalPath());
+			            IPath srcArtifact = classpathArtifact.removeFileExtension().addFileExtension("src");
+			            paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
+					} 
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+		        }
+		    }
+		    if (getJdtClassesEnabled(project)) {
+		    	IPath ceylonOutputDirectory = project.getFolder("JDTClasses").getFullPath();
+		    	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
+		    	paths.add(newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
+		    }
+		    
+		    IClasspathEntry[] entries = paths.toArray(new IClasspathEntry[paths.size()]);
+		    //if ( !skippable || !Arrays.equals(getClasspathEntries(), entries)) {
+		    	//System.out.println(Arrays.toString(entries));
+		    	//System.out.println(Arrays.toString(getClasspathEntries()));
+		    	updateClasspathEntries(entries);
+	            CeylonPlugin.log(IStatus.INFO, "resolved dependencies of project " + 
+	            		project.getName(), null);
+		    	return true;
+		    //}
+		    
+		}
+		return false;
+	}
 }
