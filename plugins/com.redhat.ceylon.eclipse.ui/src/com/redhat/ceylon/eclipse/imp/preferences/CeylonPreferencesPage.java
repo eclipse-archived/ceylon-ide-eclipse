@@ -102,7 +102,7 @@ public class CeylonPreferencesPage extends PropertyPage {
             node.remove("repo");
         }
         if (enableJdtClassesDir) {
-        	node.putBoolean("jdtClasses", true);;
+        	node.putBoolean("jdtClasses", true);
         }
         else {
         	node.remove("jdtClasses");
@@ -123,7 +123,8 @@ public class CeylonPreferencesPage extends PropertyPage {
 				}
     			super.setUpClasspath(project);
     			try {
-    				project.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+    				project.getWorkspace()
+    				        .build(IncrementalProjectBuilder.CLEAN_BUILD, null);
     			}
     			catch (CoreException e) {
     				e.printStackTrace();

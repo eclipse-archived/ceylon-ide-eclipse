@@ -17,9 +17,12 @@
  */
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
+import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
+import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,22 +128,69 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         }
     };*/
 
-    private /*synchronized*/ Job createResolveJob(boolean isUser) {
-    	/*if (job != null) {
-    		// resolve job already running
-    		return job;
-    	}*/
-    	//An asynchronous Job that sets up the classpath entries of
-    	//the Ceylon Modules classpath container.
-    	Job job = new Job("Resolve Ceylon dependencies for project " + 
+    public static void runInitialize(final IPath containerPath, final IJavaProject project) {
+    	Job job = new Job("Initializing Ceylon dependencies for project " + 
+    			project.getElementName()) {
+    		@Override protected IStatus run(IProgressMonitor monitor) {
+    			// try to get an existing one
+
+    			try {
+    				
+        			IClasspathContainer c = getClasspathContainer(containerPath, project);
+    				CeylonClasspathContainer container;
+    				if (c instanceof CeylonClasspathContainer) {
+    					container = (CeylonClasspathContainer) c;
+    				} 
+    				else {
+    					IClasspathEntry entry = getCeylonClasspathEntry(containerPath, project);
+    					IClasspathAttribute[] attributes = entry == null ? 
+    							new IClasspathAttribute[0] : entry.getExtraAttributes();
+						if (c == null) {
+							container = new CeylonClasspathContainer(project, containerPath,
+									new IClasspathEntry[0], attributes);
+						} 
+						else {
+							// this might be the persisted one : reuse the persisted entries
+							container = new CeylonClasspathContainer(project, containerPath, 
+									c.getClasspathEntries(), attributes);
+						}                    
+    				}
+
+    				// set the container
+    				setClasspathContainer(containerPath, new IJavaProject[] {project},
+    						new IClasspathContainer[] {container}, null);
+
+    				container.resolveClasspath(monitor, !isUser());
+    				
+    				return Status.OK_STATUS;
+    				
+    			} 
+    			catch (JavaModelException ex) {
+    				// unless there are issues with the JDT, this should never happen
+    				return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    						"could not get container", ex);
+    			}
+    			catch (CoreException e) {
+    				e.printStackTrace();
+    				return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    						"could not resolve dependencies", e);
+    			}            
+    		}    		
+    	};
+    	job.setUser(false);
+    	job.setRule(getWorkspace().getRoot());
+    	job.schedule();
+    }
+
+    public void runResolve() {
+    	Job job = new Job("Resolving Ceylon dependencies for project " + 
                 getJavaProject().getElementName()) {
-    	    protected IStatus run(IProgressMonitor monitor) {
-    	        //try {
-    	            try {
-    	            	resolveClasspath(monitor, !isUser());
-    	            	//not necessary because the Job is run with
-    	            	//a scheduling rule already
-    	                /*getWorkspace().run(new IWorkspaceRunnable() {
+    	    @Override protected IStatus run(IProgressMonitor monitor) {
+    	    	try {
+    	    		resolveClasspath(monitor, !isUser());
+    	    		//not necessary because the Job is run with
+    	    		//a scheduling rule already
+    	    		/*getWorkspace().run(new IWorkspaceRunnable() {
     						//The following code requires a lock on the workspace to
     						//avoid concurrent access to the model
     					    @Override
@@ -149,28 +199,20 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     					    }
 
     					}, monitor);*/
-    	                return Status.OK_STATUS;
-    	            } 
-    	            catch (CoreException e) {
-    	                e.printStackTrace();
-    	                return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
-    	                		"could not resolve dependencies", e);
-    	            }            
-    	        /*} 
-    	        finally {
-    	            container.resetJob();
-    	        }*/
+    	    		return Status.OK_STATUS;
+    	    	} 
+    	    	catch (CoreException e) {
+    	    		e.printStackTrace();
+    	    		return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    	    				"could not resolve dependencies", e);
+    	    	}            
     	    }    		
     	};
-    	job.setUser(isUser);
+    	job.setUser(true);
     	job.setRule(getWorkspace().getRoot());
-    	return job;
+        job.schedule();
     }
-
-    public void runResolve(boolean isUser) {
-        createResolveJob(isUser).schedule();
-    }
-
+    
     public boolean resolve(IProgressMonitor monitor) {
         try {
 			return resolveClasspath(monitor, true);
