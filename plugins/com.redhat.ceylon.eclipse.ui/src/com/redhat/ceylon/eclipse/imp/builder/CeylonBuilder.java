@@ -2334,19 +2334,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
     
     private Package retrievePackage(IResource folder) {
-        String packageName = getPackageName(folder);
-        if (packageName == null) {
-            return null;
-        }
-        TypeChecker typeChecker = typeCheckers.get(folder.getProject());
-        Context context = typeChecker.getContext();
-        Modules modules = context.getModules();
-        for (Module module : modules.getListOfModules()) {
-            for (Package p : module.getPackages()) {
-                if (p.getQualifiedNameString().equals(packageName)) {
-                    return p;
-                }
-            }
+    	IProject project = folder.getProject();
+    	if (project.isOpen()) {
+    		String packageName = getPackageName(folder);
+    		if (packageName != null) {
+        		TypeChecker typeChecker = typeCheckers.get(project);
+        		Context context = typeChecker.getContext();
+        		Modules modules = context.getModules();
+        		for (Module module : modules.getListOfModules()) {
+        			for (Package p : module.getPackages()) {
+        				if (p.getQualifiedNameString().equals(packageName)) {
+        					return p;
+        				}
+        			}
+        		}
+        	}
         }
         return null;
     }
