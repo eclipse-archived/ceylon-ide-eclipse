@@ -131,7 +131,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         final Button enableBuilder = new Button(parent, SWT.PUSH);
         enableBuilder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
         enableBuilder.setText("Enable Ceylon Builder");
-        enableBuilder.setEnabled(!builderEnabled);
+        enableBuilder.setEnabled(!builderEnabled && getSelectedProject().isOpen());
         enableBuilder.setImage(CeylonPlugin.getInstance()
                 .getImageRegistry().get(ICeylonResources.ELE32));
         //enableBuilder.setSize(40, 40);
@@ -270,18 +270,24 @@ public class CeylonPreferencesPage extends PropertyPage {
     @Override
     protected Control createContents(Composite composite) {
         
-        try {
-            builderEnabled = getSelectedProject().hasNature(CeylonNature.NATURE_ID);
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
+        IProject project = getSelectedProject();
         
-        IEclipsePreferences node = new ProjectScope(getSelectedProject())
-                .getNode(CeylonPlugin.PLUGIN_ID);
-		repositoryPath = node.get("repo", null);
-        useEmbeddedRepo = repositoryPath==null;
-        enableJdtClassesDir = node.getBoolean("jdtClasses", false);
+        if (project.isOpen()) {
+        
+			try {
+	            builderEnabled = project.hasNature(CeylonNature.NATURE_ID);
+	        } 
+	        catch (CoreException e) {
+	            e.printStackTrace();
+	        }
+	        
+	        IEclipsePreferences node = new ProjectScope(project)
+	                .getNode(CeylonPlugin.PLUGIN_ID);
+			repositoryPath = node.get("repo", null);
+	        useEmbeddedRepo = repositoryPath==null;
+	        enableJdtClassesDir = node.getBoolean("jdtClasses", false);
+	        
+        }
 
         addSelectRepo(composite);
         return composite;
