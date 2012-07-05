@@ -614,7 +614,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                             String fqn = getQualifiedName(pkgName, name);
                             if (! sourceDeclarations.containsKey(fqn)) {
                                 synchronized (sourceDeclarations) {
-                                    sourceDeclarations.put(fqn, new CeylonDeclaration(JDTModelLoader.this, unit, decl, isSourceToCompile));
+                                    sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
                                 }
                             }
                         }
