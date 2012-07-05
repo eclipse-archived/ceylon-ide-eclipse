@@ -373,7 +373,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             cpContainers = getCeylonClasspathContainers(javaProject);
         }
         
-        project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
+        //project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
+        
+        if (project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO).length>0) {
+        	return new IProject[0];
+        }
+        
         if (cpContainers.isEmpty()) {
             // Add a problem marker if binary generation went wrong for ceylon files
             IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
@@ -414,6 +419,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 for (CeylonClasspathContainer container: cpContainers) {
                 	container.resolve(monitor);
                 }
+                /*project.build(CLEAN_BUILD, monitor);
+            	for (IProject p: requiredProjects) {
+            		p.build(CLEAN_BUILD, monitor);
+            	}*/
                 return requiredProjects.toArray(new IProject[0]);
             }
         }
@@ -432,18 +441,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             sourceFolders.clear();
             
-            if (kind==IncrementalProjectBuilder.CLEAN_BUILD) {
+            /*if (kind==CLEAN_BUILD) {
             	getConsoleStream().println("             CLEAN BUILD");
             }
-            if (kind==IncrementalProjectBuilder.AUTO_BUILD) {
+            if (kind==AUTO_BUILD) {
             	getConsoleStream().println("             AUTO BUILD");
             }
-            if (kind==IncrementalProjectBuilder.FULL_BUILD) {
+            if (kind==FULL_BUILD) {
             	getConsoleStream().println("             FULL BUILD");
             }
-            if (kind==IncrementalProjectBuilder.INCREMENTAL_BUILD) {
+            if (kind==INCREMENTAL_BUILD) {
             	getConsoleStream().println("             INCREMENTAL BUILD");
-            }
+            }*/
             
             if (mustDoFullBuild.value) {
                 monitor.beginTask("Full Ceylon build of project " + project.getName(), 11);
@@ -711,7 +720,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             
             if (getJdtClassesEnabled(project)) {
-            	refresh(project.getFolder("JDTClasses"));
+            	refresh(project.getFolder("JDTClasses"), monitor);
+            }
+            else {
+            	refresh(project.getFolder("modules"), monitor);
             }
 
             if (!binariesGenerationOK) {
@@ -731,7 +743,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
             
             
-            for (IProject referencingProject : requiredProjects) {
+            for (IProject referencingProject: requiredProjects) {
                 TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(referencingProject);
                 if (requiredProjectTypeChecker != null) {
                     phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
@@ -758,7 +770,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             IProgressMonitor monitor,
             final CeylonBuilder.BooleanHolder mustDoFullBuild,
             final CeylonBuilder.BooleanHolder mustResolveClasspathContainer) {
-        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || ! isModelAvailable(getProject());
+        mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || 
+        		!isModelAvailable(getProject());
         mustResolveClasspathContainer.value = false;
         final BooleanHolder sourceModified = new BooleanHolder();
         sourceModified.value = false;
@@ -769,7 +782,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     try {
                         currentDelta.accept(new IResourceDeltaVisitor() {
                             @Override
-                            public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+                            public boolean visit(IResourceDelta resourceDelta) 
+                            		throws CoreException {
                                 IResource resource = resourceDelta.getResource();
                                 if (resourceDelta.getKind() == IResourceDelta.REMOVED) {
                                     if (resource instanceof IFolder) {
@@ -795,16 +809,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                         //mustDoFullBuild.value = true;
                                         return false;
                                     }
-                                    if ( isCeylonOrJava((IFile)resource) ) {
+                                    /*if (resource.getName().equals(".classpath")) {
+                                        // If classpath has changed, trigger a full build
+                                		//TODO: this is slightly hackish!
+                                    	//mustDoFullBuild.value = true;
+                                    	mustResolveClasspathContainer.value = true;
+                                        return false;
+                                    }*/
+                                    if (isCeylonOrJava((IFile) resource)) {
                                         sourceModified.value = true;
                                     }
                                 }
                                 
                                 if (resource instanceof IProject && 
                                         ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
-                                    //mustDoFullBuild.value = true;
-                                	sourceModified.value=true;
-                                    //return false;
+                                    //TODO: we need to somehow be able to detect a 
+                                	//      change to the classpath entries and 
+                                	//      trigger a full build in that case only. 
+                                	//      For now we will just use the ".classpath"
+                                	//      file change to trigger it
+                                	mustDoFullBuild.value = true;
+                                    return false;
+                                	//sourceModified.value=true;
                                 }
                                 
                                 return true;
@@ -1572,41 +1598,35 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 if (!enabedJdtClassesDir) {
                                 	return jarStream;
                                 }
-                                try {
-                                    return new OutputStream() {
-                                        final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
-                                        @Override
-                                        public void write(int b) throws IOException {
-                                            jarStream.write(b);
-                                            classFileStream.write(b);
-                                        }
-                                        @Override
-                                        public void write(byte[] b, int off, int len)
-                                                throws IOException {
-                                            jarStream.write(b, off, len);
-                                            classFileStream.write(b, off, len);
-                                        }
-                                        @Override
-                                        public void write(byte[] b) throws IOException {
-                                            jarStream.write(b);
-                                            classFileStream.write(b);
-                                        }
-                                        @Override
-                                        public void close() throws IOException {
-                                            classFileStream.close();
-                                            jarStream.close();
-                                        }
-                                        @Override
-                                        public void flush() throws IOException {
-                                            classFileStream.flush();
-                                            jarStream.flush();
-                                        }
-                                    };
-                                }
-                                catch (Exception e) {
-                                    CeylonPlugin.log(e);
-                                    return jarStream;
-                                }
+                                return new OutputStream() {
+                                	final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
+                                	@Override
+                                	public void write(int b) throws IOException {
+                                		jarStream.write(b);
+                                		classFileStream.write(b);
+                                	}
+                                	@Override
+                                	public void write(byte[] b, int off, int len)
+                                			throws IOException {
+                                		jarStream.write(b, off, len);
+                                		classFileStream.write(b, off, len);
+                                	}
+                                	@Override
+                                	public void write(byte[] b) throws IOException {
+                                		jarStream.write(b);
+                                		classFileStream.write(b);
+                                	}
+                                	@Override
+                                	public void close() throws IOException {
+                                		classFileStream.close();
+                                		jarStream.close();
+                                	}
+                                	@Override
+                                	public void flush() throws IOException {
+                                		classFileStream.flush();
+                                		jarStream.flush();
+                                	}
+                                };
                             }
                             @Override
                             public Reader openReader(boolean b)
@@ -1959,7 +1979,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private static void clearProjectMarkers(IProject project) {
         try {
-            project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
+            //project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
             project.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO);
         } catch (CoreException e) {
             e.printStackTrace();
@@ -1999,9 +2019,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return msgs;
     }
 
-    private void refresh(final IResource resource) {
+    private void refresh(final IResource resource, IProgressMonitor monitor) {
         try {
-        	resource.refreshLocal(DEPTH_INFINITE, null);
+        	resource.refreshLocal(DEPTH_INFINITE, monitor);
         	//not necessary because builds run with a lock, I think
             /*getProject().getWorkspace().run(new IWorkspaceRunnable() {
 			    public void run(IProgressMonitor monitor) throws CoreException {
