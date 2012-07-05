@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -183,20 +184,20 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	Job job = new Job("Resolving Ceylon dependencies for project " + 
                 getJavaProject().getElementName()) {
     	    @Override protected IStatus run(IProgressMonitor monitor) {
-    	    	IProject project = javaProject.getProject();
-    	    	if (!getJdtClassesEnabled(project)) {
-    	    		try {
-    	    			IFolder jdtClassesDir = project.getFolder("JDTClasses");
-    	    			if (jdtClassesDir.exists()) {
-    	    				jdtClassesDir.delete(true, monitor);
-    	    			}
-    	    		} 
-    	    		catch (CoreException e) {
-    	    			e.printStackTrace();
-    	    		}
-    	    	}
-    			
-    	    	try {
+    	    	final IProject project = javaProject.getProject();
+    			IFolder jdtClassesDir = project.getFolder("JDTClasses");
+	    		try {
+	    			
+	    			if (getJdtClassesEnabled(project)) {
+	    				if (!jdtClassesDir.exists()) {
+	    					jdtClassesDir.create(0, true, monitor);
+	    				}
+	    			}
+	    			else {
+	    				if (jdtClassesDir.exists()) {
+	    					jdtClassesDir.delete(true, monitor);
+	    				}
+	    			}
     	    		
         			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject, path);        			
     	            javaProject.setRawClasspath(classpath, monitor);
@@ -206,19 +207,31 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            setClasspathContainer(path, new IJavaProject[] {javaProject},
     	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
 
-    	            /*try {
-    	            	project.build(CLEAN_BUILD, monitor);
-    	            	for (IProject p: project.getWorkspace().getRoot().getProjects()) {
-    	            		if (p.isOpen() && !p.equals(project) &&
-    	            				getRequiredProjects(p).contains(project)) {
-    	            			p.build(CLEAN_BUILD, monitor);
+    	            Job job = new Job("Rebuild dependencies of project " + project.getName()) {
+    	            	@Override
+    	            	protected IStatus run(IProgressMonitor monitor) {
+    	            		try {
+    	            			//Note: I would love to be able to just build the projects that
+    	            			//      depend on this one, but that just doesn't work out right
+    	            			for (IProject p: project.getWorkspace().getRoot().getProjects()) {
+    	            				if (p.isOpen() && !p.equals(project) &&
+    	            						CeylonBuilder.getRequiredProjects(p).contains(project)) {
+    	            					project.getWorkspace().build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+    	            					break;
+    	            				} 
+    	            			}
+    	            			
     	            		}
+    	            		catch (CoreException e) {
+    	            			e.printStackTrace();
+    	            		}
+    	            		return Status.OK_STATUS;
     	            	}
-    	            }
-    	            catch (CoreException e) {
-    	            	e.printStackTrace();
-    	            }*/
+    	            };
+    	            job.setRule(project.getWorkspace().getRoot());
+    	            job.schedule();
     				return Status.OK_STATUS;
+    				
     	    	} 
     	    	catch (CoreException e) {
     	    		e.printStackTrace();
