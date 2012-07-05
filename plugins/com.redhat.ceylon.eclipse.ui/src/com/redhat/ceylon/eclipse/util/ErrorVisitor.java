@@ -33,6 +33,8 @@ public abstract class ErrorVisitor extends Visitor {
     public void visitAny(Node node) {
         super.visitAny(node);
         for (Message error: node.getErrors()) {
+        	if (!include(error)) continue;
+        	
             String errorMessage = error.getMessage();
             int startOffset = 0;
             int endOffset = 0;
@@ -81,6 +83,10 @@ public abstract class ErrorVisitor extends Visitor {
             handler.handleSimpleMessage(errorMessage, startOffset, adjust(endOffset),
                     startCol, startCol, startLine, startLine, attributes);
         }
+    }
+    
+    protected boolean include(Message msg) {
+    	return true;
     }
     
     protected int adjust(int stopIndex) {
