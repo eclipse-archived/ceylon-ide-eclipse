@@ -19,6 +19,8 @@ package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getRequiredProjects;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
@@ -26,9 +28,12 @@ import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -95,6 +100,13 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         this.javaProject = javaProject;
     }
 
+    public CeylonClasspathContainer(IProject project) {
+		javaProject = JavaCore.create(project);
+		path = new Path(CeylonClasspathContainer.CONTAINER_ID + "/default");
+		classpathEntries = new IClasspathEntry[0];
+		attributes = new IClasspathAttribute[0];
+    }
+    
     public CeylonClasspathContainer(CeylonClasspathContainer cp) {
         path = cp.path;
         javaProject = cp.javaProject;        
@@ -131,9 +143,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     public static void runInitialize(final IPath containerPath, final IJavaProject project) {
     	Job job = new Job("Initializing Ceylon dependencies for project " + 
     			project.getElementName()) {
-    		@Override protected IStatus run(IProgressMonitor monitor) {
-    			// try to get an existing one
-
+    		@Override protected IStatus run(IProgressMonitor monitor) {			
     			try {
     				
         			IClasspathContainer c = getClasspathContainer(containerPath, project);
@@ -158,9 +168,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     				// set the container
     				setClasspathContainer(containerPath, new IJavaProject[] {project},
-    						new IClasspathContainer[] {container}, null);
+    						new IClasspathContainer[] {container}, monitor);
 
-    				container.resolveClasspath(monitor, !isUser());
+    				container.resolveClasspath(monitor, true);
+    				
+    				project.getProject().build(CLEAN_BUILD, monitor);
     				
     				return Status.OK_STATUS;
     				
@@ -182,13 +194,47 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	job.schedule();
     }
 
-    public void runResolve() {
+    public void runReconfigure() {
     	Job job = new Job("Resolving Ceylon dependencies for project " + 
                 getJavaProject().getElementName()) {
     	    @Override protected IStatus run(IProgressMonitor monitor) {
+    	    	IProject project = javaProject.getProject();
+    	    	if (!getJdtClassesEnabled(project)) {
+    	    		try {
+    	    			IFolder jdtClassesDir = project.getFolder("JDTClasses");
+    	    			if (jdtClassesDir.exists()) {
+    	    				jdtClassesDir.delete(true, monitor);
+    	    			}
+    	    		} 
+    	    		catch (CoreException e) {
+    	    			e.printStackTrace();
+    	    		}
+    	    	}
+    			
     	    	try {
-    	    		resolveClasspath(monitor, !isUser());
-    	    		//not necessary because the Job is run with
+    	    		
+        			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject, path);        			
+    	            javaProject.setRawClasspath(classpath, monitor);
+    	            
+    	            setClasspathContainer(path, new IJavaProject[] {javaProject},
+    	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
+
+    	    		resolveClasspath(monitor, false);
+    	    		
+        			try {
+        				project.build(CLEAN_BUILD, monitor);
+        				for (IProject p: project.getWorkspace().getRoot().getProjects()) {
+        					if (p.isOpen() && !p.equals(project) &&
+        							getRequiredProjects(p).contains(project)) {
+        						p.build(CLEAN_BUILD, monitor);
+        					}
+        				}
+        			}
+        			catch (CoreException e) {
+        				e.printStackTrace();
+        			}
+
+        			//not necessary because the Job is run with
     	    		//a scheduling rule already
     	    		/*getWorkspace().run(new IWorkspaceRunnable() {
     						//The following code requires a lock on the workspace to
@@ -205,7 +251,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	    		e.printStackTrace();
     	    		return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
     	    				"could not resolve dependencies", e);
-    	    	}            
+    	    	}
     	    }    		
     	};
     	job.setUser(true);
@@ -213,6 +259,30 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         job.schedule();
     }
     
+	private IClasspathEntry[] constructModifiedClasspath(IJavaProject javaProject, IPath path) 
+			throws JavaModelException {
+		IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, 
+				new IClasspathAttribute[0], false);
+		IClasspathEntry[] entries = javaProject.getRawClasspath();
+		List<IClasspathEntry> newEntries = Arrays.asList(Arrays.copyOf(entries, entries.length));
+		int index = 0;
+		boolean mustReplace = false;
+		for (IClasspathEntry entry: newEntries) {
+		    if (entry.getPath().equals(newEntry.getPath()) ) {
+		        mustReplace = true;
+		        break;
+		    }
+		    index++;
+		}
+		if (mustReplace) {
+		    newEntries.set(index, newEntry);
+		}
+		else {
+		    newEntries.add(newEntry);
+		}
+		return (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
+	}
+	
     public boolean resolve(IProgressMonitor monitor) {
         try {
 			return resolveClasspath(monitor, true);
