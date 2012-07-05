@@ -160,19 +160,16 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 									new IClasspathEntry[0], attributes);
 						} 
 						else {
-							// this might be the persisted one : reuse the persisted entries
+							// this might be the persisted one: reuse the persisted entries
 							container = new CeylonClasspathContainer(project, containerPath, 
 									c.getClasspathEntries(), attributes);
 						}                    
     				}
 
-    				// set the container
     				setClasspathContainer(containerPath, new IJavaProject[] {project},
     						new IClasspathContainer[] {container}, monitor);
 
     				container.resolveClasspath(monitor, true);
-    				
-    				project.getProject().build(CLEAN_BUILD, monitor);
     				
     				return Status.OK_STATUS;
     				
@@ -221,31 +218,19 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     	    		resolveClasspath(monitor, false);
     	    		
-        			try {
-        				project.build(CLEAN_BUILD, monitor);
-        				for (IProject p: project.getWorkspace().getRoot().getProjects()) {
-        					if (p.isOpen() && !p.equals(project) &&
-        							getRequiredProjects(p).contains(project)) {
-        						p.build(CLEAN_BUILD, monitor);
-        					}
-        				}
-        			}
-        			catch (CoreException e) {
-        				e.printStackTrace();
-        			}
-
-        			//not necessary because the Job is run with
-    	    		//a scheduling rule already
-    	    		/*getWorkspace().run(new IWorkspaceRunnable() {
-    						//The following code requires a lock on the workspace to
-    						//avoid concurrent access to the model
-    					    @Override
-    					    public void run(IProgressMonitor monitor) throws CoreException {
-    					    	container.resolveClasspath(monitor, !isUser());
-    					    }
-
-    					}, monitor);*/
-    	    		return Status.OK_STATUS;
+    	            try {
+    	            	project.build(CLEAN_BUILD, monitor);
+    	            	for (IProject p: project.getWorkspace().getRoot().getProjects()) {
+    	            		if (p.isOpen() && !p.equals(project) &&
+    	            				getRequiredProjects(p).contains(project)) {
+    	            			p.build(CLEAN_BUILD, monitor);
+    	            		}
+    	            	}
+    	            }
+    	            catch (CoreException e) {
+    	            	e.printStackTrace();
+    	            }
+    				return Status.OK_STATUS;
     	    	} 
     	    	catch (CoreException e) {
     	    		e.printStackTrace();
