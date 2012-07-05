@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.model;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 public class CeylonDeclaration {
 
