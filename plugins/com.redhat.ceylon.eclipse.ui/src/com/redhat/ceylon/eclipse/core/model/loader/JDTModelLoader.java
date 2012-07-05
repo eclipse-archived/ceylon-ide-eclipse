@@ -535,17 +535,17 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     protected void logError(String message) {
-        System.err.println("ERROR: "+message);
+        //System.err.println("ERROR: "+message);
     }
 
     @Override
     protected void logWarning(String message) {
-        System.err.println("WARNING: "+message);
+        //System.err.println("WARNING: "+message);
     }
 
     @Override
     protected void logVerbose(String message) {
-        System.err.println("NOTE: "+message);
+        //System.err.println("NOTE: "+message);
     }
     
     @Override
@@ -559,9 +559,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         
         for (Declaration decl : allDeclarations) {
             String fqn = getQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
-            if(sourceDeclarations.remove(fqn) != null) {
-                System.out.println("Trying to remove unexisting declaratuon from the JDTModelLoader source declarations");
-            }
+            sourceDeclarations.remove(fqn);
         }
         
         super.removeDeclarations(allDeclarations);
