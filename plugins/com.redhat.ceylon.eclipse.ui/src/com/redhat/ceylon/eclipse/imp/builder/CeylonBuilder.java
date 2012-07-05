@@ -1456,11 +1456,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     protected int adjust(int stopIndex) {
                         return stopIndex+1;
                     }
+                    @Override
+                    protected boolean include(Message msg) {
+                    	return !msg.getMessage().startsWith("Cannot find module");
+                    }
                 });
+            phasedUnit.getCompilationUnit()
+	            .visit(new ErrorVisitor(new MarkerCreator(file, IJavaModelMarker.BUILDPATH_PROBLEM_MARKER)) {
+	                @Override
+	                public int getSeverity(Message error, boolean expected) {
+	                    return IMarker.SEVERITY_ERROR;
+	                }
+	                @Override
+	                //workaround for bug in IMP's MarkerCreator
+	                protected int adjust(int stopIndex) {
+	                    return stopIndex+1;
+	                }
+	                @Override
+	                protected boolean include(Message msg) {
+	                	return isCompilerError(msg);
+	                }
+	            });
             addTaskMarkers(file, tokens);
         }
     }
 
+	private static boolean isCompilerError(Message msg) {
+        //TODO: we need a MUCH better way to distinguish 
+        //      compiler errors from typechecker errors
+		String ms = msg.getMessage();
+		return ms.startsWith("cannot find module") || 
+				ms.startsWith("unable to read source artifact for");
+	}
+	
     private boolean generateBinaries(IProject project, ISourceProject sourceProject, 
     		Collection<IFile> filesToCompile, IProgressMonitor monitor) 
     				throws CoreException {
@@ -1987,26 +2015,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		return project.getFolder(path).getRawLocation().toFile();
 	}
     
-    /**
-     * Clears all problem markers (all markers whose type derives from IMarker.PROBLEM)
-     * from the given file. A utility method for the use of derived builder classes.
-     */
-    private static void clearMarkersOn(IFile file) {
-        try {
-            clearTaskMarkersOn(file);
-            file.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
-        } catch (CoreException e) {
-        }
-    }
-
-    /**
-     * Clears all problem markers (all markers whose type derives from IMarker.PROBLEM)
-     * from the given file. A utility method for the use of derived builder classes.
-     */
     private static void clearMarkersOn(IResource resource) {
         try {
             clearTaskMarkersOn(resource);
             resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
+            //these are actually errors from the Ceylon compiler, but
+            //we did not bother creating a separate annotation type!
+            resource.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_INFINITE);
         } catch (CoreException e) {
         }
     }
