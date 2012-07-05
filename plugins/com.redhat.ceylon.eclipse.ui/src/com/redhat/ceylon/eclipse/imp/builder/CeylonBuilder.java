@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.imp.builder;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathContainers;
+import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
+import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
+import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -67,7 +70,6 @@ import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.preferences.IPreferencesService;
-import org.eclipse.imp.preferences.PreferenceConstants;
 import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
@@ -371,7 +373,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             cpContainers = getCeylonClasspathContainers(javaProject);
         }
         
-        project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
+        project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         if (cpContainers.isEmpty()) {
             // Add a problem marker if binary generation went wrong for ceylon files
             IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
@@ -424,37 +426,54 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 console.activate();
             }
             getConsoleStream().println("\n===================================");
-            getConsoleStream().println(timedMessage("Starting Ceylon build on project : " + getProject()));
+            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
             getConsoleStream().println("-----------------------------------");
             boolean binariesGenerationOK;
             
             sourceFolders.clear();
             
+            if (kind==IncrementalProjectBuilder.CLEAN_BUILD) {
+            	getConsoleStream().println("             CLEAN BUILD");
+            }
+            if (kind==IncrementalProjectBuilder.AUTO_BUILD) {
+            	getConsoleStream().println("             AUTO BUILD");
+            }
+            if (kind==IncrementalProjectBuilder.FULL_BUILD) {
+            	getConsoleStream().println("             FULL BUILD");
+            }
+            if (kind==IncrementalProjectBuilder.INCREMENTAL_BUILD) {
+            	getConsoleStream().println("             INCREMENTAL BUILD");
+            }
+            
             if (mustDoFullBuild.value) {
-                monitor.beginTask("Full Ceylon build of project " + project.getName(), 9);
+                monitor.beginTask("Full Ceylon build of project " + project.getName(), 11);
                 getConsoleStream().println(timedMessage("Full build of model"));
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
                 
-                monitor.subTask("Clearing existing markers");
+                monitor.subTask("Clearing existing markers of project " + project.getName());
                 clearProjectMarkers(project);
                 clearMarkersOn(project);
                 monitor.worked(1);
                 
+                monitor.subTask("Parsing source of project " + project.getName());
                 if (! getModelState(project).equals(ModelState.Parsed)) {
                     parseCeylonModel(project, monitor);
                 }
+                monitor.worked(1);
                 
+                monitor.subTask("Typechecking source of project " + project.getName());
                 final TypeChecker typeChecker = getProjectTypeChecker(project);
                 
                 modelStates.put(project, ModelState.TypeChecking);
                 builtPhasedUnits = fullTypeCheck(project, sourceProject, typeChecker, monitor);
                 modelStates.put(project, ModelState.TypeChecked);
+                monitor.worked(1);
                 
                 getConsoleStream().println(timedMessage("Full generation of class files..."));
-                monitor.subTask("Generating binaries");
+                monitor.subTask("Generating binaries for project " + project.getName());
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -471,7 +490,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 
                 final List<IFile> filesToRemove = new ArrayList<IFile>();
                 final Set<IFile> fChangedSources = new HashSet<IFile>(); 
-                monitor.subTask("Scanning deltas"); 
+                monitor.subTask("Scanning deltas of project " + project.getName()); 
                 for (final IResourceDelta projectDelta : projectDeltas) {
                     if (projectDelta != null) {
                         List<IPath> deltaSourceFolders = getSourceFolders((IProject) projectDelta.getResource());
@@ -523,7 +542,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
                 
                 monitor.worked(1);
-                monitor.subTask("Scanning dependencies of deltas"); 
+                monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
                 if (fChangedSources.size() > 0) {
                     Collection<IFile> changeDependents= new HashSet<IFile>();
     
@@ -628,7 +647,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
                 monitor.worked(1);
-                monitor.subTask("Cleaning removed files"); 
+                monitor.subTask("Cleaning removed files for project " + project.getName()); 
                 removeObsoleteClassFiles(filesToRemove);
                 for (IFile fileToRemove : filesToRemove) {
                     if(isCeylon(fileToRemove)) {
@@ -660,7 +679,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
                 monitor.worked(1);
-                monitor.subTask("Compiling " + fSourcesToCompile + " file(s)"); 
+                monitor.subTask("Compiling " + fSourcesToCompile + " source files in project " + project.getName()); 
                 if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(fSourcesToCompile);
@@ -676,7 +695,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
                 monitor.worked(1);
-                monitor.subTask("Generating binaries");
+                monitor.subTask("Generating binaries for project " + project.getName());
                 getConsoleStream().println(timedMessage("Incremental generation of class files..."));
                 getConsoleStream().println("             ...compiling " + fSourcesToCompile.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, sourceProject, fSourcesToCompile, monitor);
@@ -685,7 +704,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
-                monitor.subTask("Updating referencing projects");
+                monitor.subTask("Updating referencing projects of project " + project.getName());
                 getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
@@ -707,7 +726,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             TypeChecker typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
             
-            monitor.subTask("Collecting dependencies");
+            monitor.subTask("Collecting dependencies of project " + project.getName());
             getConsoleStream().println(timedMessage("Collecting dependencies"));
             List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
             
@@ -730,7 +749,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         finally {
             getConsoleStream().println("-----------------------------------");
-            getConsoleStream().println(timedMessage("End Ceylon build on project : " + getProject()));
+            getConsoleStream().println(timedMessage("End Ceylon build on project: " + project.getName()));
             getConsoleStream().println("===================================");
         }
     }
@@ -783,8 +802,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 
                                 if (resource instanceof IProject && 
                                         ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0)) {
-                                    mustDoFullBuild.value = true;
-                                    return false;
+                                    //mustDoFullBuild.value = true;
+                                	sourceModified.value=true;
+                                    //return false;
                                 }
                                 
                                 return true;
@@ -1076,9 +1096,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private List<PhasedUnit> fullTypeCheck(IProject project, ISourceProject sourceProject, TypeChecker typeChecker, IProgressMonitor monitor) throws CoreException {
-        System.out.println("Starting ceylon full build of project " + project.getName());
 
-        monitor.subTask("Typechecking Ceylon source archives for project " 
+        monitor.subTask("Typechecking source archives for project " 
                 + project.getName());
 
 //        doRefresh(project);
@@ -1122,7 +1141,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
-        monitor.subTask("Typechecking Ceylon source files for project " 
+        monitor.subTask("Typechecking source files for project " 
                 + project.getName());
 
         for (PhasedUnit pu : listOfUnits) {
@@ -1169,13 +1188,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         monitor.worked(1);
-        monitor.subTask("Collecting Ceylon problems for project " 
+        monitor.subTask("Collecting problems for project " 
                 + project.getName());
     
         addProblemAndTaskMarkers(typeChecker.getPhasedUnits().getPhasedUnits());
         monitor.worked(1);
 
-        System.out.println("Finished ceylon full build of project " + project.getName());
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
@@ -1186,7 +1204,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static TypeChecker parseCeylonModel(
             final IProject project,
             IProgressMonitor monitor) throws CoreException {
-        monitor.subTask("Collecting Ceylon source files for project " 
+        monitor.subTask("Collecting source files for project " 
                     + project.getName());
 
         modelStates.put(project, ModelState.Parsing);
@@ -1224,7 +1242,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         monitor.worked(1);
         
-        monitor.subTask("Parsing Ceylon source files for project " 
+        monitor.subTask("Parsing source files for project " 
                     + project.getName());
 
         if (monitor.isCanceled()) {
@@ -1839,8 +1857,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	    List<IProject> requiredProjects = new ArrayList<IProject>();
         try {
             for (String requiredProjectName : javaProject.getRequiredProjectNames()) {
-                IProject requiredProject = javaProject.getProject().getWorkspace().getRoot().getProject(requiredProjectName);
-                
+                IProject requiredProject = javaProject.getProject().getWorkspace().getRoot()
+                		.getProject(requiredProjectName);
                 if (requiredProject != null) {
                     requiredProjects.add(requiredProject);
                 }
@@ -1922,7 +1940,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private static void clearMarkersOn(IFile file) {
         try {
             clearTaskMarkersOn(file);
-            file.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+            file.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
         } catch (CoreException e) {
         }
     }
@@ -1934,17 +1952,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private static void clearMarkersOn(IResource resource) {
         try {
             clearTaskMarkersOn(resource);
-            resource.deleteMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+            resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
         } catch (CoreException e) {
         }
     }
 
     private static void clearProjectMarkers(IProject project) {
         try {
-            project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, IResource.DEPTH_ZERO);
-            project.deleteMarkers(PROBLEM_MARKER_ID, true, IResource.DEPTH_ZERO);
+            project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
+            project.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO);
         } catch (CoreException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -1976,15 +1993,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final IPreferencesService builderPrefSvc= getPlugin().getPreferencesService();
         final IPreferencesService impPrefSvc= RuntimePlugin.getInstance().getPreferencesService();
         
-        boolean msgs= builderPrefSvc.isDefined(PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS) ?
-            builderPrefSvc.getBooleanPreference(PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS) :
-                impPrefSvc.getBooleanPreference(PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS);
+        boolean msgs= builderPrefSvc.isDefined(P_EMIT_BUILDER_DIAGNOSTICS) ?
+            builderPrefSvc.getBooleanPreference(P_EMIT_BUILDER_DIAGNOSTICS) :
+                impPrefSvc.getBooleanPreference(P_EMIT_BUILDER_DIAGNOSTICS);
         return msgs;
     }
 
     private void refresh(final IResource resource) {
         try {
-        	resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+        	resource.refreshLocal(DEPTH_INFINITE, null);
         	//not necessary because builds run with a lock, I think
             /*getProject().getWorkspace().run(new IWorkspaceRunnable() {
 			    public void run(IProgressMonitor monitor) throws CoreException {
@@ -2148,7 +2165,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private static void clearTaskMarkersOn(IResource resource) {
         try {
-            resource.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
+            resource.deleteMarkers(IMarker.TASK, false, DEPTH_INFINITE);
         }
         catch (CoreException e) {
             e.printStackTrace();
