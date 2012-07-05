@@ -5,7 +5,6 @@ import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE
 import java.io.File;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -113,24 +112,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         catch (BackingStoreException e) {
             e.printStackTrace();
         }
-    	new CeylonNature() {
-    		protected void setUpClasspath(IProject project) {
-    			try {
-					project.getFolder("JDTClasses").delete(true, null);
-				} 
-    			catch (CoreException e) {
-					e.printStackTrace();
-				}
-    			super.setUpClasspath(project);
-    			try {
-    				project.getWorkspace()
-    				        .build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-    			}
-    			catch (CoreException e) {
-    				e.printStackTrace();
-    			}
-    		}
-    	}.addToProject(project);
+    	new CeylonNature().addToProject(project);
     }
 
     private IProject getSelectedProject() {
