@@ -8,8 +8,10 @@ import org.eclipse.imp.services.DecorationDescriptor;
 import org.eclipse.imp.services.DecorationDescriptor.Quadrant;
 import org.eclipse.imp.services.IEntityImageDecorator;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.imp.search.CeylonElement;
@@ -18,7 +20,7 @@ import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 
 public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILanguageService {
     
-    //private final static int WARNING = 1 << 2;
+    private final static int WARNING = 1 << 2;
     private final static int ERROR = 1 << 3;
     private final static int REFINES = 1 << 4;
     private final static int IMPLEMENTS = 1 << 5;
@@ -28,6 +30,8 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     @Override
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
+                new DecorationDescriptor(WARNING, CeylonPlugin.getInstance().getBundle(), 
+                        "/icons/warning.gif", Quadrant.BOTTOM_LEFT),
                 new DecorationDescriptor(ERROR, CeylonPlugin.getInstance().getBundle(), 
                         "/icons/error.gif", Quadrant.BOTTOM_LEFT),
                 new DecorationDescriptor(REFINES, CeylonPlugin.getInstance().getBundle(), 
@@ -64,8 +68,13 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
             int result = getDecorationAttributes(dec.getDeclarationModel());
             ErrorCollectionVisitor ev = new ErrorCollectionVisitor(dec, true);
             dec.visit(ev);
-            if (!ev.getErrors().isEmpty()) {
-                result |= ERROR;
+            for (Message er: ev.getErrors()) {
+            	if (er instanceof UsageWarning) {
+            		result |= WARNING;
+            	}
+            	else {
+            		result |= ERROR;
+            	}
             }
             return result;
         }
