@@ -19,8 +19,6 @@ package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getRequiredProjects;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
@@ -28,6 +26,7 @@ import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -42,22 +41,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IElementChangedListener;
-import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.core.DeltaProcessingState;
-import org.eclipse.jdt.internal.core.JavaElementDelta;
-import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
-import org.eclipse.swt.widgets.Display;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -75,8 +64,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     private IClasspathEntry[] classpathEntries;
     private IPath path;
-    //private CeylonResolveJob job;
-    private String jdtVersion;
+    //private String jdtVersion;
     private IJavaProject javaProject;
 
     public IJavaProject getJavaProject() {
@@ -166,11 +154,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 						}                    
     				}
 
+    				container.resolveClasspath(monitor, true);
+    				
     				setClasspathContainer(containerPath, new IJavaProject[] {project},
     						new IClasspathContainer[] {container}, monitor);
 
-    				container.resolveClasspath(monitor, true);
-    				
     				return Status.OK_STATUS;
     				
     			} 
@@ -213,12 +201,12 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject, path);        			
     	            javaProject.setRawClasspath(classpath, monitor);
     	            
+    	    		resolveClasspath(monitor, false);
+    	    		
     	            setClasspathContainer(path, new IJavaProject[] {javaProject},
     	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
 
-    	    		resolveClasspath(monitor, false);
-    	    		
-    	            try {
+    	            /*try {
     	            	project.build(CLEAN_BUILD, monitor);
     	            	for (IProject p: project.getWorkspace().getRoot().getProjects()) {
     	            		if (p.isOpen() && !p.equals(project) &&
@@ -229,7 +217,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            }
     	            catch (CoreException e) {
     	            	e.printStackTrace();
-    	            }
+    	            }*/
     				return Status.OK_STATUS;
     	    	} 
     	    	catch (CoreException e) {
@@ -249,7 +237,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, 
 				new IClasspathAttribute[0], false);
 		IClasspathEntry[] entries = javaProject.getRawClasspath();
-		List<IClasspathEntry> newEntries = Arrays.asList(Arrays.copyOf(entries, entries.length));
+		List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
 		int index = 0;
 		boolean mustReplace = false;
 		for (IClasspathEntry entry: newEntries) {
@@ -289,17 +277,18 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     }
 
     private void setClasspathEntries(final IClasspathEntry[] entries) {
-        Display.getDefault().asyncExec(new Runnable() {
+    	classpathEntries = entries;
+        /*Display.getDefault().asyncExec(new Runnable() {
             public void run() {
                 classpathEntries = entries;
                 notifyUpdateClasspathEntries();
             }
-        });
+        });*/
     }
 
-    void notifyUpdateClasspathEntries() {
+    /*void notifyUpdateClasspathEntries() {
         try {
-            JavaCore.setClasspathContainer(path, new IJavaProject[] {javaProject},
+            setClasspathContainer(path, new IJavaProject[] {javaProject},
                 new IClasspathContainer[] {new CeylonClasspathContainer(CeylonClasspathContainer.this)},
                 null);
 
@@ -335,9 +324,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
             // unless there are some issues with the JDT, this should never happen
             CeylonPlugin.getInstance().logException("", e);
         }
-    }
+    }*/
 
-    private synchronized String getJDTVersion() {
+    /*private synchronized String getJDTVersion() {
         if (jdtVersion == null) {
             Bundle[] bundles = CeylonPlugin.getInstance().getBundleContext().getBundles();
             for (int i = 0; i < bundles.length; i++) {
@@ -348,10 +337,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
             }
         }
         return jdtVersion;
-    }
-
-    /*public synchronized void resetJob() {
-        job = null;
     }*/
 
 	boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)
@@ -368,17 +353,17 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		if (reparse) CeylonBuilder.parseCeylonModel(project, monitor);
 		
 		TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-		if (typeChecker != null) {
+		if (typeChecker!=null) {
 			Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
 		    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 		    JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
-		    for (File archive : moduleManager.getClasspath()) {
+		    for (File archive: moduleManager.getClasspath()) {
 		        if (archive.exists()) {
 					try {
 						Path classpathArtifact = new Path(archive.getCanonicalPath());
 			            IPath srcArtifact = classpathArtifact.removeFileExtension().addFileExtension("src");
 			            paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
-					} 
+					}
 					catch (IOException e) {
 						e.printStackTrace();
 					}
