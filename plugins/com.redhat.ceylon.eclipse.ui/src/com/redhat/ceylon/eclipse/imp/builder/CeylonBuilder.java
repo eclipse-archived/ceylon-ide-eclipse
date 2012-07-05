@@ -372,11 +372,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (javaProject != null) {
             cpContainers = getCeylonClasspathContainers(javaProject);
         }
+        List<IProject> requiredProjects = getRequiredProjects(project);
         
         //project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         
-        if (project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO).length>0) {
-        	return new IProject[0];
+        IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
+        for (IMarker m: buildMarkers) {
+        	Object message = m.getAttribute("message");
+			if (message!=null && message.toString().endsWith("'JDTClasses'")) {
+        		m.delete();
+        	}
+        	else {
+            	return requiredProjects.toArray(new IProject[0]);
+        	}
         }
         
         if (cpContainers.isEmpty()) {
@@ -387,11 +395,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
-            return new IProject[0];
+            return requiredProjects.toArray(new IProject[0]);
         }
         
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
-        List<IProject> requiredProjects = getRequiredProjects(project);
         
         final BooleanHolder mustDoFullBuild = new BooleanHolder();
         final BooleanHolder mustResolveClasspathContainer = new BooleanHolder();
@@ -693,10 +700,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(fSourcesToCompile);
                 }
-                builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);
-                if (builtPhasedUnits== null)
-                    return new IProject[0];
-                
+                builtPhasedUnits = incrementalBuild(project, sourceProject, monitor);                
                 if (builtPhasedUnits.isEmpty() && fSourcesToCompile.isEmpty()) {
                     return requiredProjects.toArray(new IProject[0]);
                 }
@@ -745,7 +749,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             for (IProject referencingProject: requiredProjects) {
                 TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(referencingProject);
-                if (requiredProjectTypeChecker != null) {
+                if (requiredProjectTypeChecker!=null) {
                     phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
                 }
             }
@@ -1570,14 +1574,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         	classFile = null;
                         }
                         return new JavaFileObject() {
+                        	@Override
+                        	public String toString() {
+                        		return fileName.getPath();
+                        	}
                             @Override
                             public boolean delete() {
                                 return javaFileObject.delete();
                             }
                             @Override
-                            public CharSequence getCharContent(boolean arg0)
+                            public CharSequence getCharContent(boolean b)
                                     throws IOException {
-                                return javaFileObject.getCharContent(arg0);
+                                return javaFileObject.getCharContent(b);
                             }
                             @Override
                             public long getLastModified() {
@@ -2196,10 +2204,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     protected void clean(IProgressMonitor monitor) throws CoreException {
         super.clean(monitor);
         
-        IJavaProject javaProject = JavaCore.create(getProject());
+        IProject project = getProject();
+
+        getConsoleStream().println("\n===================================");
+        getConsoleStream().println(timedMessage("Starting Ceylon clean on project: " + project.getName()));
+        getConsoleStream().println("-----------------------------------");
+        
+		IJavaProject javaProject = JavaCore.create(project);
         final File modulesOutputDirectory = getModulesOutputDirectory(javaProject);
         if (modulesOutputDirectory != null) {
-            monitor.subTask("Cleaning existing artifacts");
+            monitor.subTask("Cleaning existing artifacts of project " + project.getName());
             List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
             new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
             		new RepositoryLister.Actions() {
@@ -2216,7 +2230,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             });
         }
 
-        if (getJdtClassesEnabled(getProject())) {
+        if (getJdtClassesEnabled(project)) {
+            monitor.subTask("Cleaning JDTClasses directory of project " + project.getName());
 	        final File ceylonOutputDirectory = getCeylonOutputDirectory(javaProject);
 	        new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, 
 	        		new RepositoryLister.Actions() {
@@ -2233,9 +2248,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	        });
         }
         
-        monitor.subTask("Clear project and source markers");
-        clearProjectMarkers(getProject());
-        clearMarkersOn(getProject());
+        monitor.subTask("Clearing project and source markers for project " + project.getName());
+        clearProjectMarkers(project);
+        clearMarkersOn(project);
+
+        getConsoleStream().println("-----------------------------------");
+        getConsoleStream().println(timedMessage("End Ceylon clean on project: " + project.getName()));
+        getConsoleStream().println("===================================");
     }
     
     public static IFile getFile(PhasedUnit phasedUnit) {
