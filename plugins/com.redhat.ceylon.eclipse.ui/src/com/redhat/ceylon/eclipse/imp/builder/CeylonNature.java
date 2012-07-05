@@ -34,11 +34,12 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
     /**
-     * Returns the ID of the builder that processes the artifacts that this
-     * nature's builder produces. If there is no such dependency, returns null.
+     * Run the Java builder before the Ceylon builder, since
+     * it's more common for Ceylon to call Java than the
+     * other way around, and because the Java builder erases
+     * the output directory during a full build.
      */
-    // TODO this should be a property of the builder itself...
-    protected String getDownstreamBuilderID() {
+    protected String getUpstreamBuilderID() {
         return JavaCore.BUILDER_ID;
     }
 }
