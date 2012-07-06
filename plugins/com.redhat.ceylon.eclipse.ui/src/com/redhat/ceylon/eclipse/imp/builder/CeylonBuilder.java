@@ -1525,9 +1525,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             options.add(modulesOutputDir.getAbsolutePath());
         }
 
-        java.util.List<File> javaSourceFiles = new ArrayList<File>();
-        java.util.List<File> sourceFiles = new ArrayList<File>();
-        java.util.List<File> moduleFiles = new ArrayList<File>();
+        List<File> javaSourceFiles = new ArrayList<File>();
+        List<File> sourceFiles = new ArrayList<File>();
+        List<File> moduleFiles = new ArrayList<File>();
         for (IFile file : filesToCompile) {
             if(isCeylon(file)) {
                 sourceFiles.add(file.getRawLocation().toFile());
@@ -1607,8 +1607,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
         CeylonLog.preRegister(context);
         
-        final boolean enabedJdtClassesDir = getJdtClassesEnabled(project);        
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
+            final boolean enabedJdtClassesDir = getJdtClassesEnabled(project);        
         	final IJavaProject javaProject = JavaCore.create(project);
             final File ceylonOutputDirectory = enabedJdtClassesDir ? getCeylonOutputDirectory(javaProject) : null;
             @Override
@@ -1755,28 +1755,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             javaProjects.add(JavaCore.create(requiredProject));
         }
 
-        if (enabedJdtClassesDir) {
-        	IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        	for (IJavaProject javaProj : javaProjects) {
-        		try {
-        			List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProj);
-        			for (CeylonClasspathContainer container : containers) {
-        				for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
-        					if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
-        						classpathElements.add(cpEntry.getPath().toOSString());
-        					}
+        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
+        for (IJavaProject javaProj : javaProjects) {
+        	try {
+        		List<CeylonClasspathContainer> containers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProj);
+        		for (CeylonClasspathContainer container : containers) {
+        			for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
+        				if (!cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+        					classpathElements.add(cpEntry.getPath().toOSString());
         				}
         			}
-
-        			classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
-        			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
-        				if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
-        					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
-        				}
-        			}
-        		} catch (JavaModelException e1) {
-        			CeylonPlugin.log(e1);
         		}
+
+        		classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+        		for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
+        			if (cpEntry.getPath().lastSegment().equals("JDTClasses")) {
+        				classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+        			}
+        		}
+        	} catch (JavaModelException e1) {
+        		CeylonPlugin.log(e1);
         	}
         }
         
@@ -2597,8 +2595,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	        	moduleJars.add(moduleSrc);
 	            String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
 	            try {
-	                ZipFile zipFile = new ZipFile(moduleSrc);
-	                zipFile.removeFile(relativeFilePath);
+	                new ZipFile(moduleSrc).removeFile(relativeFilePath);
 	            } catch (ZipException e) {
 	                e.printStackTrace();
 	            }
