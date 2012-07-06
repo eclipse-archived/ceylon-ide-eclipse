@@ -69,7 +69,6 @@ import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.util.Policy;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
@@ -522,7 +521,8 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 						if (result != 0)
 							return result;
 					}
-					return Policy.getComparator().compare(i0.getName(), i1.getName());
+					//return Policy.getComparator().compare(i0.getName(), i1.getName());
+					return i0.getName().compareTo(i1.getName());
 				}
 
 			});
@@ -561,7 +561,8 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 			fInstalledEEs= JavaRuntime.getExecutionEnvironmentsManager().getExecutionEnvironments();
 			Arrays.sort(fInstalledEEs, new Comparator<IExecutionEnvironment>() {
 				public int compare(IExecutionEnvironment arg0, IExecutionEnvironment arg1) {
-					return Policy.getComparator().compare(arg0.getId(), arg1.getId());
+					//return Policy.getComparator().compare(arg0.getId(), arg1.getId());
+					return arg0.getId().compareTo(arg1.getId());
 				}
 			});
 			selectionIndex= -1;//find new index
