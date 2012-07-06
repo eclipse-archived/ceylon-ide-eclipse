@@ -2670,7 +2670,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
 	public static boolean showWarnings(IProject project) {
-		return !new ProjectScope(project).getNode(CeylonPlugin.PLUGIN_ID)
-				.getBoolean("hideWarnings", false);
+		return project==null || 
+				!new ProjectScope(project).getNode(CeylonPlugin.PLUGIN_ID)
+				        .getBoolean("hideWarnings", false);
 	}
 }
