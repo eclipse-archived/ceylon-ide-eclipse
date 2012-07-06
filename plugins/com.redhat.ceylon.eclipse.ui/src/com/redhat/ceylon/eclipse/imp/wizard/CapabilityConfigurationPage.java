@@ -30,7 +30,6 @@ import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.wizards.IStatusChangeListener;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.ui.wizards.NewElementWizardPage;
-import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPage;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.Dialog;
@@ -46,9 +45,7 @@ import org.eclipse.ui.PlatformUI;
  * Basic wizard page for creating new Java projects. This page can be used in
  * project creation wizards. The page shows UI to configure the project with a Java
  * build path and output location. On finish the page will also configure the Java nature.
- * <p>
- * This is a replacement for {@link NewJavaProjectWizardPage} with a cleaner API.
- * </p>
+ *
  * <p>
  * The pages used by the New Java Project wizard are {@link NewJavaProjectWizardPageOne} and
  * {@link NewJavaProjectWizardPageTwo}.
