@@ -36,8 +36,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.core.ClasspathAttribute;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
@@ -327,7 +329,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 	 */
 	private final class LayoutGroup implements Observer, SelectionListener {
 
-		private final SelectionButtonDialogField fStdRadio, fSrcBinRadio;
+		private final SelectionButtonDialogField fStdRadio;//, fSrcBinRadio;
 		private Group fGroup;
 		private Link fPreferenceLink;
 
@@ -335,12 +337,12 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 			fStdRadio= new SelectionButtonDialogField(SWT.RADIO);
 			fStdRadio.setLabelText(NewWizardMessages.NewJavaProjectWizardPageOne_LayoutGroup_option_oneFolder);
 
-			fSrcBinRadio= new SelectionButtonDialogField(SWT.RADIO);
+			/*fSrcBinRadio= new SelectionButtonDialogField(SWT.RADIO);
 			fSrcBinRadio.setLabelText(NewWizardMessages.NewJavaProjectWizardPageOne_LayoutGroup_option_separateFolders);
 
 			boolean useSrcBin= PreferenceConstants.getPreferenceStore().getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ);
 			fSrcBinRadio.setSelection(useSrcBin);
-			fStdRadio.setSelection(!useSrcBin);
+			fStdRadio.setSelection(!useSrcBin);*/
 		}
 
 
@@ -353,7 +355,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 			fStdRadio.doFillIntoGrid(fGroup, 3);
 			LayoutUtil.setHorizontalGrabbing(fStdRadio.getSelectionButton(null));
 
-			fSrcBinRadio.doFillIntoGrid(fGroup, 2);
+			//fSrcBinRadio.doFillIntoGrid(fGroup, 2);
 
 			fPreferenceLink= new Link(fGroup, SWT.NONE);
 			fPreferenceLink.setText(NewWizardMessages.NewJavaProjectWizardPageOne_LayoutGroup_link_description);
@@ -378,7 +380,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 			
 			final boolean detect= fDetectGroup.mustDetect();
 			fStdRadio.setEnabled(!detect);
-			fSrcBinRadio.setEnabled(!detect);
+			//fSrcBinRadio.setEnabled(!detect);
 			if (fPreferenceLink != null) {
 				fPreferenceLink.setEnabled(!detect);
 			}
@@ -392,9 +394,9 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 		 *
 		 * @return returns <code>true</code> if the user specified to create 'source' and 'bin' folders.
 		 */
-		public boolean isSrcBin() {
+		/*public boolean isSrcBin() {
 			return fSrcBinRadio.isSelected();
-		}
+		}*/
 
 		/* (non-Javadoc)
 		 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
@@ -1288,14 +1290,22 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 	 * @return returns the source class path entries for the new project
 	 */
 	public IClasspathEntry[] getSourceClasspathEntries() {
-		IPath sourceFolderPath= new Path(getProjectName()).makeAbsolute();
-		if (fLayoutGroup.isSrcBin()) {
-			IPath srcPath= new Path(PreferenceConstants.getPreferenceStore().getString(PreferenceConstants.SRCBIN_SRCNAME));
+		IPath folderPath= new Path(getProjectName()).makeAbsolute();
+		//if (fLayoutGroup.isSrcBin()) {
+			/*IPath srcPath= new Path(PreferenceConstants.getPreferenceStore().getString(PreferenceConstants.SRCBIN_SRCNAME));
 			if (srcPath.segmentCount() > 0) {
 				sourceFolderPath= sourceFolderPath.append(srcPath).removeLastSegments(1).append("source");
-			}
-		}
-		return new IClasspathEntry[] {  JavaCore.newSourceEntry(sourceFolderPath) };
+			}*/
+		//}
+		return new IClasspathEntry[] {  
+				JavaCore.newSourceEntry(folderPath.append("ceylon"), 
+						new IPath[0], new IPath[] {new Path("*.java")}, 
+						getCeylonOutputLocation(), 
+						new IClasspathAttribute[]{new ClasspathAttribute("ceylonSource", "true")}), 
+				JavaCore.newSourceEntry(folderPath.append("java"), 
+						new IPath[0], new IPath[] {new Path("*.ceylon")},
+						getJavaOutputLocation(), 
+						new IClasspathAttribute[]{new ClasspathAttribute("javaSource", "true")})};
 	}
 
 	/**
@@ -1304,11 +1314,25 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 	 *
 	 * @return returns the default class path entries
 	 */
-	public IPath getOutputLocation() {
+	public IPath getJavaOutputLocation() {
 		IPath outputLocationPath= new Path(getProjectName()).makeAbsolute();
-		if (fLayoutGroup.isSrcBin()) {
-			outputLocationPath= outputLocationPath.append("output");
-		}
+		//if (fLayoutGroup.isSrcBin()) {
+			outputLocationPath= outputLocationPath.append("classes");
+		//}
+		return outputLocationPath;
+	}
+
+	/**
+	 * Returns the source class path entries to be added on new projects.
+	 * The underlying resource may not exist.
+	 *
+	 * @return returns the default class path entries
+	 */
+	public IPath getCeylonOutputLocation() {
+		IPath outputLocationPath= new Path(getProjectName()).makeAbsolute();
+		//if (fLayoutGroup.isSrcBin()) {
+			outputLocationPath= outputLocationPath.append("modules");
+		//}
 		return outputLocationPath;
 	}
 

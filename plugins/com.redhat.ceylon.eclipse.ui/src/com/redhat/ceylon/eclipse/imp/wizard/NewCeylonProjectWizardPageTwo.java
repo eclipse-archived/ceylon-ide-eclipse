@@ -293,7 +293,8 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
 		try {
 			IClasspathEntry[] entries= null;
-			IPath outputLocation= null;
+			IPath outputJavaLocation= null;
+			IPath outputCeylonLocation= null;
 			IProject project= javaProject.getProject();
 
 			if (fKeepContent) {
@@ -301,17 +302,10 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 					final ClassPathDetector detector= new ClassPathDetector(fCurrProject, 
 							new SubProgressMonitor(monitor, 2));
 					entries= detector.getClasspath();
-					outputLocation= detector.getOutputLocation();
+					outputJavaLocation= detector.getOutputLocation();
+					outputCeylonLocation = outputJavaLocation; //TODO: auto-detect where the modules are
 					if (entries.length == 0)
 						entries= null;
-					if (outputLocation.toString()
-							.contains(PreferenceConstants.getPreferenceStore()
-									.getString(PreferenceConstants.SRCBIN_BINNAME))) {
-						outputLocation = fFirstPage.getOutputLocation();
-					}
-					else {
-						outputLocation = outputLocation.removeLastSegments(1);
-					}
 				} else {
 					monitor.worked(2);
 				}
@@ -334,9 +328,14 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
 				entries= cpEntries.toArray(new IClasspathEntry[cpEntries.size()]);
 
-				outputLocation= fFirstPage.getOutputLocation();
-				if (outputLocation.segmentCount() > 1) {
-					IFolder folder= root.getFolder(outputLocation);
+				outputJavaLocation= fFirstPage.getJavaOutputLocation();
+				outputCeylonLocation= fFirstPage.getCeylonOutputLocation();
+				if (outputJavaLocation.segmentCount() > 1) {
+					CoreUtility.createDerivedFolder(root.getFolder(outputJavaLocation), 
+							true, true, new SubProgressMonitor(monitor, 1));
+				}
+				if (outputCeylonLocation.segmentCount() > 1) {
+					IFolder folder= root.getFolder(outputCeylonLocation);
 					CoreUtility.createDerivedFolder(folder, true, true, 
 							new SubProgressMonitor(monitor, 1));
 				}
@@ -345,7 +344,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 				throw new OperationCanceledException();
 			}
 
-			init(javaProject, outputLocation, entries, false);
+			init(javaProject, outputJavaLocation, outputCeylonLocation, entries, false);
 		} finally {
 			monitor.done();
 		}

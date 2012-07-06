@@ -20,6 +20,9 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader;
 
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.CEYLON_CLASSES_FOLDER_NAME;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -403,7 +406,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 if (classFile != null) {
                     IPackageFragmentRoot fragmentRoot = classFile.getPackageFragmentRoot();
                     if (fragmentRoot != null) {
-                        if (fragmentRoot.getPath().lastSegment().equals("JDTClasses")) {
+                        if (isInCeylonClassesOutputFolder(fragmentRoot.getPath())) {
                             return null;
                         }
                     }

@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.launching;
 
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +52,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         
         List<RepositoryManager> repositoryManagers = new ArrayList<RepositoryManager>();
         
-        File outputDirectory = CeylonBuilder.getModulesOutputDirectory(javaProject);
+        File outputDirectory = getCeylonModulesOutputDirectory(javaProject);
         if (outputDirectory != null) {
         	RepositoryManager outputRepo = new SimpleRepositoryManager(new FileContentStore(outputDirectory), 
         	        new EclipseLogger());

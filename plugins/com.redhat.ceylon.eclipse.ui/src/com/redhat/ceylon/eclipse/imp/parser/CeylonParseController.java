@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.imp.parser;
 
 import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getModulesOutputDirectory;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectRepositoryManager;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectTypeChecker;
@@ -319,7 +319,7 @@ public class CeylonParseController extends ParseControllerBase {
                     for (String repo: getUserRepositories(project)) {
                         repos.add(repo);
                     }
-                    repos.add(getModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
+                    repos.add(getCeylonModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
                 }
             } 
             catch (CoreException e) {

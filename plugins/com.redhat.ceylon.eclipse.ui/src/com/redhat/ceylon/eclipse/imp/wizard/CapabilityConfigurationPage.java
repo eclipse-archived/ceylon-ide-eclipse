@@ -137,14 +137,17 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 	 * @param defaultsOverrideExistingClasspath If set to <code>true</code>, an existing '.classpath' file is ignored. If set to <code>false</code>
 	 * the given default classpath and output location is only used if no '.classpath' exists.
 	 */
-	public void init(IJavaProject jproject, IPath defaultOutputLocation, 
-			IClasspathEntry[] defaultEntries, boolean defaultsOverrideExistingClasspath) {
+	public void init(IJavaProject jproject, IPath defaultJavaOutputLocation, 
+			IPath defaultCeylonOutputLocation, IClasspathEntry[] defaultEntries, 
+			boolean defaultsOverrideExistingClasspath) {
 		if (!defaultsOverrideExistingClasspath && jproject.exists() && 
 				jproject.getProject().getFile(".classpath").exists()) { //$NON-NLS-1$
-			defaultOutputLocation= null;
+			defaultJavaOutputLocation= null;
+			defaultCeylonOutputLocation= null;
 			defaultEntries= null;
 		}
-		getBuildPathsBlock().init(jproject, defaultOutputLocation, defaultEntries);
+		getBuildPathsBlock().init(jproject, defaultJavaOutputLocation, 
+				defaultCeylonOutputLocation, defaultEntries);
 		fJavaProject= jproject;
 	}
 
