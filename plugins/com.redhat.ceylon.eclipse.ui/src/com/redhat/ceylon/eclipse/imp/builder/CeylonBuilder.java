@@ -90,9 +90,14 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.compiler.java.codegen.BoxingDeclarationVisitor;
+import com.redhat.ceylon.compiler.java.codegen.BoxingVisitor;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
+import com.redhat.ceylon.compiler.java.codegen.CompilerBoxingDeclarationVisitor;
+import com.redhat.ceylon.compiler.java.codegen.CompilerBoxingVisitor;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.loader.ValueVisitor;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
@@ -125,6 +130,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -1107,13 +1113,54 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         if (compileWithJDTModelLoader()) {
-            loader.completeFromClasses();
+//            loader.completeFromClasses();
         }
         
         for (PhasedUnit pu : dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
 
+        if (compileWithJDTModelLoader()) {
+            for (PhasedUnit dependency : dependencies) {
+                dependency.analyseTypes();
+            }
+            for (PhasedUnit dependency : dependencies) {
+                dependency.analyseFlow();
+            }
+            
+            ClassMirror objectMirror = loader.lookupClassMirror("ceylon.language.Object");
+            if (objectMirror instanceof SourceClass) {
+                Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
+                if (objectClass != null) {
+                    Declaration hashMethod = objectClass.getDirectMember("hash", Collections.<ProducedType>emptyList());
+                    if (hashMethod instanceof TypedDeclaration) {
+                        ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
+                    }
+                }
+                
+            }
+            
+            for (PhasedUnit pu : dependencies) {
+                Unit unit = pu.getUnit();
+                final CompilationUnit compilationUnit = pu.getCompilationUnit();
+                for (Declaration d: unit.getDeclarations()) {
+                    if (d instanceof TypedDeclaration && !(d instanceof Setter)) {
+                        compilationUnit.visit(new ValueVisitor((TypedDeclaration) d));
+                    }
+                }
+            }
+            
+            BoxingDeclarationVisitor boxingDeclarationVisitor = new IDEBoxingDeclarationVisitor();
+            BoxingVisitor boxingVisitor = new IDEBoxingVisitor();
+            // Extra phases for the compiler
+            for (PhasedUnit pu : dependencies) {
+                pu.getCompilationUnit().visit(boxingDeclarationVisitor);
+            }
+            for (PhasedUnit pu : dependencies) {
+                pu.getCompilationUnit().visit(boxingVisitor);
+            }
+        }
+        
         loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
         loader.loadPackage("ceylon.language", true);
         loader.loadPackage("ceylon.language.descriptor", true);
@@ -1180,7 +1227,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private boolean compileWithJDTModelLoader() {
-        return compileWithJDTModelLoader;
+        return getJdtClassesEnabled(getProject());
     }
 
     public static TypeChecker parseCeylonModel(
@@ -1718,8 +1765,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 @Override
                 public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
                         List<PhasedUnit> sourceUnits) {
+                    return sourceUnits;
+                    /*
                     if (getModelState(project).equals(ModelState.Compiled)) {
-                        return sourceUnits;
                     }
                     List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
                     for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
@@ -1750,10 +1798,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         
                     }
                     return allPhasedUnits;
+                    */
                 }
                 @Override
                 public void extraPhasesApplied() {
+                    /*
                     modelStates.put(project, ModelState.Compiled);
+                    */
                 }
                 
             });
