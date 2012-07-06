@@ -238,7 +238,10 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
                         if (resource.equals(workspaceRoot)) {
                             return true;
                         }
-                        if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
+                        if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
+                        	CeylonBuilder.removeProject((IProject) resource);
+                        }
+                        else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                             final IProject project = (IProject) resource;
                             try {
                                 if (! project.isOpen()) {
