@@ -278,8 +278,11 @@ public class CeylonParseController extends ParseControllerBase {
         
         fCurrentAst = cu;
         
+        boolean showWarnings = CeylonBuilder.showWarnings(project);
+        
         if (typeChecker == null) {
-        	TypeCheckerBuilder tcb = new TypeCheckerBuilder().verbose(false);
+        	TypeCheckerBuilder tcb = new TypeCheckerBuilder()
+        	        .verbose(false).usageWarnings(showWarnings);
         	
         	if (path!=null) { //path==null in structured compare editor
                 for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
@@ -332,7 +335,7 @@ public class CeylonParseController extends ParseControllerBase {
         if (isCanceling(monitor)) {
             return fCurrentAst;
         }
-         
+
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
         
         PhasedUnit phasedUnit;
@@ -342,7 +345,9 @@ public class CeylonParseController extends ParseControllerBase {
             fCurrentAst = cu;
             phasedUnit = builtPhasedUnit;
             phasedUnit.analyseTypes();
-            phasedUnit.analyseUsage();
+			if (showWarnings) {
+                phasedUnit.analyseUsage();
+            }
         }
         else {
             Package pkg = null;
@@ -415,7 +420,9 @@ public class CeylonParseController extends ParseControllerBase {
             phasedUnit.scanTypeDeclarations();
             phasedUnit.validateRefinement();
             phasedUnit.analyseTypes();
-            phasedUnit.analyseUsage();
+            if (showWarnings) {
+            	phasedUnit.analyseUsage();
+            }
             phasedUnit.analyseFlow();
         }
             
@@ -439,7 +446,7 @@ public class CeylonParseController extends ParseControllerBase {
         return fCurrentAst;
     }
 
-    public boolean isExternalPath(IPath path) {
+	public boolean isExternalPath(IPath path) {
         IWorkspaceRoot wsRoot= ResourcesPlugin.getWorkspace().getRoot();
         // If the path is outside the workspace, or pointing inside the workspace, 
         // but is still file-system-absolute.

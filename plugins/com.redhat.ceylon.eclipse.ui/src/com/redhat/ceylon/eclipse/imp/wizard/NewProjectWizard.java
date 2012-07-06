@@ -71,6 +71,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     private String repositoryPath;
     private boolean useEmbeddedRepo=true;
+    private boolean showCompilerWarnings=true;
     private boolean enableJdtClassesDir=false;
     
     public NewProjectWizard() {
@@ -167,6 +168,11 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         enableJdtClasses.setSelection(false);
         enableJdtClasses.setEnabled(true);
 
+        final Button showWarnings = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        showWarnings.setText("Show compiler warnings (for unused declarations)");
+        showWarnings.setSelection(true);
+        showWarnings.setEnabled(true);
+
         //final Composite composite= new Composite(parent, SWT.NONE);
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
         composite.setText("Ceylon module repository");
@@ -257,6 +263,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        showWarnings.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	showCompilerWarnings = !showCompilerWarnings;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
     }
     
     public boolean isRepoValid() {
@@ -317,6 +332,10 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
             if (enableJdtClassesDir) {
             	node.putBoolean("jdtClasses", true);
+            }
+            
+            if (!showCompilerWarnings) {
+            	node.putBoolean("hideWarnings", true);
             }
             
             if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {

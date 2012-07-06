@@ -1099,7 +1099,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isFullyTyped()) {
                 phasedUnit.analyseTypes();
-                phasedUnit.analyseUsage();
+                if (showWarnings(project)) {
+                	phasedUnit.analyseUsage();
+                }
             }
         }
         if (monitor.isCanceled()) {
@@ -1224,7 +1226,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isFullyTyped()) {
                 pu.analyseTypes();
-                pu.analyseUsage();
+                if (showWarnings(project)) {
+                	pu.analyseUsage();
+                }
             }
         }
         if (monitor.isCanceled()) {
@@ -2649,4 +2653,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             ? "CeylonBuilder for unknown project" //$NON-NLS-1$
             : "CeylonBuilder for " + getProject().getName(); //$NON-NLS-1$
     }
+
+	public static boolean showWarnings(IProject project) {
+		return !new ProjectScope(project).getNode(CeylonPlugin.PLUGIN_ID)
+				.getBoolean("hideWarnings", false);
+	}
 }

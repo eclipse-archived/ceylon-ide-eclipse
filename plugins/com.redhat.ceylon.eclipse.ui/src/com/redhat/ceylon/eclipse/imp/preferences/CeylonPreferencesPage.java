@@ -35,8 +35,10 @@ public class CeylonPreferencesPage extends PropertyPage {
     private String repositoryPath;
     private boolean useEmbeddedRepo;
     private boolean enableJdtClassesDir;
+    private boolean showCompilerWarnings=true;
     
     private Button useEmbedded;
+    private Button showWarnings;
     private Button enableJdtClasses;
 
     //TODO: fix copy/paste!
@@ -81,6 +83,8 @@ public class CeylonPreferencesPage extends PropertyPage {
         useEmbedded.setSelection(true);
         enableJdtClassesDir=false;
         enableJdtClasses.setSelection(false);
+        showCompilerWarnings=true;
+        showWarnings.setSelection(true);
         selectFolder.setEnabled(false);
         folder.setEnabled(false);
         super.performDefaults();
@@ -105,6 +109,12 @@ public class CeylonPreferencesPage extends PropertyPage {
         }
         else {
         	node.remove("jdtClasses");
+        }
+        if (showCompilerWarnings) {
+        	node.remove("hideWarnings");
+        }
+        else {
+        	node.putBoolean("hideWarnings", true);
         }
         try {
             node.flush();
@@ -144,6 +154,11 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
         enableJdtClasses.setSelection(enableJdtClassesDir);
         enableJdtClasses.setEnabled(builderEnabled);
+
+        showWarnings = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        showWarnings.setText("Show compiler warnings (for unused declarations)");
+        showWarnings.setSelection(showCompilerWarnings);
+        showWarnings.setEnabled(true);
 
         Label title = new Label(parent, SWT.LEFT | SWT.WRAP);
         title.setText("The Ceylon module repository contains dependencies:");
@@ -256,6 +271,15 @@ public class CeylonPreferencesPage extends PropertyPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        showWarnings.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	showCompilerWarnings = !showCompilerWarnings;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
         if (useEmbeddedRepo) {
             setErrorMessage(null);
         }
@@ -286,6 +310,7 @@ public class CeylonPreferencesPage extends PropertyPage {
 			repositoryPath = node.get("repo", null);
 	        useEmbeddedRepo = repositoryPath==null;
 	        enableJdtClassesDir = node.getBoolean("jdtClasses", false);
+	        showCompilerWarnings = !node.getBoolean("hideWarnings", false);
 	        
         }
 
