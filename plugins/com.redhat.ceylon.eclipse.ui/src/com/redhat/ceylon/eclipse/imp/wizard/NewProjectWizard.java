@@ -264,9 +264,10 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
             selectAndReveal(fSecondPage.getJavaProject().getProject());             
 
+            //TODO: use classpathentry attributes to persist this stuff!
             IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
                     .getNode(CeylonPlugin.PLUGIN_ID);
-
+            
             if (enableJdtClassesDir) {
             	node.putBoolean("jdtClasses", true);
             }

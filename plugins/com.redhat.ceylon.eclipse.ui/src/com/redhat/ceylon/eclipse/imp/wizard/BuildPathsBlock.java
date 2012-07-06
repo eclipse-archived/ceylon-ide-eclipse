@@ -27,7 +27,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -37,7 +36,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModelStatus;
 import org.eclipse.jdt.core.IJavaProject;
@@ -101,8 +99,6 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.views.navigator.ResourceComparator;
-
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class BuildPathsBlock {
 
@@ -249,8 +245,8 @@ public class BuildPathsBlock {
         /*if (fUseNewPage) {
 			fSourceContainerPage= new NewSourceContainerWorkbookPage(fClassPathList, fBuildPathDialogField, fRunnableContext, this);
         } else {*/
-			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList, 
-					fJavaBuildPathDialogField, fCeylonBuildPathDialogField);
+			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList, this); 
+					//fJavaBuildPathDialogField, fCeylonBuildPathDialogField);
         //}
         item.setData(fSourceContainerPage);
         item.setControl(fSourceContainerPage.getControl(folder));
@@ -314,15 +310,15 @@ public class BuildPathsBlock {
 	 * Initializes the classpath for the given project. Multiple calls to init are allowed,
 	 * but all existing settings will be cleared and replace by the given or default paths.
 	 * @param jproject The java project to configure. Does not have to exist.
-	 * @param outputLocation The output location to be set in the page. If <code>null</code>
+	 * @param javaOutputLocation The output location to be set in the page. If <code>null</code>
 	 * is passed, jdt default settings are used, or - if the project is an existing Java project- the
 	 * output location of the existing project
 	 * @param classpathEntries The classpath entries to be set in the page. If <code>null</code>
 	 * is passed, jdt default settings are used, or - if the project is an existing Java project - the
 	 * classpath entries of the existing project
 	 */
-	public void init(IJavaProject jproject, IPath outputLocation, 
-			IClasspathEntry[] classpathEntries) {
+	public void init(IJavaProject jproject, IPath javaOutputLocation, 
+			IPath ceylonOutputLocation, IClasspathEntry[] classpathEntries) {
 		fCurrJProject= jproject;
 		boolean projectExists= false;
 		List<CPListElement> newClassPath= null;
@@ -330,16 +326,20 @@ public class BuildPathsBlock {
 		projectExists= (project.exists() && project.getFile(".classpath").exists()); //$NON-NLS-1$
 		IClasspathEntry[] existingEntries= null;
 		if  (projectExists) {
-			if (outputLocation == null) {
-				outputLocation=  fCurrJProject.readOutputLocation().removeLastSegments(1);
+			if (javaOutputLocation == null) {
+				javaOutputLocation=  fCurrJProject.readOutputLocation();
 			}
 			existingEntries= fCurrJProject.readRawClasspath();
 			if (classpathEntries == null) {
 				classpathEntries= existingEntries;
+				//TODO: read existing ceylon output location from classpathEntries
 			}
 		}
-		if (outputLocation == null) {
-			outputLocation= getDefaultOutputLocation(jproject);
+		if (javaOutputLocation == null) {
+			javaOutputLocation= getDefaultJavaOutputLocation(jproject);
+		}
+		if (ceylonOutputLocation == null) {
+			ceylonOutputLocation= getDefaultCeylonOutputLocation(jproject);
 		}
 
 		if (classpathEntries != null) {
@@ -357,8 +357,8 @@ public class BuildPathsBlock {
 			}
 		}
 
-		fJavaOutputLocationPath = outputLocation.append("java").makeRelative();
-		fCeylonOutputLocationPath = outputLocation.append("ceylon").makeRelative();
+		fJavaOutputLocationPath = javaOutputLocation.makeRelative();
+		fCeylonOutputLocationPath = ceylonOutputLocation.makeRelative();
 		
 		// inits the dialog field
 		fJavaBuildPathDialogField.setText(fJavaOutputLocationPath.toString());
@@ -516,8 +516,12 @@ public class BuildPathsBlock {
 		return list;
 	}
 
-	public static IPath getDefaultOutputLocation(IJavaProject jproj) {
-		return jproj.getProject().getFullPath().append("output");
+	public static IPath getDefaultJavaOutputLocation(IJavaProject jproj) {
+		return jproj.getProject().getFullPath().append("classes");
+	}
+
+	public static IPath getDefaultCeylonOutputLocation(IJavaProject jproj) {
+		return jproj.getProject().getFullPath().append("modules");
 	}
 
 	private class JavaBuildPathAdapter implements IStringButtonAdapter, 
@@ -724,12 +728,12 @@ public class BuildPathsBlock {
 	private void updateCeylonOutputLocationStatus() {
 		fCeylonOutputLocationPath= null;
 
-		String text= fJavaBuildPathDialogField.getText();
+		String text= fCeylonBuildPathDialogField.getText();
 		if ("".equals(text)) { //$NON-NLS-1$
 			fOutputFolderStatus.setError(NewWizardMessages.BuildPathsBlock_error_EnterBuildPath);
 			return;
 		}
-		IPath path= getJavaOutputLocation();
+		IPath path= getCeylonOutputLocation();
 		fCeylonOutputLocationPath= path;
 
 		IResource res= fWorkspaceRoot.findMember(path);
@@ -872,16 +876,6 @@ public class BuildPathsBlock {
 			IProject project= javaProject.getProject();
 			IPath projPath= project.getFullPath();
 
-			IEclipsePreferences node = new ProjectScope(project)
-			        .getNode(CeylonPlugin.PLUGIN_ID);
-			node.put("ceylonOutputPath", ceylonOutputLocation.makeRelativeTo(project.getFullPath()).toString());
-			try {
-				node.flush();
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-
 			IPath oldOutputLocation;
 			try {
 				oldOutputLocation= javaProject.getOutputLocation();
@@ -910,6 +904,8 @@ public class BuildPathsBlock {
 					}
 				}
 			}
+			
+			//TODO: clean the old ceylon output location!
 
 			monitor.worked(1);
 
@@ -917,9 +913,18 @@ public class BuildPathsBlock {
 
 			//create and set the output path first
 			if (!fWorkspaceRoot.exists(javaOutputLocation)) {
-				IFolder folder= fWorkspaceRoot.getFolder(javaOutputLocation);
-				CoreUtility.createDerivedFolder(folder, true, true, 
-						new SubProgressMonitor(monitor, 1));
+				CoreUtility.createDerivedFolder(fWorkspaceRoot.getFolder(javaOutputLocation), 
+						true, true, new SubProgressMonitor(monitor, 1));
+			} else {
+				monitor.worked(1);
+			}
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
+
+			if (!fWorkspaceRoot.exists(ceylonOutputLocation)) {
+				CoreUtility.createDerivedFolder(fWorkspaceRoot.getFolder(ceylonOutputLocation), 
+						true, true, new SubProgressMonitor(monitor, 1));
 			} else {
 				monitor.worked(1);
 			}

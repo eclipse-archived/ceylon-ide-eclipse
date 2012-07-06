@@ -18,7 +18,12 @@
 package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathEntry;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonSourceFolder;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getRequiredProjects;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
@@ -34,7 +39,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -165,12 +169,12 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     			} 
     			catch (JavaModelException ex) {
     				// unless there are issues with the JDT, this should never happen
-    				return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    				return new Status(IStatus.ERROR, PLUGIN_ID,
     						"could not get container", ex);
     			}
     			catch (CoreException e) {
     				e.printStackTrace();
-    				return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    				return new Status(IStatus.ERROR, PLUGIN_ID,
     						"could not resolve dependencies", e);
     			}            
     		}    		
@@ -185,7 +189,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                 getJavaProject().getElementName()) {
     	    @Override protected IStatus run(IProgressMonitor monitor) {
     	    	final IProject project = javaProject.getProject();
-    			IFolder jdtClassesDir = project.getFolder("JDTClasses");
+    			IFolder jdtClassesDir = getCeylonClassesOutputFolder(javaProject);
 	    		try {
 	    			
 	    			if (getJdtClassesEnabled(project)) {
@@ -205,7 +209,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	    		resolveClasspath(monitor, false);
     	    		
     	            setClasspathContainer(path, new IJavaProject[] {javaProject},
-    	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
+    	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, 
+    	                    monitor);
 
     	            Job job = new Job("Rebuild dependencies of project " + project.getName()) {
     	            	@Override
@@ -215,8 +220,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            			//      depend on this one, but that just doesn't work out right
     	            			for (IProject p: project.getWorkspace().getRoot().getProjects()) {
     	            				if (p.isOpen() && !p.equals(project) &&
-    	            						CeylonBuilder.getRequiredProjects(p).contains(project)) {
-    	            					project.getWorkspace().build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+    	            						getRequiredProjects(p).contains(project)) {
+    	            					project.getWorkspace().build(FULL_BUILD, monitor);
     	            					break;
     	            				} 
     	            			}
@@ -235,7 +240,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	    	} 
     	    	catch (CoreException e) {
     	    		e.printStackTrace();
-    	    		return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+    	    		return new Status(IStatus.ERROR, PLUGIN_ID,
     	    				"could not resolve dependencies", e);
     	    	}
     	    }    		
@@ -374,7 +379,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		        if (archive.exists()) {
 					try {
 						Path classpathArtifact = new Path(archive.getCanonicalPath());
-			            IPath srcArtifact = classpathArtifact.removeFileExtension().addFileExtension("src");
+			            IPath srcArtifact = classpathArtifact.removeFileExtension()
+			            		.addFileExtension("src");
 			            paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
 					}
 					catch (IOException e) {
@@ -383,8 +389,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		        }
 		    }
 		    if (getJdtClassesEnabled(project)) {
-		    	IPath ceylonOutputDirectory = project.getFolder("JDTClasses").getFullPath();
-		    	IPath ceylonSourceDirectory = project.getFolder("source").getFullPath();
+		    	IPath ceylonOutputDirectory = getCeylonClassesOutputFolder(getJavaProject()).getFullPath();
+		    	IPath ceylonSourceDirectory = getCeylonSourceFolder(getJavaProject()).getFullPath();
 		    	paths.add(newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
 		    }
 		    
