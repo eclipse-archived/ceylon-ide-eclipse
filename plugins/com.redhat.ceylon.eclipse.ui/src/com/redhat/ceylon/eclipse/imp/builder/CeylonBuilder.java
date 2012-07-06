@@ -763,7 +763,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             	}
             }
             //TODO: is this needed? probably not...
-            refresh(project.getFolder("modules"), monitor);
+            refresh(getCeylonOutputFolder(javaProject), monitor);
 
             monitor.worked(1);
             monitor.done();
@@ -2638,12 +2638,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static File getModulesOutputDirectory(IJavaProject javaProject) {
-        File modulesOutputDir = javaProject.getProject().getFolder("modules").getRawLocation().toFile();
+        IFolder out = getCeylonOutputFolder(javaProject);
+		File modulesOutputDir = out.getRawLocation().toFile();
         if (! modulesOutputDir.exists()) {
             modulesOutputDir.mkdirs();
+        	try {
+        		out.refreshLocal(DEPTH_ZERO, null);
+				out.setHidden(true);
+			} 
+        	catch (CoreException e) {
+				e.printStackTrace();
+			}
         }
         return modulesOutputDir;
     }
+
+	private static IFolder getCeylonOutputFolder(IJavaProject javaProject) {
+		IEclipsePreferences node = new ProjectScope(javaProject.getProject())
+                .getNode(CeylonPlugin.PLUGIN_ID);
+		return javaProject.getProject().
+				getFolder(node.get("ceylonOutputPath", "modules"));
+	}
     
     /**
      * String representation for debugging purposes
