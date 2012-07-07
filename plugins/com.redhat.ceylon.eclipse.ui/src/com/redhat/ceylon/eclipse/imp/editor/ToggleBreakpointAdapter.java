@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.debug.ui.actions;
+package com.redhat.ceylon.eclipse.imp.editor;
 
 import java.util.HashMap;
 import java.util.Map;

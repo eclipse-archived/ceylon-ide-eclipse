@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.debug.ui.launch;
+package com.redhat.ceylon.eclipse.launch;
 
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.launching.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
+import static com.redhat.ceylon.eclipse.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 

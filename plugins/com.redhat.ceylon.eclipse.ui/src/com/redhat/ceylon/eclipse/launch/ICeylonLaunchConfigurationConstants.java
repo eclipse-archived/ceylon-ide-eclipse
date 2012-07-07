@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.launching;
+package com.redhat.ceylon.eclipse.launch;
 
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
