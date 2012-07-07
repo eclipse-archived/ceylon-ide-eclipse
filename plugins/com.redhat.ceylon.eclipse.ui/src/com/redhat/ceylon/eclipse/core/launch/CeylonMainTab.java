@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IProject;
@@ -101,7 +103,7 @@ public class CeylonMainTab extends SharedJavaMainTab {
      * @since 3.3
      */
     public String getId() {
-        return "com.redhat.ceylon.eclipse.ui.ceylonMainTab"; //$NON-NLS-1$
+        return PLUGIN_ID + ".ceylonMainTab"; //$NON-NLS-1$
     }
     
     /**

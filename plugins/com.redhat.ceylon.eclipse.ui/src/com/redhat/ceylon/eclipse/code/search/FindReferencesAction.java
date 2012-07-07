@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
@@ -12,7 +14,7 @@ public class FindReferencesAction extends AbstractFindAction {
 
     public FindReferencesAction(IEditorPart editor) {
 		super("Find References", editor);
-		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findReferences");
+		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
 	}
 	
     @Override

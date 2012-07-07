@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
@@ -15,7 +17,7 @@ public class FindAssignmentsAction extends AbstractFindAction {
 
     public FindAssignmentsAction(IEditorPart editor) {
 		super("Find Assignments", editor);
-		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findAssignments");
+		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
 	}
 	
     @Override

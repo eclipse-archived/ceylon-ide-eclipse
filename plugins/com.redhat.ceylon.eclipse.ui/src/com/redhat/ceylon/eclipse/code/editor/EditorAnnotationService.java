@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
  */
 public class EditorAnnotationService extends EditorServiceBase {
     
-    public static final String TODO_ANNOTATION_TYPE = "com.redhat.ceylon.eclipse.ui.todo";
+    public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
     @Override
     public AnalysisRequired getAnalysisRequired() {

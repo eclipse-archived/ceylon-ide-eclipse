@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -38,29 +39,29 @@ public class RefactorMenuItems extends CompoundContributionItem {
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
                 //new Separator(),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.rename", "Rename...",
+                new DynamicMenuItem(PLUGIN_ID + ".action.rename", "Rename...",
                         editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
                         AbstractRefactoring.RENAME),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit", 
+                new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
                         "Move to New Unit...", new MoveDeclarationHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
                 new Separator(),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.inline", "Inline...",
+                new DynamicMenuItem(PLUGIN_ID + ".action.inline", "Inline...",
                         editor!=null && new InlineRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.COMP_CHANGE),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractValue", 
+                new DynamicMenuItem(PLUGIN_ID + ".action.extractValue", 
                         "Extract Value...",
                         editor!=null && new ExtractValueRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.extractFunction", 
+                new DynamicMenuItem(PLUGIN_ID + ".action.extractFunction", 
                         "Extract Function...",
                         editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
-                /*new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.convertToClass", 
+                /*new DynamicMenuItem(PLUGIN_ID + ".action.convertToClass", 
                                 "Convert to Class...",
                                 editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
                 new Separator(),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.cleanImports", 
+                new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
                         "Clean Imports", new CleanImportsHandler().isEnabled(), 
                         AbstractRefactoring.DELETE_IMPORT)
             };

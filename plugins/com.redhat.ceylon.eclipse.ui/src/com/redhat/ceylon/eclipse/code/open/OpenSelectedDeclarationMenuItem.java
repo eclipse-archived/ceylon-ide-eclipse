@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
@@ -17,7 +19,7 @@ public class OpenSelectedDeclarationMenuItem extends CompoundContributionItem {
     @Override
     protected IContributionItem[] getContributionItems() {
         return new IContributionItem[] {
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration", 
+                new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
                         "Open Selected Declaration",
                         new OpenSelectedDeclarationHandler().isEnabled())
             };

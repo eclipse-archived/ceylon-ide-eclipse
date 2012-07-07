@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,7 +52,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
     }
     
     public static Color color(ColorRegistry colorRegistry, String key) {
-        return colorRegistry.get("com.redhat.ceylon.eclipse.ui.theme.color." + key);
+        return colorRegistry.get(PLUGIN_ID + ".theme.color." + key);
     }
     
     static {
@@ -59,7 +61,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith("com.redhat.ceylon.eclipse.ui.theme.color.")) {
+                if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
                     initColors(currentTheme.getColorRegistry());
                 }
             }

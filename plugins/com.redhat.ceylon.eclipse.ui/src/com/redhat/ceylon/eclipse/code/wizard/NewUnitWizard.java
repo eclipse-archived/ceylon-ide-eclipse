@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
 
 import java.lang.reflect.InvocationTargetException;
@@ -112,7 +113,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     public static boolean open(String def, IFile file, String unitName, 
             String title, String description) {
         IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-                .findWizard("com.redhat.ceylon.eclipse.ui.newUnitWizard");
+                .findWizard(PLUGIN_ID + ".newUnitWizard");
         if (descriptor==null) {
             return false;
         }

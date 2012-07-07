@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
@@ -486,7 +487,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
     private NewPackageWizard openPackageWizard() {
         IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-                .findWizard("com.redhat.ceylon.eclipse.ui.newPackageWizard");
+                .findWizard(PLUGIN_ID + ".newPackageWizard");
         if (descriptor!=null) {
             try {
                 NewPackageWizard wizard = (NewPackageWizard) descriptor.createWizard();
