@@ -2617,21 +2617,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-    /*private static IPath getProjectRelativeOutputDir(IJavaProject javaProject) {
-        if (!javaProject.exists()) return null;
-        try {
-            return javaProject.getOutputLocation()
-                    .makeRelativeTo(javaProject.getProject().getFullPath());
-        } 
-        catch (JavaModelException e) {
-            return null;
-        }
-    }
-
-    public static File getJavaOutputDirectory(IJavaProject javaProject) {
-        return toFile(javaProject.getProject(), getProjectRelativeOutputDir(javaProject));
-    }*/
-
     private static File getCeylonClassesOutputDirectory(IJavaProject javaProject) {
         return getCeylonClassesOutputFolder(javaProject)
         		.getRawLocation().toFile();
@@ -2647,23 +2632,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	}
 
     public static File getCeylonModulesOutputDirectory(IJavaProject javaProject) {
-        IFolder out = getCeylonModulesOutputFolder(javaProject);
-		File modulesOutputDir = out.getRawLocation().toFile();
-        /*if (! modulesOutputDir.exists()) {
-            modulesOutputDir.mkdirs();
-        	try {
-        		out.refreshLocal(DEPTH_ZERO, null);
-				out.setHidden(true);
-			} 
-        	catch (CoreException e) {
-				e.printStackTrace();
-			}
-        }*/
-        return modulesOutputDir;
+        return getCeylonModulesOutputFolder(javaProject).getRawLocation().toFile();
     }
     
-    //private static Map<IProject,IPath> ceylonModulesPaths = new HashMap<IProject,IPath>();
-
 	public static IFolder getCeylonModulesOutputFolder(IJavaProject javaProject) {
 		IProject project = javaProject.getProject();
 		IPath path = getCeylonModulesOutputPath(project);
