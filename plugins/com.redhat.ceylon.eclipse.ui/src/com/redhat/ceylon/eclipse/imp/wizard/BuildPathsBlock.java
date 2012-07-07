@@ -204,13 +204,13 @@ public class BuildPathsBlock {
 		fJavaBuildPathDialogField.setButtonLabel(NewWizardMessages.BuildPathsBlock_buildpath_button);
 		fJavaBuildPathDialogField.setDialogFieldListener(jadapter);
 		//fJavaPathDialogField.setLabelText(NewWizardMessages.BuildPathsBlock_buildpath_label);
-		fJavaBuildPathDialogField.setLabelText("Java compiler output folder:");
+		fJavaBuildPathDialogField.setLabelText("Default Java binary class output folder:");
 
 		fCeylonBuildPathDialogField= new StringButtonDialogField(cadapter);
 		fCeylonBuildPathDialogField.setButtonLabel(NewWizardMessages.BuildPathsBlock_buildpath_button);
 		fCeylonBuildPathDialogField.setDialogFieldListener(cadapter);
 		//fCeylonBuildPathDialogField.setLabelText(NewWizardMessages.BuildPathsBlock_buildpath_label);
-		fCeylonBuildPathDialogField.setLabelText("Ceylon compiler output folder:");
+		fCeylonBuildPathDialogField.setLabelText("Ceylon module archive output folder:");
 
 		fBuildPathStatus= new StatusInfo();
 		fClassPathStatus= new StatusInfo();
@@ -245,8 +245,8 @@ public class BuildPathsBlock {
         /*if (fUseNewPage) {
 			fSourceContainerPage= new NewSourceContainerWorkbookPage(fClassPathList, fBuildPathDialogField, fRunnableContext, this);
         } else {*/
-			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList, this); 
-					//fJavaBuildPathDialogField, fCeylonBuildPathDialogField);
+			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList,
+					fJavaBuildPathDialogField, fCeylonBuildPathDialogField);
         //}
         item.setData(fSourceContainerPage);
         item.setControl(fSourceContainerPage.getControl(folder));
@@ -873,6 +873,8 @@ public class BuildPathsBlock {
 		monitor.beginTask("", classPathEntries.size() * 4 + 4); //$NON-NLS-1$
 		try {
 			
+			//javaProject.setOption("ceylonOutput", ceylonOutputLocation.toString());
+			
 			IProject project= javaProject.getProject();
 			IPath projPath= project.getFullPath();
 
@@ -894,9 +896,10 @@ public class BuildPathsBlock {
 			} else if (!javaOutputLocation.equals(oldOutputLocation)) {
 				IFolder folder= ResourcesPlugin.getWorkspace().getRoot().getFolder(oldOutputLocation);
 				if (folder.exists()) {
-					if (folder.members().length == 0) {
+					if (folder.members().length==0) {
 						BuildPathsBlock.removeOldClassfiles(folder);
-					} else {
+					} 
+					else {
 						if (BuildPathsBlock.getRemoveOldBinariesQuery(JavaPlugin.getActiveWorkbenchShell())
 								.doQuery(folder.isDerived(), oldOutputLocation)) {
 							BuildPathsBlock.removeOldClassfiles(folder);
@@ -905,7 +908,8 @@ public class BuildPathsBlock {
 				}
 			}
 			
-			//TODO: clean the old ceylon output location!
+			//TODO: more robust clean up the "old" ceylon output location!
+			project.getFolder("modules").delete(true, monitor);
 
 			monitor.worked(1);
 
@@ -923,8 +927,10 @@ public class BuildPathsBlock {
 			}
 
 			if (!fWorkspaceRoot.exists(ceylonOutputLocation)) {
-				CoreUtility.createDerivedFolder(fWorkspaceRoot.getFolder(ceylonOutputLocation), 
+				IFolder folder = fWorkspaceRoot.getFolder(ceylonOutputLocation);
+				CoreUtility.createDerivedFolder(folder, 
 						true, true, new SubProgressMonitor(monitor, 1));
+				folder.setHidden(true);
 			} else {
 				monitor.worked(1);
 			}

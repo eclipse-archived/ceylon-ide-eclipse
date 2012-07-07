@@ -36,10 +36,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.ClasspathAttribute;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
@@ -1291,21 +1289,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 	 */
 	public IClasspathEntry[] getSourceClasspathEntries() {
 		IPath folderPath= new Path(getProjectName()).makeAbsolute();
-		//if (fLayoutGroup.isSrcBin()) {
-			/*IPath srcPath= new Path(PreferenceConstants.getPreferenceStore().getString(PreferenceConstants.SRCBIN_SRCNAME));
-			if (srcPath.segmentCount() > 0) {
-				sourceFolderPath= sourceFolderPath.append(srcPath).removeLastSegments(1).append("source");
-			}*/
-		//}
-		return new IClasspathEntry[] {  
-				JavaCore.newSourceEntry(folderPath.append("ceylon"), 
-						new IPath[0], new IPath[] {new Path("*.java")}, 
-						getCeylonOutputLocation(), 
-						new IClasspathAttribute[]{new ClasspathAttribute("ceylonSource", "true")}), 
-				JavaCore.newSourceEntry(folderPath.append("java"), 
-						new IPath[0], new IPath[] {new Path("*.ceylon")},
-						getJavaOutputLocation(), 
-						new IClasspathAttribute[]{new ClasspathAttribute("javaSource", "true")})};
+		return new IClasspathEntry[] { JavaCore.newSourceEntry(folderPath.append("source")) };
 	}
 
 	/**
