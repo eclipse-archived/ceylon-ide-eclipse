@@ -80,8 +80,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         if (fFirstPage == null) {
             fFirstPage= new NewCeylonProjectWizardPageOne() { 
 	        	@Override
-	            void addSelectRepo(Composite parent) {
-	            	NewProjectWizard.this.addSelectRepo(parent);
+	            void addExtraControls(Composite parent) {
+	            	NewProjectWizard.this.addControls(parent);
 	            }
         	};
         }
@@ -100,18 +100,49 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
     
     //TODO: fix copy/paste!
-    void addSelectRepo(Composite parent) {
-        final Button enableJdtClasses = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+    void addControls(Composite parent) {
+        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        composite.setText("Ceylon compiler settings");
+        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        composite.setLayout(layout);        
+        
+        final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
         enableJdtClasses.setSelection(false);
         enableJdtClasses.setEnabled(true);
 
-        final Button showWarnings = new Button(parent, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         showWarnings.setText("Show compiler warnings (for unused declarations)");
         showWarnings.setSelection(true);
         showWarnings.setEnabled(true);
 
-        //final Composite composite= new Composite(parent, SWT.NONE);
+        addSelectRepoSection(parent);
+        
+        enableJdtClasses.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	enableJdtClassesDir = !enableJdtClassesDir;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        showWarnings.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	showCompilerWarnings = !showCompilerWarnings;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+    }
+
+	private void addSelectRepoSection(Composite parent) {
+		//final Composite composite= new Composite(parent, SWT.NONE);
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
         composite.setText("Ceylon module repository");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -191,26 +222,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        
-        enableJdtClasses.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-            	enableJdtClassesDir = !enableJdtClassesDir;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
-        
-        showWarnings.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-            	showCompilerWarnings = !showCompilerWarnings;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
-        
-    }
+	}
     
     public boolean isRepoValid() {
         if (useEmbeddedRepo) {

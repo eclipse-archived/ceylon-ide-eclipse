@@ -779,7 +779,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-	public static void setCeylonModulesOutputPath(final IProject project, IPath path) {
+	public static void setCeylonModulesOutputPath(IProject project, IPath path) {
 		if (path!=null) {
 			ceylonModulesPaths.put(project, path);
 		}
@@ -2670,10 +2670,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
 	public static IFolder getCeylonModulesOutputFolder(IJavaProject javaProject) {
 		IProject project = javaProject.getProject();
-		IPath path = ceylonModulesPaths.get(project);
+		IPath path = getCeylonModulesOutputPath(project);
 		return path==null ? 
 				project.getFolder("modules") : 
 			    project.getFolder(path.makeRelativeTo(project.getLocation()));
+	}
+
+	public static IPath getCeylonModulesOutputPath(IProject project) {
+		return ceylonModulesPaths.get(project);
 	}
     
     /**

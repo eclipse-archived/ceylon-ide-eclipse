@@ -104,7 +104,7 @@ import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
  */
 public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 
-	abstract void addSelectRepo(Composite parent);
+	abstract void addExtraControls(Composite parent);
 	
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
@@ -121,7 +121,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
         Control locationControl= createLocationControl(composite);
         locationControl.setLayoutData(new GridData(FILL_HORIZONTAL));
 
-        addSelectRepo(composite);
+        addExtraControls(composite);
 
         Control jreControl= createJRESelectionControl(composite);
         jreControl.setLayoutData(new GridData(FILL_HORIZONTAL));

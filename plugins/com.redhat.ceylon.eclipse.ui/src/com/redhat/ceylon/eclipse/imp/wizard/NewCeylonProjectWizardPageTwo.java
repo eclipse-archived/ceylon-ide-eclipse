@@ -338,7 +338,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 					IFolder folder= root.getFolder(outputCeylonLocation);
 					CoreUtility.createDerivedFolder(folder, true, true, 
 							new SubProgressMonitor(monitor, 1));
-					folder.setHidden(true);
+					//folder.setHidden(true);
 				}
 
 				//javaProject.setOption("ceylonOutput", outputCeylonLocation.toString());
