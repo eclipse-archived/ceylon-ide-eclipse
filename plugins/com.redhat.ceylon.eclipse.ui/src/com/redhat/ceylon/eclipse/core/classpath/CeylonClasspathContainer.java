@@ -373,7 +373,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		        }
 		    }
 		    List<IJavaProject> javaProjects = new ArrayList<IJavaProject>();
-	        for (IProject requiredProject : getRequiredProjects(project)) {
+	        for (IProject requiredProject: getRequiredProjects(project)) {
 	            javaProjects.add(JavaCore.create(requiredProject));
 	        }
 
@@ -386,8 +386,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 						String ext = resource.getFileExtension();
 						if (ext!=null && ext.equals("car")) {
 				            IPath classpathArtifact = resource.getFullPath();
-							IPath srcArtifact = classpathArtifact.removeFileExtension()
-				            		.addFileExtension("src");
+							IPath srcArtifact = javaProj.getPath();
+							        /*classpathArtifact.removeFileExtension().addFileExtension("src");*/
 							paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
 						}
 						return true;
