@@ -806,7 +806,7 @@
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
-            class="com.redhat.ceylon.eclipse.debug.ui.launchConfigurations.LocalCeylonApplicationTabGroup"
+            class="com.redhat.ceylon.eclipse.debug.ui.launch.LocalCeylonApplicationTabGroup"
             id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonApplication">
             <launchMode 
                   mode="debug"
@@ -832,7 +832,7 @@
             label="Ceylon Application"
             icon="icons/ceylon_app.gif"
             modes="run, debug"
-            class="com.redhat.ceylon.eclipse.debug.ui.launchConfigurations.CeylonApplicationLaunchShortcut"
+            class="com.redhat.ceylon.eclipse.debug.ui.launch.CeylonApplicationLaunchShortcut"
             description="Launch a local Ceylon application"
             id="com.redhat.ceylon.eclipse.ui.launcher.localJavaShortcut">
          <description 

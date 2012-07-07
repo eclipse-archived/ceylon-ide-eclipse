@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.debug.ui.launchConfigurations;
+package com.redhat.ceylon.eclipse.debug.ui.launch;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
