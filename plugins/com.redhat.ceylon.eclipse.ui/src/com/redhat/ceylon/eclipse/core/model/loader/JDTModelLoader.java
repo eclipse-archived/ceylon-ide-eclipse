@@ -20,8 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader;
 
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.CEYLON_CLASSES_FOLDER_NAME;
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CLASSES_FOLDER_NAME;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,13 +101,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
-import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTClass;
-import com.redhat.ceylon.eclipse.core.model.loader.mirror.JDTMethod;
-import com.redhat.ceylon.eclipse.core.model.loader.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 /**
  * A model loader which uses the JDT model.

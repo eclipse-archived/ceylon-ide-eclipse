@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<plugin>
+<plugin>com.redhat.ceylon.eclipse.ui
 
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
@@ -18,7 +18,7 @@
             icon="icons/template_obj.gif"
             extensions="ceylon" 
             default="true" 
-            class="com.redhat.ceylon.eclipse.imp.editor.CeylonEditor"
+            class="com.redhat.ceylon.eclipse.code.editor.CeylonEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             id="com.redhat.ceylon.eclipse.ui.editor">
           <contentTypeBinding
@@ -33,7 +33,7 @@
             icon="icons/template_obj.gif"
             extensions="ceylon"
             description="Say more, more clearly"
-            natureID="com.redhat.ceylon.eclipse.ui.imp.nature"
+            natureID="com.redhat.ceylon.eclipse.ui.ceylonNature"
             language="ceylon">
       </language>
    </extension>
@@ -45,7 +45,7 @@
       <builder
             id="com.redhat.ceylon.eclipse.ui.ceylonBuilder"/>
       <runtime>
-         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonNature"/>
+         <run class="com.redhat.ceylon.eclipse.core.builder.CeylonNature"/>
       </runtime>
    </extension>
    
@@ -54,7 +54,7 @@
          name="Ceylon Builder"
          point="org.eclipse.core.resources.builders">
       <builder>
-         <run class="com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder"/>
+         <run class="com.redhat.ceylon.eclipse.core.builder.CeylonBuilder"/>
       </builder>
    </extension>
    
@@ -68,7 +68,7 @@
          <action
                label="Enable Ceylon Builder"
                tooltip="Enable the ceylon builder for this project"
-               class="com.redhat.ceylon.eclipse.imp.builder.EnableCeylonNature"
+               class="com.redhat.ceylon.eclipse.core.builder.EnableCeylonNature"
                id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"/>
       </objectContribution>
    </extension>
@@ -93,35 +93,35 @@
          name="Ceylon Parser"
          point="org.eclipse.imp.runtime.parser">
       <parser
-            class="com.redhat.ceylon.eclipse.imp.parser.CeylonParseController"
+            class="com.redhat.ceylon.eclipse.code.parse.CeylonParseController"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
-            class="com.redhat.ceylon.eclipse.imp.parser.CeylonTokenColorer"
+            class="com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.modelTreeBuilder">
       <treeBuilder
-            class="com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder"
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
       <labelProvider
-            class="com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider"
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.entityImageDecorator">
       <entityImageDecorator
-            class="com.redhat.ceylon.eclipse.imp.outline.CeylonEntityImageDecorator"
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonEntityImageDecorator"
             language="ceylon">
       </entityImageDecorator>
    </extension>
@@ -129,43 +129,43 @@
    <extension
          point="org.eclipse.imp.runtime.referenceResolvers">
       <referenceResolver
-            class="com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver"
+            class="com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.documentationProvider">
       <docProvider
-            class="com.redhat.ceylon.eclipse.imp.hover.CeylonDocumentationProvider"
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonDocumentationProvider"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.contentProposer">
       <proposer
-            class="com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer"
+            class="com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.markOccurrences">
       <occurrenceIdentifier
-            class="com.redhat.ceylon.eclipse.imp.editor.CeylonOccurrenceMarker"
+            class="com.redhat.ceylon.eclipse.code.editor.CeylonOccurrenceMarker"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.foldingUpdater">
       <foldingUpdater
-            class="com.redhat.ceylon.eclipse.imp.editor.CeylonFoldingUpdater"
+            class="com.redhat.ceylon.eclipse.code.editor.CeylonFoldingUpdater"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
-            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchResultPage"
-            searchResultClass="com.redhat.ceylon.eclipse.imp.search.CeylonSearchResult"
+            class="com.redhat.ceylon.eclipse.code.search.CeylonSearchResultPage"
+            searchResultClass="com.redhat.ceylon.eclipse.code.search.CeylonSearchResult"
             id="org.eclipse.search.searchResultViewPage"/>
    </extension>
    
@@ -173,7 +173,7 @@
          point="org.eclipse.search.searchPages">
       <page
             id="com.redhat.ceylon.eclipse.ui.searchPage"
-            class="com.redhat.ceylon.eclipse.imp.search.CeylonSearchDialogPage"
+            class="com.redhat.ceylon.eclipse.code.search.CeylonSearchDialogPage"
             canSearchEnclosingProjects="true"
             enabled="true"
             extensions="ceylon:90"
@@ -193,7 +193,7 @@
              icon="icons/template_obj.gif"
              name="Ceylon Unit"
              category="com.redhat.ceylon.eclipse.ui.category"
-             class="com.redhat.ceylon.eclipse.imp.wizard.NewUnitWizard">
+             class="com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard">
            <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
@@ -202,7 +202,7 @@
              icon="icons/new_wiz.gif"
              name="Ceylon Project"
              category="com.redhat.ceylon.eclipse.ui.category"
-             class="com.redhat.ceylon.eclipse.imp.wizard.NewProjectWizard"
+             class="com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard"
              project="true">
            <description>Create a Ceylon project</description>
        </wizard>
@@ -211,7 +211,7 @@
              icon="icons/newftrprj_wiz.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
-             class="com.redhat.ceylon.eclipse.imp.wizard.NewModuleWizard">
+             class="com.redhat.ceylon.eclipse.code.wizard.NewModuleWizard">
            <description>Create a runnable Ceylon module with module and package descriptors</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
@@ -220,7 +220,7 @@
              icon="icons/newpack_wiz.gif"
              name="Ceylon Package"
              category="com.redhat.ceylon.eclipse.ui.category"
-             class="com.redhat.ceylon.eclipse.imp.wizard.NewPackageWizard">
+             class="com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard">
            <description>Create a Ceylon package with a package descriptor</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
@@ -240,7 +240,7 @@
       <wizard 
             id="com.redhat.ceylon.eclipse.ui.exportModuleWizard" 
             name="Ceylon Module to Module Repository"
-            class="com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard"
+            class="com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizard"
             category="ceylon" 
             icon="/icons/exportjar_wiz.gif">
           <description>Export a Ceylon module to a module repository.</description>
@@ -251,14 +251,14 @@
    <extension
          point="org.eclipse.imp.runtime.autoEditStrategy">
       <autoEditStrategy
-            class="com.redhat.ceylon.eclipse.imp.editor.CeylonAutoEditStrategy"
+            class="com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy"
             language="ceylon"/>
    </extension>
    
    <extension
          point="org.eclipse.imp.runtime.editorService">
       <editorService
-            class="com.redhat.ceylon.eclipse.imp.editor.EditorAnnotationService"
+            class="com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService"
             language="ceylon"/>
    </extension>
    
@@ -276,7 +276,7 @@
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             label="Ceylon Refinement Indicators"
-            annotationImageProvider="com.redhat.ceylon.eclipse.imp.editor.RefinementAnnotationImageProvider"
+            annotationImageProvider="com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationImageProvider"
             icon="icons/over_co.gif"
             presentationLayer="0"
             contributesToHeader="true"
@@ -357,7 +357,7 @@
    <extension
          point="org.eclipse.imp.runtime.quickFixAssistant">
       <quickFixAssistant
-            class="com.redhat.ceylon.eclipse.imp.quickfix.CeylonQuickFixAssistant"
+            class="com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant"
             language="ceylon">
          <supportedMarkerType
                markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
@@ -367,7 +367,7 @@
    <extension
          point="org.eclipse.imp.runtime.annotationHover">
       <annotationHover
-            class="com.redhat.ceylon.eclipse.imp.hover.CeylonAnnotationHover"
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonAnnotationHover"
             language="ceylon"/>
    </extension>
    
@@ -375,7 +375,7 @@
          point="org.eclipse.imp.runtime.compareNodeIdentifier">
       <compareNodeIdentifier 
             language="ceylon"
-            class="com.redhat.ceylon.eclipse.imp.compare.CeylonCompareNodeIdentifier"/>
+            class="com.redhat.ceylon.eclipse.code.editor.CeylonCompareNodeIdentifier"/>
    </extension>
    
    <extension
@@ -393,7 +393,7 @@
             id="com.redhat.ceylon.eclipse.ui.rulerActions">
          <action
                label="Select Ruler"
-               class="com.redhat.ceylon.eclipse.imp.editor.SelectRulerAction"
+               class="com.redhat.ceylon.eclipse.code.editor.SelectRulerAction"
                actionID="RulerClick"
                id="com.redhat.ceylon.eclipse.ui.action.selectRuler"/>
       </editorContribution>
@@ -507,52 +507,52 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.open.OpenCeylonDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.search.OpenCeylonSearchPageAction"
+            class="com.redhat.ceylon.eclipse.code.search.OpenCeylonSearchPageAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
       <handler
             class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.welcome"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.hierarchy.OpenHierarchyPopupHandler"
+            class="com.redhat.ceylon.eclipse.code.outline.OpenHierarchyPopupHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.search.FindReferencesHandler"
+            class="com.redhat.ceylon.eclipse.code.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.search.FindAssignmentsHandler"
+            class="com.redhat.ceylon.eclipse.code.search.FindAssignmentsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.search.FindRefinementsHandler"
+            class="com.redhat.ceylon.eclipse.code.search.FindRefinementsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.search.FindSubtypesHandler"
+            class="com.redhat.ceylon.eclipse.code.search.FindSubtypesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.imports.CleanImportsHandler"
+            class="com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.MoveDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.MoveDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.RenameHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.InlineHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.InlineHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.inline"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractValueHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.ExtractValueHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.ExtractFunctionHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"/>
       <handler
-            class="com.redhat.ceylon.eclipse.imp.refactoring.ConvertToClassHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.ConvertToClassHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
    </extension>
    
@@ -645,7 +645,7 @@
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <dynamic id="openSelectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationMenuItem"/>
+                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem"/>
             <separator
                   visible="true"
                   name="belowOpen"/>
@@ -671,7 +671,7 @@
             <!--dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
             <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
             <separator
                   visible="true"
                   name="sep2"/>
@@ -733,17 +733,17 @@
                   visible="true"
                   name="sep5"/>
             <dynamic id="openSelectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.imp.open.OpenSelectedDeclarationMenuItem"/>
+                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem"/>
             <separator
                   visible="true"
                   name="sep2"/>
             <dynamic id="find"
-                  class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.code.search.FindMenuItems"/>
             <separator
                   visible="true"
                   name="sep4"/>
             <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.imp.refactoring.RefactorMenuItems"/>
+                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
             <separator
                   visible="true"
                   name="sep3"/>
@@ -772,7 +772,7 @@
                     visible="true"
                     name="findGroup"/>
              <dynamic id="find"
-                    class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/>
+                    class="com.redhat.ceylon.eclipse.code.search.FindMenuItems"/>
              <separator name="fileSearchContextMenuActionsGroup" visible="true"/>
              <separator name="occurencesActionsGroup" visible="true"/>
              <separator name="extraSearchGroup" visible="true"/>
@@ -792,7 +792,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="com.redhat.ceylon.eclipse.launch.CeylonLaunchDelegate"
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate"
             delegateDescription=""
             delegateName="Ceylon Local Launcher"
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
@@ -806,7 +806,7 @@
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
-            class="com.redhat.ceylon.eclipse.launch.LocalCeylonApplicationTabGroup"
+            class="com.redhat.ceylon.eclipse.core.launch.LocalCeylonApplicationTabGroup"
             id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonApplication">
             <launchMode 
                   mode="debug"
@@ -832,7 +832,7 @@
             label="Ceylon Application"
             icon="icons/ceylon_app.gif"
             modes="run, debug"
-            class="com.redhat.ceylon.eclipse.launch.CeylonApplicationLaunchShortcut"
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonApplicationLaunchShortcut"
             description="Launch a local Ceylon application"
             id="com.redhat.ceylon.eclipse.ui.launcher.localJavaShortcut">
          <description 
@@ -870,7 +870,7 @@
        <page 
            id="com.redhat.ceylon.eclipse.ui.preferences"
            name="Ceylon"
-           class="com.redhat.ceylon.eclipse.imp.preferences.CeylonPreferencesPage">
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
          </enabledWhen>
@@ -1109,7 +1109,7 @@
       name="Ceylon Classpath Container"
       point="org.eclipse.jdt.core.classpathContainerInitializer">
   <classpathContainerInitializer
-        class="com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathInitializer"
+        class="com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathInitializer"
         id="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
   </classpathContainerInitializer>
    </extension>
