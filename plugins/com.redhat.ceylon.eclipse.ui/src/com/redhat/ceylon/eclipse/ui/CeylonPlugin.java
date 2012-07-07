@@ -35,7 +35,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
-import com.redhat.ceylon.eclipse.core.cpcontainer.fragmentinfo.IPackageFragmentExtraInfo;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 
@@ -270,8 +269,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
             }
         }
     };
-    
-    private IPackageFragmentExtraInfo packageExtraInfo;
     
     public BundleContext getBundleContext() {
         return this.bundleContext;
