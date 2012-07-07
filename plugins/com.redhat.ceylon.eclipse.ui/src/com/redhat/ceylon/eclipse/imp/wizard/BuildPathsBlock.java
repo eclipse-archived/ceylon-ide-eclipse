@@ -930,7 +930,7 @@ public class BuildPathsBlock {
 				IFolder folder = fWorkspaceRoot.getFolder(ceylonOutputLocation);
 				CoreUtility.createDerivedFolder(folder, 
 						true, true, new SubProgressMonitor(monitor, 1));
-				folder.setHidden(true);
+				//folder.setHidden(true);
 			} else {
 				monitor.worked(1);
 			}

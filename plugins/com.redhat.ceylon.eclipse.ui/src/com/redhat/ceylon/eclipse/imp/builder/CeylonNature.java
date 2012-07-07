@@ -1,8 +1,13 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputPath;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.setCeylonModulesOutputPath;
+
 import java.util.Map;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
@@ -33,7 +38,38 @@ public class CeylonNature extends ProjectNatureBase {
     
 	public void addToProject(final IProject project) {
         super.addToProject(project);
-        CeylonBuilder.setCeylonModulesOutputPath(project, outputPath);
+        if (outputPath!=null) {
+        	IPath oldPath = getCeylonModulesOutputPath(project);
+        	if (oldPath!=null) {
+				IFolder old = project.getFolder(oldPath.makeRelativeTo(project.getLocation()));
+	        	if (old.exists() && old.isHidden()) {
+	        		try {
+	        			old.setHidden(false);
+	        			//old.touch(null);
+	        		} 
+	        		catch (CoreException e) {
+	        			e.printStackTrace();
+	        		}
+	        	}
+        	}
+        	setCeylonModulesOutputPath(project, outputPath);
+        	IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
+        	if (!folder.isHidden()) {
+        		try {
+        			folder.setHidden(true);
+        			//folder.touch(null);
+        		} 
+        		catch (CoreException e) {
+        			e.printStackTrace();
+        		}
+        	}
+        	/*try {
+				project.refreshLocal(IResource.DEPTH_ONE, null);
+			} 
+        	catch (CoreException e) {
+				e.printStackTrace();
+			}*/
+        }
         new CeylonClasspathContainer(project).runReconfigure();
     }
     
