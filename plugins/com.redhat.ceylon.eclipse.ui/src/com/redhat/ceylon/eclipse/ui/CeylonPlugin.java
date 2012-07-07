@@ -1,19 +1,13 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,7 +21,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.imp.runtime.PluginBase;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -35,8 +28,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
+
 
 public class CeylonPlugin extends PluginBase implements ICeylonResources {
 
@@ -224,51 +217,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
           getWorkspace().removeResourceChangeListener(projectOpenCloseListener);
     }
 
-    IResourceChangeListener projectOpenCloseListener = new IResourceChangeListener() {
-        @Override
-        public void resourceChanged(IResourceChangeEvent event) {
-            try {
-                event.getDelta().accept(new IResourceDeltaVisitor() {                    
-                    @Override
-                    public boolean visit(IResourceDelta delta) throws CoreException {
-                        final IWorkspaceRoot workspaceRoot = getWorkspace().getRoot();
-                        IResource resource = delta.getResource();
-                        if (resource.equals(workspaceRoot)) {
-                            return true;
-                        }
-                        if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
-                        	CeylonBuilder.removeProject((IProject) resource);
-                        }
-                        else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
-                            final IProject project = (IProject) resource;
-                            try {
-                                if (! project.isOpen()) {
-                                    CeylonBuilder.removeProject(project);
-                                }
-                                else {
-                                    if (project.hasNature(CeylonNature.NATURE_ID)) {
-                                        IJavaProject javaProject = JavaCore.create(project);
-                                        if (javaProject != null) {
-                                            //List<CeylonClasspathContainer> cpContainers = 
-                                            getCeylonClasspathContainers(javaProject);
-                                            /*for (CeylonClasspathContainer container : cpContainers) {
-                                                container.launchResolve(false, null);
-                                            }*/
-                                        }
-                                    }
-                                }
-                            } catch (CoreException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        return false;
-                    }
-                });
-            } catch (CoreException e) {
-                e.printStackTrace();
-            }
-        }
-    };
+    IResourceChangeListener projectOpenCloseListener = new ProjectChangeListener();
     
     public BundleContext getBundleContext() {
         return this.bundleContext;

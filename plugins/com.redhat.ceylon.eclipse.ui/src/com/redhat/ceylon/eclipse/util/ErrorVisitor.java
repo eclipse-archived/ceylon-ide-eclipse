@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.imp.core.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
 import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
 import static org.eclipse.imp.parser.IMessageHandler.SEVERITY_KEY;
 

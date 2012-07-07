@@ -18,7 +18,7 @@
             style-id="content-group">
     <link style-id="content-link" 
          label="New Ceylon Project" 
-         url="http://org.eclipse.ui.intro/runAction?class=com.redhat.ceylon.eclipse.imp.wizard.NewProjectAction&amp;pluginId=com.redhat.ceylon.eclipse.ui&amp;standby=true" 
+         url="http://org.eclipse.ui.intro/runAction?class=com.redhat.ceylon.eclipse.code.wizard.NewProjectAction&amp;pluginId=com.redhat.ceylon.eclipse.ui&amp;standby=true" 
          id="newproject">
            <text>Create a new Ceylon project and switch to the Ceylon perspective</text>
     </link>
