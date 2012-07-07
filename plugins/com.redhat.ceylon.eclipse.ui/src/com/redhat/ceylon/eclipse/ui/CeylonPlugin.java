@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
@@ -126,14 +127,14 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
     public static File getCeylonRepository(String ceylonRepositoryProperty) {
         File ceylonRepository=null;
         if (! "".equals(ceylonRepositoryProperty)) {
-            File ceylonRepositoryPath = new java.io.File(ceylonRepositoryProperty);
+            File ceylonRepositoryPath = new File(ceylonRepositoryProperty);
             if (ceylonRepositoryPath.exists()) {
                 ceylonRepository = ceylonRepositoryPath;
             }
         }
         if (ceylonRepository == null) {
             try {
-                Bundle bundle = Platform.getBundle(CeylonPlugin.PLUGIN_ID);
+                Bundle bundle = Platform.getBundle(PLUGIN_ID);
                 Path path = new Path("defaultRepository");
                 URL eclipseUrl = FileLocator.find(bundle, path, null);
                 URL fileURL = FileLocator.resolve(eclipseUrl);

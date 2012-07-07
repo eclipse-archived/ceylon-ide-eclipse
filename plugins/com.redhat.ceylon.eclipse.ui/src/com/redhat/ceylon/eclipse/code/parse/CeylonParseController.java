@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectRepositoryManager;
@@ -8,6 +9,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,14 +66,13 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 public class CeylonParseController extends ParseControllerBase {
     
     public CeylonParseController() {
-        super(CeylonPlugin.LANGUAGE_ID);
+        super(LANGUAGE_ID);
     }
     
     private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
@@ -89,7 +90,7 @@ public class CeylonParseController extends ParseControllerBase {
      */
     public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
         super.initialize(filePath, project, handler);
-        simpleAnnotationTypeInfo.addProblemMarkerType(CeylonBuilder.PROBLEM_MARKER_ID);
+        simpleAnnotationTypeInfo.addProblemMarkerType(PROBLEM_MARKER_ID);
     }
     
     public CeylonSourcePositionLocator getSourcePositionLocator() {

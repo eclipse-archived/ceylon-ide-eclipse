@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.core.builder;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_EMIT_BUILDER_DIAGNOSTICS;
@@ -143,9 +145,9 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
@@ -176,22 +178,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
      * Extension ID of the Ceylon builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
      */
-    public static final String BUILDER_ID = CeylonPlugin.PLUGIN_ID
-            + ".ceylonBuilder";
+    public static final String BUILDER_ID = PLUGIN_ID + ".ceylonBuilder";
 
     /**
      * A marker ID that identifies problems detected by the builder
      */
-    public static final String PROBLEM_MARKER_ID = CeylonPlugin.PLUGIN_ID
-            + ".ceylonProblem";
+    public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
-    /*public static final String TASK_MARKER_ID = CeylonPlugin.PLUGIN_ID
-            + ".ceylonTask";*/
+    /*public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";*/
 
-    public static final String LANGUAGE_NAME = "ceylon";
-
-    public static final Language LANGUAGE = LanguageRegistry
-            .findLanguage(LANGUAGE_NAME);
+    public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
 
     public static enum ModelState {
         Missing,

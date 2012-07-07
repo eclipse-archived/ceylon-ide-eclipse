@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Map;
 
@@ -17,7 +19,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonNature extends ProjectNatureBase {
     
-    public static final String NATURE_ID = CeylonPlugin.PLUGIN_ID + ".ceylonNature";
+    public static final String NATURE_ID = PLUGIN_ID + ".ceylonNature";
     
     private IPath outputPath;
 	String repositoryPath;
@@ -42,7 +44,7 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
     public String getBuilderID() {
-        return CeylonBuilder.BUILDER_ID;
+        return BUILDER_ID;
     }
     
 	public void addToProject(final IProject project) {
