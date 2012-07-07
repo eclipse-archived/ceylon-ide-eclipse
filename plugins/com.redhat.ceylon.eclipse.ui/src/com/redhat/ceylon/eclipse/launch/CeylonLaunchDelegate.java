@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.launching;
+package com.redhat.ceylon.eclipse.launch;
 
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 

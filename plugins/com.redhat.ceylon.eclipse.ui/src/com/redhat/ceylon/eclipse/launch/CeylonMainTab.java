@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.debug.ui.launch;
+package com.redhat.ceylon.eclipse.launch;
 
 import java.lang.reflect.InvocationTargetException;
 

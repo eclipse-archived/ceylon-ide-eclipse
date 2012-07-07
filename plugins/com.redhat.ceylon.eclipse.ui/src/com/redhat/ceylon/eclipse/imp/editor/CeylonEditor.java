@@ -67,7 +67,6 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.themes.ITheme;
 
-import com.redhat.ceylon.eclipse.debug.ui.actions.ToggleBreakpointAdapter;
 import com.redhat.ceylon.eclipse.imp.core.JavaReferenceResolver;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.imp.outline.CeylonTreeModelBuilder;

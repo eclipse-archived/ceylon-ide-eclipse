@@ -792,7 +792,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="com.redhat.ceylon.eclipse.launching.CeylonLaunchDelegate"
+            delegate="com.redhat.ceylon.eclipse.launch.CeylonLaunchDelegate"
             delegateDescription=""
             delegateName="Ceylon Local Launcher"
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
@@ -806,7 +806,7 @@
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
-            class="com.redhat.ceylon.eclipse.debug.ui.launch.LocalCeylonApplicationTabGroup"
+            class="com.redhat.ceylon.eclipse.launch.LocalCeylonApplicationTabGroup"
             id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonApplication">
             <launchMode 
                   mode="debug"
@@ -832,7 +832,7 @@
             label="Ceylon Application"
             icon="icons/ceylon_app.gif"
             modes="run, debug"
-            class="com.redhat.ceylon.eclipse.debug.ui.launch.CeylonApplicationLaunchShortcut"
+            class="com.redhat.ceylon.eclipse.launch.CeylonApplicationLaunchShortcut"
             description="Launch a local Ceylon application"
             id="com.redhat.ceylon.eclipse.ui.launcher.localJavaShortcut">
          <description 
