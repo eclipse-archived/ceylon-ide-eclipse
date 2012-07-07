@@ -56,7 +56,6 @@ import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.wizards.ClassPathDetector;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -292,6 +291,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 		monitor.beginTask(NewWizardMessages.NewJavaProjectWizardPageTwo_monitor_init_build_path, 2);
 
 		try {
+
 			IClasspathEntry[] entries= null;
 			IPath outputJavaLocation= null;
 			IPath outputCeylonLocation= null;
@@ -338,7 +338,11 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 					IFolder folder= root.getFolder(outputCeylonLocation);
 					CoreUtility.createDerivedFolder(folder, true, true, 
 							new SubProgressMonitor(monitor, 1));
+					folder.setHidden(true);
 				}
+
+				//javaProject.setOption("ceylonOutput", outputCeylonLocation.toString());
+				
 			}
 			if (monitor.isCanceled()) {
 				throw new OperationCanceledException();

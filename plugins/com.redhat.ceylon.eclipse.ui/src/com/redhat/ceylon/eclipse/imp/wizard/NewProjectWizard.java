@@ -300,7 +300,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             });
             
-            new CeylonNature().addToProject(getCreatedElement().getProject());
+            new CeylonNature(fSecondPage.getCeylonOutputLocation())
+                    .addToProject(getCreatedElement().getProject());
         }
         
         /*IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())

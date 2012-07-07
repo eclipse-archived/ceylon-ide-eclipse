@@ -60,6 +60,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -72,7 +73,6 @@ import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.preferences.IPreferencesService;
-import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -357,15 +357,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	@Override
     protected IProject[] build(final int kind, Map args, final IProgressMonitor monitor) 
     		throws CoreException {
-        if (getPreferencesService().getProject() == null) {
-            getPreferencesService().setProject(getProject());
+        final IProject project = getProject();
+
+        Object op = args.get("outputPath");
+        if (op instanceof String) {
+        	setCeylonModulesOutputPath(project, new Path((String) op));
         }
         
         boolean emitDiags= getDiagPreference();
 
         fSourcesToCompile.clear();
 
-        final IProject project = getProject();
         ISourceProject sourceProject = getSourceProject();
         if (sourceProject == null) {
             return new IProject[0];
@@ -776,6 +778,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             getConsoleStream().println("===================================");
         }
     }
+
+	public static void setCeylonModulesOutputPath(final IProject project, IPath path) {
+		if (path!=null) {
+			ceylonModulesPaths.put(project, path);
+		}
+	}
 
     public boolean chooseBuildTypeFromDeltas(final int kind, final List<IResourceDelta> currentDeltas,
             IProgressMonitor monitor,
@@ -2054,13 +2062,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-    protected IPreferencesService getPreferencesService() {
-        if (fPrefService == null) {
-            fPrefService= new PreferencesService(null, getPlugin().getLanguageID());        
-        }
-        return fPrefService;
-    }
-
     protected boolean getDiagPreference() {
         final IPreferencesService builderPrefSvc= getPlugin().getPreferencesService();
         final IPreferencesService impPrefSvc= RuntimePlugin.getInstance().getPreferencesService();
@@ -2391,8 +2392,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return false;
         }
         
-        for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
-            if (attribute.getName().equals("CEYLON") && "true".equalsIgnoreCase(attribute.getValue())) {
+        for (IClasspathAttribute attribute: entry.getExtraAttributes()) {
+            if (attribute.getName().equals("ceylonSource")) {
                 return true;
             }
         }
@@ -2652,7 +2653,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static File getCeylonModulesOutputDirectory(IJavaProject javaProject) {
         IFolder out = getCeylonModulesOutputFolder(javaProject);
 		File modulesOutputDir = out.getRawLocation().toFile();
-        if (! modulesOutputDir.exists()) {
+        /*if (! modulesOutputDir.exists()) {
             modulesOutputDir.mkdirs();
         	try {
         		out.refreshLocal(DEPTH_ZERO, null);
@@ -2661,36 +2662,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         	catch (CoreException e) {
 				e.printStackTrace();
 			}
-        }
+        }*/
         return modulesOutputDir;
     }
+    
+    private static Map<IProject,IPath> ceylonModulesPaths = new HashMap<IProject,IPath>();
 
 	public static IFolder getCeylonModulesOutputFolder(IJavaProject javaProject) {
-		IClasspathEntry cpe = getCeylonClasspathEntry(javaProject);
-		return cpe==null ? javaProject.getProject().getFolder("modules") : 
-			javaProject.getProject().getFolder(cpe.getOutputLocation().makeRelativeTo(javaProject.getProject().getLocation()));
-	}
-    
-	public static IFolder getCeylonSourceFolder(IJavaProject javaProject) {
-		IClasspathEntry cpe = getCeylonClasspathEntry(javaProject);
-		return cpe==null ? javaProject.getProject().getFolder("source") : 
-			javaProject.getProject().getFolder(cpe.getPath().makeRelativeTo(javaProject.getProject().getLocation()));
-	}
-    
-	private static IClasspathEntry getCeylonClasspathEntry(IJavaProject javaProject) {
-		try {
-			for (IClasspathEntry cpe: javaProject.getRawClasspath()) {
-				for (IClasspathAttribute cpa: cpe.getExtraAttributes()) {
-					if (cpa.getName().equals("ceylonSource")) {
-						return cpe;
-					}
-				}
-			}
-		} 
-		catch (JavaModelException e) {
-			e.printStackTrace();
-		}
-		return null;
+		IProject project = javaProject.getProject();
+		IPath path = ceylonModulesPaths.get(project);
+		return path==null ? 
+				project.getFolder("modules") : 
+			    project.getFolder(path.makeRelativeTo(project.getLocation()));
 	}
     
     /**

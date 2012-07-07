@@ -183,7 +183,7 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 	 * @return the currently configured output location
 	 */
 	public IPath getCeylonOutputLocation() {
-		return getBuildPathsBlock().getJavaOutputLocation();
+		return getBuildPathsBlock().getCeylonOutputLocation();
 	}
 
 	/**

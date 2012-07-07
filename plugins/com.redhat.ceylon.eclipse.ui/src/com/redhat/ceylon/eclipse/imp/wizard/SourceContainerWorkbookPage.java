@@ -42,6 +42,7 @@ import org.eclipse.jdt.internal.ui.wizards.dialogfields.ITreeListAdapter;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.LayoutUtil;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.ListDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.SelectionButtonDialogField;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.TreeListDialogField;
 import org.eclipse.jdt.ui.actions.AbstractOpenWizardAction;
 import org.eclipse.jface.action.IAction;
@@ -61,7 +62,8 @@ import org.eclipse.ui.INewWizard;
 
 public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
-	private class OpenBuildPathWizardAction extends AbstractOpenWizardAction implements IPropertyChangeListener {
+	private class OpenBuildPathWizardAction extends AbstractOpenWizardAction 
+	        implements IPropertyChangeListener {
 
 		private final BuildPathWizard fWizard;
 		private final List<Object> fSelectedElements;
@@ -104,7 +106,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
 		protected void finishWizard() {
 			List<CPListElement> insertedElements= fWizard.getInsertedElements();
-			refresh(insertedElements, fWizard.getRemovedElements(), fWizard.getModifiedElements(), fWizard.getOutputLocation());
+			refresh(insertedElements, fWizard.getRemovedElements(), 
+					fWizard.getModifiedElements(), fWizard.getOutputLocation());
 
 			if (insertedElements.isEmpty()) {
 				fFoldersList.postSetSelection(new StructuredSelection(fSelectedElements));
@@ -113,21 +116,28 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
 	}
 
-	private static AddSourceFolderWizard newSourceFolderWizard(CPListElement element, List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
+	private static AddSourceFolderWizard newSourceFolderWizard(CPListElement element, 
+			List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
 		CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
-		AddSourceFolderWizard wizard= new AddSourceFolderWizard(existing, element, new Path(outputLocation).makeAbsolute(), false, newFolder, newFolder, newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, newFolder);
+		AddSourceFolderWizard wizard= new AddSourceFolderWizard(existing, element, 
+				new Path(outputLocation).makeAbsolute(), false, newFolder, newFolder, 
+				newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, newFolder);
 		wizard.setDoFlushChange(false);
 		return wizard;
 	}
 
-	private static AddSourceFolderWizard newLinkedSourceFolderWizard(CPListElement element, List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
+	private static AddSourceFolderWizard newLinkedSourceFolderWizard(CPListElement element, 
+			List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
 		CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
-		AddSourceFolderWizard wizard= new AddSourceFolderWizard(existing, element, new Path(outputLocation).makeAbsolute(), true, newFolder, newFolder, newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, newFolder);
+		AddSourceFolderWizard wizard= new AddSourceFolderWizard(existing, element, 
+				new Path(outputLocation).makeAbsolute(), true, newFolder, newFolder, 
+				newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, newFolder);
 		wizard.setDoFlushChange(false);
 		return wizard;
 	}
 
-	private static EditFilterWizard newEditFilterWizard(CPListElement element, List<CPListElement> existingElements, String outputLocation) {
+	private static EditFilterWizard newEditFilterWizard(CPListElement element, 
+			List<CPListElement> existingElements, String outputLocation) {
 		CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
 		EditFilterWizard result = new EditFilterWizard(existing, element, new Path(outputLocation).makeAbsolute());
 		result.setDoFlushChange(false);
@@ -140,28 +150,22 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 	private Control fSWTControl;
 	private final TreeListDialogField<CPListElement> fFoldersList;
 
-	/*private final StringDialogField fJavaOutputLocationField;
-	private final StringDialogField fCeylonOutputLocationField;*/
-	private final BuildPathsBlock buildPaths;
+	private final StringDialogField fJavaOutputLocationField;
+	private final StringDialogField fCeylonOutputLocationField;
 
 	private final SelectionButtonDialogField fUseFolderOutputs;
 
-	private final int IDX_EDIT= 0;
-	private final int IDX_ADD = -1, IDX_ADD_LINK = -1, IDX_REMOVE = -1;
-	
-	/*private final int IDX_ADD= 0;
+	private final int IDX_ADD= 0;
 	private final int IDX_ADD_LINK= 1;
 	private final int IDX_EDIT= 3;
-	private final int IDX_REMOVE= 4;*/
+	private final int IDX_REMOVE= 4;
 
 	public SourceContainerWorkbookPage(ListDialogField<CPListElement> classPathList,
-			BuildPathsBlock buildPaths) {
-			/*,StringDialogField javaOutputLocationField, StringDialogField ceylonOutputLocationField*/
+			StringDialogField javaOutputLocationField, StringDialogField ceylonOutputLocationField) {
 		fClassPathList= classPathList;
 
-		/*fJavaOutputLocationField= javaOutputLocationField;
-		fCeylonOutputLocationField= ceylonOutputLocationField;*/
-		this.buildPaths = buildPaths;
+		fJavaOutputLocationField= javaOutputLocationField;
+		fCeylonOutputLocationField= ceylonOutputLocationField;
 
 		fSWTControl= null;
 
@@ -170,11 +174,11 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		String[] buttonLabels;
 
 		buttonLabels= new String[] {
-			//NewWizardMessages.SourceContainerWorkbookPage_folders_add_button,
-			//NewWizardMessages.SourceContainerWorkbookPage_folders_link_source_button,
-			//null,
-			NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button
-			//NewWizardMessages.SourceContainerWorkbookPage_folders_remove_button
+			NewWizardMessages.SourceContainerWorkbookPage_folders_add_button,
+			NewWizardMessages.SourceContainerWorkbookPage_folders_link_source_button,
+			null,
+			NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button,
+			NewWizardMessages.SourceContainerWorkbookPage_folders_remove_button
 		};
 
 		fFoldersList= new TreeListDialogField<CPListElement>(adapter, buttonLabels, new CPListLabelProvider());
@@ -217,7 +221,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			CPListElement cpe= cpelements.get(i);
 			if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
 				folders.add(cpe);
-				boolean hasOutputFolder= (cpe.getAttribute(CPListElement.OUTPUT) != null);
+				boolean hasOutputFolder= cpe.getAttribute(CPListElement.OUTPUT)!=null;
 				if (hasOutputFolder) {
 					useFolderOutputs= true;
 				}
@@ -231,7 +235,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			CPListElement cpe= folders.get(i);
 			IPath[] ePatterns= (IPath[]) cpe.getAttribute(CPListElement.EXCLUSION);
 			IPath[] iPatterns= (IPath[])cpe.getAttribute(CPListElement.INCLUSION);
-			boolean hasOutputFolder= (cpe.getAttribute(CPListElement.OUTPUT) != null);
+			boolean hasOutputFolder= cpe.getAttribute(CPListElement.OUTPUT)!=null;
 			if (ePatterns.length > 0 || iPatterns.length > 0 || hasOutputFolder) {
 				fFoldersList.expandElement(cpe, 3);
 			}
@@ -244,8 +248,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		Composite composite= new Composite(parent, SWT.NONE);
 
 		LayoutUtil.doDefaultLayout(composite, 
-				new DialogField[] { fFoldersList, fUseFolderOutputs },
-				//fCeylonOutputLocationField, fJavaOutputLocationField 
+				new DialogField[] { fFoldersList, fUseFolderOutputs,
+				fCeylonOutputLocationField, fJavaOutputLocationField }, 
 				true, SWT.DEFAULT, SWT.DEFAULT);
 		LayoutUtil.setHorizontalGrabbing(fFoldersList.getTreeControl(null));
 
@@ -350,21 +354,22 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 					List<CPListElement> existingElements= fFoldersList.getElements();
 					CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
 					CreateMultipleSourceFoldersDialog dialog= new CreateMultipleSourceFoldersDialog(fCurrJProject, 
-							existing, buildPaths.getJavaOutputLocation().toString(), getShell());
+							existing, fJavaOutputLocationField.getText(), getShell());
 					if (dialog.open() == Window.OK) {
-						refresh(dialog.getInsertedElements(), dialog.getRemovedElements(), dialog.getModifiedElements(), dialog.getOutputLocation());
+						refresh(dialog.getInsertedElements(), dialog.getRemovedElements(), 
+								dialog.getModifiedElements(), dialog.getOutputLocation());
 					}
 				} else {
 					CPListElement newElement= new CPListElement(fCurrJProject, IClasspathEntry.CPE_SOURCE);
 					AddSourceFolderWizard wizard= newSourceFolderWizard(newElement, fFoldersList.getElements(), 
-							buildPaths.getJavaOutputLocation().toString(), true);
+							fJavaOutputLocationField.getText(), true);
 					OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 					action.run();
 				}
 			} else if (index == IDX_ADD_LINK) {
 				CPListElement newElement= new CPListElement(fCurrJProject, IClasspathEntry.CPE_SOURCE);
 				AddSourceFolderWizard wizard= newLinkedSourceFolderWizard(newElement, fFoldersList.getElements(), 
-						buildPaths.getJavaOutputLocation().toString(), true);
+						fJavaOutputLocationField.getText(), true);
 				OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 				action.run();
 			} else if (index == IDX_EDIT) {
@@ -417,13 +422,13 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
 	private void editElementEntry(CPListElement elem) {
 		if (elem.getLinkTarget() != null) {
-			AddSourceFolderWizard wizard= newLinkedSourceFolderWizard(elem, fFoldersList.getElements(), 
-					buildPaths.getJavaOutputLocation().toString(), false);
+			AddSourceFolderWizard wizard= newLinkedSourceFolderWizard(elem, 
+					fFoldersList.getElements(), fJavaOutputLocationField.getText(), false);
 			OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 			action.run();
 		} else {
-			AddSourceFolderWizard wizard= newSourceFolderWizard(elem, fFoldersList.getElements(), 
-					buildPaths.getJavaOutputLocation().toString(), false);
+			AddSourceFolderWizard wizard= newSourceFolderWizard(elem, 
+					fFoldersList.getElements(), fJavaOutputLocationField.getText(), false);
 			OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 			action.run();
 		}
@@ -434,16 +439,16 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		if (key.equals(CPListElement.OUTPUT)) {
 			CPListElement selElement=  elem.getParent();
 			OutputLocationDialog dialog= new OutputLocationDialog(getShell(), selElement, 
-					fClassPathList.getElements(), new Path(buildPaths.getJavaOutputLocation()
-							.toString()).makeAbsolute(), true);
+					fClassPathList.getElements(), 
+					new Path(fJavaOutputLocationField.getText()).makeAbsolute(), true);
 			if (dialog.open() == Window.OK) {
 				selElement.setAttribute(CPListElement.OUTPUT, dialog.getOutputLocation());
 				fFoldersList.refresh();
 				fClassPathList.dialogFieldChanged(); // validate
 			}
 		} else if (key.equals(CPListElement.EXCLUSION) || key.equals(CPListElement.INCLUSION)) {
-			EditFilterWizard wizard= newEditFilterWizard(elem.getParent(), fFoldersList.getElements(), 
-					buildPaths.getJavaOutputLocation().toString());
+			EditFilterWizard wizard= newEditFilterWizard(elem.getParent(), 
+					fFoldersList.getElements(), fJavaOutputLocationField.getText());
 			OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 			action.run();
 		} else if (key.equals(CPListElement.IGNORE_OPTIONAL_PROBLEMS)) {
@@ -470,9 +475,9 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 				? NewWizardMessages.SourceContainerWorkbookPage_folders_toggle_button
 				: NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button);
 		fFoldersList.enableButton(IDX_EDIT, canEdit(selected));
-		/*fFoldersList.enableButton(IDX_REMOVE, canRemove(selected));
+		fFoldersList.enableButton(IDX_REMOVE, canRemove(selected));
 		boolean noAttributes= containsOnlyTopLevelEntries(selected);
-		fFoldersList.enableButton(IDX_ADD, noAttributes);*/
+		fFoldersList.enableButton(IDX_ADD, noAttributes);
 	}
 
 	private void removeEntry() {
@@ -484,7 +489,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 				String key= attrib.getKey();
 				if (attrib.isBuiltIn()) {
 					Object value= null;
-					if (key.equals(CPListElement.EXCLUSION) || key.equals(CPListElement.INCLUSION)) {
+					if (key.equals(CPListElement.EXCLUSION) || 
+							key.equals(CPListElement.INCLUSION)) {
 						value= new Path[0];
 					}
 					attrib.getParent().setAttribute(key, value);
@@ -501,7 +507,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			for (Iterator<Object> iter= selElements.iterator(); iter.hasNext();) {
 				CPListElement element= (CPListElement)iter.next();
 				if (element.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-					List<CPListElement> list= ClasspathModifier.removeFilters(element.getPath(), fCurrJProject, fFoldersList.getElements());
+					List<CPListElement> list= ClasspathModifier.removeFilters(element.getPath(), 
+							fCurrJProject, fFoldersList.getElements());
 					for (Iterator<CPListElement> iterator= list.iterator(); iterator.hasNext();) {
 						CPListElement modified= iterator.next();
 						fFoldersList.refresh(modified);
@@ -628,17 +635,12 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		}
 	}
 
-	/*
-	 * @see BuildPathBasePage#getSelection
-	 */
+
 	@Override
 	public List<Object> getSelection() {
 		return fFoldersList.getSelectedElements();
 	}
 
-	/*
-	 * @see BuildPathBasePage#setSelection
-	 */
 	@Override
 	public void setSelection(List<?> selElements, boolean expand) {
 		fFoldersList.selectElements(new StructuredSelection(selElements));
@@ -649,15 +651,13 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathBasePage#isEntryKind(int)
-	 */
 	@Override
 	public boolean isEntryKind(int kind) {
 		return kind == IClasspathEntry.CPE_SOURCE;
 	}
 
-	private void refresh(List<CPListElement> insertedElements, List<?> removedElements, List<CPListElement> modifiedElements, IPath outputLocation) {
+	private void refresh(List<CPListElement> insertedElements, List<?> removedElements, 
+			List<CPListElement> modifiedElements, IPath outputLocation) {
 		fFoldersList.addElements(insertedElements);
 		for (Iterator<CPListElement> iter= insertedElements.iterator(); iter.hasNext();) {
 			CPListElement element= iter.next();
@@ -677,7 +677,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			fFoldersList.postSetSelection(new StructuredSelection(insertedElements));
 		}
 
-		//fJavaOutputLocationField.setText(outputLocation.makeRelative().toOSString());
+		fJavaOutputLocationField.setText(outputLocation.makeRelative().toOSString());
 	}
 
 	/**

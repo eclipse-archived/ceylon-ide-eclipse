@@ -19,9 +19,10 @@ package com.redhat.ceylon.eclipse.core.cpcontainer;
 
 import static com.redhat.ceylon.eclipse.core.cpcontainer.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonSourceFolder;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getRequiredProjects;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -56,7 +57,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -368,9 +368,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		//      - as a side effect we throw away the whole
 		//        model, forcing us to have to do a full 
 		//        build even if nothing interesting changed!
-		if (reparse) CeylonBuilder.parseCeylonModel(project, monitor);
+		if (reparse) parseCeylonModel(project, monitor);
 		
-		TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+		TypeChecker typeChecker = getProjectTypeChecker(project);
 		if (typeChecker!=null) {
 			Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
 		    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
@@ -390,8 +390,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		    }
 		    if (getJdtClassesEnabled(project)) {
 		    	IPath ceylonOutputDirectory = getCeylonClassesOutputFolder(getJavaProject()).getFullPath();
-		    	IPath ceylonSourceDirectory = getCeylonSourceFolder(getJavaProject()).getFullPath();
-		    	paths.add(newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
+		    	//IPath ceylonSourceDirectory = getCeylonSourceFolder(getJavaProject()).getFullPath();
+		    	paths.add(newLibraryEntry(ceylonOutputDirectory, null, /*ceylonSourceDirectory,*/ null, true));
 		    }
 		    
 		    IClasspathEntry[] entries = paths.toArray(new IClasspathEntry[paths.size()]);
