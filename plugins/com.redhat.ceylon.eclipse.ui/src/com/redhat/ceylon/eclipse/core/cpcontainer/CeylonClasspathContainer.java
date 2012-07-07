@@ -389,8 +389,16 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		    }
 		    if (getJdtClassesEnabled(project)) {
 		    	IPath ceylonOutputDirectory = getCeylonClassesOutputFolder(getJavaProject()).getFullPath();
-		    	//IPath ceylonSourceDirectory = getCeylonSourceFolder(getJavaProject()).getFullPath();
-		    	paths.add(newLibraryEntry(ceylonOutputDirectory, null, /*ceylonSourceDirectory,*/ null, true));
+		    	IPath ceylonSourceDirectory = null;
+		    	for (IClasspathEntry e: getJavaProject().getRawClasspath()) {
+		    		if (e.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
+		    			//it doesn't accept a list, so just 
+		    			//take the first one
+		    			ceylonSourceDirectory = e.getPath();
+		    			break;
+		    		}
+		    	}
+		    	paths.add(newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
 		    }
 		    
 		    IClasspathEntry[] entries = paths.toArray(new IClasspathEntry[paths.size()]);
