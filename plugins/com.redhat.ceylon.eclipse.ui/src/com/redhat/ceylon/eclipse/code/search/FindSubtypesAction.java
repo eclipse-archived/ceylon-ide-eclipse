@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -15,7 +17,7 @@ public class FindSubtypesAction extends AbstractFindAction {
 
     public FindSubtypesAction(IEditorPart editor) {
 		super("Find Subtypes", editor);
-		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findSubtypes");
+		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
 	}
     
     @Override

@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -22,7 +24,7 @@ public class OpenCeylonSearchPageAction extends AbstractHandler {
             MessageDialog.openError(shell, "Ceylon Search Error", "No active window");
         }
         else {
-            NewSearchUI.openSearchDialog(window, "com.redhat.ceylon.eclipse.ui.searchPage");
+            NewSearchUI.openSearchDialog(window, PLUGIN_ID + ".searchPage");
         }
         return null;
     }

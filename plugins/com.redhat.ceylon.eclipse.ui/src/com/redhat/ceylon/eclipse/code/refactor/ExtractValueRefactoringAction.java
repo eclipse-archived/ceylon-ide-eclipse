@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     public ExtractValueRefactoringAction(IEditorPart editor) {
         super("ExtractValue.", editor);
-        setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.extractValue");
+        setActionDefinitionId(PLUGIN_ID + ".action.extractValue");
     }
     
     @Override

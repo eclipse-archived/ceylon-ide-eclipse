@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 public class ConvertToClassRefactoringAction extends AbstractRefactoringAction {
 	public ConvertToClassRefactoringAction(IEditorPart editor) {
 		super("ConvertToClass.", editor);
-		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.convertToClass");
+		setActionDefinitionId(PLUGIN_ID + ".action.convertToClass");
 	}
 	
 	@Override

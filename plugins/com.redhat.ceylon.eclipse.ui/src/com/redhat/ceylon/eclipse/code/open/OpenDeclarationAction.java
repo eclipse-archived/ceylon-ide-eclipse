@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.model.ISourceProject;
@@ -30,7 +31,7 @@ public class OpenDeclarationAction extends Action {
     public OpenDeclarationAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
-        setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.openDeclaration");
+        setActionDefinitionId(PLUGIN_ID + ".action.openDeclaration");
         setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
                 .getDescriptor(ICeylonResources.CEYLON_OPEN_DECLARATION));
     }

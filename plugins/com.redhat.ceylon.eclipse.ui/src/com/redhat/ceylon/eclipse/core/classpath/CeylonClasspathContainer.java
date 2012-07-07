@@ -67,8 +67,7 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
  */
 public class CeylonClasspathContainer implements IClasspathContainer {
 
-    public static final String CONTAINER_ID =
-        "com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER";
+    public static final String CONTAINER_ID = PLUGIN_ID + ".cpcontainer.CEYLON_CONTAINER";
 
     private IClasspathEntry[] classpathEntries;
     private IPath path;

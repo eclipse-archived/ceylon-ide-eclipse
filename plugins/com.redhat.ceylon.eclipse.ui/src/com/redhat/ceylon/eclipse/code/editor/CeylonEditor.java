@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
@@ -74,7 +75,7 @@ import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver;
 
 public class CeylonEditor extends UniversalEditor {
-    private static final String TEXT_FONT_PREFERENCE = "com.redhat.ceylon.eclipse.ui.editorFont";
+    private static final String TEXT_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
     
     private static Field refreshContributionsField;
     private static Field generateActionGroupField;
@@ -170,7 +171,7 @@ public class CeylonEditor extends UniversalEditor {
     private IPropertyChangeListener colorChangeListener = new IPropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().startsWith("com.redhat.ceylon.eclipse.ui.theme.color.")) {
+            if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
                 getSourceViewer().invalidateTextPresentation();
             }
         }
@@ -271,7 +272,7 @@ public class CeylonEditor extends UniversalEditor {
         getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
         getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
         ((IContextService) getSite().getService(IContextService.class))
-            .activateContext("com.redhat.ceylon.eclipse.ui.context");
+            .activateContext(PLUGIN_ID + ".context");
         
         //CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
         currentTheme.getColorRegistry().addListener(colorChangeListener);
@@ -291,7 +292,7 @@ public class CeylonEditor extends UniversalEditor {
         IPreferenceStore store = getPreferenceStore();
         store.setDefault(MATCHING_BRACKETS, true);
         Color color = currentTheme.getColorRegistry()
-                    .get("com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor");
+                    .get(PLUGIN_ID + ".theme.matchingBracketsColor");
         store.setDefault(MATCHING_BRACKETS_COLOR, 
                 color.getRed() +"," + color.getGreen() + "," + color.getBlue());
     }

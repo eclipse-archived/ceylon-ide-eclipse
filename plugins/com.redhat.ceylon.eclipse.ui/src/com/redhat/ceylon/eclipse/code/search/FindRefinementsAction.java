@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -16,7 +18,7 @@ public class FindRefinementsAction extends AbstractFindAction {
 
     public FindRefinementsAction(IEditorPart editor) {
 		super("Find Refinements", editor);
-		setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.findRefinements");
+		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
 	}
     
     @Override
