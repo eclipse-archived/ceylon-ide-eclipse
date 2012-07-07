@@ -2,6 +2,10 @@ package com.redhat.ceylon.eclipse.imp.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputPath;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getJdtClassesEnabled;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getRepositoryPath;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.showWarnings;
+import static com.redhat.ceylon.eclipse.imp.builder.CeylonNature.NATURE_ID;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,11 +14,9 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
@@ -43,7 +45,6 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
-import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.imp.wizard.ExportModuleWizard;
@@ -116,36 +117,6 @@ public class CeylonPreferencesPage extends PropertyPage {
     
     private void store() {
         final IProject project = getSelectedProject();
-		IEclipsePreferences node = new ProjectScope(project)
-                .getNode(CeylonPlugin.PLUGIN_ID);
-        if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
-            node.put("repo", repositoryPath);
-            /*getCreatedElement().getProject()
-                    .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
-                            repositoryPath);*/
-            ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
-        }
-        else if (useEmbeddedRepo) {
-            node.remove("repo");
-        }
-        if (enableJdtClassesDir) {
-        	node.putBoolean("jdtClasses", true);
-        }
-        else {
-        	node.remove("jdtClasses");
-        }
-        if (showCompilerWarnings) {
-        	node.remove("hideWarnings");
-        }
-        else {
-        	node.putBoolean("hideWarnings", true);
-        }
-        try {
-            node.flush();
-        } 
-        catch (BackingStoreException e) {
-            e.printStackTrace();
-        }
         IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
         if (!folder.exists()) {
 			try {
@@ -156,7 +127,11 @@ public class CeylonPreferencesPage extends PropertyPage {
 				e.printStackTrace();
 			}
         }
-		new CeylonNature(outputPath).addToProject(project);
+		boolean embeddedRepo = useEmbeddedRepo || repositoryPath==null || repositoryPath.isEmpty();
+		if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+		new CeylonNature(outputPath, embeddedRepo ? null : repositoryPath,
+				enableJdtClassesDir, !showCompilerWarnings)
+		                .addToProject(project);
     }
 
     private IProject getSelectedProject() {
@@ -465,18 +440,16 @@ public class CeylonPreferencesPage extends PropertyPage {
         if (project.isOpen()) {
         
 			try {
-	            builderEnabled = project.hasNature(CeylonNature.NATURE_ID);
+	            builderEnabled = project.hasNature(NATURE_ID);
 	        } 
 	        catch (CoreException e) {
 	            e.printStackTrace();
 	        }
 	        
-	        IEclipsePreferences node = new ProjectScope(project)
-	                .getNode(CeylonPlugin.PLUGIN_ID);
-			repositoryPath = node.get("repo", null);
+			repositoryPath = getRepositoryPath(project);
 	        useEmbeddedRepo = repositoryPath==null;
-	        enableJdtClassesDir = node.getBoolean("jdtClasses", false);
-	        showCompilerWarnings = !node.getBoolean("hideWarnings", false);
+	        enableJdtClassesDir = getJdtClassesEnabled(project);
+	        showCompilerWarnings = showWarnings(project);
 	        outputPath = getCeylonModulesOutputPath(project);
 	        if (outputPath==null) {
 	        	outputPath = getDefaultOutputPath(project);
