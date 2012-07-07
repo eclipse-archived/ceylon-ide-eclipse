@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.debug.ui.launchConfigurations;
+package com.redhat.ceylon.eclipse.debug.ui.launch;
 
 import static com.redhat.ceylon.eclipse.imp.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.imp.proposals.CeylonContentProposer.getDescriptionFor;
