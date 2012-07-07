@@ -23,7 +23,6 @@ import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
@@ -42,19 +41,14 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IPath modulesFolder = getCeylonModulesOutputFolder(javaProject).getLocation();
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
 
-        Modules projectModules = context.getModules();
-        Set<Module> modulesToAdd = new HashSet<Module>();
-        modulesToAdd.add(projectModules.getLanguageModule());
-        for (Module module: projectModules.getListOfModules()) {
-            if (!module.equals(projectModules.getDefaultModule()) && 
-            		!module.getNameAsString().equals("java")) {
-                modulesToAdd.add(module); 
-            }
-        }
-        
-    	IPath rootLocation = javaProject.getProject().getWorkspace().getRoot().getLocation();
         RepositoryManager provider = context.getRepositoryManager();
+        Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
+        //modulesToAdd.add(projectModules.getLanguageModule());        
     	for (Module module: modulesToAdd) {
+    		if (module.getNameAsString().equals("default") ||
+    				module.getNameAsString().equals("java")) {
+    			continue;
+    		}
             boolean artifactFound = false;
             ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
             // try first with car
@@ -67,13 +61,11 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             	moduleArtifact = provider.getArtifact(ctx);
             }
             if (moduleArtifact != null) {
-            	String modulePath = moduleArtifact.getPath();
-            	File moduleFile = new File(modulePath);
-            	if (moduleFile.exists()) {
+            	IPath modulePath = new Path(moduleArtifact.getPath());
+            	if (modulePath.toFile().exists()) {
             		artifactFound = true;
-            		IPath moduleWorkspacePath = new Path(modulePath).makeRelativeTo(rootLocation);
-					if (javaProject.getPath().isPrefixOf(moduleWorkspacePath)) {
-            			classpathList.add(moduleFile.getAbsolutePath());
+					if (javaProject.getProject().getLocation().isPrefixOf(modulePath)) {
+            			classpathList.add(modulePath.toOSString());
             		}
             	} 
             	else {
