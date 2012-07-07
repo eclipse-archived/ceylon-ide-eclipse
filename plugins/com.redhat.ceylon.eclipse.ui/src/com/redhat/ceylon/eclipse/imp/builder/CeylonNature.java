@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.imp.builder;
 
 import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.getCeylonModulesOutputPath;
-import static com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder.setCeylonModulesOutputPath;
 
 import java.util.Map;
 
@@ -21,11 +20,21 @@ public class CeylonNature extends ProjectNatureBase {
     public static final String NATURE_ID = CeylonPlugin.PLUGIN_ID + ".ceylonNature";
     
     private IPath outputPath;
+	String repositoryPath;
+	boolean enableJdtClasses;
+	boolean hideWarnings;
+	boolean keepSettings;
+	
+    public CeylonNature() {
+    	keepSettings=true;
+    }
     
-    public CeylonNature() {}
-    
-    public CeylonNature(IPath outputPath) {
+    public CeylonNature(IPath outputPath, String repositoryPath,
+    		boolean enableJdtClasses, boolean hideWarnings) {
     	this.outputPath = outputPath;
+    	this.repositoryPath = repositoryPath;
+    	this.enableJdtClasses = enableJdtClasses;
+    	this.hideWarnings = hideWarnings;
     }
     
     public String getNatureID() {
@@ -37,7 +46,6 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
 	public void addToProject(final IProject project) {
-        super.addToProject(project);
         if (outputPath!=null) {
         	IPath oldPath = getCeylonModulesOutputPath(project);
         	if (oldPath!=null) {
@@ -52,7 +60,9 @@ public class CeylonNature extends ProjectNatureBase {
 	        		}
 	        	}
         	}
-        	setCeylonModulesOutputPath(project, outputPath);
+        }
+        super.addToProject(project);
+        if (outputPath!=null) {
         	IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
         	if (!folder.isHidden()) {
         		try {
@@ -94,8 +104,26 @@ public class CeylonNature extends ProjectNatureBase {
     @Override
     protected Map getBuilderArguments() {
     	Map args = super.getBuilderArguments();
-    	if (outputPath!=null) {
+    	if (!keepSettings) {
     		args.put("outputPath", outputPath.toString());
+    		if (repositoryPath!=null) {
+    			args.put("repositoryPath", repositoryPath);
+    		}
+    		else {
+    			args.remove("repositoryPath");
+    		}
+    		if (hideWarnings) {
+    			args.put("hideWarnings", "true");
+    		}
+    		else {
+    			args.remove("hideWarnings");
+    		}
+    		if (enableJdtClasses) {
+    			args.put("enableJdtClasses", "true");
+    		}
+    		else {
+    			args.remove("enableJdtClasses");
+    		}
     	}
 		return args;
     }

@@ -7,13 +7,11 @@ import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -46,7 +44,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
-import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.eclipse.imp.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -273,35 +270,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                         .addToWorkingSets(getCreatedElement(), workingSets);
             }
 
+            IPath outputPath = fSecondPage.getCeylonOutputLocation();
+    		boolean embeddedRepo = useEmbeddedRepo || repositoryPath==null || repositoryPath.isEmpty();
+    		if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+    		new CeylonNature(outputPath, embeddedRepo ? null : repositoryPath,
+    				enableJdtClassesDir, !showCompilerWarnings)
+                            .addToProject(getCreatedElement().getProject());
+
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
             selectAndReveal(fSecondPage.getJavaProject().getProject());             
-
-            //TODO: use classpathentry attributes to persist this stuff!
-            IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
-                    .getNode(CeylonPlugin.PLUGIN_ID);
-            
-            if (enableJdtClassesDir) {
-            	node.putBoolean("jdtClasses", true);
-            }
-            
-            if (!showCompilerWarnings) {
-            	node.putBoolean("hideWarnings", true);
-            }
-            
-            if (!useEmbeddedRepo && repositoryPath!=null && !repositoryPath.isEmpty()) {
-                node.put("repo", repositoryPath);
-                /*getCreatedElement().getProject()
-                        .setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "repo"), 
-                                repositoryPath);*/
-                ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
-            }
-            
-            try {
-                node.flush();
-            } 
-            catch (BackingStoreException e) {
-                e.printStackTrace();
-            }
 
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
@@ -312,19 +289,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             });
             
-            new CeylonNature(fSecondPage.getCeylonOutputLocation())
-                    .addToProject(getCreatedElement().getProject());
         }
-        
-        /*IEclipsePreferences node = new ProjectScope(getCreatedElement().getProject())
-                .getNode(JavaCore.PLUGIN_ID);
-        node.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "*.launch, *.ceylon");
-        try {
-            node.flush();
-        } 
-        catch (BackingStoreException e) {
-            e.printStackTrace();
-        }*/
         
         return res;
     }

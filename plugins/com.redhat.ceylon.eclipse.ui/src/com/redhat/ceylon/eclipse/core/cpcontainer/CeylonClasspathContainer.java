@@ -57,7 +57,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -399,8 +398,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		    	//System.out.println(Arrays.toString(entries));
 		    	//System.out.println(Arrays.toString(getClasspathEntries()));
 		    	updateClasspathEntries(entries);
-	            CeylonPlugin.log(IStatus.INFO, "resolved dependencies of project " + 
-	            		project.getName(), null);
+	            /*CeylonPlugin.log(IStatus.INFO, "resolved dependencies of project " + 
+	            		project.getName(), null);*/
 		    	return true;
 		    //}
 		    
