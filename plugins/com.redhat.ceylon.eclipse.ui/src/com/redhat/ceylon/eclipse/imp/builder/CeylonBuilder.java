@@ -168,7 +168,7 @@ import com.sun.tools.javac.util.Options;
  */
 public class CeylonBuilder extends IncrementalProjectBuilder{
 
-    public static final String CEYLON_CLASSES_FOLDER_NAME = "ceylon-classes";
+    public static final String CEYLON_CLASSES_FOLDER_NAME = ".exploded";
 
 	private static boolean compileWithJDTModelLoader = false;
     
@@ -2248,6 +2248,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         super.clean(monitor);
         
         IProject project = getProject();
+        
+        startTime = System.nanoTime();
 
         getConsoleStream().println("\n===================================");
         getConsoleStream().println(timedMessage("Starting Ceylon clean on project: " + project.getName()));
