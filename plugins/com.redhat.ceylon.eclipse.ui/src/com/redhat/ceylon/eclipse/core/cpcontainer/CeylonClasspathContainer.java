@@ -38,8 +38,11 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -57,6 +60,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.core.model.loader.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.imp.builder.CeylonBuilder;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -283,26 +287,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         return false;
     }
 
-    void updateClasspathEntries(final IClasspathEntry[] newEntries) {
-        IClasspathEntry[] entries;
-        if (newEntries != null) {
-            entries = newEntries;
-        } else {
-            entries = new IClasspathEntry[0];
-        }
-        setClasspathEntries(entries);
-    }
-
-    private void setClasspathEntries(final IClasspathEntry[] entries) {
-    	classpathEntries = entries;
-        /*Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-                classpathEntries = entries;
-                notifyUpdateClasspathEntries();
-            }
-        });*/
-    }
-
     /*void notifyUpdateClasspathEntries() {
         try {
             setClasspathContainer(path, new IJavaProject[] {javaProject},
@@ -358,7 +342,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 	boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)
 			throws CoreException {
-		IProject project = getJavaProject().getProject();
+		IJavaProject javaProject = getJavaProject();
+		IProject project = javaProject.getProject();
 		
 		//TODO: the following is terrible for two reasons:
 		//      - we don't really need to parse all the 
@@ -371,7 +356,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		
 		TypeChecker typeChecker = getProjectTypeChecker(project);
 		if (typeChecker!=null) {
-			Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+			final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+			
 		    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 		    JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
 		    for (File archive: moduleManager.getClasspath()) {
@@ -387,31 +373,52 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 					}
 		        }
 		    }
+		    List<IJavaProject> javaProjects = new ArrayList<IJavaProject>();
+	        for (IProject requiredProject : getRequiredProjects(project)) {
+	            javaProjects.add(JavaCore.create(requiredProject));
+	        }
+
+	        for (final IJavaProject javaProj : javaProjects) {
+	        	IFolder ceylonModulesOutputFolder = CeylonBuilder.getCeylonModulesOutputFolder(javaProj);
+	        	ceylonModulesOutputFolder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+	        	ceylonModulesOutputFolder.accept(new IResourceVisitor() {
+					@Override
+					public boolean visit(IResource resource) throws CoreException {
+						String ext = resource.getFileExtension();
+						if (ext!=null && ext.equals("car")) {
+				            IPath classpathArtifact = resource.getFullPath();
+							IPath srcArtifact = classpathArtifact.removeFileExtension()
+				            		.addFileExtension("src");
+							paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
+						}
+						return true;
+					}
+				}, 
+				IResource.DEPTH_INFINITE, 
+				IContainer.INCLUDE_HIDDEN);
+	        }
+	        
 		    if (getJdtClassesEnabled(project)) {
-		    	IPath ceylonOutputDirectory = getCeylonClassesOutputFolder(getJavaProject()).getFullPath();
-		    	IPath ceylonSourceDirectory = null;
-		    	for (IClasspathEntry e: getJavaProject().getRawClasspath()) {
-		    		if (e.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
-		    			//it doesn't accept a list, so just 
-		    			//take the first one
-		    			ceylonSourceDirectory = e.getPath();
-		    			break;
-		    		}
-		    	}
-		    	paths.add(newLibraryEntry(ceylonOutputDirectory, ceylonSourceDirectory, null, true));
+		    	paths.add(newLibraryEntry(getCeylonClassesOutputFolder(javaProject).getFullPath(), 
+		    			getFirstSourceDir(javaProject), null, true));
 		    }
 		    
-		    IClasspathEntry[] entries = paths.toArray(new IClasspathEntry[paths.size()]);
-		    //if ( !skippable || !Arrays.equals(getClasspathEntries(), entries)) {
-		    	//System.out.println(Arrays.toString(entries));
-		    	//System.out.println(Arrays.toString(getClasspathEntries()));
-		    	updateClasspathEntries(entries);
-	            /*CeylonPlugin.log(IStatus.INFO, "resolved dependencies of project " + 
-	            		project.getName(), null);*/
-		    	return true;
-		    //}
+		    classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
+		    return true;
 		    
 		}
 		return false;
+	}
+
+	private IPath getFirstSourceDir(IJavaProject javaProject)
+			throws JavaModelException {
+		for (IClasspathEntry e: javaProject.getRawClasspath()) {
+			if (e.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
+				//it doesn't accept a list, so just 
+				//take the first one
+				return e.getPath();
+			}
+		}
+		return null;
 	}
 }
