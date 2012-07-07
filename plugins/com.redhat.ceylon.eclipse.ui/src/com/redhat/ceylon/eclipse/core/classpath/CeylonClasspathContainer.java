@@ -399,7 +399,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	        
 		    if (getJdtClassesEnabled(project)) {
 		    	paths.add(newLibraryEntry(getCeylonClassesOutputFolder(javaProject).getFullPath(), 
-		    			getFirstSourceDir(javaProject), null, true));
+		    			javaProject.getPath(), null, true));
 		    }
 		    
 		    classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
@@ -407,17 +407,5 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		    
 		}
 		return false;
-	}
-
-	private IPath getFirstSourceDir(IJavaProject javaProject)
-			throws JavaModelException {
-		for (IClasspathEntry e: javaProject.getRawClasspath()) {
-			if (e.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
-				//it doesn't accept a list, so just 
-				//take the first one
-				return e.getPath();
-			}
-		}
-		return null;
 	}
 }
