@@ -1956,7 +1956,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
     
-	public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
+	/*public static List<IProject> getRequiredProjects(IJavaProject javaProject) {
 	    List<IProject> requiredProjects = new ArrayList<IProject>();
         try {
             for (String requiredProjectName : javaProject.getRequiredProjectNames()) {
@@ -1970,14 +1970,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             e.printStackTrace();
         }
         return requiredProjects;
-	}
+	}*/
 	
     public static List<IProject> getRequiredProjects(IProject project) {
-        IJavaProject javaProject = JavaCore.create(project);
+    	try {
+			return Arrays.asList(project.getReferencedProjects());
+		} 
+    	catch (CoreException e) {
+			e.printStackTrace();
+			return new ArrayList<IProject>();
+		}
+        /*IJavaProject javaProject = JavaCore.create(project);
         if (javaProject == null) {
             return Collections.emptyList();
         }
-        return getRequiredProjects(javaProject);
+        return getRequiredProjects(javaProject);*/
     }
     
 
