@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 
 import java.util.List;
 
@@ -33,7 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 public class JavaReferenceResolver implements IHyperlinkDetector {
@@ -128,8 +128,9 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
         }
     }
 
-    private static IType findType(IJavaProject jp, String fullyQualifiedName) throws JavaModelException {
-        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(jp.getProject());
+    private static IType findType(IJavaProject jp, String fullyQualifiedName) 
+    		throws JavaModelException {
+        JDTModelLoader modelLoader = getProjectModelLoader(jp.getProject());
         if (modelLoader.getSourceDeclarations().contains(fullyQualifiedName)) {
             return null;
         }

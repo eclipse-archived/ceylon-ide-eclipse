@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.List;
@@ -24,7 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -73,7 +73,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	    }
 	    else {
             int count = 0;
-            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit pu: getUnits(project)) {
                 if (searchInFile(pu)) {
                     count += countReferences(pu.getCompilationUnit());
                 }
@@ -117,7 +117,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
-        List<PhasedUnit> units = CeylonBuilder.getUnits(project);
+        List<PhasedUnit> units = getUnits(project);
         pm.beginTask(getName(), units.size());
         int i=0;
         for (PhasedUnit pu: units) {

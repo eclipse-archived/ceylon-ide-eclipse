@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
@@ -34,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -122,7 +120,33 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         gotoNode(node, parseController.getTypeChecker());
     }
     
-    public static void gotoNode(Node node, TypeChecker typeChecker) {
+    public static Node getIdentifyingNode(Node node) {
+	    if (node instanceof Tree.Declaration) {
+	        return ((Tree.Declaration) node).getIdentifier();
+	    }
+	    else if (node instanceof Tree.NamedArgument) {
+	        return ((Tree.NamedArgument) node).getIdentifier();
+	    }
+	    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+	        return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+	    }
+	    else if (node instanceof Tree.ExtendedTypeExpression) {
+	        //TODO: whoah! this is really ugly!
+	        return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
+	                .getIdentifier();
+	    }
+	    else if (node instanceof Tree.SimpleType) {
+	        return ((Tree.SimpleType) node).getIdentifier();
+	    }
+	    else if (node instanceof Tree.ImportMemberOrType) {
+	        return ((Tree.ImportMemberOrType) node).getIdentifier();
+	    }
+	    else {    
+	        return node;
+	    }
+	}
+
+	public static void gotoNode(Node node, TypeChecker typeChecker) {
         gotoLocation(getNodePath(node, typeChecker), 
                 getNodeStartOffset(node));
         /*if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {

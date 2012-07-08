@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
 import static org.eclipse.imp.parser.IMessageHandler.SEVERITY_KEY;
 
@@ -22,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public abstract class ErrorVisitor extends Visitor {
+	
     private final IMessageHandler handler;
     private boolean warnForErrors = false;
     
