@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
+
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -17,7 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 
@@ -177,7 +181,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
 
     public static PhasedUnit getPhasedUnit(IProject project, 
             Declaration dec) {
-        return CeylonBuilder.getProjectTypeChecker(project)
+        return getProjectTypeChecker(project)
                         .getPhasedUnitFromRelativePath(getRelativePath(dec));
     }
 
@@ -202,8 +206,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 }
                 
                 IProject currentProject = null;
-                for (IProject project : CeylonBuilder.getProjects()) {
-                    TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                for (IProject project : getProjects()) {
+                    TypeChecker alternateTypeChecker = getProjectTypeChecker(project);
                     if (alternateTypeChecker == typeChecker) {
                         currentProject = project;
                         break;
@@ -212,9 +216,9 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 
                 if (currentProject != null) {
                     List<IProject> requiredProjects;
-                    requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
+                    requiredProjects = getRequiredProjects(currentProject);
                     for (IProject project : requiredProjects) {
-                        JDTModelLoader requiredProjectLoader = CeylonBuilder.getProjectModelLoader(project);
+                        JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
                         if (requiredProjectLoader == null) {
                             continue;
                         }
@@ -224,7 +228,7 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                             String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
                             String fileRelativePath = packagePath + "/" + fileName;
 
-                            TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                            TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
                             if (requiredProjectTypeChecker == null) {
                                 continue;
                             }

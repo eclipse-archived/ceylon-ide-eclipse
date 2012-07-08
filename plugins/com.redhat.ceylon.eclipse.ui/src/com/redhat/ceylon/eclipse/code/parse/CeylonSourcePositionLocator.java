@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -212,8 +215,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
             if (phasedUnit == null || (phasedUnit != null && (phasedUnit.getSrcDir() instanceof ZipFileVirtualFile))) {
                 IProject currentProject = null;
-                for (IProject project : CeylonBuilder.getProjects()) {
-                    TypeChecker alternateTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                for (IProject project : getProjects()) {
+                    TypeChecker alternateTypeChecker = getProjectTypeChecker(project);
                     if (alternateTypeChecker == typeChecker) {
                         currentProject = project;
                         break;
@@ -222,9 +225,9 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
                 
                 if (currentProject != null) {
                     List<IProject> requiredProjects;
-                    requiredProjects = CeylonBuilder.getRequiredProjects(currentProject);
+                    requiredProjects = getRequiredProjects(currentProject);
                     for (IProject requiredProject : requiredProjects) {
-                        TypeChecker requiredProjectTypeChecker = CeylonBuilder.getProjectTypeChecker(requiredProject);
+                        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(requiredProject);
                         if (requiredProjectTypeChecker == null) {
                             continue;
                         }
