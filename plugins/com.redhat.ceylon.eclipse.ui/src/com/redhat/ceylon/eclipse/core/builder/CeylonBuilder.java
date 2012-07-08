@@ -671,8 +671,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		                //      fragile - it depends on the format 
 		                //      of the path that we use to track
 		                //      dependents!
-		                IPath pathRelativeToProject = new Path(dependingFile)
-		                        .makeRelativeTo(project.getLocation());
+		                IPath pathRelativeToProject = new Path(dependingFile);
+		                        //.makeRelativeTo(project.getLocation());
 						IFile depFile= (IFile) project.findMember(pathRelativeToProject);
 		                if (depFile == null) {
 		                    depFile= (IFile) currentFileProject.findMember(dependingFile);
@@ -681,7 +681,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		                    additions.add(depFile);
 		                }
 		                else {
-		                    // System.out.println("a depending resource is in a third-party project");
+		                    System.err.println("could not resolve dependent unit: " + 
+		                            dependingFile);
 		                }
 		            }
 		        }
