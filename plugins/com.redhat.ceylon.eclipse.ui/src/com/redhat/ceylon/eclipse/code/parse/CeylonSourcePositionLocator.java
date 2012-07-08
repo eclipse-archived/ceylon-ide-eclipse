@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +16,7 @@ import org.eclipse.imp.editor.EditorUtility;
 import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
+import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -31,13 +30,11 @@ import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -117,11 +114,25 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public IPath getPath(Object entity) {
-        return getNodePath(entity, parseController.getProject().getRawProject());
+    	if (entity instanceof Node) {
+    		ISourceProject project = parseController.getProject();
+			return getNodePath((Node) entity, 
+    				project==null ? null : project.getRawProject(),
+    				parseController.getTypeChecker());
+    	}
+    	else if (entity instanceof ICompilationUnit) {
+            return ((ICompilationUnit) entity).getPath();
+        }
+    	else {
+    		return null;
+    	}
     }
     
     public void gotoNode(Node node) {
-        gotoNode(node, parseController.getProject().getRawProject());
+		ISourceProject project = parseController.getProject();
+        gotoNode(node, 
+        		project==null ? null : project.getRawProject(), 
+        		parseController.getTypeChecker());
     }
     
     public static Node getIdentifyingNode(Node node) {
@@ -149,31 +160,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 	        return node;
 	    }
 	}
-
-	public static void gotoNode(Node node, IProject project) {
-        gotoLocation(getNodePath(node, project), 
+	
+	public static void gotoNode(Node node, IProject project, TypeChecker tc) {
+        gotoLocation(getNodePath(node, project, tc), 
                 getNodeStartOffset(node));
-        /*if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
-            IFileStore fileLocation = EFS.getLocalFileSystem().getStore(nodePath);
-            FileStoreEditorInput fileStoreEditorInput = new FileStoreEditorInput(
-                                        fileLocation);
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                                        .getActivePage();
-            try {
-                page.openEditor(fileStoreEditorInput, CeylonPlugin.EDITOR_ID);
-            }
-            catch (PartInitException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            IPath path = nodePath.removeFirstSegments(1);
-            int targetOffset = getNodeStartOffset(node);
-            IResource file = project.findMember(path);
-            if (file!=null) {
-                Util.gotoLocation(file, targetOffset);
-            }
-        }*/
     }
 
     public static void gotoLocation(IPath path, int offset) {
@@ -255,46 +245,41 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     	return null;
 	}
     
-    public static IPath getNodePath(Object entity, IProject project) {
-        if (entity instanceof Node) {
-            Unit unit = ((Node) entity).getUnit();
-            
-            //first look for it in the current project
-            IPath path = getPath(unit, project);
-            if (path!=null) return path;
-            try {
-            	//now look for it in projects that the current
-            	//project depends on
-				for (IProject p: project.getReferencedProjects()) {
-					path = getPath(unit, p);
-					if (path!=null) return path;
-				}
-			} 
-            catch (CoreException e) {
-				e.printStackTrace();
-			}
-            
-            //finally look for it in a module archive 
-            PhasedUnit pu = getProjectTypeChecker(project)
-            		.getPhasedUnitFromRelativePath(getRelativePath(unit));
-            if (pu!=null) {
-            	return new Path(pu.getUnitFile().getPath());
-                /*VirtualFile unitFile = pu.getUnitFile();
+    private static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
+    	Unit unit = node.getUnit();
+    	
+    	if (project!=null) {
+    		//first look for it in the current project
+    		IPath path = getPath(unit, project);
+    		if (path!=null) return path;
+    		try {
+    			//now look for it in projects that the current
+    			//project depends on
+    			for (IProject p: project.getReferencedProjects()) {
+    				path = getPath(unit, p);
+    				if (path!=null) return path;
+    			}
+    		} 
+    		catch (CoreException e) {
+    			e.printStackTrace();
+    		}
+    	}
+
+    	//finally look for it in a module archive 
+    	PhasedUnit pu = tc.getPhasedUnitFromRelativePath(getRelativePath(unit));
+    	if (pu!=null) {
+    		return new Path(pu.getUnitFile().getPath());
+    		/*VirtualFile unitFile = pu.getUnitFile();
                 if (unitFile instanceof IFileVirtualFile) {
                     return ((IFileVirtualFile) unitFile).getFile().getFullPath();
                 }
                 else {
                     return new Path(unitFile.getPath());
                 }*/
-            }
-            
-            return null;
-            
-        }
-        if (entity instanceof ICompilationUnit) {
-            return ((ICompilationUnit) entity).getPath();
-        }
-        return new Path("");
+    	}
+
+    	return null;
+
     }
 
 	private static String getRelativePath(Unit unit) {
