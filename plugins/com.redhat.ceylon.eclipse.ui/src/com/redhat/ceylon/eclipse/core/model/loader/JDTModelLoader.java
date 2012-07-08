@@ -20,7 +20,6 @@
 
 package com.redhat.ceylon.eclipse.core.model.loader;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CLASSES_FOLDER_NAME;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
