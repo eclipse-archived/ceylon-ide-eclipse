@@ -2029,15 +2029,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
 	private static Map getBuilderArgs(IProject project) {
-    	try {
-			for (ICommand c: project.getDescription().getBuildSpec()) {
-				if (c.getBuilderName().equals(BUILDER_ID)) {
-					return c.getArguments();
+		if (project!=null) {
+			try {
+				for (ICommand c: project.getDescription().getBuildSpec()) {
+					if (c.getBuilderName().equals(BUILDER_ID)) {
+						return c.getArguments();
+					}
 				}
+			} 
+			catch (CoreException e) {
+				e.printStackTrace();
 			}
-		} 
-    	catch (CoreException e) {
-			e.printStackTrace();
 		}
     	return Collections.EMPTY_MAP;
 	}
