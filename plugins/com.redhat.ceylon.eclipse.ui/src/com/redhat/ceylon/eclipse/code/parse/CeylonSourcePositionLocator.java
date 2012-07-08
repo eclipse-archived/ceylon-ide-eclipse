@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -233,6 +232,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             String fileName = unit.getFilename();
             String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
             String fileRelativePath = packagePath + "/" + fileName;
+            
+            //TODO: all of the following would be totally unnecessary 
+            //      if the typechecker exposed the full path of
+            //      the Unit!
 
             PhasedUnit phasedUnit = typeChecker==null ? 
                     null : typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
@@ -267,18 +270,15 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
             if (phasedUnit != null) {
                 VirtualFile unitFile = phasedUnit.getUnitFile();
                 if (unitFile instanceof IFileVirtualFile) {
-                    IFileVirtualFile file = (IFileVirtualFile) unitFile;
-                    IFile fileResource = (IFile) file.getResource();
-                    return fileResource.getFullPath();
+                    return ((IFileVirtualFile) unitFile).getFile().getFullPath();
                 }
                 else {
-                    return Path.fromOSString(unitFile.getPath());
+                    return new Path(unitFile.getPath());
                 }
             }
         }
         if (entity instanceof ICompilationUnit) {
-            ICompilationUnit cu= (ICompilationUnit) entity;
-            return cu.getPath();
+            return ((ICompilationUnit) entity).getPath();
         }
         return new Path("");
     }
