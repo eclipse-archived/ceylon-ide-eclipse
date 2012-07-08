@@ -63,14 +63,14 @@ public class OpenDeclarationAction extends Action {
                 CeylonParseController cpc = ce.getParseController();
                 Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
                 if (node!=null) {
-                    gotoNode(node, cpc.getTypeChecker());
+                    gotoNode(node, project);
                     return;
                 }
             }
         }
         Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
         if (node!=null) {
-            gotoNode(node, CeylonBuilder.getProjectTypeChecker(project));
+            gotoNode(node, project);
         }
     }
 

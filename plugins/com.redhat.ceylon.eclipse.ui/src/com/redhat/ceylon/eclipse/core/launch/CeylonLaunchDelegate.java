@@ -8,7 +8,6 @@ import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer.
 import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +42,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
 
         RepositoryManager provider = context.getRepositoryManager();
-        Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
+        Set<Module> modulesToAdd = context.getModules().getListOfModules();
         //modulesToAdd.add(projectModules.getLanguageModule());        
     	for (Module module: modulesToAdd) {
     		if (module.getNameAsString().equals("default") ||

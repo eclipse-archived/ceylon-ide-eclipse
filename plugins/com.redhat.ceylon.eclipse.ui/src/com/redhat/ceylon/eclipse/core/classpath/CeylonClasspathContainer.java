@@ -34,7 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -359,7 +358,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			
 	        Context context = typeChecker.getContext();
 	        RepositoryManager provider = context.getRepositoryManager();
-	        Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
+	        Set<Module> modulesToAdd = context.getModules().getListOfModules();
 	        //modulesToAdd.add(projectModules.getLanguageModule());        
 	    	for (Module module: modulesToAdd) {
 	    		if (module.getNameAsString().equals("default") ||
@@ -407,7 +406,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 	public static IPath getSourceArchive(RepositoryManager provider,
 			Module module) {
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        		module.getVersion());
 		ctx.setSuffix(ArtifactContext.SRC);
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
@@ -418,7 +418,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 	public static IPath getModuleArchive(RepositoryManager provider,
 			Module module) {
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        		module.getVersion());
 		// try first with .car
 		ctx.setSuffix(ArtifactContext.CAR);
 		File moduleArtifact = provider.getArtifact(ctx);

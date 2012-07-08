@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -64,7 +65,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	@Override
 	boolean isEnabled() {
 	    return declaration!=null &&
-	            !(declaration.getUnit() instanceof ExternalUnit);
+	            !(declaration.getUnit() instanceof ExternalUnit) &&
+	            belongsToProject(declaration.getUnit(), project);
 	}
 	
 	public int getCount() {

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 
 import java.util.List;
@@ -49,6 +50,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	boolean isEnabled() {
 	    return declaration!=null && 
 	            !(declaration.getUnit() instanceof ExternalUnit) &&
+	            belongsToProject(declaration.getUnit(), project) &&
 	            declaration instanceof MethodOrValue &&
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&
