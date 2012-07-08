@@ -31,18 +31,16 @@ import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -57,10 +55,11 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -357,44 +356,40 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		if (typeChecker!=null) {
 			final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
 			
-		    PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-		    JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
-		    for (File archive: moduleManager.getClasspath()) {
-		        if (archive.exists()) {
-					try {
-						Path classpathArtifact = new Path(archive.getCanonicalPath());
-			            IPath srcArtifact = classpathArtifact.removeFileExtension()
-			            		.addFileExtension("src");
-			            paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-		        }
-		    }
-		    List<IJavaProject> javaProjects = new ArrayList<IJavaProject>();
-	        for (IProject requiredProject: getRequiredProjects(project)) {
-	            javaProjects.add(JavaCore.create(requiredProject));
-	        }
-
-	        for (final IJavaProject javaProj : javaProjects) {
-	        	IFolder ceylonModulesOutputFolder = CeylonBuilder.getCeylonModulesOutputFolder(javaProj);
-	        	ceylonModulesOutputFolder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-	        	ceylonModulesOutputFolder.accept(new IResourceVisitor() {
-					@Override
-					public boolean visit(IResource resource) throws CoreException {
-						String ext = resource.getFileExtension();
-						if (ext!=null && ext.equals("car")) {
-				            IPath classpathArtifact = resource.getFullPath();
-							IPath srcArtifact = javaProj.getPath();
-							        /*classpathArtifact.removeFileExtension().addFileExtension("src");*/
-							paths.add(newLibraryEntry(classpathArtifact, srcArtifact, null));
-						}
-						return true;
-					}
-				}, 
-				IResource.DEPTH_INFINITE, 
-				IContainer.INCLUDE_HIDDEN);
+	        Context context = typeChecker.getContext();
+	        IPath projectLoc = project.getLocation();
+	        RepositoryManager provider = context.getRepositoryManager();
+	        Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
+	        //modulesToAdd.add(projectModules.getLanguageModule());        
+	    	for (Module module: modulesToAdd) {
+	    		if (module.getNameAsString().equals("default") ||
+	    				module.getNameAsString().equals("java")) {
+	    			continue;
+	    		}
+	            ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+	            // try first with car
+	            ctx.setSuffix(ArtifactContext.CAR);
+	            File moduleArtifact = null;
+	            moduleArtifact = provider.getArtifact(ctx);
+	            if (moduleArtifact==null){
+	            	// try with .jar
+	            	ctx.setSuffix(ArtifactContext.JAR);
+	            	moduleArtifact = provider.getArtifact(ctx);
+	            }
+	            if (moduleArtifact!=null) {
+	            	IPath modulePath = new Path(moduleArtifact.getPath());
+	            	if (!projectLoc.isPrefixOf(modulePath)) {
+	            		ctx.setSuffix(ArtifactContext.SRC);
+	            		File srcArtifact = provider.getArtifact(ctx);
+	            		IPath srcPath = srcArtifact==null ? null : new Path(srcArtifact.getPath());
+	            		paths.add(newLibraryEntry(modulePath, srcPath, null)); //TODO: would be better to pass the root path of the containing project
+	            	}
+	            	
+	            }
+	            else {
+	                System.err.println("no module archive found for classpath container: " + 
+	                        module.getNameAsString() + "/" + module.getVersion());
+	            }
 	        }
 	        
 		    if (getJdtClassesEnabled(project)) {
