@@ -52,6 +52,7 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -362,23 +363,14 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	        //modulesToAdd.add(projectModules.getLanguageModule());        
 	    	for (Module module: modulesToAdd) {
 	    		if (module.getNameAsString().equals("default") ||
-	    				module.getNameAsString().equals("java")) {
+	    				module.getNameAsString().equals("java") ||
+	    				isProjectModule(javaProject, module)) {
 	    			continue;
 	    		}
-	            ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
-	            // try first with .car
-	            ctx.setSuffix(ArtifactContext.CAR);
-	            File moduleArtifact = null;
-	            moduleArtifact = provider.getArtifact(ctx);
-	            if (moduleArtifact==null){
-	            	// try with .jar
-	            	ctx.setSuffix(ArtifactContext.JAR);
-	            	moduleArtifact = provider.getArtifact(ctx);
-	            }
-	            if (moduleArtifact!=null) {
-	            	IPath modulePath = new Path(moduleArtifact.getPath());
-	            	IPath srcPath = null;
-	            	if (!project.getLocation().isPrefixOf(modulePath)) {
+	            IPath modulePath = getModuleArchive(provider, module);
+	            if (modulePath!=null) {
+	            	//if (!project.getLocation().isPrefixOf(modulePath)) {
+	            		IPath srcPath = null;
 	            		for (IProject p: project.getDescription().getReferencedProjects()) {
 	            			if (p.getLocation().isPrefixOf(modulePath)) {
 	            				//the module belongs to a referenced
@@ -389,14 +381,10 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	            		}
 	            		if (srcPath==null) {
             				//otherwise, use the src archive
-	            			ctx.setSuffix(ArtifactContext.SRC);
-	            			File srcArtifact = provider.getArtifact(ctx);
-	            			if (srcArtifact!=null) {
-	            				srcPath = new Path(srcArtifact.getPath());
-	            			}
+	            			srcPath = getSourceArchive(provider, module);
 	            		}
 	            		paths.add(newLibraryEntry(modulePath, srcPath, null));
-	            	}
+	            	//}
 	            	
 	            }
 	            else {
@@ -415,5 +403,46 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		    
 		}
 		return false;
+	}
+
+	public static IPath getSourceArchive(RepositoryManager provider,
+			Module module) {
+        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+		ctx.setSuffix(ArtifactContext.SRC);
+		File srcArtifact = provider.getArtifact(ctx);
+		if (srcArtifact!=null) {
+			return new Path(srcArtifact.getPath());
+		}
+		return null;
+	}
+
+	public static IPath getModuleArchive(RepositoryManager provider,
+			Module module) {
+        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
+		// try first with .car
+		ctx.setSuffix(ArtifactContext.CAR);
+		File moduleArtifact = provider.getArtifact(ctx);
+		if (moduleArtifact==null){
+			// try with .jar
+			ctx.setSuffix(ArtifactContext.JAR);
+			moduleArtifact = provider.getArtifact(ctx);
+		}
+		if (moduleArtifact!=null) {
+			return new Path(moduleArtifact.getPath());
+		}
+		return null;
+	}
+
+	public static boolean isProjectModule(IJavaProject javaProject, Module module)
+			throws JavaModelException {
+		boolean isSource=false;
+		for (IPackageFragmentRoot s: javaProject.getPackageFragmentRoots()) {
+			if (s.getKind()==IPackageFragmentRoot.K_SOURCE &&
+			    s.getPackageFragment(module.getNameAsString()).exists()) {
+				isSource=true;
+				break;
+			}
+		}
+		return isSource;
 	}
 }
