@@ -476,197 +476,38 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.beginTask("Incremental Ceylon build of project " + project.getName(), 7);
                 getConsoleStream().println(timedMessage("Incremental build of model"));
                 
+        		monitor.subTask("Scanning deltas of project " + project.getName()); 
                 final List<IFile> filesToRemove = new ArrayList<IFile>();
                 final Set<IFile> fChangedSources = new HashSet<IFile>(); 
-                monitor.subTask("Scanning deltas of project " + project.getName()); 
-                for (final IResourceDelta projectDelta : projectDeltas) {
-                    if (projectDelta != null) {
-                        List<IPath> deltaSourceFolders = getSourceFolders((IProject) projectDelta.getResource());
-                        for (IResourceDelta sourceDelta : projectDelta.getAffectedChildren()) {
-                            boolean found = false;
-                            for (IPath ip: deltaSourceFolders) {
-                                if (sourceDelta.getResource().getFullPath().isPrefixOf(ip)) {
-                                    found=true; break;
-                                }
-                            }
-                            if (!found) {
-                                // Not a real Ceylon source folder : don't scan changes to it 
-                                continue;
-                            }
-                            if (emitDiags)
-                                getConsoleStream().println("==> Scanning resource delta for '" + 
-                                        projectDelta.getResource().getName() + "'... <==");
-                            sourceDelta.accept(new IResourceDeltaVisitor() {
-                                public boolean visit(IResourceDelta delta) throws CoreException {
-                                    IResource resource = delta.getResource();
-                                    if (resource instanceof IFile) {
-                                        IFile file= (IFile) resource;
-                                        if (isCeylonOrJava(file)) {
-                                            fChangedSources.add(file);
-                                            if (projectDelta == currentDelta) {
-                                                if (delta.getKind() == IResourceDelta.REMOVED) {
-                                                    filesToRemove.add((IFile) resource);
-                                                }
-                                            }
-                                        }
-                                        
-                                        return false;
-                                    }
-                                    return true;
-                                }
-                            });
-                            if (emitDiags)
-                                getConsoleStream().println("Delta scan completed for project '" + 
-                                        projectDelta.getResource().getName() + "'...");
-                        }
-                    }
-                }
+                calculateChangedSourceSources(monitor, project, emitDiags,
+						currentDelta, projectDeltas, filesToRemove,
+						fChangedSources);
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-
+                monitor.worked(1);
+                
                 TypeChecker typeChecker = typeCheckers.get(project);
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-                
-                monitor.worked(1);
+
                 monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
-                if (fChangedSources.size() > 0) {
-                    Collection<IFile> changeDependents= new HashSet<IFile>();
-    
-                    changeDependents.addAll(fChangedSources);
-                    if (emitDiags) {
-                        getConsoleStream().println("Changed files:");
-                        dumpSourceList(changeDependents);
-                    }
-    
-                    boolean changed = false;
-                    do {
-                        Collection<IFile> additions= new HashSet<IFile>();
-                        for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
-                            IFile srcFile= iter.next();
-                            IProject currentFileProject = srcFile.getProject();
-                            TypeChecker currentFileTypeChecker = null;
-                            if (currentFileProject == project) {
-                                currentFileTypeChecker = typeChecker;
-                            } else {
-                                currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
-                            }
-                            
-                            Set<String> filesDependingOn = Collections.emptySet();
-                            
-                            filesDependingOn = getDependentsOf(srcFile,
-                                    currentFileTypeChecker, currentFileProject);
-    
-                            for(String dependingFile : filesDependingOn ) {
-                                if (monitor.isCanceled()) {
-                                    throw new OperationCanceledException();
-                                }
-                                
-                                
-                                IFile depFile= (IFile) project.findMember(dependingFile);
-                                if (depFile == null) {
-                                    depFile= (IFile) currentFileProject.findMember(dependingFile);
-                                }
-                                if (depFile != null) {
-                                    additions.add(depFile);
-                                }
-                                else {
-                                    // System.out.println("a depending resource is in a third-party project");
-                                }
-                            }
-                        }
-                        changed = changeDependents.addAll(additions);
-                    } while (changed);
-    
-                    if (monitor.isCanceled()) {
-                        throw new OperationCanceledException();
-                    }
-                    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-                        Unit unit = phasedUnit.getUnit();
-                        if (unit.getUnresolvedReferences().size() > 0) {
-                            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
-                            if (fileToAdd.exists()) {
-                                sourceToCompile.add(fileToAdd);
-                            }
-                        }
-                        Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
-                        if (duplicateDeclarations.size() > 0) {
-                            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
-                            if (fileToAdd.exists()) {
-                                sourceToCompile.add(fileToAdd);
-                            }
-                            for (Declaration duplicateDeclaration : duplicateDeclarations) {
-                                PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
-                                if (duplicateDeclPU != null) {
-                                    IFile duplicateDeclFile = ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getFile();
-                                    if (duplicateDeclFile.exists()) {
-                                        sourceToCompile.add(duplicateDeclFile);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (monitor.isCanceled()) {
-                        throw new OperationCanceledException();
-                    }
-                    for(IFile f: changeDependents) {
-                        if (isSourceFile(f) && f.getProject() == project) {
-                            if (f.exists()) {
-                                sourceToCompile.add(f);
-                            }
-                            else {
-                                // If the file is moved : add a dependency on the new file
-                                if (currentDelta != null) {
-                                    IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
-                                    if (removedFile != null && 
-                                            (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
-                                            removedFile.getMovedToPath() != null) {
-                                        sourceToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                calculateDependencies(monitor, project, emitDiags,
+						sourceToCompile, currentDelta, fChangedSources,
+						typeChecker, phasedUnits);
 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
                 monitor.worked(1);
-                monitor.subTask("Cleaning removed files for project " + project.getName()); 
-                removeObsoleteClassFiles(filesToRemove);
-                for (IFile fileToRemove : filesToRemove) {
-                    if(isCeylon(fileToRemove)) {
-                        // Remove the ceylon phasedUnit (which will also remove the unit from the package)
-                        PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(createResourceVirtualFile(fileToRemove));
-                        if (phasedUnitToDelete != null) {
-                            phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
-                        }
-                    }
-                    else if (isJava(fileToRemove)) {
-                        // Remove the external unit from the package
-                        Package pkg = retrievePackage(fileToRemove.getParent());
-                        if (pkg != null) {
-                            Unit unitToRemove = null;
-                            for (Unit unitToTest : pkg.getUnits()) {
-                                if (unitToTest.getFilename().equals(fileToRemove.getName())) {
-                                    unitToRemove = unitToTest;
-                                    break;
-                                }
-                            }
-                            if (unitToRemove != null) {
-                                pkg.removeUnit(unitToRemove);
-                            }
-                        }
-                    }
-                }
                 
+                monitor.subTask("Cleaning removed files for project " + project.getName()); 
+                cleanRemovedSources(filesToRemove, phasedUnits);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
                 monitor.worked(1);
+                
                 monitor.subTask("Compiling " + sourceToCompile + " source files in project " + project.getName()); 
                 if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
@@ -764,6 +605,195 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
+	private void cleanRemovedSources(final List<IFile> filesToRemove,
+			PhasedUnits phasedUnits) {
+		removeObsoleteClassFiles(filesToRemove);
+		for (IFile fileToRemove : filesToRemove) {
+		    if(isCeylon(fileToRemove)) {
+		        // Remove the ceylon phasedUnit (which will also remove the unit from the package)
+		        PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(createResourceVirtualFile(fileToRemove));
+		        if (phasedUnitToDelete != null) {
+		            phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+		        }
+		    }
+		    else if (isJava(fileToRemove)) {
+		        // Remove the external unit from the package
+		        Package pkg = retrievePackage(fileToRemove.getParent());
+		        if (pkg != null) {
+		            Unit unitToRemove = null;
+		            for (Unit unitToTest : pkg.getUnits()) {
+		                if (unitToTest.getFilename().equals(fileToRemove.getName())) {
+		                    unitToRemove = unitToTest;
+		                    break;
+		                }
+		            }
+		            if (unitToRemove != null) {
+		                pkg.removeUnit(unitToRemove);
+		            }
+		        }
+		    }
+		}
+	}
+
+	private void calculateDependencies(final IProgressMonitor monitor,
+			final IProject project, boolean emitDiags,
+			final Collection<IFile> sourceToCompile,
+			final IResourceDelta currentDelta,
+			final Set<IFile> fChangedSources, TypeChecker typeChecker,
+			PhasedUnits phasedUnits) {
+		if (fChangedSources.size() > 0) {
+		    Collection<IFile> changeDependents= new HashSet<IFile>();
+   
+		    changeDependents.addAll(fChangedSources);
+		    if (emitDiags) {
+		        getConsoleStream().println("Changed files:");
+		        dumpSourceList(changeDependents);
+		    }
+   
+		    boolean changed = false;
+		    do {
+		        Collection<IFile> additions= new HashSet<IFile>();
+		        for(Iterator<IFile> iter= changeDependents.iterator(); iter.hasNext(); ) {
+		            IFile srcFile= iter.next();
+		            IProject currentFileProject = srcFile.getProject();
+		            TypeChecker currentFileTypeChecker = null;
+		            if (currentFileProject == project) {
+		                currentFileTypeChecker = typeChecker;
+		            } else {
+		                currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
+		            }
+		            
+		            Set<String> filesDependingOn = getDependentsOf(srcFile,
+		                    currentFileTypeChecker, currentFileProject);
+   
+		            for(String dependingFile : filesDependingOn) {
+		                if (monitor.isCanceled()) {
+		                    throw new OperationCanceledException();
+		                }
+		                //TODO: note that the following is slightly
+		                //      fragile - it depends on the format 
+		                //      of the path that we use to track
+		                //      dependents!
+		                IPath pathRelativeToProject = new Path(dependingFile)
+		                        .makeRelativeTo(project.getLocation());
+						IFile depFile= (IFile) project.findMember(pathRelativeToProject);
+		                if (depFile == null) {
+		                    depFile= (IFile) currentFileProject.findMember(dependingFile);
+		                }
+		                if (depFile != null) {
+		                    additions.add(depFile);
+		                }
+		                else {
+		                    // System.out.println("a depending resource is in a third-party project");
+		                }
+		            }
+		        }
+		        changed = changeDependents.addAll(additions);
+		    } while (changed);
+   
+		    if (monitor.isCanceled()) {
+		        throw new OperationCanceledException();
+		    }
+		    for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+		        Unit unit = phasedUnit.getUnit();
+		        if (!unit.getUnresolvedReferences().isEmpty()) {
+		            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
+		            if (fileToAdd.exists()) {
+		                sourceToCompile.add(fileToAdd);
+		            }
+		        }
+		        Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
+		        if (!duplicateDeclarations.isEmpty()) {
+		            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
+		            if (fileToAdd.exists()) {
+		                sourceToCompile.add(fileToAdd);
+		            }
+		            for (Declaration duplicateDeclaration : duplicateDeclarations) {
+		                PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
+		                if (duplicateDeclPU != null) {
+		                    IFile duplicateDeclFile = ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getFile();
+		                    if (duplicateDeclFile.exists()) {
+		                        sourceToCompile.add(duplicateDeclFile);
+		                    }
+		                }
+		            }
+		        }
+		    }
+		    
+		    if (monitor.isCanceled()) {
+		        throw new OperationCanceledException();
+		    }
+		    for(IFile f: changeDependents) {
+		        if (isSourceFile(f) && f.getProject() == project) {
+		            if (f.exists()) {
+		                sourceToCompile.add(f);
+		            }
+		            else {
+		                // If the file is moved : add a dependency on the new file
+		                if (currentDelta != null) {
+		                    IResourceDelta removedFile = currentDelta.findMember(f.getProjectRelativePath());
+		                    if (removedFile != null && 
+		                            (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
+		                            removedFile.getMovedToPath() != null) {
+		                        sourceToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
+		                    }
+		                }
+		            }
+		        }
+		    }
+		}
+	}
+
+	private void calculateChangedSourceSources(final IProgressMonitor monitor,
+			final IProject project, boolean emitDiags,
+			final IResourceDelta currentDelta,
+			List<IResourceDelta> projectDeltas,
+			final List<IFile> filesToRemove, final Set<IFile> fChangedSources)
+			throws CoreException {
+		for (final IResourceDelta projectDelta : projectDeltas) {
+		    if (projectDelta != null) {
+		        List<IPath> deltaSourceFolders = getSourceFolders((IProject) projectDelta.getResource());
+		        for (IResourceDelta sourceDelta : projectDelta.getAffectedChildren()) {
+		            boolean found = false;
+		            for (IPath ip: deltaSourceFolders) {
+		                if (sourceDelta.getResource().getFullPath().isPrefixOf(ip)) {
+		                    found=true; break;
+		                }
+		            }
+		            if (!found) {
+		                // Not a real Ceylon source folder : don't scan changes to it 
+		                continue;
+		            }
+		            if (emitDiags)
+		                getConsoleStream().println("==> Scanning resource delta for '" + 
+		                        projectDelta.getResource().getName() + "'... <==");
+		            sourceDelta.accept(new IResourceDeltaVisitor() {
+		                public boolean visit(IResourceDelta delta) throws CoreException {
+		                    IResource resource = delta.getResource();
+		                    if (resource instanceof IFile) {
+		                        IFile file= (IFile) resource;
+		                        if (isCeylonOrJava(file)) {
+		                            fChangedSources.add(file);
+		                            if (projectDelta == currentDelta) {
+		                                if (delta.getKind() == IResourceDelta.REMOVED) {
+		                                    filesToRemove.add((IFile) resource);
+		                                }
+		                            }
+		                        }
+		                        
+		                        return false;
+		                    }
+		                    return true;
+		                }
+		            });
+		            if (emitDiags)
+		                getConsoleStream().println("Delta scan completed for project '" + 
+		                        projectDelta.getResource().getName() + "'...");
+		        }
+		    }
+		}
+	}
+
     public boolean chooseBuildTypeFromDeltas(final int kind, final List<IResourceDelta> currentDeltas,
             IProgressMonitor monitor,
             final CeylonBuilder.BooleanHolder mustDoFullBuild,
@@ -831,8 +861,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 		//this is some kind of multi-project build,
                                 		//indicating a change in a project we
                                 		//depend upon
-                                		mustDoFullBuild.value = true;
+                                		/*mustDoFullBuild.value = true;
                                 		mustResolveClasspathContainer.value = true;
+                                		return true;*/
                                 		return true;
                                 	}
                                 }
@@ -2359,9 +2390,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
      * build path accordingly.
      */
     public static List<IPath> getSourceFolders(IProject theProject) {
-        if (sourceFolders.containsKey(theProject)) {
+        /*if (sourceFolders.containsKey(theProject)) {
             return sourceFolders.get(theProject);
-        }
+        }*/
         
         IJavaProject javaProject = JavaCore.create(theProject);
         if (javaProject.exists()) {
