@@ -11,6 +11,8 @@
 
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static org.eclipse.jdt.core.IClasspathAttribute.IGNORE_OPTIONAL_PROBLEMS;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -158,7 +160,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 	private final int IDX_ADD= 0;
 	private final int IDX_ADD_LINK= 1;
 	private final int IDX_EDIT= 3;
-	private final int IDX_REMOVE= 4;
+	private final int IDX_TOGGLE= 4;
+	private final int IDX_REMOVE= 5;
 
 	public SourceContainerWorkbookPage(ListDialogField<CPListElement> classPathList,
 			StringDialogField javaOutputLocationField, StringDialogField ceylonOutputLocationField) {
@@ -178,6 +181,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			NewWizardMessages.SourceContainerWorkbookPage_folders_link_source_button,
 			null,
 			NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button,
+			"Toggl&e",
 			NewWizardMessages.SourceContainerWorkbookPage_folders_remove_button
 		};
 
@@ -187,6 +191,8 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
 		fFoldersList.setViewerComparator(new CPListElementSorter());
 		fFoldersList.enableButton(IDX_EDIT, false);
+		fFoldersList.enableButton(IDX_TOGGLE, false);
+		fFoldersList.enableButton(IDX_REMOVE, false);
 
 		fUseFolderOutputs= new SelectionButtonDialogField(SWT.CHECK);
 		fUseFolderOutputs.setSelection(false);
@@ -372,7 +378,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 						fJavaOutputLocationField.getText(), true);
 				OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 				action.run();
-			} else if (index == IDX_EDIT) {
+			} else if (index == IDX_EDIT||index == IDX_TOGGLE) {
 				editEntry();
 			} else if (index == IDX_REMOVE) {
 				removeEntry();
@@ -451,7 +457,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 					fFoldersList.getElements(), fJavaOutputLocationField.getText());
 			OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
 			action.run();
-		} else if (key.equals(CPListElement.IGNORE_OPTIONAL_PROBLEMS)) {
+		} else if (key.equals(IGNORE_OPTIONAL_PROBLEMS)) {
 			String newValue= "true".equals(elem.getValue()) ? null : "true"; //$NON-NLS-1$ //$NON-NLS-2$
 			elem.setValue(newValue);
 			fFoldersList.refresh(elem);
@@ -470,11 +476,18 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		List<Object> selected= fFoldersList.getSelectedElements();
 		boolean isIgnoreOptionalProblems= selected.size() == 1
 				&& selected.get(0) instanceof CPListElementAttribute
-				&& CPListElement.IGNORE_OPTIONAL_PROBLEMS.equals(((CPListElementAttribute) selected.get(0)).getKey());
-		fFoldersList.getButton(IDX_EDIT).setText(isIgnoreOptionalProblems
+				&& IGNORE_OPTIONAL_PROBLEMS.equals(((CPListElementAttribute) selected.get(0)).getKey());
+		/*fFoldersList.getButton(IDX_EDIT).setText(isIgnoreOptionalProblems
 				? NewWizardMessages.SourceContainerWorkbookPage_folders_toggle_button
-				: NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button);
-		fFoldersList.enableButton(IDX_EDIT, canEdit(selected));
+				: NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button);*/
+		if (isIgnoreOptionalProblems) {
+			fFoldersList.enableButton(IDX_TOGGLE, canEdit(selected));
+			fFoldersList.enableButton(IDX_EDIT, false);
+		}
+		else {
+			fFoldersList.enableButton(IDX_TOGGLE, false);
+			fFoldersList.enableButton(IDX_EDIT, canEdit(selected));
+		}
 		fFoldersList.enableButton(IDX_REMOVE, canRemove(selected));
 		boolean noAttributes= containsOnlyTopLevelEntries(selected);
 		fFoldersList.enableButton(IDX_ADD, noAttributes);
@@ -572,7 +585,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 			CPListElementAttribute attrib= (CPListElementAttribute) elem;
 			if (attrib.isBuiltIn()) {
 				return true;
-			} else if (CPListElement.IGNORE_OPTIONAL_PROBLEMS.equals(attrib.getKey())) {
+			} else if (IGNORE_OPTIONAL_PROBLEMS.equals(attrib.getKey())) {
 				return true;
 			} else {
 				return canEditCustomAttribute(attrib);
