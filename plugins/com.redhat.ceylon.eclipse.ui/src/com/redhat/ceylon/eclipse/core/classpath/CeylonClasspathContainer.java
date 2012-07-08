@@ -371,7 +371,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	            if (modulePath!=null) {
 	            	//if (!project.getLocation().isPrefixOf(modulePath)) {
 	            		IPath srcPath = null;
-	            		for (IProject p: project.getDescription().getReferencedProjects()) {
+	            		for (IProject p: project.getReferencedProjects()) {
 	            			if (p.getLocation().isPrefixOf(modulePath)) {
 	            				//the module belongs to a referenced
 	            				//project, so use the project source

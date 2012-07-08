@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectMod
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectRepositoryManager;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
@@ -461,7 +462,7 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     private VirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
-        for (IPath folderPath: CeylonBuilder.getSourceFolders(project)) {
+        for (IPath folderPath: getSourceFolders(project)) {
             if (folderPath.isPrefixOf(resolvedPath)) {
                 return new IFolderVirtualFile(project, 
                         folderPath.makeRelativeTo(project.getFullPath()));
