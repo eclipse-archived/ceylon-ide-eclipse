@@ -11,8 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static org.eclipse.jdt.core.IClasspathAttribute.IGNORE_OPTIONAL_PROBLEMS;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,7 +61,9 @@ import org.eclipse.ui.INewWizard;
 
 
 public class SourceContainerWorkbookPage extends BuildPathBasePage {
-
+	
+	private static final String IGNORE_OPTIONAL_PROBLEMS = "ignore_optional_problems";
+	
 	private class OpenBuildPathWizardAction extends AbstractOpenWizardAction 
 	        implements IPropertyChangeListener {
 
