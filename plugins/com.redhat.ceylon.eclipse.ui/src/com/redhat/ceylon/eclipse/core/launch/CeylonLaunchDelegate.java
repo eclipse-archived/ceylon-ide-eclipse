@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -36,12 +37,13 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         //add the car files of the output directory
         
         IJavaProject javaProject = getJavaProject(configuration);
-        Context context = getProjectTypeChecker(javaProject.getProject()).getContext();
+        IProject project = javaProject.getProject();
+		Context context = getProjectTypeChecker(project).getContext();
 
         IPath modulesFolder = getCeylonModulesOutputFolder(javaProject).getLocation();
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
 
-		IPath projectLoc = javaProject.getProject().getLocation();
+		IPath projectLoc = project.getLocation();
         RepositoryManager provider = context.getRepositoryManager();
         Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
         //modulesToAdd.add(projectModules.getLanguageModule());        
@@ -50,7 +52,6 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
     				module.getNameAsString().equals("java")) {
     			continue;
     		}
-            boolean artifactFound = false;
             ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
             // try first with car
             ctx.setSuffix(ArtifactContext.CAR);
@@ -64,7 +65,6 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             if (moduleArtifact != null) {
             	IPath modulePath = new Path(moduleArtifact.getPath());
             	if (modulePath.toFile().exists()) {
-            		artifactFound = true;
 					if (projectLoc.isPrefixOf(modulePath)) {
             			classpathList.add(modulePath.toOSString());
             		}
@@ -74,7 +74,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             				modulePath);
             	}
             }
-            if (!artifactFound) {
+            else {
                 System.err.println("no module archive found for launch classpath: " + 
                         module.getNameAsString() + "/" + module.getVersion());
             }
