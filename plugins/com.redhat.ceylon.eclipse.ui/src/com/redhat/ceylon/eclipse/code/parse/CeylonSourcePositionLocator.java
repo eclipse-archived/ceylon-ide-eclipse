@@ -275,17 +275,17 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 			}
             
             //finally look for it in a module archive 
-            TypeChecker tc = getProjectTypeChecker(project);
-			String rp = getRelativePath(unit);
-			PhasedUnit pu = tc.getPhasedUnitFromRelativePath(rp);
+            PhasedUnit pu = getProjectTypeChecker(project)
+            		.getPhasedUnitFromRelativePath(getRelativePath(unit));
             if (pu!=null) {
-                VirtualFile unitFile = pu.getUnitFile();
+            	return new Path(pu.getUnitFile().getPath());
+                /*VirtualFile unitFile = pu.getUnitFile();
                 if (unitFile instanceof IFileVirtualFile) {
                     return ((IFileVirtualFile) unitFile).getFile().getFullPath();
                 }
                 else {
                     return new Path(unitFile.getPath());
-                }
+                }*/
             }
             
             return null;
