@@ -305,6 +305,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         for (Declaration dec: p.getMembers()) {
                             if (isPresentable(dec)) {
                                 DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
+                                //TODO: eliminate duplicates based on the
+                                //      location of the module archive
                                 if (!set.contains(dwp)) {
                                     contentProvider.add(dwp, itemsFilter);
                                     nameOccurs(dec);
