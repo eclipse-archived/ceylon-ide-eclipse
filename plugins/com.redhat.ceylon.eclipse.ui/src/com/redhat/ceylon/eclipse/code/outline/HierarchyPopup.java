@@ -302,7 +302,7 @@ public class HierarchyPopup extends PopupDialog {
 	        Object object = selection.getFirstElement();
 	        Declaration dec = (Declaration) object;
 	        gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	                cpc.getProject().getRawProject());
+	                cpc.getProject().getRawProject(), cpc.getTypeChecker());
     	}
         close();
     }
