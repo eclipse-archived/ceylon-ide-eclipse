@@ -357,7 +357,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
 			
 	        Context context = typeChecker.getContext();
-	        IPath projectLoc = project.getLocation();
 	        RepositoryManager provider = context.getRepositoryManager();
 	        Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
 	        //modulesToAdd.add(projectModules.getLanguageModule());        
@@ -367,7 +366,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	    			continue;
 	    		}
 	            ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
-	            // try first with car
+	            // try first with .car
 	            ctx.setSuffix(ArtifactContext.CAR);
 	            File moduleArtifact = null;
 	            moduleArtifact = provider.getArtifact(ctx);
@@ -378,11 +377,25 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	            }
 	            if (moduleArtifact!=null) {
 	            	IPath modulePath = new Path(moduleArtifact.getPath());
-	            	if (!projectLoc.isPrefixOf(modulePath)) {
-	            		ctx.setSuffix(ArtifactContext.SRC);
-	            		File srcArtifact = provider.getArtifact(ctx);
-	            		IPath srcPath = srcArtifact==null ? null : new Path(srcArtifact.getPath());
-	            		paths.add(newLibraryEntry(modulePath, srcPath, null)); //TODO: would be better to pass the root path of the containing project
+	            	IPath srcPath = null;
+	            	if (!project.getLocation().isPrefixOf(modulePath)) {
+	            		for (IProject p: project.getDescription().getReferencedProjects()) {
+	            			if (p.getLocation().isPrefixOf(modulePath)) {
+	            				//the module belongs to a referenced
+	            				//project, so use the project source
+	            				srcPath = p.getLocation();
+	            				break;
+	            			}
+	            		}
+	            		if (srcPath==null) {
+            				//otherwise, use the src archive
+	            			ctx.setSuffix(ArtifactContext.SRC);
+	            			File srcArtifact = provider.getArtifact(ctx);
+	            			if (srcArtifact!=null) {
+	            				srcPath = new Path(srcArtifact.getPath());
+	            			}
+	            		}
+	            		paths.add(newLibraryEntry(modulePath, srcPath, null));
 	            	}
 	            	
 	            }

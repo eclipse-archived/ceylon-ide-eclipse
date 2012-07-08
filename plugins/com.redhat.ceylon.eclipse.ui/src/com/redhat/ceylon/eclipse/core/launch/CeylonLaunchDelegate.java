@@ -43,7 +43,6 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IPath modulesFolder = getCeylonModulesOutputFolder(javaProject).getLocation();
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
 
-		IPath projectLoc = project.getLocation();
         RepositoryManager provider = context.getRepositoryManager();
         Set<Module> modulesToAdd = new HashSet<Module>(context.getModules().getListOfModules());
         //modulesToAdd.add(projectModules.getLanguageModule());        
@@ -65,7 +64,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             if (moduleArtifact != null) {
             	IPath modulePath = new Path(moduleArtifact.getPath());
             	if (modulePath.toFile().exists()) {
-					if (projectLoc.isPrefixOf(modulePath)) {
+					if (project.getLocation().isPrefixOf(modulePath)) {
             			classpathList.add(modulePath.toOSString());
             		}
             	} 
