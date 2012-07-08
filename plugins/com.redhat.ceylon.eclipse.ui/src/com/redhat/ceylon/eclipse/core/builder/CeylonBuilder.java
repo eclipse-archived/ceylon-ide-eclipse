@@ -585,21 +585,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                         Unit unit = phasedUnit.getUnit();
                         if (unit.getUnresolvedReferences().size() > 0) {
-                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
                             if (fileToAdd.exists()) {
                                 sourceToCompile.add(fileToAdd);
                             }
                         }
                         Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
                         if (duplicateDeclarations.size() > 0) {
-                            IFile fileToAdd = (IFile) ((IFileVirtualFile)(phasedUnit.getUnitFile())).getResource();
+                            IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
                             if (fileToAdd.exists()) {
                                 sourceToCompile.add(fileToAdd);
                             }
                             for (Declaration duplicateDeclaration : duplicateDeclarations) {
                                 PhasedUnit duplicateDeclPU = CeylonReferenceResolver.getPhasedUnit(project, duplicateDeclaration);
                                 if (duplicateDeclPU != null) {
-                                    IFile duplicateDeclFile = (IFile) ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getResource();
+                                    IFile duplicateDeclFile = ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getFile();
                                     if (duplicateDeclFile.exists()) {
                                         sourceToCompile.add(duplicateDeclFile);
                                     }
@@ -2299,7 +2299,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
     
     public static IFile getFile(PhasedUnit phasedUnit) {
-        return (IFile) ((ResourceVirtualFile) phasedUnit.getUnitFile()).getResource();
+        return ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
     }
 
     // TODO think: doRefresh(file.getParent()); // N.B.: Assumes all
