@@ -3,9 +3,10 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer.getModuleArchive;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer.isProjectModule;
 import static java.util.Arrays.asList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,12 +16,10 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -48,25 +47,16 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         //modulesToAdd.add(projectModules.getLanguageModule());        
     	for (Module module: modulesToAdd) {
     		if (module.getNameAsString().equals("default") ||
-    				module.getNameAsString().equals("java")) {
+    				module.getNameAsString().equals("java") ||
+    				!isProjectModule(javaProject, module)) {
     			continue;
     		}
-            ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), module.getVersion());
-            // try first with car
-            ctx.setSuffix(ArtifactContext.CAR);
-            File moduleArtifact = null;
-            moduleArtifact = provider.getArtifact(ctx);
-            if (moduleArtifact == null){
-            	// try with .jar
-            	ctx.setSuffix(ArtifactContext.JAR);
-            	moduleArtifact = provider.getArtifact(ctx);
-            }
-            if (moduleArtifact != null) {
-            	IPath modulePath = new Path(moduleArtifact.getPath());
+    		IPath modulePath = getModuleArchive(provider, module);
+            if (modulePath!=null) {
             	if (modulePath.toFile().exists()) {
-					if (project.getLocation().isPrefixOf(modulePath)) {
+					//if (project.getLocation().isPrefixOf(modulePath)) {
             			classpathList.add(modulePath.toOSString());
-            		}
+            		//}
             	} 
             	else {
             		System.err.println("ignoring nonexistent module artifact for launch classpath: " + 
