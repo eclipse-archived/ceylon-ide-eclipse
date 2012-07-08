@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 
 import java.util.Collection;
 

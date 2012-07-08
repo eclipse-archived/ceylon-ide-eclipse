@@ -44,8 +44,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
      * Get the target for the given source node in the AST produced by the given
      * Parse Controller.
      */
-    public Tree.Declaration getLinkTarget(Object node,
-            IParseController controller) {
+    public Tree.Declaration getLinkTarget(Object node, 
+    		IParseController controller) {
         if (node instanceof Node) {
             return getReferencedNode(node, controller);
         }
@@ -54,9 +54,11 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         }
     }
 
-    public static Tree.Declaration getReferencedNode(Object node, IParseController controller) {
+    public static Tree.Declaration getReferencedNode(Object node, 
+    		IParseController controller) {
         return getReferencedNode(getReferencedDeclaration(node), 
-            getCompilationUnit((CeylonParseController) controller, getReferencedDeclaration(node)));
+            getCompilationUnit((CeylonParseController) controller, 
+            		getReferencedDeclaration(node)));
     }
 
     private static Declaration getReferencedDeclaration(Object node) {
@@ -81,7 +83,8 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                     dec = pd;
                 }
                 else if (dec.getName()!=null) {
-                    Declaration att = pd.getMemberOrParameter(dec.getUnit(), dec.getName(), null);
+                    Declaration att = pd.getMemberOrParameter(dec.getUnit(), 
+                    		dec.getName(), null);
                     if (att!=null) dec = att;
                 }
             }
@@ -109,32 +112,6 @@ public class CeylonReferenceResolver implements IReferenceResolver {
         }
         else {
             return null;
-        }
-    }
-
-    public static Node getIdentifyingNode(Node node) {
-        if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getIdentifier();
-        }
-        else if (node instanceof Tree.NamedArgument) {
-            return ((Tree.NamedArgument) node).getIdentifier();
-        }
-        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-            return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
-        }
-        else if (node instanceof Tree.ExtendedTypeExpression) {
-            //TODO: whoah! this is really ugly!
-            return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
-                    .getIdentifier();
-        }
-        else if (node instanceof Tree.SimpleType) {
-            return ((Tree.SimpleType) node).getIdentifier();
-        }
-        else if (node instanceof Tree.ImportMemberOrType) {
-            return ((Tree.ImportMemberOrType) node).getIdentifier();
-        }
-        else {    
-            return node;
         }
     }
 

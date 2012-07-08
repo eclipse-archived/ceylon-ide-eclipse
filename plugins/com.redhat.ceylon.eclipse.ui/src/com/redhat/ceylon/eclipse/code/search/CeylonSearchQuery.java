@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 
@@ -23,8 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 
@@ -84,9 +85,7 @@ class CeylonSearchQuery implements ISearchQuery {
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-	    List<PhasedUnit> units = projects==null ? 
-	                CeylonBuilder.getUnits() : 
-	                CeylonBuilder.getUnits(projects);
+	    List<PhasedUnit> units = projects==null ? getUnits() : getUnits(projects);
 	    monitor.beginTask("Ceylon Search", units.size());
         if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 
@@ -99,9 +98,8 @@ class CeylonSearchQuery implements ISearchQuery {
     	            public void matchingNode(Node node) {
     	                FindContainerVisitor fcv = new FindContainerVisitor(node);
     	                cu.visit(fcv);
-    	                node = CeylonReferenceResolver.getIdentifyingNode(node);
-    	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
-    	                        CeylonBuilder.getFile(pu), 
+    	                node = getIdentifyingNode(node);
+    	                result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), getFile(pu), 
     	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
     	                        node.getToken()));
     	                count++;

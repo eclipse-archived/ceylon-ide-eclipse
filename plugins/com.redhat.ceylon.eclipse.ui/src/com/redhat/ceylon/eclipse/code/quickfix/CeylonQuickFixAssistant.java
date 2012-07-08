@@ -9,11 +9,14 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFA
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
@@ -79,7 +82,6 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
@@ -212,7 +214,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         if (context.getModel()==null) return;
         IProject project = context.getModel().getProject().getRawProject();
         IFile file = context.getModel().getFile();
-        TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
+        TypeChecker tc = getProjectTypeChecker(project);
         Tree.CompilationUnit cu = (Tree.CompilationUnit) context.getModel()
                 .getAST(new NullMessageHandler(), new NullProgressMonitor());
         if (problem==null) {
@@ -786,7 +788,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, Declaration typeDec) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
@@ -835,7 +837,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
             ProblemLocation problem, IProject project, ProducedType type, 
             TypedDeclaration typedDec) {
         if (typedDec!=null) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (typedDec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
                     getRootNode(unit).visit(fdv);
@@ -843,9 +845,8 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                     if (decNode!=null) {
                         Tree.Type typeNode = decNode.getType();
                         ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
-                        IFile file = CeylonBuilder.getFile(unit);
                         ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
-                                newType, file);
+                                newType, getFile(unit));
                     }
                 }
             }
@@ -930,7 +931,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateParameterProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Declaration typeDec) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
@@ -952,7 +953,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateParameterAndAttributeProposals(Collection<ICompletionProposal> proposals,
             IProject project, String pdef, String adef, String desc, Declaration typeDec) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
@@ -1016,7 +1017,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Tree.TypeDeclaration cd) {
-        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+        for (PhasedUnit unit: getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 CreateProposal.addCreateEnumProposal(proposals, def, desc, image, unit, cd);
                 break;
@@ -1031,7 +1032,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         cu.visit(fsv);
         if (!fsv.isToplevel()) {
             Tree.Statement statement = fsv.getStatement();
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (unit.getUnit().equals(cu.getUnit())) {
                     CreateProposal.addCreateProposal(proposals, def, true, desc, image, unit, statement);
                     break;
@@ -1046,7 +1047,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         FindStatementVisitor fsv = new FindStatementVisitor(node, true);
         cu.visit(fsv);
         Tree.Statement statement = fsv.getStatement();
-        for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+        for (PhasedUnit unit: getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, unit, statement);
                 break;
@@ -1203,7 +1204,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addAddAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
         if (dec!=null) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
                     getRootNode(unit).visit(fdv);
@@ -1221,7 +1222,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     private void addRemoveAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
         if (dec!=null) {
-            for (PhasedUnit unit: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);

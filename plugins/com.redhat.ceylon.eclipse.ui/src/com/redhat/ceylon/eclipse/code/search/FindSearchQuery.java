@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 abstract class FindSearchQuery implements ISearchQuery {
@@ -44,7 +47,7 @@ abstract class FindSearchQuery implements ISearchQuery {
 	    //List<PhasedUnit> units = CeylonBuilder.getUnits(project);
 	    //if (units==null) units = CeylonBuilder.getUnits();
 	    
-	    List<PhasedUnit> units = CeylonBuilder.getUnits();
+	    List<PhasedUnit> units = getUnits();
         for (PhasedUnit pu: units) {
 	        CompilationUnit cu = getRootNode(pu);
             Set<Node> nodes = getNodes(cu);
@@ -56,7 +59,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                     //a synthetic node inserted in the tree
                 }
                 else {
-                    node = CeylonReferenceResolver.getIdentifyingNode(node);
+                    node = getIdentifyingNode(node);
         			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
         			        CeylonBuilder.getFile(pu), 
         					node.getStartIndex(), 
