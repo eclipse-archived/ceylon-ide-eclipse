@@ -63,24 +63,24 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     }
 
     private int getNodeDecorationAttributes(Node node) {
-        if (node instanceof Tree.Declaration) {
-            Tree.Declaration dec = (Tree.Declaration) node;
-            int result = getDecorationAttributes(dec.getDeclarationModel());
-            ErrorCollectionVisitor ev = new ErrorCollectionVisitor(dec, true);
-            dec.visit(ev);
-            for (Message er: ev.getErrors()) {
-            	if (er instanceof UsageWarning) {
+    	int result = 0;
+        if (node instanceof Tree.Declaration || node instanceof Tree.Import) {
+            ErrorCollectionVisitor ev = new ErrorCollectionVisitor(node, true);
+            node.visit(ev);
+            for (Message m: ev.getErrors()) {
+            	if (m instanceof UsageWarning) {
             		result |= WARNING;
             	}
             	else {
             		result |= ERROR;
             	}
             }
-            return result;
+            if (node instanceof Tree.Declaration) {
+            	Tree.Declaration dec = (Tree.Declaration) node;
+            	result |= getDecorationAttributes(dec.getDeclarationModel());
+            }
         }
-        else {
-            return 0;
-        }
+        return result;
     }
 
     private static int getDecorationAttributes(Declaration model) {
