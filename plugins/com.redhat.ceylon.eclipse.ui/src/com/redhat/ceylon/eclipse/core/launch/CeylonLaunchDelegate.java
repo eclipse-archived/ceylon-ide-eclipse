@@ -38,7 +38,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IProject project = javaProject.getProject();
 		Context context = getProjectTypeChecker(project).getContext();
 
-        IPath modulesFolder = getCeylonModulesOutputFolder(javaProject).getLocation();
+        IPath modulesFolder = getCeylonModulesOutputFolder(project).getLocation();
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
 
         RepositoryManager provider = context.getRepositoryManager();
