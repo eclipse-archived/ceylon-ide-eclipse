@@ -4,7 +4,6 @@ import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectRepositoryManager;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
@@ -12,14 +11,11 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserReposi
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -44,7 +40,6 @@ import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IRegion;
 
-import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -202,45 +197,26 @@ public class CeylonParseController extends ParseControllerBase {
             if (path!=null) { //path==null in structured compare editor
                 //for files from external repos, search for
                 //the repo by iterating all repos referenced
-                //by all projects
-
+                //by all projects (yuck, this is fragile!!!)
                 String pathString = path.toString();
-                String artifactName = null;
-                String version = null;
-                int lastColonIdx = pathString.lastIndexOf('!');
-                if (lastColonIdx > 0) {
-                    String srcArchivePath= pathString.substring(0, lastColonIdx);
-                    String separator = Pattern.quote("/");
-                    String hyphen = Pattern.quote("-");
-                    String dot = Pattern.quote(".");
-                    Pattern pattern = Pattern.compile(".*" + separator + "([^" + separator + "]+)" + hyphen + "(.+)" + dot + "src");
-                    Matcher matcher = pattern.matcher(srcArchivePath);
-                    if (matcher.matches()) {
-                        artifactName = matcher.group(1);
-                        version = matcher.group(2);
-                    }
+                int lastBangIdx = pathString.lastIndexOf('!');
+                if (lastBangIdx > 0) {
+                    String srcArchivePath= pathString.substring(0, lastBangIdx);
                     srcDir = new TemporaryFile(srcArchivePath+'!');
-                }
-                
-                for (IProject p: CeylonBuilder.getProjects()) {
-                    boolean found = false;
-                    //RepositoryManager manager = getProjectRepositoryManager(project);
-                    
-                    if (artifactName != null && version != null) {
-                        RepositoryManager repositoryManager = getProjectRepositoryManager(p);
-                        File artifact = null;
-                        artifact = repositoryManager.getArtifact(artifactName, version);
-                        if (artifact != null) {
-                            try {
-                                sourceProject = ModelFactory.open(p);
-                                project = p;
-                                found=true;
-                            } catch (ModelException e) {
-                                e.printStackTrace();
-                            }
-                            break;
+                    for (IProject p: getProjects()) {
+                        String rp = file.getPath().substring(srcArchivePath.length()+2);
+                        PhasedUnit phasedUnitFromRelativePath = getProjectTypeChecker(p).getPhasedUnitFromRelativePath(rp);
+                        if (phasedUnitFromRelativePath!=null && 
+                        		phasedUnitFromRelativePath.getUnitFile().getPath().equals(pathString)) {
+                        	try {
+                        		sourceProject = ModelFactory.open(p);
+                        		project = p;
+                        		break;
+                        	} 
+                        	catch (ModelException e) {
+                        		e.printStackTrace();
+                        	}
                         }
-                        if (found) break;
                     }
                 }
             }
@@ -457,7 +433,7 @@ public class CeylonParseController extends ParseControllerBase {
     }
     
     private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
-        return file.getPath().replaceFirst(srcDir.getPath() + "/", "")
+        return file.getPath().substring(srcDir.getPath().length()+1)
                 .replace("/" + file.getName(), "").replace('/', '.');
     }
     
