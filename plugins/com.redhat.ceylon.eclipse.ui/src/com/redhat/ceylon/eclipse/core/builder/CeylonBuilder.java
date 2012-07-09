@@ -467,7 +467,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
                 final List<IFile> allSources = getProjectSources(project);
                 getConsoleStream().println("             ...compiling " + allSources.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, sourceProject, allSources, monitor);
+                binariesGenerationOK = generateBinaries(project, javaProject, sourceProject, allSources, monitor);
                 monitor.worked(1);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
             }
@@ -524,7 +524,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.subTask("Generating binaries for project " + project.getName());
                 getConsoleStream().println(timedMessage("Incremental generation of class files..."));
                 getConsoleStream().println("             ...compiling " + sourceToCompile.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, sourceProject, sourceToCompile, monitor);
+                binariesGenerationOK = generateBinaries(project, javaProject, sourceProject, sourceToCompile, monitor);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -1513,15 +1513,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 				ms.startsWith("unable to read source artifact for");
 	}
 	
-    private boolean generateBinaries(IProject project, ISourceProject sourceProject, 
-    		Collection<IFile> filesToCompile, IProgressMonitor monitor) 
-    				throws CoreException {
+    private boolean generateBinaries(IProject project, IJavaProject javaProject,
+    		ISourceProject sourceProject, Collection<IFile> filesToCompile, 
+    		IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
-        IJavaProject javaProject = JavaCore.create(project);
 
         String srcPath = "";
         for (IPath sourceFolder : getSourceFolders(javaProject)) {
-            File sourcePathElement = toFile(project,sourceFolder.makeRelativeTo(project.getFullPath()));
+            File sourcePathElement = toFile(project,sourceFolder
+            		.makeRelativeTo(project.getFullPath()));
             if (! srcPath.isEmpty()) {
                 srcPath += File.pathSeparator;
             }
@@ -1570,55 +1570,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (compileWithJDTModelLoader()) {
                 sourceFiles.addAll(javaSourceFiles);
             } 
-            else {
-                // first java source files
-                /*if(!javaSourceFiles.isEmpty()){
-                    javaSourceFiles.addAll(moduleFiles);
-                    compile(project, options, javaSourceFiles, printWriter);
-                }*/
-            }
-            // then ceylon source files if that last run worked
             if(!sourceFiles.isEmpty()){
-                success = compile(project, options, sourceFiles, printWriter);
+                success = compile(project, javaProject, options, sourceFiles, printWriter);
             }
-/*            
-            if (modulesOutputDir != null) {
-                monitor.subTask("Unzipping archives files in the Ceylon output folder");
-                new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDir, new RepositoryLister.Actions() {
-                    @Override
-                    public void doWithFile(File path) {
-                        path.delete();
-                    }
-                    
-                    public void exitDirectory(File path) {
-                        if (path.list().length == 0 && ! path.equals(ceylonOutputDir)) {
-                            path.delete();
-                        }
-                    }
-                });
-                List<String> extensionsToUnzip = Arrays.asList(".car");
-                new RepositoryLister(extensionsToUnzip).list(modulesOutputDir, new RepositoryLister.Actions() {
-                    @Override
-                    public void doWithFile(File path) {
-                        try {
-                            ZipFile carFile = new ZipFile(path);
-                            carFile.extractAll(ceylonOutputDir.getAbsolutePath());
-                        } catch (ZipException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                monitor.subTask("Refreshing the Ceylon output folder");
-            }
-*/            
+            
             return success;
         }
         else
             return true;
     }
 
-    private boolean compile(final IProject project, List<String> options,
-            java.util.List<File> sourceFiles, PrintWriter printWriter) throws VerifyError {
+    private boolean compile(final IProject project, IJavaProject javaProject, 
+    		List<String> options, java.util.List<File> sourceFiles, 
+    		PrintWriter printWriter) throws VerifyError {
         CeyloncTool compiler;
         try {
             compiler = new CeyloncTool();
@@ -1773,39 +1737,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
         }
         
-        List<IJavaProject> javaProjects = new ArrayList<IJavaProject>();
-        javaProjects.add(JavaCore.create(project));
+        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
+        addProjectClasspathElements(classpathElements, workspaceLocation,
+				javaProject);
         try {
-			for (IProject requiredProject: project.getReferencedProjects()) {
-			    javaProjects.add(JavaCore.create(requiredProject));
+			for (IProject p: project.getReferencedProjects()) {
+				addProjectClasspathElements(classpathElements, workspaceLocation,
+						JavaCore.create(p));
 			}
 		} 
         catch (CoreException ce) {
 			ce.printStackTrace();
 		}
-
-        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        for (IJavaProject javaProj: javaProjects) {
-        	try {
-        		List<CeylonClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
-        		for (CeylonClasspathContainer container : containers) {
-        			for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
-        				if (!isInCeylonClassesOutputFolder(cpEntry.getPath())) {
-        					classpathElements.add(cpEntry.getPath().toOSString());
-        				}
-        			}
-        		}
-
-        		classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
-        		for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
-        			if (isInCeylonClassesOutputFolder(cpEntry.getPath())) {
-        				classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
-        			}
-        		}
-        	} catch (JavaModelException e1) {
-        		CeylonPlugin.log(e1);
-        	}
-        }
         
         options.add("-classpath");
         String classpath = "";
@@ -1939,6 +1882,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         return success;
     }
+
+	private void addProjectClasspathElements(List<String> classpathElements,
+			IPath workspaceLocation, IJavaProject javaProj) {
+		try {
+			List<CeylonClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
+			for (CeylonClasspathContainer container : containers) {
+				for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
+					if (!isInCeylonClassesOutputFolder(cpEntry.getPath())) {
+						classpathElements.add(cpEntry.getPath().toOSString());
+					}
+				}
+			}
+
+			classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
+				if (isInCeylonClassesOutputFolder(cpEntry.getPath())) {
+					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+				}
+			}
+		} catch (JavaModelException e1) {
+			CeylonPlugin.log(e1);
+		}
+	}
 
 	public static boolean getJdtClassesEnabled(final IProject project) {
         return getBuilderArgs(project).get("enableJdtClasses")!=null;

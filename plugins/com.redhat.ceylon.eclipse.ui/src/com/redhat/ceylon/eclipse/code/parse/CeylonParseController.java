@@ -38,7 +38,6 @@ import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -56,6 +55,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonParserScheduler;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
@@ -73,7 +73,6 @@ public class CeylonParseController extends ParseControllerBase {
 
     private List<CommonToken> tokens;
     private TypeChecker typeChecker;
-    private AbstractModelLoader modelLoader;
     
     /**
      * @param filePath		Project-relative path of file
@@ -214,7 +213,7 @@ public class CeylonParseController extends ParseControllerBase {
                 return fCurrentAst; // TypeChecking has not been performed.
             }
             typeChecker = getProjectTypeChecker(project);
-            modelLoader = getProjectModelLoader(project);
+            //modelLoader = getProjectModelLoader(project);
         }
         
         if (isCanceling(monitor)) {
@@ -386,6 +385,7 @@ public class CeylonParseController extends ParseControllerBase {
 			// Editing an already built file
 			Package sourcePackage = builtPhasedUnit.getPackage();
 			if (sourcePackage instanceof LazyPackage) {
+				JDTModelLoader modelLoader = getProjectModelLoader(getProject().getRawProject());
 				if (modelLoader != null) {
 					pkg = new LazyPackage(modelLoader);
 				} else {
