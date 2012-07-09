@@ -18,7 +18,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 class AssignToLocalProposal extends ChangeCorrectionProposal {
