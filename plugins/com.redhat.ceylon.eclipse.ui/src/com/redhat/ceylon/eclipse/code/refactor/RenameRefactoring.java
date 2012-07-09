@@ -3,13 +3,10 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -72,24 +69,11 @@ public class RenameRefactoring extends AbstractRefactoring {
 	}
 	
 	public int getCount() {
-	    if (declaration==null) {
-	        return 0;
-	    }
-	    else {
-            int count = 0;
-            for (PhasedUnit pu: getAllUnits()) {
-                if (searchInFile(pu)) {
-                    count += countReferences(pu.getCompilationUnit());
-                }
-            }
-            if (searchInEditor()) {
-                count += countReferences(editor.getParseController().getRootNode());
-            }
-    		return count;
-	    }
+	    return declaration==null ? 0 : countDeclarationOccurrences();
 	}
-	
-	private int countReferences(Tree.CompilationUnit cu) {
+
+	@Override
+	int countReferences(Tree.CompilationUnit cu) {
         FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
         cu.visit(frv);
@@ -138,15 +122,6 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
         pm.done();
         return cc;
-	}
-
-	private List<PhasedUnit> getAllUnits() {
-		List<PhasedUnit> units = new ArrayList<PhasedUnit>();
-		units.addAll(getUnits(project));
-        for (IProject p: project.getReferencingProjects()) {
-        	units.addAll(getUnits(p));
-        }
-		return units;
 	}
 
     private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {

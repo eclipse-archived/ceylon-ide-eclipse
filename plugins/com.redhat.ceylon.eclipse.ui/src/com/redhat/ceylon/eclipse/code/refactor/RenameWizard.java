@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
 public class RenameWizard extends RefactoringWizard {
-	public RenameWizard(RenameRefactoring refactoring) {
+	public RenameWizard(AbstractRefactoring refactoring) {
 		super(refactoring, DIALOG_BASED_USER_INTERFACE
 				| PREVIEW_EXPAND_FIRST_NODE);
 		setDefaultPageTitle(refactoring.getName());
@@ -13,7 +13,7 @@ public class RenameWizard extends RefactoringWizard {
 		addPage(new RenameInputPage(getRefactoring().getName()));
 	}
 
-	public RenameRefactoring getRenameRefactoring() {
-		return (RenameRefactoring) getRefactoring();
+	public AbstractRefactoring getRenameRefactoring() {
+		return (AbstractRefactoring) getRefactoring();
 	}
 }
