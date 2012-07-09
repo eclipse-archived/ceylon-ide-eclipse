@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
 import java.util.Collection;
 
@@ -51,7 +52,7 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
                 int offset = st.getStartIndex();
                 TextChange change = new DocumentChange("Assign To Local", doc);
                 change.setEdit(new MultiTextEdit());
-                String name = AbstractRefactoring.guessName(((Tree.ExpressionStatement) st).getExpression());
+                String name = guessName(((Tree.ExpressionStatement) st).getExpression());
                 change.addEdit(new InsertEdit(offset, "value " + name + " = "));
                 String terminal;
                 try {

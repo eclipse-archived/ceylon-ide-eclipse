@@ -112,7 +112,13 @@ public abstract class AbstractRefactoring extends Refactoring {
                 String tn = type.getDeclaration().getName();
                 String name = Character.toLowerCase(tn.charAt(0)) + 
                         tn.substring(1);
-                if (!CeylonTokenColorer.keywords.contains(name)) return name;
+                if (identifyingNode instanceof Tree.BaseMemberExpression) {
+                	String id = ((Tree.BaseMemberExpression) identifyingNode).getIdentifier().getText();
+                	if (!name.equals(id) && !CeylonTokenColorer.keywords.contains(name)) return name;
+                }
+                else {
+                	if (!CeylonTokenColorer.keywords.contains(name)) return name;
+                }
             }
         }
         
