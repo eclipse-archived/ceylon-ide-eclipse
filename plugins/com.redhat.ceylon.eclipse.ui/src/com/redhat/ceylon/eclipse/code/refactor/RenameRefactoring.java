@@ -3,11 +3,14 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -75,7 +78,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	    }
 	    else {
             int count = 0;
-            for (PhasedUnit pu: getUnits(project)) {
+            for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     count += countReferences(pu.getCompilationUnit());
                 }
@@ -118,24 +121,32 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        List<PhasedUnit> units = getUnits(project);
+        List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
+        CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
-                renameInFile(tfc, cc, pu.getCompilationUnit());
-                pm.worked(i++);
-            }
+        	if (searchInFile(pu)) {
+        		TextFileChange tfc = newTextFileChange(pu);
+        		renameInFile(tfc, cc, pu.getCompilationUnit());
+        		pm.worked(i++);
+        	}
         }
         if (searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, editor.getParseController().getRootNode());
-            pm.worked(i++);
+        	DocumentChange dc = newDocumentChange();
+        	renameInFile(dc, cc, editor.getParseController().getRootNode());
+        	pm.worked(i++);
         }
         pm.done();
-		return cc;
+        return cc;
+	}
+
+	private List<PhasedUnit> getAllUnits() {
+		List<PhasedUnit> units = new ArrayList<PhasedUnit>();
+        for (IProject p: getProjects()) {
+        	units.addAll(getUnits(p));
+        }
+		return units;
 	}
 
     private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
