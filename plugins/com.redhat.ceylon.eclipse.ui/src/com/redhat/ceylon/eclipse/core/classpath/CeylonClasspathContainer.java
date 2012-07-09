@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -216,13 +217,17 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            	@Override
     	            	protected IStatus run(IProgressMonitor monitor) {
     	            		try {
+    	            			List<IBuildConfiguration> configs = new ArrayList<IBuildConfiguration>();
+    	            			configs.add(project.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
     	            			for (IProject p: project.getReferencingProjects()) {
     	            				if (p.isOpen()) {
-    	            					project.getWorkspace().build(FULL_BUILD, monitor);
-    	            					break;
+    	            					configs.add(p.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
+    	            					//project.getWorkspace().build(FULL_BUILD, monitor);
+    	            					//break;
     	            				} 
     	            			}
-    	            			
+            					project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
+            										FULL_BUILD, true, monitor);    	            			
     	            		}
     	            		catch (CoreException e) {
     	            			e.printStackTrace();
