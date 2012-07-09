@@ -72,6 +72,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
@@ -197,6 +198,10 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 }
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, 
                         file, dec, editor);
+            }
+            if (node instanceof Tree.Return) {
+            	Tree.Return dec = (Return) node;
+            	ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, dec);
             }
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
