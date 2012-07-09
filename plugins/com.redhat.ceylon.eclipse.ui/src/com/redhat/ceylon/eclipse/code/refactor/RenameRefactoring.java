@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -143,7 +142,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	private List<PhasedUnit> getAllUnits() {
 		List<PhasedUnit> units = new ArrayList<PhasedUnit>();
-        for (IProject p: getProjects()) {
+		units.addAll(getUnits(project));
+        for (IProject p: project.getReferencingProjects()) {
         	units.addAll(getUnits(p));
         }
 		return units;
