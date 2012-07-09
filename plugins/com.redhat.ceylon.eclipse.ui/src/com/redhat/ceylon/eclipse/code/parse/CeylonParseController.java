@@ -36,7 +36,6 @@ import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
@@ -334,8 +333,9 @@ public class CeylonParseController extends ParseControllerBase {
 		for (String repo: getUserRepositories(project)) {
 			repos.add(repo);
 		}
-		repos.add(getCeylonModulesOutputDirectory(JavaCore.create(project)).getAbsolutePath());
-		tcb.setRepositoryManager(makeRepositoryManager(repos, null, new EclipseLogger()));
+		repos.add(getCeylonModulesOutputDirectory(project).getAbsolutePath());
+		tcb.setRepositoryManager(makeRepositoryManager(repos, null, 
+				new EclipseLogger()));
 		
 		TypeChecker tc = tcb.getTypeChecker();
 		tc.process();

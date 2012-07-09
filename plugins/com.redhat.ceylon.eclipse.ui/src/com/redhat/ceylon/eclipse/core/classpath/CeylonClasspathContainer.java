@@ -20,7 +20,6 @@ package com.redhat.ceylon.eclipse.core.classpath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getJdtClassesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -190,7 +189,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                 getJavaProject().getElementName()) {
     	    @Override protected IStatus run(IProgressMonitor monitor) {
     	    	final IProject project = javaProject.getProject();
-    			IFolder jdtClassesDir = getCeylonClassesOutputFolder(javaProject);
+    			IFolder jdtClassesDir = getCeylonClassesOutputFolder(project);
 	    		try {
 	    			
 	    			if (getJdtClassesEnabled(project)) {
@@ -217,11 +216,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            	@Override
     	            	protected IStatus run(IProgressMonitor monitor) {
     	            		try {
-    	            			//Note: I would love to be able to just build the projects that
-    	            			//      depend on this one, but that just doesn't work out right
-    	            			for (IProject p: project.getWorkspace().getRoot().getProjects()) {
-    	            				if (p.isOpen() && !p.equals(project) &&
-    	            						getRequiredProjects(p).contains(project)) {
+    	            			for (IProject p: project.getReferencingProjects()) {
+    	            				if (p.isOpen()) {
     	            					project.getWorkspace().build(FULL_BUILD, monitor);
     	            					break;
     	            				} 
@@ -393,8 +389,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	        }
 	        
 		    if (getJdtClassesEnabled(project)) {
-		    	paths.add(newLibraryEntry(getCeylonClassesOutputFolder(javaProject).getFullPath(), 
-		    			javaProject.getPath(), null, true));
+		    	paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
+		    			project.getFullPath(), null, true));
 		    }
 		    
 		    classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
