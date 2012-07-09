@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 
 import java.util.List;
@@ -28,8 +29,10 @@ import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -61,7 +64,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	}
 	
 	public int getCount() {
-        return declaration==null ? 0 : countDeclarationOccurrences()-1;
+        return declaration==null ? 0 : countDeclarationOccurrences();
 	}
 	
 	@Override
@@ -165,20 +168,51 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineInFile(TextChange tfc, CompositeChange cc, 
             Tree.Declaration declarationNode, CompilationUnit declarationUnit, 
             Tree.Term term, List<CommonToken> declarationTokens,
-            CompilationUnit pu, List<CommonToken> tokens) {
+            CompilationUnit cu, List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         inlineReferences(declarationNode, declarationUnit, term, declarationTokens, 
-                pu, tokens, tfc);
-        deleteDeclaration(declarationNode, declarationUnit, pu, tokens, tfc);
+                cu, tokens, tfc);
+        deleteDeclaration(declarationNode, declarationUnit, cu, tokens, tfc);
+        deleteImports(tfc, declarationNode, cu, tokens);
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
     }
 
+	private void deleteImports(TextChange tfc, Tree.Declaration declarationNode, 
+			CompilationUnit cu, List<CommonToken> tokens) {
+		for (Tree.Import i: cu.getImportList().getImports()) {
+        	for (ImportMemberOrType imt: i.getImportMemberOrTypeList().getImportMemberOrTypes()) {
+        		Declaration d = imt.getDeclarationModel();
+				if (d!=null && d.equals(declarationNode.getDeclarationModel())) {
+        			tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
+        					imt.getStopIndex()-imt.getStartIndex()+1));
+    				int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
+    				CommonToken prev = tokens.get(ti-1);
+    				if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+    					prev = tokens.get(ti-2);
+    				}
+    				CommonToken next = tokens.get(ti+1);
+    				if (next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+    					next = tokens.get(ti+2);
+    				}
+    				if (prev.getType()==CeylonLexer.COMMA) {
+    					tfc.addEdit(new DeleteEdit(prev.getStartIndex(), 
+    							imt.getStartIndex()-prev.getStartIndex()));
+    				}
+    				else if (next.getType()==CeylonLexer.COMMA) {
+    					tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
+    							next.getStopIndex()-imt.getStopIndex()));
+    				}
+        		}
+        	}
+        }
+	}
+
     private void deleteDeclaration(Tree.Declaration declarationNode, 
-            CompilationUnit declarationUnit, CompilationUnit pu, 
+            CompilationUnit declarationUnit, CompilationUnit cu, 
             List<CommonToken> tokens, TextChange tfc) {
-        if (delete && pu.getUnit().equals(declarationUnit.getUnit())) {
+        if (delete && cu.getUnit().equals(declarationUnit.getUnit())) {
             CommonToken from = (CommonToken) declarationNode.getToken();
             Tree.AnnotationList anns = declarationNode.getAnnotationList();
             if (!anns.getAnnotations().isEmpty()) {
@@ -236,8 +270,9 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
 
     private void inlineReferences(Tree.Declaration declarationNode,
-            CompilationUnit declarationUnit, Tree.Term term, List<CommonToken> declarationTokens,
-            CompilationUnit pu, List<CommonToken> tokens, TextChange tfc) {
+            CompilationUnit declarationUnit, Tree.Term term, 
+            List<CommonToken> declarationTokens, CompilationUnit pu, 
+            List<CommonToken> tokens, TextChange tfc) {
         String template = toString(term, declarationTokens);
         int templateStart = term.getStartIndex();
         if (declarationNode instanceof Tree.AnyAttribute) {
