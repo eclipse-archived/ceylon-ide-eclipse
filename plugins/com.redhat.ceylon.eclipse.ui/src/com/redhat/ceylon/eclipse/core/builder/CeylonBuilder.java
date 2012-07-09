@@ -822,50 +822,53 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 		if (pkg!=null) {
                                 			//a package has been removed
                                 			mustDoFullBuild.value = true;
-                                			return true;
                                 		}
                                 	}
                                 }
                                 
-                                if (resource instanceof IFile) {
+                                else if (resource instanceof IFile) {
                                     if (resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
                                         //a package descriptor has been added, removed, or changed
                                         mustDoFullBuild.value = true;
-                                        return true;
                                     }
-                                    if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
+                                    else if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
                                         //a module descriptor has been added, removed, or changed
                                         mustResolveClasspathContainer.value = true;
                                         mustDoFullBuild.value = true;
-                                        return true;
                                     }
-                                    if (resource.getName().equals(".classpath")) {
+                                    else if (resource.getName().equals(".classpath")) {
                                         //the classpath changed
                                     	mustDoFullBuild.value = true;
                                     	mustResolveClasspathContainer.value = true;
-                                        return true;
                                     }
-                                    if (isCeylonOrJava((IFile) resource)) {
-                                    	//a source file was modified
+                                    else if (isCeylon((IFile) resource)) {
+                                    	//a Ceylon source file was modified, we can
+                                    	//compile incrementally
+                                        sourceModified.value = true;
+                                    }
+                                    else if (isJava((IFile) resource)) {
+                                    	//a Java source file was modified, we must 
+                                    	//do a full build, 'cos we don't know what
+                                    	//Ceylon units depend on it
+                                    	//TODO: fix that by tracking dependencies
+                                    	//      to Java!
+                                        mustDoFullBuild.value = true;
                                         sourceModified.value = true;
                                     }
                                 }
                                 
-                                if (resource instanceof IProject) { 
+                                else if (resource instanceof IProject) { 
                                 	if ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION)!=0) {
                                 		//some project setting changed
                                     	mustDoFullBuild.value = true;
                                     	mustResolveClasspathContainer.value = true;
-                                        return true;
                                 	}
                                 	else if (!resource.equals(getProject())) {
                                 		//this is some kind of multi-project build,
                                 		//indicating a change in a project we
                                 		//depend upon
                                 		/*mustDoFullBuild.value = true;
-                                		mustResolveClasspathContainer.value = true;
-                                		return true;*/
-                                		return true;
+                                		mustResolveClasspathContainer.value = true;*/
                                 	}
                                 }
                                 
@@ -875,7 +878,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     } 
                     catch (CoreException e) {
                         getPlugin().getLog().log(new Status(IStatus.ERROR, 
-                        		getPlugin().getID(), e.getLocalizedMessage(), e));
+                        		getPlugin().getID(), 
+                        		e.getLocalizedMessage(), e));
                         mustDoFullBuild.value = true;
                         mustResolveClasspathContainer.value = true;
                     }
