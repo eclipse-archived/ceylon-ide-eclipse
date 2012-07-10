@@ -33,9 +33,11 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
  * NOTE:  This version of the ISourcePositionLocator is for use when the Source
@@ -81,6 +83,13 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         cu.visit(visitor);
         return visitor.getNode();
     }
+
+    public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
+        FindStatementVisitor visitor = new FindStatementVisitor(node, false);
+        cu.visit(visitor);
+        return visitor.getStatement();
+    }
+
     
     public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
