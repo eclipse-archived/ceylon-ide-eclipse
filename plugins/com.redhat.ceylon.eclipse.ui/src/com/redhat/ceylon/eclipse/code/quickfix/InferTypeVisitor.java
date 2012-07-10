@@ -38,7 +38,7 @@ class InferTypeVisitor extends Visitor {
                 inferredType = pt;
             }
             else {
-                inferredType = unionType(inferredType, pt, unit);
+                inferredType = unionType(inferredType, unit.denotableType(pt), unit);
             }
         }
     }
