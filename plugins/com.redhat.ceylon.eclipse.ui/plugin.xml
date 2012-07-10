@@ -570,7 +570,13 @@
        <key
            sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="org.eclipse.ui.contexts.window"/>
+       <key
+           sequence="M1+M2+C"
+           commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M3+D"
            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
@@ -579,7 +585,8 @@
        <key
            sequence="M1+T"
            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
