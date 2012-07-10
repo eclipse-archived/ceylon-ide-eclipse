@@ -298,7 +298,9 @@ public class CeylonParseController extends ParseControllerBase {
             Package pkg;
             if (srcDir==null) {
                 srcDir = new TemporaryFile();
-                pkg = null;
+                //put it in the default module
+                pkg =  typeChecker.getContext().getModules()
+                		.getDefaultModule().getPackages().get(0);
             }
             else {
             	pkg = getPackage(file, srcDir, builtPhasedUnit);
@@ -329,10 +331,12 @@ public class CeylonParseController extends ParseControllerBase {
 		        .verbose(false).usageWarnings(showWarnings);
 		
 		List<String> repos = new LinkedList<String>();
-		for (String repo: getUserRepositories(project)) {
-			repos.add(repo);
+		if (project!=null) {
+			for (String repo: getUserRepositories(project)) {
+				repos.add(repo);
+			}
+			repos.add(getCeylonModulesOutputDirectory(project).getAbsolutePath());
 		}
-		repos.add(getCeylonModulesOutputDirectory(project).getAbsolutePath());
 		tcb.setRepositoryManager(makeRepositoryManager(repos, null, 
 				new EclipseLogger()));
 		
