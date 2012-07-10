@@ -5,18 +5,13 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.text.correction.proposals.EditAnnotator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -84,8 +79,10 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 					annotations = getTerm(doc, attrDecl.getAnnotationList()) + " ";
 				}
 				declaration = annotations + getTerm(doc, attrDecl.getType()) + " " + identifier + ";";
-    			action = identifier + " " + getToken(attrDecl.getSpecifierOrInitializerExpression()) + " ";
-    			operation = attrDecl.getSpecifierOrInitializerExpression().getExpression().getTerm();
+    			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
+    			if (sie==null) return;
+				action = identifier + " " + getToken(sie) + " ";
+    			operation = sie.getExpression().getTerm();
     		} else {
     			return;
     		}
