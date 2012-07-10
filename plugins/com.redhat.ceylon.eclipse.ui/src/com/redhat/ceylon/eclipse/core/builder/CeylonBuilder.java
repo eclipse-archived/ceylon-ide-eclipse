@@ -353,18 +353,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     		throws CoreException {
 		
         final IProject project = getProject();
+        IJavaProject javaProject = JavaCore.create(project);
         boolean emitDiags= getDiagPreference();
         final Collection<IFile> sourceToCompile= new HashSet<IFile>();
 
         ISourceProject sourceProject = getSourceProject();
         if (sourceProject == null) {
             return new IProject[0];
-        }
-        
-        IJavaProject javaProject = JavaCore.create(project);
-        List<CeylonClasspathContainer> cpContainers = null;
-        if (javaProject != null) {
-            cpContainers = getCeylonClasspathContainers(javaProject);
         }
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
@@ -378,6 +373,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             	return project.getReferencedProjects();
         	}
         }
+        
+        List<CeylonClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
         
         if (cpContainers.isEmpty()) {
             //if the ClassPathContainer is missing, add an error
@@ -592,8 +589,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             	}
             }
             //TODO: is this needed? probably not...
-            refresh(getCeylonModulesOutputFolder(project), monitor);
+            //refresh(getCeylonModulesOutputFolder(project), monitor);
 
+            if (mustResolveClasspathContainer.value) {
+                if (cpContainers != null) {
+                    for (CeylonClasspathContainer container: cpContainers) {
+                    	container.resolve(monitor);
+                    }
+                }
+            }
+            
             monitor.worked(1);
             monitor.done();
             return project.getReferencedProjects();
