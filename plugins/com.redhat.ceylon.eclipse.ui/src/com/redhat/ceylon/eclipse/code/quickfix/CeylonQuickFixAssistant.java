@@ -199,10 +199,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, 
                         file, dec, editor);
             }
-            if (node instanceof Tree.Return) {
-            	Tree.Return dec = (Return) node;
-            	ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, dec);
-            }
+            ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, node);
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
         }
