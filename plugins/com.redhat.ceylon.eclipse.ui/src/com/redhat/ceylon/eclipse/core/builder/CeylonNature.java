@@ -72,7 +72,6 @@ public class CeylonNature extends ProjectNatureBase {
 				if (old.exists() && old.isHidden()) {
 	        		try {
 	        			old.setHidden(false);
-	        			//old.touch(null);
 	        		} 
 	        		catch (CoreException e) {
 	        			e.printStackTrace();
@@ -95,7 +94,6 @@ public class CeylonNature extends ProjectNatureBase {
         	if (!folder.isHidden()) {
         		try {
         			folder.setHidden(true);
-        			//folder.touch(null);
         		} 
         		catch (CoreException e) {
         			e.printStackTrace();

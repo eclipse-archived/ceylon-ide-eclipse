@@ -270,18 +270,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}
 		return (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
 	}
-	
-    
 
     void notifyUpdateClasspathEntries() {
-        // XXX In Eclipse 3.3, changes to resolved classpath are not announced by JDT Core
-		// and PackageExplorer does not properly refresh when we update Ivy
-		// classpath container.
-		// As a temporary workaround, send F_CLASSPATH_CHANGED notifications
-		// to all PackageExplorerContentProvider instances listening to
-		// java ElementChangedEvent.
-		// Note that even with this hack, build clean is sometimes necessary to
-		// reconcile PackageExplorer with actual classpath
+        // Changes to resolved classpath are not announced by JDT Core
+		// and so PackageExplorer does not properly refresh when we update
+		// the classpath container.
 		// See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154071
     	DeltaProcessingState s = JavaModelManager.getJavaModelManager().deltaState;
     	synchronized (s) {
@@ -306,10 +299,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}*/
     }
 
-
 	public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
-		final IJavaProject javaProject = getJavaProject();
-		final IProject project = javaProject.getProject();
+		IJavaProject javaProject = getJavaProject();
+		IProject project = javaProject.getProject();
 		
 		try {
 
@@ -324,50 +316,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 			TypeChecker typeChecker = getProjectTypeChecker(project);
 			if (typeChecker!=null) {
-				final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
-
-				Context context = typeChecker.getContext();
-				RepositoryManager provider = context.getRepositoryManager();
-				Set<Module> modulesToAdd = context.getModules().getListOfModules();
-				//modulesToAdd.add(projectModules.getLanguageModule());        
-				for (Module module: modulesToAdd) {
-					if (module.getNameAsString().equals("default") ||
-							module.getNameAsString().equals("java") ||
-							isProjectModule(javaProject, module)) {
-						continue;
-					}
-					IPath modulePath = getModuleArchive(provider, module);
-					if (modulePath!=null) {
-						//if (!project.getLocation().isPrefixOf(modulePath)) {
-						IPath srcPath = null;
-						for (IProject p: project.getReferencedProjects()) {
-							if (p.getLocation().isPrefixOf(modulePath)) {
-								/*System.out.println(CeylonBuilder.getCeylonModulesOutputDirectory(p));
-	            				System.out.println(modulePath);*/
-								//the module belongs to a referenced
-								//project, so use the project source
-								srcPath = p.getLocation();
-								break;
-							}
-						}
-						if (srcPath==null) {
-							//otherwise, use the src archive
-							srcPath = getSourceArchive(provider, module);
-						}
-						paths.add(newLibraryEntry(modulePath, srcPath, null));
-						//}
-
-					}
-					else {
-						System.err.println("no module archive found for classpath container: " + 
-								module.getNameAsString() + "/" + module.getVersion());
-					}
-				}
-
-				if (getJdtClassesEnabled(project)) {
-					paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
-							project.getFullPath(), null, true));
-				}
+				final Collection<IClasspathEntry> paths = findModuleArchivePaths(
+						javaProject, project, typeChecker);
 
 				classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
 
@@ -378,14 +328,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 				new Job("update package manager") {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
-						/*try {
-							setClasspathContainer(path, new IJavaProject[] {javaProject},
-									new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
-						} 
-						catch (JavaModelException e) {
-							e.printStackTrace();
-						}*/
-						
 						notifyUpdateClasspathEntries();
 						return Status.OK_STATUS;
 					}
@@ -399,6 +341,55 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	private static Collection<IClasspathEntry> findModuleArchivePaths(
+			IJavaProject javaProject, IProject project, TypeChecker typeChecker) 
+					throws JavaModelException, CoreException {
+		final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+
+		Context context = typeChecker.getContext();
+		RepositoryManager provider = context.getRepositoryManager();
+		Set<Module> modulesToAdd = context.getModules().getListOfModules();
+		//modulesToAdd.add(projectModules.getLanguageModule());        
+		for (Module module: modulesToAdd) {
+			if (module.getNameAsString().equals("default") ||
+					module.getNameAsString().equals("java") ||
+					isProjectModule(javaProject, module)) {
+				continue;
+			}
+			IPath modulePath = getModuleArchive(provider, module);
+			if (modulePath!=null) {
+				//if (!project.getLocation().isPrefixOf(modulePath)) {
+				IPath srcPath = null;
+				for (IProject p: project.getReferencedProjects()) {
+					if (p.getLocation().isPrefixOf(modulePath)) {
+						//the module belongs to a referenced
+						//project, so use the project source
+						srcPath = p.getLocation();
+						break;
+					}
+				}
+				if (srcPath==null) {
+					//otherwise, use the src archive
+					srcPath = getSourceArchive(provider, module);
+				}
+				paths.add(newLibraryEntry(modulePath, srcPath, null));
+				//}
+
+			}
+			else {
+				System.err.println("no module archive found for classpath container: " + 
+						module.getNameAsString() + "/" + module.getVersion());
+			}
+		}
+
+		if (getJdtClassesEnabled(project)) {
+			paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
+					project.getFullPath(), null, true));
+		}
+		
+		return paths;
 	}
 
 	public static IPath getSourceArchive(RepositoryManager provider,
