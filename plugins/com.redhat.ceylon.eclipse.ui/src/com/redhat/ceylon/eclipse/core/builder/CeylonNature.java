@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -52,7 +54,7 @@ public class CeylonNature extends ProjectNatureBase {
         	IPath oldPath = getCeylonModulesOutputPath(project);
         	if (oldPath!=null) {
 				IFolder old = project.getFolder(oldPath.makeRelativeTo(project.getLocation()));
-	        	if (old.exists() && old.isHidden()) {
+	        	/*if (old.exists() && old.isHidden()) {
 	        		try {
 	        			old.setHidden(false);
 	        			//old.touch(null);
@@ -60,7 +62,21 @@ public class CeylonNature extends ProjectNatureBase {
 	        		catch (CoreException e) {
 	        			e.printStackTrace();
 	        		}
-	        	}
+	        	}*/
+				if (old.exists() && !oldPath.equals(outputPath)) {
+					boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+						    .getShell(), "Changing Ceylon output folder", 
+						    "The Ceylon output folder has changed. Do you want to remove the old output folder '" +
+						    old.getFullPath().toString() + "' and all its contents?");
+					if (remove) {
+						try {
+							old.delete(true, null);
+						} 
+						catch (CoreException e) {
+							e.printStackTrace();
+						}
+					}
+				}
         	}
         }
         super.addToProject(project);
