@@ -117,16 +117,6 @@ public class CeylonPreferencesPage extends PropertyPage {
     
     private void store() {
         final IProject project = getSelectedProject();
-        IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
-        if (!folder.exists()) {
-			try {
-				CoreUtility.createDerivedFolder(folder, 
-						true, true, null);
-			} 
-			catch (CoreException e) {
-				e.printStackTrace();
-			}
-        }
 		boolean embeddedRepo = useEmbeddedRepo || repositoryPath==null || repositoryPath.isEmpty();
 		if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
 		new CeylonNature(outputPath, embeddedRepo ? null : repositoryPath,

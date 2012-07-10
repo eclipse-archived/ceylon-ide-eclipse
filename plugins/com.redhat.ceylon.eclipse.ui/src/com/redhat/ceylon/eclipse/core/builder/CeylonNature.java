@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 
@@ -82,6 +83,15 @@ public class CeylonNature extends ProjectNatureBase {
         super.addToProject(project);
         if (outputPath!=null) {
         	IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
+            if (!folder.exists()) {
+    			try {
+    				CoreUtility.createDerivedFolder(folder, 
+    						true, true, null);
+    			} 
+    			catch (CoreException e) {
+    				e.printStackTrace();
+    			}
+            }
         	if (!folder.isHidden()) {
         		try {
         			folder.setHidden(true);
@@ -91,13 +101,8 @@ public class CeylonNature extends ProjectNatureBase {
         			e.printStackTrace();
         		}
         	}
-        	/*try {
-				project.refreshLocal(IResource.DEPTH_ONE, null);
-			} 
-        	catch (CoreException e) {
-				e.printStackTrace();
-			}*/
         }
+        //CeylonBuilder.setCeylonModulesOutputPath(project, outputPath.toString());
         new CeylonClasspathContainer(project).runReconfigure();
     }
     
