@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMETER;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.*;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
@@ -75,6 +75,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -199,9 +200,11 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, 
                         file, dec, editor);
             }
-            ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, node);
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
+
+            Statement statement = findStatement(cu, node);
+            ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, statement);
         }
 
         CreateSubtypeProposal.add(proposals, editor);
