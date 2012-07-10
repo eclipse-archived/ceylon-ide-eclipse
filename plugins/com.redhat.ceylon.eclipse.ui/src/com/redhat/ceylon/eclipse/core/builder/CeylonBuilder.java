@@ -646,7 +646,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		}
 		for (PhasedUnit pu : builtPhasedUnits) {
 		    TypeChecker typeChecker = typeCheckers.get(project); // could have been instanciated and added into the map by the full build
-		    pu.collectUnitDependencies(typeChecker.getPhasedUnits(), phasedUnitsForDependencies);
+		    new UnitDependencyVisitor(pu, typeChecker.getPhasedUnits(), phasedUnitsForDependencies)
+		            .visit(pu.getCompilationUnit());
 		}
 	}
 
