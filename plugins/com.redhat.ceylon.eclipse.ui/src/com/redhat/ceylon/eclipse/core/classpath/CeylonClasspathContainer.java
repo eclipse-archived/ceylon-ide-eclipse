@@ -299,48 +299,42 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}*/
     }
 
-	public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
+	public void resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
 		IJavaProject javaProject = getJavaProject();
 		IProject project = javaProject.getProject();
 		
 		try {
 
-			//TODO: the following is terrible for two reasons:
-			//      - we don't really need to parse all the 
-			//        source of the whole project (just the
-			//        module descriptors)
-			//      - as a side effect we throw away the whole
-			//        model, forcing us to have to do a full 
-			//        build even if nothing interesting changed!
-			if (reparse) parseCeylonModel(project, monitor);
-
-			TypeChecker typeChecker = getProjectTypeChecker(project);
-			if (typeChecker!=null) {
-				final Collection<IClasspathEntry> paths = findModuleArchivePaths(
-						javaProject, project, typeChecker);
-
-				classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
-
-				setClasspathContainer(path, new IJavaProject[] {javaProject},
-						new IClasspathContainer[] {this}, monitor);
-				
-				//update the package manager UI
-				new Job("update package manager") {
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						notifyUpdateClasspathEntries();
-						return Status.OK_STATUS;
-					}
-				}.schedule();
-				return true;
-
+			TypeChecker typeChecker = null;
+			if (!reparse) {
+			    typeChecker = getProjectTypeChecker(project);
+			} 
+			if (typeChecker==null) {
+				typeChecker = parseCeylonModel(project, monitor);
 			}
+			
+			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
+					javaProject, project, typeChecker);
+
+			classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
+
+			setClasspathContainer(path, new IJavaProject[] {javaProject},
+					new IClasspathContainer[] {this}, monitor);
+
+			//update the package manager UI
+			new Job("update package manager") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					notifyUpdateClasspathEntries();
+					return Status.OK_STATUS;
+				}
+			}.schedule();
 
 		}
 		catch (CoreException e) {
 			e.printStackTrace();
 		}
-		return false;
+		
 	}
 
 	private static Collection<IClasspathEntry> findModuleArchivePaths(
