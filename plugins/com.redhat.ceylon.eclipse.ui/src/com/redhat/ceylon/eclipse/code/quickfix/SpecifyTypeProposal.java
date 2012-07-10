@@ -60,8 +60,8 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         };
         itv.visit(cu);
         ProducedType it = itv.inferredType;
-        String explicitType = it==null ? "Object" : 
-                type.getUnit().denotableType(it).getProducedTypeName();
+        String explicitType = it==null ? 
+        		"Object" : it.getProducedTypeName();
         return explicitType;
     }
     
