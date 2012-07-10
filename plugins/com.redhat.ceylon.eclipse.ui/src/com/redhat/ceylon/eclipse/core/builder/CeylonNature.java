@@ -54,15 +54,6 @@ public class CeylonNature extends ProjectNatureBase {
         	IPath oldPath = getCeylonModulesOutputPath(project);
         	if (oldPath!=null) {
 				IFolder old = project.getFolder(oldPath.makeRelativeTo(project.getLocation()));
-	        	/*if (old.exists() && old.isHidden()) {
-	        		try {
-	        			old.setHidden(false);
-	        			//old.touch(null);
-	        		} 
-	        		catch (CoreException e) {
-	        			e.printStackTrace();
-	        		}
-	        	}*/
 				if (old.exists() && !oldPath.equals(outputPath)) {
 					boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 						    .getShell(), "Changing Ceylon output folder", 
@@ -77,6 +68,15 @@ public class CeylonNature extends ProjectNatureBase {
 						}
 					}
 				}
+				if (old.exists() && old.isHidden()) {
+	        		try {
+	        			old.setHidden(false);
+	        			//old.touch(null);
+	        		} 
+	        		catch (CoreException e) {
+	        			e.printStackTrace();
+	        		}
+	        	}
         	}
         }
         super.addToProject(project);
