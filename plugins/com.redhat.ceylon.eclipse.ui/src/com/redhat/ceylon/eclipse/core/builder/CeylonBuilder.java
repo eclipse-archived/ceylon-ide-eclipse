@@ -448,8 +448,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 
                 monitor.subTask("Parsing source of project " + project.getName());
                 //if (! getModelState(project).equals(ModelState.Parsed)) {
+                if (!mustResolveClasspathContainer.value) {
+                	//if we already resolved the classpath, the
+                	//model has already been freshly-parsed
                     parseCeylonModel(project, monitor);
-                //}
+                }
                 monitor.worked(1);
                 
                 monitor.subTask("Typechecking source of project " + project.getName());
