@@ -482,8 +482,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         		monitor.subTask("Scanning deltas of project " + project.getName()); 
                 final List<IFile> filesToRemove = new ArrayList<IFile>();
                 final Set<IFile> fChangedSources = new HashSet<IFile>(); 
-                calculateChangedSourceSources(monitor, project, emitDiags, currentDelta, 
-                		projectDeltas, filesToRemove, fChangedSources);
+                calculateChangedSources(currentDelta, projectDeltas, filesToRemove, 
+                		fChangedSources, monitor, emitDiags);
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -593,18 +593,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             		job.schedule();
             	}
             }
-
-            //refresh the output folder so dependent project classpath
-            //containers can see the newly created module archives
-            //refresh(getCeylonModulesOutputFolder(project), monitor);
-
-            /*if (mustResolveClasspathContainer.value) {
-                if (cpContainers != null) {
-                    for (CeylonClasspathContainer container: cpContainers) {
-                    	container.resolveClasspath(monitor, true);
-                    }
-                }
-            }*/
             
             monitor.worked(1);
             monitor.done();
@@ -757,12 +745,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		}
 	}
 
-	private void calculateChangedSourceSources(final IProgressMonitor monitor,
-			final IProject project, boolean emitDiags,
-			final IResourceDelta currentDelta,
-			List<IResourceDelta> projectDeltas,
-			final List<IFile> filesToRemove, final Set<IFile> fChangedSources)
-			throws CoreException {
+	private void calculateChangedSources(final IResourceDelta currentDelta, 
+			List<IResourceDelta> projectDeltas, final List<IFile> filesToRemove, 
+			final Set<IFile> changedSources, IProgressMonitor monitor, 
+			boolean emitDiags) throws CoreException {
 		for (final IResourceDelta projectDelta: projectDeltas) {
 		    if (projectDelta != null) {
 		        IProject p = (IProject) projectDelta.getResource();
@@ -785,7 +771,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		            			if (resource instanceof IFile) {
 		            				IFile file= (IFile) resource;
 		            				if (isCeylonOrJava(file)) {
-		            					fChangedSources.add(file);
+		            					changedSources.add(file);
 		            					if (projectDelta == currentDelta) {
 		            						if (delta.getKind() == IResourceDelta.REMOVED) {
 		            							filesToRemove.add((IFile) resource);
@@ -1292,8 +1278,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return compileWithJDTModelLoader;
     }
 
-    public static TypeChecker parseCeylonModel(
-            final IProject project,
+    public static void parseCeylonModel(IProject project,
             IProgressMonitor monitor) throws CoreException {
         monitor.subTask("Collecting source files for project " 
                     + project.getName());
@@ -1301,8 +1286,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         modelStates.put(project, ModelState.Parsing);
         typeCheckers.remove(project);
         projectSources.remove(project);
-        final List<IFile> scannedSources = new ArrayList<IFile>();
-
+        
         monitor.subTask("Setting up typechecker for project " 
                 + project.getName());
 
@@ -1341,8 +1325,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
-        scanSources(project, monitor, scannedSources, javaProject, typeChecker,
-				phasedUnits, moduleManager, modelLoader, defaultModule);
+        
+        List<IFile> scannedSources = scanSources(project, javaProject, 
+        		typeChecker, phasedUnits, moduleManager, modelLoader, 
+        		defaultModule, monitor);
 
         monitor.worked(1);
         
@@ -1385,15 +1371,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         typeCheckers.put(project, typeChecker);
         projectSources.put(project, scannedSources);
         modelStates.put(project, ModelState.Parsed);
-        
-        return typeChecker;
+
     }
 
-	private static void scanSources(final IProject project, IProgressMonitor monitor, 
-			final List<IFile> scannedSources, final IJavaProject javaProject, 
-			final TypeChecker typeChecker, final PhasedUnits phasedUnits,
+	private static List<IFile> scanSources(IProject project, IJavaProject javaProject, 
+			final TypeChecker typeChecker, final PhasedUnits phasedUnits, 
 			final JDTModuleManager moduleManager, final JDTModelLoader modelLoader, 
-			final Module defaultModule) throws CoreException {
+			final Module defaultModule, IProgressMonitor monitor) throws CoreException {
+		
+		final List<IFile> scannedSources = new ArrayList<IFile>();
 		final Collection<IPath> sourceFolders = getSourceFolders(javaProject);
         for (final IPath srcAbsoluteFolderPath : sourceFolders) {
             final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
@@ -1467,9 +1453,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                                 if (scannedSources != null) {
                                     scannedSources.add(file);
                                 }
-                                ResourceVirtualFile virtualFile = ResourceVirtualFile.createResourceVirtualFile(file);
+                                ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
                                 try {
-                                    PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
+                                    PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, 
+                                    		typeChecker, virtualFile, srcDir, pkg);
                                     phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
                                 } catch(Exception e) {
                                     CeylonPlugin.log(e);
@@ -1486,6 +1473,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
             });
         }
+        return scannedSources;
 	}
 
     private static void addProblemAndTaskMarkers(List<PhasedUnit> units) {
