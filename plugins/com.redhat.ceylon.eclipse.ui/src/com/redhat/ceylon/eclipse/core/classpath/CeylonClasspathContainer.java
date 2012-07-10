@@ -47,13 +47,20 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IElementChangedListener;
+import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.DeltaProcessingState;
+import org.eclipse.jdt.internal.core.JavaElementDelta;
+import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -162,9 +169,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     				container.resolveClasspath(monitor, true);
     				
-    				setClasspathContainer(containerPath, new IJavaProject[] {project},
-    						new IClasspathContainer[] {container}, monitor);
-
     				return Status.OK_STATUS;
     				
     			} 
@@ -173,11 +177,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				return new Status(IStatus.ERROR, PLUGIN_ID,
     						"could not get container", ex);
     			}
-    			catch (CoreException e) {
-    				e.printStackTrace();
-    				return new Status(IStatus.ERROR, PLUGIN_ID,
-    						"could not resolve dependencies", e);
-    			}            
     		}    		
     	};
     	job.setUser(false);
@@ -204,15 +203,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	    				}
 	    			}
     	    		
-        			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject, path);        			
+        			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);        			
     	            javaProject.setRawClasspath(classpath, monitor);
     	            
     	    		resolveClasspath(monitor, false);
     	    		
-    	            setClasspathContainer(path, new IJavaProject[] {javaProject},
-    	                    new IClasspathContainer[] {CeylonClasspathContainer.this}, 
-    	                    monitor);
-
     	            Job job = new Job("Rebuild dependencies of project " + project.getName()) {
     	            	@Override
     	            	protected IStatus run(IProgressMonitor monitor) {
@@ -252,7 +247,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         job.schedule();
     }
     
-	private IClasspathEntry[] constructModifiedClasspath(IJavaProject javaProject, IPath path) 
+	private IClasspathEntry[] constructModifiedClasspath(IJavaProject javaProject) 
 			throws JavaModelException {
 		IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, 
 				new IClasspathAttribute[0], false);
@@ -276,131 +271,132 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		return (IClasspathEntry[]) newEntries.toArray(new IClasspathEntry[newEntries.size()]);
 	}
 	
-    public boolean resolve(IProgressMonitor monitor) {
-        try {
-			return resolveClasspath(monitor, true);
+    
+
+    void notifyUpdateClasspathEntries() {
+        // XXX In Eclipse 3.3, changes to resolved classpath are not announced by JDT Core
+		// and PackageExplorer does not properly refresh when we update Ivy
+		// classpath container.
+		// As a temporary workaround, send F_CLASSPATH_CHANGED notifications
+		// to all PackageExplorerContentProvider instances listening to
+		// java ElementChangedEvent.
+		// Note that even with this hack, build clean is sometimes necessary to
+		// reconcile PackageExplorer with actual classpath
+		// See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154071
+    	DeltaProcessingState s = JavaModelManager.getJavaModelManager().deltaState;
+    	synchronized (s) {
+    		IElementChangedListener[] listeners = s.elementChangedListeners;
+    		for (int i = 0; i < listeners.length; i++) {
+    			if (listeners[i] instanceof PackageExplorerContentProvider) {
+    				JavaElementDelta delta = new JavaElementDelta(javaProject);
+    				delta.changed(IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED);
+    				listeners[i].elementChanged(new ElementChangedEvent(delta,
+    						ElementChangedEvent.POST_CHANGE));
+    			}
+    		}
+    	}
+    	//I've disabled this because I don't really like having it, but
+    	//it does seem to help with the issue of archives appearing
+    	//empty in the package manager
+    	/*try {
+			javaProject.getProject().refreshLocal(IResource.DEPTH_ONE, null);
 		} 
-        catch (CoreException e) {
+    	catch (CoreException e) {
 			e.printStackTrace();
-		}
-        return false;
+		}*/
     }
 
-    /*void notifyUpdateClasspathEntries() {
-        try {
-            setClasspathContainer(path, new IJavaProject[] {javaProject},
-                new IClasspathContainer[] {new CeylonClasspathContainer(CeylonClasspathContainer.this)},
-                null);
 
-            // the following code was imported from:
-            // http://svn.codehaus.org/m2eclipse/trunk/org.maven.ide.eclipse/src/org/maven/ide
-            // /eclipse/embedder/BuildPathManager.java
-            // revision: 370; function setClasspathContainer; line 215
-
-            // XXX In Eclipse 3.3, changes to resolved classpath are not announced by JDT Core
-            // and PackageExplorer does not properly refresh when we update Ivy
-            // classpath container.
-            // As a temporary workaround, send F_CLASSPATH_CHANGED notifications
-            // to all PackageExplorerContentProvider instances listening to
-            // java ElementChangedEvent.
-            // Note that even with this hack, build clean is sometimes necessary to
-            // reconcile PackageExplorer with actual classpath
-            // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154071
-            if (getJDTVersion().startsWith("3.3")) {
-                DeltaProcessingState s = JavaModelManager.getJavaModelManager().deltaState;
-                synchronized (s) {
-                    IElementChangedListener[] listeners = s.elementChangedListeners;
-                    for (int i = 0; i < listeners.length; i++) {
-                        if (listeners[i] instanceof PackageExplorerContentProvider) {
-                            JavaElementDelta delta = new JavaElementDelta(javaProject);
-                            delta.changed(IJavaElementDelta.F_CLASSPATH_CHANGED);
-                            listeners[i].elementChanged(new ElementChangedEvent(delta,
-                                    ElementChangedEvent.POST_CHANGE));
-                        }
-                    }
-                }
-            }
-        } catch (JavaModelException e) {
-            // unless there are some issues with the JDT, this should never happen
-            CeylonPlugin.getInstance().logException("", e);
-        }
-    }*/
-
-    /*private synchronized String getJDTVersion() {
-        if (jdtVersion == null) {
-            Bundle[] bundles = CeylonPlugin.getInstance().getBundleContext().getBundles();
-            for (int i = 0; i < bundles.length; i++) {
-                if (JavaCore.PLUGIN_ID.equals(bundles[i].getSymbolicName())) {
-                    jdtVersion = (String) bundles[i].getHeaders().get(Constants.BUNDLE_VERSION);
-                    break;
-                }
-            }
-        }
-        return jdtVersion;
-    }*/
-
-	boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)
-			throws CoreException {
-		IJavaProject javaProject = getJavaProject();
-		IProject project = javaProject.getProject();
+	public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
+		final IJavaProject javaProject = getJavaProject();
+		final IProject project = javaProject.getProject();
 		
-		//TODO: the following is terrible for two reasons:
-		//      - we don't really need to parse all the 
-		//        source of the whole project (just the
-		//        module descriptors)
-		//      - as a side effect we throw away the whole
-		//        model, forcing us to have to do a full 
-		//        build even if nothing interesting changed!
-		if (reparse) parseCeylonModel(project, monitor);
-		
-		TypeChecker typeChecker = getProjectTypeChecker(project);
-		if (typeChecker!=null) {
-			final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
-			
-	        Context context = typeChecker.getContext();
-	        RepositoryManager provider = context.getRepositoryManager();
-	        Set<Module> modulesToAdd = context.getModules().getListOfModules();
-	        //modulesToAdd.add(projectModules.getLanguageModule());        
-	    	for (Module module: modulesToAdd) {
-	    		if (module.getNameAsString().equals("default") ||
-	    				module.getNameAsString().equals("java") ||
-	    				isProjectModule(javaProject, module)) {
-	    			continue;
-	    		}
-	            IPath modulePath = getModuleArchive(provider, module);
-	            if (modulePath!=null) {
-	            	//if (!project.getLocation().isPrefixOf(modulePath)) {
-	            		IPath srcPath = null;
-	            		for (IProject p: project.getReferencedProjects()) {
-	            			if (p.getLocation().isPrefixOf(modulePath)) {
-	            				//the module belongs to a referenced
-	            				//project, so use the project source
-	            				srcPath = p.getLocation();
-	            				break;
-	            			}
-	            		}
-	            		if (srcPath==null) {
-            				//otherwise, use the src archive
-	            			srcPath = getSourceArchive(provider, module);
-	            		}
-	            		paths.add(newLibraryEntry(modulePath, srcPath, null));
-	            	//}
-	            	
-	            }
-	            else {
-	                System.err.println("no module archive found for classpath container: " + 
-	                        module.getNameAsString() + "/" + module.getVersion());
-	            }
-	        }
-	        
-		    if (getJdtClassesEnabled(project)) {
-		    	paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
-		    			project.getFullPath(), null, true));
-		    }
-		    
-		    classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
-		    return true;
-		    
+		try {
+
+			//TODO: the following is terrible for two reasons:
+			//      - we don't really need to parse all the 
+			//        source of the whole project (just the
+			//        module descriptors)
+			//      - as a side effect we throw away the whole
+			//        model, forcing us to have to do a full 
+			//        build even if nothing interesting changed!
+			if (reparse) parseCeylonModel(project, monitor);
+
+			TypeChecker typeChecker = getProjectTypeChecker(project);
+			if (typeChecker!=null) {
+				final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+
+				Context context = typeChecker.getContext();
+				RepositoryManager provider = context.getRepositoryManager();
+				Set<Module> modulesToAdd = context.getModules().getListOfModules();
+				//modulesToAdd.add(projectModules.getLanguageModule());        
+				for (Module module: modulesToAdd) {
+					if (module.getNameAsString().equals("default") ||
+							module.getNameAsString().equals("java") ||
+							isProjectModule(javaProject, module)) {
+						continue;
+					}
+					IPath modulePath = getModuleArchive(provider, module);
+					if (modulePath!=null) {
+						//if (!project.getLocation().isPrefixOf(modulePath)) {
+						IPath srcPath = null;
+						for (IProject p: project.getReferencedProjects()) {
+							if (p.getLocation().isPrefixOf(modulePath)) {
+								/*System.out.println(CeylonBuilder.getCeylonModulesOutputDirectory(p));
+	            				System.out.println(modulePath);*/
+								//the module belongs to a referenced
+								//project, so use the project source
+								srcPath = p.getLocation();
+								break;
+							}
+						}
+						if (srcPath==null) {
+							//otherwise, use the src archive
+							srcPath = getSourceArchive(provider, module);
+						}
+						paths.add(newLibraryEntry(modulePath, srcPath, null));
+						//}
+
+					}
+					else {
+						System.err.println("no module archive found for classpath container: " + 
+								module.getNameAsString() + "/" + module.getVersion());
+					}
+				}
+
+				if (getJdtClassesEnabled(project)) {
+					paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
+							project.getFullPath(), null, true));
+				}
+
+				classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
+
+				setClasspathContainer(path, new IJavaProject[] {javaProject},
+						new IClasspathContainer[] {this}, monitor);
+				
+				//update the package manager UI
+				new Job("update package manager") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						/*try {
+							setClasspathContainer(path, new IJavaProject[] {javaProject},
+									new IClasspathContainer[] {CeylonClasspathContainer.this}, monitor);
+						} 
+						catch (JavaModelException e) {
+							e.printStackTrace();
+						}*/
+						
+						notifyUpdateClasspathEntries();
+						return Status.OK_STATUS;
+					}
+				}.schedule();
+				return true;
+
+			}
+
+		}
+		catch (CoreException e) {
+			e.printStackTrace();
 		}
 		return false;
 	}
