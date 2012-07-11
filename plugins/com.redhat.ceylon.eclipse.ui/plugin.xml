@@ -571,11 +571,6 @@
            sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="org.eclipse.ui.contexts.window"/>
-       <key
-           sequence="M1+M2+C"
-           commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M3+D"
@@ -967,6 +962,18 @@
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
+            <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
+            <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
+            <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
+            <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.ui.views.ProblemView"/>
+            <viewShortcut id="org.eclipse.ui.views.TaskList"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.search.ui.views.SearchView"/>
+            <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <viewShortcut id="org.eclipse.ui.views.ResourceNavigator"/>
       </perspectiveExtension>
    </extension>
    
