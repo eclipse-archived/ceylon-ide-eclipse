@@ -131,6 +131,9 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
     private static IType findType(IJavaProject jp, String fullyQualifiedName) 
     		throws JavaModelException {
         JDTModelLoader modelLoader = getProjectModelLoader(jp.getProject());
+        if (modelLoader==null) {
+            return null;
+        }
         if (modelLoader.getSourceDeclarations().contains(fullyQualifiedName)) {
             return null;
         }

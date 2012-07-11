@@ -94,8 +94,10 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				}
 				
 				declaration = annotations + type + " " + identifier + ";";
-    			action = identifier + " " + getToken(attrDecl.getSpecifierOrInitializerExpression()) + " ";
-    			operation = attrDecl.getSpecifierOrInitializerExpression().getExpression().getTerm();
+    			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
+    			if (sie==null) return;
+				action = identifier + " " + getToken(sie) + " ";
+    			operation = sie.getExpression().getTerm();
     		} else {
     			return;
     		}

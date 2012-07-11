@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getJdtClassesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPath;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 
@@ -17,7 +17,6 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
@@ -56,13 +55,13 @@ public class CeylonPreferencesPage extends PropertyPage {
     private String repositoryPath;
     private IPath outputPath;
     private boolean useEmbeddedRepo;
-    private boolean enableJdtClassesDir;
+    private boolean explodeModules;
     private boolean showCompilerWarnings=true;
     boolean builderEnabled = false;
         
     private Button useEmbedded;
     private Button showWarnings;
-    private Button enableJdtClasses;
+    private Button enableExplodeModules;
 
     //TODO: fix copy/paste!
     public boolean isRepoValid() {
@@ -104,8 +103,8 @@ public class CeylonPreferencesPage extends PropertyPage {
     protected void performDefaults() {
         useEmbeddedRepo=true;
         useEmbedded.setSelection(true);
-        enableJdtClassesDir=false;
-        enableJdtClasses.setSelection(false);
+        explodeModules=false;
+        enableExplodeModules.setSelection(false);
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
         selectRepoFolder.setEnabled(false);
@@ -117,20 +116,10 @@ public class CeylonPreferencesPage extends PropertyPage {
     
     private void store() {
         final IProject project = getSelectedProject();
-        IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
-        if (!folder.exists()) {
-			try {
-				CoreUtility.createDerivedFolder(folder, 
-						true, true, null);
-			} 
-			catch (CoreException e) {
-				e.printStackTrace();
-			}
-        }
 		boolean embeddedRepo = useEmbeddedRepo || repositoryPath==null || repositoryPath.isEmpty();
 		if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
 		new CeylonNature(outputPath, embeddedRepo ? null : repositoryPath,
-				enableJdtClassesDir, !showCompilerWarnings)
+				explodeModules, !showCompilerWarnings)
 		                .addToProject(project);
     }
 
@@ -168,10 +157,10 @@ public class CeylonPreferencesPage extends PropertyPage {
         layout.numColumns = 1;
         composite.setLayout(layout); 
         
-        enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
-        enableJdtClasses.setSelection(enableJdtClassesDir);
-        enableJdtClasses.setEnabled(builderEnabled);
+        enableExplodeModules = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableExplodeModules.setSelection(explodeModules);
+        enableExplodeModules.setEnabled(builderEnabled);
 
         showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         showWarnings.setText("Show compiler warnings (for unused declarations)");
@@ -187,17 +176,17 @@ public class CeylonPreferencesPage extends PropertyPage {
                 new CeylonNature().addToProject(getSelectedProject());
                 enableBuilder.setEnabled(false);
                 useEmbedded.setEnabled(true);
-                enableJdtClasses.setEnabled(true);
+                enableExplodeModules.setEnabled(true);
                 builderEnabled=true;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
     
-        enableJdtClasses.addSelectionListener(new SelectionListener() {
+        enableExplodeModules.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	enableJdtClassesDir = !enableJdtClassesDir;
+            	explodeModules = !explodeModules;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -448,7 +437,7 @@ public class CeylonPreferencesPage extends PropertyPage {
 	        
 			repositoryPath = getRepositoryPath(project);
 	        useEmbeddedRepo = repositoryPath==null;
-	        enableJdtClassesDir = getJdtClassesEnabled(project);
+	        explodeModules = isExplodeModulesEnabled(project);
 	        showCompilerWarnings = showWarnings(project);
 	        outputPath = getCeylonModulesOutputPath(project);
 	        if (outputPath==null) {

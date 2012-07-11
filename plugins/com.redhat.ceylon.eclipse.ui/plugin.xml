@@ -563,6 +563,11 @@
             name="Editing Ceylon Source" 
             parentId="org.eclipse.ui.textEditorScope" 
             description="Editing Ceylon Source"/>
+      <context
+            id="com.redhat.ceylon.eclipse.ui.perspectiveContext"
+            name="Working In Ceylon Perspective" 
+            parentId="org.eclipse.ui.contexts.window" 
+            description="Working In Ceylon Perspective"/>
    </extension>
             
    <extension
@@ -570,7 +575,8 @@
        <key
            sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
        <key
            sequence="M3+D"
            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
@@ -579,7 +585,8 @@
        <key
            sequence="M1+T"
            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
@@ -923,6 +930,10 @@
       </perspective>
    </extension>
    
+   <extension point="org.eclipse.ui.startup">
+     <startup class="com.redhat.ceylon.eclipse.ui.CeylonStartup"/>
+   </extension>
+   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -960,6 +971,18 @@
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
+            <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
+            <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
+            <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
+            <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.ui.views.ProblemView"/>
+            <viewShortcut id="org.eclipse.ui.views.TaskList"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.search.ui.views.SearchView"/>
+            <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <viewShortcut id="org.eclipse.ui.views.ResourceNavigator"/>
       </perspectiveExtension>
    </extension>
    

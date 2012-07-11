@@ -198,7 +198,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         Declaration declarationToRun = null;
         IFile fileToRun = null; 
         if (topLevelDeclarations.size() == 0) {
-            MessageDialog.openError(CeylonBuilder.getShell(), "Ceylon Launcher", "No ceylon runnable element"); 
+            MessageDialog.openError(Util.getShell(), "Ceylon Launcher", 
+            		"No ceylon runnable element"); 
         } 
         else if (topLevelDeclarations.size() > 1) {
             declarationToRun = chooseDeclaration(topLevelDeclarations);
@@ -217,7 +218,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
     private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
     protected Declaration chooseDeclaration(final List<Declaration> declarations) {
-        FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(CeylonBuilder.getShell())
+        FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(Util.getShell())
         {
             {
                 setTitle("Ceylon Launcher");
@@ -485,7 +486,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
      */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= new ElementListSelectionDialog(CeylonBuilder.getShell(), labelProvider);
+        ElementListSelectionDialog dialog= new ElementListSelectionDialog(Util.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
@@ -528,7 +529,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             wc.setMappedResources(new IResource[] {file});
             config = wc.doSave();
         } catch (CoreException exception) {
-            MessageDialog.openError(CeylonBuilder.getShell(), "Ceylon Launcher Error", 
+            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", 
                     exception.getStatus().getMessage()); 
         } 
         return config;

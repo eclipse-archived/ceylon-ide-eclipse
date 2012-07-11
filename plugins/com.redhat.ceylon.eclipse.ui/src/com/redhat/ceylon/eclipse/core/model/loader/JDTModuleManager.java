@@ -38,10 +38,10 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
@@ -65,7 +65,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 
 /**
@@ -175,14 +174,14 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     public boolean isModuleLoadedFromCompiledSource(String moduleName) {
-        IProject project = javaProject.getProject();
-        if (moduleFileInProject(moduleName, project)) {
+        if (moduleFileInProject(moduleName, javaProject)) {
             return true;
         }
 
         try {
-            for (IProject p : project.getReferencedProjects()) {
-                if (moduleFileInProject(moduleName, p)) {
+            IProject project = javaProject.getProject();
+            for (IProject p: project.getReferencedProjects()) {
+                if (moduleFileInProject(moduleName, JavaCore.create(p))) {
                     return true;
                 }
             }
@@ -193,14 +192,22 @@ public class JDTModuleManager extends LazyModuleManager {
         return false;
     }
 
-    private boolean moduleFileInProject(String moduleName, IProject p) {
-        List<IPath> sourceFolders = CeylonBuilder.getSourceFolders(p);
-        for (IPath sourceFolder : sourceFolders) {
-            IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + "/module.ceylon").makeRelativeTo(p.getFullPath());
-            if (p.getFile(moduleFile).exists()) {
-                return true;
-            }
-        }
+    private boolean moduleFileInProject(String moduleName, IJavaProject p) {
+        try {
+			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
+				if (sourceFolder.getPackageFragment(moduleName).exists()) {
+					return true;
+				}
+			    /*IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + 
+			    		"/module.ceylon").makeRelativeTo(p.getFullPath());
+			    if (p.getFile(moduleFile).exists()) {
+			        return true;
+			    }*/
+			}
+		} 
+        catch (JavaModelException e) {
+			e.printStackTrace();
+		}
         return false;
     }
     

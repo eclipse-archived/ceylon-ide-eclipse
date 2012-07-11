@@ -7,4 +7,5 @@ public class CeylonPerspectiveFactory implements IPerspectiveFactory {
 
 	@Override
 	public void createInitialLayout(IPageLayout layout) {}
+
 }

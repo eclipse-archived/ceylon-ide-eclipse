@@ -1,23 +1,28 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.EditorUtility;
 import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
+import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorInput;
@@ -25,15 +30,12 @@ import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -121,11 +123,25 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public IPath getPath(Object entity) {
-        return getNodePath(entity, parseController.getTypeChecker());
+    	if (entity instanceof Node) {
+    		ISourceProject project = parseController.getProject();
+			return getNodePath((Node) entity, 
+    				project==null ? null : project.getRawProject(),
+    				parseController.getTypeChecker());
+    	}
+    	else if (entity instanceof ICompilationUnit) {
+            return ((ICompilationUnit) entity).getPath();
+        }
+    	else {
+    		return null;
+    	}
     }
     
     public void gotoNode(Node node) {
-        gotoNode(node, parseController.getTypeChecker());
+		ISourceProject project = parseController.getProject();
+        gotoNode(node, 
+        		project==null ? null : project.getRawProject(), 
+        		parseController.getTypeChecker());
     }
     
     public static Node getIdentifyingNode(Node node) {
@@ -153,31 +169,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 	        return node;
 	    }
 	}
-
-	public static void gotoNode(Node node, TypeChecker typeChecker) {
-        gotoLocation(getNodePath(node, typeChecker), 
+	
+	public static void gotoNode(Node node, IProject project, TypeChecker tc) {
+        gotoLocation(getNodePath(node, project, tc), 
                 getNodeStartOffset(node));
-        /*if (!project.getFullPath().lastSegment().equals(nodePath.segment(0))) {
-            IFileStore fileLocation = EFS.getLocalFileSystem().getStore(nodePath);
-            FileStoreEditorInput fileStoreEditorInput = new FileStoreEditorInput(
-                                        fileLocation);
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                                        .getActivePage();
-            try {
-                page.openEditor(fileStoreEditorInput, CeylonPlugin.EDITOR_ID);
-            }
-            catch (PartInitException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            IPath path = nodePath.removeFirstSegments(1);
-            int targetOffset = getNodeStartOffset(node);
-            IResource file = project.findMember(path);
-            if (file!=null) {
-                Util.gotoLocation(file, targetOffset);
-            }
-        }*/
     }
 
     public static void gotoLocation(IPath path, int offset) {
@@ -234,63 +229,74 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         }
     }
     
-    public static IPath getNodePath(Object entity, TypeChecker typeChecker) {
-        if (entity instanceof Node) {
-            Node node= (Node) entity;
-            Unit unit = node.getUnit();
-            String fileName = unit.getFilename();
-            String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
-            String fileRelativePath = packagePath + "/" + fileName;
-            
-            //TODO: all of the following would be totally unnecessary 
-            //      if the typechecker exposed the full path of
-            //      the Unit!
+    public static boolean belongsToProject(Unit unit, IProject project) {
+    	return getPath(unit, project)!=null;
+    }
 
-            PhasedUnit phasedUnit = typeChecker==null ? 
-                    null : typeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+	private static IPath getPath(Unit unit, IProject project) {
+		try {
+			for (IPackageFragmentRoot srcDir: JavaCore.create(project)
+					.getPackageFragmentRoots()) {
+				IPackageFragment pkg = srcDir.getPackageFragment(unit.getPackage()
+						.getQualifiedNameString());
+				IResource rsrc = pkg.getResource();
+				if (rsrc instanceof IFolder && rsrc.exists()) {
+					IFile file = ((IFolder) rsrc).getFile(unit.getFilename());
+					if (file!=null && file.exists()) {
+						return file.getLocation();
+					}
+				}
+			}
+		} 
+    	catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+    	return null;
+	}
+    
+    private static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
+    	Unit unit = node.getUnit();
+    	
+    	if (project!=null) {
+    		//first look for it in the current project
+    		IPath path = getPath(unit, project);
+    		if (path!=null) return path;
+    		try {
+    			//now look for it in projects that the current
+    			//project depends on
+    			for (IProject p: project.getReferencedProjects()) {
+    				path = getPath(unit, p);
+    				if (path!=null) return path;
+    			}
+    		} 
+    		catch (CoreException e) {
+    			e.printStackTrace();
+    		}
+    	}
 
-            if (phasedUnit == null || (phasedUnit != null && (phasedUnit.getSrcDir() instanceof ZipFileVirtualFile))) {
-                IProject currentProject = null;
-                for (IProject project : getProjects()) {
-                    TypeChecker alternateTypeChecker = getProjectTypeChecker(project);
-                    if (alternateTypeChecker == typeChecker) {
-                        currentProject = project;
-                        break;
-                    }
-                }
-                
-                if (currentProject != null) {
-                    List<IProject> requiredProjects;
-                    requiredProjects = getRequiredProjects(currentProject);
-                    for (IProject requiredProject : requiredProjects) {
-                        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(requiredProject);
-                        if (requiredProjectTypeChecker == null) {
-                            continue;
-                        }
-                        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-                        if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
-                            phasedUnit = requiredProjectPhasedUnit;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if (phasedUnit != null) {
-                VirtualFile unitFile = phasedUnit.getUnitFile();
+    	//finally look for it in a module archive 
+    	PhasedUnit pu = tc.getPhasedUnitFromRelativePath(getRelativePath(unit));
+    	if (pu!=null) {
+    		return new Path(pu.getUnitFile().getPath());
+    		/*VirtualFile unitFile = pu.getUnitFile();
                 if (unitFile instanceof IFileVirtualFile) {
                     return ((IFileVirtualFile) unitFile).getFile().getFullPath();
                 }
                 else {
                     return new Path(unitFile.getPath());
-                }
-            }
-        }
-        if (entity instanceof ICompilationUnit) {
-            return ((ICompilationUnit) entity).getPath();
-        }
-        return new Path("");
+                }*/
+    	}
+
+    	return null;
+
     }
+
+	private static String getRelativePath(Unit unit) {
+		String fileName = unit.getFilename();
+		String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
+		String fileRelativePath = packagePath + "/" + fileName;
+		return fileRelativePath;
+	}
     
     public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, IRegion region) {
         int regionOffset = region.getOffset();

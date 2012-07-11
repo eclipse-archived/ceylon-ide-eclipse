@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.resources.IProject;
@@ -17,7 +18,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
@@ -63,14 +63,14 @@ public class OpenDeclarationAction extends Action {
                 CeylonParseController cpc = ce.getParseController();
                 Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
                 if (node!=null) {
-                    gotoNode(node, cpc.getTypeChecker());
+                    gotoNode(node, project, cpc.getTypeChecker());
                     return;
                 }
             }
         }
         Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
         if (node!=null) {
-            gotoNode(node, CeylonBuilder.getProjectTypeChecker(project));
+            gotoNode(node, project, getProjectTypeChecker(project));
         }
     }
 

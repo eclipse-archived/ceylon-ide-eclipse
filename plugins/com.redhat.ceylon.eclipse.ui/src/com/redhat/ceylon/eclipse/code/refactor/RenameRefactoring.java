@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.List;
@@ -64,28 +64,16 @@ public class RenameRefactoring extends AbstractRefactoring {
 	@Override
 	boolean isEnabled() {
 	    return declaration!=null &&
-	            !(declaration.getUnit() instanceof ExternalUnit);
+	            !(declaration.getUnit() instanceof ExternalUnit) &&
+	            belongsToProject(declaration.getUnit(), project);
 	}
 	
 	public int getCount() {
-	    if (declaration==null) {
-	        return 0;
-	    }
-	    else {
-            int count = 0;
-            for (PhasedUnit pu: getUnits(project)) {
-                if (searchInFile(pu)) {
-                    count += countReferences(pu.getCompilationUnit());
-                }
-            }
-            if (searchInEditor()) {
-                count += countReferences(editor.getParseController().getRootNode());
-            }
-    		return count;
-	    }
+	    return declaration==null ? 0 : countDeclarationOccurrences();
 	}
-	
-	private int countReferences(Tree.CompilationUnit cu) {
+
+	@Override
+	int countReferences(Tree.CompilationUnit cu) {
         FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
         cu.visit(frv);
@@ -116,24 +104,24 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        List<PhasedUnit> units = getUnits(project);
+        List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
+        CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
-                renameInFile(tfc, cc, pu.getCompilationUnit());
-                pm.worked(i++);
-            }
+        	if (searchInFile(pu)) {
+        		TextFileChange tfc = newTextFileChange(pu);
+        		renameInFile(tfc, cc, pu.getCompilationUnit());
+        		pm.worked(i++);
+        	}
         }
         if (searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, editor.getParseController().getRootNode());
-            pm.worked(i++);
+        	DocumentChange dc = newDocumentChange();
+        	renameInFile(dc, cc, editor.getParseController().getRootNode());
+        	pm.worked(i++);
         }
         pm.done();
-		return cc;
+        return cc;
 	}
 
     private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {

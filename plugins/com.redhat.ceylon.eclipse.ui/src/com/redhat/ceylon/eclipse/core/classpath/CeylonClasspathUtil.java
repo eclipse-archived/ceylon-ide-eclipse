@@ -21,11 +21,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -224,11 +222,4 @@ public final class CeylonClasspathUtil {
         return null;
     }
 
-    public static List<CeylonClasspathContainer> getCeylonClasspathContainers(IProject project) {
-        IJavaProject javaProject = JavaCore.create(project);
-        if (javaProject != null && javaProject.exists()) {
-            return getCeylonClasspathContainers(javaProject);
-        }
-        return Collections.<CeylonClasspathContainer>emptyList();
-    }
 }

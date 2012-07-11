@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -57,7 +59,8 @@ public class Util {
     }
 
     public static ITextSelection getSelection(ITextEditor textEditor) {
-        return (ITextSelection) textEditor.getSelectionProvider().getSelection();
+        ISelectionProvider sp = textEditor.getSelectionProvider();
+		return sp==null ? null : (ITextSelection) sp.getSelection();
     }
     
     public static String getSelectionText(ITextEditor textEditor) {
@@ -115,4 +118,7 @@ public class Util {
         }
     }
     
+    public static Shell getShell() {
+    	return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+    }
 }
