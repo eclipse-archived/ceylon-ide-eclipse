@@ -5,7 +5,9 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
 import static com.redhat.ceylon.compiler.java.util.Util.quoteIfJavaKeyword;
+import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getPhasedUnit;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
@@ -13,16 +15,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,8 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 
@@ -90,7 +83,6 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
@@ -119,7 +111,6 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.io.impl.Helper;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -589,8 +580,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 throw new OperationCanceledException();
             }
 
-            if (getJdtClassesEnabled(project)) {
-                monitor.subTask("Rebuilding using Ceylon class directory of " + project.getName());
+            if (isExplodeModulesEnabled(project)) {
+                monitor.subTask("Rebuilding using exploded modules directory of " + project.getName());
             	sheduleIncrementalRebuild(args, project, monitor);
                 monitor.worked(1);
             }
@@ -1528,146 +1519,75 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         CeylonLog.preRegister(context);
         
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
-            final boolean enabedJdtClassesDir = getJdtClassesEnabled(project);        
-            final File ceylonOutputDirectory = enabedJdtClassesDir ? 
-            		getCeylonClassesOutputDirectory(project) : null;
+            final boolean explodeModules = isExplodeModulesEnabled(project);        
             @Override
             protected JavaFileObject getFileForOutput(Location location,
                     final RelativeFile fileName, FileObject sibling)
                     throws IOException {
-                final JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
-                if (javaFileObject instanceof JarEntryFileObject) {
-                    try {
-                        final File classFile;
-                        if (enabedJdtClassesDir) {
-                        	classFile = fileName.getFile(ceylonOutputDirectory);
-                        	classFile.getParentFile().mkdirs();
-                        }
-                        else {
-                        	classFile = null;
-                        }
-                        return new JavaFileObject() {
-                        	@Override
-                        	public String toString() {
-                        		return fileName.getPath();
-                        	}
-                            @Override
-                            public boolean delete() {
-                                return javaFileObject.delete();
-                            }
-                            @Override
-                            public CharSequence getCharContent(boolean b)
-                                    throws IOException {
-                                return javaFileObject.getCharContent(b);
-                            }
-                            @Override
-                            public long getLastModified() {
-                                return javaFileObject.getLastModified();
-                            }
-                            @Override
-                            public String getName() {
-                                return javaFileObject.getName();
-                            }
-                            @Override
-                            public InputStream openInputStream() throws IOException {
-                                return javaFileObject.openInputStream();
-                            }
-                            @Override
-                            public OutputStream openOutputStream()
-                                    throws IOException {
-                                final OutputStream jarStream = javaFileObject.openOutputStream();
-                                if (!enabedJdtClassesDir) {
-                                	return jarStream;
-                                }
-                                return new OutputStream() {
-                                	final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
-                                	@Override
-                                	public void write(int b) throws IOException {
-                                		jarStream.write(b);
-                                		classFileStream.write(b);
-                                	}
-                                	@Override
-                                	public void write(byte[] b, int off, int len)
-                                			throws IOException {
-                                		jarStream.write(b, off, len);
-                                		classFileStream.write(b, off, len);
-                                	}
-                                	@Override
-                                	public void write(byte[] b) throws IOException {
-                                		jarStream.write(b);
-                                		classFileStream.write(b);
-                                	}
-                                	@Override
-                                	public void close() throws IOException {
-                                		classFileStream.close();
-                                		jarStream.close();
-                                	}
-                                	@Override
-                                	public void flush() throws IOException {
-                                		classFileStream.flush();
-                                		jarStream.flush();
-                                	}
-                                };
-                            }
-                            @Override
-                            public Reader openReader(boolean b)
-                                    throws IOException {
-                                return javaFileObject.openReader(b);
-                            }
-                            @Override
-                            public Writer openWriter() throws IOException {
-                                return javaFileObject.openWriter();
-                            }
-                            @Override
-                            public URI toUri() {
-                                return javaFileObject.toUri();
-                            }
-                            @Override
-                            public Modifier getAccessLevel() {
-                                return javaFileObject.getAccessLevel();
-                            }
-                            @Override
-                            public Kind getKind() {
-                                return javaFileObject.getKind();
-                            }
-                            @Override
-                            public NestingKind getNestingKind() {
-                                return javaFileObject.getNestingKind();
-                            }
-                            @Override
-                            public boolean isNameCompatible(String simpleName,
-                                    Kind kind) {
-                                return javaFileObject.isNameCompatible(simpleName, kind);
-                            }
-                        };
-                    } catch(Exception e) {
-                        CeylonPlugin.log(e);
-                    }
+                JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
+                if (explodeModules && 
+                		javaFileObject instanceof JarEntryFileObject) {
+                	final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
+                	final File classFile = fileName.getFile(ceylonOutputDirectory);
+                	classFile.getParentFile().mkdirs();
+                	return new ExplodingJavaFileObject(classFile, fileName,
+                			javaFileObject);
                 }
                 return javaFileObject;
             }
         };
         
-        ArtifactContext ctx = null;
-        Modules projectModules = getProjectModules(project);
-        if (projectModules != null) {
-            Module languageModule = projectModules.getLanguageModule();
-            ctx = new ArtifactContext(languageModule.getNameAsString(), languageModule.getVersion());
-        } else {
-            ctx = new ArtifactContext("ceylon.language", TypeChecker.LANGUAGE_MODULE_VERSION);
+        computeCompilerClasspath(project, javaProject, options);
+        
+        Iterable<? extends JavaFileObject> compilationUnits =
+                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+        
+        if (compileWithJDTModelLoader()) {
+            setupJDTModelLoader(project, typeChecker, context);
         }
+        
+        ZipFileIndexCache.getSharedInstance().clearCache();
+        
+        CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
+                fileManager, null, options, null, compilationUnits);
+        boolean success=false;
+        try {
+            success = task.call();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+	private void computeCompilerClasspath(IProject project,
+			IJavaProject javaProject, List<String> options) {
+		
         List<String> classpathElements = new ArrayList<String>();
-        ctx.setSuffix(ArtifactContext.CAR);
-        RepositoryManager repositoryManager = getProjectRepositoryManager(project);
-        if (repositoryManager != null) {
-            File languageModuleArchive;
-            try {
-                languageModuleArchive = repositoryManager.getArtifact(ctx);
-                classpathElements.add(languageModuleArchive.getAbsolutePath());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+
+//        Modules projectModules = getProjectModules(project);
+//		ArtifactContext ctx;
+//        if (projectModules != null) {
+//            Module languageModule = projectModules.getLanguageModule();
+//            ctx = new ArtifactContext(languageModule.getNameAsString(), 
+//            		languageModule.getVersion());
+//        } 
+//        else {
+//            ctx = new ArtifactContext("ceylon.language", 
+//            		TypeChecker.LANGUAGE_MODULE_VERSION);
+//        }
+//        
+//        ctx.setSuffix(ArtifactContext.CAR);
+//        RepositoryManager repositoryManager = getProjectRepositoryManager(project);
+//        if (repositoryManager!=null) {
+//            //try {
+//            File languageModuleArchive = repositoryManager.getArtifact(ctx);
+//            classpathElements.add(languageModuleArchive.getAbsolutePath());
+//            /*} 
+//            catch (Exception e) {
+//                e.printStackTrace();
+//            }*/
+//        }
         
         IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
         addProjectClasspathElements(classpathElements, workspaceLocation,
@@ -1691,128 +1611,122 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             classpath += cpElement;
         }
         options.add(classpath);
+	}
+
+	private void setupJDTModelLoader(final IProject project,
+			final TypeChecker typeChecker,
+			final com.sun.tools.javac.util.Context context) {
+
+		final JDTModelLoader modelLoader = getModelLoader(typeChecker);
         
-        final JDTModelLoader modelLoader = getModelLoader(typeChecker);
-        
-        Iterable<? extends JavaFileObject> compilationUnits1 =
-                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-        if (compileWithJDTModelLoader()) {
-            context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
-            context.put(TypeFactory.class, modelLoader.getTypeFactory());
-            context.put(LanguageCompiler.phasedUnitsManagerKey, new PhasedUnitsManager() {
-                @Override
-                public ModuleManager getModuleManager() {
-                    return typeChecker.getPhasedUnits().getModuleManager();
-                }
+		context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
+		context.put(TypeFactory.class, modelLoader.getTypeFactory());
+		context.put(LanguageCompiler.phasedUnitsManagerKey, new PhasedUnitsManager() {
+		    @Override
+		    public ModuleManager getModuleManager() {
+		        return typeChecker.getPhasedUnits().getModuleManager();
+		    }
 
-                @Override
-                public void resolveDependencies() {
-                }
+		    @Override
+		    public void resolveDependencies() {
+		    }
 
-                @Override
-                public PhasedUnit getExternalSourcePhasedUnit(
-                        VirtualFile srcDir, VirtualFile file) {
-                    return typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(Helper.computeRelativePath(file, srcDir));
-                }
+		    @Override
+		    public PhasedUnit getExternalSourcePhasedUnit(
+		            VirtualFile srcDir, VirtualFile file) {
+		        return typeChecker.getPhasedUnits()
+		        		.getPhasedUnitFromRelativePath(computeRelativePath(file, srcDir));
+		    }
 
-                @Override
-                public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
-                        List<PhasedUnit> sourceUnits) {
-                    if (getModelState(project).equals(ModelState.Compiled)) {
-                        return sourceUnits;
-                    }
-                    List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
-                    for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
-                        for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-                            dependencies.add(phasedUnit);
-                        }
-                    }
-                    
-                    for (PhasedUnit dependency : dependencies) {
-                        dependency.analyseTypes();
-                    }
-                    for (PhasedUnit dependency : dependencies) {
-                        dependency.analyseFlow();
-                    }
-                    List<PhasedUnit> allPhasedUnits = new ArrayList<PhasedUnit>();
-                    allPhasedUnits.addAll(dependencies);
-                    allPhasedUnits.addAll(sourceUnits);
-                    
-                    ClassMirror objectMirror = modelLoader.lookupClassMirror("ceylon.language.Object");
-                    if (objectMirror instanceof SourceClass) {
-                        Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
-                        if (objectClass != null) {
-                            Declaration hashMethod = objectClass.getDirectMember("hash", Collections.<ProducedType>emptyList());
-                            if (hashMethod instanceof TypedDeclaration) {
-                                ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
-                            }
-                        }
-                        
-                    }
-                    return allPhasedUnits;
-                }
-                @Override
-                public void extraPhasesApplied() {
-                    modelStates.put(project, ModelState.Compiled);
-                }
-                
-            });
-            
-            modelLoader.setSourceFileObjectManager(new SourceFileObjectManager() {
-                @Override
-                public void setupSourceFileObjects(List<?> treeHolders) {
-                    for(Object treeHolder : treeHolders){
-                        if (!(treeHolder instanceof CeylonCompilationUnit)) {
-                            continue;
-                        }
-                        final CeylonCompilationUnit tree = (CeylonCompilationUnit)treeHolder;
-                        CompilationUnit ceylonTree = tree.ceylonTree;
-                        final String pkgName = tree.getPackageName() != null ? tree.getPackageName().toString() : "";
-                        ceylonTree.visit(new SourceDeclarationVisitor(){
-                            @Override
-                            public void loadFromSource(Tree.Declaration decl) {
-                                String name = quoteIfJavaKeyword(decl.getIdentifier().getText());
-                                String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-                                try{
-                                    CeylonClassReader.instance(context).enterClass(Names.instance(context).fromString(fqn), tree.getSourceFile());
-                                }
-                                catch (AssertionError error){
-                                    // this happens when we have already registered a source file for this decl, so let's
-                                    // print out a helpful message
-                                    // see https://github.com/ceylon/ceylon-compiler/issues/250
-                                    ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
-                                    CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
-                                            fqn + " is declared twice: once in " + tree.getSourceFile() + 
-                                            " and again in: " + fileName(previousClass));
-                                }
-                            }
-                        });
-                    }
-                }
-            });
+		    @Override
+		    public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
+		            List<PhasedUnit> sourceUnits) {
+		        if (getModelState(project).equals(ModelState.Compiled)) {
+		            return sourceUnits;
+		        }
+		        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+		        for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
+		            for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+		                dependencies.add(phasedUnit);
+		            }
+		        }
+		        
+		        for (PhasedUnit dependency : dependencies) {
+		            dependency.analyseTypes();
+		        }
+		        for (PhasedUnit dependency : dependencies) {
+		            dependency.analyseFlow();
+		        }
+		        List<PhasedUnit> allPhasedUnits = new ArrayList<PhasedUnit>();
+		        allPhasedUnits.addAll(dependencies);
+		        allPhasedUnits.addAll(sourceUnits);
+		        
+		        ClassMirror objectMirror = modelLoader.lookupClassMirror("ceylon.language.Object");
+		        if (objectMirror instanceof SourceClass) {
+		            Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
+		            if (objectClass != null) {
+		                Declaration hashMethod = objectClass.getDirectMember("hash", 
+		                		Collections.<ProducedType>emptyList());
+		                if (hashMethod instanceof TypedDeclaration) {
+		                    ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
+		                }
+		            }
+		            
+		        }
+		        return allPhasedUnits;
+		    }
+		    @Override
+		    public void extraPhasesApplied() {
+		        modelStates.put(project, ModelState.Compiled);
+		    }
+		    
+		});
+		
+		modelLoader.setSourceFileObjectManager(new SourceFileObjectManager() {
+			@Override
+			public void setupSourceFileObjects(List<?> treeHolders) {
+				for(Object treeHolder: treeHolders){
+					if (treeHolder instanceof CeylonCompilationUnit) {
+						final CeylonCompilationUnit tree = (CeylonCompilationUnit) treeHolder;
+						CompilationUnit ceylonTree = tree.ceylonTree;
+						final String pkgName = tree.getPackageName() != null ? 
+								tree.getPackageName().toString() : "";
+						ceylonTree.visit(new SourceDeclarationVisitor() {
+							@Override
+							public void loadFromSource(Tree.Declaration decl) {
+								String name = quoteIfJavaKeyword(decl.getIdentifier().getText());
+								String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
+								try{
+									CeylonClassReader.instance(context)
+									        .enterClass(Names.instance(context).fromString(fqn), 
+											        tree.getSourceFile());
+								}
+								catch (AssertionError error){
+									// this happens when we have already registered a source 
+									// file for this decl, so let's print out a helpful message
+									// see https://github.com/ceylon/ceylon-compiler/issues/250
+									ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
+									CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
+											fqn + " is declared twice: once in " + tree.getSourceFile() + 
+											" and again in: " + fileName(previousClass));
+								}
+							}
+						});
+					}
+				}
+			}
+		});
 
-            context.put(TypeFactory.class, modelLoader.getTypeFactory());
-            context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
-                @Override
-                public AbstractModelLoader createModelLoader(
-                        com.sun.tools.javac.util.Context context) {
-                    return modelLoader;
-                }
-                
-            });
-        }
-        ZipFileIndexCache.getSharedInstance().clearCache();
-        CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
-                fileManager, null, options, null, compilationUnits1);
-        boolean success=false;
-        try {
-            success = task.call();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
+		context.put(TypeFactory.class, modelLoader.getTypeFactory());
+		context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
+		    @Override
+		    public AbstractModelLoader createModelLoader(
+		            com.sun.tools.javac.util.Context context) {
+		        return modelLoader;
+		    }
+		    
+		});
+	}
 
 	private void addProjectClasspathElements(List<String> classpathElements,
 			IPath workspaceLocation, IJavaProject javaProj) {
@@ -1832,13 +1746,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
 				}
 			}
-		} catch (JavaModelException e1) {
+		} 
+		catch (JavaModelException e1) {
 			CeylonPlugin.log(e1);
 		}
 	}
 
-	public static boolean getJdtClassesEnabled(final IProject project) {
-        return getBuilderArgs(project).get("enableJdtClasses")!=null;
+	public static boolean isExplodeModulesEnabled(IProject project) {
+        Map args = getBuilderArgs(project);
+		return args.get("explodeModules")!=null ||
+        		args.get("enableJdtClasses")!=null;
 	}
 
 	public static boolean showWarnings(IProject project) {
@@ -1867,7 +1784,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (project != null) {
             for (IProject requiredProject: project.getReferencedProjects()) {
                 if (requiredProject.isOpen() &&
-                		requiredProject.hasNature(CeylonNature.NATURE_ID)) {
+                		requiredProject.hasNature(NATURE_ID)) {
                 	userRepos.add(getCeylonModulesOutputDirectory(requiredProject)
                 			.getAbsolutePath());	
                 }
@@ -1943,15 +1860,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }
 
-    private void dumpSourceList(Collection<IFile> sourcesToCompile) {
+    /*private void dumpSourceList(Collection<IFile> sourcesToCompile) {
         MessageConsoleStream consoleStream= getConsoleStream();
-
         for(Iterator<IFile> iter= sourcesToCompile.iterator(); iter.hasNext(); ) {
             IFile srcFile= iter.next();
-
             consoleStream.println("  " + srcFile.getFullPath());
         }
-    }
+    }*/
 
     protected static MessageConsoleStream getConsoleStream() {
         return findConsole().newMessageStream();
@@ -2037,8 +1952,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
 	private void cleanupJdtClasses(IProgressMonitor monitor, IProject project) {
-		if (getJdtClassesEnabled(project)) {
-            monitor.subTask("Cleaning JDTClasses directory of project " + project.getName());
+		if (isExplodeModulesEnabled(project)) {
+            monitor.subTask("Cleaning exploded modules directory of project " + project.getName());
 	        final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
 	        new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, 
 	        		new RepositoryLister.Actions() {
@@ -2329,8 +2244,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
             
             final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
-            boolean jdtClassesEnabled = getJdtClassesEnabled(project);
-			final File ceylonOutputDirectory = jdtClassesEnabled ? 
+            boolean explodeModules = isExplodeModulesEnabled(project);
+			final File ceylonOutputDirectory = explodeModules ? 
             		getCeylonClassesOutputDirectory(project) : null;
             File moduleDir = getModulePath(modulesOutputDirectory, module);
             
@@ -2359,7 +2274,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     }
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
-                        if (jdtClassesEnabled) {
+                        if (explodeModules) {
 	                        new File(ceylonOutputDirectory, 
 	                        		entryToDelete.replace('/', File.separatorChar))
 	                                .delete();

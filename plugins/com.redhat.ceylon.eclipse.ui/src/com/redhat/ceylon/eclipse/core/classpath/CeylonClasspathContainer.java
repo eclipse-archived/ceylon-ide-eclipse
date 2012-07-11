@@ -18,7 +18,7 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getJdtClassesEnabled;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
@@ -189,17 +189,17 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                 getJavaProject().getElementName()) {
     	    @Override protected IStatus run(IProgressMonitor monitor) {
     	    	final IProject project = javaProject.getProject();
-    			IFolder jdtClassesDir = getCeylonClassesOutputFolder(project);
+    			IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
 	    		try {
 	    			
-	    			if (getJdtClassesEnabled(project)) {
-	    				if (!jdtClassesDir.exists()) {
-	    					jdtClassesDir.create(0, true, monitor);
+	    			if (isExplodeModulesEnabled(project)) {
+	    				if (!explodedModulesFolder.exists()) {
+	    					explodedModulesFolder.create(0, true, monitor);
 	    				}
 	    			}
 	    			else {
-	    				if (jdtClassesDir.exists()) {
-	    					jdtClassesDir.delete(true, monitor);
+	    				if (explodedModulesFolder.exists()) {
+	    					explodedModulesFolder.delete(true, monitor);
 	    				}
 	    			}
     	    		
@@ -378,7 +378,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			}
 		}
 
-		if (getJdtClassesEnabled(project)) {
+		if (isExplodeModulesEnabled(project)) {
 			paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
 					project.getFullPath(), null, true));
 		}
