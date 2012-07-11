@@ -13,14 +13,19 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -78,7 +83,17 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				if (!attrDecl.getAnnotationList().getAnnotations().isEmpty()) {
 					annotations = getTerm(doc, attrDecl.getAnnotationList()) + " ";
 				}
-				declaration = annotations + getTerm(doc, attrDecl.getType()) + " " + identifier + ";";
+				String type;
+				if (attrDecl.getType() instanceof ValueModifier) {
+					ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
+					ProducedType typeModel = valueModifier.getTypeModel();
+					type = typeModel.getProducedTypeName();
+					
+				} else {
+					type = getTerm(doc, attrDecl.getType());
+				}
+				
+				declaration = annotations + type + " " + identifier + ";";
     			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
     			if (sie==null) return;
 				action = identifier + " " + getToken(sie) + " ";
@@ -98,8 +113,21 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     				thenTerm = getTerm(doc, thenOp.getRightTerm());
     				test = getTerm(doc, thenOp.getLeftTerm());
     			} else {
-    				thenTerm = getTerm(doc, defaultOp.getLeftTerm());
-    				test = "exists " + thenTerm;
+    				Term leftTerm = defaultOp.getLeftTerm();
+					thenTerm = getTerm(doc, leftTerm);
+					test = "exists " + thenTerm;
+    				if (leftTerm instanceof InvocationExpression) {
+						InvocationExpression expr = (InvocationExpression) leftTerm;
+						if (expr.getPrimary() instanceof QualifiedMemberExpression) {
+							QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) expr.getPrimary();
+							String id = getTerm(doc, qMemberExp.getIdentifier());
+							test = "exists " + id + " = " + thenTerm;
+							thenTerm = id;
+						} else {
+							return;
+						}
+												
+					}
     			}
     			elseTerm = getTerm(doc, defaultOp.getRightTerm());
     		} else if (operation instanceof Tree.ThenOp) {
