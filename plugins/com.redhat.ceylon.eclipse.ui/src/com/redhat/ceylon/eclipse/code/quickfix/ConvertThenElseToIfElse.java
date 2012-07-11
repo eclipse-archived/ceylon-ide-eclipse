@@ -119,14 +119,17 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     				if (leftTerm instanceof InvocationExpression) {
 						InvocationExpression expr = (InvocationExpression) leftTerm;
 						if (expr.getPrimary() instanceof QualifiedMemberExpression) {
-							QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) expr.getPrimary();
-							String id = getTerm(doc, qMemberExp.getIdentifier());
-							test = "exists " + id + " = " + thenTerm;
-							thenTerm = id;
+							leftTerm = expr.getPrimary();
 						} else {
 							return;
 						}
-												
+					}
+    				if (leftTerm instanceof QualifiedMemberExpression) {
+    					QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) leftTerm;
+						String id = getTerm(doc, qMemberExp.getIdentifier());
+						test = "exists " + id + " = " + thenTerm;
+						thenTerm = id;
+
 					}
     			}
     			elseTerm = getTerm(doc, defaultOp.getRightTerm());
