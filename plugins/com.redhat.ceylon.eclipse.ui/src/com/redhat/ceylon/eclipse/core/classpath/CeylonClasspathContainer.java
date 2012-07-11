@@ -242,7 +242,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	    	}
     	    }    		
     	};
-    	job.setUser(true);
+    	//job.setUser(true);
     	job.setRule(getWorkspace().getRoot());
         job.schedule();
     }
