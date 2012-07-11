@@ -5,19 +5,13 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.text.correction.proposals.EditAnnotator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
@@ -31,7 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerEx
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;

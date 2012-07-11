@@ -8,7 +8,8 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMETER;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.*;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
@@ -72,7 +73,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
