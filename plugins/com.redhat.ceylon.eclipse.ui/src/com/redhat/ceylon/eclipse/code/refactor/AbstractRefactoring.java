@@ -3,12 +3,14 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_COMPOSITE_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DELETE_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_MOVE;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_RENAME;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -112,7 +114,13 @@ public abstract class AbstractRefactoring extends Refactoring {
                 String tn = type.getDeclaration().getName();
                 String name = Character.toLowerCase(tn.charAt(0)) + 
                         tn.substring(1);
-                if (!CeylonTokenColorer.keywords.contains(name)) return name;
+                if (identifyingNode instanceof Tree.BaseMemberExpression) {
+                	String id = ((Tree.BaseMemberExpression) identifyingNode).getIdentifier().getText();
+                	if (!name.equals(id) && !CeylonTokenColorer.keywords.contains(name)) return name;
+                }
+                else {
+                	if (!CeylonTokenColorer.keywords.contains(name)) return name;
+                }
             }
         }
         
@@ -159,5 +167,31 @@ public abstract class AbstractRefactoring extends Refactoring {
                 new DocumentChange(getName(), document) :
                 new TextFileChange(getName(), sourceFile);
     }
+
+	protected List<PhasedUnit> getAllUnits() {
+		List<PhasedUnit> units = new ArrayList<PhasedUnit>();
+		units.addAll(getUnits(project));
+        for (IProject p: project.getReferencingProjects()) {
+        	units.addAll(getUnits(p));
+        }
+		return units;
+	}
+
+	protected int countDeclarationOccurrences() {
+		int count = 0;
+		for (PhasedUnit pu: getAllUnits()) {
+		    if (searchInFile(pu)) {
+		        count += countReferences(pu.getCompilationUnit());
+		    }
+		}
+		if (searchInEditor()) {
+		    count += countReferences(editor.getParseController().getRootNode());
+		}
+		return count;
+	}
+	
+	int countReferences(Tree.CompilationUnit cu) {
+		return 0;
+	}
 
 }

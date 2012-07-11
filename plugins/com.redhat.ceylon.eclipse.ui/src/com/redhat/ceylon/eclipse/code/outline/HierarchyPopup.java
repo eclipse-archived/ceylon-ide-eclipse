@@ -47,6 +47,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class HierarchyPopup extends PopupDialog {
 
@@ -296,11 +297,12 @@ public class HierarchyPopup extends PopupDialog {
     }
 
     protected void gotoSelectedElement(IStructuredSelection selection) {
-    	if (editor.getParseController()!=null) {
+    	CeylonParseController cpc = editor.getParseController();
+		if (cpc!=null) {
 	        Object object = selection.getFirstElement();
 	        Declaration dec = (Declaration) object;
-	        gotoNode(getReferencedNode(dec, getCompilationUnit(editor.getParseController(), dec)), 
-	                editor.getParseController().getTypeChecker());
+	        gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
+	                cpc.getProject().getRawProject(), cpc.getTypeChecker());
     	}
         close();
     }

@@ -73,10 +73,8 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
 	    super.start(context);
         this.bundleContext = context;
-//        copyDefaultRepoIfNecessary();
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
-//        runInitialBuild();
 	}
 	
 	@Override

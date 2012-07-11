@@ -13,6 +13,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.imp.builder.ProjectNatureBase;
 import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.ui.util.CoreUtility;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -52,10 +55,23 @@ public class CeylonNature extends ProjectNatureBase {
         	IPath oldPath = getCeylonModulesOutputPath(project);
         	if (oldPath!=null) {
 				IFolder old = project.getFolder(oldPath.makeRelativeTo(project.getLocation()));
-	        	if (old.exists() && old.isHidden()) {
+				if (old.exists() && !oldPath.equals(outputPath)) {
+					boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+						    .getShell(), "Changing Ceylon output folder", 
+						    "The Ceylon output folder has changed. Do you want to remove the old output folder '" +
+						    old.getFullPath().toString() + "' and all its contents?");
+					if (remove) {
+						try {
+							old.delete(true, null);
+						} 
+						catch (CoreException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				if (old.exists() && old.isHidden()) {
 	        		try {
 	        			old.setHidden(false);
-	        			//old.touch(null);
 	        		} 
 	        		catch (CoreException e) {
 	        			e.printStackTrace();
@@ -66,22 +82,25 @@ public class CeylonNature extends ProjectNatureBase {
         super.addToProject(project);
         if (outputPath!=null) {
         	IFolder folder = project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
+            if (!folder.exists()) {
+    			try {
+    				CoreUtility.createDerivedFolder(folder, 
+    						true, true, null);
+    			} 
+    			catch (CoreException e) {
+    				e.printStackTrace();
+    			}
+            }
         	if (!folder.isHidden()) {
         		try {
         			folder.setHidden(true);
-        			//folder.touch(null);
         		} 
         		catch (CoreException e) {
         			e.printStackTrace();
         		}
         	}
-        	/*try {
-				project.refreshLocal(IResource.DEPTH_ONE, null);
-			} 
-        	catch (CoreException e) {
-				e.printStackTrace();
-			}*/
         }
+        //CeylonBuilder.setCeylonModulesOutputPath(project, outputPath.toString());
         new CeylonClasspathContainer(project).runReconfigure();
     }
     
@@ -121,10 +140,10 @@ public class CeylonNature extends ProjectNatureBase {
     			args.remove("hideWarnings");
     		}
     		if (enableJdtClasses) {
-    			args.put("enableJdtClasses", "true");
+    			args.put("explodeModules", "true");
     		}
     		else {
-    			args.remove("enableJdtClasses");
+    			args.remove("explodeModules");
     		}
     	}
 		return args;

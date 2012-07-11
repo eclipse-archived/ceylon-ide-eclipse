@@ -3,11 +3,9 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRequiredProjects;
-
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.IReferenceResolver;
 
@@ -192,30 +190,33 @@ public class CeylonReferenceResolver implements IReferenceResolver {
                 }
                 
                 if (currentProject != null) {
-                    List<IProject> requiredProjects;
-                    requiredProjects = getRequiredProjects(currentProject);
-                    for (IProject project : requiredProjects) {
-                        JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
-                        if (requiredProjectLoader == null) {
-                            continue;
-                        }
-                        Declaration originalDecl = requiredProjectLoader.getDeclaration(dec.getQualifiedNameString(), DeclarationType.TYPE);
-                        if (originalDecl != null) {
-                            String fileName = originalDecl.getUnit().getFilename();
-                            String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
-                            String fileRelativePath = packagePath + "/" + fileName;
+                    try {
+						for (IProject project: currentProject.getReferencedProjects()) {
+						    JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
+						    if (requiredProjectLoader == null) {
+						        continue;
+						    }
+						    Declaration originalDecl = requiredProjectLoader.getDeclaration(dec.getQualifiedNameString(), DeclarationType.TYPE);
+						    if (originalDecl != null) {
+						        String fileName = originalDecl.getUnit().getFilename();
+						        String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
+						        String fileRelativePath = packagePath + "/" + fileName;
 
-                            TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
-                            if (requiredProjectTypeChecker == null) {
-                                continue;
-                            }
-                            PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-                            if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
-                                pu = requiredProjectPhasedUnit;
-                                break;
-                            }
-                        }
-                    }
+						        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
+						        if (requiredProjectTypeChecker == null) {
+						            continue;
+						        }
+						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
+						        if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+						            pu = requiredProjectPhasedUnit;
+						            break;
+						        }
+						    }
+						}
+					} 
+                    catch (CoreException e) {
+						e.printStackTrace();
+					}
                 }
                 
                 if (pu == null && typeChecker != null) {

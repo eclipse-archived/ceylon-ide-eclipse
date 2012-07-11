@@ -18,7 +18,7 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
 	
 	@Override
 	public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
-	    return new RenameWizard((RenameRefactoring) refactoring);
+	    return new RenameWizard((AbstractRefactoring) refactoring);
 	}
 	
 	@Override

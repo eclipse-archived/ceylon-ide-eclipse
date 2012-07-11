@@ -515,7 +515,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         Unit unit = null;
-        JDTClass jdtClass = ((JDTClass)classMirror);
+        JDTClass jdtClass = (JDTClass)classMirror;
         String unitName = jdtClass.getFileName();
         if (!jdtClass.isBinary()) {
             for (Unit unitToTest : pkg.getUnits()) {
