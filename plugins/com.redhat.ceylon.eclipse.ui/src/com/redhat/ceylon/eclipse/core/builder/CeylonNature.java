@@ -140,10 +140,10 @@ public class CeylonNature extends ProjectNatureBase {
     			args.remove("hideWarnings");
     		}
     		if (enableJdtClasses) {
-    			args.put("enableJdtClasses", "true");
+    			args.put("explodeModules", "true");
     		}
     		else {
-    			args.remove("enableJdtClasses");
+    			args.remove("explodeModules");
     		}
     	}
 		return args;
