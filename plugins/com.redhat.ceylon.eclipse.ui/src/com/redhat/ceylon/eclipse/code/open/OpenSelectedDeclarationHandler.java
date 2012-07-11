@@ -23,18 +23,23 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     private Tree.Declaration getSelectionTarget(ITextSelection textSel) {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         CeylonParseController pc= editor.getParseController();
-        Tree.CompilationUnit ast= pc.getRootNode();
-        if (ast == null) {
-            return null;
+        if (pc==null) {
+        	return null;
         }
         else {
-            Object sourceNode= findNode(ast, textSel.getOffset());
-            if (sourceNode == null) {
-                return null;
-            }
-            else {
-                return getReferencedNode(sourceNode, pc);
-            }
+        	Tree.CompilationUnit ast= pc.getRootNode();
+        	if (ast == null) {
+        		return null;
+        	}
+        	else {
+        		Object sourceNode= findNode(ast, textSel.getOffset());
+        		if (sourceNode == null) {
+        			return null;
+        		}
+        		else {
+        			return getReferencedNode(sourceNode, pc);
+        		}
+        	}
         }
     }
 
