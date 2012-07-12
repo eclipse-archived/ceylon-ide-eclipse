@@ -16,6 +16,8 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
 
+	public FindRefinementsAction() {}
+	
     public FindRefinementsAction(IEditorPart editor) {
 		super("Find Refinements", editor);
 		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
