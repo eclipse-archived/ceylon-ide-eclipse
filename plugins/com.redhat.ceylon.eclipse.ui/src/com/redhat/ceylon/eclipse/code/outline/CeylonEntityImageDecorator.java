@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
 
-import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.language.ILanguageService;
 import org.eclipse.imp.services.DecorationDescriptor;
 import org.eclipse.imp.services.DecorationDescriptor.Quadrant;
@@ -47,8 +46,8 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     
     @Override
     public int getDecorationAttributes(Object entity) {
-        if (entity instanceof ModelTreeNode) {
-            return getNodeDecorationAttributes((Node)((ModelTreeNode) entity).getASTNode());
+        if (entity instanceof CeylonOutlineNode) {
+            return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getASTNode());
         }
         if (entity instanceof CeylonElement) {
             return getNodeDecorationAttributes(((CeylonElement) entity).getNode());

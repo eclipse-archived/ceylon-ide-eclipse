@@ -47,4 +47,5 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar,
  lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar,
  lib/ceylon.language-0.3.1-ide.jar
+Import-Package: org.eclipse.ui.views.contentoutline
 

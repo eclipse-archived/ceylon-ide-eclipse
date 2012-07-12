@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.EditorUtility;
 import org.eclipse.imp.editor.IRegionSelectionService;
-import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IParseController;
@@ -36,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -189,8 +189,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     private static Node toNode(Object node) {
-        if (node instanceof ModelTreeNode) {
-            ModelTreeNode treeNode = (ModelTreeNode) node;
+        if (node instanceof CeylonOutlineNode) {
+        	CeylonOutlineNode treeNode = (CeylonOutlineNode) node;
             return (Node) treeNode.getASTNode();
         }
         else if (node instanceof Node) {

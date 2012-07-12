@@ -1,17 +1,18 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import org.eclipse.imp.services.base.TreeModelBuilderBase;
+import java.util.Stack;
+
+import org.eclipse.imp.core.ErrorHandler;
 
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
+public class CeylonTreeModelBuilder {
 	
-	@Override
 	public void visitTree(Object root) {
 		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
@@ -82,5 +83,53 @@ public class CeylonTreeModelBuilder extends TreeModelBuilderBase {
 		}
 		
 	}
-	
+
+	protected CeylonOutlineNode fModelRoot;
+
+	private Stack<CeylonOutlineNode> fItemStack= new Stack<CeylonOutlineNode>();
+
+	public final CeylonOutlineNode buildTree(Object rootASTNode) {
+		fItemStack.push(fModelRoot= createTopItem(new CeylonOutlineNode(rootASTNode)));
+		try {
+			visitTree(rootASTNode);
+		} catch (Exception e) {
+			ErrorHandler.reportError("Exception caught from invocation of language-specific tree model builder implementation", e);
+		}
+		fItemStack.pop();
+		return fModelRoot;
+	}
+
+
+	protected CeylonOutlineNode createTopItem(Object n) {
+		return createTopItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+	}
+
+	protected CeylonOutlineNode createTopItem(Object n, int category) {
+		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, category);
+		return treeNode;
+	}
+
+	protected CeylonOutlineNode createSubItem(Object n) {
+		return createSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+	}
+
+	protected CeylonOutlineNode createSubItem(Object n, int category) {
+		final CeylonOutlineNode parent= fItemStack.peek();
+		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, parent, category);
+
+		parent.addChild(treeNode);
+		return treeNode;
+	}
+
+	protected CeylonOutlineNode pushSubItem(Object n) {
+		return pushSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+	}
+
+	protected CeylonOutlineNode pushSubItem(Object n, int category) {
+		return fItemStack.push(createSubItem(n, category));
+	}
+
+	protected void popSubItem() {
+		fItemStack.pop();
+	}
 }

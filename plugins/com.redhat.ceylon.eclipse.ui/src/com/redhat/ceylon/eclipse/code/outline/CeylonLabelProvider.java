@@ -17,7 +17,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -161,8 +160,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof Unit) {
             return FILE_IMAGE;
         }
-        if (element instanceof ModelTreeNode) {
-            return getImageFor((ModelTreeNode) element);
+        if (element instanceof CeylonOutlineNode) {
+            return getImageFor((CeylonOutlineNode) element);
         }
         if (element instanceof Node) {
             return getImageFor((Node) element);
@@ -186,7 +185,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
     
-    private static Image getImageFor(ModelTreeNode n) {
+    private static Image getImageFor(CeylonOutlineNode n) {
         if (n.getCategory()==-1) return null;
         return getImageFor((Node) n.getASTNode());
     }
@@ -298,8 +297,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     @Override
     public StyledString getStyledText(Object element) {
-        if (element instanceof ModelTreeNode) {
-            return getStyledLabelFor((Node) ((ModelTreeNode) element).getASTNode());
+        if (element instanceof CeylonOutlineNode) {
+            return getStyledLabelFor((Node) ((CeylonOutlineNode) element).getASTNode());
         }
         else if (element instanceof IFile) {
             return new StyledString(getLabelForFile((IFile) element));
