@@ -18,6 +18,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.imp.editor.GenerateActionGroup;
+import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
 import org.eclipse.imp.editor.OutlineInformationControl;
 import org.eclipse.imp.editor.OutlineLabelProvider;
@@ -26,7 +27,6 @@ import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.base.TreeModelBuilderBase;
 import org.eclipse.imp.ui.DefaultPartListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -67,8 +67,11 @@ import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
@@ -125,7 +128,7 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
     
-    private static final TreeModelBuilderBase builder = new CeylonTreeModelBuilder();
+    private static final CeylonTreeModelBuilder builder = new CeylonTreeModelBuilder();
 
     private class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
         public IRegion getSubject(ITextViewer textViewer, int offset) {
@@ -358,7 +361,8 @@ public class CeylonEditor extends UniversalEditor {
     }
     
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
-    private Object toggleBreakpointTarget;
+    private ToggleBreakpointAdapter toggleBreakpointTarget;
+    private CeylonOutlinePage myOutlinePage;
     
     @Override
     public IDocumentProvider getDocumentProvider() {
@@ -717,6 +721,21 @@ public class CeylonEditor extends UniversalEditor {
 
     @Override
     public Object getAdapter(Class required) {
+        if (IContentOutlinePage.class.equals(required)) {
+        	IRegionSelectionService regionSelector= (IRegionSelectionService) getAdapter(IRegionSelectionService.class);
+            if (myOutlinePage == null) {
+                myOutlinePage = new CeylonOutlinePage(getParseController(),
+                        new CeylonTreeModelBuilder(), new CeylonLabelProvider());
+				try {
+					ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
+	                scheduler.addModelListener(myOutlinePage);
+				} 
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+             }
+             return myOutlinePage;
+        }
         if (IToggleBreakpointsTarget.class.equals(required)) {
             if (toggleBreakpointTarget == null) {
                 toggleBreakpointTarget = new ToggleBreakpointAdapter();

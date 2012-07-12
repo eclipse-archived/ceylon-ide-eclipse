@@ -1,16 +1,16 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ICompareNodeIdentifier;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 
 public class CeylonCompareNodeIdentifier implements ICompareNodeIdentifier {
     
     @Override
     public int getTypeCode(Object o) {
-        if (o instanceof ModelTreeNode) {
-            o = ((ModelTreeNode) o).getASTNode();
+        if (o instanceof CeylonOutlineNode) {
+            o = ((CeylonOutlineNode) o).getASTNode();
         }
         if (o instanceof Tree.Declaration) {
             return ((Tree.Declaration) o).getDeclarationModel()
@@ -26,8 +26,8 @@ public class CeylonCompareNodeIdentifier implements ICompareNodeIdentifier {
     
     @Override
     public String getID(Object o) {
-        if (o instanceof ModelTreeNode) {
-            o = ((ModelTreeNode) o).getASTNode();
+        if (o instanceof CeylonOutlineNode) {
+            o = ((CeylonOutlineNode) o).getASTNode();
         }
         if (o instanceof Tree.Declaration) {
             return ((Tree.Declaration) o).getDeclarationModel().getQualifiedNameString();
