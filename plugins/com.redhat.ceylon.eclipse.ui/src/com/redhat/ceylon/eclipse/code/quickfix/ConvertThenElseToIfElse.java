@@ -17,6 +17,9 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
@@ -105,8 +108,13 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     		String test;
     		String elseTerm;
     		String thenTerm;
+    		
+    		while (operation instanceof Expression) {
+    			//If Operation is enclosed in parenthesis we need to get down through them: return (test then x else y);
+    			operation = ((Expression) operation).getTerm();
+     		}
 			
-			if (operation instanceof Tree.DefaultOp) {
+    		if (operation instanceof Tree.DefaultOp) {
     			Tree.DefaultOp defaultOp = (Tree.DefaultOp) operation;
     			if (defaultOp.getLeftTerm() instanceof Tree.ThenOp) {
     				Tree.ThenOp thenOp = (ThenOp) defaultOp.getLeftTerm();
@@ -114,23 +122,27 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     				test = getTerm(doc, thenOp.getLeftTerm());
     			} else {
     				Term leftTerm = defaultOp.getLeftTerm();
-					thenTerm = getTerm(doc, leftTerm);
-					test = "exists " + thenTerm;
-    				if (leftTerm instanceof InvocationExpression) {
-						InvocationExpression expr = (InvocationExpression) leftTerm;
-						if (expr.getPrimary() instanceof QualifiedMemberExpression) {
-							leftTerm = expr.getPrimary();
-						} else {
-							return;
-						}
-					}
-    				if (leftTerm instanceof QualifiedMemberExpression) {
-    					QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) leftTerm;
-						String id = getTerm(doc, qMemberExp.getIdentifier());
-						test = "exists " + id + " = " + thenTerm;
-						thenTerm = id;
-
-					}
+					String leftTermStr = getTerm(doc, leftTerm);
+					if (leftTerm instanceof BaseMemberExpression) {
+    					thenTerm = leftTermStr;
+    					test = "exists " + leftTermStr;			
+    				} else  {
+    					if (leftTerm instanceof InvocationExpression) {
+    						InvocationExpression expr = (InvocationExpression) leftTerm;
+    						if (expr.getPrimary() instanceof QualifiedMemberExpression) {
+    							leftTerm = expr.getPrimary();
+    						}
+    					}
+    					if (leftTerm instanceof QualifiedMemberExpression) {
+    						QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) leftTerm;
+    						String id = getTerm(doc, qMemberExp.getIdentifier());
+    						test = "exists " + id + " = " + leftTermStr;
+    						thenTerm = id;
+    					} else {
+    						test = "exists tmp_var = " + leftTermStr;
+    						thenTerm = "tmp_var";
+    					}
+    				}	
     			}
     			elseTerm = getTerm(doc, defaultOp.getRightTerm());
     		} else if (operation instanceof Tree.ThenOp) {
