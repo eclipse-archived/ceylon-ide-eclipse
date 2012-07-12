@@ -17,11 +17,8 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
@@ -31,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     
@@ -127,21 +125,9 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     					thenTerm = leftTermStr;
     					test = "exists " + leftTermStr;			
     				} else  {
-    					if (leftTerm instanceof InvocationExpression) {
-    						InvocationExpression expr = (InvocationExpression) leftTerm;
-    						if (expr.getPrimary() instanceof QualifiedMemberExpression) {
-    							leftTerm = expr.getPrimary();
-    						}
-    					}
-    					if (leftTerm instanceof QualifiedMemberExpression) {
-    						QualifiedMemberExpression qMemberExp = (QualifiedMemberExpression) leftTerm;
-    						String id = getTerm(doc, qMemberExp.getIdentifier());
-    						test = "exists " + id + " = " + leftTermStr;
-    						thenTerm = id;
-    					} else {
-    						test = "exists tmp_var = " + leftTermStr;
-    						thenTerm = "tmp_var";
-    					}
+    					String id = AbstractRefactoring.guessName(leftTerm);
+    					test = "exists " + id + " = " + leftTermStr;
+    					thenTerm = id;
     				}	
     			}
     			elseTerm = getTerm(doc, defaultOp.getRightTerm());
