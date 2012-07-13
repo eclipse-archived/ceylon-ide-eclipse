@@ -88,8 +88,8 @@ public class CeylonTreeModelBuilder {
 
 	private Stack<CeylonOutlineNode> fItemStack= new Stack<CeylonOutlineNode>();
 
-	public final CeylonOutlineNode buildTree(Object rootASTNode) {
-		fItemStack.push(fModelRoot= createTopItem(new CeylonOutlineNode(rootASTNode)));
+	public final CeylonOutlineNode buildTree(Node rootASTNode) {
+		fItemStack.push(fModelRoot= createTopItem(rootASTNode));
 		try {
 			visitTree(rootASTNode);
 		} catch (Exception e) {
@@ -100,32 +100,31 @@ public class CeylonTreeModelBuilder {
 	}
 
 
-	protected CeylonOutlineNode createTopItem(Object n) {
+	protected CeylonOutlineNode createTopItem(Node n) {
 		return createTopItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
 	}
 
-	protected CeylonOutlineNode createTopItem(Object n, int category) {
+	protected CeylonOutlineNode createTopItem(Node n, int category) {
 		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, category);
 		return treeNode;
 	}
 
-	protected CeylonOutlineNode createSubItem(Object n) {
+	protected CeylonOutlineNode createSubItem(Node n) {
 		return createSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
 	}
 
-	protected CeylonOutlineNode createSubItem(Object n, int category) {
+	protected CeylonOutlineNode createSubItem(Node n, int category) {
 		final CeylonOutlineNode parent= fItemStack.peek();
 		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, parent, category);
-
 		parent.addChild(treeNode);
 		return treeNode;
 	}
 
-	protected CeylonOutlineNode pushSubItem(Object n) {
+	protected CeylonOutlineNode pushSubItem(Node n) {
 		return pushSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
 	}
 
-	protected CeylonOutlineNode pushSubItem(Object n, int category) {
+	protected CeylonOutlineNode pushSubItem(Node n, int category) {
 		return fItemStack.push(createSubItem(n, category));
 	}
 

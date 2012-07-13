@@ -139,7 +139,7 @@ public class CeylonEditor extends UniversalEditor {
             throw new UnsupportedOperationException();
         }
         public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-            return builder.buildTree(getParseController().getCurrentAst());
+            return builder.buildTree(getParseController().getRootNode());
         }
     }
 

@@ -1,9 +1,8 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package com.redhat.ceylon.eclipse.code.outline;
 
 import org.eclipse.imp.services.ICompareNodeIdentifier;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 
 public class CeylonCompareNodeIdentifier implements ICompareNodeIdentifier {
     
