@@ -158,7 +158,7 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 
     private static IPath iconsPath = new Path("icons/");
 
-    private ImageDescriptor image(String file) {
+    public ImageDescriptor image(String file) {
         URL url = FileLocator.find(getBundle(), 
                 iconsPath.append(file), null);
         if (url!=null) {
@@ -204,6 +204,9 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         reg.put(CEYLON_REFS, image("search_ref_obj.png"));
         reg.put(CEYLON_DECS, image("search_decl_obj.png"));
         reg.put(ELE32, image("ceylon_icon_32px.png"));
+		reg.put(CEYLON_ERR, image("error_co.gif"));
+		reg.put(CEYLON_WARN, image("warning_co.gif"));
+
 	}
 	
     private void registerProjectOpenCloseListener() {

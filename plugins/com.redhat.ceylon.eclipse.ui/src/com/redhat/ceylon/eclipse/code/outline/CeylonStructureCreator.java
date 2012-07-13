@@ -26,15 +26,12 @@ import org.eclipse.compare.structuremergeviewer.StructureRootNode;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.services.ICompareNodeIdentifier;
-import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 /**
  * @author rfuhrer
@@ -85,10 +82,9 @@ public class CeylonStructureCreator extends StructureCreator {
         }
     }
 
-    private Language fLanguage;
-    private ICompareNodeIdentifier fCompareNodeIdentifier;
-    private ILabelProvider fLabelProvider;
-    private ISourcePositionLocator fSrcPositionLocator;
+    private CeylonCompareNodeIdentifier fCompareNodeIdentifier;
+    private CeylonLabelProvider fLabelProvider;
+    private CeylonSourcePositionLocator fSrcPositionLocator;
 
     public String getName() {
         return "Structural Comparison";

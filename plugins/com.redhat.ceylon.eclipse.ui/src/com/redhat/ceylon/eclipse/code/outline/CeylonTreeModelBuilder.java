@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import java.util.Stack;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
 
-import org.eclipse.imp.core.ErrorHandler;
+import java.util.Stack;
 
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -30,15 +31,14 @@ public class CeylonTreeModelBuilder {
 			Package pkg = unit.getPackage();
 			pn.setPackageName(pkg.getQualifiedNameString());
 		}
-		createSubItem(pn);
+		createSubItem(pn, ROOT_CATEGORY);
 		//createSubItem(rootNode);
 		/*pushSubItem(rootNode.getImportList());
 		for (Tree.Import i: rootNode.getImportList().getImports()) {
 			createSubItem(i);
 		}
 		popSubItem();*/
- 		CeylonModelVisitor visitor = new CeylonModelVisitor(); 		
-		rootNode.visit(visitor);
+ 		rootNode.visit(new CeylonModelVisitor());
 	}
 
 	public class CeylonModelVisitor extends Visitor {
@@ -59,7 +59,7 @@ public class CeylonTreeModelBuilder {
 			}
 			else if (that instanceof Tree.ImportList) {
 			    if (!((Tree.ImportList) that).getImports().isEmpty()) {
-                    pushSubItem(that);
+                    pushSubItem(that, ROOT_CATEGORY);
                     super.visitAny(that);
                     popSubItem();
 			    }
@@ -89,11 +89,12 @@ public class CeylonTreeModelBuilder {
 	private Stack<CeylonOutlineNode> fItemStack= new Stack<CeylonOutlineNode>();
 
 	public final CeylonOutlineNode buildTree(Node rootASTNode) {
-		fItemStack.push(fModelRoot= createTopItem(rootASTNode));
+		fItemStack.push(fModelRoot=createTopItem(rootASTNode, ROOT_CATEGORY));
 		try {
 			visitTree(rootASTNode);
-		} catch (Exception e) {
-			ErrorHandler.reportError("Exception caught from invocation of language-specific tree model builder implementation", e);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 		fItemStack.pop();
 		return fModelRoot;
@@ -101,16 +102,15 @@ public class CeylonTreeModelBuilder {
 
 
 	protected CeylonOutlineNode createTopItem(Node n) {
-		return createTopItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+		return createTopItem(n, DEFAULT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode createTopItem(Node n, int category) {
-		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, category);
-		return treeNode;
+		return new CeylonOutlineNode(n, category);
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n) {
-		return createSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+		return createSubItem(n, DEFAULT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n, int category) {
@@ -121,7 +121,7 @@ public class CeylonTreeModelBuilder {
 	}
 
 	protected CeylonOutlineNode pushSubItem(Node n) {
-		return pushSubItem(n, CeylonOutlineNode.DEFAULT_CATEGORY);
+		return pushSubItem(n, DEFAULT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode pushSubItem(Node n, int category) {
