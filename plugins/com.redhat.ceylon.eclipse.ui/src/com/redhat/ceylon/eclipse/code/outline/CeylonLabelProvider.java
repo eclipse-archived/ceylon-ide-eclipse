@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIER
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.color;
-import static org.eclipse.imp.utils.MarkerUtils.getMaxProblemMarkerSeverity;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
@@ -16,8 +15,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -56,9 +55,10 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
  *
  */
 public class CeylonLabelProvider extends StyledCellLabelProvider 
-        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider, ICeylonResources {
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
+                   ILabelProvider, ICeylonResources {
     
-    private static CeylonLabelDecorator DECORATOR = new CeylonLabelDecorator(LanguageRegistry.findLanguage(CeylonPlugin.LANGUAGE_ID));
+    private static CeylonLabelDecorator DECORATOR = new CeylonLabelDecorator();
     
     private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
     
@@ -186,7 +186,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static Image getImageFor(CeylonOutlineNode n) {
-        if (n.getCategory()==-1) return null;
         return getImageFor((Node) n.getASTNode());
     }
     
@@ -556,4 +555,40 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         super.update(cell);
     }
     
+    /**
+     * Returns the maximum problem marker severity for the given resource, and, if
+     * depth is IResource.DEPTH_INFINITE, its children. The return value will be
+     * one of IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING, IMarker.SEVERITY_INFO
+     * or 0, indicating that no problem markers exist on the given resource.
+     * @param depth TODO
+     */
+    public static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+        if (res == null || !res.isAccessible())
+            return 0;
+    
+        boolean hasWarnings= false; // if resource has errors, will return error image immediately
+        IMarker[] markers= null;
+    
+        try {
+            markers= res.findMarkers(IMarker.PROBLEM, true, depth);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        if (markers == null)
+            return 0; // don't know - say no errors/warnings/infos
+    
+        for(int i= 0; i < markers.length; i++) {
+            IMarker m= markers[i];
+            int priority= m.getAttribute(IMarker.SEVERITY, -1);
+    
+            if (priority == IMarker.SEVERITY_WARNING) {
+        	hasWarnings= true;
+            } else if (priority == IMarker.SEVERITY_ERROR) {
+        	return IMarker.SEVERITY_ERROR;
+            }
+        }
+        return hasWarnings ? IMarker.SEVERITY_WARNING : 0;
+    }
+
 }

@@ -44,6 +44,9 @@ public interface ICeylonResources {
     public static final String CEYLON_DECS = "ceylon_decs";
     public static final String CEYLON_REFS = "ceylon_refs";
     
+    public static final String CEYLON_ERR = "ceylon_err";
+    public static final String CEYLON_WARN = "ceylon_warn";
+    
     public static final String ELE32="ceylon_ele32";
     
 }

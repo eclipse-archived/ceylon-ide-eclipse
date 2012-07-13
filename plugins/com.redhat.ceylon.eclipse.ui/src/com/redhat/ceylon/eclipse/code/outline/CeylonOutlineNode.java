@@ -12,90 +12,48 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import org.eclipse.imp.editor.ModelTreeNode;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
-public class CeylonOutlineNode extends ModelTreeNode {
-
-	public CeylonOutlineNode(Node astNode, int category) {
-		super(astNode, category);
-	}
-
-	public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, int category) {
-		super(astNode, parent, category);
-	}
-
-	public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent) {
-		super(astNode, parent);
-	}
-
-	public CeylonOutlineNode(Node astNode) {
-		super(astNode);
-	}
+public class CeylonOutlineNode {
 	
-	@Override
-	public Node getASTNode() {
-		return (Node) super.getASTNode();
-	}
-	
-    public CeylonOutlineNode[] getChildren() {
-        ModelTreeNode[] children = super.getChildren();
-        CeylonOutlineNode[] result = new CeylonOutlineNode[children.length];
-        System.arraycopy(children, 0, result, 0, children.length);
-		return result;
-    }
+    public static final int DEFAULT_CATEGORY = 0;
+    public static final int ROOT_CATEGORY = -1;
 
-    public CeylonOutlineNode getParent() {
-        return (CeylonOutlineNode) super.getParent();
-    }
-	
-    /*public static final int DEFAULT_CATEGORY= 0;
-
-    private static final CeylonOutlineNode[] NO_CHILDREN= new CeylonOutlineNode[0];
-
-    private CeylonOutlineNode[] fChildren= NO_CHILDREN;
+    private List<CeylonOutlineNode> fChildren= new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode fParent;
 
-    private final Object fASTNode;
+    private final Node fASTNode;
 
     private final int fCategory;
 
-    public CeylonOutlineNode(Object astNode) {
+    public CeylonOutlineNode(Node astNode) {
         this(astNode, DEFAULT_CATEGORY);
     }
 
-    public CeylonOutlineNode(Object astNode, int category) {
+    public CeylonOutlineNode(Node astNode, int category) {
         fASTNode= astNode;
         fCategory= category;
     }
 
-    public CeylonOutlineNode(Object astNode, CeylonOutlineNode parent) {
+    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent) {
         this(astNode, parent, DEFAULT_CATEGORY);
     }
 
-    public CeylonOutlineNode(Object astNode, CeylonOutlineNode parent, int category) {
+    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, int category) {
         fASTNode= astNode;
         fParent= parent;
         fCategory= category;
     }
 
-    public void setChildren(CeylonOutlineNode[] children) {
-        fChildren= children;
-        for(int i= 0; i < children.length; i++) {
-            children[i].fParent= this;
-        }
+    public void addChild(CeylonOutlineNode child) {   
+        fChildren.add(child);
     }
 
-    public void addChild(CeylonOutlineNode child) {
-        CeylonOutlineNode[] newChildren= new CeylonOutlineNode[fChildren.length + 1];
-        System.arraycopy(fChildren, 0, newChildren, 0, fChildren.length);
-        newChildren[fChildren.length]= child;
-        fChildren= newChildren;
-    }
-
-    public CeylonOutlineNode[] getChildren() {
+    public List<CeylonOutlineNode> getChildren() {
         return fChildren;
     }
 
@@ -103,7 +61,7 @@ public class CeylonOutlineNode extends ModelTreeNode {
         return fParent;
     }
 
-    public Object getASTNode() {
+    public Node getASTNode() {
         return fASTNode;
     }
 
@@ -115,13 +73,13 @@ public class CeylonOutlineNode extends ModelTreeNode {
         StringBuilder sb= new StringBuilder();
 
         sb.append(fASTNode.toString());
-        if (fChildren.length > 0) {
+        if (!fChildren.isEmpty()) {
             sb.append(" [");
-            for(int i= 0; i < fChildren.length; i++) {
-                sb.append(fChildren[i].toString());
+            for(CeylonOutlineNode child: fChildren) {
+                sb.append(child);
             }
             sb.append(" ]");
         }
         return sb.toString();
-    }*/
+    }
 }

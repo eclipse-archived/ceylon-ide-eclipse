@@ -371,12 +371,12 @@
             language="ceylon"/>
    </extension>
    
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.compareNodeIdentifier">
       <compareNodeIdentifier 
             language="ceylon"
             class="com.redhat.ceylon.eclipse.code.outline.CeylonCompareNodeIdentifier"/>
-   </extension>
+   </extension-->
    
    <extension
          point="org.eclipse.compare.structureCreators">

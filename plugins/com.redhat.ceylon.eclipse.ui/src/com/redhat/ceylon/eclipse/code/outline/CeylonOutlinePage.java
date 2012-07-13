@@ -11,18 +11,17 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.parser.IModelListener;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -37,19 +36,21 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonOutlinePage extends ContentOutlinePage implements IModelListener {
 	
     private final ITreeContentProvider fContentProvider;
     private final CeylonTreeModelBuilder fModelBuilder;
-    private final ILabelProvider fLabelProvider;
+    private final CeylonLabelProvider fLabelProvider;
     private final CeylonParseController fParseController;
 
     public CeylonOutlinePage(CeylonParseController parseController,
             CeylonTreeModelBuilder modelBuilder,
-            ILabelProvider labelProvider) {
+            CeylonLabelProvider labelProvider) {
     	
         fParseController= parseController;
         fModelBuilder= modelBuilder;
@@ -57,14 +58,14 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
 
         fContentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {
-            	return ((CeylonOutlineNode) element).getChildren();
+            	return ((CeylonOutlineNode) element).getChildren().toArray();
             }
             public Object getParent(Object element) {
             	return ((CeylonOutlineNode) element).getParent();
             }
         	public boolean hasChildren(Object element) {
         	    Object[] children= getChildren(element);
-        	    return (children != null) && children.length > 0;
+        	    return children!=null && children.length > 0;
         	}
         	public Object[] getElements(Object inputElement) {
         	    return getChildren(inputElement);
@@ -79,9 +80,14 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
     public AnalysisRequired getAnalysisRequired() {
         return IModelListener.AnalysisRequired.SYNTACTIC_ANALYSIS;
     }
+    
+    @Override
+    public void update(IParseController parseController, IProgressMonitor monitor) {
+    	update((CeylonParseController) parseController);
+    }
 
-    public void update(final IParseController parseController, IProgressMonitor monitor) {
-        if (getTreeViewer() != null && !getTreeViewer().getTree().isDisposed()) {
+    public void update(final CeylonParseController parseController) {
+        if (getTreeViewer()!=null && !getTreeViewer().getTree().isDisposed()) {
             getTreeViewer().getTree().getDisplay().asyncExec(new Runnable() {
                 public void run() {
                 	if (getTreeViewer() != null && !getTreeViewer().getTree().isDisposed())
@@ -94,17 +100,14 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
     @Override
     public void selectionChanged(SelectionChangedEvent event) {
         super.selectionChanged(event);
-        
         ITreeSelection sel= (ITreeSelection) event.getSelection();
         if (!sel.isEmpty()) {
-        	ISourcePositionLocator locator= fParseController.getSourcePositionLocator();
-        	Object node = ((CeylonOutlineNode) sel.getFirstElement()).getASTNode();
+        	CeylonSourcePositionLocator locator= fParseController.getSourcePositionLocator();
+        	Node node = ((CeylonOutlineNode) sel.getFirstElement()).getASTNode();
         	int startOffset= locator.getStartOffset(node);
         	int endOffset= locator.getEndOffset(node);
         	int length= endOffset - startOffset + 1;
-            
-        	ITextEditor textEditor= (ITextEditor) Util.getCurrentEditor();
-        	textEditor.selectAndReveal(startOffset, length);
+        	((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
         }
     }
 
@@ -125,6 +128,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
 
         IToolBarManager toolBarManager= actionBars.getToolBarManager();
 		toolBarManager.add(new LexicalSortingAction());
+		//TODO: add a control for filtering out non-shared members!!
 		
 		MenuManager mm = new MenuManager();
 		mm.add(new GroupMarker("find"));
@@ -154,7 +158,8 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
                 return cat1 - cat2;
             }
         };
-        private ISourcePositionLocator fLocator= fParseController.getSourcePositionLocator();
+        
+        private CeylonSourcePositionLocator fLocator= fParseController.getSourcePositionLocator();
 
         private ViewerComparator fPositionComparator= new ViewerComparator() {
             @Override
@@ -172,11 +177,11 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
             setToolTipText("Sort by name");
             setDescription("Sort entries lexically by name");
 
-            ImageDescriptor desc= RuntimePlugin.getImageDescriptor("icons/alphab_sort_co.gif"); //$NON-NLS-1$
+            ImageDescriptor desc= CeylonPlugin.getInstance().image("alphab_sort_co.gif"); //$NON-NLS-1$
             this.setHoverImageDescriptor(desc);
             this.setImageDescriptor(desc); 
 
-            boolean checked= RuntimePlugin.getInstance().getPreferenceStore()
+            boolean checked= CeylonPlugin.getInstance().getPreferenceStore()
                     .getBoolean("LexicalSortingAction.isChecked"); //$NON-NLS-1$
             valueChanged(checked, false);
         }
@@ -198,7 +203,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
             });
 
             if (store) {
-                RuntimePlugin.getInstance().getPreferenceStore()
+                CeylonPlugin.getInstance().getPreferenceStore()
                         .setValue("LexicalSortingAction.isChecked", on); //$NON-NLS-1$
             }
         }

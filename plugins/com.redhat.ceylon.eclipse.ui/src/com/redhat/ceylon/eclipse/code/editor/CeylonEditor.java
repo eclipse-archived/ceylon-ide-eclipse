@@ -155,7 +155,7 @@ public class CeylonEditor extends UniversalEditor {
                         TreeViewer tv = super.createTreeViewer(parent, style);
                         try {
                             OutlineLabelProvider lp = (OutlineLabelProvider) labelProviderField.get(this);
-                            lp.addLabelDecorator(new CeylonLabelDecorator(getLanguage()));
+                            lp.addLabelDecorator(new CeylonLabelDecorator());
                         }
                         catch (Exception e) {
                             e.printStackTrace();
