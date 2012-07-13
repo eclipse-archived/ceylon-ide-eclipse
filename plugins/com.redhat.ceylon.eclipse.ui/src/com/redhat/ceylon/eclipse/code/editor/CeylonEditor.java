@@ -1,9 +1,17 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_PREVIOUS_WORD;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WORD_NEXT;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,10 +26,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.imp.editor.GenerateActionGroup;
-import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
-import org.eclipse.imp.editor.OutlineInformationControl;
-import org.eclipse.imp.editor.OutlineLabelProvider;
 import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
@@ -49,7 +54,6 @@ import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -62,28 +66,28 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder;
+import com.redhat.ceylon.eclipse.code.outline.OutlineInformationControl;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver;
 
 public class CeylonEditor extends UniversalEditor {
+	
     private static final String TEXT_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
     
     private static Field refreshContributionsField;
     private static Field generateActionGroupField;
     private static Field openEditorActionGroupField;
-    private static Field labelProviderField;
+    //private static Field labelProviderField;
     private static Field fParserSchedulerField;
     private static Method updateCaretMethod;
     private static Field fAnnotationCreatorField;
@@ -98,8 +102,8 @@ public class CeylonEditor extends UniversalEditor {
             generateActionGroupField.setAccessible(true);
             openEditorActionGroupField = UniversalEditor.class.getDeclaredField("fOpenEditorActionGroup");
             openEditorActionGroupField.setAccessible(true);
-            labelProviderField = OutlineInformationControl.class.getDeclaredField("fInnerLabelProvider");
-            labelProviderField.setAccessible(true);
+            //labelProviderField = OutlineInformationControl.class.getDeclaredField("fInnerLabelProvider");
+            //labelProviderField.setAccessible(true);
             fParserSchedulerField = UniversalEditor.class.getDeclaredField("fParserScheduler");
             fParserSchedulerField.setAccessible(true);
             fAnnotationCreatorField = UniversalEditor.class.getDeclaredField("fAnnotationCreator");
@@ -130,7 +134,8 @@ public class CeylonEditor extends UniversalEditor {
     
     private static final CeylonTreeModelBuilder builder = new CeylonTreeModelBuilder();
 
-    private class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
+    private class OutlineInformationProvider 
+            implements IInformationProvider, IInformationProviderExtension {
         public IRegion getSubject(ITextViewer textViewer, int offset) {
             return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
         }
@@ -149,24 +154,7 @@ public class CeylonEditor extends UniversalEditor {
         return new IInformationControlCreator() {
             @Override
             public IInformationControl createInformationControl(Shell parent) {
-                return new OutlineInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId, getLanguage()) {
-                    @Override
-                    protected TreeViewer createTreeViewer(Composite parent, int style) {
-                        TreeViewer tv = super.createTreeViewer(parent, style);
-                        try {
-                            OutlineLabelProvider lp = (OutlineLabelProvider) labelProviderField.get(this);
-                            lp.addLabelDecorator(new CeylonLabelDecorator());
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return tv;
-                    }
-                    @Override
-                    protected String getStatusFieldText() {
-                        return "";
-                    }
-                };
+                return new OutlineInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
             }
         };
     }
@@ -243,23 +231,21 @@ public class CeylonEditor extends UniversalEditor {
         getPreferenceStore().setValue(EDITOR_SPACES_FOR_TABS, esft);
         //getPreferenceStore().setValue(EDITOR_TAB_WIDTH, etw);
 
-        CeylonParserScheduler ceylonParserScheduler;
         try {
             Field astListenersField = ParserScheduler.class.getDeclaredField("fAstListeners");
             astListenersField.setAccessible(true);
 
             ParserScheduler parserScheduler = (ParserScheduler) fParserSchedulerField.get(this);
             Object astListeners = astListenersField.get(parserScheduler);
-            ceylonParserScheduler = new CeylonParserScheduler(getParseController(), this, getDocumentProvider(),
-                    (IMessageHandler) fAnnotationCreatorField.get(this));
+            CeylonParserScheduler ceylonParserScheduler = new CeylonParserScheduler(getParseController(), 
+            		this, getDocumentProvider(), (IMessageHandler) fAnnotationCreatorField.get(this));
             astListenersField.set(ceylonParserScheduler, astListeners);
             fParserSchedulerField.set(this, ceylonParserScheduler);
-/*
-            IDocumentListener docLister = (IDocumentListener) fDocumentListenerField.get(this);
+            /*IDocumentListener docLister = (IDocumentListener) fDocumentListenerField.get(this);
             getDocumentProvider().getDocument(getEditorInput()).removeDocumentListener(docLister);
-            watchDocumentMethod.invoke(this, new Object[] {100});
-            */
-        } catch (Exception e) {
+            watchDocumentMethod.invoke(this, new Object[] {100});*/
+        } 
+        catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -309,20 +295,16 @@ public class CeylonEditor extends UniversalEditor {
         
         ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
-                if (event.getType() != IResourceChangeEvent.POST_BUILD)
-                    return;
-                if (event.getBuildKind() != IncrementalProjectBuilder.AUTO_BUILD)
-                    return;
-                
-                IParseController pc= fLanguageServiceManager.getParseController();
-                if (pc == null) {
-                    return;
-                }
-                IPath oldWSRelPath= pc.getProject().getRawProject().getFullPath().append(pc.getPath());
-                IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
-
-                if (rd != null) {
-                    scheduleParsing();
+                if (event.getType()==POST_BUILD && event.getBuildKind()==AUTO_BUILD) {
+                	IParseController pc= fLanguageServiceManager.getParseController();
+                	if (pc!=null) {
+                		IPath oldWSRelPath= pc.getProject().getRawProject()
+                				.getFullPath().append(pc.getPath());
+                		IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+                		if (rd != null) {
+                			scheduleParsing();
+                		}
+                	}
                 }
             }
         }, IResourceChangeEvent.POST_BUILD);
@@ -331,15 +313,15 @@ public class CeylonEditor extends UniversalEditor {
     public void scheduleParsing() {
         try {
             ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
-            if (scheduler != null) {
+            if (scheduler!=null) {
                 scheduler.cancel();
                 scheduler.schedule(50);
             }
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
+        } 
+        catch (IllegalArgumentException e) {
             e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
+        } 
+        catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }
@@ -393,35 +375,31 @@ public class CeylonEditor extends UniversalEditor {
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.SELECT_LINE_START);
         editor.setAction(ITextEditorActionDefinitionIds.SELECT_LINE_START, action);*/
 
-        setAction(ITextEditorActionDefinitionIds.WORD_PREVIOUS, 
-                new NavigatePreviousSubWordAction());
+        setAction(WORD_PREVIOUS, new NavigatePreviousSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.ARROW_LEFT, SWT.NULL);
 
-        setAction(ITextEditorActionDefinitionIds.WORD_NEXT, 
-                new NavigateNextSubWordAction());
+        setAction(WORD_NEXT, new NavigateNextSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.ARROW_RIGHT, SWT.NULL);
 
-        setAction(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS, 
-                new SelectPreviousSubWordAction());
+        setAction(SELECT_WORD_PREVIOUS, new SelectPreviousSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.SHIFT | SWT.ARROW_LEFT, SWT.NULL);
 
-        setAction(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT, 
-                new SelectNextSubWordAction());
+        setAction(SELECT_WORD_NEXT, new SelectNextSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.SHIFT | SWT.ARROW_RIGHT, SWT.NULL);
 
-        setAction(ITextEditorActionDefinitionIds.DELETE_PREVIOUS_WORD, new DeletePreviousSubWordAction());
+        setAction(DELETE_PREVIOUS_WORD, new DeletePreviousSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.BS, SWT.NULL);
-        markAsStateDependentAction(ITextEditorActionDefinitionIds.DELETE_PREVIOUS_WORD, true);
+        markAsStateDependentAction(DELETE_PREVIOUS_WORD, true);
 
-        setAction(ITextEditorActionDefinitionIds.DELETE_NEXT_WORD, new DeleteNextSubWordAction());
+        setAction(DELETE_NEXT_WORD, new DeleteNextSubWordAction());
         textWidget.setKeyBinding(SWT.CTRL | SWT.DEL, SWT.NULL);
-        markAsStateDependentAction(ITextEditorActionDefinitionIds.DELETE_NEXT_WORD, true);
+        markAsStateDependentAction(DELETE_NEXT_WORD, true);
     }
     
     protected class NavigateNextSubWordAction extends NextSubWordAction {
         public NavigateNextSubWordAction() {
             super(ST.WORD_NEXT);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.WORD_NEXT);
+            setActionDefinitionId(WORD_NEXT);
         }
         @Override
         protected void setCaretPosition(final int position) {
@@ -432,7 +410,7 @@ public class CeylonEditor extends UniversalEditor {
     protected class NavigatePreviousSubWordAction extends PreviousSubWordAction {
         public NavigatePreviousSubWordAction() {
             super(ST.WORD_PREVIOUS);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.WORD_PREVIOUS);
+            setActionDefinitionId(WORD_PREVIOUS);
         }
         @Override
         protected void setCaretPosition(final int position) {
@@ -609,7 +587,7 @@ public class CeylonEditor extends UniversalEditor {
     protected class SelectNextSubWordAction extends NextSubWordAction {
         public SelectNextSubWordAction() {
             super(ST.SELECT_WORD_NEXT);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT);
+            setActionDefinitionId(SELECT_WORD_NEXT);
         }
         @Override
         protected void setCaretPosition(final int position) {
@@ -633,7 +611,7 @@ public class CeylonEditor extends UniversalEditor {
     protected class SelectPreviousSubWordAction extends PreviousSubWordAction {
         public SelectPreviousSubWordAction() {
             super(ST.SELECT_WORD_PREVIOUS);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS);
+            setActionDefinitionId(SELECT_WORD_PREVIOUS);
         }
         @Override
         protected void setCaretPosition(final int position) {
@@ -657,7 +635,7 @@ public class CeylonEditor extends UniversalEditor {
     protected class DeleteNextSubWordAction extends NextSubWordAction implements IUpdate {
         public DeleteNextSubWordAction() {
             super(ST.DELETE_WORD_NEXT);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.DELETE_NEXT_WORD);
+            setActionDefinitionId(DELETE_NEXT_WORD);
         }
         @Override
         protected void setCaretPosition(final int position) {
@@ -690,7 +668,7 @@ public class CeylonEditor extends UniversalEditor {
     protected class DeletePreviousSubWordAction extends PreviousSubWordAction implements IUpdate {
         public DeletePreviousSubWordAction() {
             super(ST.DELETE_WORD_PREVIOUS);
-            setActionDefinitionId(ITextEditorActionDefinitionIds.DELETE_PREVIOUS_WORD);
+            setActionDefinitionId(DELETE_PREVIOUS_WORD);
         }
         @Override
         protected void setCaretPosition(int position) {
@@ -722,7 +700,6 @@ public class CeylonEditor extends UniversalEditor {
     @Override
     public Object getAdapter(Class required) {
         if (IContentOutlinePage.class.equals(required)) {
-        	IRegionSelectionService regionSelector= (IRegionSelectionService) getAdapter(IRegionSelectionService.class);
             if (myOutlinePage == null) {
                 myOutlinePage = new CeylonOutlinePage(getParseController(),
                         new CeylonTreeModelBuilder(), new CeylonLabelProvider());
