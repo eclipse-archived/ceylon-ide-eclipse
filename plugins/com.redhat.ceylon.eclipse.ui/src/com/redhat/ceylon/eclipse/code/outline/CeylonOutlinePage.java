@@ -85,7 +85,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
             getTreeViewer().getTree().getDisplay().asyncExec(new Runnable() {
                 public void run() {
                 	if (getTreeViewer() != null && !getTreeViewer().getTree().isDisposed())
-                		getTreeViewer().setInput(fModelBuilder.buildTree(fParseController.getCurrentAst()));
+                		getTreeViewer().setInput(fModelBuilder.buildTree(fParseController.getRootNode()));
                 }
             });
         }
@@ -116,7 +116,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
             viewer.setLabelProvider(fLabelProvider);
         }
         viewer.addSelectionChangedListener(this);
-        CeylonOutlineNode rootNode= fModelBuilder.buildTree(fParseController.getCurrentAst());
+        CeylonOutlineNode rootNode= fModelBuilder.buildTree(fParseController.getRootNode());
         viewer.setInput(rootNode);
         viewer.setAutoExpandLevel(2);
 

@@ -14,24 +14,41 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+
 public class CeylonOutlineNode extends ModelTreeNode {
 
-	public CeylonOutlineNode(Object astNode, int category) {
+	public CeylonOutlineNode(Node astNode, int category) {
 		super(astNode, category);
 	}
 
-	public CeylonOutlineNode(Object astNode, ModelTreeNode parent, int category) {
+	public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, int category) {
 		super(astNode, parent, category);
 	}
 
-	public CeylonOutlineNode(Object astNode, ModelTreeNode parent) {
+	public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent) {
 		super(astNode, parent);
 	}
 
-	public CeylonOutlineNode(Object astNode) {
+	public CeylonOutlineNode(Node astNode) {
 		super(astNode);
 	}
 	
+	@Override
+	public Node getASTNode() {
+		return (Node) super.getASTNode();
+	}
+	
+    public CeylonOutlineNode[] getChildren() {
+        ModelTreeNode[] children = super.getChildren();
+        CeylonOutlineNode[] result = new CeylonOutlineNode[children.length];
+        System.arraycopy(children, 0, result, 0, children.length);
+		return result;
+    }
+
+    public CeylonOutlineNode getParent() {
+        return (CeylonOutlineNode) super.getParent();
+    }
 	
     /*public static final int DEFAULT_CATEGORY= 0;
 

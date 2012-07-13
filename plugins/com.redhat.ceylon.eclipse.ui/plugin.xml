@@ -375,14 +375,14 @@
          point="org.eclipse.imp.runtime.compareNodeIdentifier">
       <compareNodeIdentifier 
             language="ceylon"
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonCompareNodeIdentifier"/>
+            class="com.redhat.ceylon.eclipse.code.outline.CeylonCompareNodeIdentifier"/>
    </extension>
    
    <extension
          point="org.eclipse.compare.structureCreators">
        <structureCreator
            extensions="ceylon"
-           class="org.eclipse.imp.compare.ModelStructureCreator"
+           class="com.redhat.ceylon.eclipse.code.outline.CeylonStructureCreator"
            id="com.redhat.ceylon.eclipse.ui.compare"/>
    </extension>
    
