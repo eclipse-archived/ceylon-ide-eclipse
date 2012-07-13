@@ -103,8 +103,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 /**
  * Abstract class for Show hierarchy in light-weight controls.
  */
-public abstract class AbstractInformationControl implements IInformationControl, IInformationControlExtension, IInformationControlExtension2,
-IInformationControlExtension3, DisposeListener {
+public abstract class AbstractInformationControl 
+    implements IInformationControl, IInformationControlExtension, 
+               IInformationControlExtension2, IInformationControlExtension3, 
+               DisposeListener {
 
 	/**
 	 * The NamePatternFilter selects the elements which
