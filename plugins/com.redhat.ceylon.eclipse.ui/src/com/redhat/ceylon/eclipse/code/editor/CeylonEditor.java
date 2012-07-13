@@ -21,7 +21,6 @@ import java.text.CharacterIterator;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
@@ -396,7 +395,8 @@ public class CeylonEditor extends UniversalEditor {
         markAsStateDependentAction(DELETE_NEXT_WORD, true);
     }
     
-    protected class NavigateNextSubWordAction extends NextSubWordAction {
+    protected class NavigateNextSubWordAction 
+            extends NextSubWordAction {
         public NavigateNextSubWordAction() {
             super(ST.WORD_NEXT);
             setActionDefinitionId(WORD_NEXT);
@@ -407,7 +407,8 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
 
-    protected class NavigatePreviousSubWordAction extends PreviousSubWordAction {
+    protected class NavigatePreviousSubWordAction 
+            extends PreviousSubWordAction {
         public NavigatePreviousSubWordAction() {
             super(ST.WORD_PREVIOUS);
             setActionDefinitionId(WORD_PREVIOUS);
@@ -418,7 +419,8 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
 
-    protected abstract class NextSubWordAction extends TextNavigationAction {
+    protected abstract class NextSubWordAction 
+            extends TextNavigationAction {
 
         protected CeylonWordIterator fIterator= new CeylonWordIterator();
 
@@ -431,9 +433,6 @@ public class CeylonEditor extends UniversalEditor {
             super(getSourceViewer().getTextWidget(), code);
         }
 
-        /*
-         * @see org.eclipse.jface.action.IAction#run()
-         */
         @Override
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
@@ -442,7 +441,8 @@ public class CeylonEditor extends UniversalEditor {
             final IDocument document= viewer.getDocument();
             try {
                 fIterator.setText((CharacterIterator)new DocumentCharacterIterator(document));
-                int position= widgetOffset2ModelOffset(viewer, viewer.getTextWidget().getCaretOffset());
+                int position= widgetOffset2ModelOffset(viewer, 
+                		viewer.getTextWidget().getCaretOffset());
                 if (position == -1)
                     return;
 
@@ -452,7 +452,8 @@ public class CeylonEditor extends UniversalEditor {
                     getTextWidget().showSelection();
                     fireSelectionChanged();
                 }
-            } catch (BadLocationException x) {
+            } 
+            catch (BadLocationException x) {
                 // ignore
             }
         }
@@ -495,21 +496,24 @@ public class CeylonEditor extends UniversalEditor {
         }
 
         /**
-         * Sets the caret position to the sub-word boundary given with <code>position</code>.
+         * Sets the caret position to the sub-word boundary given with 
+         * <code>position</code>.
          *
          * @param position Position where the action should move the caret
          */
         protected abstract void setCaretPosition(int position);
     }
 
-    protected abstract class PreviousSubWordAction extends TextNavigationAction {
+    protected abstract class PreviousSubWordAction 
+            extends TextNavigationAction {
 
         protected CeylonWordIterator fIterator= new CeylonWordIterator();
 
         /**
          * Creates a new previous sub-word action.
          *
-         * @param code Action code for the default operation. Must be an action code from @see org.eclipse.swt.custom.ST.
+         * @param code Action code for the default operation. Must be an 
+         * action code from @see org.eclipse.swt.custom.ST.
          */
         protected PreviousSubWordAction(final int code) {
             super(getSourceViewer().getTextWidget(), code);
@@ -523,7 +527,8 @@ public class CeylonEditor extends UniversalEditor {
             final IDocument document= viewer.getDocument();
             try {
                 fIterator.setText((CharacterIterator)new DocumentCharacterIterator(document));
-                int position= widgetOffset2ModelOffset(viewer, viewer.getTextWidget().getCaretOffset());
+                int position= widgetOffset2ModelOffset(viewer, 
+                		viewer.getTextWidget().getCaretOffset());
                 if (position == -1)
                     return;
 
@@ -584,7 +589,8 @@ public class CeylonEditor extends UniversalEditor {
         protected abstract void setCaretPosition(int position);
     }
     
-    protected class SelectNextSubWordAction extends NextSubWordAction {
+    protected class SelectNextSubWordAction 
+            extends NextSubWordAction {
         public SelectNextSubWordAction() {
             super(ST.SELECT_WORD_NEXT);
             setActionDefinitionId(SELECT_WORD_NEXT);
@@ -608,7 +614,8 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
     
-    protected class SelectPreviousSubWordAction extends PreviousSubWordAction {
+    protected class SelectPreviousSubWordAction 
+            extends PreviousSubWordAction {
         public SelectPreviousSubWordAction() {
             super(ST.SELECT_WORD_PREVIOUS);
             setActionDefinitionId(SELECT_WORD_PREVIOUS);
@@ -632,7 +639,8 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
     
-    protected class DeleteNextSubWordAction extends NextSubWordAction implements IUpdate {
+    protected class DeleteNextSubWordAction 
+            extends NextSubWordAction implements IUpdate {
         public DeleteNextSubWordAction() {
             super(ST.DELETE_WORD_NEXT);
             setActionDefinitionId(DELETE_NEXT_WORD);
@@ -665,7 +673,8 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
 
-    protected class DeletePreviousSubWordAction extends PreviousSubWordAction implements IUpdate {
+    protected class DeletePreviousSubWordAction 
+            extends PreviousSubWordAction implements IUpdate {
         public DeletePreviousSubWordAction() {
             super(ST.DELETE_WORD_PREVIOUS);
             setActionDefinitionId(DELETE_PREVIOUS_WORD);
