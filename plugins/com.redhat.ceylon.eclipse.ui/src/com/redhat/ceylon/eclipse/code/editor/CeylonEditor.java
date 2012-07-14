@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -62,20 +61,13 @@ import org.eclipse.imp.editor.IEditorActionDefinitionIds;
 import org.eclipse.imp.editor.IProblemChangedListener;
 import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.editor.IResourceDocumentMapListener;
-import org.eclipse.imp.editor.LanguageServiceManager;
 import org.eclipse.imp.editor.ParserScheduler;
-import org.eclipse.imp.editor.ServiceControllerManager;
-import org.eclipse.imp.language.ILanguageService;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
-import org.eclipse.imp.language.ServiceFactory;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IModelListener;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.imp.preferences.IPreferencesService;
 import org.eclipse.imp.preferences.IPreferencesService.BooleanPreferenceListener;
 import org.eclipse.imp.preferences.IPreferencesService.IntegerPreferenceListener;
@@ -85,7 +77,6 @@ import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
-import org.eclipse.imp.services.IEditorInputResolver;
 import org.eclipse.imp.services.IFoldingUpdater;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.imp.services.INavigationTargetFinder;
@@ -110,7 +101,6 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextPresentation;
-import org.eclipse.jface.text.formatter.ContentFormatter;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
@@ -168,8 +158,9 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * An Eclipse editor, which is not enhanced using API; rather, we publish extension
@@ -209,13 +200,7 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
     /** Preference key for matching brackets color */
     protected final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
 
-    private Language fLanguage;
-
     private ParserScheduler fParserScheduler;
-
-    protected LanguageServiceManager fLanguageServiceManager;
-
-    protected ServiceControllerManager fServiceControllerManager;
 
     private IDocumentProvider fZipDocProvider;
 
@@ -276,10 +261,6 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
      */
     protected StructuredSourceViewerConfiguration createSourceViewerConfiguration() {
     	return new StructuredSourceViewerConfiguration(getPreferenceStore(), this);
-    }
-
-    public LanguageServiceManager getLanguageServiceManager() {
-        return fLanguageServiceManager;
     }
 
     public IPreferencesService getLanguageSpecificPreferences() {
@@ -983,39 +964,16 @@ extends PreviousSubWordAction implements IUpdate {
 
     public void createPartControl(Composite parent) {
         String esft = getPreferenceStore().getString(EDITOR_SPACES_FOR_TABS);
+        initializeParseController();
+        findLanguageSpecificPreferences();
 
-        fLanguage= LanguageRegistry.findLanguage(getEditorInput(), getDocumentProvider());
-
-        // SMS 10 Oct 2008:  null check added per bug #242949
-        if (fLanguage == null) {
-        	
-//            throw new IllegalArgumentException("No language support found for files of type '" +
-//            		EditorInputUtils.getPath(getEditorInput()).getFileExtension() + "'");
-        }
-
-        // Create language service extensions now, since some services could
-        // get accessed via super.createPartControl() (in particular, while
-        // setting up the ISourceViewer).
-        if (fLanguage != null) {
-            fLanguageServiceManager= new LanguageServiceManager(fLanguage);
-            fLanguageServiceManager.initialize(this);
-            fServiceControllerManager= new ServiceControllerManager(this, fLanguageServiceManager);
-            fServiceControllerManager.initialize();
-            if (fLanguageServiceManager.getParseController() != null) {
-                initializeParseController();
-                findLanguageSpecificPreferences();
-            }
-        }
         // RMF 07 June 2010 - Not sure why the "run the spell checker" pref would get set, but
         // it does seem to, which gives lots of annoying squigglies all over the place...
         getPreferenceStore().setValue(SpellingService.PREFERENCE_SPELLING_ENABLED, false);
 
         super.createPartControl(parent);
 
-        if (fLanguageServiceManager != null && fLanguageServiceManager.getParseController() != null) {
-            fServiceControllerManager.setSourceViewer(getSourceViewer());
-            initiateServiceControllers();
-        }
+        initiateServiceControllers();
 
         // SMS 4 Apr 2007:  Call no longer needed because preferences for the
         // overview ruler are now obtained from appropriate preference store directly
@@ -1052,17 +1010,11 @@ extends PreviousSubWordAction implements IUpdate {
         currentTheme.getFontRegistry().addListener(fontChangeListener);
     }
 
-    private void watchForSourceBuild() {
-        if (fLanguageServiceManager == null ||
-            fLanguageServiceManager.getParseController() == null ||
-            fLanguageServiceManager.getParseController().getProject() == null) {
-            return;
-        }
-        
+    private void watchForSourceBuild() {        
         ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType()==POST_BUILD && event.getBuildKind()==AUTO_BUILD) {
-                	IParseController pc= fLanguageServiceManager.getParseController();
+                	CeylonParseController pc = getParseController();
                 	if (pc!=null) {
                 		IPath oldWSRelPath= pc.getProject().getRawProject()
                 				.getFullPath().append(pc.getPath());
@@ -1084,27 +1036,30 @@ extends PreviousSubWordAction implements IUpdate {
     	}
     }
 
+    private CeylonParseController parseController;
+    
     private void initializeParseController() {
-        // Initialize the parse controller now, since the initialization of other things (like the context help support) might depend on it being so.
+    	
+    	// Initialize the parse controller now, since the initialization of other things (like the context help support) might depend on it being so.
         IEditorInput editorInput= getEditorInput();
         IFile file = null;
         IPath filePath = null;
 
-		IEditorInputResolver editorInputResolver= fLanguageServiceManager.getEditorInputResolver();
+		//IEditorInputResolver editorInputResolver= fLanguageServiceManager.getEditorInputResolver();
 
-		if (fLanguageServiceManager != null && editorInputResolver != null) {
+		/*if (fLanguageServiceManager != null && editorInputResolver != null) {
 			file = editorInputResolver.getFile(editorInput);
 			filePath = editorInputResolver.getPath(editorInput);
-		} else {
-			file = EditorInputUtils.getFile(editorInput);
-			filePath = EditorInputUtils.getPath(editorInput);
-		}
+		} else {*/
+        file = EditorInputUtils.getFile(editorInput);
+        filePath = EditorInputUtils.getPath(editorInput);
+		//}
         
         try {
+        	parseController = new CeylonParseController();
             IProject project= (file != null && file.exists()) ? file.getProject() : null;
             ISourceProject srcProject= (project != null) ? ModelFactory.open(project) : null;
-
-            fLanguageServiceManager.getParseController().initialize(filePath, srcProject, fAnnotationCreator);
+            parseController.initialize(filePath, srcProject, fAnnotationCreator);
             // TODO Need to do the following to give the strategy access to project-specific preference settings
 //          if (fLanguageServiceManager.getAutoEditStrategies().size() > 0) {
 //              Set<org.eclipse.imp.services.IAutoEditStrategy> strategies= fLanguageServiceManager.getAutoEditStrategies();
@@ -1119,12 +1074,13 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private void findLanguageSpecificPreferences() {
-        ISourceProject srcProject = fLanguageServiceManager.getParseController().getProject();
-        if (srcProject != null) {
+        ISourceProject srcProject = getParseController().getProject();
+        if (srcProject!=null) {
         	IProject project= srcProject.getRawProject();
-        	fLangSpecificPrefs= new PreferencesService(project, fLanguage.getName());
-        } else {
-            fLangSpecificPrefs= new PreferencesService(null, fLanguage.getName());
+        	fLangSpecificPrefs= new PreferencesService(project, CeylonPlugin.LANGUAGE_ID);
+        } 
+        else {
+            fLangSpecificPrefs= new PreferencesService(null, CeylonPlugin.LANGUAGE_ID);
         }
         // Now propagate the setting of "spaces for tabs" from either the language-specific preference store,
         // or the IMP runtime's preference store to the UniversalEditor's preference store, where
@@ -1228,12 +1184,7 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private void watchDocument(final long reparse_schedule_delay) {
-        if (fLanguageServiceManager.getParseController() == null) {
-            return;
-        }
-
         IDocument doc= getDocumentProvider().getDocument(getEditorInput());
-
         doc.addDocumentListener(fDocumentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
@@ -1384,21 +1335,13 @@ extends PreviousSubWordAction implements IUpdate {
     };
 
     private void watchForSourceMove() {
-        if (fLanguageServiceManager == null ||
-            fLanguageServiceManager.getParseController() == null ||
-            fLanguageServiceManager.getParseController().getProject() == null) {
-            return;
-        }
         // We need to see when the editor input changes, so we can watch the new document
         addPropertyListener(fEditorInputPropertyListener);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType() != IResourceChangeEvent.POST_CHANGE)
                     return;
-                IParseController pc= fLanguageServiceManager.getParseController();
-                if (pc == null) {
-                    return;
-                }
+                CeylonParseController pc= getParseController();
                 IPath oldWSRelPath= pc.getProject().getRawProject().getFullPath().append(pc.getPath());
                 IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
 
@@ -1464,9 +1407,9 @@ extends PreviousSubWordAction implements IUpdate {
             fProblemMarkerManager.addListener(fEditorErrorTickUpdater);
             fAnnotationUpdater= new AnnotationUpdater();
             fProblemMarkerManager.addListener(fAnnotationUpdater);
-
-            CeylonParseController cpc = (CeylonParseController) fLanguageServiceManager.getParseController();
-			fParserScheduler= new CeylonParserScheduler(cpc, this, getDocumentProvider(), fAnnotationCreator);
+            
+			fParserScheduler= new CeylonParserScheduler(parseController, this, 
+					getDocumentProvider(), fAnnotationCreator);
 
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
@@ -1478,47 +1421,43 @@ extends PreviousSubWordAction implements IUpdate {
             // The source viewer configuration has already been asked for its IContentFormatter,
             // but before we actually instantiated the relevant controller class. So update the
             // source viewer, now that we actually have the IContentFormatter.
-            ContentFormatter formatter= new ContentFormatter();
+            /*ContentFormatter formatter= new ContentFormatter();
 
             formatter.setFormattingStrategy(fServiceControllerManager.getFormattingController(), 
             		DEFAULT_CONTENT_TYPE);
-            sourceViewer.setFormatter(formatter);
+            sourceViewer.setFormatter(formatter);*/
 
             try {
-            	new PresentationController(getSourceViewer(), cpc).damage(new Region(0, 
-            			sourceViewer.getDocument().getLength()));
+            	new PresentationController(getSourceViewer(), parseController)
+            	        .damage(new Region(0, sourceViewer.getDocument().getLength()));
             } 
             catch (Exception e) {
             	e.printStackTrace();
             }
             
-            // SMS 29 May 2007 (to give viewer access to single-line comment prefix)
-            sourceViewer.setParseController(cpc);
-
-            if (fLanguageServiceManager.getFoldingUpdater() != null) {
-                ProjectionViewer projViewer= sourceViewer;
-                ProjectionSupport projectionSupport= new ProjectionSupport(projViewer, getAnnotationAccess(),
-                                                                           getSharedColors());
-                projectionSupport.install();
-                projViewer.doOperation(ProjectionViewer.TOGGLE);
-                fAnnotationModel= projViewer.getProjectionAnnotationModel();
-                if (fAnnotationModel != null) {
-                    fParserScheduler.addModelListener(new FoldingController(fAnnotationModel, 
-                    		fLanguageServiceManager.getFoldingUpdater()));
-                }
+            ProjectionSupport projectionSupport= new ProjectionSupport(sourceViewer, getAnnotationAccess(),
+            		getSharedColors());
+            projectionSupport.install();
+            sourceViewer.doOperation(ProjectionViewer.TOGGLE);
+            fAnnotationModel= sourceViewer.getProjectionAnnotationModel();
+            if (fAnnotationModel != null) {
+            	fParserScheduler.addModelListener(new FoldingController(fAnnotationModel, 
+            			new CeylonFoldingUpdater()));
             }
 
             if (isEditable()) {
                 fParserScheduler.addModelListener(new AnnotationCreatorListener());
             }
-            fServiceControllerManager.setupModelListeners(fParserScheduler);
+            //fServiceControllerManager.setupModelListeners(fParserScheduler);
 
             // TODO RMF 8/6/2007 - Disable "Mark Occurrences" if no occurrence marker exists for this language
             // The following doesn't work b/c getAction() doesn't find the Mark Occurrences action (why?)
             // if (this.fOccurrenceMarker == null)
             //   getAction("org.eclipse.imp.runtime.actions.markOccurrencesAction").setEnabled(false);
 
-            installExternalEditorServices();
+            EditorAnnotationService editorService = new EditorAnnotationService(this);
+            fParserScheduler.addModelListener(editorService);
+
             watchDocument(REPARSE_SCHEDULE_DELAY);
             fParserScheduler.schedule();
         } 
@@ -1530,33 +1469,17 @@ extends PreviousSubWordAction implements IUpdate {
     private static final int REPARSE_SCHEDULE_DELAY= 100;
 
     private void setTitleImageFromLanguageIcon() {
-        // Only set the editor's title bar icon if the language has a label provider
-        if (fLanguageServiceManager != null && fLanguageServiceManager.getLabelProvider() != null) {
-            IEditorInput editorInput= getEditorInput();
-            IEditorInputResolver editorInputResolver= fLanguageServiceManager.getEditorInputResolver();
-            Object fileOrPath= (editorInputResolver != null) ? editorInputResolver.getFile(editorInput) :
-                EditorInputUtils.getFile(editorInput);
-
-            if (fileOrPath == null) {
-                fileOrPath = this.fLanguageServiceManager.getParseController().getPath();
-            }
-
-            try {
-                setTitleImage(fLanguageServiceManager.getLabelProvider().getImage(fileOrPath));
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void installExternalEditorServices() {
-        Set<IModelListener> editorServices= fLanguageServiceManager.getEditorServices();
-        for(ILanguageService editorService : editorServices) {
-            if (editorService instanceof EditorAnnotationService)
-                ((EditorAnnotationService) editorService).setEditor(this);
-            fParserScheduler.addModelListener((IModelListener) editorService);
-        }
+    	IEditorInput editorInput= getEditorInput();
+    	Object fileOrPath= EditorInputUtils.getFile(editorInput);
+    	if (fileOrPath == null) {
+    		fileOrPath = getParseController().getPath();
+    	}
+    	try {
+    		setTitleImage(new CeylonLabelProvider().getImage(fileOrPath));
+    	} 
+    	catch (Exception e) {
+    		e.printStackTrace();
+    	}
     }
     
     /**
@@ -1685,9 +1608,6 @@ extends PreviousSubWordAction implements IUpdate {
             getResourceDocumentMapListener().unregisterDocument(getDocumentProvider().getDocument(getEditorInput()));
         }
 
-        if (fLanguageServiceManager != null) {
-            fLanguageServiceManager.dispose();
-        }
         fToggleBreakpointAction.dispose(); // this holds onto the IDocument
         fFoldingActionGroup.dispose();
 
@@ -1695,8 +1615,8 @@ extends PreviousSubWordAction implements IUpdate {
         	fParserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
         }
         fParserScheduler= null;
-        ((StructuredSourceViewer) getSourceViewer()).setParseController(null);
         super.dispose();
+        parseController = null;
 
         if (fResourceListener != null) {
         	ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
@@ -1857,9 +1777,8 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private boolean isBracket(char character) {
-        ILanguageSyntaxProperties syntaxProps= fLanguageServiceManager.getParseController().getSyntaxProperties();
+    	CeylonLanguageSyntaxProperties syntaxProps= CeylonLanguageSyntaxProperties.INSTANCE;
         String[][] fences= syntaxProps.getFences();
-
         for(int i= 0; i != fences.length; ++i) {
             if (fences[i][0].indexOf(character) >= 0)
                 return true;
@@ -2123,7 +2042,7 @@ extends PreviousSubWordAction implements IUpdate {
             // Ask the language's token colorer how much of the document presentation needs to be recomputed.
             final ITokenColorer tokenColorer= new CeylonTokenColorer();
             if (tokenColorer != null)
-                return tokenColorer.calculateDamageExtent(partition, fLanguageServiceManager.getParseController());
+                return tokenColorer.calculateDamageExtent(partition, getParseController());
             else
                 return partition;
         }
@@ -2135,7 +2054,7 @@ extends PreviousSubWordAction implements IUpdate {
 	    ITypedRegion previousDamage= null;
 
 	    final PresentationController pc =  new PresentationController(getSourceViewer(), 
-	    		(CeylonParseController) fLanguageServiceManager.getParseController());
+	    		getParseController());
 
         public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
             boolean hyperlinkRestore= false;
@@ -2158,7 +2077,7 @@ extends PreviousSubWordAction implements IUpdate {
             try {
                 pc.damage(damage);
                 if (hyperlinkRestore) {
-                	pc.update(fLanguageServiceManager.getParseController(), new NullProgressMonitor());
+                	pc.update(getParseController(), new NullProgressMonitor());
                 }
             } 
             catch (Exception e) {
@@ -2232,11 +2151,11 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public CeylonParseController getParseController() {
-        return (CeylonParseController) fLanguageServiceManager.getParseController();
+        return parseController;
     }
     
     public IOccurrenceMarker getOccurrenceMarker() {
-        return fLanguageServiceManager.getOccurrenceMarker();
+        return new CeylonOccurrenceMarker();
     }
 
     // SMS 4 May 2006:
@@ -2336,9 +2255,9 @@ abstract class TargetNavigationAction extends Action {
         fNavTargetFinder= null;
         if (editor instanceof CeylonEditor) {
             fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= ServiceFactory.getInstance()
-            		.getNavigationTargetFinder(CeylonBuilder.LANGUAGE);
-        } else {
+            fNavTargetFinder= null; //TODO??
+        } 
+        else {
             fEditor= null;
         }
         setEnabled(fNavTargetFinder != null);
@@ -2347,8 +2266,8 @@ abstract class TargetNavigationAction extends Action {
     @Override
     public void run() {
         IRegion selection= fEditor.getSelectedRegion();
-        IParseController pc= fEditor.getParseController();
-        ISourcePositionLocator locator= pc.getSourcePositionLocator();
+        CeylonParseController pc= fEditor.getParseController();
+        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
         Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getCurrentAst();
@@ -2411,8 +2330,7 @@ class SelectEnclosingAction extends Action {
         fNavTargetFinder= null;
         if (editor instanceof CeylonEditor) {
             fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= ServiceFactory.getInstance()
-            		.getNavigationTargetFinder(CeylonBuilder.LANGUAGE);
+            fNavTargetFinder= null; //TODO???
         } 
         else {
             fEditor= null;
@@ -2423,8 +2341,8 @@ class SelectEnclosingAction extends Action {
     @Override
     public void run() {
         IRegion selection= fEditor.getSelectedRegion();
-        IParseController pc= fEditor.getParseController();
-        ISourcePositionLocator locator= pc.getSourcePositionLocator();
+        CeylonParseController pc= fEditor.getParseController();
+        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
         Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getCurrentAst();

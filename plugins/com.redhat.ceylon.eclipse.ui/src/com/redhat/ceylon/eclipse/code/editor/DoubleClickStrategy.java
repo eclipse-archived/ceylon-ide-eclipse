@@ -1,14 +1,14 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.imp.services.base.LanguageSyntaxPropertiesBase;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultTextDoubleClickStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
+
+import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
  * IMP implementation of ITextDoubleClickStrategy, which appeals to the language-
@@ -18,42 +18,24 @@ import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
  * @author rfuhrer, ataylor
  */
 public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
-    private final IParseController fParseController;
+    private final CeylonParseController fParseController;
     protected final IdentifierDetector fWordDetector;
-    protected final ILanguageSyntaxProperties fSyntaxProps;
+    protected final CeylonLanguageSyntaxProperties fSyntaxProps;
     protected final DefaultCharacterPairMatcher fPairMatcher;
 
-    public DoubleClickStrategy(IParseController pc) {
+    public DoubleClickStrategy(CeylonParseController pc) {
         fParseController = pc;
         fWordDetector = new IdentifierDetector();
 
         StringBuilder sb= new StringBuilder();
-        ILanguageSyntaxProperties props= pc.getSyntaxProperties();
 
-        if (props != null) {
-            fSyntaxProps= props;
-            String[][] fences= fSyntaxProps.getFences();
-            if (fences != null) {
-                for(int i= 0; i < fences.length; i++) {
-                    sb.append(fences[i][0]);
-                    sb.append(fences[i][1]);
-                }
-            }
-        } else {
-           fSyntaxProps = new LanguageSyntaxPropertiesBase() {
-               public String getSingleLineCommentPrefix() {
-                   return null;
-               }
-               public String getBlockCommentStart() {
-                   return null;
-               }
-               public String getBlockCommentEnd() {
-                   return null;
-               }
-               public String getBlockCommentContinuation() {
-                   return null;
-               }
-           };
+        fSyntaxProps= CeylonLanguageSyntaxProperties.INSTANCE;
+        String[][] fences= fSyntaxProps.getFences();
+        if (fences != null) {
+        	for(int i= 0; i < fences.length; i++) {
+        		sb.append(fences[i][0]);
+        		sb.append(fences[i][1]);
+        	}
         }
 
         fPairMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());

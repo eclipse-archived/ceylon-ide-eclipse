@@ -40,7 +40,16 @@ public class EditorAnnotationService implements IModelListener {
     
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
-    @Override
+    private CeylonEditor editor;
+    
+    public EditorAnnotationService(CeylonEditor editor) {
+    	this.editor = editor;
+        //System.out.println("Adding SelectionListener to editor " + editor);
+        ((IPostSelectionProvider) editor.getSelectionProvider())
+            .addPostSelectionChangedListener(new SelectionListener());
+	}
+
+	@Override
     public AnalysisRequired getAnalysisRequired() {
         return AnalysisRequired.NONE;
     }
@@ -122,15 +131,6 @@ public class EditorAnnotationService implements IModelListener {
     private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
         model.addAnnotation(new Annotation(TODO_ANNOTATION_TYPE, false, null), 
                 new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
-    }
-    
-    private CeylonEditor editor;
-    
-    public void setEditor(CeylonEditor editor) {
-    	this.editor = editor;
-        //System.out.println("Adding SelectionListener to editor " + editor);
-        ((IPostSelectionProvider) editor.getSelectionProvider())
-            .addPostSelectionChangedListener(new SelectionListener());
     }
     
     class SelectionListener implements ISelectionChangedListener {

@@ -9,15 +9,7 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import org.eclipse.imp.editor.LanguageServiceManager;
-import org.eclipse.imp.editor.ServiceControllerManager;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.preferences.IPreferencesService;
-import org.eclipse.imp.services.IDocumentationProvider;
-import org.eclipse.imp.services.base.DefaultAnnotationHover;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
@@ -32,37 +24,37 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.InformationPresenter;
-import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider;
 import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
-import com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver;
+import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
+import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class StructuredSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
     protected final CeylonEditor fEditor;
-    private ServiceControllerManager fServiceControllerManager;
-    private LanguageServiceManager fLanguageServiceManager;
-    private IPreferencesService fLangSpecificPrefs;
     private CompletionProcessor processor;
 
     public StructuredSourceViewerConfiguration(IPreferenceStore prefStore, CeylonEditor editor) {
@@ -72,34 +64,13 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         // Can't cache the ServiceControllerManager, LangaugeServiceManager, or the IPreferencesService
         // yet, b/c they haven't been set up by the editor yet. Retrieve them lazily.
     }
-
-    protected ServiceControllerManager getServiceControllerManager() {
-        if (fServiceControllerManager == null) {
-            fServiceControllerManager= fEditor.fServiceControllerManager;
-        }
-        return fServiceControllerManager;
-    }
-
-    protected LanguageServiceManager getLanguageServiceManager() {
-        if (fLanguageServiceManager == null) {
-            fLanguageServiceManager= fEditor.getLanguageServiceManager();
-        }
-        return fLanguageServiceManager;
-    }
-
-    protected IPreferencesService getLangSpecificPrefs() {
-        if (fLangSpecificPrefs == null) {
-            fLangSpecificPrefs= fEditor.getLanguageSpecificPreferences();
-        }
-        return fLangSpecificPrefs;
-    }
-
+    
     @Override
     public int getTabWidth(ISourceViewer sourceViewer) {
         return fEditor.getPrefStore().getInt(EDITOR_TAB_WIDTH);
     }
 
-    public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
+    public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setRepairer(fEditor.new PresentationRepairer(), DEFAULT_CONTENT_TYPE);
@@ -107,45 +78,32 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         return reconciler;
     }
 
-    public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+    public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant ca= new ContentAssistant();
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
         ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
         return ca;
     }
 
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        IAnnotationHover hover= getLanguageServiceManager().getAnnotationHover();
-        if (hover==null) hover= new DefaultAnnotationHover();
-        return hover;
+    public CeylonAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+        return new CeylonAnnotationHover();
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        Set<org.eclipse.imp.services.IAutoEditStrategy> autoEdits= getLanguageServiceManager().getAutoEditStrategies();
-        if (autoEdits == null || autoEdits.size() == 0) {
-            return super.getAutoEditStrategies(sourceViewer, contentType);
-        }
-        return autoEdits.toArray(new IAutoEditStrategy[autoEdits.size()]);
+        return new IAutoEditStrategy[] { getAutoEditStrategy() };
+    }
+        
+    public CeylonAutoEditStrategy getAutoEditStrategy() {
+        return new CeylonAutoEditStrategy();
     }
 
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
-        LanguageServiceManager lsm= getLanguageServiceManager();
-        return lsm!=null ? new DoubleClickStrategy(lsm.getParseController()) : 
-        	    super.getDoubleClickStrategy(sourceViewer, contentType);
+        return new DoubleClickStrategy(fEditor.getParseController()); 
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-    	IHyperlinkDetector[] detectors;
-        if (getServiceControllerManager() != null && getServiceControllerManager().getHyperLinkController() != null)
-        	detectors = new IHyperlinkDetector[] { getServiceControllerManager().getHyperLinkController() };
-        else
-        	detectors = super.getHyperlinkDetectors(sourceViewer);
-        IHyperlinkDetector[] result = new IHyperlinkDetector[detectors.length+1];
-        for (int i=0; i<detectors.length; i++) {
-            result[i]=detectors[i];
-        }
-        result[detectors.length] = new JavaReferenceResolver(fEditor);
-        return result;
+    	return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(fEditor), 
+    			new JavaHyperlinkDetector(fEditor) };
     }
 
     /**
@@ -163,9 +121,6 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     private InformationPresenter fInfoPresenter;
 
     public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
-        if (getLanguageServiceManager() == null) {
-            return super.getInformationPresenter(sourceViewer);
-        }
         if (fInfoPresenter == null) {
             fInfoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
             fInfoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
@@ -198,33 +153,23 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
                 		return new Region(pos.offset, pos.length);
                 	}
 
-                	IParseController pc= getLanguageServiceManager().getParseController();
-                    ISourcePositionLocator locator= pc.getSourcePositionLocator();
-
-                    if (locator == null) {
-                        return new Region(offset, 0);
-                    }
-                    Object selNode= locator.findNode(pc.getCurrentAst(), offset);
+                	CeylonParseController pc = fEditor.getParseController();
+                	CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
+                    Node selNode= locator.findNode(pc.getCurrentAst(), offset);
                     return new Region(locator.getStartOffset(selNode), locator.getLength(selNode));
                 }
 
                 public String getInformation(ITextViewer textViewer, IRegion subject) {
                 	List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
-
                 	if (parserAnnsAtOffset.size() > 0) {
                 		Annotation theAnn= parserAnnsAtOffset.get(0);
                 		return theAnn.getText();
                 	}
 
-                	IParseController pc= getLanguageServiceManager().getParseController();
-                    ISourcePositionLocator locator= pc.getSourcePositionLocator();
-
-                    if (locator == null) {
-                        return "";
-                    }
-                    IDocumentationProvider docProvider= getLanguageServiceManager().getDocProvider();
-                    Object selNode= locator.findNode(pc.getCurrentAst(), subject.getOffset());
-                    return (docProvider != null) ? docProvider.getDocumentation(selNode, pc) : null;
+                	CeylonParseController pc = fEditor.getParseController();
+                	Node selNode= pc.getSourcePositionLocator()
+                			.findNode(pc.getCurrentAst(), subject.getOffset());
+                    return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
                 }
             };
             fInfoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);

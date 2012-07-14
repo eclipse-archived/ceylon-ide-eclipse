@@ -35,7 +35,6 @@ import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.ParseControllerBase;
 import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
@@ -92,7 +91,7 @@ public class CeylonParseController extends ParseControllerBase {
         return sourcePositionLocator;
     }
     
-    public ILanguageSyntaxProperties getSyntaxProperties() {
+    public CeylonLanguageSyntaxProperties getSyntaxProperties() {
         return CeylonLanguageSyntaxProperties.INSTANCE;
     }
     

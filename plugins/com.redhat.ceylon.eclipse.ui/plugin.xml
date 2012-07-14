@@ -97,12 +97,12 @@
             language="ceylon"/>
    </extension>
    
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
             class="com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer"
             language="ceylon"/>
-   </extension>
+   </extension-->
    
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
@@ -111,19 +111,19 @@
             language="ceylon"/>
    </extension>
    
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.referenceResolvers">
       <referenceResolver
             class="com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver"
             language="ceylon"/>
-   </extension>
+   </extension-->
    
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.documentationProvider">
       <docProvider
             class="com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider"
             language="ceylon"/>
-   </extension>
+   </extension-->
    
    <extension
          point="org.eclipse.imp.runtime.contentProposer">
@@ -1127,7 +1127,7 @@
                 targetId="org.eclipse.jdt.ui.javaCode"
                 id="com.redhat.ceylon.eclipse.ui.javaHyperlinkDetector"
                 name="Navigate to Ceylon Code"
-                class="com.redhat.ceylon.eclipse.code.resolve.JavaToCeylonReferenceResolver">
+                class="com.redhat.ceylon.eclipse.code.resolve.JavaToCeylonHyperlinkDetector">
           </hyperlinkDetector>
     </extension>
 

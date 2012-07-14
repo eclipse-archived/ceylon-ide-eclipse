@@ -9,7 +9,7 @@ import org.eclipse.jface.text.IRegion;
 
 public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
     
-    static final ILanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
+    public static final CeylonLanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
     
     @Override
 	public boolean isWhitespace(char ch) {
