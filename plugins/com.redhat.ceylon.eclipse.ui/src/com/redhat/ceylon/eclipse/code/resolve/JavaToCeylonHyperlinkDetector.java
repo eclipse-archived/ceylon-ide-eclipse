@@ -29,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-public class JavaToCeylonReferenceResolver extends AbstractHyperlinkDetector {
+public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
 
 	@Override

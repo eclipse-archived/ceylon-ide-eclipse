@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver.getJavaElement;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 
 import java.util.List;
 

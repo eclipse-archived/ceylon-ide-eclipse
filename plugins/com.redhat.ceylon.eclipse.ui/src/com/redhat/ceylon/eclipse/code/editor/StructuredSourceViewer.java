@@ -12,12 +12,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
-import java.util.List;
-
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.IAutoEditStrategy;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.imp.services.base.DefaultAutoIndentStrategy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -34,7 +28,8 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-//import org.eclipse.imp.runtime.RuntimePlugin;
+
+import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 
 public class StructuredSourceViewer extends ProjectionViewer {
     /**
@@ -74,11 +69,12 @@ public class StructuredSourceViewer extends ProjectionViewer {
 
     private IInformationPresenter fHierarchyPresenter;
 
-    private IAutoEditStrategy fAutoEditStrategy;
+    private org.eclipse.jface.text.IAutoEditStrategy fAutoEditStrategy;
 
-    private IParseController fParseController;
+    //private CeylonParseController fParseController;
     
-    public StructuredSourceViewer(Composite parent, IVerticalRuler verticalRuler, IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
+    public StructuredSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
+    		IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
         super(parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
     }
 
@@ -130,24 +126,15 @@ public class StructuredSourceViewer extends ProjectionViewer {
         super.doOperation(operation);
     }
 
-    public void setParseController(IParseController parseController) {
-    	fParseController = parseController;
-    }
-
     public void setFormatter(IContentFormatter formatter) {
         fContentFormatter= formatter;
     }
 
     private void doToggleComment() {
-        ILanguageSyntaxProperties syntaxProps= fParseController.getSyntaxProperties();
-
-        if (syntaxProps == null)
-            return;
-
         IDocument doc= this.getDocument();
         DocumentRewriteSession rewriteSession= null;
         Point p= this.getSelectedRange();
-        final String lineCommentPrefix= syntaxProps.getSingleLineCommentPrefix();
+        final String lineCommentPrefix= CeylonLanguageSyntaxProperties.INSTANCE.getSingleLineCommentPrefix();
 
     	if (doc instanceof IDocumentExtension4) {
     	    IDocumentExtension4 extension= (IDocumentExtension4) doc;
@@ -330,38 +317,23 @@ public class StructuredSourceViewer extends ProjectionViewer {
         }
         super.configure(configuration);
         if (configuration instanceof StructuredSourceViewerConfiguration) {
-            StructuredSourceViewerConfiguration sSVConfiguration= (StructuredSourceViewerConfiguration) configuration;
+            StructuredSourceViewerConfiguration svc= (StructuredSourceViewerConfiguration) configuration;
 
-            fOutlinePresenter= sSVConfiguration.getOutlinePresenter(this);
+            fOutlinePresenter= svc.getOutlinePresenter(this);
             if (fOutlinePresenter != null)
                 fOutlinePresenter.install(this);
 
-            fStructurePresenter= sSVConfiguration.getOutlinePresenter(this);
+            fStructurePresenter= svc.getOutlinePresenter(this);
             if (fStructurePresenter != null)
                 fStructurePresenter.install(this);
 
-            fHierarchyPresenter= sSVConfiguration.getHierarchyPresenter(this, true);
+            fHierarchyPresenter= svc.getHierarchyPresenter(this, true);
             if (fHierarchyPresenter != null)
                 fHierarchyPresenter.install(this);
 
-            if (fAutoIndentStrategies != null) {
-                List<org.eclipse.jface.text.IAutoEditStrategy> strategies= (List<org.eclipse.jface.text.IAutoEditStrategy>) fAutoIndentStrategies.get(IDocument.DEFAULT_CONTENT_TYPE);
-                // TODO If there are multiple IAudoEditStrategy's, we may pick up one that doesn't do indent. How to identify the right one?
-                // SMS 5 Aug 2008:  There's another problem here, in that the available strategy here
-                // may not be of type IAutoEditStrategy.  See bug #243212.  To provide at least a
-                // short term fix, I'm going to substitute an appropriate value when that turns out 
-                // to be the case.  This may be revised if we decide to somehow avoid the possibility
-                // that a strategy of an inappropriate type might appear here.
-                if (strategies != null && strategies.size() > 0) {
-//                    fAutoEditStrategy= (IAutoEditStrategy) strategies.get(0);
-                	if (strategies.get(0) instanceof IAutoEditStrategy)
-                		fAutoEditStrategy= (IAutoEditStrategy) strategies.get(0);
-                	else
-                		fAutoEditStrategy = new DefaultAutoIndentStrategy();
-                }
-            }
+            fAutoEditStrategy = new CeylonAutoEditStrategy();
             
-            fQuickAssistAssistant = sSVConfiguration.getQuickAssistAssistant(this);
+            fQuickAssistAssistant = svc.getQuickAssistAssistant(this);
             if (fQuickAssistAssistant != null)
             	fQuickAssistAssistant.install(this);
         }
