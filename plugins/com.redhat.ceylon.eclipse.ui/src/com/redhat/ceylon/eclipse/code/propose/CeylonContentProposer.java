@@ -9,7 +9,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonDocumentationProvider.getDocumentation;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.getDocumentation;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;

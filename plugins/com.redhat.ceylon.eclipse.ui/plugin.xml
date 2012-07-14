@@ -121,7 +121,7 @@
    <extension
          point="org.eclipse.imp.runtime.documentationProvider">
       <docProvider
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonDocumentationProvider"
+            class="com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider"
             language="ceylon"/>
    </extension>
    
@@ -145,7 +145,15 @@
             class="com.redhat.ceylon.eclipse.code.editor.CeylonFoldingUpdater"
             language="ceylon"/>
    </extension>
-   
+
+   <extension 
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator 
+            class="com.redhat.ceylon.eclipse.code.quickfix.MarkerResolutionGenerator"
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem">
+      </markerResolutionGenerator>
+    </extension>
+ 
    <extension
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
@@ -352,7 +360,7 @@
    <extension
          point="org.eclipse.imp.runtime.annotationHover">
       <annotationHover
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonAnnotationHover"
+            class="com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover"
             language="ceylon"/>
    </extension>
    

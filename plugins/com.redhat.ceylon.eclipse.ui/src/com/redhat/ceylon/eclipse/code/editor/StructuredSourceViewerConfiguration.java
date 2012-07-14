@@ -49,6 +49,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
@@ -234,7 +235,7 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return getServiceControllerManager().getHoverHelpController();
+        return new HoverHelpController(fEditor);
     }
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
@@ -277,7 +278,7 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(50, 20, true, false);
-        presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
         return presenter;
     }
     
@@ -288,7 +289,7 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(100, 20, true, false);
-        presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
         return presenter;
     }
 

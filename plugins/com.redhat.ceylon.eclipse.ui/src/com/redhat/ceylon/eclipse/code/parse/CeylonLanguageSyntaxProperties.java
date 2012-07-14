@@ -7,7 +7,7 @@ import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
-class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
+public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
     
     static final ILanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
     

@@ -53,6 +53,11 @@ public class AnnotationCreator implements IMessageHandler {
         public PositionedMessage(String msg, Position pos) {
             this(msg, pos, null);
         }
+        
+        @Override
+        public String toString() {
+        	return pos.toString() + " - "+ message;
+        }
     }
 
     private final CeylonEditor fEditor;
@@ -92,15 +97,12 @@ public class AnnotationCreator implements IMessageHandler {
 
         if (docProvider != null) {
             IAnnotationModel model= docProvider.getAnnotationModel(fEditor.getEditorInput());
-    
             if (model instanceof IAnnotationModelExtension) {
                 IAnnotationModelExtension modelExt= (IAnnotationModelExtension) model;
                 Annotation[] oldAnnotations= fAnnotations.toArray(new Annotation[fAnnotations.size()]);
                 Map<Annotation, Position> newAnnotations= new HashMap<Annotation, Position>(fMessages.size());
-
                 for(PositionedMessage pm: fMessages) {
                     Annotation anno= createAnnotation(pm);
-
                     newAnnotations.put(anno, pm.pos);
                     fAnnotations.add(anno);
                 }
