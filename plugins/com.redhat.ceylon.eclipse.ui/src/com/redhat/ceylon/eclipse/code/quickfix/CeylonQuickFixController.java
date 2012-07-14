@@ -40,7 +40,7 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 
 public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
 	
@@ -107,11 +107,11 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         ArrayList<ProblemLocation> problems = new ArrayList<ProblemLocation>();
 
         // collect problem locations and corrections from marker annotations
-        for (Annotation curr : annotations) {
+        for (Annotation curr: annotations) {
             ProblemLocation problemLocation = null;
 
-            if (curr instanceof IAnnotation) {
-                problemLocation = getProblemLocation((DefaultAnnotation) curr, model);
+            if (curr instanceof CeylonAnnotation) {
+                problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
                 if (problemLocation != null) {
                     problems.add(problemLocation);
                 }
@@ -132,7 +132,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         }
     }
 
-    private static ProblemLocation getProblemLocation(DefaultAnnotation annotation, IAnnotationModel model) {
+    private static ProblemLocation getProblemLocation(CeylonAnnotation annotation, IAnnotationModel model) {
         int problemId = annotation.getId();
         if (problemId != -1) {
             Position pos = model.getPosition((Annotation) annotation);
@@ -189,8 +189,8 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         private IQuickAssistInvocationContext context;
         private ICompilationUnit model;
 
-        public DefaultQuickFixInvocationContext(
-                IQuickAssistInvocationContext context, ICompilationUnit model) {
+        public DefaultQuickFixInvocationContext(IQuickAssistInvocationContext context, 
+        		ICompilationUnit model) {
             this.context = context;
             this.model = model;
         }

@@ -1464,8 +1464,8 @@ extends PreviousSubWordAction implements IUpdate {
             fAnnotationUpdater= new AnnotationUpdater();
             fProblemMarkerManager.addListener(fAnnotationUpdater);
 
-            fParserScheduler= new CeylonParserScheduler(fLanguageServiceManager.getParseController(), 
-            		this, getDocumentProvider(), fAnnotationCreator);
+            CeylonParseController cpc = (CeylonParseController) fLanguageServiceManager.getParseController();
+			fParserScheduler= new CeylonParserScheduler(cpc, this, getDocumentProvider(), fAnnotationCreator);
 
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
@@ -1480,17 +1480,16 @@ extends PreviousSubWordAction implements IUpdate {
             formatter.setFormattingStrategy(fServiceControllerManager.getFormattingController(), DEFAULT_CONTENT_TYPE);
             sourceViewer.setFormatter(formatter);
 
-            if (fLanguageServiceManager.getTokenColorer() != null) {
-                try {
-                    new PresentationController(getSourceViewer(), fLanguageServiceManager)
-                            .damage(new Region(0, sourceViewer.getDocument().getLength()));
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+            	new PresentationController(getSourceViewer(), cpc)
+            	.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            } 
+            catch (Exception e) {
+            	e.printStackTrace();
             }
+            
             // SMS 29 May 2007 (to give viewer access to single-line comment prefix)
-            sourceViewer.setParseController(fLanguageServiceManager.getParseController());
+            sourceViewer.setParseController(cpc);
 
             if (fLanguageServiceManager.getFoldingUpdater() != null) {
                 ProjectionViewer projViewer= sourceViewer;
@@ -2149,9 +2148,8 @@ extends PreviousSubWordAction implements IUpdate {
 	    // For checking whether the damage region has changed
 	    ITypedRegion previousDamage= null;
 
-	    final PresentationController pc =  new PresentationController(getSourceViewer(), fLanguageServiceManager);
-
-        private final IProgressMonitor fProgressMonitor= new NullProgressMonitor();
+	    final PresentationController pc =  new PresentationController(getSourceViewer(), 
+	    		(CeylonParseController) fLanguageServiceManager.getParseController());
 
         public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
             boolean hyperlinkRestore= false;
@@ -2174,7 +2172,7 @@ extends PreviousSubWordAction implements IUpdate {
             try {
                 pc.damage(damage);
                 if (hyperlinkRestore) {
-                	pc.update(fLanguageServiceManager.getParseController(), fProgressMonitor);
+                	pc.update(fLanguageServiceManager.getParseController(), new NullProgressMonitor());
                 }
             } 
             catch (Exception e) {

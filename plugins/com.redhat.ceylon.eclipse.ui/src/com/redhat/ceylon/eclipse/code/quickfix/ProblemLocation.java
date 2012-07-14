@@ -5,7 +5,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 
 public class ProblemLocation {
 	private final int fId;
@@ -16,13 +16,13 @@ public class ProblemLocation {
 	private final String fMarkerType;
 
 	IMarker marker;
-	DefaultAnnotation annotation;
+	CeylonAnnotation annotation;
 
 	public ProblemLocation(MarkerAnnotation annotation) throws CoreException {
 		this(annotation.getMarker());
 	}
 
-	public ProblemLocation(int offset, int length, DefaultAnnotation annotation) {
+	public ProblemLocation(int offset, int length, CeylonAnnotation annotation) {
 		fId = annotation.getId();
 		// fArguments= annotation.getArguments();
 		fOffset = offset;

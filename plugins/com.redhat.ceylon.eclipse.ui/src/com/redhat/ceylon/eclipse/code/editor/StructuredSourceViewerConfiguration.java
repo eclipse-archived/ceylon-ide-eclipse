@@ -20,7 +20,6 @@ import org.eclipse.imp.services.IDocumentationProvider;
 import org.eclipse.imp.services.base.DefaultAnnotationHover;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -30,15 +29,11 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.formatter.ContentFormatter;
-import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
-import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
@@ -104,9 +99,6 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     }
 
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-        if (getServiceControllerManager() == null || getLanguageServiceManager().getTokenColorer() == null) {
-            return super.getPresentationReconciler(sourceViewer);
-        }
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setRepairer(fEditor.new PresentationRepairer(), DEFAULT_CONTENT_TYPE);
@@ -115,9 +107,6 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     }
 
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        if (getServiceControllerManager() == null) {
-            return super.getContentAssistant(sourceViewer);
-        }
         ContentAssistant ca= new ContentAssistant();
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
         ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
@@ -125,45 +114,17 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     }
 
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        if (getLanguageServiceManager() == null) {
-            return super.getAnnotationHover(sourceViewer);
-        }
         IAnnotationHover hover= getLanguageServiceManager().getAnnotationHover();
-        if (hover == null)
-            hover= new DefaultAnnotationHover();
+        if (hover==null) hover= new DefaultAnnotationHover();
         return hover;
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        if (getLanguageServiceManager() == null) {
-            return super.getAutoEditStrategies(sourceViewer, contentType);
-        }
         Set<org.eclipse.imp.services.IAutoEditStrategy> autoEdits= getLanguageServiceManager().getAutoEditStrategies();
-
         if (autoEdits == null || autoEdits.size() == 0) {
             return super.getAutoEditStrategies(sourceViewer, contentType);
         }
-
         return autoEdits.toArray(new IAutoEditStrategy[autoEdits.size()]);
-    }
-
-    public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
-        // Disable the content formatter if no language-specific implementation exists.
-        // N.B.: This will probably always be null, since this method gets called before
-        // the formatting controller has been instantiated (which happens in
-        // instantiateServiceControllers()).
-        if (getServiceControllerManager() == null || getServiceControllerManager().getFormattingController() == null)
-            return null;
-
-        // For now, assumes only one content type (i.e. one kind of partition)
-        ContentFormatter formatter= new ContentFormatter();
-
-        formatter.setFormattingStrategy(getServiceControllerManager().getFormattingController(), DEFAULT_CONTENT_TYPE);
-        return formatter;
-    }
-
-    public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType) {
-        return super.getDefaultPrefixes(sourceViewer, contentType);
     }
 
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -186,21 +147,14 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         return result;
     }
 
-    public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
-        return super.getHyperlinkPresenter(sourceViewer);
-    }
-
-    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
-        return super.getIndentPrefixes(sourceViewer, contentType);
-    }
-
     /**
      * Used to present hover help (anything else?)
      */
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
         return new IInformationControlCreator() {
             public IInformationControl createInformationControl(Shell parent) {
-                return new DefaultInformationControl(parent, "Press 'F2' for focus", new HTMLTextPresenter(true));
+                return new DefaultInformationControl(parent, "Press 'F2' for focus", 
+                		new HTMLTextPresenter(true));
             }
         };
     }
@@ -214,18 +168,19 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         if (fInfoPresenter == null) {
             fInfoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
             fInfoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-            fInfoPresenter.setAnchor(AbstractInformationControlManager.ANCHOR_GLOBAL);
+            fInfoPresenter.setAnchor(ANCHOR_GLOBAL);
 
             IInformationProvider provider= new IInformationProvider() {
-            	private IAnnotationModel fAnnotationModel= fEditor.getDocumentProvider().getAnnotationModel(fEditor.getEditorInput());
+            	private IAnnotationModel fAnnotationModel= fEditor.getDocumentProvider()
+            			.getAnnotationModel(fEditor.getEditorInput());
 
                 private List<Annotation> getParserAnnotationsAtOffset(int offset) {
                     List<Annotation> result= new LinkedList<Annotation>();
                     if (fAnnotationModel != null) {
                         for(Iterator<Annotation> iter= fAnnotationModel.getAnnotationIterator(); iter.hasNext(); ) {
                             Annotation ann= iter.next();
-
-                            if (fAnnotationModel.getPosition(ann).includes(offset) && isParseAnnotation(ann)) {
+                            if (fAnnotationModel.getPosition(ann).includes(offset) && 
+                            		isParseAnnotation(ann)) {
                                 result.add(ann);
                             }
                         }
@@ -279,22 +234,7 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        if (getServiceControllerManager() == null) {
-            return super.getTextHover(sourceViewer, contentType);
-        }
         return getServiceControllerManager().getHoverHelpController();
-    }
-
-    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType, int stateMask) {
-        return super.getTextHover(sourceViewer, contentType, stateMask);
-    }
-
-    public IUndoManager getUndoManager(ISourceViewer sourceViewer) {
-        return super.getUndoManager(sourceViewer);
-    }
-
-    public IAnnotationHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
-        return super.getOverviewRulerAnnotationHover(sourceViewer);
     }
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();

@@ -10,13 +10,9 @@ import java.util.Stack;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.editor.LanguageServiceManager;
 import org.eclipse.imp.parser.IModelListener;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.preferences.PreferenceCache;
-import org.eclipse.imp.services.ITokenColorer;
-import org.eclipse.imp.utils.ConsoleUtil;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -28,6 +24,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.widgets.Display;
 
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+
 /**
  * A class that does the real work of repairing the text presentation for an associated ISourceViewer.
  * Calls to damage(IRegion) simply accumulate damaged regions into a work queue, which is processed
@@ -36,20 +35,17 @@ import org.eclipse.swt.widgets.Display;
  * @author rfuhrer@watson.ibm.com
  */
 public class PresentationController implements IModelListener {
-    public static final String CONSOLE_NAME= "Source Tokens";
 
     private final ISourceViewer fSourceViewer;
-
-    private final ITokenColorer fColorer;
-
-    private final IParseController fParseCtlr;
+    private final CeylonTokenColorer fColorer;
+    private final CeylonParseController fParseCtlr;
 
     private final Stack<IRegion> fWorkItems= new Stack<IRegion>();
 
-    public PresentationController(ISourceViewer sourceViewer, LanguageServiceManager langServiceMgr) {
+    public PresentationController(ISourceViewer sourceViewer, CeylonParseController cpc) {
         fSourceViewer= sourceViewer;
-        this.fParseCtlr= langServiceMgr.getParseController();
-        fColorer= langServiceMgr.getTokenColorer();
+        this.fParseCtlr= cpc;
+        fColorer= new CeylonTokenColorer();
     }
 
     public AnalysisRequired getAnalysisRequired() {
@@ -74,19 +70,6 @@ public class PresentationController implements IModelListener {
         }
         ps.print(" \t" + token);
         ps.println();
-    }
-
-    private void dumpTokens(Iterator<Object> tokenIter, PrintStream ps) {
-        ISourcePositionLocator locator = fParseCtlr.getSourcePositionLocator();
-
-        if (locator != null) {
-            ps.println(" Offset \tLen \tLine \tCol \tText");
-        } else {
-            ps.println(" Text");
-        }
-        for(; tokenIter.hasNext(); ) {
-            dumpToken(tokenIter.next(), locator, ps);
-        }
     }
 
     /**
@@ -159,19 +142,13 @@ public class PresentationController implements IModelListener {
         if (parseController == null) {
             return;
         }
-        if (PreferenceCache.dumpTokens /*RuntimePlugin.getInstance().getPreferencesService().getBooleanPreference(PreferenceConstants.P_DUMP_TOKENS)*/) {
-            PrintStream ps= ConsoleUtil.findConsoleStream(PresentationController.CONSOLE_NAME);
-
-            dumpTokens(parseController.getTokenIterator(damage), ps);
-        }
-
         final TextPresentation presentation= new TextPresentation();
         ISourcePositionLocator locator= parseController.getSourcePositionLocator();
-
         aggregateTextPresentation(parseController, monitor, damage, presentation, locator);
         if (monitor.isCanceled()) {
             System.err.println("Ignored cancelled presentation update");
-        } else if (!presentation.isEmpty()) {
+        } 
+        else if (!presentation.isEmpty()) {
             submitTextPresentation(presentation);
         }
     }

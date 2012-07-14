@@ -40,25 +40,21 @@ public class EditorErrorTickUpdater implements IProblemChangedListener {
     }
 
     public void problemsChanged(IResource[] changedResources, boolean isMarkerChange) {
-        if (!isMarkerChange)
-            return;
-
-        IEditorInput input= fEditor.getEditorInput();
-
-        if (input != null) { // might run async, tests needed
-            if (!(input instanceof IFileEditorInput)) { // The editor might be looking at something outside the workspace (e.g. system include files).
-                return;
-            }
-
-            IFileEditorInput fileInput= (IFileEditorInput) input;
-            IFile file= fileInput.getFile();
-            if (file != null) {
-                for(int i= 0; i<changedResources.length; i++) {
-                    if (changedResources[i].equals(file)) {
-                        updateEditorImage(file);
-                    }
-                }
-            }
+        if (isMarkerChange) {
+        	IEditorInput input= fEditor.getEditorInput();
+        	if (input!=null) { // might run async, tests needed
+        		if (input instanceof IFileEditorInput) { // The editor might be looking at something outside the workspace (e.g. system include files).
+        			IFileEditorInput fileInput= (IFileEditorInput) input;
+        			IFile file= fileInput.getFile();
+        			if (file != null) {
+        				for(int i= 0; i<changedResources.length; i++) {
+        					if (changedResources[i].equals(file)) {
+        						updateEditorImage(file);
+        					}
+        				}
+        			}
+        		}
+        	}
         }
     }
 
