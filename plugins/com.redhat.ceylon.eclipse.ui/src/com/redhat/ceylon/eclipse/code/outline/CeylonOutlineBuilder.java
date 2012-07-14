@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class CeylonTreeModelBuilder {
+public class CeylonOutlineBuilder {
 	
 	public void visitTree(Object root) {
 		if (root==null) return;

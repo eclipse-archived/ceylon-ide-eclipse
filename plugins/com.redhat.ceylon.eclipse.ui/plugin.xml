@@ -104,26 +104,11 @@
             language="ceylon"/>
    </extension>
    
-   <!--extension
-         point="org.eclipse.imp.runtime.modelTreeBuilder">
-      <treeBuilder
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder"
-            language="ceylon"/>
-   </extension-->
-   
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
       <labelProvider
             class="com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider"
             language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.entityImageDecorator">
-      <entityImageDecorator
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonEntityImageDecorator"
-            language="ceylon">
-      </entityImageDecorator>
    </extension>
    
    <extension
@@ -371,13 +356,6 @@
             language="ceylon"/>
    </extension>
    
-   <!--extension
-         point="org.eclipse.imp.runtime.compareNodeIdentifier">
-      <compareNodeIdentifier 
-            language="ceylon"
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonCompareNodeIdentifier"/>
-   </extension-->
-   
    <extension
          point="org.eclipse.compare.structureCreators">
        <structureCreator
@@ -438,7 +416,7 @@
             name="Ceylon Welcome"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.hierarchy"
-            categoryId="com.redhat.ceylon.eclipse.ui"
+            categoryId="org.eclipse.ui.category.navigate"
             description="Show popup hierarchy view"
             name="Show Ceylon Hierarchy"/>
        <command
@@ -518,9 +496,6 @@
       <handler
             class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.welcome"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.code.outline.OpenHierarchyPopupHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
