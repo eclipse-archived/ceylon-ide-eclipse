@@ -561,7 +561,7 @@
            sequence="M1+T"
            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+           contextId="org.eclipse.imp.runtime.sourceEditorScope"/>
        <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
