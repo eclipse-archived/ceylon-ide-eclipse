@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import java.util.Collection;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -56,12 +55,10 @@ class MoveDeclarationProposal implements ICompletionProposal {
         }
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        if (editor instanceof CeylonEditor) {
-            if (MoveDeclarationHandler.canMoveDeclaration((CeylonEditor) editor)) {
-                proposals.add(new MoveDeclarationProposal((CeylonEditor) editor));
-            }
-        }
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    	if (MoveDeclarationHandler.canMoveDeclaration(editor)) {
+    		proposals.add(new MoveDeclarationProposal(editor));
+    	}
     }
 
 }
