@@ -8,9 +8,8 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
+import org.eclipse.imp.parser.IModelListener;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.base.EditorServiceBase;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -37,7 +36,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
  * @author gavin
  *
  */
-public class EditorAnnotationService extends EditorServiceBase {
+public class EditorAnnotationService implements IModelListener {
     
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
@@ -50,8 +49,8 @@ public class EditorAnnotationService extends EditorServiceBase {
     public void update(IParseController parseController, IProgressMonitor monitor) {
         final CeylonParseController cpc = (CeylonParseController) parseController;
         if (cpc.getRootNode()==null) return;
-        final IAnnotationModel model = getEditor().getDocumentProvider()
-                .getAnnotationModel(getEditor().getEditorInput());
+        final IAnnotationModel model = editor.getDocumentProvider()
+                .getAnnotationModel(editor.getEditorInput());
         for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation a = iter.next();
@@ -125,9 +124,10 @@ public class EditorAnnotationService extends EditorServiceBase {
                 new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
     }
     
-    @Override
-    public void setEditor(UniversalEditor editor) {
-        super.setEditor(editor);
+    private CeylonEditor editor;
+    
+    public void setEditor(CeylonEditor editor) {
+    	this.editor = editor;
         //System.out.println("Adding SelectionListener to editor " + editor);
         ((IPostSelectionProvider) editor.getSelectionProvider())
             .addPostSelectionChangedListener(new SelectionListener());

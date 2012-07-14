@@ -339,7 +339,7 @@
             
    </extension>
    
-   <extension
+   <!--extension
          point="org.eclipse.imp.runtime.quickFixAssistant">
       <quickFixAssistant
             class="com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant"
@@ -347,7 +347,7 @@
          <supportedMarkerType
                markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
       </quickFixAssistant>
-   </extension>
+   </extension-->
    
    <extension
          point="org.eclipse.imp.runtime.annotationHover">

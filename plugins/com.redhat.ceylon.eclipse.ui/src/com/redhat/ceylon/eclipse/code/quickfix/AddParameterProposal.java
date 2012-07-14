@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -47,7 +46,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
 
     static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.AttributeDeclaration decNode, UniversalEditor editor) {
+            Tree.AttributeDeclaration decNode, CeylonEditor editor) {
         Value dec = decNode.getDeclarationModel();
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new DocumentChange("Add Parameter", doc);
@@ -64,7 +63,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 }
                 else {
                     def = AbstractRefactoring.toString(sie, 
-                            ((CeylonEditor) editor).getParseController().getTokens());
+                            editor.getParseController().getTokens());
                     int start = sie.getStartIndex();
                     try {
                         if (doc.get(start-1,1).equals(" ")) {

@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;

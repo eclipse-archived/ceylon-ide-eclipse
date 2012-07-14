@@ -18,12 +18,10 @@ import java.util.HashSet;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.imp.editor.EditorUtility;
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.services.IQuickFixAssistant;
+import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.AnnotationUtils;
 import org.eclipse.jface.text.BadLocationException;
@@ -41,12 +39,16 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
-public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
-    private IQuickFixAssistant fAssistant;
-    private ICompilationUnit fCU;
-    private UniversalEditor editor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
 
-    public CeylonQuickFixController(UniversalEditor editor) {
+public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
+	
+    private CeylonQuickFixAssistant fAssistant;
+    private ICompilationUnit fCU;
+    private CeylonEditor editor;
+
+    public CeylonQuickFixController(CeylonEditor editor) {
         this.fCU = null;
         fAssistant = new CeylonQuickFixAssistant();
         this.editor = editor;
@@ -58,7 +60,18 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         }
     }
     
-    public IQuickFixInvocationContext getContext(IQuickAssistInvocationContext quickAssistContext) {
+    public CeylonQuickFixController(IMarker marker) {
+        fAssistant = new CeylonQuickFixAssistant();
+        setQuickAssistProcessor(this);
+        try {
+			fCU = (ICompilationUnit) ModelFactory.open(marker.getResource());
+		} 
+        catch (ModelException e) {
+			e.printStackTrace();
+		} 
+	}
+
+	public IQuickFixInvocationContext getContext(IQuickAssistInvocationContext quickAssistContext) {
         return new DefaultQuickFixInvocationContext(quickAssistContext, fCU);
     }
 
@@ -98,7 +111,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
             ProblemLocation problemLocation = null;
 
             if (curr instanceof IAnnotation) {
-                problemLocation = getProblemLocation((IAnnotation) curr, model);
+                problemLocation = getProblemLocation((DefaultAnnotation) curr, model);
                 if (problemLocation != null) {
                     problems.add(problemLocation);
                 }
@@ -119,7 +132,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         }
     }
 
-    private static ProblemLocation getProblemLocation(IAnnotation annotation, IAnnotationModel model) {
+    private static ProblemLocation getProblemLocation(DefaultAnnotation annotation, IAnnotationModel model) {
         int problemId = annotation.getId();
         if (problemId != -1) {
             Position pos = model.getPosition((Annotation) annotation);

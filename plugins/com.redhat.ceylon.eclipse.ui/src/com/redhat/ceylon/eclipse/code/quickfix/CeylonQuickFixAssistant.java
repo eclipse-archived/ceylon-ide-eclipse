@@ -28,11 +28,7 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.editor.hover.ProblemLocation;
 import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
-import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.services.IQuickFixAssistant;
 import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.NullMessageHandler;
 import org.eclipse.jface.text.BadLocationException;
@@ -80,6 +76,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -92,13 +89,12 @@ import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
  * Popup quick fixes for problem annotations displayed in editor
  * @author gavin
  */
-public class CeylonQuickFixAssistant implements IQuickFixAssistant {
+public class CeylonQuickFixAssistant {
 
-    @Override
     public boolean canFix(Annotation annotation) {
         int code;
-        if (annotation instanceof IAnnotation) {
-            code = ((IAnnotation) annotation).getId();
+        if (annotation instanceof DefaultAnnotation) {
+            code = ((DefaultAnnotation) annotation).getId();
         }
         else if (annotation instanceof MarkerAnnotation) {
             code = ((MarkerAnnotation) annotation).getMarker()
@@ -110,7 +106,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return code>0;
     }
 
-    @Override
     public boolean canAssist(IQuickFixInvocationContext context) {
         //oops, all this is totally useless, because
         //this method never gets called by IMP
@@ -121,7 +116,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return true;
     }
 
-    @Override
     public String[] getSupportedMarkerTypes() {
         return new String[] { PROBLEM_MARKER_ID };
     }
@@ -144,7 +138,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
     
     public void addProposals(IQuickAssistInvocationContext context, 
-            UniversalEditor editor, Collection<ICompletionProposal> proposals) {
+    		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         
         RenameRefactoringProposal.add(proposals, editor);
         InlineRefactoringProposal.add(proposals, editor);
@@ -213,7 +207,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         RefineFormalMembersProposal.add(proposals, editor);
     }
     
-    @Override
     public void addProposals(IQuickFixInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals) {
         if (context.getModel()==null) return;
