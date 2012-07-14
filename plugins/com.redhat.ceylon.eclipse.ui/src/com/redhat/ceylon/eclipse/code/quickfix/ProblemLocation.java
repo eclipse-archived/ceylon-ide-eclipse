@@ -15,8 +15,8 @@ public class ProblemLocation {
 	// private final boolean fIsError;
 	private final String fMarkerType;
 
-	IMarker marker;
-	CeylonAnnotation annotation;
+	//IMarker marker;
+	//CeylonAnnotation annotation;
 
 	public ProblemLocation(MarkerAnnotation annotation) throws CoreException {
 		this(annotation.getMarker());
@@ -29,7 +29,7 @@ public class ProblemLocation {
 		fLength = length;
 		// fIsError= annotation.getMarker().get
 		fMarkerType = IMarker.PROBLEM;
-		this.annotation = annotation;
+		//this.annotation = annotation;
 	}
 
 	public ProblemLocation(IMarker marker) throws CoreException {
@@ -39,7 +39,7 @@ public class ProblemLocation {
 		fLength = marker.getAttribute(IMarker.CHAR_END, 0) - fOffset;
 		// fIsError= annotation.getMarker().get
 		fMarkerType = marker.getType();
-		this.marker = marker;
+		//this.marker = marker;
 	}
 
 	/*
@@ -82,7 +82,7 @@ public class ProblemLocation {
 		return fMarkerType;
 	}
 
-	public Object getAttribute(String key) throws CoreException {
+	/*public Object getAttribute(String key) throws CoreException {
 		if (marker != null) {
 			return marker.getAttribute(key);
 		}
@@ -104,7 +104,7 @@ public class ProblemLocation {
 		}
 
 		return (Integer) annotation.getAttribute(key);
-	}
+	}*/
 
 	// /*
 	// * (non-Javadoc)

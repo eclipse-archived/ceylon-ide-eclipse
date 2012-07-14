@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver.getJavaElement;
@@ -23,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 

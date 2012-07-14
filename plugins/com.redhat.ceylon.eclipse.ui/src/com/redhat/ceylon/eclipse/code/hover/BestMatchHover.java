@@ -8,14 +8,12 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.code.hover;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.editor.hover.AbstractTextHover;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -23,6 +21,8 @@ import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
+
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 /**
  * Caution: this implementation is a layer breaker and contains some "shortcuts"
@@ -38,7 +38,7 @@ public class BestMatchHover extends AbstractTextHover {
 		installTextHovers();
 	}
 
-	public BestMatchHover(UniversalEditor editor) {
+	public BestMatchHover(CeylonEditor editor) {
 		this();
 		setEditor(editor);
 	}

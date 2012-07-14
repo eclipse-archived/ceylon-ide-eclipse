@@ -1,8 +1,7 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.code.hover;
 
 import java.util.ArrayList;
 
-import org.eclipse.imp.editor.hover.AbstractAnnotationHover;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.ITextViewer;
@@ -172,10 +171,8 @@ public class ProblemHover extends AbstractAnnotationHover {
 		}
 
 		private ICompletionProposal[] getAnnotationFixes(CeylonAnnotation annotation) {
-			CeylonQuickFixController qac = new CeylonQuickFixController(annotation.getEditor());
-			
-			final ProblemLocation location = new ProblemLocation(position
-					.getOffset(), position.getLength(), annotation);
+			final ProblemLocation location = new ProblemLocation(position.getOffset(), 
+					position.getLength(), annotation);
 			
 			IQuickAssistInvocationContext quickAssistContext = new IQuickAssistInvocationContext() {
 				public ISourceViewer getSourceViewer() {
@@ -194,12 +191,11 @@ public class ProblemHover extends AbstractAnnotationHover {
 			};
 
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-			qac.collectCorrections(qac.getContext(quickAssistContext),
-					new ProblemLocation[] { location }, proposals);
-			// Collections.sort(proposals, new CompletionProposalComparator());
+			new CeylonQuickFixController(annotation.getEditor())
+			        .collectCorrections(quickAssistContext, new ProblemLocation[] { location }, 
+			        		proposals);
 
-			return (ICompletionProposal[]) proposals
-					.toArray(new ICompletionProposal[proposals.size()]);
+			return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
 		}
 
 		private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation) {
@@ -209,8 +205,8 @@ public class ProblemHover extends AbstractAnnotationHover {
 			TextInvocationContext context = new TextInvocationContext(
 					((ISourceViewer) this.viewer), position.getOffset(),
 					position.getLength());
-			CeylonQuickFixController c = new CeylonQuickFixController(markerAnnotation.getMarker());
-			return c.computeQuickAssistProposals(context);
+			return new CeylonQuickFixController(markerAnnotation.getMarker())
+			        .computeQuickAssistProposals(context);
 		}
 
 		/*

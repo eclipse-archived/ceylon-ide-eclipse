@@ -15,15 +15,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.editor.EditorUtility;
-import org.eclipse.imp.editor.quickfix.IAnnotation;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.services.IQuickFixInvocationContext;
 import org.eclipse.imp.utils.AnnotationUtils;
+import org.eclipse.imp.utils.MarkerUtils;
+import org.eclipse.imp.utils.NullMessageHandler;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -33,47 +34,73 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
 	
     private CeylonQuickFixAssistant fAssistant;
-    private ICompilationUnit fCU;
-    private CeylonEditor editor;
-
-    public CeylonQuickFixController(CeylonEditor editor) {
-        this.fCU = null;
+    private CeylonEditor editor; //may only be used for quick assists!!!
+    private IFile file;
+    private ICompilationUnit model;
+	
+	public CeylonQuickFixController(CeylonEditor editor) {
         fAssistant = new CeylonQuickFixAssistant();
         this.editor = editor;
-        setQuickAssistProcessor(this);        
         
         if (editor.getEditorInput() instanceof FileEditorInput) {
             FileEditorInput input = (FileEditorInput) editor.getEditorInput();
-            fCU = ModelFactory.open(input.getFile(), EditorUtility.getSourceProject(input));
+            if (input!=null) {
+            	file = input.getFile();
+            }
         }
+
+        setQuickAssistProcessor(this);        
     }
     
     public CeylonQuickFixController(IMarker marker) {
         fAssistant = new CeylonQuickFixAssistant();
-        setQuickAssistProcessor(this);
-        try {
+        IFileEditorInput input = MarkerUtils.getInput(marker);
+		if (input!=null) {
+			file = input.getFile();
+			//TODO: get the tree from CeylonBuilder!!!!
+			model = ModelFactory.open(file, EditorUtility.getSourceProject(input));
+		}
+		/*try {
 			fCU = (ICompilationUnit) ModelFactory.open(marker.getResource());
 		} 
         catch (ModelException e) {
 			e.printStackTrace();
-		} 
+		} */
+        setQuickAssistProcessor(this);
 	}
 
-	public IQuickFixInvocationContext getContext(IQuickAssistInvocationContext quickAssistContext) {
-        return new DefaultQuickFixInvocationContext(quickAssistContext, fCU);
+    
+    Tree.CompilationUnit getRootNode() {
+    	if (editor!=null) {
+    		return editor.getParseController().getRootNode();
+    	}
+    	else if (model!=null) {
+    		//TODO: this is really slow ... get the tree from CeylonBuilder
+    		return (Tree.CompilationUnit) model.getAST(new NullMessageHandler(), 
+    				new NullProgressMonitor());
+    	}
+    	else {
+    		return null;
+    	}
     }
+    
+	/*public IQuickAssistInvocationContext getContext(IQuickAssistInvocationContext quickAssistContext) {
+        return new DefaultQuickFixInvocationContext(quickAssistContext, fCU);
+    }*/
 
     public String getErrorMessage() {
         return null;
@@ -86,7 +113,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
 
     @Override
     public boolean canAssist(IQuickAssistInvocationContext quickAssistContext) {
-        return fAssistant.canAssist(getContext(quickAssistContext));
+        return fAssistant.canAssist(quickAssistContext);
     }
 
     public boolean canFix(IMarker marker) throws CoreException {
@@ -96,20 +123,17 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
                 return fAssistant.canFix(ma);
             }
         }
-
         return false;
     }
 
-    public void collectProposals(IQuickFixInvocationContext context,
+    public void collectProposals(IQuickAssistInvocationContext context,
             IAnnotationModel model, Collection<Annotation> annotations,
             boolean addQuickFixes, boolean addQuickAssists,
             Collection<ICompletionProposal> proposals) {
         ArrayList<ProblemLocation> problems = new ArrayList<ProblemLocation>();
-
         // collect problem locations and corrections from marker annotations
         for (Annotation curr: annotations) {
             ProblemLocation problemLocation = null;
-
             if (curr instanceof CeylonAnnotation) {
                 problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
                 if (problemLocation != null) {
@@ -154,7 +178,6 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
     private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
         IMarker marker = annotation.getMarker();
         IMarkerResolution[] res = IDE.getMarkerHelpRegistry().getResolutions(marker);
-
         if (res.length > 0) {
             for (int i = 0; i < res.length; i++) {
                 proposals.add(new CeylonMarkerResolutionProposal(res[i], marker));
@@ -165,8 +188,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext quickAssistContext) {
         ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         ISourceViewer viewer = quickAssistContext.getSourceViewer();
-        collectProposals(getContext(quickAssistContext), AnnotationUtils
-                .getAnnotationModel(viewer),
+        collectProposals(quickAssistContext, AnnotationUtils.getAnnotationModel(viewer),
                 AnnotationUtils.getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
                         true, true, proposals);
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
@@ -183,8 +205,8 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         }
     }
 
-    private static class DefaultQuickFixInvocationContext implements
-            IQuickFixInvocationContext {
+    /*private static class DefaultQuickFixInvocationContext implements
+            IQuickAssistInvocationContext {
 
         private IQuickAssistInvocationContext context;
         private ICompilationUnit model;
@@ -210,22 +232,20 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
         public ICompilationUnit getModel() {
             return model;
         }
-    }
+    }*/
     
     public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        if (locations == null || locations.length == 0) {
-            return;
-        }
-
-        HashSet<Integer> handledProblems = new HashSet<Integer>(locations.length);
-        for (int i = 0; i < locations.length; i++) {
-            ProblemLocation curr = locations[i];
-            Integer id = new Integer(curr.getProblemId());
-            if (handledProblems.add(id)) {
-                fAssistant.addProposals(getContext(quickAssistContext), curr,
-                        proposals);
-            }
+        if (locations!= null && locations.length>0) {
+        	Tree.CompilationUnit rootNode = getRootNode();
+        	HashSet<Integer> handledProblems = new HashSet<Integer>(locations.length);
+        	for (int i = 0; i < locations.length; i++) {
+        		ProblemLocation curr = locations[i];
+        		Integer id = new Integer(curr.getProblemId());
+        		if (handledProblems.add(id)) {
+        			fAssistant.addProposals(quickAssistContext, curr, file, rootNode, proposals);
+        		}
+        	}
         }
     }
 

@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 

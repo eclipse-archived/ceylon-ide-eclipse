@@ -162,10 +162,13 @@ import org.eclipse.ui.texteditor.spelling.SpellingService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
+import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
@@ -1117,10 +1120,8 @@ extends PreviousSubWordAction implements IUpdate {
 
     private void findLanguageSpecificPreferences() {
         ISourceProject srcProject = fLanguageServiceManager.getParseController().getProject();
-        
         if (srcProject != null) {
         	IProject project= srcProject.getRawProject();
-
         	fLangSpecificPrefs= new PreferencesService(project, fLanguage.getName());
         } else {
             fLangSpecificPrefs= new PreferencesService(null, fLanguage.getName());
@@ -1450,7 +1451,7 @@ extends PreviousSubWordAction implements IUpdate {
         }
         Font sourceFont= fontRegistry.get(fontName);
 
-        if (sourceFont != null) {
+        if (sourceFont!=null) {
             getSourceViewer().getTextWidget().setFont(sourceFont);
         }
     }
@@ -1470,19 +1471,22 @@ extends PreviousSubWordAction implements IUpdate {
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
             // the source viewer, now that we actually have the hover provider.
-            sourceViewer.setTextHover(fServiceControllerManager.getHoverHelpController(), DEFAULT_CONTENT_TYPE);
+            HoverHelpController hover = new HoverHelpController(this);
+			sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
+            addModelListener(hover);
 
             // The source viewer configuration has already been asked for its IContentFormatter,
             // but before we actually instantiated the relevant controller class. So update the
             // source viewer, now that we actually have the IContentFormatter.
             ContentFormatter formatter= new ContentFormatter();
 
-            formatter.setFormattingStrategy(fServiceControllerManager.getFormattingController(), DEFAULT_CONTENT_TYPE);
+            formatter.setFormattingStrategy(fServiceControllerManager.getFormattingController(), 
+            		DEFAULT_CONTENT_TYPE);
             sourceViewer.setFormatter(formatter);
 
             try {
-            	new PresentationController(getSourceViewer(), cpc)
-            	.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            	new PresentationController(getSourceViewer(), cpc).damage(new Region(0, 
+            			sourceViewer.getDocument().getLength()));
             } 
             catch (Exception e) {
             	e.printStackTrace();
@@ -1747,7 +1751,8 @@ extends PreviousSubWordAction implements IUpdate {
         fAnnotationAccess= createAnnotationAccess();
         fOverviewRuler= createOverviewRuler(getSharedColors());
 
-        ISourceViewer viewer= new StructuredSourceViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+        ISourceViewer viewer= new StructuredSourceViewer(parent, ruler, 
+        		getOverviewRuler(), isOverviewRulerVisible(), styles);
         // ensure decoration support has been created and configured.
         getSourceViewerDecorationSupport(viewer);
         /*if (fLanguageServiceManager != null && fLanguageServiceManager.getParseController() != null) {
@@ -1769,19 +1774,7 @@ extends PreviousSubWordAction implements IUpdate {
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         setupMatchingBrackets();
 
-        // X10DT Bug #546: If this input has no corresponding language descriptor, someone
-        // can still associate the IMP editor with this file extension, in which case we
-        // get here with no fLanguage and no fLanguageServiceManager.
-        if (fLanguage == null || fLanguageServiceManager == null) {
-            return;
-        }
-        IParseController parseController = fLanguageServiceManager.getParseController();
-
-        if (parseController == null) {
-        	return;
-        }
-
-        ILanguageSyntaxProperties syntaxProps= parseController.getSyntaxProperties();
+        ILanguageSyntaxProperties syntaxProps= new CeylonLanguageSyntaxProperties();
         getPreferenceStore().setValue(MATCHING_BRACKETS, true);
         if (syntaxProps != null) {
 //          fBracketMatcher.setSourceVersion(getPreferenceStore().getString(JavaCore.COMPILER_SOURCE));
@@ -2005,10 +1998,8 @@ extends PreviousSubWordAction implements IUpdate {
     		Iterator annotations = model.getAnnotationIterator();
     		while (annotations.hasNext()) {
     			Object ann = annotations.next();
-
     			if (ann instanceof MarkerAnnotation) {
     				IMarker marker = ((MarkerAnnotation)ann).getMarker();
-
     				if (marker.exists()) {
     				    currentMarkers.add(marker);
     				}
@@ -2026,7 +2017,6 @@ extends PreviousSubWordAction implements IUpdate {
     		for (int i = 0; i < currentMarkers.size(); i++) {
     			IMarker marker = currentMarkers.get(i);
 				Annotation annotation = findParseAnnotationForMarker(model, marker, currentParseAnnotations);
-
 				if (annotation != null) {
 					markerParseAnnotations.put(marker, annotation);
 				}
@@ -2046,15 +2036,11 @@ extends PreviousSubWordAction implements IUpdate {
 				if (markerStartAttr == null || markerEndAttr == null) {
 					return null;
 				}
-			} catch (CoreException e) {
-			    // RMF 7/25/2008 -- This exception should never occur, now that we check that each marker still exists in modelChanged()
-			    // (see Bug 242098).
-			    RuntimePlugin.getInstance().logException("UniversalEditor.findParseAnnotationForMarker:  CoreException getting marker start and end attributes", e);
+			} 
+    		catch (Exception e) {
+			    e.printStackTrace();
 				return null;
-			} catch (NullPointerException e) {
-			    RuntimePlugin.getInstance().logException("UniversalEditor.findParseAnnotationForMarker:  NullPointerException getting marker start and end attributes", e);
-				return null;
-			}
+    		}
 			
    			int markerStart = markerStartAttr.intValue();
 			int markerEnd = markerEndAttr.intValue();
@@ -2063,7 +2049,6 @@ extends PreviousSubWordAction implements IUpdate {
 			for (int j = 0; j < parseAnnotations.size(); j++) {
 				Annotation parseAnnotation = (Annotation) parseAnnotations.get(j);
 				Position pos = model.getPosition(parseAnnotation);
-
 				if (pos == null)
 					// And this would be why?
 					continue;
@@ -2075,7 +2060,8 @@ extends PreviousSubWordAction implements IUpdate {
 				if (markerStart == annotationStart && markerLength == annotationLength) {
 					//System.out.println("\tfindParseAnnotationForMarker: Returning annotation at offset = " + markerStart);
 					return parseAnnotation;
-				} else {
+				} 
+				else {
   					//System.out.println("\tfindParseAnnotationForMarker: Not returning annotation at offset = " + markerStart);
 				}
 			}
@@ -2096,7 +2082,8 @@ extends PreviousSubWordAction implements IUpdate {
         // while retrieving the input's contents, e.g., if the given input doesn't exist.
     	try {
     		super.doSetInput(input);
-    	} catch (CoreException e) {
+    	} 
+    	catch (CoreException e) {
     	    if (e.getCause() instanceof IOException) {
     	        throw new CoreException(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, 0, "Unable to read source text", e.getStatus().getException()));
     	    }
@@ -2134,8 +2121,7 @@ extends PreviousSubWordAction implements IUpdate {
     class PresentationDamager implements IPresentationDamager {
         public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, boolean documentPartitioningChanged) {
             // Ask the language's token colorer how much of the document presentation needs to be recomputed.
-            final ITokenColorer tokenColorer= fLanguageServiceManager.getTokenColorer();
-
+            final ITokenColorer tokenColorer= new CeylonTokenColorer();
             if (tokenColorer != null)
                 return tokenColorer.calculateDamageExtent(partition, fLanguageServiceManager.getParseController());
             else
@@ -2258,28 +2244,24 @@ extends PreviousSubWordAction implements IUpdate {
     // remove parser annotations that I expect to be duplicated
     // if a save triggers a build that leads to the creation
     // of markers and another set of annotations.
-	public void doSave(IProgressMonitor progressMonitor) {
+	/*public void doSave(IProgressMonitor progressMonitor) {
 		// SMS 25 Apr 2007:  Removing parser annotations here
 		// may not hurt but also doesn't seem to be necessary
-		//removeParserAnnotations();
+		removeParserAnnotations();
 		super.doSave(progressMonitor);
 	}
 
     public void removeParserAnnotations() {
     	IAnnotationModel model= getDocumentProvider().getAnnotationModel(getEditorInput());
-
     	for(Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
     	    Annotation a= (Annotation) i.next();
-
     	    if (a.getType().equals(PARSE_ANNOTATION_TYPE))
     	    	model.removeAnnotation(a);
     	}
-    }
+    }*/
 
     public String toString() {
-        String langName= (fLanguage != null ? " for " + fLanguage.getName() : "");
-        String inputDesc= (fParserScheduler != null && fLanguageServiceManager.getParseController() != null && fLanguageServiceManager.getParseController().getPath() != null) ? "source " + fLanguageServiceManager.getParseController().getPath().toPortableString() : "";
-        return "Universal Editor" + langName +  " on " + inputDesc + getEditorInput();
+        return "Ceylon Editor for " + getEditorInput();
     }
 }
 

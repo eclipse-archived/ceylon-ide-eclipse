@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonDocumentationProvider.getRefinementDocumentation;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.getRefinementDocumentation;
 import static org.eclipse.imp.utils.AnnotationUtils.formatAnnotationList;
 import static org.eclipse.imp.utils.AnnotationUtils.getAnnotationsForLine;
 
