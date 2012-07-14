@@ -105,7 +105,8 @@ public class AnnotationCreator implements IMessageHandler {
                     fAnnotations.add(anno);
                 }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
-            } else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
+            } 
+            else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
                 for(Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
                     Annotation a= (Annotation) i.next();
                     if (CeylonEditor.isParseAnnotation(a)) {
@@ -124,16 +125,14 @@ public class AnnotationCreator implements IMessageHandler {
     }
 
     private Annotation createAnnotation(PositionedMessage pm) {
-        if (pm.attributes==null) {
-            return new Annotation(CeylonEditor.PARSE_ANNOTATION_TYPE, false, pm.message);
-        } 
-        else {
-            return new DefaultAnnotation(getAnnotationType(pm), false, pm.message,
-                                         fEditor, pm.attributes);
-        }
+        return new CeylonAnnotation(getAnnotationType(pm), false, 
+        		pm.message, fEditor, pm.attributes);
     }
 
     private String getAnnotationType(PositionedMessage pm) {
+    	if (pm.attributes==null) {
+    		return CeylonEditor.PARSE_ANNOTATION_TYPE;
+    	}
         if (pm.attributes.containsKey(SEVERITY_KEY)) {
             int severity= (Integer) pm.attributes.get(SEVERITY_KEY);
             switch (severity) {

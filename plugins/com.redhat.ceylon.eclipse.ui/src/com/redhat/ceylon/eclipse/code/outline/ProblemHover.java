@@ -14,7 +14,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.quickfix.ProblemLocation;
 
@@ -159,8 +159,8 @@ public class ProblemHover extends AbstractAnnotationHover {
 		 * .AnnotationInfo#getCompletionProposals()
 		 */
 		public ICompletionProposal[] getCompletionProposals() {
-			if (annotation instanceof DefaultAnnotation) {
-				ICompletionProposal[] result = getAnnotationFixes((DefaultAnnotation) annotation);
+			if (annotation instanceof CeylonAnnotation) {
+				ICompletionProposal[] result = getAnnotationFixes((CeylonAnnotation) annotation);
 				if (result.length > 0)
 					return result;
 			}
@@ -171,7 +171,7 @@ public class ProblemHover extends AbstractAnnotationHover {
 			return NO_PROPOSALS;
 		}
 
-		private ICompletionProposal[] getAnnotationFixes(DefaultAnnotation annotation) {
+		private ICompletionProposal[] getAnnotationFixes(CeylonAnnotation annotation) {
 			CeylonQuickFixController qac = new CeylonQuickFixController(annotation.getEditor());
 			
 			final ProblemLocation location = new ProblemLocation(position

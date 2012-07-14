@@ -76,7 +76,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.DefaultAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -93,8 +93,8 @@ public class CeylonQuickFixAssistant {
 
     public boolean canFix(Annotation annotation) {
         int code;
-        if (annotation instanceof DefaultAnnotation) {
-            code = ((DefaultAnnotation) annotation).getId();
+        if (annotation instanceof CeylonAnnotation) {
+            code = ((CeylonAnnotation) annotation).getId();
         }
         else if (annotation instanceof MarkerAnnotation) {
             code = ((MarkerAnnotation) annotation).getMarker()
