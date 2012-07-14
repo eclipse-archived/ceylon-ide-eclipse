@@ -44,12 +44,12 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonOutlinePage extends ContentOutlinePage implements IModelListener {
 	
     private final ITreeContentProvider fContentProvider;
-    private final CeylonTreeModelBuilder fModelBuilder;
+    private final CeylonOutlineBuilder fModelBuilder;
     private final CeylonLabelProvider fLabelProvider;
     private final CeylonParseController fParseController;
 
     public CeylonOutlinePage(CeylonParseController parseController,
-            CeylonTreeModelBuilder modelBuilder,
+            CeylonOutlineBuilder modelBuilder,
             CeylonLabelProvider labelProvider) {
     	
         fParseController= parseController;
@@ -121,7 +121,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
         viewer.addSelectionChangedListener(this);
         CeylonOutlineNode rootNode= fModelBuilder.buildTree(fParseController.getRootNode());
         viewer.setInput(rootNode);
-        viewer.setAutoExpandLevel(2);
+        viewer.setAutoExpandLevel(3);
 
         IPageSite site= getSite();
         IActionBars actionBars= site.getActionBars();

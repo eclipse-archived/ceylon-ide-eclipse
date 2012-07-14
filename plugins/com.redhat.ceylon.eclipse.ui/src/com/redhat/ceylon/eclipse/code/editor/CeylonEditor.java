@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
+import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -17,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
+import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -27,14 +30,15 @@ import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.imp.editor.GenerateActionGroup;
 import org.eclipse.imp.editor.OpenEditorActionGroup;
 import org.eclipse.imp.editor.ParserScheduler;
+import org.eclipse.imp.editor.StructuredSourceViewer;
 import org.eclipse.imp.editor.StructuredSourceViewerConfiguration;
 import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.ui.DefaultPartListener;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -68,13 +72,15 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
+import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
-import com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder;
-import com.redhat.ceylon.eclipse.code.outline.OutlineInformationControl;
+import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
+import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
+import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.JavaReferenceResolver;
@@ -131,7 +137,7 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
     
-    private static final CeylonTreeModelBuilder builder = new CeylonTreeModelBuilder();
+    private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
 
     private class OutlineInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
@@ -147,13 +153,36 @@ public class CeylonEditor extends UniversalEditor {
         }
     }
 
+    private class HierarchyInformationProvider 
+            implements IInformationProvider, IInformationProviderExtension {
+    	public IRegion getSubject(ITextViewer textViewer, int offset) {
+    		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+    	}
+    	public String getInformation(ITextViewer textViewer, IRegion subject) {
+    		// shouldn't be called, given IInformationProviderExtension???
+    		throw new UnsupportedOperationException();
+    	}
+    	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+    		return CeylonEditor.this;
+    	}
+    }
+
     private IResourceChangeListener fResourceListener;
 
     private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
         return new IInformationControlCreator() {
             @Override
             public IInformationControl createInformationControl(Shell parent) {
-                return new OutlineInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
+                return new OutlinePopup(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
+            }
+        };
+    }
+
+    private IInformationControlCreator getHierarchyPresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new HierarchyPopup(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
             }
         };
     }
@@ -184,10 +213,20 @@ public class CeylonEditor extends UniversalEditor {
             public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
                 InformationPresenter presenter = new InformationPresenter(getOutlinePresenterControlCreator(sourceViewer, SHOW_OUTLINE));
                 presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-                presenter.setAnchor(AbstractInformationControlManager.ANCHOR_GLOBAL);
-                presenter.setInformationProvider(new OutlineInformationProvider(), IDocument.DEFAULT_CONTENT_TYPE);
-                // TODO Should associate all other partition types with this provider, too
-                //presenter.setSizeConstraints(50, 20, true, false);
+                presenter.setAnchor(ANCHOR_GLOBAL);
+                presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
+                presenter.setSizeConstraints(50, 20, true, false);
+                //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+                return presenter;
+            }
+            @Override
+            public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer, boolean b) {
+                InformationPresenter presenter = new InformationPresenter(getHierarchyPresenterControlCreator(sourceViewer, 
+                		"com.redhat.ceylon.eclipse.ui.action.hierarchy"));
+                presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+                presenter.setAnchor(ANCHOR_GLOBAL);
+                presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
+                presenter.setSizeConstraints(100, 20, true, false);
                 //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
                 return presenter;
             }
@@ -358,6 +397,16 @@ public class CeylonEditor extends UniversalEditor {
 
     public CeylonParseController getParseController() {
         return (CeylonParseController) super.getParseController();
+    }
+    
+    @Override
+    protected void createActions() {
+    	super.createActions();
+    	final ResourceBundle bundle= ResourceBundle.getBundle(MESSAGE_BUNDLE);
+    	Action action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
+    			StructuredSourceViewer.SHOW_HIERARCHY, true); //$NON-NLS-1$
+        action.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.hierarchy");
+        setAction("com.redhat.ceylon.eclipse.ui.action.hierarchy", action); //$NON-NLS-1$
     }
     
     @Override
@@ -711,7 +760,7 @@ public class CeylonEditor extends UniversalEditor {
         if (IContentOutlinePage.class.equals(required)) {
             if (myOutlinePage == null) {
                 myOutlinePage = new CeylonOutlinePage(getParseController(),
-                        new CeylonTreeModelBuilder(), new CeylonLabelProvider());
+                        new CeylonOutlineBuilder(), new CeylonLabelProvider());
 				try {
 					ParserScheduler scheduler = (ParserScheduler) fParserSchedulerField.get(CeylonEditor.this);
 	                scheduler.addModelListener(myOutlinePage);

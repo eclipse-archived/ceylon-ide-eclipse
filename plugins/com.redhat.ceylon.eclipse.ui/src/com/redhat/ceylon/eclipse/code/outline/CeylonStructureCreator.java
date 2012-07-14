@@ -30,6 +30,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
@@ -37,6 +38,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
  * @author rfuhrer
  */
 public class CeylonStructureCreator extends StructureCreator {
+	
     public class TreeCompareNode extends DocumentRangeNode implements ITypedElement {
         private final Node fASTNode;
 
@@ -55,8 +57,8 @@ public class CeylonStructureCreator extends StructureCreator {
          */
         public TreeCompareNode(DocumentRangeNode parent, CeylonOutlineNode treeNode, 
         		IDocument document) {
-            super(parent, fCompareNodeIdentifier.getTypeCode(treeNode.getASTNode()), 
-                    fCompareNodeIdentifier.getID(treeNode.getASTNode()), document,
+            super(parent, CeylonStructureCreator.getTypeCode(treeNode.getASTNode()), 
+                    getID(treeNode.getASTNode()), document,
                     fSrcPositionLocator.getStartOffset(treeNode.getASTNode()), 
                     fSrcPositionLocator.getLength(treeNode.getASTNode()));
             fASTNode= treeNode.getASTNode();
@@ -82,9 +84,39 @@ public class CeylonStructureCreator extends StructureCreator {
         }
     }
 
-    private CeylonCompareNodeIdentifier fCompareNodeIdentifier;
     private CeylonLabelProvider fLabelProvider;
     private CeylonSourcePositionLocator fSrcPositionLocator;
+    
+    static int getTypeCode(Object o) {
+        if (o instanceof CeylonOutlineNode) {
+            o = ((CeylonOutlineNode) o).getASTNode();
+        }
+        if (o instanceof Tree.Declaration) {
+            return ((Tree.Declaration) o).getDeclarationModel()
+                    .getDeclarationKind().ordinal();
+        }
+        else if (o instanceof Tree.CompilationUnit) {
+            return 100;
+        }
+        else {
+            return -1;
+        }
+    }
+    
+    static String getID(Object o) {
+        if (o instanceof CeylonOutlineNode) {
+            o = ((CeylonOutlineNode) o).getASTNode();
+        }
+        if (o instanceof Tree.Declaration) {
+            return ((Tree.Declaration) o).getDeclarationModel().getQualifiedNameString();
+        }
+        else if (o instanceof Tree.CompilationUnit) {
+            return ((Tree.CompilationUnit) o).getUnit().getFilename();
+        }
+        else {
+            return o.toString();
+        }
+    }
 
     public String getName() {
         return "Structural Comparison";
@@ -98,9 +130,8 @@ public class CeylonStructureCreator extends StructureCreator {
 
     	//ServiceFactory svcFactory= ServiceFactory.getInstance();
     	CeylonParseController pc= new CeylonParseController();
-    	fCompareNodeIdentifier= new CeylonCompareNodeIdentifier();
     	fLabelProvider= new CeylonLabelProvider();
-    	CeylonTreeModelBuilder builder= new CeylonTreeModelBuilder();
+    	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
     	fSrcPositionLocator= pc.getSourcePositionLocator();
         
     	//TODO: pass some more info in here!
