@@ -14,6 +14,13 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.CORRECT_INDENTATION;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_MATCHING_FENCE;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static org.eclipse.imp.editor.IEditorActionDefinitionIds.TOGGLE_COMMENT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SOURCE_FONT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
@@ -164,7 +171,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  * @author Robert M. Fuhrer
  */
 public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
-    public static final String MESSAGE_BUNDLE= "org.eclipse.imp.editor.messages";
+	
+    private static final String SHOW_CEYLON_HIERARCHY = "com.redhat.ceylon.eclipse.ui.action.hierarchy";
+
+	public static final String MESSAGE_BUNDLE= "org.eclipse.imp.editor.messages";
 
     public static final String EDITOR_ID= RuntimePlugin.IMP_RUNTIME + ".impEditor";
 
@@ -318,7 +328,8 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
 //                return new ToggleBreakpointAction(UniversalEditor.this, getDocumentProvider().getDocument(getEditorInput()), getVerticalRuler());
 //            }
 //        }
-        fToggleBreakpointAction= new ToggleBreakpointAction(this, getDocumentProvider().getDocument(getEditorInput()), getVerticalRuler());
+        fToggleBreakpointAction= new ToggleBreakpointAction(this, getDocumentProvider().getDocument(getEditorInput()), 
+        		getVerticalRuler());
         setAction("ToggleBreakpoint", action);
         fEnableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, getVerticalRuler());
         setAction("ToggleBreakpoint", action);
@@ -330,44 +341,45 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
         markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
 
-        action= new TextOperationAction(bundle, "ShowOutline.", this, CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */); //$NON-NLS-1$
-        action.setActionDefinitionId(IEditorActionDefinitionIds.SHOW_OUTLINE);
-        setAction(IEditorActionDefinitionIds.SHOW_OUTLINE, action); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "ShowOutline.", this, 
+        		CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */); //$NON-NLS-1$
+        action.setActionDefinitionId(SHOW_OUTLINE);
+        setAction(SHOW_OUTLINE, action); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
 
-        action= new TextOperationAction(bundle, "ToggleComment.", this, CeylonSourceViewer.TOGGLE_COMMENT); //$NON-NLS-1$
-        action.setActionDefinitionId(IEditorActionDefinitionIds.TOGGLE_COMMENT);
-        setAction(IEditorActionDefinitionIds.TOGGLE_COMMENT, action); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "ToggleComment.", this, 
+        		CeylonSourceViewer.TOGGLE_COMMENT); //$NON-NLS-1$
+        action.setActionDefinitionId(TOGGLE_COMMENT);
+        setAction(TOGGLE_COMMENT, action); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
 
-        action= new TextOperationAction(bundle, "CorrectIndentation.", this, CeylonSourceViewer.CORRECT_INDENTATION); //$NON-NLS-1$
-        action.setActionDefinitionId(IEditorActionDefinitionIds.CORRECT_INDENTATION);
-        setAction(IEditorActionDefinitionIds.CORRECT_INDENTATION, action); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "CorrectIndentation.", this, 
+        		CeylonSourceViewer.CORRECT_INDENTATION); //$NON-NLS-1$
+        action.setActionDefinitionId(CORRECT_INDENTATION);
+        setAction(CORRECT_INDENTATION, action); //$NON-NLS-1$
 
         action= new GotoMatchingFenceAction(this);
-        action.setActionDefinitionId(IEditorActionDefinitionIds.GOTO_MATCHING_FENCE);
-        setAction(IEditorActionDefinitionIds.GOTO_MATCHING_FENCE, action);
+        action.setActionDefinitionId(GOTO_MATCHING_FENCE);
+        setAction(GOTO_MATCHING_FENCE, action);
 
         action= new GotoPreviousTargetAction(this);
-        action.setActionDefinitionId(IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET);
-        setAction(IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET, action);
+        action.setActionDefinitionId(GOTO_PREVIOUS_TARGET);
+        setAction(GOTO_PREVIOUS_TARGET, action);
 
         action= new GotoNextTargetAction(this);
-        action.setActionDefinitionId(IEditorActionDefinitionIds.GOTO_NEXT_TARGET);
-        setAction(IEditorActionDefinitionIds.GOTO_NEXT_TARGET, action);
+        action.setActionDefinitionId(GOTO_NEXT_TARGET);
+        setAction(GOTO_NEXT_TARGET, action);
 
         action= new SelectEnclosingAction(this);
-        action.setActionDefinitionId(IEditorActionDefinitionIds.SELECT_ENCLOSING);
-        setAction(IEditorActionDefinitionIds.SELECT_ENCLOSING, action);
+        action.setActionDefinitionId(SELECT_ENCLOSING);
+        setAction(SELECT_ENCLOSING, action);
 
         fFoldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
-        //installQuickAccessAction();
-
     	action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
     			CeylonSourceViewer.SHOW_HIERARCHY, true); //$NON-NLS-1$
-        action.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.hierarchy");
-        setAction("com.redhat.ceylon.eclipse.ui.action.hierarchy", action); //$NON-NLS-1$
+        action.setActionDefinitionId(SHOW_CEYLON_HIERARCHY);
+        setAction(SHOW_CEYLON_HIERARCHY, action); //$NON-NLS-1$
     }
     
     @Override
