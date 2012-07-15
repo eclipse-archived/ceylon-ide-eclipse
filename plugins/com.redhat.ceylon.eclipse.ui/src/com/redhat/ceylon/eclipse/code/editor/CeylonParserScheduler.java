@@ -12,8 +12,6 @@ import org.eclipse.imp.language.Language;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.preferences.PreferenceCache;
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -89,11 +87,6 @@ public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserSchedule
 
                 if (document == null)
                     return Status.OK_STATUS;
-
-                if (PreferenceCache.emitMessages /* fPrefService.getBooleanPreference(PreferenceConstants.P_EMIT_MESSAGES) */) {
-                    RuntimePlugin.getInstance().writeInfoMsg(
-                            "Parsing language " + fParseController.getLanguage().getName() + " for input " + editorInput.getName());
-                }
 
 //              System.out.println("Parsing started.");
                 // If we're editing a workspace resource, check to make sure that it still exists

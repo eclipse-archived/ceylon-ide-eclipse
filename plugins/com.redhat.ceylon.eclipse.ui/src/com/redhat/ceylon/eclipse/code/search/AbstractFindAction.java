@@ -44,6 +44,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
+		if (outlineView==null)return;
 		try {
 			Node node = (Node) ((CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection())
 					.getFirstElement()).getASTNode();
