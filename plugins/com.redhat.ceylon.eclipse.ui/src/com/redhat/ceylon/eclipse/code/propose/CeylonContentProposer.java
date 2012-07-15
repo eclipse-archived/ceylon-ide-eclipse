@@ -45,8 +45,6 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.IContentProposer;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -91,7 +89,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
-public class CeylonContentProposer implements IContentProposer {
+public class CeylonContentProposer {
     
     public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
             .getImageRegistry().get(ICeylonResources.CEYLON_DEFAULT_REFINEMENT);
@@ -115,7 +113,7 @@ public class CeylonContentProposer implements IContentProposer {
      * @return        An array of completion proposals applicable relative to the AST of the given
      *             parse controller at the given position
      */
-    public ICompletionProposal[] getContentProposals(IParseController controller,
+    public ICompletionProposal[] getContentProposals(CeylonParseController controller,
             final int offset, ITextViewer viewer) {
         
         if (controller==null || viewer==null) {
