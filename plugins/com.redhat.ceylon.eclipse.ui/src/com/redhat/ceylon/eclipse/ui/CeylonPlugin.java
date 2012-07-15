@@ -38,7 +38,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 	public static final String LANGUAGE_ID = "ceylon";
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
 	
-	public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
+	private static Language LANGUAGE;
 
 	/**
 	 * The unique instance of this plugin class
@@ -242,6 +242,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         }
         return Platform.getAdapterManager().getAdapter(object, type);
     }
+
+	public static Language getLanguage() {
+		if (LANGUAGE==null) LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
+		return LANGUAGE;
+	}
 
 }
 

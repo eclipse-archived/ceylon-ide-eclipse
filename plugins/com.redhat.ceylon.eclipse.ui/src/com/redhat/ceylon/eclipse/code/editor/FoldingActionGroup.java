@@ -1,5 +1,14 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.FOLDING_COLLAPSE_COMMENTS;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.FOLDING_COLLAPSE_MEMBERS;
+import static org.eclipse.imp.actions.FoldingMessages.getResourceBundle;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE_ALL;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_EXPAND;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_EXPAND_ALL;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_RESTORE;
+
 import java.util.ResourceBundle;
 
 import org.eclipse.imp.actions.FoldingMessages;
@@ -107,23 +116,23 @@ public class FoldingActionGroup extends ActionGroup {
 //        fToggle.setActionDefinitionId(IFoldingCommandIds.FOLDING_TOGGLE);
 //        editor.setAction("FoldingToggle", fToggle); //$NON-NLS-1$
         
-        fExpandAll= new TextOperationAction(FoldingMessages.getResourceBundle(), "Projection.ExpandAll.", editor, ProjectionViewer.EXPAND_ALL, true); //$NON-NLS-1$
-        fExpandAll.setActionDefinitionId(IFoldingCommandIds.FOLDING_EXPAND_ALL);
+        fExpandAll= new TextOperationAction(getResourceBundle(), "Projection.ExpandAll.", editor, ProjectionViewer.EXPAND_ALL, true); //$NON-NLS-1$
+        fExpandAll.setActionDefinitionId(FOLDING_EXPAND_ALL);
         editor.setAction("FoldingExpandAll", fExpandAll); //$NON-NLS-1$
         
-        fCollapseAll= new TextOperationAction(FoldingMessages.getResourceBundle(), "Projection.CollapseAll.", editor, ProjectionViewer.COLLAPSE_ALL, true); //$NON-NLS-1$
-        fCollapseAll.setActionDefinitionId(IFoldingCommandIds.FOLDING_COLLAPSE_ALL);
+        fCollapseAll= new TextOperationAction(getResourceBundle(), "Projection.CollapseAll.", editor, ProjectionViewer.COLLAPSE_ALL, true); //$NON-NLS-1$
+        fCollapseAll.setActionDefinitionId(FOLDING_COLLAPSE_ALL);
         editor.setAction("FoldingCollapseAll", fCollapseAll); //$NON-NLS-1$
         
-        fExpand= new TextOperationAction(FoldingMessages.getResourceBundle(), "Projection.Expand.", editor, ProjectionViewer.EXPAND, true); //$NON-NLS-1$
-        fExpand.setActionDefinitionId(IFoldingCommandIds.FOLDING_EXPAND);
+        fExpand= new TextOperationAction(getResourceBundle(), "Projection.Expand.", editor, ProjectionViewer.EXPAND, true); //$NON-NLS-1$
+        fExpand.setActionDefinitionId(FOLDING_EXPAND);
         editor.setAction("FoldingExpand", fExpand); //$NON-NLS-1$
         
-        fCollapse= new TextOperationAction(FoldingMessages.getResourceBundle(), "Projection.Collapse.", editor, ProjectionViewer.COLLAPSE, true); //$NON-NLS-1$
-        fCollapse.setActionDefinitionId(IFoldingCommandIds.FOLDING_COLLAPSE);
+        fCollapse= new TextOperationAction(getResourceBundle(), "Projection.Collapse.", editor, ProjectionViewer.COLLAPSE, true); //$NON-NLS-1$
+        fCollapse.setActionDefinitionId(FOLDING_COLLAPSE);
         editor.setAction("FoldingCollapse", fCollapse); //$NON-NLS-1$
         
-        fRestoreDefaults= new FoldingAction(FoldingMessages.getResourceBundle(), "Projection.Restore.") { //$NON-NLS-1$
+        fRestoreDefaults= new FoldingAction(getResourceBundle(), "Projection.Restore.") { //$NON-NLS-1$
             public void run() {
                 if (editor instanceof CeylonEditor) {
                 	CeylonEditor univEditor= (CeylonEditor) editor;
@@ -131,10 +140,10 @@ public class FoldingActionGroup extends ActionGroup {
                 }
             }
         };
-        fRestoreDefaults.setActionDefinitionId(IFoldingCommandIds.FOLDING_RESTORE);
+        fRestoreDefaults.setActionDefinitionId(FOLDING_RESTORE);
         editor.setAction("FoldingRestore", fRestoreDefaults); //$NON-NLS-1$
         
-        fCollapseMembers= new FoldingAction(FoldingMessages.getResourceBundle(), "Projection.CollapseMembers.") { //$NON-NLS-1$
+        fCollapseMembers= new FoldingAction(getResourceBundle(), "Projection.CollapseMembers.") { //$NON-NLS-1$
             public void run() {
                 if (editor instanceof CeylonEditor) {
                 	CeylonEditor univEditor= (CeylonEditor) editor;
@@ -143,10 +152,10 @@ public class FoldingActionGroup extends ActionGroup {
                 }
             }
         };
-        fCollapseMembers.setActionDefinitionId(IEditorActionDefinitionIds.FOLDING_COLLAPSE_MEMBERS);
+        fCollapseMembers.setActionDefinitionId(FOLDING_COLLAPSE_MEMBERS);
         editor.setAction("FoldingCollapseMembers", fCollapseMembers); //$NON-NLS-1$
         
-        fCollapseComments= new FoldingAction(FoldingMessages.getResourceBundle(), "Projection.CollapseComments.") { //$NON-NLS-1$
+        fCollapseComments= new FoldingAction(getResourceBundle(), "Projection.CollapseComments.") { //$NON-NLS-1$
             public void run() {
                 if (editor instanceof CeylonEditor) {
                 	CeylonEditor univEditor= (CeylonEditor) editor;
@@ -155,7 +164,7 @@ public class FoldingActionGroup extends ActionGroup {
                 }
             }
         };
-        fCollapseComments.setActionDefinitionId(IEditorActionDefinitionIds.FOLDING_COLLAPSE_COMMENTS);
+        fCollapseComments.setActionDefinitionId(FOLDING_COLLAPSE_COMMENTS);
         editor.setAction("FoldingCollapseComments", fCollapseComments); //$NON-NLS-1$
     }
     

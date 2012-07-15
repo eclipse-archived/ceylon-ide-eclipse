@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;

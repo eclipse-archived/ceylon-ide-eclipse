@@ -268,7 +268,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static boolean isCeylon(IFile file) {
-        return CeylonPlugin.LANGUAGE.hasExtension(file.getFileExtension());
+        return CeylonPlugin.getLanguage().hasExtension(file.getFileExtension());
     }
 
     public static boolean isJava(IFile file) {
