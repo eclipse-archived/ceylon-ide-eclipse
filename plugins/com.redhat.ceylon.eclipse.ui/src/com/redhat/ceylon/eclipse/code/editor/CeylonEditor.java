@@ -45,7 +45,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -77,9 +76,7 @@ import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.imp.services.IASTFindReplaceTarget;
 import org.eclipse.imp.services.IAnnotationTypeInfo;
-import org.eclipse.imp.services.IFoldingUpdater;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -139,7 +136,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IEditorStatusLine;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
@@ -157,7 +153,6 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -259,8 +254,8 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
      * standard StructuredSourceViewerConfiguration.
      * @return the StructuredSourceViewerConfiguration to use with this editor
      */
-    protected StructuredSourceViewerConfiguration createSourceViewerConfiguration() {
-    	return new StructuredSourceViewerConfiguration(getPreferenceStore(), this);
+    protected CeylonSourceViewerConfiguration createSourceViewerConfiguration() {
+    	return new CeylonSourceViewerConfiguration(getPreferenceStore(), this);
     }
 
     public IPreferencesService getLanguageSpecificPreferences() {
@@ -335,17 +330,17 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
         markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
 
-        action= new TextOperationAction(bundle, "ShowOutline.", this, StructuredSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "ShowOutline.", this, CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */); //$NON-NLS-1$
         action.setActionDefinitionId(IEditorActionDefinitionIds.SHOW_OUTLINE);
         setAction(IEditorActionDefinitionIds.SHOW_OUTLINE, action); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
 
-        action= new TextOperationAction(bundle, "ToggleComment.", this, StructuredSourceViewer.TOGGLE_COMMENT); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "ToggleComment.", this, CeylonSourceViewer.TOGGLE_COMMENT); //$NON-NLS-1$
         action.setActionDefinitionId(IEditorActionDefinitionIds.TOGGLE_COMMENT);
         setAction(IEditorActionDefinitionIds.TOGGLE_COMMENT, action); //$NON-NLS-1$
 //      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
 
-        action= new TextOperationAction(bundle, "CorrectIndentation.", this, StructuredSourceViewer.CORRECT_INDENTATION); //$NON-NLS-1$
+        action= new TextOperationAction(bundle, "CorrectIndentation.", this, CeylonSourceViewer.CORRECT_INDENTATION); //$NON-NLS-1$
         action.setActionDefinitionId(IEditorActionDefinitionIds.CORRECT_INDENTATION);
         setAction(IEditorActionDefinitionIds.CORRECT_INDENTATION, action); //$NON-NLS-1$
 
@@ -370,7 +365,7 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
         //installQuickAccessAction();
 
     	action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
-    			StructuredSourceViewer.SHOW_HIERARCHY, true); //$NON-NLS-1$
+    			CeylonSourceViewer.SHOW_HIERARCHY, true); //$NON-NLS-1$
         action.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.action.hierarchy");
         setAction("com.redhat.ceylon.eclipse.ui.action.hierarchy", action); //$NON-NLS-1$
     }
@@ -1403,7 +1398,7 @@ extends PreviousSubWordAction implements IUpdate {
 
     private void initiateServiceControllers() {
         try {
-            StructuredSourceViewer sourceViewer= (StructuredSourceViewer) getSourceViewer();
+            CeylonSourceViewer sourceViewer= (CeylonSourceViewer) getSourceViewer();
 
             fEditorErrorTickUpdater= new EditorErrorTickUpdater(this);
             fProblemMarkerManager.addListener(fEditorErrorTickUpdater);
@@ -1437,18 +1432,17 @@ extends PreviousSubWordAction implements IUpdate {
             	e.printStackTrace();
             }
             
-            ProjectionSupport projectionSupport= new ProjectionSupport(sourceViewer, getAnnotationAccess(),
-            		getSharedColors());
+            ProjectionSupport projectionSupport= new ProjectionSupport(sourceViewer, 
+            		getAnnotationAccess(), getSharedColors());
             projectionSupport.install();
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
             fAnnotationModel= sourceViewer.getProjectionAnnotationModel();
-            if (fAnnotationModel != null) {
-            	fParserScheduler.addModelListener(new FoldingController(fAnnotationModel, 
-            			new CeylonFoldingUpdater()));
+            if (fAnnotationModel!=null) {
+            	addModelListener(new FoldingController(fAnnotationModel));
             }
 
             if (isEditable()) {
-                fParserScheduler.addModelListener(new AnnotationCreatorListener());
+                addModelListener(new AnnotationCreatorListener());
             }
             //fServiceControllerManager.setupModelListeners(fParserScheduler);
 
@@ -1678,7 +1672,7 @@ extends PreviousSubWordAction implements IUpdate {
         fAnnotationAccess= createAnnotationAccess();
         fOverviewRuler= createOverviewRuler(getSharedColors());
 
-        ISourceViewer viewer= new StructuredSourceViewer(parent, ruler, 
+        ISourceViewer viewer= new CeylonSourceViewer(parent, ruler, 
         		getOverviewRuler(), isOverviewRulerVisible(), styles);
         // ensure decoration support has been created and configured.
         getSourceViewerDecorationSupport(viewer);
@@ -2187,22 +2181,6 @@ extends PreviousSubWordAction implements IUpdate {
     }
 }
 
-class GotoMatchingFenceAction extends Action {
-    private final CeylonEditor fEditor;
-
-    public GotoMatchingFenceAction(CeylonEditor editor) {
-            super("Go to Matching Fence");
-            Assert.isNotNull(editor);
-            fEditor= editor;
-            setEnabled(true);
-//          PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_MATCHING_BRACKET_ACTION);
-    }
-
-    public void run() {
-            fEditor.gotoMatchingFence();
-    }
-}
-
 /*class GotoAnnotationAction extends TextEditorAction {
     public static final String PREFIX= RuntimePlugin.IMP_RUNTIME + '.';
 
@@ -2238,150 +2216,3 @@ class GotoMatchingFenceAction extends Action {
     }
 }*/
 
-abstract class TargetNavigationAction extends Action {
-    protected CeylonEditor fEditor;
-    protected INavigationTargetFinder fNavTargetFinder;
-
-    protected abstract Object getNavTarget(Object o, Object astRoot);
-
-    protected TargetNavigationAction(String title, String actionDefID) {
-        this(null, title, actionDefID);
-    }
-
-    public TargetNavigationAction(CeylonEditor editor, String title, String actionDefID) {
-        setEditor(editor);
-        setText(title);
-        setActionDefinitionId(actionDefID);
-    }
-
-    public void setEditor(ITextEditor editor) {
-        fNavTargetFinder= null;
-        if (editor instanceof CeylonEditor) {
-            fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= null; //TODO??
-        } 
-        else {
-            fEditor= null;
-        }
-        setEnabled(fNavTargetFinder != null);
-    }
-
-    @Override
-    public void run() {
-        IRegion selection= fEditor.getSelectedRegion();
-        CeylonParseController pc= fEditor.getParseController();
-        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
-        Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
-        if (curNode == null || selection.getOffset() == 0) {
-            curNode= pc.getCurrentAst();
-        }
-        Object prev= getNavTarget(curNode, pc.getCurrentAst());
-    
-        if (prev != null) {
-            int prevOffset= locator.getStartOffset(prev);
-    
-            fEditor.selectAndReveal(prevOffset, 0);
-        }
-    }
-}
-
-class GotoNextTargetAction extends TargetNavigationAction {
-    public GotoNextTargetAction() {
-        this(null);
-    }
-
-    public GotoNextTargetAction(CeylonEditor editor) {
-        super(editor, "Go to Next Navigation Target", IEditorActionDefinitionIds.GOTO_NEXT_TARGET);
-    }
-
-    @Override
-    protected Object getNavTarget(Object o, Object astRoot) {
-        return fNavTargetFinder.getNextTarget(o, astRoot);
-    }
-}
-
-class GotoPreviousTargetAction extends TargetNavigationAction {
-    public GotoPreviousTargetAction() {
-        this(null);
-    }
-
-    public GotoPreviousTargetAction(CeylonEditor editor) {
-        super(editor, "Go to Previous Navigation Target", IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET);
-    }
-
-    @Override
-    protected Object getNavTarget(Object o, Object astRoot) {
-        return fNavTargetFinder.getPreviousTarget(o, astRoot);
-    }
-}
-
-class SelectEnclosingAction extends Action {
-    private CeylonEditor fEditor;
-    private INavigationTargetFinder fNavTargetFinder;
-
-    public SelectEnclosingAction() {
-        this(null);
-    }
-
-    public SelectEnclosingAction(CeylonEditor editor) {
-        super("Select Enclosing");
-        setActionDefinitionId(IEditorActionDefinitionIds.SELECT_ENCLOSING);
-        setEditor(editor);
-    }
-
-    public void setEditor(ITextEditor editor) {
-        fNavTargetFinder= null;
-        if (editor instanceof CeylonEditor) {
-            fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= null; //TODO???
-        } 
-        else {
-            fEditor= null;
-        }
-        setEnabled(fNavTargetFinder != null);
-    }
-
-    @Override
-    public void run() {
-        IRegion selection= fEditor.getSelectedRegion();
-        CeylonParseController pc= fEditor.getParseController();
-        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
-        Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
-        if (curNode == null || selection.getOffset() == 0) {
-            curNode= pc.getCurrentAst();
-        }
-        Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getCurrentAst());
-    
-        if (enclosing != null) {
-            int enclOffset= locator.getStartOffset(enclosing);
-            int enclEnd= locator.getEndOffset(enclosing);
-
-            fEditor.selectAndReveal(enclOffset, enclEnd - enclOffset + 1);
-        }
-    }
-}
-
-class FoldingController implements IModelListener {
-    private final ProjectionAnnotationModel fAnnotationModel;
-    private final IFoldingUpdater fFoldingUpdater;
-
-    public FoldingController(ProjectionAnnotationModel annotationModel, IFoldingUpdater foldingUpdater) {
-        super();
-        this.fAnnotationModel= annotationModel;
-        this.fFoldingUpdater= foldingUpdater;
-    }
-
-    public AnalysisRequired getAnalysisRequired() {
-        return AnalysisRequired.SYNTACTIC_ANALYSIS;
-    }
-
-    public void update(IParseController parseController, IProgressMonitor monitor) {
-        if (fAnnotationModel != null) { // can be null if file is outside workspace
-            try {
-                fFoldingUpdater.updateFoldingStructure(parseController, fAnnotationModel);
-            } catch (Exception e) {
-                RuntimePlugin.getInstance().logException("Error while updating folding annotations for " + parseController.getPath(), e);
-            }
-        }
-    }
-}

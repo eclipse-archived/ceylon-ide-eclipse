@@ -96,13 +96,6 @@
             class="com.redhat.ceylon.eclipse.code.parse.CeylonParseController"
             language="ceylon"/>
    </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.foldingUpdater">
-      <foldingUpdater
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonFoldingUpdater"
-            language="ceylon"/>
-   </extension>
 
    <extension 
          point="org.eclipse.ui.ide.markerResolution">

@@ -16,9 +16,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
-import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 
-public class StructuredSourceViewer extends ProjectionViewer {
+public class CeylonSourceViewer extends ProjectionViewer {
     /**
      * Text operation code for requesting the outline for the current input.
      */
@@ -64,23 +64,15 @@ public class StructuredSourceViewer extends ProjectionViewer {
     public static final int CORRECT_INDENTATION= 60;
 
     private IInformationPresenter fOutlinePresenter;
-
     private IInformationPresenter fStructurePresenter;
-
     private IInformationPresenter fHierarchyPresenter;
+    private IAutoEditStrategy fAutoEditStrategy;
 
-    private org.eclipse.jface.text.IAutoEditStrategy fAutoEditStrategy;
-
-    //private CeylonParseController fParseController;
-    
-    public StructuredSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
+    public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
     		IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
         super(parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
     }
 
-    /*
-     * @see ITextOperationTarget#canDoOperation(int)
-     */
     public boolean canDoOperation(int operation) {
         switch(operation) {
         case SHOW_OUTLINE:
@@ -97,9 +89,6 @@ public class StructuredSourceViewer extends ProjectionViewer {
         return super.canDoOperation(operation);
     }
 
-    /*
-     * @see ITextOperationTarget#doOperation(int)
-     */
     public void doOperation(int operation) {
         if (getTextWidget() == null)
             return;
@@ -125,11 +114,7 @@ public class StructuredSourceViewer extends ProjectionViewer {
         }
         super.doOperation(operation);
     }
-
-    public void setFormatter(IContentFormatter formatter) {
-        fContentFormatter= formatter;
-    }
-
+    
     private void doToggleComment() {
         IDocument doc= this.getDocument();
         DocumentRewriteSession rewriteSession= null;
@@ -316,8 +301,8 @@ public class StructuredSourceViewer extends ProjectionViewer {
                 textWidget.setBackground(null);
         }
         super.configure(configuration);
-        if (configuration instanceof StructuredSourceViewerConfiguration) {
-            StructuredSourceViewerConfiguration svc= (StructuredSourceViewerConfiguration) configuration;
+        if (configuration instanceof CeylonSourceViewerConfiguration) {
+            CeylonSourceViewerConfiguration svc= (CeylonSourceViewerConfiguration) configuration;
 
             fOutlinePresenter= svc.getOutlinePresenter(this);
             if (fOutlinePresenter != null)

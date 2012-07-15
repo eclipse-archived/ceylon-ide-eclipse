@@ -52,12 +52,12 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class StructuredSourceViewerConfiguration extends TextSourceViewerConfiguration {
+public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
     protected final CeylonEditor fEditor;
     private CompletionProcessor processor;
 
-    public StructuredSourceViewerConfiguration(IPreferenceStore prefStore, CeylonEditor editor) {
+    public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, CeylonEditor editor) {
         super(prefStore);
         fEditor = editor;
         processor = new CompletionProcessor();
