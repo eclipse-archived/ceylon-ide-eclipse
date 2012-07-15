@@ -61,8 +61,6 @@ public class StructuredSourceViewerConfiguration extends TextSourceViewerConfigu
         super(prefStore);
         fEditor = editor;
         processor = new CompletionProcessor();
-        // Can't cache the ServiceControllerManager, LangaugeServiceManager, or the IPreferencesService
-        // yet, b/c they haven't been set up by the editor yet. Retrieve them lazily.
     }
     
     @Override

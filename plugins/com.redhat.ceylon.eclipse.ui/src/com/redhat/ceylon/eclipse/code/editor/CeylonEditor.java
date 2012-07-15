@@ -80,7 +80,6 @@ import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.IFoldingUpdater;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.imp.services.INavigationTargetFinder;
-import org.eclipse.imp.services.IOccurrenceMarker;
 import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -228,7 +227,8 @@ public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
 
     private IAction fEnableDisableBreakpointAction;
 
-    private IResourceChangeListener fResourceListener;
+    private IResourceChangeListener buildListener;
+    private IResourceChangeListener moveListener;
 
     private IDocumentListener fDocumentListener;
 
@@ -1011,7 +1011,7 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private void watchForSourceBuild() {        
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(buildListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType()==POST_BUILD && event.getBuildKind()==AUTO_BUILD) {
                 	CeylonParseController pc = getParseController();
@@ -1337,12 +1337,12 @@ extends PreviousSubWordAction implements IUpdate {
     private void watchForSourceMove() {
         // We need to see when the editor input changes, so we can watch the new document
         addPropertyListener(fEditorInputPropertyListener);
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener= new IResourceChangeListener() {
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(moveListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
-                if (event.getType() != IResourceChangeEvent.POST_CHANGE)
+                if (event.getType()!=IResourceChangeEvent.POST_CHANGE)
                     return;
-                CeylonParseController pc= getParseController();
-                IPath oldWSRelPath= pc.getProject().getRawProject().getFullPath().append(pc.getPath());
+                IPath oldWSRelPath= parseController.getProject().getRawProject()
+                		.getFullPath().append(parseController.getPath());
                 IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
 
                 if (rd != null) {
@@ -1351,15 +1351,17 @@ extends PreviousSubWordAction implements IUpdate {
                         IPath newPath= rd.getMovedToPath();
                         IPath newProjRelPath= newPath.removeFirstSegments(1);
                         String newProjName= newPath.segment(0);
-                        boolean sameProj= pc.getProject().getRawProject().getName().equals(newProjName);
+                        boolean sameProj= parseController.getProject().getRawProject()
+                        		.getName().equals(newProjName);
 
                         try {
-                            ISourceProject proj= sameProj ? pc.getProject() : 
-                            	ModelFactory.open(ResourcesPlugin.getWorkspace().getRoot().getProject(newProjName));
+                            ISourceProject proj= sameProj ? parseController.getProject() : 
+                            	ModelFactory.open(ResourcesPlugin.getWorkspace().getRoot()
+                            			.getProject(newProjName));
 
                             // Tell the IParseController about the move - it caches the path
 //                          fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-                            pc.initialize(newProjRelPath, proj, fAnnotationCreator);
+                            parseController.initialize(newProjRelPath, proj, fAnnotationCreator);
                         } 
                         catch (ModelException e) {
                             e.printStackTrace();
@@ -1601,9 +1603,13 @@ extends PreviousSubWordAction implements IUpdate {
         	getDocumentProvider().getDocument(getEditorInput()).removeDocumentListener(fDocumentListener);
         }
         
-        if (fResourceListener != null) {
-        	ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
+        if (buildListener != null) {
+        	ResourcesPlugin.getWorkspace().removeResourceChangeListener(buildListener);
         }
+        if (moveListener != null) {
+        	ResourcesPlugin.getWorkspace().removeResourceChangeListener(moveListener);
+        }
+        
         if (isEditable() && getResourceDocumentMapListener() != null) {
             getResourceDocumentMapListener().unregisterDocument(getDocumentProvider().getDocument(getEditorInput()));
         }
@@ -1615,12 +1621,13 @@ extends PreviousSubWordAction implements IUpdate {
         	fParserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
         }
         fParserScheduler= null;
-        super.dispose();
         parseController = null;
 
-        if (fResourceListener != null) {
+        super.dispose();
+
+        /*if (fResourceListener != null) {
         	ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
-        }
+        }*/
         //CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(colorChangeListener);
         currentTheme.getColorRegistry().removeListener(colorChangeListener);
         currentTheme.getFontRegistry().removeListener(fontChangeListener);
@@ -2152,10 +2159,6 @@ extends PreviousSubWordAction implements IUpdate {
 
     public CeylonParseController getParseController() {
         return parseController;
-    }
-    
-    public IOccurrenceMarker getOccurrenceMarker() {
-        return new CeylonOccurrenceMarker();
     }
 
     // SMS 4 May 2006:

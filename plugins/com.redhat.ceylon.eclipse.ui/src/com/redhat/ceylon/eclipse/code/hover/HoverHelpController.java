@@ -15,11 +15,12 @@ import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.jface.text.source.ISourceViewer;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class HoverHelpController implements ITextHover, ITextHoverExtension, 
         ITextHoverExtension2, IModelListener {
 	
-    private IParseController controller;
+    private CeylonParseController controller;
     private HoverHelper hoverHelper;
     private BestMatchHover fHover;
 
@@ -62,7 +63,7 @@ public class HoverHelpController implements ITextHover, ITextHoverExtension,
 	}
 	
     public void update(IParseController controller, IProgressMonitor monitor) {
-        this.controller= controller;
+        this.controller= (CeylonParseController) controller;
     }
     
 	public IInformationControlCreator getHoverControlCreator() {

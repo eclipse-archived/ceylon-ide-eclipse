@@ -1,19 +1,17 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+
 import java.util.List;
 
-import org.eclipse.imp.language.ServiceFactory;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
-import org.eclipse.imp.services.IDocumentationProvider;
-import org.eclipse.imp.services.IReferenceResolver;
 import org.eclipse.imp.utils.AnnotationUtils;
 import org.eclipse.imp.utils.HTMLPrinter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
  * Helper class for implementing "hover help" which encapsulates the process of locating
@@ -29,7 +27,7 @@ public class HoverHelper {
 
     public HoverHelper() {}
 
-    public String getHoverHelpAt(IParseController parseController, ISourceViewer srcViewer, int offset) {
+    public String getHoverHelpAt(CeylonParseController parseController, ISourceViewer srcViewer, int offset) {
 		try {
 			int lineOfOffset= srcViewer.getDocument().getLineOfOffset(offset);
             List<Annotation> annotations= AnnotationUtils.getAnnotationsForLine(srcViewer, lineOfOffset);
@@ -45,17 +43,12 @@ public class HoverHelper {
 			e.printStackTrace();
 		}
 
-    	IReferenceResolver refResolver = ServiceFactory.getInstance()
-    			.getReferenceResolver(CeylonBuilder.LANGUAGE);
-        Object root= parseController.getCurrentAst();
-        ISourcePositionLocator nodeLocator = parseController.getSourcePositionLocator();
+        Node root= parseController.getRootNode();
         if (root == null) return null;
-        Object selNode = nodeLocator.findNode(root, offset);
+        Node selNode = parseController.getSourcePositionLocator().findNode(root, offset);
         if (selNode == null) return null;
-
         // determine whether this is a reference to something else 
-       	Object target = refResolver!=null ? 
-       			refResolver.getLinkTarget(selNode, parseController) : selNode;
+       	Node target = getReferencedNode(selNode, parseController);
 
        	// if target is null, we're hovering over a declaration whose javadoc is right before us, but
        	// showing it can still be useful for previewing the javadoc formatting
@@ -67,19 +60,14 @@ public class HoverHelper {
        	//
        	
        	// if this is not a reference, provide info for it anyway 
-       	if (target == null) target=selNode;
+       	if (target==null) target=selNode;
 
-       	IDocumentationProvider docProvider= new CeylonDocumentationProvider();
-       	String doc= docProvider.getDocumentation(target, parseController);			
+       	String doc= new CeylonDocumentationProvider().getDocumentation(target, parseController);			
+       	if (doc!=null) return doc;
 
-       	if (doc != null)
-       		return doc;
-
-       	if (target==selNode)
-       		return null;
+       	if (target==selNode) return null;
 
        	StringBuffer buffer= new StringBuffer();
-
        	HTMLPrinter.addSmallHeader(buffer, target.toString());
        	HTMLPrinter.addParagraph(buffer, doc);
        	return buffer.toString();

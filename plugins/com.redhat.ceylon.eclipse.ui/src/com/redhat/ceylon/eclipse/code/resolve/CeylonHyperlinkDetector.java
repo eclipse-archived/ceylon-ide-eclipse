@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
+import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -39,7 +41,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-        	gotoNode(node, pc.getProject().getRawProject(), pc.getTypeChecker());
+        	ISourceProject project = pc.getProject();
+			gotoNode(node, project==null ? null : project.getRawProject(), 
+					pc.getTypeChecker());
         }
 
         @Override
@@ -74,12 +78,12 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 return null;
             }
             else {
-                Tree.Declaration dec = CeylonReferenceResolver.getReferencedNode(node, pc);
+                Tree.Declaration dec = getReferencedNode(node, pc);
                 if (dec==null) {
                     return null;
                 }
                 else {
-                	return new IHyperlink[] { new CeylonNodeLink(node, id, pc) };
+                	return new IHyperlink[] { new CeylonNodeLink(dec, id, pc) };
                 }
             }
         }

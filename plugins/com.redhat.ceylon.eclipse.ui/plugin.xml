@@ -97,48 +97,6 @@
             language="ceylon"/>
    </extension>
    
-   <!--extension
-         point="org.eclipse.imp.runtime.tokenColorer">
-      <tokenColorer
-            class="com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer"
-            language="ceylon"/>
-   </extension-->
-   
-   <extension
-         point="org.eclipse.imp.runtime.labelProvider">
-      <labelProvider
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider"
-            language="ceylon"/>
-   </extension>
-   
-   <!--extension
-         point="org.eclipse.imp.runtime.referenceResolvers">
-      <referenceResolver
-            class="com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver"
-            language="ceylon"/>
-   </extension-->
-   
-   <!--extension
-         point="org.eclipse.imp.runtime.documentationProvider">
-      <docProvider
-            class="com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider"
-            language="ceylon"/>
-   </extension-->
-   
-   <extension
-         point="org.eclipse.imp.runtime.contentProposer">
-      <proposer
-            class="com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.markOccurrences">
-      <occurrenceIdentifier
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonOccurrenceMarker"
-            language="ceylon"/>
-   </extension>
-   
    <extension
          point="org.eclipse.imp.runtime.foldingUpdater">
       <foldingUpdater
