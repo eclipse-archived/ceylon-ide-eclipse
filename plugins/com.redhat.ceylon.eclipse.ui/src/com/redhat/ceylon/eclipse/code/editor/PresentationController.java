@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,8 +8,6 @@ import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
@@ -23,7 +20,6 @@ import org.eclipse.swt.widgets.Display;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 
 /**
  * A class that does the real work of repairing the text presentation for an associated ISourceViewer.
@@ -32,54 +28,27 @@ import com.redhat.ceylon.eclipse.code.parse.IModelListener;
  * @author Claffra
  * @author rfuhrer@watson.ibm.com
  */
-public class PresentationController implements IModelListener {
+public class PresentationController {
 
     private final ISourceViewer fSourceViewer;
     private final CeylonTokenColorer fColorer;
-    private final CeylonParseController fParseCtlr;
-
+    
     private final Stack<IRegion> fWorkItems= new Stack<IRegion>();
 
-    public PresentationController(ISourceViewer sourceViewer, CeylonParseController cpc) {
+    public PresentationController(ISourceViewer sourceViewer) {
         fSourceViewer= sourceViewer;
-        this.fParseCtlr= cpc;
         fColorer= new CeylonTokenColorer();
     }
 
-    public AnalysisRequired getAnalysisRequired() {
-        return AnalysisRequired.LEXICAL_ANALYSIS;
-    }
-
-    private void dumpToken(Object token, CeylonSourcePositionLocator locator, PrintStream ps) {
-        if (locator != null) {
-            try {
-                final IDocument document= fSourceViewer.getDocument();
-                final int startOffset= locator.getStartOffset(token);
-//              ps.print( " (" + prs.getKind(i) + ")");
-                ps.print(" \t" + startOffset);
-                ps.print(" \t" + locator.getLength(token));
-                int line = document.getLineOfOffset(startOffset);
-                ps.print(" \t" + line);
-                ps.print(" \t" + (startOffset - document.getLineOffset(line)));
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        ps.print(" \t" + token);
-        ps.println();
-    }
-
     /**
-     * Push the damaged area onto the work queue for repair when we get scheduled to process the queue.
-     * @param region the damaged area
+     * Push the damaged area onto the work queue for repair 
+     * when we get scheduled to process the queue
      */
     public void damage(IRegion region) {
         if (fColorer == null)
             return;
 
-        IRegion bigRegion= fColorer.calculateDamageExtent(region, fParseCtlr);
-
+        IRegion bigRegion=region;
         if (bigRegion != null) {
             synchronized (fWorkItems) {
                 boolean redundant= false;
@@ -89,7 +58,6 @@ public class PresentationController implements IModelListener {
                     }
                 }
                 if (!redundant) {
-//                  System.out.println("damage(): got irredundant damage region: " + bigRegion.getOffset() + ":" + bigRegion.getLength());
                     fWorkItems.push(bigRegion);
                 }
             }
@@ -97,27 +65,19 @@ public class PresentationController implements IModelListener {
     }
 
     private boolean contains(IRegion r1, IRegion r2) {
-        return r2.getOffset() <= r1.getOffset() && r2.getOffset() + r2.getLength() >= r1.getOffset() + r1.getLength();
+        return r2.getOffset() <= r1.getOffset() && 
+        		r2.getOffset() + r2.getLength() >= r1.getOffset() + r1.getLength();
     }
 
-    public void update(CeylonParseController controller, IProgressMonitor monitor) {
-//        try {
-//            throw new Exception();
-//        } catch (Exception e) {
-//            System.out.println("Entered PresentationController.update()");
-//            e.printStackTrace(System.out);
-//        }
-        if (!monitor.isCanceled() && fSourceViewer != null && fSourceViewer.getDocument() != null) {
-//          if (fWorkItems.size() == 0) {
-//              ConsoleUtil.findConsoleStream(PresentationController.CONSOLE_NAME).println("PresentationController.update() called, but no damage in the work queue?");
-//          }
+    public void repair(CeylonParseController controller, IProgressMonitor monitor) {
+        if (!monitor.isCanceled() && fSourceViewer!=null && 
+        		fSourceViewer.getDocument()!=null) {
             synchronized (fWorkItems) {
                 if (fWorkItems.size() == 0 && fSourceViewer.getDocument() != null) {
                     // TODO Shouldn't need to re-color the entire source file here.
                     // This is intended to handle the case that the parser finishes *after*
                     // the PresentationRepairer asks for an update().
                     // We could do a more focused update, if we knew what part of the file had changed.
-//                  System.out.println("PresentationController.update() called, but no work items; reprocessing entire document");
                     fWorkItems.add(new Region(0, fSourceViewer.getDocument().getLength()));
                 }
                 // TODO Optimization: when there are multiple work items, control redrawing explicitly.
@@ -125,7 +85,6 @@ public class PresentationController implements IModelListener {
                 // Probably not very common (only refactoring or search/replace?), but perhaps worthwhile.
                 for(int n= fWorkItems.size() - 1; !monitor.isCanceled() && n >= 0; n--) {
                     Region damage= (Region) fWorkItems.get(n);
-//                  System.out.println(">>> Processing damage region: " + damage.getOffset() + ":" + damage.getLength());
                     changeTextPresentationForRegion(controller, monitor, damage);
                 }
                 // TODO Remove the work items we actually processed, whether the monitor was canceled or not
@@ -136,17 +95,15 @@ public class PresentationController implements IModelListener {
         }
     }
 
-    private void changeTextPresentationForRegion(CeylonParseController parseController, IProgressMonitor monitor, IRegion damage) {
-        if (parseController == null) {
+    private void changeTextPresentationForRegion(CeylonParseController parseController, 
+    		IProgressMonitor monitor, IRegion damage) {
+        if (parseController==null) {
             return;
         }
         final TextPresentation presentation= new TextPresentation();
         CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
         aggregateTextPresentation(parseController, monitor, damage, presentation, locator);
-        if (monitor.isCanceled()) {
-            System.err.println("Ignored cancelled presentation update");
-        } 
-        else if (!presentation.isEmpty()) {
+        if (!monitor.isCanceled() && !presentation.isEmpty()) {
             submitTextPresentation(presentation);
         }
     }

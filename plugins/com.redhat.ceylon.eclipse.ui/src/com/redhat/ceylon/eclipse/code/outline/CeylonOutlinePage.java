@@ -12,6 +12,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.SYNTACTIC_ANALYSIS;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -77,7 +78,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
     }
 
     public AnalysisRequired getAnalysisRequired() {
-        return IModelListener.AnalysisRequired.SYNTACTIC_ANALYSIS;
+        return SYNTACTIC_ANALYSIS;
     }
     
     @Override

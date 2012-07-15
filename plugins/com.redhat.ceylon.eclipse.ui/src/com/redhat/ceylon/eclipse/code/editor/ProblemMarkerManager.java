@@ -22,13 +22,21 @@ import org.eclipse.jface.text.source.IAnnotationModelListenerExtension;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * Listens to resource deltas and filters for marker changes of type IMarker.PROBLEM Viewers showing error ticks should
- * register as listener to this type. Based on class of the same name from JDT/UI.
+ * Listens to resource deltas and filters for marker changes of type IMarker.PROBLEM. 
+ * Viewers showing error ticks should register as listener to this type. Based on 
+ * class of the same name from JDT/UI.
  * 
  * @author Robert M. Fuhrer
  */
-public class ProblemMarkerManager implements IResourceChangeListener, IAnnotationModelListener, 
-        IAnnotationModelListenerExtension {
+public class ProblemMarkerManager implements IResourceChangeListener, 
+        IAnnotationModelListener, IAnnotationModelListenerExtension {
+	
+    private ListenerList fListeners;
+
+    public ProblemMarkerManager() {
+        fListeners= new ListenerList();
+    }
+
     /**
      * Visitor used to determine whether the resource delta contains a marker change.
      */
@@ -83,15 +91,6 @@ public class ProblemMarkerManager implements IResourceChangeListener, IAnnotatio
         }
     }
 
-    private ListenerList fListeners;
-
-    public ProblemMarkerManager() {
-        fListeners= new ListenerList();
-    }
-
-    /*
-     * @see IResourceChangeListener#resourceChanged
-     */
     public void resourceChanged(IResourceChangeEvent event) {
         Set<IResource> changedElements= new HashSet<IResource>();
         try {
@@ -109,31 +108,9 @@ public class ProblemMarkerManager implements IResourceChangeListener, IAnnotatio
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see IAnnotationModelListener#modelChanged(IAnnotationModel)
-     */
-    public void modelChanged(IAnnotationModel model) {
-        // no action
-    }
+    public void modelChanged(IAnnotationModel model) {}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see IAnnotationModelListenerExtension#modelChanged(AnnotationModelEvent)
-     */
-    public void modelChanged(AnnotationModelEvent event) {
-        // TODO Need to create the analogous bit of logic here... need more stuff in UniversalEditor and friends...
-//        if (event instanceof CompilationUnitAnnotationModelEvent) {
-//            CompilationUnitAnnotationModelEvent cuEvent= (CompilationUnitAnnotationModelEvent) event;
-//            if (cuEvent.includesProblemMarkerAnnotationChanges()) {
-//                IResource[] changes= new IResource[] { event.getUnderlyingResource() };
-//
-//                fireChanges(changes, false);
-//            }
-//        }
-    }
+    public void modelChanged(AnnotationModelEvent event) {}
 
     /**
      * Adds a listener for problem marker changes.
@@ -141,8 +118,6 @@ public class ProblemMarkerManager implements IResourceChangeListener, IAnnotatio
     public void addListener(IProblemChangedListener listener) {
         if (fListeners.isEmpty()) {
             ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-            // TODO Need to create the analogous bit of logic here... need more stuff in UniversalEditor and friends...
-//            RuntimePlugin.getInstance().getCompilationUnitDocumentProvider().addGlobalAnnotationModelListener(this);
         }
         fListeners.add(listener);
     }
@@ -154,13 +129,10 @@ public class ProblemMarkerManager implements IResourceChangeListener, IAnnotatio
         fListeners.remove(listener);
         if (fListeners.isEmpty()) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-            // TODO Need to create the analogous bit of logic here... need more stuff in UniversalEditor and friends...
-//            RuntimePlugin.getInstance().getCompilationUnitDocumentProvider().removeGlobalAnnotationModelListener(this);
         }
     }
 
     private void fireChanges(final IResource[] changes, final boolean isMarkerChange) {
-        //Display display= SWTUtil.getStandardDisplay();
         Display display = Display.getCurrent();
         if (display==null)
             display= Display.getDefault();

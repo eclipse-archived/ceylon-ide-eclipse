@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -98,8 +99,9 @@ public class Util {
                 editor = EditorUtility.openInEditor(path);
             }
             EditorUtility.revealInEditor(editor, targetOffset, 0);
-        } catch (PartInitException e) {
-            RuntimePlugin.getInstance().logException("Unable to open declaration", e);
+        }
+        catch (PartInitException e) {
+            e.printStackTrace();
         }*/
     }
     
@@ -110,7 +112,7 @@ public class Util {
 
     public static IWorkbenchPage getActivePage() {
         try {
-            IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
             return window==null ? null : window.getActivePage();
         }
         catch (IllegalStateException ise) {
@@ -119,6 +121,6 @@ public class Util {
     }
     
     public static Shell getShell() {
-    	return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+    	return getWorkbench().getActiveWorkbenchWindow().getShell();
     }
 }

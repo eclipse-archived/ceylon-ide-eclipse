@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.antlr.runtime.Token;
 import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -127,9 +126,5 @@ public class CeylonTokenColorer  {
                 }
         }
     }
-    
-    public IRegion calculateDamageExtent(IRegion seed, CeylonParseController ctlr) {
-        return seed;
-    }
-    
+        
 }
