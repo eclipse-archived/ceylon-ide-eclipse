@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFold
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,13 +27,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.editor.quickfix.IAnnotation;
+import org.eclipse.imp.language.Language;
 import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.parser.ParseControllerBase;
-import org.eclipse.imp.parser.SimpleAnnotationTypeInfo;
-import org.eclipse.imp.services.IAnnotationTypeInfo;
+import org.eclipse.imp.parser.IParseController;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
@@ -58,14 +56,11 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
-public class CeylonParseController extends ParseControllerBase {
-    
-    public CeylonParseController() {
-        super(LANGUAGE_ID);
-    }
+public class CeylonParseController implements IParseController {
     
     private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
     private CeylonSourcePositionLocator sourcePositionLocator;
@@ -79,9 +74,17 @@ public class CeylonParseController extends ParseControllerBase {
      * @param handler		A message handler to receive error messages (or any others)
      * 						from the parser
      */
-    public void initialize(IPath filePath, ISourceProject project, IMessageHandler handler) {
-        super.initialize(filePath, project, handler);
+    public void initialize(IPath filePath, ISourceProject project, 
+    		org.eclipse.imp.parser.IMessageHandler handler) {
+		this.fProject= project;
+		this.fFilePath= filePath;
+		this.handler= (IMessageHandler) handler;
         simpleAnnotationTypeInfo.addProblemMarkerType(PROBLEM_MARKER_ID);
+    }
+    
+    @Override
+    public Language getLanguage() {
+    	return CeylonPlugin.LANGUAGE;
     }
     
     public CeylonSourcePositionLocator getSourcePositionLocator() {
@@ -273,7 +276,7 @@ public class CeylonParseController extends ParseControllerBase {
                 @Override
                 public int getSeverity(Message error, boolean expected) {
                     return expected || error instanceof UsageWarning ? 
-                    		IAnnotation.WARNING : IAnnotation.ERROR;
+                    		IStatus.WARNING : IStatus.ERROR;
                 }
             });      
         }
@@ -477,4 +480,79 @@ public class CeylonParseController extends ParseControllerBase {
         return (Tree.CompilationUnit) getCurrentAst();
     }
     
+    /**
+     * The project containing the source being parsed by this IParseController. May be null
+     * if the source isn't actually part of an Eclipse project (e.g., a random bit of source
+     * text living outside the workspace).
+     */
+	protected ISourceProject fProject;
+
+	/**
+	 * The path to the file containing the source being parsed by this {@link IParseController}.
+	 */
+	protected IPath fFilePath;
+
+	/**
+	 * The {@link IMessageHandler} to which parser/compiler messages are directed.
+	 */
+	protected IMessageHandler handler;
+
+	/**
+	 * The current AST (if any) produced by the most recent successful parse.<br>
+	 * N.B.: "Successful" may mean that there were syntax errors, but the parser managed
+	 * to perform error recovery and still produce an AST.
+	 */
+	protected Object fCurrentAst;
+
+	/**
+	 * The most-recently parsed source document. May be null if this parse controller
+	 * has never parsed an IDocument before.
+	 */
+	protected IDocument fDocument;
+
+
+	public Object parse(IDocument doc, IProgressMonitor monitor) {
+	    fDocument= doc;
+	    return parse(fDocument.get(), monitor);
+	}
+
+	public ISourceProject getProject() {
+		return fProject;
+	}
+
+	public IPath getPath() {
+		return fFilePath;
+	}
+
+	public IMessageHandler getHandler() {
+		return handler;
+	}
+
+	public Object getCurrentAst() {
+		return fCurrentAst;
+	}
+
+	public IDocument getDocument() {
+	    return fDocument;
+	}
 }
+
+class SimpleAnnotationTypeInfo implements IAnnotationTypeInfo {
+    /*
+     * For the management of associated problem-marker types
+     */
+    private List<String> problemMarkerTypes= new ArrayList<String>();
+
+    public List<String> getProblemMarkerTypes() {
+        return problemMarkerTypes;
+    }
+
+    public void addProblemMarkerType(String problemMarkerType) {
+        problemMarkerTypes.add(problemMarkerType);
+    }
+
+    public void removeProblemMarkerType(String problemMarkerType) {
+        problemMarkerTypes.remove(problemMarkerType);
+    }
+}
+

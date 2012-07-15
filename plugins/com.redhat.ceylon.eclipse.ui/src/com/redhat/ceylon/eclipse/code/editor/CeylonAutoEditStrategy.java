@@ -11,9 +11,9 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
-import org.eclipse.imp.services.IAutoEditStrategy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;

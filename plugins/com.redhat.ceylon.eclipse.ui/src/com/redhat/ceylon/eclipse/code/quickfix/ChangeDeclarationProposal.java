@@ -6,7 +6,7 @@ import java.util.Collection;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;

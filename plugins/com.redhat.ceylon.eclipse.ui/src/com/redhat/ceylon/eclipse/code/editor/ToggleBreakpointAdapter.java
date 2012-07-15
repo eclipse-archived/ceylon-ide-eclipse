@@ -17,7 +17,6 @@ import org.eclipse.debug.core.IBreakpointListener;
 import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.text.ITextSelection;
@@ -84,8 +83,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
 
         try {
             IBreakpoint bkpt= JDIDebugModel.createStratumBreakpoint(file, null, srcFileName, null, null, lineNumber, -1, -1, 0, true, bkptAttributes);
-        } catch (CoreException e) {
-            RuntimePlugin.getInstance().logException("Unable to set stratum breakpoint on file " + srcFileName, e);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 
@@ -97,8 +97,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
             if (lineBkpt != null) {
                 lineBkpt.delete();
             }
-        } catch (CoreException e) {
-            RuntimePlugin.getInstance().logException("Unable to clear line breakpoint on file " + srcFileName, e);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 
@@ -110,8 +111,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
             if (lineBkpt != null) {
                 lineBkpt.setEnabled(false);
             }
-        } catch (CoreException e) {
-            RuntimePlugin.getInstance().logException("Unable to disable line breakpoint on file " + srcFileName, e);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 
@@ -123,8 +125,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
             if (lineBkpt != null) {
                 lineBkpt.setEnabled(true);
             }
-        } catch (CoreException e) {
-            RuntimePlugin.getInstance().logException("Unable to enable line breakpoint on file " + srcFileName, e);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 

@@ -18,13 +18,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.parser.IMessageHandler;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
 
 /**
  * An implementation of the IMessageHandler interface that creates editor annotations
@@ -138,11 +139,11 @@ public class AnnotationCreator implements IMessageHandler {
         if (pm.attributes.containsKey(SEVERITY_KEY)) {
             int severity= (Integer) pm.attributes.get(SEVERITY_KEY);
             switch (severity) {
-                case IAnnotation.ERROR:
+                case IStatus.ERROR:
                     return CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
-                case IAnnotation.WARNING:
+                case IStatus.WARNING:
                     return CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
-                case IAnnotation.INFO:
+                case IStatus.INFO:
                     return CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
             }
         }

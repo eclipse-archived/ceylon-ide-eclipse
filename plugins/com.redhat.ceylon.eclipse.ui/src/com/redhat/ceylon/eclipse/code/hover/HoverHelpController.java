@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.formatAnnotationList;
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForOffset;
+
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.utils.AnnotationUtils;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -16,6 +16,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 
 public class HoverHelpController implements ITextHover, ITextHoverExtension, 
         ITextHoverExtension2, IModelListener {
@@ -44,7 +45,7 @@ public class HoverHelpController implements ITextHover, ITextHoverExtension,
             if (controller!=null && hoverHelper!=null)
                 help= hoverHelper.getHoverHelpAt(controller, (ISourceViewer) textViewer, offset);
             if (help == null)
-                help= AnnotationUtils.formatAnnotationList(AnnotationUtils.getAnnotationsForOffset((ISourceViewer) textViewer, offset));
+                help= formatAnnotationList(getAnnotationsForOffset((ISourceViewer) textViewer, offset));
             return help;
         } 
         catch (Throwable e) {
@@ -62,7 +63,7 @@ public class HoverHelpController implements ITextHover, ITextHoverExtension,
 			return fHover.getHoverInfo(textViewer, hoverRegion);
 	}
 	
-    public void update(IParseController controller, IProgressMonitor monitor) {
+    public void update(CeylonParseController controller, IProgressMonitor monitor) {
         this.controller= (CeylonParseController) controller;
     }
     

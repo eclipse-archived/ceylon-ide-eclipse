@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.ge
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;

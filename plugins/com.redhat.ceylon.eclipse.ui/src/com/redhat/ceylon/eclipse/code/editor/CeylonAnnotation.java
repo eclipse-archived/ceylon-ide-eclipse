@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
-import static org.eclipse.imp.parser.IMessageHandler.SEVERITY_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.SEVERITY_KEY;
 
 import java.util.Map;
 
 import org.eclipse.core.runtime.AssertionFailedException;
-import org.eclipse.imp.editor.quickfix.IAnnotation;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
 import org.eclipse.jface.text.source.Annotation;
 
@@ -46,7 +46,7 @@ public class CeylonAnnotation extends Annotation implements IQuickFixableAnnotat
 		if (attributes.containsKey(SEVERITY_KEY)) {
 			return (Integer) attributes.get(SEVERITY_KEY);
 		}
-		return IAnnotation.ERROR;
+		return IStatus.ERROR;
 	}
 
 	public CeylonEditor getEditor() {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.editor.EditorUtility;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
@@ -16,6 +15,8 @@ import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
 
 public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
 		IMarkerResolutionGenerator2 {

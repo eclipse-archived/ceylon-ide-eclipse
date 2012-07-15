@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
-import org.eclipse.imp.editor.SourceProposal;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+
 
 class Proposal extends SourceProposal {
     

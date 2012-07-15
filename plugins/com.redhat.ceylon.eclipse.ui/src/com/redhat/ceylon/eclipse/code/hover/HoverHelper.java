@@ -1,17 +1,18 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.formatAnnotationList;
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 
 import java.util.List;
 
-import org.eclipse.imp.utils.AnnotationUtils;
-import org.eclipse.imp.utils.HTMLPrinter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.HTMLPrinter;
 
 /**
  * Helper class for implementing "hover help" which encapsulates the process of locating
@@ -30,9 +31,9 @@ public class HoverHelper {
     public String getHoverHelpAt(CeylonParseController parseController, ISourceViewer srcViewer, int offset) {
 		try {
 			int lineOfOffset= srcViewer.getDocument().getLineOfOffset(offset);
-            List<Annotation> annotations= AnnotationUtils.getAnnotationsForLine(srcViewer, lineOfOffset);
+            List<Annotation> annotations= getAnnotationsForLine(srcViewer, lineOfOffset);
 			if (annotations != null && annotations.size() > 0) {
-				String annString = AnnotationUtils.formatAnnotationList(annotations);
+				String annString = formatAnnotationList(annotations);
 
 				if (annString != null && annString.length() > 0) {
 					return annString;

@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -25,7 +21,9 @@ import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 
 /**
  * A class that does the real work of repairing the text presentation for an associated ISourceViewer.
@@ -52,7 +50,7 @@ public class PresentationController implements IModelListener {
         return AnalysisRequired.LEXICAL_ANALYSIS;
     }
 
-    private void dumpToken(Object token, ISourcePositionLocator locator, PrintStream ps) {
+    private void dumpToken(Object token, CeylonSourcePositionLocator locator, PrintStream ps) {
         if (locator != null) {
             try {
                 final IDocument document= fSourceViewer.getDocument();
@@ -102,7 +100,7 @@ public class PresentationController implements IModelListener {
         return r2.getOffset() <= r1.getOffset() && r2.getOffset() + r2.getLength() >= r1.getOffset() + r1.getLength();
     }
 
-    public void update(IParseController controller, IProgressMonitor monitor) {
+    public void update(CeylonParseController controller, IProgressMonitor monitor) {
 //        try {
 //            throw new Exception();
 //        } catch (Exception e) {
@@ -138,12 +136,12 @@ public class PresentationController implements IModelListener {
         }
     }
 
-    private void changeTextPresentationForRegion(IParseController parseController, IProgressMonitor monitor, IRegion damage) {
+    private void changeTextPresentationForRegion(CeylonParseController parseController, IProgressMonitor monitor, IRegion damage) {
         if (parseController == null) {
             return;
         }
         final TextPresentation presentation= new TextPresentation();
-        ISourcePositionLocator locator= parseController.getSourcePositionLocator();
+        CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
         aggregateTextPresentation(parseController, monitor, damage, presentation, locator);
         if (monitor.isCanceled()) {
             System.err.println("Ignored cancelled presentation update");
@@ -153,8 +151,9 @@ public class PresentationController implements IModelListener {
         }
     }
 
-    private void aggregateTextPresentation(IParseController parseController, IProgressMonitor monitor, IRegion damage, TextPresentation presentation,
-            ISourcePositionLocator locator) {
+    private void aggregateTextPresentation(CeylonParseController parseController, 
+    		IProgressMonitor monitor, IRegion damage, TextPresentation presentation,
+    		CeylonSourcePositionLocator locator) {
         int prevOffset= -1;
         int prevEnd= -1;
         Iterator tokenIterator= parseController.getTokenIterator(damage);
@@ -175,7 +174,8 @@ public class PresentationController implements IModelListener {
         }
     }
 
-    private void changeTokenPresentation(IParseController controller, TextPresentation presentation, Object token, ISourcePositionLocator locator) {
+    private void changeTokenPresentation(CeylonParseController controller, 
+    		TextPresentation presentation, Object token, CeylonSourcePositionLocator locator) {
         TextAttribute attribute= fColorer.getColoring(controller, token);
 
         StyleRange styleRange= new StyleRange(locator.getStartOffset(token), locator.getEndOffset(token) - locator.getStartOffset(token) + 1,
@@ -374,6 +374,6 @@ public class PresentationController implements IModelListener {
         	}
         }
 
-        ErrorHandler.logError("Malformed TextPresentation:" + explanation, e);
+        e.printStackTrace();
     }
 }

@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.IDocumentationProvider;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -27,15 +25,15 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 
-public class CeylonDocumentationProvider implements IDocumentationProvider {
+public class CeylonDocumentationProvider {
     
-    public String getDocumentation(Object entity, IParseController ctlr) {
+    public String getDocumentation(Object entity, CeylonParseController ctlr) {
         if (entity instanceof Tree.Declaration) {
             return getDocumentation((Tree.Declaration) entity);
         }
         //its coming from a binary or java project:
-        else if (((CeylonParseController) ctlr).getProject()!=null) {
-            IProject proj = ((CeylonParseController) ctlr).getProject().getRawProject();
+        else if (ctlr.getProject()!=null) {
+            IProject proj = ctlr.getProject().getRawProject();
             if (entity instanceof Tree.MemberOrTypeExpression) {
                 Tree.MemberOrTypeExpression node = (Tree.MemberOrTypeExpression) entity;
                 return getDocumentation(node.getDeclaration(), proj, node);

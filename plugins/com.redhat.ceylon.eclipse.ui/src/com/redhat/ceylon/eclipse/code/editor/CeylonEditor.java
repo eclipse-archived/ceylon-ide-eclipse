@@ -14,13 +14,13 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.CORRECT_INDENTATION;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_MATCHING_FENCE;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
-import static org.eclipse.imp.editor.IEditorActionDefinitionIds.TOGGLE_COMMENT;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_MATCHING_FENCE;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.TOGGLE_COMMENT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SOURCE_FONT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
@@ -60,20 +60,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
-import org.eclipse.imp.actions.RulerEnableDisableBreakpointAction;
-import org.eclipse.imp.editor.EditorInputUtils;
-import org.eclipse.imp.editor.FoldingActionGroup;
-import org.eclipse.imp.editor.IEditorActionDefinitionIds;
-import org.eclipse.imp.editor.IProblemChangedListener;
-import org.eclipse.imp.editor.IRegionSelectionService;
-import org.eclipse.imp.editor.IResourceDocumentMapListener;
-import org.eclipse.imp.editor.ParserScheduler;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.preferences.IPreferencesService;
 import org.eclipse.imp.preferences.IPreferencesService.BooleanPreferenceListener;
 import org.eclipse.imp.preferences.IPreferencesService.IntegerPreferenceListener;
@@ -81,10 +70,7 @@ import org.eclipse.imp.preferences.IPreferencesService.PreferenceServiceListener
 import org.eclipse.imp.preferences.IPreferencesService.StringPreferenceListener;
 import org.eclipse.imp.preferences.PreferencesService;
 import org.eclipse.imp.runtime.RuntimePlugin;
-import org.eclipse.imp.services.IASTFindReplaceTarget;
-import org.eclipse.imp.services.IAnnotationTypeInfo;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
-import org.eclipse.imp.services.ITokenColorer;
+import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -161,6 +147,10 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.parse.IAnnotationTypeInfo;
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
+import com.redhat.ceylon.eclipse.code.parse.ParserScheduler;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -170,7 +160,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  * @author Chris Laffra
  * @author Robert M. Fuhrer
  */
-public class CeylonEditor extends TextEditor implements IASTFindReplaceTarget {
+public class CeylonEditor extends TextEditor {
 	
     private static final String SHOW_CEYLON_HIERARCHY = "com.redhat.ceylon.eclipse.ui.action.hierarchy";
 
@@ -1094,7 +1084,7 @@ extends PreviousSubWordAction implements IUpdate {
         // Now propagate the setting of "spaces for tabs" from either the language-specific preference store,
         // or the IMP runtime's preference store to the UniversalEditor's preference store, where
         // AbstractDecoratedTextEditor.isTabsToSpacesConversionEnabled() will look.
-        boolean spacesForTabs= RuntimePlugin.getInstance().getPreferenceStore()
+        boolean spacesForTabs= CeylonPlugin.getInstance().getPreferenceStore()
         		.getBoolean(P_SPACES_FOR_TABS);
 
         getPreferenceStore().setValue(EDITOR_SPACES_FOR_TABS, spacesForTabs);
@@ -1714,7 +1704,7 @@ extends PreviousSubWordAction implements IUpdate {
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         setupMatchingBrackets();
 
-        ILanguageSyntaxProperties syntaxProps= new CeylonLanguageSyntaxProperties();
+        CeylonLanguageSyntaxProperties syntaxProps= new CeylonLanguageSyntaxProperties();
         getPreferenceStore().setValue(MATCHING_BRACKETS, true);
         if (syntaxProps != null) {
 //          fBracketMatcher.setSourceVersion(getPreferenceStore().getString(JavaCore.COMPILER_SOURCE));
@@ -2024,7 +2014,7 @@ extends PreviousSubWordAction implements IUpdate {
     	} 
     	catch (CoreException e) {
     	    if (e.getCause() instanceof IOException) {
-    	        throw new CoreException(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, 0, "Unable to read source text", e.getStatus().getException()));
+    	        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0, "Unable to read source text", e.getStatus().getException()));
     	    }
     	}
     	setInsertMode(SMART_INSERT);
@@ -2060,7 +2050,7 @@ extends PreviousSubWordAction implements IUpdate {
     class PresentationDamager implements IPresentationDamager {
         public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, boolean documentPartitioningChanged) {
             // Ask the language's token colorer how much of the document presentation needs to be recomputed.
-            final ITokenColorer tokenColorer= new CeylonTokenColorer();
+            final CeylonTokenColorer tokenColorer= new CeylonTokenColorer();
             if (tokenColorer != null)
                 return tokenColorer.calculateDamageExtent(partition, getParseController());
             else
@@ -2128,7 +2118,7 @@ extends PreviousSubWordAction implements IUpdate {
         public AnalysisRequired getAnalysisRequired() {
             return AnalysisRequired.NONE; // Even if it doesn't scan, it's ok - this posts the error annotations!
         }
-        public void update(IParseController parseController, IProgressMonitor monitor) {
+        public void update(CeylonParseController parseController, IProgressMonitor monitor) {
             // SMS 25 Apr 2007
             // Since parsing has finished, check whether the marker annotations
             // are up-to-date with the most recent parse annotations.
