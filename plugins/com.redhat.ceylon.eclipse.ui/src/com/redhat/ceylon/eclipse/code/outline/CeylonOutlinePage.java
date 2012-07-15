@@ -14,8 +14,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IToolBarManager;
@@ -39,6 +37,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonOutlinePage extends ContentOutlinePage implements IModelListener {
@@ -82,8 +81,8 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
     }
     
     @Override
-    public void update(IParseController parseController, IProgressMonitor monitor) {
-    	update((CeylonParseController) parseController);
+    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
+    	update(parseController);
     }
 
     public void update(final CeylonParseController parseController) {

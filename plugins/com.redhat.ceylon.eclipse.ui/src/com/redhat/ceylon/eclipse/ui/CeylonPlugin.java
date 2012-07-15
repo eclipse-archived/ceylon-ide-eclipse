@@ -8,7 +8,6 @@ import java.net.URL;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -20,10 +19,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.imp.runtime.PluginBase;
+import org.eclipse.imp.language.Language;
+import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
@@ -31,11 +32,13 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
-public class CeylonPlugin extends PluginBase implements ICeylonResources {
+public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
+	
+	public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
 
 	/**
 	 * The unique instance of this plugin class
@@ -45,7 +48,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
 	private File ceylonRepository = null;
 
     private BundleContext bundleContext;
-
 
 	/**
      * - If the 'ceylon.repo' property exist, returns the corresponding file
@@ -146,12 +148,10 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
         return ceylonRepository;
     }
 
-	@Override
 	public String getID() {
 		return PLUGIN_ID;
 	}
 
-	@Override
 	public String getLanguageID() {
 		return LANGUAGE_ID;
 	}
@@ -241,25 +241,6 @@ public class CeylonPlugin extends PluginBase implements ICeylonResources {
             return ((IAdaptable) object).getAdapter(type);
         }
         return Platform.getAdapterManager().getAdapter(object, type);
-    }
-
-    public static void log(Exception e) {
-        getInstance().logException("Ceylon IDE internal error", e);
-    }
-
-    public static void log(IStatus status) {
-        getInstance().getLog().log(status);
-    }
-
-    public static void log(CoreException e) {
-        log(e.getStatus().getSeverity(), "Ceylon IDE internal error", e);
-    }
-
-    /**
-     * Log the given exception along with the provided message and severity indicator
-     */
-    public static void log(int severity, String message, Throwable e) {
-        log(new Status(severity, PLUGIN_ID, 0, message, e));
     }
 
 }

@@ -96,7 +96,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             case IResource.FILE:
                 IFile file = (IFile) resource;
                 IPath path = file.getFullPath(); //getProjectRelativePath();
-                if (path!=null && CeylonBuilder.LANGUAGE.hasExtension(path.getFileExtension())) {
+                if (path!=null && path.getFileExtension().equals("ceylon")) {
                     files.add(file);
                 }
                 break;

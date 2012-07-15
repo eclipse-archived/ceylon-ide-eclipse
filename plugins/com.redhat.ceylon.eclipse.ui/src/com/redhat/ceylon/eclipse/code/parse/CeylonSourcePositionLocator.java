@@ -12,11 +12,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.imp.editor.EditorUtility;
-import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -34,6 +31,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
+import com.redhat.ceylon.eclipse.code.editor.IRegionSelectionService;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -61,8 +60,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     
     private CeylonParseController parseController;
     
-    public CeylonSourcePositionLocator(IParseController parseController) {
-        this.parseController= (CeylonParseController) parseController;
+    public CeylonSourcePositionLocator(CeylonParseController parseController) {
+        this.parseController= parseController;
     }
     
     public Node findNode(Object ast, int offset) {

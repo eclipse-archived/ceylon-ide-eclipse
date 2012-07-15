@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static org.eclipse.imp.utils.StreamUtils.readStreamContents;
+
+import static com.redhat.ceylon.eclipse.code.editor.StreamUtils.readStreamContents;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +12,6 @@ import java.util.zip.ZipFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.imp.runtime.RuntimePlugin;
-import org.eclipse.imp.utils.StreamUtils;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -21,6 +20,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.editors.text.StorageDocumentProvider;
+
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class SourceArchiveDocumentProvider extends StorageDocumentProvider {
     
@@ -79,7 +80,7 @@ public class SourceArchiveDocumentProvider extends StorageDocumentProvider {
     }
     
     private String getStorageContents(IStorageEditorInput storageEditorInput) throws CoreException {
-        return StreamUtils.readStreamContents(storageEditorInput.getStorage().getContents());
+        return readStreamContents(storageEditorInput.getStorage().getContents());
     }
     
     private String getZipEntryContents(IURIEditorInput uriEditorInput) throws CoreException {
@@ -98,7 +99,7 @@ public class SourceArchiveDocumentProvider extends StorageDocumentProvider {
             }
         } 
         catch (IOException e) {
-            throw new CoreException(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, 0, 
+            throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0, 
                     "Error encountered while obtaining zip file contents", e));
         } 
     }

@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
@@ -61,15 +60,9 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.builder.MarkerCreator;
-import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -127,6 +120,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
@@ -172,8 +166,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
     /*public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";*/
-
-    public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
 
     public static enum ModelState {
         Missing,
@@ -247,11 +239,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         return result;
     }
-
-    protected PluginBase getPlugin() {
-        return CeylonPlugin.getInstance();
-    }
-
+    
     public String getBuilderID() {
         return BUILDER_ID;
     }
@@ -280,7 +268,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static boolean isCeylon(IFile file) {
-        return LANGUAGE.hasExtension(file.getFileExtension());
+        return CeylonPlugin.LANGUAGE.hasExtension(file.getFileExtension());
     }
 
     public static boolean isJava(IFile file) {
@@ -857,9 +845,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 								sourceModified, mustResolveClasspathContainer));
                     } 
                     catch (CoreException e) {
-                        getPlugin().getLog().log(new Status(IStatus.ERROR, 
-                        		getPlugin().getID(), 
-                        		e.getLocalizedMessage(), e));
+                        e.printStackTrace();
                         mustDoFullBuild.value = true;
                         mustResolveClasspathContainer.value = true;
                     }
@@ -884,7 +870,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             TypeChecker currentFileTypeChecker,
             IProject currentFileProject) {
     	
-        if (LANGUAGE.hasExtension(srcFile.getRawLocation().getFileExtension())) {
+        if (srcFile.getRawLocation().getFileExtension().equals("ceylon")) {
             PhasedUnit phasedUnit = currentFileTypeChecker.getPhasedUnits()
             		.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(srcFile));
             if (phasedUnit != null && phasedUnit.getUnit() != null) {
@@ -1749,7 +1735,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 			}
 		} 
 		catch (JavaModelException e1) {
-			CeylonPlugin.log(e1);
+			e1.printStackTrace();
 		}
 	}
 
@@ -2071,7 +2057,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 return projectSourceFolders;
             } 
             catch (JavaModelException e) {
-                ErrorHandler.reportError(e.getMessage(), e);
+                e.printStackTrace();
             }
         }
         return Collections.emptyList();

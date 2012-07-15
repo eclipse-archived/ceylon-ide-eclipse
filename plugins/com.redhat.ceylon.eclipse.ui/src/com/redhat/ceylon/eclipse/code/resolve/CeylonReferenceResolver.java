@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.parser.IParseController;
 
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -52,7 +51,7 @@ public class CeylonReferenceResolver {
 //    }
 
     public static Tree.Declaration getReferencedNode(Object node, 
-    		IParseController controller) {
+    		CeylonParseController controller) {
         return getReferencedNode(getReferencedDeclaration(node), 
             getCompilationUnit((CeylonParseController) controller, 
             		getReferencedDeclaration(node)));

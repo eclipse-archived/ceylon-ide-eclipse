@@ -2,10 +2,10 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.parser.IMessageHandler;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
 
 public class ProblemLocation {
 	private final int fId;

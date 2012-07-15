@@ -1,15 +1,15 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
-import static org.eclipse.imp.parser.IMessageHandler.SEVERITY_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.SEVERITY_KEY;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import org.eclipse.imp.parser.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;

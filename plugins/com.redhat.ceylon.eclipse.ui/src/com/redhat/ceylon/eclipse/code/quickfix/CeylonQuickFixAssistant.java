@@ -18,7 +18,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +27,7 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -147,7 +147,7 @@ public class CeylonQuickFixAssistant {
         IDocument doc = context.getSourceViewer().getDocument();
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) editor.getParseController().getCurrentAst();
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());

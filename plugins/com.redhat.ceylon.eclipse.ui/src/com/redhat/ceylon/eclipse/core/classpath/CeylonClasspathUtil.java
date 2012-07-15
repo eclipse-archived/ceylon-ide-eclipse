@@ -85,9 +85,10 @@ public final class CeylonClasspathUtil {
             if (icp instanceof CeylonClasspathContainer) {
                 return (CeylonClasspathContainer) icp;
             }
-        } catch (JavaModelException e) {
+        } 
+        catch (JavaModelException e) {
             // unless there are issues with the JDT, this should never happen
-            CeylonPlugin.log(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -123,9 +124,10 @@ public final class CeylonClasspathUtil {
                     }
                 }
             }
-        } catch (JavaModelException e) {
+        } 
+        catch (JavaModelException e) {
             // unless there are issues with the JDT, this should never happen
-            CeylonPlugin.log(e);
+            e.printStackTrace();
         }
         return containers;
     }
@@ -215,9 +217,10 @@ public final class CeylonClasspathUtil {
                     }
                 }
             }
-        } catch (JavaModelException e) {
+        } 
+        catch (JavaModelException e) {
             // unless there are issues with the JDT, this should never happen
-            CeylonPlugin.log(e);
+            e.printStackTrace();
         }
         return null;
     }

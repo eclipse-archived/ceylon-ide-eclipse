@@ -6,11 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.imp.parser.IParseController;
-
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -22,7 +21,7 @@ public class CeylonOccurrenceMarker {
         return "Ceylon Occurence Marker";
     }
     
-    public List<Object> getOccurrencesOf(IParseController parseController, Object node) {
+    public List<Object> getOccurrencesOf(CeylonParseController parseController, Object node) {
         
         if (node instanceof Node) {
             

@@ -8,8 +8,6 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -26,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
@@ -55,7 +54,7 @@ public class EditorAnnotationService implements IModelListener {
     }
     
     @Override
-    public void update(IParseController parseController, IProgressMonitor monitor) {
+    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
         final CeylonParseController cpc = (CeylonParseController) parseController;
         if (cpc.getRootNode()==null) return;
         final IAnnotationModel model = editor.getDocumentProvider()

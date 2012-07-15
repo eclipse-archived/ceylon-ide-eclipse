@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextPresentation;
@@ -25,7 +24,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Display;
 
 
-public class HTMLTextPresenter implements DefaultInformationControl.IInformationPresenter, DefaultInformationControl.IInformationPresenterExtension {
+public class HTMLTextPresenter implements DefaultInformationControl.IInformationPresenter, 
+            DefaultInformationControl.IInformationPresenterExtension {
 
 	private static final String LINE_DELIM= System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -180,13 +180,13 @@ public class HTMLTextPresenter implements DefaultInformationControl.IInformation
 
 			return trim(buffer, presentation);
 
-		} catch (IOException e) {
-
-//			JavaPlugin.log(e);
-			RuntimePlugin.getInstance().logException("Exception in updatePresentation", e);
+		} 
+		catch (IOException e) {
+            e.printStackTrace();
 			return null;
 
-		} finally {
+		} 
+		finally {
 			if (font != null)
 				font.dispose();	
 			gc.dispose();

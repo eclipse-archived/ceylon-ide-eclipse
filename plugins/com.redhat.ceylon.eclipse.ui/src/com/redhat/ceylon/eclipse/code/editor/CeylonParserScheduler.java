@@ -7,26 +7,26 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.language.Language;
 import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserScheduler {
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.ParserScheduler;
+
+public class CeylonParserScheduler extends ParserScheduler {
 
     private boolean canceling = false;
     
-    private IParseController fParseController;
+    private CeylonParseController fParseController;
     private IDocumentProvider fDocumentProvider;
     private IEditorPart fEditorPart;
     private IMessageHandler fMsgHandler;
     
-    public CeylonParserScheduler(IParseController parseController,
+    public CeylonParserScheduler(CeylonParseController parseController,
             IEditorPart editorPart, IDocumentProvider docProvider,
             final IMessageHandler msgHandler) {
         super(parseController, editorPart, docProvider, msgHandler);
@@ -105,11 +105,9 @@ public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserSchedule
                 } else {
                     return Status.CANCEL_STATUS;
                 }
-            } catch (Exception e) {
-                Language lang = fParseController.getLanguage();
-                String input = editorInput != null ? editorInput.getName() : "<unknown editor input";
-                String name = lang != null ? lang.getName() : "<unknown language>";
-                ErrorHandler.reportError("Error running parser for language " + name + " and input " + input + ":", e);
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
                 // RMF 8/2/2006 - Notify the AST listeners even on an exception - the compiler front end
                 // may have failed at some phase, but there may be enough info to drive IDE services.
                 if (!wrappedMonitor.isCanceled()) {
@@ -117,9 +115,6 @@ public class CeylonParserScheduler extends org.eclipse.imp.editor.ParserSchedule
                 } else {
                     return Status.CANCEL_STATUS;
                 }
-            } catch (LinkageError e) {
-                // Catch things like NoClassDefFoundError that might result from, e.g., errors in plugin metadata, classpath, etc.
-                ErrorHandler.reportError("Error loading IParseController implementation class for language " + fParseController.getLanguage().getName(), e);
             }
             return Status.OK_STATUS;
         }

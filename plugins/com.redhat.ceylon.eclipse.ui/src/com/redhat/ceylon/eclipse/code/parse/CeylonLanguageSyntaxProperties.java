@@ -11,32 +11,26 @@ public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties
     
     public static final CeylonLanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
     
-    @Override
 	public boolean isWhitespace(char ch) {
 		return ch==' '||ch=='\r'||ch=='\n'||ch=='\t'||ch=='\u000C';
 	}
     
-    @Override
 	public boolean isIdentifierStart(char ch) {
 		return Character.isJavaIdentifierStart(ch) && ch!='$';
 	}
     
-    @Override
 	public boolean isIdentifierPart(char ch) {
 		return Character.isJavaIdentifierPart(ch) && ch!='$';
 	}
     
-    @Override
 	public String getSingleLineCommentPrefix() {
 		return "//";
 	}
     
-    @Override
 	public String getIdentifierConstituentChars() {
 		return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 	}
     
-    @Override
 	public int[] getIdentifierComponents(String ident) {
 		//this doesn't seem to actually work...
         List<Integer> listResult= new LinkedList<Integer>();
@@ -54,12 +48,10 @@ public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties
         return result;
 	}
     
-    @Override
 	public String[][] getFences() {
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}
     
-    @Override
 	public IRegion getDoubleClickRegion(int offset, IParseController pc) {
 		//this seems to be unnecessary ... default behavior is fine
 	    /*CommonTokenStream stream = (CommonTokenStream) parser.getTokenStream();
@@ -75,17 +67,14 @@ public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties
 		return null;
 	}
     
-    @Override
 	public String getBlockCommentStart() {
 		return "/*";
 	}
     
-    @Override
 	public String getBlockCommentEnd() {
 		return "*/";
 	}
     
-    @Override
 	public String getBlockCommentContinuation() {
 		return null;
 	}

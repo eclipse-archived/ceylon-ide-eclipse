@@ -9,8 +9,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.editor.EditorUtility;
-import org.eclipse.imp.editor.IRegionSelectionService;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -27,6 +25,8 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
+import com.redhat.ceylon.eclipse.code.editor.IRegionSelectionService;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {

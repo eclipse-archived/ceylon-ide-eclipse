@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.zip.ZipEntry;
@@ -10,8 +9,6 @@ import java.util.zip.ZipFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.imp.runtime.RuntimePlugin;
-import org.eclipse.imp.utils.StreamUtils;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -103,10 +100,9 @@ class ZipStorageEditorDocumentProvider extends StorageDocumentProvider {
             InputStream is= zipFile.getInputStream(entry);
 
             contents= StreamUtils.readStreamContents(is);
-        } catch (IOException e) {
-            throw new CoreException(new Status(IStatus.ERROR, RuntimePlugin.IMP_RUNTIME, 0, "Error encountered while obtaining zip file contents", e));
-        } catch (Exception e) {
-            RuntimePlugin.getInstance().logException("Exception caught while obtaining contents of zip file entry", e);
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
         }
         return contents;
     }

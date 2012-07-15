@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.parser.IModelListener;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.IModelListener;
 
 public class FoldingController implements IModelListener {
 	
@@ -22,7 +21,7 @@ public class FoldingController implements IModelListener {
         return AnalysisRequired.SYNTACTIC_ANALYSIS;
     }
 
-    public void update(IParseController parseController, IProgressMonitor monitor) {
+    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
         if (fAnnotationModel != null) { // can be null if file is outside workspace
             try {
                 fFoldingUpdater.updateFoldingStructure((CeylonParseController)parseController, 

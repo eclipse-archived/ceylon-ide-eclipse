@@ -14,8 +14,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.imp.editor.IProblemChangedListener;
-import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -29,7 +28,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 public class EditorErrorTickUpdater implements IProblemChangedListener {
 	
     private CeylonEditor fEditor;
-    private ILabelProvider fLabelProvider;
+    private CeylonLabelProvider fLabelProvider;
 
     public EditorErrorTickUpdater(CeylonEditor editor) {
         Assert.isNotNull(editor);

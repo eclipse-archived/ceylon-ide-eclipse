@@ -11,6 +11,9 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationModel;
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,11 +22,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.EditorUtility;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.utils.AnnotationUtils;
-import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.imp.utils.NullMessageHandler;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
@@ -44,6 +45,8 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.AnnotationUtils;
+import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
 public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
 	
@@ -188,8 +191,8 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext quickAssistContext) {
         ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         ISourceViewer viewer = quickAssistContext.getSourceViewer();
-        collectProposals(quickAssistContext, AnnotationUtils.getAnnotationModel(viewer),
-                AnnotationUtils.getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
+        collectProposals(quickAssistContext, getAnnotationModel(viewer),
+                getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
                         true, true, proposals);
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }

@@ -5,11 +5,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
