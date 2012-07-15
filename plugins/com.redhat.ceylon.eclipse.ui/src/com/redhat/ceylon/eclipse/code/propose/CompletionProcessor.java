@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package com.redhat.ceylon.eclipse.code.propose;
 
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -6,8 +6,9 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 
 public class CompletionProcessor implements IContentAssistProcessor {
     private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];

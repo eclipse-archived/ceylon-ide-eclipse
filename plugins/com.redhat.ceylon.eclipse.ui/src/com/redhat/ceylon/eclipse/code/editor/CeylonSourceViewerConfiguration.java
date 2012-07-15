@@ -47,6 +47,7 @@ import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
@@ -55,7 +56,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
     protected final CeylonEditor fEditor;
-    private CompletionProcessor processor;
+    private final CompletionProcessor processor;
 
     public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, CeylonEditor editor) {
         super(prefStore);
