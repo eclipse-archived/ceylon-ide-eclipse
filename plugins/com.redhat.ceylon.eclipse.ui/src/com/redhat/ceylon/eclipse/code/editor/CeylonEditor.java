@@ -1023,11 +1023,13 @@ extends PreviousSubWordAction implements IUpdate {
                 if (event.getType()==POST_BUILD && event.getBuildKind()==AUTO_BUILD) {
                 	CeylonParseController pc = getParseController();
                 	if (pc!=null) {
-                		IPath oldWSRelPath= pc.getProject().getRawProject()
-                				.getFullPath().append(pc.getPath());
-                		IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
-                		if (rd != null) {
-                			scheduleParsing();
+                		ISourceProject project = pc.getProject();
+                		if (project!=null) {
+                			IPath oldWSRelPath= project.getRawProject().getFullPath().append(pc.getPath());
+                			IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+                			if (rd != null) {
+                				scheduleParsing();
+                			}
                 		}
                 	}
                 }
@@ -1345,36 +1347,36 @@ extends PreviousSubWordAction implements IUpdate {
         // We need to see when the editor input changes, so we can watch the new document
         addPropertyListener(fEditorInputPropertyListener);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(moveListener= new IResourceChangeListener() {
-            public void resourceChanged(IResourceChangeEvent event) {
-                if (event.getType()!=IResourceChangeEvent.POST_CHANGE)
-                    return;
-                IPath oldWSRelPath= parseController.getProject().getRawProject()
-                		.getFullPath().append(parseController.getPath());
-                IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+        	public void resourceChanged(IResourceChangeEvent event) {
+        		if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
+        			ISourceProject project = parseController.getProject();
+        			if (project!=null) { //things extrenal to the workspace don't move
+        				IPath oldWSRelPath= project.getRawProject().getFullPath().append(parseController.getPath());
+        				IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+        				if (rd != null) {
+        					if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+        						// The net effect of the following is to re-initialize() the IParseController with the new path
+        						IPath newPath= rd.getMovedToPath();
+        						IPath newProjRelPath= newPath.removeFirstSegments(1);
+        						String newProjName= newPath.segment(0);
+        						boolean sameProj= project.getRawProject()
+        								.getName().equals(newProjName);
 
-                if (rd != null) {
-                    if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-                        // The net effect of the following is to re-initialize() the IParseController with the new path
-                        IPath newPath= rd.getMovedToPath();
-                        IPath newProjRelPath= newPath.removeFirstSegments(1);
-                        String newProjName= newPath.segment(0);
-                        boolean sameProj= parseController.getProject().getRawProject()
-                        		.getName().equals(newProjName);
-
-                        try {
-                            ISourceProject proj= sameProj ? parseController.getProject() : 
-                            	ModelFactory.open(ResourcesPlugin.getWorkspace().getRoot()
-                            			.getProject(newProjName));
-
-                            // Tell the IParseController about the move - it caches the path
-//                          fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-                            parseController.initialize(newProjRelPath, proj, fAnnotationCreator);
-                        } 
-                        catch (ModelException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+        						try {
+        							ISourceProject proj= sameProj ? project : 
+        								ModelFactory.open(ResourcesPlugin.getWorkspace().getRoot()
+        										.getProject(newProjName));
+        							// Tell the IParseController about the move - it caches the path
+        							// fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
+        							parseController.initialize(newProjRelPath, proj, fAnnotationCreator);
+        						} 
+        						catch (ModelException e) {
+        							e.printStackTrace();
+        						}
+        					}
+        				}
+        			}
+        		}
             }
         });
     }
@@ -1579,45 +1581,50 @@ extends PreviousSubWordAction implements IUpdate {
 	}*/
 	
     public void dispose() {
-        if (fFontListener != null) {
+        if (fFontListener!=null) {
             fFontListener.dispose();
         }
-        if (fTabListener != null) {
+        if (fTabListener!=null) {
             fTabListener.dispose();
         }
-        if (fSpacesForTabsListener != null) {
+        if (fSpacesForTabsListener!=null) {
             fSpacesForTabsListener.dispose();
         }
         if (fPropertyListener != null) {
-            RuntimePlugin.getInstance().getPreferenceStore().removePropertyChangeListener(fPropertyListener);
+            RuntimePlugin.getInstance().getPreferenceStore()
+                .removePropertyChangeListener(fPropertyListener);
         }
 
         //unregisterEditorContributionsActivator();
-        if (fEditorErrorTickUpdater != null) {
+        if (fEditorErrorTickUpdater!=null) {
         	fProblemMarkerManager.removeListener(fEditorErrorTickUpdater);
         }
-        if (fAnnotationUpdater != null) {
+        if (fAnnotationUpdater!=null) {
             fProblemMarkerManager.removeListener(fAnnotationUpdater);
         }
         
-        if (fActionBars != null) {
+        if (fActionBars!=null) {
           fActionBars.dispose();
           fActionBars = null;
         }
 
-        if (fDocumentListener != null) {
-        	getDocumentProvider().getDocument(getEditorInput()).removeDocumentListener(fDocumentListener);
+        if (fDocumentListener!=null) {
+        	getDocumentProvider().getDocument(getEditorInput())
+        	    .removeDocumentListener(fDocumentListener);
         }
         
-        if (buildListener != null) {
+        if (buildListener!=null) {
         	ResourcesPlugin.getWorkspace().removeResourceChangeListener(buildListener);
+        	buildListener = null;
         }
-        if (moveListener != null) {
+        if (moveListener!=null) {
         	ResourcesPlugin.getWorkspace().removeResourceChangeListener(moveListener);
+        	moveListener = null;
         }
         
         if (isEditable() && getResourceDocumentMapListener() != null) {
-            getResourceDocumentMapListener().unregisterDocument(getDocumentProvider().getDocument(getEditorInput()));
+            getResourceDocumentMapListener()
+                    .unregisterDocument(getDocumentProvider().getDocument(getEditorInput()));
         }
 
         fToggleBreakpointAction.dispose(); // this holds onto the IDocument

@@ -272,7 +272,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         ISourceProject sourceProject = null;
         try {
             sourceProject = ModelFactory.open(getProject());
-        } catch (ModelException e) {
+        } 
+        catch (ModelException e) {
             e.printStackTrace();
         }
         return sourceProject;
