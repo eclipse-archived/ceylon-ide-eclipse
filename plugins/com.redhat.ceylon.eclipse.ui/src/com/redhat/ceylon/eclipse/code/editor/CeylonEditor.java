@@ -11,9 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_MATCHING_FENCE;
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
@@ -21,6 +18,9 @@ import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.G
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
 import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.TOGGLE_COMMENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SOURCE_FONT;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_SPACES_FOR_TABS;
 import static org.eclipse.imp.preferences.PreferenceConstants.P_TAB_WIDTH;
@@ -285,9 +285,6 @@ public class CeylonEditor extends TextEditor {
                 toggleBreakpointTarget = new ToggleBreakpointAdapter();
             }
             return toggleBreakpointTarget;
-        }
-        if (IRegionSelectionService.class.equals(required)) {
-            return fRegionSelector;
         }
         /*if (IContextProvider.class.equals(required)) {
             return IMPHelp.getHelpContextProvider(this, fLanguageServiceManager, IMP_EDITOR_CONTEXT);
@@ -989,11 +986,6 @@ extends PreviousSubWordAction implements IUpdate {
 
         watchForSourceMove();
 
-        if (isEditable() && getResourceDocumentMapListener() != null) {
-            IResourceDocumentMapListener rdml = getResourceDocumentMapListener();
-            rdml.registerDocument(getDocumentProvider().getDocument(getEditorInput()), EditorInputUtils.getFile(getEditorInput()), this);
-        }
-
         getPreferenceStore().setValue(EDITOR_SPACES_FOR_TABS, esft);
         //getPreferenceStore().setValue(EDITOR_TAB_WIDTH, etw);
         
@@ -1292,15 +1284,6 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     /**
-     * Sub-classes may override this method. It's intended to allow language-
-     * specific editor document-aware services like indexing to get notified
-     * when the resource/document association changes.
-     */
-    protected IResourceDocumentMapListener getResourceDocumentMapListener() {
-        return null; // base behavior - nothing to do
-    }
-
-    /**
      * The following listener is intended to detect when the document associated
      * with this editor changes its identity, which happens when, e.g., the
      * underlying resource gets moved or renamed.
@@ -1310,24 +1293,10 @@ extends PreviousSubWordAction implements IUpdate {
             if (source == CeylonEditor.this && propId == IEditorPart.PROP_INPUT) {
                 IDocument oldDoc= getParseController().getDocument();
                 IDocument curDoc= getDocumentProvider().getDocument(getEditorInput()); 
-
                 if (curDoc != oldDoc) {
                     // Need to unwatch the old document and watch the new document
                     oldDoc.removeDocumentListener(fDocumentListener);
                     curDoc.addDocumentListener(fDocumentListener);
-
-                    // Now notify anyone else who needs to know that the document's
-                    // identity changed.
-                    IResourceDocumentMapListener rdml = getResourceDocumentMapListener();
-
-                    if (rdml != null) {
-                        if (oldDoc != null) {
-                            rdml.unregisterDocument(oldDoc);
-                        }
-                        rdml.updateResourceDocumentMap(curDoc, 
-                        		EditorInputUtils.getFile(getEditorInput()), 
-                        		CeylonEditor.this);
-                    }
                 }
             }
         }
@@ -1612,11 +1581,6 @@ extends PreviousSubWordAction implements IUpdate {
         	moveListener = null;
         }
         
-        if (isEditable() && getResourceDocumentMapListener() != null) {
-            getResourceDocumentMapListener()
-                    .unregisterDocument(getDocumentProvider().getDocument(getEditorInput()));
-        }
-
         fToggleBreakpointAction.dispose(); // this holds onto the IDocument
         fFoldingActionGroup.dispose();
 
@@ -2100,15 +2064,6 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private IMessageHandler fAnnotationCreator= new AnnotationCreator(this);
-
-    private final IRegionSelectionService fRegionSelector= new IRegionSelectionService() {
-        public void selectAndReveal(int startOffset, int length) {
-            IEditorPart activeEditor= PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-            		.getActivePage().getActiveEditor();
-            AbstractTextEditor textEditor= (AbstractTextEditor) activeEditor;
-            textEditor.selectAndReveal(startOffset, length);
-        }
-    };
 
     private EditorErrorTickUpdater fEditorErrorTickUpdater;
 

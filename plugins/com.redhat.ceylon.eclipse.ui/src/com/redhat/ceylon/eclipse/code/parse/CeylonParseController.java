@@ -84,7 +84,7 @@ public class CeylonParseController implements IParseController {
     
     @Override
     public Language getLanguage() {
-    	return CeylonPlugin.LANGUAGE;
+    	return CeylonPlugin.getLanguage();
     }
     
     public CeylonSourcePositionLocator getSourcePositionLocator() {

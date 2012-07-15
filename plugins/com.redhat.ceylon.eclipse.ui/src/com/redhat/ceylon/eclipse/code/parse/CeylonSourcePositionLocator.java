@@ -32,7 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
-import com.redhat.ceylon.eclipse.code.editor.IRegionSelectionService;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -179,8 +178,7 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         IEditorInput editorInput = EditorUtility.getEditorInput(path);
         try {
             CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
-            IRegionSelectionService rss = (IRegionSelectionService) editor.getAdapter(IRegionSelectionService.class);
-            rss.selectAndReveal(offset, 0);
+            editor.selectAndReveal(offset, 0);
         }
         catch (PartInitException pie) {
             pie.printStackTrace();

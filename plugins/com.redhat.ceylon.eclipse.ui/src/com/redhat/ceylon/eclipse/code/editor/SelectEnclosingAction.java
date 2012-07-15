@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import org.eclipse.imp.editor.IEditorActionDefinitionIds;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
+
 import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
@@ -19,7 +20,7 @@ class SelectEnclosingAction extends Action {
 
     public SelectEnclosingAction(CeylonEditor editor) {
         super("Select Enclosing");
-        setActionDefinitionId(IEditorActionDefinitionIds.SELECT_ENCLOSING);
+        setActionDefinitionId(SELECT_ENCLOSING);
         setEditor(editor);
     }
 

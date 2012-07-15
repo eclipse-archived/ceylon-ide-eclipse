@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import org.eclipse.imp.editor.IEditorActionDefinitionIds;
+import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
 
 class GotoNextTargetAction extends TargetNavigationAction {
     public GotoNextTargetAction() {
@@ -8,7 +8,7 @@ class GotoNextTargetAction extends TargetNavigationAction {
     }
 
     public GotoNextTargetAction(CeylonEditor editor) {
-        super(editor, "Go to Next Navigation Target", IEditorActionDefinitionIds.GOTO_NEXT_TARGET);
+        super(editor, "Go to Next Navigation Target", GOTO_NEXT_TARGET);
     }
 
     @Override
