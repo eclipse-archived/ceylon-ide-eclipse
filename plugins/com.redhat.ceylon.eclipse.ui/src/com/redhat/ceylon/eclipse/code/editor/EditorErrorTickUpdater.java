@@ -27,14 +27,12 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
  */
 public class EditorErrorTickUpdater implements IProblemChangedListener {
 	
-    private CeylonEditor fEditor;
-    private CeylonLabelProvider fLabelProvider;
+    private final CeylonEditor fEditor;
+    private final CeylonLabelProvider fLabelProvider= new CeylonLabelProvider();
 
     public EditorErrorTickUpdater(CeylonEditor editor) {
         Assert.isNotNull(editor);
         fEditor= editor;
-        fLabelProvider= new CeylonLabelProvider();
-//        fLabelProvider.addLabelDecorator(new ProblemsLabelDecorator(null));
         fEditor.getProblemMarkerManager().addListener(this);
     }
 
@@ -86,12 +84,7 @@ public class EditorErrorTickUpdater implements IProblemChangedListener {
     }
 
     public void dispose() {
-    	// SMS 9 Aug 2006
-    	// as noted above, fLabelProvoider may be referenced when null,
-    	// so I've added a guard here for that condition
-    	if (fLabelProvider!=null) {
-    		fLabelProvider.dispose();
-    	}
+    	fLabelProvider.dispose();
         fEditor.getProblemMarkerManager().removeListener(this);
     }
 }

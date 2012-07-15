@@ -23,11 +23,9 @@ public interface IModelListener  {
         POINTER_ANALYSIS(6);
 
         private final int fLevel;
-
         private AnalysisRequired(int i) { fLevel= i; }
-
         public int level() { return fLevel; }
-    };
+    }
 
     public AnalysisRequired getAnalysisRequired();
 
@@ -37,4 +35,5 @@ public interface IModelListener  {
      * @param monitor the progress monitor; listener should cancel when monitor.isCanceled() is true
      */
     public void update(CeylonParseController parseController, IProgressMonitor monitor);
+    
 }

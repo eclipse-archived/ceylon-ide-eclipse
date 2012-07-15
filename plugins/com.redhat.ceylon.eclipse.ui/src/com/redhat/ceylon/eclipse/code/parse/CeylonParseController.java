@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFold
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +52,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
@@ -118,7 +118,7 @@ public class CeylonParseController implements IParseController {
     }
     
     private CeylonParserScheduler getScheduler() {
-        final Job parsingJob = Job.getJobManager().currentJob();
+        final Job parsingJob = getJobManager().currentJob();
         if (parsingJob instanceof CeylonParserScheduler) {
             return (CeylonParserScheduler) parsingJob;
         }
@@ -142,7 +142,8 @@ public class CeylonParseController implements IParseController {
         }
         if (path == null) {
             file = new SourceCodeVirtualFile(contents);
-        } else {
+        } 
+        else {
             file = new SourceCodeVirtualFile(contents, path);
         }
         

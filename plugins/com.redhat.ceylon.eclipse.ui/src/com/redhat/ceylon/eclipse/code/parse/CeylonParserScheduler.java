@@ -1,4 +1,11 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package com.redhat.ceylon.eclipse.code.parse;
+
+import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.LEXICAL_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.POINTER_ANALYSIS;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -13,11 +20,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
-import com.redhat.ceylon.eclipse.code.parse.ParserScheduler;
-
-public class CeylonParserScheduler extends ParserScheduler {
+public class CeylonParserScheduler extends Job {
 
     private boolean canceling = false;
     
@@ -26,10 +29,18 @@ public class CeylonParserScheduler extends ParserScheduler {
     private IEditorPart fEditorPart;
     private IMessageHandler fMsgHandler;
     
+    private final List<IModelListener> fAstListeners = new ArrayList<IModelListener>();
+
     public CeylonParserScheduler(CeylonParseController parseController,
             IEditorPart editorPart, IDocumentProvider docProvider,
             final IMessageHandler msgHandler) {
-        super(parseController, editorPart, docProvider, msgHandler);
+    	super("ParserScheduler for " + editorPart.getEditorInput().getName());
+        setSystem(true); //do not show this job in the Progress view
+        setPriority(SHORT);
+        
+        // Note: The parse controller is now initialized before  
+        // it gets handed to us here, since some other services  
+        // may actually depend on that.
         this.fParseController = parseController;
         this.fEditorPart = editorPart;
         this.fDocumentProvider = docProvider;
@@ -39,7 +50,10 @@ public class CeylonParserScheduler extends ParserScheduler {
     @Override
     protected void canceling() {
         canceling = true;
-        super.canceling();
+    }
+
+    public boolean isCanceling() {
+        return canceling;
     }
 
     private boolean sourceStillExists() {
@@ -59,7 +73,7 @@ public class CeylonParserScheduler extends ParserScheduler {
     public IStatus run(IProgressMonitor monitor) {
         try {
             if (canceling) {
-                if (monitor != null) {
+                if (monitor!=null) {
                     monitor.setCanceled(true);
                 }
                 return Status.CANCEL_STATUS;
@@ -70,49 +84,55 @@ public class CeylonParserScheduler extends ParserScheduler {
                 public boolean isCanceled() {
                     boolean isCanceled = false;
                     if (Job.getJobManager().currentJob() == CeylonParserScheduler.this) {
-                        isCanceled = CeylonParserScheduler.this.isCanceling();
+                        isCanceled = canceling;
                     }
                     return isCanceled || super.isCanceled();
                 }
             };
             
-            if (fParseController == null || fDocumentProvider == null) {
-                /* Editor was closed, or no parse controller */
+            if (fParseController==null || fDocumentProvider==null) {
+                // Editor was closed, or no parse controller
                 return Status.OK_STATUS;
             }
 
             IEditorInput editorInput= fEditorPart.getEditorInput();
             try {
                 IDocument document= fDocumentProvider.getDocument(editorInput);
-
-                if (document == null)
+                if (document == null) {
                     return Status.OK_STATUS;
+                }
 
-//              System.out.println("Parsing started.");
-                // If we're editing a workspace resource, check to make sure that it still exists
-                if (sourceStillExists()) {
-                    // Don't bother to retrieve the AST; we don't need it; just make sure the document gets parsed.
+                // If we're editing a workspace resource, check   
+                // to make sure that it still exists
+                else if (sourceStillExists()) {
+                	//TODO: is this a better way to clear existing
+                	//      annotations/markers:
+                	//fMsgHandler.clearMessages();
+                    // don't bother to retrieve the AST; we don't 
+                	// need it; just make sure the document gets 
+                	// parsed
                     fParseController.parse(document, wrappedMonitor);
                     if (!wrappedMonitor.isCanceled()) {
                         fMsgHandler.endMessages();
                     }
-//              } else {
-//                  System.err.println("Scheduled parsing was bypassed due to project deletion.");
                 }
-//              System.out.println("Parsing complete.");
-                if (!wrappedMonitor.isCanceled()) {
+                if (!wrappedMonitor.isCanceled()) { //&& sourceStillExists()
                     notifyModelListeners(wrappedMonitor);
-                } else {
+                } 
+                else {
                     return Status.CANCEL_STATUS;
                 }
             } 
             catch (Exception e) {
                 e.printStackTrace();
-                // RMF 8/2/2006 - Notify the AST listeners even on an exception - the compiler front end
-                // may have failed at some phase, but there may be enough info to drive IDE services.
+                // Notify the AST listeners even on an exception - 
+                // the compiler front end may have failed at some 
+                // phase, but there may be enough info to drive IDE 
+                // services
                 if (!wrappedMonitor.isCanceled()) {
                     notifyModelListeners(wrappedMonitor);
-                } else {
+                } 
+                else {
                     return Status.CANCEL_STATUS;
                 }
             }
@@ -123,7 +143,29 @@ public class CeylonParserScheduler extends ParserScheduler {
         }
     }
 
-    public boolean isCanceling() {
-        return canceling;
+    public void addModelListener(IModelListener listener) {
+        fAstListeners.add(listener);
+    }
+
+    public void removeModelListener(IModelListener listener) {
+        fAstListeners.remove(listener);
+    }
+
+    public void notifyModelListeners(IProgressMonitor monitor) {
+        // Suppress the notification if there's no AST (e.g. due to a parse error)
+        if (fParseController!=null) {
+            for (IModelListener listener: fAstListeners) {
+            	if (monitor.isCanceled()) break;
+                // TODO: How to tell how far we got with the source analysis? 
+            	//       CeylonParseController should tell us!
+                // Pretend to get through the highest level of analysis so 
+            	// all services execute (for now)
+                int analysisLevel= fParseController.getCurrentAst()==null ?
+                		LEXICAL_ANALYSIS.level() : POINTER_ANALYSIS.level();
+                if (listener.getAnalysisRequired().level() <= analysisLevel) {
+                    listener.update(fParseController, monitor);
+                }
+            }
+        }
     }
 }

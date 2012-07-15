@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +52,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 /**
@@ -61,8 +63,8 @@ import org.eclipse.ui.texteditor.TextEditorAction;
  */
 public class EditorUtility {
 	
-    public static boolean isEditorInput(Object element, IEditorPart editor) {
-        if (editor != null) {
+	private static boolean isEditorInput(Object element, IEditorPart editor) {
+        if (editor!=null) {
             return editor.getEditorInput().equals(getEditorInput(element));
         }
         return false;
@@ -73,12 +75,12 @@ public class EditorUtility {
      * 
      * @return the IEditorPart if shown, null if element is not open in an editor
      */
-    public static IEditorPart isOpenInEditor(Object inputElement) {
+    private static IEditorPart isOpenInEditor(Object inputElement) {
         IEditorInput input= null;
         input= getEditorInput(inputElement);
-        if (input != null) {
-            IWorkbenchPage p= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p != null) {
+        if (input!=null) {
+            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (p!=null) {
                 return p.findEditor(input);
             }
         }
@@ -100,23 +102,23 @@ public class EditorUtility {
      * 
      * @return the IEditorPart or null if wrong element type or opening failed
      */
-    public static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
+    private static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
         if (inputElement instanceof IFile)
             return openInEditor((IFile) inputElement, activate);
         if (inputElement instanceof ISourceEntity) {
-            ICompilationUnit cu= (ICompilationUnit) ((ISourceEntity) inputElement).getAncestor(ICompilationUnit.class);
-
-            if (cu != null /*&& !JavaModelUtil.isPrimary(cu) */) {
+            ICompilationUnit cu= (ICompilationUnit) ((ISourceEntity) inputElement)
+            		.getAncestor(ICompilationUnit.class);
+            if (cu!=null /*&& !JavaModelUtil.isPrimary(cu) */) {
                 /*
                  * Support for non-primary working copy. Try to reveal it in the active editor.
                  */
-                IWorkbenchPage page= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                IWorkbenchPage page= getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 if (page != null) {
                     IEditorPart editor= page.getActiveEditor();
                     if (editor != null) {
-                        ISourceEntity editorCU= EditorUtility.getEditorInputModelElement(editor, false);
+                        ISourceEntity editorCU= getEditorInputModelElement(editor, false);
                         if (editorCU == cu) {
-                            EditorUtility.revealInEditor(editor, (ISourceEntity) inputElement);
+                            revealInEditor(editor, (ISourceEntity) inputElement);
                             return editor;
                         }
                     }
@@ -124,7 +126,7 @@ public class EditorUtility {
             }
         }
         IEditorInput input= getEditorInput(inputElement);
-        if (input != null)
+        if (input!=null)
             return openInEditor(input, getEditorID(input, inputElement), activate);
         return null;
     }
@@ -132,12 +134,13 @@ public class EditorUtility {
     /**
      * Selects a Java Element in an editor
      */
-    public static void revealInEditor(IEditorPart part, ISourceEntity element) {
-        if (element == null)
+    private static void revealInEditor(IEditorPart part, ISourceEntity element) {
+        if (element==null)
             return;
         if (part instanceof CeylonEditor) {
-            // TODO If/when there exist model elements for things smaller than CUs (e.g. types), need to do something here
-//            ((UniversalEditor) part).setSelection(element);
+            // TODO If/when there exist model elements for things smaller than CUs 
+        	// (e.g. types), need to do something here
+            // ((UniversalEditor) part).setSelection(element);
             return;
         }
     }
@@ -145,15 +148,15 @@ public class EditorUtility {
     /**
      * Selects and reveals the given region in the given editor part.
      */
-    public static void revealInEditor(IEditorPart part, IRegion region) {
-        if (part != null && region != null)
+    private static void revealInEditor(IEditorPart part, IRegion region) {
+        if (part!=null && region!=null)
             revealInEditor(part, region.getOffset(), region.getLength());
     }
 
     /**
      * Selects and reveals the given offset and length in the given editor part.
      */
-    public static void revealInEditor(IEditorPart editor, final int offset, final int length) {
+    private static void revealInEditor(IEditorPart editor, final int offset, final int length) {
         if (editor instanceof ITextEditor) {
             ((ITextEditor) editor).selectAndReveal(offset, length);
             return;
@@ -168,13 +171,12 @@ public class EditorUtility {
                         IMarker marker= null;
                         try {
                             marker = ((IFileEditorInput) input).getFile().createMarker(IMarker.TEXT);
-                        	String [] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
-                        	Object [] values = new Object[] {offset, offset + length};
+                        	String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
+                        	Object[] values = new Object[] {offset, offset + length};
                             marker.setAttributes(attributeNames, values);
-                            
                             gotoMarkerTarget.gotoMarker(marker);
                         } finally {
-                            if (marker != null)
+                            if (marker!=null)
                                 marker.delete();
                         }
                     }
@@ -194,19 +196,19 @@ public class EditorUtility {
          */
         if (editor != null && editor.getEditorSite().getSelectionProvider() != null) {
             IEditorSite site= editor.getEditorSite();
-            if (site == null)
+            if (site==null)
                 return;
             ISelectionProvider provider= editor.getEditorSite().getSelectionProvider();
-            if (provider == null)
+            if (provider==null)
                 return;
             provider.setSelection(new TextSelection(offset, length));
         }
     }
 
     private static IEditorPart openInEditor(IFile file, boolean activate) throws PartInitException {
-        if (file != null) {
-            IWorkbenchPage p= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p != null) {
+        if (file!=null) {
+            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (p!=null) {
                 IEditorPart editorPart= IDE.openEditor(p, file, activate);
                 initializeHighlightRange(editorPart);
                 return editorPart;
@@ -216,9 +218,9 @@ public class EditorUtility {
     }
 
     private static IEditorPart openInEditor(IEditorInput input, String editorID, boolean activate) throws PartInitException {
-        if (input != null) {
-            IWorkbenchPage p= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p != null) {
+        if (input!=null) {
+            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (p!=null) {
                 IEditorPart editorPart= p.openEditor(input, editorID, activate);
                 initializeHighlightRange(editorPart);
                 return editorPart;
@@ -229,12 +231,12 @@ public class EditorUtility {
 
     private static void initializeHighlightRange(IEditorPart editorPart) {
         if (editorPart instanceof ITextEditor) {
-            IAction toggleAction= editorPart.getEditorSite().getActionBars().getGlobalActionHandler(
-                    ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
-            boolean enable= toggleAction != null;
+            IAction toggleAction= editorPart.getEditorSite().getActionBars()
+            		.getGlobalActionHandler(TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
+            boolean enable= toggleAction!=null;
             if (enable && editorPart instanceof CeylonEditor)
                 // TODO Maybe support show segments?
-                enable= false; // RuntimePlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS);
+                enable= false; // CeylonPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS);
             else
                 enable= enable && toggleAction.isEnabled() && toggleAction.isChecked();
             if (enable) {
@@ -243,7 +245,8 @@ public class EditorUtility {
                     ((TextEditorAction) toggleAction).setEditor(null);
                     // Restore the action
                     ((TextEditorAction) toggleAction).setEditor((ITextEditor) editorPart);
-                } else {
+                } 
+                else {
                     // Un-check
                     toggleAction.run();
                     // Check
@@ -256,7 +259,7 @@ public class EditorUtility {
     /**
      * @deprecated Made it public again for java debugger UI.
      */
-    public static String getEditorID(IEditorInput input, Object inputObject) {
+    private static String getEditorID(IEditorInput input, Object inputObject) {
         IEditorDescriptor editorDescriptor;
         try {
             if (input instanceof IFileEditorInput)
@@ -266,7 +269,7 @@ public class EditorUtility {
         } catch (PartInitException e) {
             return null;
         }
-        if (editorDescriptor != null)
+        if (editorDescriptor!=null)
             return editorDescriptor.getId();
         return null;
     }
@@ -281,7 +284,7 @@ public class EditorUtility {
      * @return the given editor's input as model element or <code>null</code> if none
      * @since 3.2
      */
-    public static ISourceEntity getEditorInputModelElement(IEditorPart editor, boolean primaryOnly) {
+    private static ISourceEntity getEditorInputModelElement(IEditorPart editor, boolean primaryOnly) {
         Assert.isNotNull(editor);
         IEditorInput editorInput= editor.getEditorInput();
         if (editorInput == null)
@@ -346,9 +349,9 @@ public class EditorUtility {
 	 *            The file store to provide the editor input for
 	 * @return The editor input associated with the given file store
 	 */
-	public static IEditorInput getEditorInput(IFileStore fileStore) {
+    private static IEditorInput getEditorInput(IFileStore fileStore) {
 		IFile workspaceFile = getWorkspaceFile(fileStore);
-		if (workspaceFile != null)
+		if (workspaceFile!=null)
 			return new FileEditorInput(workspaceFile);
 		return new FileStoreEditorInput(fileStore);
 	}
@@ -362,7 +365,7 @@ public class EditorUtility {
 	 * @return The workspace's <code>IFile</code> if it exists or
 	 *         <code>null</code> if not
 	 */
-	public static IFile getWorkspaceFile(IFileStore fileStore) {
+	private static IFile getWorkspaceFile(IFileStore fileStore) {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IFile[] files = root.findFilesForLocationURI(fileStore.toURI());
 		files = filterNonExistentFiles(files);
@@ -394,20 +397,20 @@ public class EditorUtility {
 		return (IFile[]) existentFiles.toArray(new IFile[existentFiles.size()]);
 	}
 
-    public static ISourceEntity getEditorInputModelElement(IEditorInput editorInput) {
+	private static ISourceEntity getEditorInputModelElement(IEditorInput editorInput) {
         return (ISourceEntity) editorInput.getAdapter(ISourceEntity.class);
     }
 
     /**
      * If the current active editor edits a java element return it, else return null
      */
-    public static ISourceEntity getActiveEditorModelInput() {
+    private static ISourceEntity getActiveEditorModelInput() {
         IWorkbenchPage page= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        if (page != null) {
+        if (page!=null) {
             IEditorPart part= page.getActiveEditor();
-            if (part != null) {
+            if (part!=null) {
                 IEditorInput editorInput= part.getEditorInput();
-                if (editorInput != null) {
+                if (editorInput!=null) {
                     return getEditorInputModelElement(editorInput);
                 }
             }
@@ -423,7 +426,7 @@ public class EditorUtility {
      * @return the SWT modifier bit, or <code>0</code> if no match was found
      * @since 2.1.1
      */
-    public static int findLocalizedModifier(String modifierName) {
+    private static int findLocalizedModifier(String modifierName) {
         if (modifierName == null)
             return 0;
         if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.CTRL)))
@@ -488,7 +491,7 @@ public class EditorUtility {
         ISourceProject srcProject= null;
         if (input instanceof IFileEditorInput) {
             IProject project= ((IFileEditorInput) input).getFile().getProject();
-            if (project != null) {
+            if (project!=null) {
                 try {
                     srcProject= ModelFactory.open(project);
                 } 
@@ -509,22 +512,18 @@ public class EditorUtility {
      * 
      * @return an array of all dirty editor parts.
      */
-    public static IEditorPart[] getDirtyEditors() {
+    private static IEditorPart[] getDirtyEditors() {
         Set<IEditorInput> inputs= new HashSet<IEditorInput>();
         List<IEditorPart> result= new ArrayList<IEditorPart>(0);
         IWorkbench workbench= PlatformUI.getWorkbench();
         IWorkbenchWindow[] windows= workbench.getWorkbenchWindows();
-
         for(int i= 0; i < windows.length; i++) {
             IWorkbenchPage[] pages= windows[i].getPages();
-
             for(int x= 0; x < pages.length; x++) {
                 IEditorPart[] editors= pages[x].getDirtyEditors();
-
                 for(int z= 0; z < editors.length; z++) {
                     IEditorPart ep= editors[z];
                     IEditorInput input= ep.getEditorInput();
-
                     if (!inputs.contains(input)) {
                         inputs.add(input);
                         result.add(ep);

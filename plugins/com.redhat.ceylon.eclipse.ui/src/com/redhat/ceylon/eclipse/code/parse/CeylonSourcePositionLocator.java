@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
+import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -175,9 +179,10 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
 
     public static void gotoLocation(IPath path, int offset) {
         if (path==null || path.isEmpty()) return;
-        IEditorInput editorInput = EditorUtility.getEditorInput(path);
+        IEditorInput editorInput = getEditorInput(path);
         try {
-            CeylonEditor editor = (CeylonEditor) Util.getActivePage().openEditor(editorInput, CeylonPlugin.EDITOR_ID);
+            CeylonEditor editor = (CeylonEditor) getActivePage()
+            		.openEditor(editorInput, EDITOR_ID);
             editor.selectAndReveal(offset, 0);
         }
         catch (PartInitException pie) {

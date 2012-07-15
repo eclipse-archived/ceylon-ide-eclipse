@@ -115,11 +115,12 @@ public class CeylonLabelDecorator implements ILabelDecorator {
             } else if (obj instanceof IResource) {
                 return getErrorTicksFromMarkers((IResource) obj, IResource.DEPTH_INFINITE);
             }
-        } catch (CoreException e) {
+        }
+        catch (CoreException e) {
             if (e.getStatus().getCode() == IResourceStatus.MARKER_NOT_FOUND) {
                 return 0;
             }
-            RuntimePlugin.getInstance().logException("", e);
+            e.printStackTrace();
         }
         return 0;
     }*/

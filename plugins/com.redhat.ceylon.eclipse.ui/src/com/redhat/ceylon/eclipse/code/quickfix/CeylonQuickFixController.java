@@ -11,6 +11,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getSourceProject;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationModel;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 
@@ -22,7 +23,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.utils.NullMessageHandler;
@@ -45,7 +45,6 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.AnnotationUtils;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
 public class CeylonQuickFixController extends QuickAssistAssistant implements IQuickAssistProcessor {
@@ -75,7 +74,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
 		if (input!=null) {
 			file = input.getFile();
 			//TODO: get the tree from CeylonBuilder!!!!
-			model = ModelFactory.open(file, EditorUtility.getSourceProject(input));
+			model = ModelFactory.open(file, getSourceProject(input));
 		}
 		/*try {
 			fCU = (ICompilationUnit) ModelFactory.open(marker.getResource());
