@@ -1,12 +1,13 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -43,7 +44,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
      * The ID for the kind of annotations created for "mark occurrences"
      */
 	//TODO: change the id!!!!
-    public static final String OCCURRENCE_ANNOTATION= RuntimePlugin.IMP_RUNTIME + ".occurrenceAnnotation";
+    public static final String OCCURRENCE_ANNOTATION= PLUGIN_ID + ".occurrenceAnnotation";
 
     /**
      * True if "mark occurrences" is currently on/enabled

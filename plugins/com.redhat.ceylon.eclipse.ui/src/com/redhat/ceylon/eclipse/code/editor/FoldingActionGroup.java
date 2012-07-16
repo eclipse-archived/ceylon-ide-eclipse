@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FOLDING_COLLAPSE_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FOLDING_COLLAPSE_MEMBERS;
-import static org.eclipse.imp.actions.FoldingMessages.getResourceBundle;
+import static com.redhat.ceylon.eclipse.code.editor.FoldingMessages.getResourceBundle;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE_ALL;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_EXPAND;
@@ -11,14 +11,12 @@ import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_RESTORE;
 
 import java.util.ResourceBundle;
 
-import org.eclipse.imp.actions.FoldingMessages;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.actions.ActionGroup;
-import org.eclipse.ui.editors.text.IFoldingCommandIds;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;

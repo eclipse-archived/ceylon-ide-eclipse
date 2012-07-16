@@ -8,8 +8,7 @@ import org.eclipse.core.resources.IMarker;
  * This interface describes something that can process messages 
  * emitted by a parser or other language processing front-end.
  */
-public interface MessageHandler 
-        extends org.eclipse.imp.parser.IMessageHandler {
+public interface MessageHandler {
     /**
      * Attribute key for the severity of a message
      */

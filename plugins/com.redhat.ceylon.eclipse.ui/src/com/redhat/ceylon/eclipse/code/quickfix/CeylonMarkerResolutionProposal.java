@@ -11,9 +11,10 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.runtime.PluginImages;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -27,36 +28,15 @@ public class CeylonMarkerResolutionProposal implements ICompletionProposal {
     private IMarkerResolution fResolution;
     private IMarker fMarker;
 
-    /**
-     * Constructor for MarkerResolutionProposal.
-     * 
-     * @param resolution
-     *            the marker resolution
-     * @param marker
-     *            the marker
-     */
     public CeylonMarkerResolutionProposal(IMarkerResolution resolution, IMarker marker) {
         fResolution = resolution;
         fMarker = marker;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.jface.text.contentassist.ICompletionProposal#apply(org.eclipse
-     * .jface.text.IDocument)
-     */
     public void apply(IDocument document) {
         fResolution.run(fMarker);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.eclipse.jface.text.contentassist.ICompletionProposal#
-     * getAdditionalProposalInfo()
-     */
     public String getAdditionalProposalInfo() {
         if (fResolution instanceof IMarkerResolution2) {
             return ((IMarkerResolution2) fResolution).getDescription();
@@ -73,32 +53,14 @@ public class CeylonMarkerResolutionProposal implements ICompletionProposal {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.eclipse.jface.text.contentassist.ICompletionProposal#
-     * getContextInformation()
-     */
     public IContextInformation getContextInformation() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.jface.text.contentassist.ICompletionProposal#getDisplayString
-     * ()
-     */
     public String getDisplayString() {
         return fResolution.getLabel();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getImage()
-     */
     public Image getImage() {
         if (fResolution instanceof IMarkerResolution2) {
             return ((IMarkerResolution2) fResolution).getImage();
@@ -106,16 +68,9 @@ public class CeylonMarkerResolutionProposal implements ICompletionProposal {
         if (fResolution instanceof ICompletionProposal) {
             return ((ICompletionProposal) fResolution).getImage();
         }
-        return PluginImages.get(PluginImages.IMG_CORRECTION_CHANGE);
+        return CORRECTION;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.jface.text.contentassist.ICompletionProposal#getSelection
-     * (org.eclipse.jface.text.IDocument)
-     */
     public Point getSelection(IDocument document) {
         if (fResolution instanceof ICompletionProposal) {
             return ((ICompletionProposal) fResolution).getSelection(document);

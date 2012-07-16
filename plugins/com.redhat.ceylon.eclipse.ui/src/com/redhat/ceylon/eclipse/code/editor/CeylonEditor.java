@@ -56,7 +56,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -64,9 +63,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -148,29 +144,34 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  */
 public class CeylonEditor extends TextEditor {
 	
-    private static final String SHOW_CEYLON_HIERARCHY = "com.redhat.ceylon.eclipse.ui.action.hierarchy";
-	public static final String MESSAGE_BUNDLE= "org.eclipse.imp.editor.messages";
-    public static final String PARSE_ANNOTATION_TYPE= "org.eclipse.imp.editor.parseAnnotation";
+	public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
+
+	private static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".action.hierarchy";
 
     private static final int REPARSE_SCHEDULE_DELAY= 200;
+
+    /** 
+     * Parent annotation ID
+     */
+    public static final String PARSE_ANNOTATION_TYPE = PLUGIN_ID + ".parseAnnotation";
 
     /**
      * Annotation ID for a parser annotation w/ severity = error. Must match the ID of the
      * corresponding annotationTypes extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_ERROR= "org.eclipse.imp.editor.parseAnnotation.error";
+    public static final String PARSE_ANNOTATION_TYPE_ERROR= PLUGIN_ID + ".parseAnnotation.error";
 
     /**
      * Annotation ID for a parser annotation w/ severity = warning. Must match the ID of the
      * corresponding annotationTypes extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_WARNING= "org.eclipse.imp.editor.parseAnnotation.warning";
+    public static final String PARSE_ANNOTATION_TYPE_WARNING= PLUGIN_ID + ".parseAnnotation.warning";
 
     /**
      * Annotation ID for a parser annotation w/ severity = info. Must match the ID of the
      * corresponding annotationTypes extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_INFO= "org.eclipse.imp.editor.parseAnnotation.info";
+    public static final String PARSE_ANNOTATION_TYPE_INFO= PLUGIN_ID + ".parseAnnotation.info";
 
     /** Preference key for matching brackets */
     protected final static String MATCHING_BRACKETS= "matchingBrackets";

@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN_DIS;
+
 import java.text.MessageFormat;
 import java.util.Iterator;
 
@@ -9,10 +13,10 @@ import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.imp.runtime.PluginImages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
@@ -568,8 +572,9 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			super();
 			fAnnotation= annotation;
 			fInfoControl= infoControl;
-			setImageDescriptor(PluginImages.DESC_ELCL_CONFIGURE_ANNOTATIONS);
-			setDisabledImageDescriptor(PluginImages.DESC_DLCL_CONFIGURE_ANNOTATIONS);
+			ImageRegistry imageRegistry = getInstance().getImageRegistry();
+			setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
+			setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
 			setToolTipText("Configure Annotation Preferences");
 		}
 

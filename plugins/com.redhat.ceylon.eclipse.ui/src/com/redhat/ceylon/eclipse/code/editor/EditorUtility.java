@@ -14,7 +14,6 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -22,11 +21,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.model.ICompilationUnit;
-import org.eclipse.imp.model.ISourceEntity;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
@@ -105,44 +99,10 @@ public class EditorUtility {
     private static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
         if (inputElement instanceof IFile)
             return openInEditor((IFile) inputElement, activate);
-        if (inputElement instanceof ISourceEntity) {
-            ICompilationUnit cu= (ICompilationUnit) ((ISourceEntity) inputElement)
-            		.getAncestor(ICompilationUnit.class);
-            if (cu!=null /*&& !JavaModelUtil.isPrimary(cu) */) {
-                /*
-                 * Support for non-primary working copy. Try to reveal it in the active editor.
-                 */
-                IWorkbenchPage page= getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                if (page != null) {
-                    IEditorPart editor= page.getActiveEditor();
-                    if (editor != null) {
-                        ISourceEntity editorCU= getEditorInputModelElement(editor, false);
-                        if (editorCU == cu) {
-                            revealInEditor(editor, (ISourceEntity) inputElement);
-                            return editor;
-                        }
-                    }
-                }
-            }
-        }
         IEditorInput input= getEditorInput(inputElement);
         if (input!=null)
             return openInEditor(input, getEditorID(input, inputElement), activate);
         return null;
-    }
-
-    /**
-     * Selects a Java Element in an editor
-     */
-    private static void revealInEditor(IEditorPart part, ISourceEntity element) {
-        if (element==null)
-            return;
-        if (part instanceof CeylonEditor) {
-            // TODO If/when there exist model elements for things smaller than CUs 
-        	// (e.g. types), need to do something here
-            // ((UniversalEditor) part).setSelection(element);
-            return;
-        }
     }
 
     /**
@@ -274,46 +234,8 @@ public class EditorUtility {
         return null;
     }
 
-    /**
-     * Returns the given editor's input as a model element.
-     * 
-     * @param editor
-     *            the editor
-     * @param primaryOnly
-     *            if <code>true</code> only primary working copies will be returned
-     * @return the given editor's input as model element or <code>null</code> if none
-     * @since 3.2
-     */
-    private static ISourceEntity getEditorInputModelElement(IEditorPart editor, boolean primaryOnly) {
-        Assert.isNotNull(editor);
-        IEditorInput editorInput= editor.getEditorInput();
-        if (editorInput == null)
-            return null;
-        ISourceEntity se= getEditorInputModelElement(editorInput);
-        if (se != null || primaryOnly)
-            return se;
-        return null;
-//      return RuntimePlugin.getInstance().getWorkingCopyManager().getWorkingCopy(editorInput, false);
-    }
-
-    private static IEditorInput getEditorInput(ISourceEntity element) {
-        while (element != null) {
-            if (element instanceof ICompilationUnit) {
-                ICompilationUnit unit= (ICompilationUnit) element;
-                IFile file= unit.getFile();
-
-                return new FileEditorInput(file);
-            }
-//            if (element instanceof IClassFile)
-//                return new InternalClassFileEditorInput((IClassFile) element);
-            element= element.getParent();
-        }
-        return null;
-    }
 
     public static IEditorInput getEditorInput(Object input) {
-        if (input instanceof ISourceEntity)
-            return getEditorInput((ISourceEntity) input);
         if (input instanceof IFile)
             return new FileEditorInput((IFile) input);
         if (input instanceof IPath) {
@@ -396,27 +318,6 @@ public class EditorUtility {
 		}
 		return (IFile[]) existentFiles.toArray(new IFile[existentFiles.size()]);
 	}
-
-	private static ISourceEntity getEditorInputModelElement(IEditorInput editorInput) {
-        return (ISourceEntity) editorInput.getAdapter(ISourceEntity.class);
-    }
-
-    /**
-     * If the current active editor edits a java element return it, else return null
-     */
-    private static ISourceEntity getActiveEditorModelInput() {
-        IWorkbenchPage page= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        if (page!=null) {
-            IEditorPart part= page.getActiveEditor();
-            if (part!=null) {
-                IEditorInput editorInput= part.getEditorInput();
-                if (editorInput!=null) {
-                    return getEditorInputModelElement(editorInput);
-                }
-            }
-        }
-        return null;
-    }
 
     /**
      * Maps the localized modifier name to a code in the same manner as #findModifier.

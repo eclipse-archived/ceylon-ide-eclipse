@@ -3,17 +3,15 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
-import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 abstract class TargetNavigationAction extends Action {
     protected CeylonEditor fEditor;
-    protected INavigationTargetFinder fNavTargetFinder;
+    //protected INavigationTargetFinder fNavTargetFinder;
 
     protected abstract Object getNavTarget(Object o, Object astRoot);
 
@@ -28,15 +26,16 @@ abstract class TargetNavigationAction extends Action {
     }
 
     public void setEditor(ITextEditor editor) {
-        fNavTargetFinder= null;
+        //fNavTargetFinder= null;
         if (editor instanceof CeylonEditor) {
             fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= null; //TODO??
+            //fNavTargetFinder= null; //TODO??
         } 
         else {
             fEditor= null;
         }
-        setEnabled(fNavTargetFinder != null);
+        //setEnabled(fNavTargetFinder!=null);
+        setEnabled(false);
     }
 
     @Override

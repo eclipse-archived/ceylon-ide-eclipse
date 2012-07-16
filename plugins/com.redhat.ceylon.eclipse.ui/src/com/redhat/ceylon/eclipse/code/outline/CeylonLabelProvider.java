@@ -48,9 +48,11 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
  * 
- * Needs to explicitly implement org.eclipse.imp.services.ILabelProvider to show up in IMP servicees.
- * Extends StyledCellLabelProvider to provide custom styling by doing its own painting - here the {@link #update(ViewerCell)} method is the entry point
- * Implements DelegatingStyledCellLabelProvider.IStyledLabelProvider too, but this probably is not required.
+ * Extends StyledCellLabelProvider to provide custom styling by doing its own painting 
+ * - here the {@link #update(ViewerCell)} method is the entry point
+ * Implements DelegatingStyledCellLabelProvider.IStyledLabelProvider too, but this 
+ * probably is not required.
+ * 
  * @author max
  *
  */
