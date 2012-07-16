@@ -294,6 +294,9 @@
            extensions="ceylon"
            class="com.redhat.ceylon.eclipse.code.outline.CeylonStructureCreator"
            id="com.redhat.ceylon.eclipse.ui.compare"/>
+       <contentTypeBinding
+             contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"
+             structureCreatorId="com.redhat.ceylon.eclipse.ui.compare"/>
    </extension>
    
    <extension
