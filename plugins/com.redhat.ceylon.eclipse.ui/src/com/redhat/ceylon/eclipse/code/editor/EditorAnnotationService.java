@@ -42,7 +42,6 @@ public class EditorAnnotationService implements TreeLifecycleListener {
     
     public EditorAnnotationService(CeylonEditor editor) {
     	this.editor = editor;
-        //System.out.println("Adding SelectionListener to editor " + editor);
         ((IPostSelectionProvider) editor.getSelectionProvider())
             .addPostSelectionChangedListener(new SelectionListener());
 	}

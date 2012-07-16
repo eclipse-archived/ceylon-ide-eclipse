@@ -1162,7 +1162,7 @@ extends PreviousSubWordAction implements IUpdate {
             //add this guy first in the list of model listeners so he
             //gets notified first out of everyone
             presentationController = new PresentationController(getSourceViewer());
-            presentationController.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            presentationController.registerDamage(new Region(0, sourceViewer.getDocument().getLength()));
             addModelListener(presentationController);
             
             addModelListener(new EditorAnnotationService(this));

@@ -122,7 +122,6 @@ public class AnnotationCreator implements MessageHandler {
                     fAnnotations.add(annotation);
                 }
             }
-            // System.out.println("Annotation model updated.");
         }
         fMessages.clear();
     }
@@ -176,7 +175,6 @@ public class AnnotationCreator implements MessageHandler {
                 }
             }
         }
-//      System.out.println("Annotations removed.");
         fAnnotations.clear();
     }
 }
