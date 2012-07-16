@@ -60,9 +60,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -256,19 +253,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return PROBLEM_MARKER_ID;
     }
     
-    private ISourceProject getSourceProject() {
-        ISourceProject sourceProject = null;
-        try {
-            sourceProject = ModelFactory.open(getProject());
-        } 
-        catch (ModelException e) {
-            e.printStackTrace();
-        }
-        return sourceProject;
-    }
-
     public static boolean isCeylon(IFile file) {
-        return CeylonPlugin.getLanguage().hasExtension(file.getFileExtension());
+        String ext = file.getFileExtension();
+		return ext!=null && ext.equals("ceylon");
     }
 
     public static boolean isJava(IFile file) {
@@ -330,11 +317,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
         final Collection<IFile> sourceToCompile= new HashSet<IFile>();
-
-        ISourceProject sourceProject = getSourceProject();
-        if (sourceProject == null) {
-            return new IProject[0];
-        }
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
@@ -442,7 +424,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
                 monitor.subTask("Typechecking source of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = fullTypeCheck(project, sourceProject, typeChecker, monitor);
+                builtPhasedUnits = fullTypeCheck(project, typeChecker, monitor);
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
@@ -464,7 +446,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println("             ...compiling " + 
                         allSources.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject, 
-                		sourceProject, allSources, typeChecker, monitor);
+                		allSources, typeChecker, monitor);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
@@ -513,8 +495,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(sourceToCompile);
                 }*/
-                builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
-                		sourceProject, monitor);                
+                builtPhasedUnits = incrementalBuild(project, sourceToCompile, monitor);                
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     return project.getReferencedProjects();
                 }
@@ -536,7 +517,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println(timedMessage("Incremental generation of class files..."));
                 getConsoleStream().println("             ...compiling " + 
                         sourceToCompile.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, javaProject, sourceProject, 
+                binariesGenerationOK = generateBinaries(project, javaProject,
                 		sourceToCompile, typeChecker, monitor);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
@@ -975,7 +956,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project, Collection<IFile> sourceToCompile,
-        ISourceProject sourceProject, IProgressMonitor monitor) {
+            IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         PhasedUnits pus = typeChecker.getPhasedUnits();
 		JDTModuleManager moduleManager = (JDTModuleManager) pus.getModuleManager(); 
@@ -1137,7 +1118,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return null;
     }
 
-    private List<PhasedUnit> fullTypeCheck(IProject project, ISourceProject sourceProject, 
+    private List<PhasedUnit> fullTypeCheck(IProject project, 
     		TypeChecker typeChecker, IProgressMonitor monitor) 
     				throws CoreException {
 
@@ -1422,8 +1403,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	}
 	
     private boolean generateBinaries(IProject project, IJavaProject javaProject,
-    		ISourceProject sourceProject, Collection<IFile> filesToCompile, 
-    		TypeChecker typeChecker, IProgressMonitor monitor) throws CoreException {
+    		Collection<IFile> filesToCompile, TypeChecker typeChecker, 
+    		IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
 
         String srcPath = "";

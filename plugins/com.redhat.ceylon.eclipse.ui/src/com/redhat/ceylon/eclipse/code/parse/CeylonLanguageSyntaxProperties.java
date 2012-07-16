@@ -3,11 +3,9 @@ package com.redhat.ceylon.eclipse.code.parse;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
-public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
+public class CeylonLanguageSyntaxProperties {
     
     public static final CeylonLanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
     
@@ -52,7 +50,7 @@ public class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}
     
-	public IRegion getDoubleClickRegion(int offset, IParseController pc) {
+	public IRegion getDoubleClickRegion(int offset, CeylonParseController pc) {
 		//this seems to be unnecessary ... default behavior is fine
 	    /*CommonTokenStream stream = (CommonTokenStream) parser.getTokenStream();
 	    if (stream!=null) {

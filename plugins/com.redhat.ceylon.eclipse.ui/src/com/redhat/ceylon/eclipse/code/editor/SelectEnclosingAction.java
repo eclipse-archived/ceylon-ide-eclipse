@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
 import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;
@@ -40,17 +43,15 @@ class SelectEnclosingAction extends Action {
     public void run() {
         IRegion selection= fEditor.getSelectedRegion();
         CeylonParseController pc= fEditor.getParseController();
-        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
-        Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
+        Object curNode= findNode(pc.getRootNode(), selection.getOffset(), 
+        		selection.getOffset() + selection.getLength() - 1);
         if (curNode == null || selection.getOffset() == 0) {
-            curNode= pc.getCurrentAst();
+            curNode= pc.getRootNode();
         }
-        Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getCurrentAst());
-    
+        Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getRootNode());
         if (enclosing != null) {
-            int enclOffset= locator.getStartOffset(enclosing);
-            int enclEnd= locator.getEndOffset(enclosing);
-
+            int enclOffset= getStartOffset(enclosing);
+            int enclEnd= getEndOffset(enclosing);
             fEditor.selectAndReveal(enclOffset, enclEnd - enclOffset + 1);
         }
     }

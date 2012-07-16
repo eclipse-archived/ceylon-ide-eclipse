@@ -960,15 +960,9 @@ extends PreviousSubWordAction implements IUpdate {
         IEditorInput editorInput= getEditorInput();
         IFile file = getFile(editorInput);
         IPath filePath = getPath(editorInput);
-        try {
-        	parseController = new CeylonParseController();
-            IProject project= file!=null && file.exists() ? file.getProject() : null;
-            ISourceProject srcProject= project!=null ? ModelFactory.open(project) : null;
-            parseController.initialize(filePath, srcProject, annotationCreator);
-        } 
-        catch (ModelException e) {
-            e.printStackTrace();
-        }
+        parseController = new CeylonParseController();
+        IProject project= file!=null && file.exists() ? file.getProject() : null;
+        parseController.initialize(filePath, project, annotationCreator);
     }
 
     private void watchDocument() {
@@ -1105,9 +1099,9 @@ extends PreviousSubWordAction implements IUpdate {
         getWorkspace().addResourceChangeListener(moveListener= new IResourceChangeListener() {
         	public void resourceChanged(IResourceChangeEvent event) {
         		if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
-        			ISourceProject project = parseController.getProject();
+        			IProject project = parseController.getProject();
         			if (project!=null) { //things extrenal to the workspace don't move
-        				IPath oldWSRelPath= project.getRawProject().getFullPath().append(parseController.getPath());
+        				IPath oldWSRelPath= project.getFullPath().append(parseController.getPath());
         				IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
         				if (rd != null) {
         					if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
@@ -1115,20 +1109,12 @@ extends PreviousSubWordAction implements IUpdate {
         						IPath newPath= rd.getMovedToPath();
         						IPath newProjRelPath= newPath.removeFirstSegments(1);
         						String newProjName= newPath.segment(0);
-        						boolean sameProj= project.getRawProject()
-        								.getName().equals(newProjName);
-
-        						try {
-        							ISourceProject proj= sameProj ? project : 
-        								ModelFactory.open(ResourcesPlugin.getWorkspace().getRoot()
-        										.getProject(newProjName));
-        							// Tell the IParseController about the move - it caches the path
-        							// fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-        							parseController.initialize(newProjRelPath, proj, annotationCreator);
-        						} 
-        						catch (ModelException e) {
-        							e.printStackTrace();
-        						}
+        						IProject proj= project.getName().equals(newProjName) ? 
+        								project : project.getWorkspace().getRoot()
+        							            .getProject(newProjName);
+        						// Tell the IParseController about the move - it caches the path
+        						// fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
+        						parseController.initialize(newProjRelPath, proj, annotationCreator);
         					}
         				}
         			}

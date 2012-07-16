@@ -194,18 +194,23 @@ public class CeylonReferenceResolver {
 						    if (requiredProjectLoader == null) {
 						        continue;
 						    }
-						    Declaration originalDecl = requiredProjectLoader.getDeclaration(dec.getQualifiedNameString(), DeclarationType.TYPE);
+						    Declaration originalDecl = requiredProjectLoader
+						    		.getDeclaration(dec.getQualifiedNameString(), 
+						    		        DeclarationType.TYPE);
 						    if (originalDecl != null) {
 						        String fileName = originalDecl.getUnit().getFilename();
-						        String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
+						        String packagePath = originalDecl.getUnit().getPackage()
+						        		.getQualifiedNameString().replace('.', '/');
 						        String fileRelativePath = packagePath + "/" + fileName;
 
 						        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
-						        if (requiredProjectTypeChecker == null) {
+						        if (requiredProjectTypeChecker==null) {
 						            continue;
 						        }
-						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-						        if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker
+						        		.getPhasedUnitFromRelativePath(fileRelativePath);
+						        if (requiredProjectPhasedUnit != null 
+						        		&& requiredProjectPhasedUnit.isFullyTyped()) {
 						            pu = requiredProjectPhasedUnit;
 						            break;
 						        }

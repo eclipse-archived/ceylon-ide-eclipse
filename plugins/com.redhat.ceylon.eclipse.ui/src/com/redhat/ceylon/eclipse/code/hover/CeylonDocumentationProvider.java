@@ -33,7 +33,7 @@ public class CeylonDocumentationProvider {
         }
         //its coming from a binary or java project:
         else if (ctlr.getProject()!=null) {
-            IProject proj = ctlr.getProject().getRawProject();
+            IProject proj = ctlr.getProject();
             if (entity instanceof Tree.MemberOrTypeExpression) {
                 Tree.MemberOrTypeExpression node = (Tree.MemberOrTypeExpression) entity;
                 return getDocumentation(node.getDeclaration(), proj, node);

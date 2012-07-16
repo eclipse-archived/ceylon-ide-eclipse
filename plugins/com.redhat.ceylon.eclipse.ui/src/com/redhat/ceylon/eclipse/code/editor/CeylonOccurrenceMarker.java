@@ -15,7 +15,7 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class CeylonOccurrenceMarker {
     
-    private List<Object> fOccurrences = Collections.emptyList();
+    private List<Object> occurrences = Collections.emptyList();
     
     public String getKindName() {
         return "Ceylon Occurence Marker";
@@ -24,27 +24,27 @@ public class CeylonOccurrenceMarker {
     public List<Object> getOccurrencesOf(CeylonParseController parseController, Object node) {
         
         if (node instanceof Node) {
-            
+        	
             // Check whether we even have an AST in which to find occurrences
-            Tree.CompilationUnit root = (Tree.CompilationUnit) parseController.getCurrentAst();
+            Tree.CompilationUnit root = parseController.getRootNode();
             if (root == null) {
                 return Collections.emptyList();
             }
             
-            fOccurrences = new ArrayList<Object>();
+            occurrences = new ArrayList<Object>();
             Declaration declaration = getReferencedDeclaration((Node) node);
             if (declaration != null) {
                 FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
                 root.visit(frv);
-                fOccurrences.addAll(frv.getNodes());
+                occurrences.addAll(frv.getNodes());
                 FindDeclarationVisitor fdv = new FindDeclarationVisitor(frv.getDeclaration());
                 root.visit(fdv);
                 Tree.Declaration decNode = fdv.getDeclarationNode();
                 if (decNode!=null) {
-                    fOccurrences.add(decNode);
+                    occurrences.add(decNode);
                 }
             }
-            return fOccurrences;
+            return occurrences;
             
         }
         else {

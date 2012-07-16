@@ -481,31 +481,6 @@ public class EditorUtility {
 //    }
 
     /**
-     * Returns the source project for a given editor input or <code>null</code> if no corresponding project exists.
-     * 
-     * @param input
-     *            the editor input
-     * @return the corresponding source project
-     */
-    public static ISourceProject getSourceProject(IEditorInput input) {
-        ISourceProject srcProject= null;
-        if (input instanceof IFileEditorInput) {
-            IProject project= ((IFileEditorInput) input).getFile().getProject();
-            if (project!=null) {
-                try {
-                    srcProject= ModelFactory.open(project);
-                } 
-                catch (ModelException e) {
-                    e.printStackTrace();
-                }
-            }
-//        } else if (input instanceof IClassFileEditorInput) {
-//            srcProject= ((IClassFileEditorInput) input).getClassFile().getJavaProject();
-        }
-        return srcProject;
-    }
-
-    /**
      * Returns an array of all editors that have an unsaved content. 
      * If the identical content is presented in more than one editor, 
      * only one of those editor parts is part of the result.

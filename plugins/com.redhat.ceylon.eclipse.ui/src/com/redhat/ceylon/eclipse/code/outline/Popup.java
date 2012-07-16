@@ -15,7 +15,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
-import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -429,17 +428,16 @@ public abstract class Popup extends PopupDialog
     	CeylonParseController cpc = ((CeylonEditor) Util.getCurrentEditor()).getParseController();
 		if (cpc!=null) {
 	        Object object = getSelectedElement();
-	        ISourceProject p = cpc.getProject();
 			if (object instanceof CeylonOutlineNode) {
 	        	dispose();
 	        	gotoNode(((CeylonOutlineNode) object).getASTNode(),
-	        			p==null ? null : p.getRawProject(), cpc.getTypeChecker());
+	        			cpc.getProject(), cpc.getTypeChecker());
 	        }
 	        if (object instanceof Declaration) {
 	        	dispose();
 	        	Declaration dec = (Declaration) object;
 	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	        			p==null ? null : p.getRawProject(), cpc.getTypeChecker());
+	        			cpc.getProject(), cpc.getTypeChecker());
 	        }
     	}
     }

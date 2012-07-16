@@ -17,8 +17,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.model.ICompilationUnit;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.parser.ISourcePositionLocator;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -56,21 +54,12 @@ import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
  * @author Stan Sutton (suttons@us.ibm.com)
  * @since May 15, 2007
  */
-public class CeylonSourcePositionLocator implements ISourcePositionLocator {
+public class CeylonSourcePositionLocator {
     
     private CeylonParseController parseController;
     
     public CeylonSourcePositionLocator(CeylonParseController parseController) {
         this.parseController= parseController;
-    }
-    
-    public Node findNode(Object ast, int offset) {
-        return findNode(ast, offset, offset+1);
-    }
-    
-    public Node findNode(Object ast, int startOffset, int endOffset) {   
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
-        return findNode(cu, startOffset, endOffset);
     }
     
     public static Node findNode(Tree.CompilationUnit cu, int offset) {
@@ -109,23 +98,22 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
         return findScope(cu, s.getOffset(), s.getOffset()+s.getLength());
     }
     
-    public int getStartOffset(Object node) {
+    public static int getStartOffset(Object node) {
         return getNodeStartOffset(node);
     }
     
-    public int getEndOffset(Object node) {
+    public static int getEndOffset(Object node) {
         return getNodeEndOffset(node);
     }
     
-    public int getLength(Object node) {
+    public static int getLength(Object node) {
         return getEndOffset(node) - getStartOffset(node);
     }
     
     public IPath getPath(Object entity) {
     	if (entity instanceof Node) {
-    		ISourceProject project = parseController.getProject();
-			return getNodePath((Node) entity, 
-    				project==null ? null : project.getRawProject(),
+    		return getNodePath((Node) entity, 
+    				parseController.getProject(),
     				parseController.getTypeChecker());
     	}
     	else if (entity instanceof ICompilationUnit) {
@@ -137,9 +125,8 @@ public class CeylonSourcePositionLocator implements ISourcePositionLocator {
     }
     
     public void gotoNode(Node node) {
-		ISourceProject project = parseController.getProject();
         gotoNode(node, 
-        		project==null ? null : project.getRawProject(), 
+        		parseController.getProject(),
         		parseController.getTypeChecker());
     }
     
