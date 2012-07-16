@@ -18,7 +18,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static org.eclipse.imp.parser.IMessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,14 +27,7 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.editor.hover.ProblemLocation;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
-import org.eclipse.imp.editor.quickfix.IAnnotation;
-import org.eclipse.imp.services.IQuickFixAssistant;
-import org.eclipse.imp.services.IQuickFixInvocationContext;
-import org.eclipse.imp.utils.NullMessageHandler;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -79,6 +72,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -92,13 +86,12 @@ import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
  * Popup quick fixes for problem annotations displayed in editor
  * @author gavin
  */
-public class CeylonQuickFixAssistant implements IQuickFixAssistant {
+public class CeylonQuickFixAssistant {
 
-    @Override
     public boolean canFix(Annotation annotation) {
         int code;
-        if (annotation instanceof IAnnotation) {
-            code = ((IAnnotation) annotation).getId();
+        if (annotation instanceof CeylonAnnotation) {
+            code = ((CeylonAnnotation) annotation).getId();
         }
         else if (annotation instanceof MarkerAnnotation) {
             code = ((MarkerAnnotation) annotation).getMarker()
@@ -110,8 +103,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return code>0;
     }
 
-    @Override
-    public boolean canAssist(IQuickFixInvocationContext context) {
+    public boolean canAssist(IQuickAssistInvocationContext context) {
         //oops, all this is totally useless, because
         //this method never gets called by IMP
         /*Tree.CompilationUnit cu = (CompilationUnit) context.getModel()
@@ -121,7 +113,6 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         return true;
     }
 
-    @Override
     public String[] getSupportedMarkerTypes() {
         return new String[] { PROBLEM_MARKER_ID };
     }
@@ -144,7 +135,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
     }
     
     public void addProposals(IQuickAssistInvocationContext context, 
-            UniversalEditor editor, Collection<ICompletionProposal> proposals) {
+    		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         
         RenameRefactoringProposal.add(proposals, editor);
         InlineRefactoringProposal.add(proposals, editor);
@@ -156,7 +147,7 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         IDocument doc = context.getSourceViewer().getDocument();
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) editor.getParseController().getCurrentAst();
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
@@ -215,148 +206,135 @@ public class CeylonQuickFixAssistant implements IQuickFixAssistant {
         RefineFormalMembersProposal.add(proposals, editor);
     }
     
-    @Override
-    public void addProposals(IQuickFixInvocationContext context, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals) {
-        if (context.getModel()==null) return;
-        IProject project = context.getModel().getProject().getRawProject();
-        IFile file = context.getModel().getFile();
+    public void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
+            IFile file, Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals) {
+        if (file==null) return;
+        IProject project = file.getProject();
         TypeChecker tc = getProjectTypeChecker(project);
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) context.getModel()
-                .getAST(new NullMessageHandler(), new NullProgressMonitor());
-        if (problem==null) {
-            //oops, all this is totally useless, because
-            //this method never gets called except when
-            //there is a Problem
-            /*Node node = findNode(cu, context.getOffset(), 
-                    context.getOffset() + context.getLength());
-            addRefactoringProposals(context, proposals, node);*/
-        }
-        else {
-            Node node = findNode(cu, problem.getOffset(), 
+        Node node = findNode(cu, problem.getOffset(), 
                     problem.getOffset() + problem.getLength());
-            switch ( problem.getProblemId() ) {
-            case 100:
-            case 102:
-                if (tc!=null) {
-                    addImportProposals(cu, node, proposals, file);
-                }
-                addCreateEnumProposal(cu, node, problem, proposals, 
-                        project, tc, file);
-                addCreateProposals(cu, node, problem, proposals, 
-                        project, tc, file);
-                if (tc!=null) {
-                    addRenameProposals(cu, node, problem, proposals, file);
-                }
-                break;
-            case 101:
-                addCreateParameterProposals(cu, node, problem, proposals, 
-                        project, tc, file);
-                if (tc!=null) {
-                    addRenameProposals(cu, node, problem, proposals, file);
-                }
-                break;
-            case 200:
-                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
-                break;
-            case 300:
-                if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-                    ImplementFormalMembersProposal.addImplementFormalMembersProposal(cu, node, proposals, file,
-                            context.getSourceViewer().getDocument());
-                }
-                break;
-            case 400:
-                addMakeSharedProposal(proposals, project, node);
-                break;
-            case 500:
-                addMakeDefaultProposal(proposals, project, node);
-                break;
-            case 600:
-                addMakeActualProposal(proposals, project, node);
-                break;
-            case 701:
-                addMakeSharedDecProposal(proposals, project, node);
-                addRemoveAnnotationDecProposal(proposals, "actual", project, node);
-                break;
-            case 702:
-                addMakeSharedDecProposal(proposals, project, node);
-                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
-                break;
-            case 703:
-                addMakeSharedDecProposal(proposals, project, node);
-                addRemoveAnnotationDecProposal(proposals, "default", project, node);
-                break;
-            case 800:
-            case 804:
-                addMakeVariableProposal(proposals, project, node);
-                break;
-            case 803:
-                addMakeVariableProposal(proposals, project, node);
-                addFixSpecificationProposal(problem, proposals, project, file, node);
-                break;
-            case 801:
-                addMakeVariableDecProposal(cu, proposals, project, node);
-                addFixSpecificationProposal(problem, proposals, project, file, node);
-                break;
-            case 802:
-                addFixAssignmentProposal(problem, proposals, project, file, node);
-                break;
-            case 900:
-                addMakeAbstractProposal(proposals, project, node);
-                break;
-            case 1000:
-                AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
-                ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
-                break;
-            case 1100:
-                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
-                break;
-            case 1200:
-            case 1201:
-                addRemoveAnnotationDecProposal(proposals, "shared", project, node);
-                break;
-            case 1300:
-            case 1301:
-                addRemoveAnnotationDecProposal(proposals, "actual", project, node);
-                break;
-            case 1302:
-            case 1312:
-                addRemoveAnnotationDecProposal(proposals, "formal", project, node);
-                break;
-            case 1303:
-            case 1313:
-                addRemoveAnnotationDecProposal(proposals, "default", project, node);
-                break;
-            case 1400:
-                addMakeFormalProposal(proposals, project, node);
-                break;
-            case 1500:
-                addRemoveAnnotationDecProposal(proposals, "variable", project, node);
-                break;
-            case 1600:
-                addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
-                break;
-            case 2000:
-                addCreateParameterProposals(cu, node, problem, proposals, 
-                        project, tc, file);
-                break;
-            case 2100:
-                addChangeTypeProposals(cu, node, problem, proposals, project);
-                break;
-            case 3000:
-                if (context.getSourceViewer()!=null) {
-                    AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
-                            file, cu, proposals, node);
-                }
-                break;
-            case 3100:
-                if (context.getSourceViewer()!=null) {
-                    ShadowReferenceProposal.addShadowReferenceProposal(context.getSourceViewer().getDocument(),
-                            file, cu, proposals, node);
-                }
-                break;
-            }
+        switch ( problem.getProblemId() ) {
+        case 100:
+        case 102:
+        	if (tc!=null) {
+        		addImportProposals(cu, node, proposals, file);
+        	}
+        	addCreateEnumProposal(cu, node, problem, proposals, 
+        			project, tc, file);
+        	addCreateProposals(cu, node, problem, proposals, 
+        			project, tc, file);
+        	if (tc!=null) {
+        		addRenameProposals(cu, node, problem, proposals, file);
+        	}
+        	break;
+        case 101:
+        	addCreateParameterProposals(cu, node, problem, proposals, 
+        			project, tc, file);
+        	if (tc!=null) {
+        		addRenameProposals(cu, node, problem, proposals, file);
+        	}
+        	break;
+        case 200:
+        	SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
+        	break;
+        case 300:
+        	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
+        		ImplementFormalMembersProposal.addImplementFormalMembersProposal(cu, node, proposals, file,
+        				context.getSourceViewer().getDocument());
+        	}
+        	break;
+        case 400:
+        	addMakeSharedProposal(proposals, project, node);
+        	break;
+        case 500:
+        	addMakeDefaultProposal(proposals, project, node);
+        	break;
+        case 600:
+        	addMakeActualProposal(proposals, project, node);
+        	break;
+        case 701:
+        	addMakeSharedDecProposal(proposals, project, node);
+        	addRemoveAnnotationDecProposal(proposals, "actual", project, node);
+        	break;
+        case 702:
+        	addMakeSharedDecProposal(proposals, project, node);
+        	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+        	break;
+        case 703:
+        	addMakeSharedDecProposal(proposals, project, node);
+        	addRemoveAnnotationDecProposal(proposals, "default", project, node);
+        	break;
+        case 800:
+        case 804:
+        	addMakeVariableProposal(proposals, project, node);
+        	break;
+        case 803:
+        	addMakeVariableProposal(proposals, project, node);
+        	addFixSpecificationProposal(problem, proposals, project, file, node);
+        	break;
+        case 801:
+        	addMakeVariableDecProposal(cu, proposals, project, node);
+        	addFixSpecificationProposal(problem, proposals, project, file, node);
+        	break;
+        case 802:
+        	addFixAssignmentProposal(problem, proposals, project, file, node);
+        	break;
+        case 900:
+        	addMakeAbstractProposal(proposals, project, node);
+        	break;
+        case 1000:
+        	AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
+        	ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
+        	break;
+        case 1100:
+        	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+        	break;
+        case 1200:
+        case 1201:
+        	addRemoveAnnotationDecProposal(proposals, "shared", project, node);
+        	break;
+        case 1300:
+        case 1301:
+        	addRemoveAnnotationDecProposal(proposals, "actual", project, node);
+        	break;
+        case 1302:
+        case 1312:
+        	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+        	break;
+        case 1303:
+        case 1313:
+        	addRemoveAnnotationDecProposal(proposals, "default", project, node);
+        	break;
+        case 1400:
+        	addMakeFormalProposal(proposals, project, node);
+        	break;
+        case 1500:
+        	addRemoveAnnotationDecProposal(proposals, "variable", project, node);
+        	break;
+        case 1600:
+        	addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
+        	break;
+        case 2000:
+        	addCreateParameterProposals(cu, node, problem, proposals, 
+        			project, tc, file);
+        	break;
+        case 2100:
+        	addChangeTypeProposals(cu, node, problem, proposals, project);
+        	break;
+        case 3000:
+        	if (context.getSourceViewer()!=null) {
+        		AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+        				file, cu, proposals, node);
+        	}
+        	break;
+        case 3100:
+        	if (context.getSourceViewer()!=null) {
+        		ShadowReferenceProposal.addShadowReferenceProposal(context.getSourceViewer().getDocument(),
+        				file, cu, proposals, node);
+        	}
+        	break;
         }
+
     }
 
     private void addMakeActualProposal(Collection<ICompletionProposal> proposals, 

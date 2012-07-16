@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -58,7 +57,7 @@ public class OpenDeclarationAction extends Action {
         Declaration dec = dwp.getDeclaration();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            ISourceProject ep = ce.getParseController().getProject();
+            IProject ep = ce.getParseController().getProject();
             if (ep!=null && ep.equals(project)) {
                 CeylonParseController cpc = ce.getParseController();
                 Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));

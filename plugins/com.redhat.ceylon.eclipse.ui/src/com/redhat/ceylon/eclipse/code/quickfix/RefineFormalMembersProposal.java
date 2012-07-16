@@ -12,7 +12,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -150,12 +149,10 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
     }
 
-    public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        if (editor instanceof CeylonEditor) {
-            if (RefineFormalMembersProposal.canRefine((CeylonEditor) editor)) {
-                proposals.add(new RefineFormalMembersProposal((CeylonEditor) editor));
-            }
-        }
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    	if (RefineFormalMembersProposal.canRefine(editor)) {
+    		proposals.add(new RefineFormalMembersProposal(editor));
+    	}
     }
 
 }

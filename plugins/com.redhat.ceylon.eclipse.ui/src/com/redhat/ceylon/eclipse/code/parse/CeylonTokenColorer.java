@@ -7,10 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.antlr.runtime.Token;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -22,7 +19,7 @@ import org.eclipse.ui.themes.ITheme;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
-public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenColorer {
+public class CeylonTokenColorer  {
     
     public static String IDENTIFIERS = "identifiers";
     public static String TYPES = "types";
@@ -83,7 +80,7 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
         packageAttribute = text(colorRegistry, PACKAGES, SWT.NORMAL);
     }
     
-    public TextAttribute getColoring(IParseController controller, Object o) {
+    public TextAttribute getColoring(CeylonParseController controller, Object o) {
         if (o == null) return null;
         Token token = (Token) o;
         switch (token.getType()) {
@@ -129,9 +126,5 @@ public class CeylonTokenColorer /*extends TokenColorerBase*/ implements ITokenCo
                 }
         }
     }
-    
-    public IRegion calculateDamageExtent(IRegion seed, IParseController ctlr) {
-        return seed;
-    }
-    
+        
 }

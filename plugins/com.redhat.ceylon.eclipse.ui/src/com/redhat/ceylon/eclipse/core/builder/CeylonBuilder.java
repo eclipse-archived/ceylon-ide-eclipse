@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.LANGUAGE_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
@@ -61,15 +60,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.builder.MarkerCreator;
-import org.eclipse.imp.core.ErrorHandler;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
-import org.eclipse.imp.model.ISourceProject;
-import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.parser.IMessageHandler;
-import org.eclipse.imp.runtime.PluginBase;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -127,6 +117,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
@@ -172,8 +163,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
     /*public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";*/
-
-    public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
 
     public static enum ModelState {
         Missing,
@@ -247,11 +236,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         return result;
     }
-
-    protected PluginBase getPlugin() {
-        return CeylonPlugin.getInstance();
-    }
-
+    
     public String getBuilderID() {
         return BUILDER_ID;
     }
@@ -268,18 +253,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return PROBLEM_MARKER_ID;
     }
     
-    private ISourceProject getSourceProject() {
-        ISourceProject sourceProject = null;
-        try {
-            sourceProject = ModelFactory.open(getProject());
-        } catch (ModelException e) {
-            e.printStackTrace();
-        }
-        return sourceProject;
-    }
-
     public static boolean isCeylon(IFile file) {
-        return LANGUAGE.hasExtension(file.getFileExtension());
+        String ext = file.getFileExtension();
+		return ext!=null && ext.equals("ceylon");
     }
 
     public static boolean isJava(IFile file) {
@@ -341,11 +317,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
         final Collection<IFile> sourceToCompile= new HashSet<IFile>();
-
-        ISourceProject sourceProject = getSourceProject();
-        if (sourceProject == null) {
-            return new IProject[0];
-        }
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
@@ -453,7 +424,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
                 monitor.subTask("Typechecking source of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = fullTypeCheck(project, sourceProject, typeChecker, monitor);
+                builtPhasedUnits = fullTypeCheck(project, typeChecker, monitor);
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
@@ -475,7 +446,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println("             ...compiling " + 
                         allSources.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject, 
-                		sourceProject, allSources, typeChecker, monitor);
+                		allSources, typeChecker, monitor);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
@@ -524,8 +495,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(sourceToCompile);
                 }*/
-                builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
-                		sourceProject, monitor);                
+                builtPhasedUnits = incrementalBuild(project, sourceToCompile, monitor);                
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     return project.getReferencedProjects();
                 }
@@ -547,7 +517,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println(timedMessage("Incremental generation of class files..."));
                 getConsoleStream().println("             ...compiling " + 
                         sourceToCompile.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, javaProject, sourceProject, 
+                binariesGenerationOK = generateBinaries(project, javaProject,
                 		sourceToCompile, typeChecker, monitor);
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
@@ -856,9 +826,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 								sourceModified, mustResolveClasspathContainer));
                     } 
                     catch (CoreException e) {
-                        getPlugin().getLog().log(new Status(IStatus.ERROR, 
-                        		getPlugin().getID(), 
-                        		e.getLocalizedMessage(), e));
+                        e.printStackTrace();
                         mustDoFullBuild.value = true;
                         mustResolveClasspathContainer.value = true;
                     }
@@ -883,7 +851,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             TypeChecker currentFileTypeChecker,
             IProject currentFileProject) {
     	
-        if (LANGUAGE.hasExtension(srcFile.getRawLocation().getFileExtension())) {
+        if (srcFile.getRawLocation().getFileExtension().equals("ceylon")) {
             PhasedUnit phasedUnit = currentFileTypeChecker.getPhasedUnits()
             		.getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(srcFile));
             if (phasedUnit != null && phasedUnit.getUnit() != null) {
@@ -968,14 +936,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         List<LexError> lexerErrors = lexer.getErrors();
         for (LexError le : lexerErrors) {
-            //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
             cu.addLexError(le);
         }
         lexerErrors.clear();
 
         List<ParseError> parserErrors = parser.getErrors();
         for (ParseError pe : parserErrors) {
-            //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
             cu.addParseError(pe);
         }
         parserErrors.clear();
@@ -988,7 +954,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project, Collection<IFile> sourceToCompile,
-        ISourceProject sourceProject, IProgressMonitor monitor) {
+            IProgressMonitor monitor) {
         TypeChecker typeChecker = typeCheckers.get(project);
         PhasedUnits pus = typeChecker.getPhasedUnits();
 		JDTModuleManager moduleManager = (JDTModuleManager) pus.getModuleManager(); 
@@ -1150,7 +1116,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return null;
     }
 
-    private List<PhasedUnit> fullTypeCheck(IProject project, ISourceProject sourceProject, 
+    private List<PhasedUnit> fullTypeCheck(IProject project, 
     		TypeChecker typeChecker, IProgressMonitor monitor) 
     				throws CoreException {
 
@@ -1435,8 +1401,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	}
 	
     private boolean generateBinaries(IProject project, IJavaProject javaProject,
-    		ISourceProject sourceProject, Collection<IFile> filesToCompile, 
-    		TypeChecker typeChecker, IProgressMonitor monitor) throws CoreException {
+    		Collection<IFile> filesToCompile, TypeChecker typeChecker, 
+    		IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
 
         String srcPath = "";
@@ -1748,7 +1714,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 			}
 		} 
 		catch (JavaModelException e1) {
-			CeylonPlugin.log(e1);
+			e1.printStackTrace();
 		}
 	}
 
@@ -1906,7 +1872,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 int priority = priority(token);
                 if (priority>=0) {
                     Map<String, Object> attributes = new HashMap<String, Object>();
-                    attributes.put(IMessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
+                    attributes.put(MessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
                     attributes.put(IMarker.PRIORITY, priority);
                     attributes.put(IMarker.USER_EDITABLE, false);
                     new MarkerCreator(file, IMarker.TASK)
@@ -2070,7 +2036,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 return projectSourceFolders;
             } 
             catch (JavaModelException e) {
-                ErrorHandler.reportError(e.getMessage(), e);
+                e.printStackTrace();
             }
         }
         return Collections.emptyList();

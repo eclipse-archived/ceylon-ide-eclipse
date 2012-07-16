@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Iterator;
@@ -8,9 +9,6 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.base.EditorServiceBase;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -27,31 +25,38 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
- * Responsible for adding refinement annotations to 
- * the vertical ruler, and updating the highlight
- * range in the vertical ruler.
- * 
- * @author gavin
+ * Responsible for adding refinement annotations to the 
+ * vertical ruler, and updating the highlight range in 
+ * the vertical ruler.
  *
  */
-public class EditorAnnotationService extends EditorServiceBase {
+public class EditorAnnotationService implements TreeLifecycleListener {
     
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
-    @Override
-    public AnalysisRequired getAnalysisRequired() {
-        return AnalysisRequired.NONE;
+    private CeylonEditor editor;
+    
+    public EditorAnnotationService(CeylonEditor editor) {
+    	this.editor = editor;
+        ((IPostSelectionProvider) editor.getSelectionProvider())
+            .addPostSelectionChangedListener(new SelectionListener());
+	}
+
+	@Override
+    public Stage getStage() {
+        return TYPE_ANALYSIS;
     }
     
     @Override
-    public void update(IParseController parseController, IProgressMonitor monitor) {
+    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
         final CeylonParseController cpc = (CeylonParseController) parseController;
         if (cpc.getRootNode()==null) return;
-        final IAnnotationModel model = getEditor().getDocumentProvider()
-                .getAnnotationModel(getEditor().getEditorInput());
+        final IAnnotationModel model = editor.getDocumentProvider()
+                .getAnnotationModel(editor.getEditorInput());
         for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation a = iter.next();
@@ -123,14 +128,6 @@ public class EditorAnnotationService extends EditorServiceBase {
     private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
         model.addAnnotation(new Annotation(TODO_ANNOTATION_TYPE, false, null), 
                 new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
-    }
-    
-    @Override
-    public void setEditor(UniversalEditor editor) {
-        super.setEditor(editor);
-        //System.out.println("Adding SelectionListener to editor " + editor);
-        ((IPostSelectionProvider) editor.getSelectionProvider())
-            .addPostSelectionChangedListener(new SelectionListener());
     }
     
     class SelectionListener implements ISelectionChangedListener {

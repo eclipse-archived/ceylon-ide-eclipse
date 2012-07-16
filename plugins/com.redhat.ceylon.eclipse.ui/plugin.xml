@@ -25,19 +25,7 @@
                 contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"/>
       </editor>
    </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.languageDescription">
-      <language
-            url="http://in.relation.to/Tutorials/IntroductionToCeylon"
-            icon="icons/template_obj.gif"
-            extensions="ceylon"
-            description="Say more, more clearly"
-            natureID="com.redhat.ceylon.eclipse.ui.ceylonNature"
-            language="ceylon">
-      </language>
-   </extension>
-   
+      
    <extension
          id="ceylonNature"
          name="Ceylon Nature"
@@ -90,77 +78,37 @@
    </extension-->
    
    <extension
-         name="Ceylon Parser"
-         point="org.eclipse.imp.runtime.parser">
-      <parser
-            class="com.redhat.ceylon.eclipse.code.parse.CeylonParseController"
-            language="ceylon"/>
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.error"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="1"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.info"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
    </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.tokenColorer">
-      <tokenColorer
-            class="com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.modelTreeBuilder">
-      <treeBuilder
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonTreeModelBuilder"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.labelProvider">
-      <labelProvider
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.entityImageDecorator">
-      <entityImageDecorator
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonEntityImageDecorator"
-            language="ceylon">
-      </entityImageDecorator>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.referenceResolvers">
-      <referenceResolver
-            class="com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.documentationProvider">
-      <docProvider
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonDocumentationProvider"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.contentProposer">
-      <proposer
-            class="com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.markOccurrences">
-      <occurrenceIdentifier
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonOccurrenceMarker"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.foldingUpdater">
-      <foldingUpdater
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonFoldingUpdater"
-            language="ceylon"/>
-   </extension>
-   
+
+   <extension 
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator 
+            class="com.redhat.ceylon.eclipse.code.quickfix.MarkerResolutionGenerator"
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem">
+      </markerResolutionGenerator>
+    </extension>
+ 
    <extension
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
@@ -249,20 +197,6 @@
    </extension> 
    
    <extension
-         point="org.eclipse.imp.runtime.autoEditStrategy">
-      <autoEditStrategy
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.editorService">
-      <editorService
-            class="com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type name="com.redhat.ceylon.eclipse.ui.refinement"
             markerSeverity="0"/>
@@ -325,7 +259,7 @@
             overviewRulerPreferenceValue="true"/>
             
       <specification
-            annotationType="org.eclipse.imp.runtime.occurrenceAnnotation"
+            annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
             label="Ceylon Occurrences"
             icon="icons/searchm_obj.gif"
             presentationLayer="4"
@@ -355,35 +289,14 @@
    </extension>
    
    <extension
-         point="org.eclipse.imp.runtime.quickFixAssistant">
-      <quickFixAssistant
-            class="com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant"
-            language="ceylon">
-         <supportedMarkerType
-               markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
-      </quickFixAssistant>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.annotationHover">
-      <annotationHover
-            class="com.redhat.ceylon.eclipse.code.outline.CeylonAnnotationHover"
-            language="ceylon"/>
-   </extension>
-   
-   <extension
-         point="org.eclipse.imp.runtime.compareNodeIdentifier">
-      <compareNodeIdentifier 
-            language="ceylon"
-            class="com.redhat.ceylon.eclipse.code.editor.CeylonCompareNodeIdentifier"/>
-   </extension>
-   
-   <extension
          point="org.eclipse.compare.structureCreators">
        <structureCreator
            extensions="ceylon"
-           class="org.eclipse.imp.compare.ModelStructureCreator"
+           class="com.redhat.ceylon.eclipse.code.outline.CeylonStructureCreator"
            id="com.redhat.ceylon.eclipse.ui.compare"/>
+       <contentTypeBinding
+             contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"
+             structureCreatorId="com.redhat.ceylon.eclipse.ui.compare"/>
    </extension>
    
    <extension
@@ -407,8 +320,39 @@
                id="org.eclipse.jdt.debug.ui.actions.ManageBreakpointRulerAction">
          </action>
       </editorContribution>
+      <!--editorContribution
+            targetID="com.redhat.ceylon.eclipse.ui.editor"
+            id="com.redhat.ceylon.eclipse.ui.action.markOccurrences">
+         <action
+               class="com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction"
+               icon="icons/mark_occurrences.gif"
+               id="com.redhat.ceylon.eclipse.ui.action.MarkOccurrences"
+               label="&amp;Toggle Mark Occurrences"
+               state="false"
+               style="toggle"
+               toolbarPath="additions"
+               tooltip="Mark references to a Ceylon declaration"/>
+      </editorContribution-->
    </extension>
 
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="com.redhat.ceylon.eclipse.ui.actionSet.markOccurrences"
+            label="Ceylon Occurrence Marking"
+            visible="true">
+         <action
+               class="com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction"
+               icon="icons/mark_occurrences.gif"
+               id="com.redhat.ceylon.eclipse.ui.action.markOccurrences"
+               label="&amp;Toggle Mark Occurrences"
+               state="false"
+               style="toggle"
+               toolbarPath="analysisGroup"
+               tooltip="Highlight References to Ceylon Declaration"/>
+      </actionSet>
+   </extension>
+   
    <extension
          point="org.eclipse.ui.commands">
        <category
@@ -496,12 +440,6 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Convert selected anonymous class to a class"
             name="Convert to Class"/>
-       <command
-             id="org.eclipse.imp.runtime.editor.folding.collapseComments"
-             name="Collapse Comments"/>
-       <command
-             id="com.redhat.ceylon.eclipse.ui.menu.refactor"
-             name="Refactor Menu"/>
    </extension>
    
    <extension
@@ -518,9 +456,6 @@
       <handler
             class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.welcome"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.code.outline.OpenHierarchyPopupHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
@@ -582,6 +517,11 @@
            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M1+O"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M1+T"
            commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
@@ -684,7 +624,7 @@
                   name="sep2"/>
             <command 
                   id="showOutline"
-                  commandId="org.eclipse.imp.runtime.editor.showOutline"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
@@ -703,14 +643,14 @@
                   label="Shift Left"/>
             <command
                   id="correctIndentation"
-                  commandId="org.eclipse.imp.runtime.editor.correctIndentation"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   label="Correct Indentation"/>
             <separator 
                   name="sep4" 
                   visible="true"/>
             <command
                   id="toggleComment"
-                  commandId="org.eclipse.imp.runtime.editor.toggleComment"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   label="Toggle Comment"/>
           </menu>
       </menuContribution>
@@ -724,14 +664,14 @@
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=ShiftLeft">
             <command
                   id="correctIndentation"
-                  commandId="org.eclipse.imp.runtime.editor.correctIndentation"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   label="Correct Indentation"/>
             <separator 
                   name="sep1" 
                   visible="true"/>
             <command
                   id="toggleComment"
-                  commandId="org.eclipse.imp.runtime.editor.toggleComment"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   label="Toggle Comment"/>
       </menuContribution>
       <menuContribution
@@ -756,7 +696,7 @@
                   name="sep3"/>
             <command 
                   id="showOutline"
-                  commandId="org.eclipse.imp.runtime.editor.showOutline"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
@@ -1144,8 +1084,190 @@
                 targetId="org.eclipse.jdt.ui.javaCode"
                 id="com.redhat.ceylon.eclipse.ui.javaHyperlinkDetector"
                 name="Navigate to Ceylon Code"
-                class="com.redhat.ceylon.eclipse.code.resolve.JavaToCeylonReferenceResolver">
+                class="com.redhat.ceylon.eclipse.code.resolve.JavaToCeylonHyperlinkDetector">
           </hyperlinkDetector>
     </extension>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
+            id="com.redhat.ceylon.eclipse.ui.outline.findActions">
+         <!--menu
+               label="Find"
+               id="findMenu">
+            <separator
+                  name="findGroup">
+            </separator>
+         </menu-->
+         <!--      menubarPath="findMenu/findGroup" -->
+         <action
+               label="Move To New Unit..."
+               class="com.redhat.ceylon.eclipse.code.refactor.MoveDeclarationHandler"
+               enablesFor="1"
+               icon="icons/file_change.png"
+               id="moveToNewUnit"
+               menubarPath="refactor"/>
+         <action
+               label="Rename..."
+               class="com.redhat.ceylon.eclipse.code.refactor.RenameAction"
+               enablesFor="1"
+               icon="icons/correction_rename.png"
+               id="rename"
+               menubarPath="refactor"/>
+         <action
+               label="Find Refinements"
+               class="com.redhat.ceylon.eclipse.code.search.FindRefinementsAction"
+               enablesFor="1"
+               icon="icons/search_decl_obj.png"
+               id="findRefinements"
+               menubarPath="find"/>
+         <action
+               label="Find Subtypes"
+               class="com.redhat.ceylon.eclipse.code.search.FindSubtypesAction"
+               enablesFor="1"
+               icon="icons/search_decl_obj.png"
+               id="findSubtypes"
+               menubarPath="find"/>
+         <action
+               label="Find Assignments"
+               class="com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction"
+               enablesFor="1"
+               icon="icons/search_ref_obj.png"
+               id="findAssignments"
+               menubarPath="find"/>
+         <action
+               label="Find References"
+               class="com.redhat.ceylon.eclipse.code.search.FindReferencesAction"
+               enablesFor="1"
+               icon="icons/search_ref_obj.png"
+               id="findReferences"
+               menubarPath="find"/>
+     </objectContribution>
+   </extension>
+   
+      <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+F"/>
+      <key
+            sequence="M1+M3+P"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M2+M3+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="M3+M4+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M2+M3+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="M3+M4+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="CTRL+SHIFT+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="F3"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.openDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show the quick outline for the editor input"
+            id="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+            name="Show Outline"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            name="Collapse Members"
+            description="Collapses all members in the current source file"
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers">
+      </command>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            name="Collapse Comments"
+            description="Collapses all multi-line comments in the current source file"
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments">
+      </command>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Comments/uncomments the current selection or the current source line"
+            id="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+            name="Toggle Comment"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Format the source code"
+            id="com.redhat.ceylon.eclipse.ui.editor.formatSource"
+            name="Format"/>
+
+      <!-- navigate -->
+      <command
+            name="Go to Matching Fence"
+            description="Moves the cursor to the matching fence character, if any"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence">
+      </command>
+      <command
+            name="Go to Previous Navigation Target"
+            description="Go to Previous Navigation Target"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"/>
+      <command
+            name="Go to Next Navigation Target"
+            description="Go to Next Navigation Target"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"/>
+      <command
+            name="Open Declaration"
+            description="Open an editor on the selected element"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.openDeclaration">
+      </command>
+
+      <!-- -->
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Re-indent the selected text according to current formatting settings"
+            id="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+            name="Correct Indentation">
+      </command>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Select the innermost enclosing construct"
+            id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            name="Select Enclosing">
+      </command>
+   </extension>
 
 </plugin>

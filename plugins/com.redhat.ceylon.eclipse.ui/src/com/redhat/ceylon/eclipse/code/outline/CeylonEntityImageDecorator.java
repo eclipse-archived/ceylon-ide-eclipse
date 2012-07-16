@@ -1,12 +1,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
-
-import org.eclipse.imp.editor.ModelTreeNode;
-import org.eclipse.imp.language.ILanguageService;
-import org.eclipse.imp.services.DecorationDescriptor;
-import org.eclipse.imp.services.DecorationDescriptor.Quadrant;
-import org.eclipse.imp.services.IEntityImageDecorator;
+import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_LEFT;
+import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_RIGHT;
+import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.TOP_RIGHT;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -18,7 +15,7 @@ import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 
-public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILanguageService {
+public class CeylonEntityImageDecorator {
     
     private final static int WARNING = 1 << 2;
     private final static int ERROR = 1 << 3;
@@ -27,28 +24,21 @@ public class CeylonEntityImageDecorator implements IEntityImageDecorator, ILangu
     private final static int FORMAL = 1 << 6;
     private final static int ABSTRACT = 1 << 7;
 
-    @Override
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
-                new DecorationDescriptor(WARNING, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/warning.gif", Quadrant.BOTTOM_LEFT),
-                new DecorationDescriptor(ERROR, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/error.gif", Quadrant.BOTTOM_LEFT),
-                new DecorationDescriptor(REFINES, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/over_tiny_co.gif", Quadrant.BOTTOM_RIGHT),
-                new DecorationDescriptor(IMPLEMENTS, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/implm_tiny_co.gif", Quadrant.BOTTOM_RIGHT),
-                new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/final_co.gif", Quadrant.TOP_RIGHT),
-                new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().getBundle(), 
-                        "/icons/abstract_co.gif", Quadrant.TOP_RIGHT),
+        		//TODO: cache the images in CeylonPlugin!
+                new DecorationDescriptor(WARNING, CeylonPlugin.getInstance().image("warning.gif"), BOTTOM_LEFT),
+                new DecorationDescriptor(ERROR, CeylonPlugin.getInstance().image("error.gif"), BOTTOM_LEFT),
+                new DecorationDescriptor(REFINES, CeylonPlugin.getInstance().image("over_tiny_co.gif"), BOTTOM_RIGHT),
+                new DecorationDescriptor(IMPLEMENTS, CeylonPlugin.getInstance().image("implm_tiny_co.gif"), BOTTOM_RIGHT),
+                new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().image("final_co.gif"), TOP_RIGHT),
+                new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().image("abstract_co.gif"), TOP_RIGHT)
             };
     }
     
-    @Override
     public int getDecorationAttributes(Object entity) {
-        if (entity instanceof ModelTreeNode) {
-            return getNodeDecorationAttributes((Node)((ModelTreeNode) entity).getASTNode());
+        if (entity instanceof CeylonOutlineNode) {
+            return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getASTNode());
         }
         if (entity instanceof CeylonElement) {
             return getNodeDecorationAttributes(((CeylonElement) entity).getNode());

@@ -15,6 +15,8 @@ import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 
 public class FindSubtypesAction extends AbstractFindAction {
 
+	public FindSubtypesAction() {}
+	
     public FindSubtypesAction(IEditorPart editor) {
 		super("Find Subtypes", editor);
 		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");

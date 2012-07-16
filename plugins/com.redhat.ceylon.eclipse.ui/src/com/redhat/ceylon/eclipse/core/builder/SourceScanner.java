@@ -112,8 +112,9 @@ final class SourceScanner implements IResourceVisitor {
 	                    PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
 	                    		typeChecker, virtualFile, srcDir, pkg);
 	                    phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
-	                } catch(Exception e) {
-	                    CeylonPlugin.log(e);
+	                } 
+	                catch (Exception e) {
+	                    e.printStackTrace();
 	                }
 	            }
 	            if (CeylonBuilder.isJava((IFile)resource)) {

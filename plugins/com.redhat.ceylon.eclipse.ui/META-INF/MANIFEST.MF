@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.eclipse.imp.runtime,
  org.eclipse.ui,
  org.eclipse.ui.intro,
  org.eclipse.jface.text,
@@ -20,6 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.search,
  org.eclipse.ui.console,
+ org.eclipse.ui.views,
  org.eclipse.core.filesystem,
  org.eclipse.compare,
  org.eclipse.debug.core,
@@ -47,4 +47,5 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar,
  lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar,
  lib/ceylon.language-0.3.1-ide.jar
+
 

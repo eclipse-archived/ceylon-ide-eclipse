@@ -2,13 +2,13 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import java.util.Collection;
 
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
 
@@ -16,7 +16,7 @@ class ExtractValueProposal implements ICompletionProposal {
 
     private ExtractValueRefactoringAction action;
     
-    public ExtractValueProposal(UniversalEditor editor) {
+    public ExtractValueProposal(CeylonEditor editor) {
         action = new ExtractValueRefactoringAction(editor);
     }
     
@@ -54,7 +54,7 @@ class ExtractValueProposal implements ICompletionProposal {
         return action.isEnabled();
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
         ExtractValueProposal prop = new ExtractValueProposal(editor);
         if (prop.isEnabled()) {
             proposals.add(prop);

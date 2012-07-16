@@ -15,6 +15,8 @@ import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 
 public class FindAssignmentsAction extends AbstractFindAction {
 
+	public FindAssignmentsAction() {}
+	
     public FindAssignmentsAction(IEditorPart editor) {
 		super("Find Assignments", editor);
 		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");

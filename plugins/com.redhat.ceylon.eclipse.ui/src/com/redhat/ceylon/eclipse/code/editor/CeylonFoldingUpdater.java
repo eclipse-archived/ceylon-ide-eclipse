@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.imp.services.base.FolderBase;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;

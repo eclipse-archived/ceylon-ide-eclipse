@@ -8,7 +8,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -70,9 +69,9 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
         }
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        if (canConvert((CeylonEditor)editor)) {
-            proposals.add(new ConvertToNamedArgumentsProposal((CeylonEditor)editor));
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+        if (canConvert(editor)) {
+            proposals.add(new ConvertToNamedArgumentsProposal(editor));
         }
     }
 

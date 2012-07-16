@@ -351,14 +351,12 @@ public class JDTModuleManager extends LazyModuleManager {
 
                     List<LexError> lexerErrors = lexer.getErrors();
                     for (LexError le : lexerErrors) {
-                        //System.out.println("Lexer error in " + file.getName() + ": " + le.getMessage());
                         cu.addLexError(le);
                     }
                     lexerErrors.clear();
 
                     List<ParseError> parserErrors = parser.getErrors();
                     for (ParseError pe : parserErrors) {
-                        //System.out.println("Parser error in " + file.getName() + ": " + pe.getMessage());
                         cu.addParseError(pe);
                     }
                     parserErrors.clear();

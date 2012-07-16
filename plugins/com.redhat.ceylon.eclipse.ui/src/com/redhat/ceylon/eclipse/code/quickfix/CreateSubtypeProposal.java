@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRe
 
 import java.util.Collection;
 
-import org.eclipse.imp.editor.UniversalEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -242,16 +241,14 @@ class CreateSubtypeProposal implements ICompletionProposal {
         }
     }
 
-    public static void add(Collection<ICompletionProposal> proposals, UniversalEditor editor) {
-        if (editor instanceof CeylonEditor) {
-            ProducedType type = getType((CeylonEditor)editor);
-            if (type!=null && 
-                    (type.getDeclaration() instanceof ClassOrInterface ||
-                     type.getDeclaration() instanceof IntersectionType) &&
-                     type.getDeclaration().isExtendable()) {
-                proposals.add(new CreateSubtypeProposal((CeylonEditor) editor, type));
-            }
-        }
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    	ProducedType type = getType(editor);
+    	if (type!=null && 
+    			(type.getDeclaration() instanceof ClassOrInterface ||
+    					type.getDeclaration() instanceof IntersectionType) &&
+    					type.getDeclaration().isExtendable()) {
+    		proposals.add(new CreateSubtypeProposal(editor, type));
+    	}
     }
 
 }

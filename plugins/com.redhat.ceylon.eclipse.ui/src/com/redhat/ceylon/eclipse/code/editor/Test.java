@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
@@ -235,7 +234,7 @@ class Test extends CeylonAutoEditStrategy {
             customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
-            RuntimePlugin.getInstance().logException("Correct Indentation command failed", e);
+            System.err.println("Correct Indentation command failed " + e.getMessage());
         }
     }
     
@@ -250,7 +249,7 @@ class Test extends CeylonAutoEditStrategy {
             customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
-            RuntimePlugin.getInstance().logException("Correct Indentation command failed", e);
+            System.err.println("Correct Indentation command failed " + e.getMessage());
         }
     }
     
@@ -286,7 +285,7 @@ class Test extends CeylonAutoEditStrategy {
                 doc.replace(cmd.offset, cmd.length, cmd.text);
             }
         } catch (BadLocationException e) {
-            RuntimePlugin.getInstance().logException("Correct Indentation command failed", e);
+            System.err.println("Correct Indentation command failed " + e.getMessage());
         }
     }
     
@@ -300,7 +299,7 @@ class Test extends CeylonAutoEditStrategy {
                 }
             }
         } catch (BadLocationException e) {
-            //RuntimePlugin.getInstance().logException("Error examining document for line termination", e);
+            //System.err.println("Error examining document for line termination", e);
         }
         return false;
     }
