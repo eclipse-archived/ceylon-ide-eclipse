@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
+import org.eclipse.jdt.internal.ui.text.JavaElementPrefixPatternMatcher;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -62,6 +63,8 @@ import org.eclipse.ui.commands.HandlerSubmission;
 import org.eclipse.ui.commands.Priority;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -84,12 +87,6 @@ public abstract class Popup extends PopupDialog
 	 */
 	protected class NamePatternFilter extends ViewerFilter {
 
-		public NamePatternFilter() {
-		}
-
-		/*
-		 * @see org.eclipse.jface.viewers.ViewerFilter#select(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-		 */
 		@Override
 		public boolean select(Viewer viewer, Object parentElement, Object element) {
 			//TODO: re-enable filtering
@@ -104,6 +101,27 @@ public abstract class Popup extends PopupDialog
 				return true;
 
 			return hasUnfilteredChild(treeViewer, element);*/
+			TreeViewer treeViewer= (TreeViewer) viewer;
+			if (element instanceof CeylonOutlineNode) {
+				Node node = ((CeylonOutlineNode)element).getASTNode();
+				if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
+					com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration dec = (com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node;
+					Identifier id = dec.getIdentifier();
+					return id!=null && id.getText().toLowerCase()
+							.startsWith(fFilterText.getText().toLowerCase()) ||
+							hasUnfilteredChild(treeViewer, element);
+				}
+				else {
+					return false;
+				}
+			}
+			else if (element instanceof Declaration) {
+				Declaration dec = (Declaration) element;
+				String name = dec.getName();
+				return name!=null && name.toLowerCase()
+						.startsWith(fFilterText.getText().toLowerCase()) ||
+						hasUnfilteredChild(treeViewer, element);
+			}
 			return true;
 		}
 
@@ -223,7 +241,8 @@ public abstract class Popup extends PopupDialog
 				if (tree.equals(e.getSource())) {
 					Object o= tree.getItem(new Point(e.x, e.y));
 					if (fLastItem == null ^ o == null) {
-						tree.setCursor(o == null ? null : tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+						tree.setCursor(o == null ? null : 
+							tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
 					}
 					if (o instanceof TreeItem) {
 						Rectangle clientArea = tree.getClientArea();
@@ -368,8 +387,7 @@ public abstract class Popup extends PopupDialog
 		fFilterText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				String text= ((Text) e.widget).getText();
-				//TODO: reneable filtering
-				//setMatcherString(text, true);
+				setMatcherString(text, true);
 			}
 		});
 	}
@@ -395,18 +413,18 @@ public abstract class Popup extends PopupDialog
 	 * 
 	 * @see JavaElementPrefixPatternMatcher
 	 */
-	/*protected void setMatcherString(String pattern, boolean update) {
-		if (pattern.length() == 0) {
+	protected void setMatcherString(String pattern, boolean update) {
+		/*if (pattern.length() == 0) {
 			fPatternMatcher= null;
 		} else {
 			fPatternMatcher= new JavaElementPrefixPatternMatcher(pattern);
-		}
+		}*/
 
 		if (update)
 			stringMatcherUpdated();
 	}
 
-	protected JavaElementPrefixPatternMatcher getMatcher() {
+	/*protected JavaElementPrefixPatternMatcher getMatcher() {
 		return fPatternMatcher;
 	}*/
 
@@ -466,7 +484,8 @@ public abstract class Popup extends PopupDialog
 		return findElement(items, null, true);
 	}
 
-	private TreeItem findElement(TreeItem[] items, TreeItem[] toBeSkipped, boolean allowToGoUp) {
+	private TreeItem findElement(TreeItem[] items, TreeItem[] toBeSkipped, 
+			boolean allowToGoUp) {
 		return items.length > 0 ? items[0] : null;
 		//TODO: reenable filtering
 		/*if (fPatternMatcher == null)
@@ -585,9 +604,6 @@ public abstract class Popup extends PopupDialog
 			fTreeViewer.setSelection(new StructuredSelection(newSelection));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setVisible(boolean visible) {
 		if (visible) {
 			open();
@@ -598,87 +614,55 @@ public abstract class Popup extends PopupDialog
 		}
 	}
 
-	/*
-	 * @see org.eclipse.jface.dialogs.PopupDialog#open()
-	 * @since 3.3
-	 */
 	@Override
 	public int open() {
 		addHandlerAndKeyBindingSupport();
 		return super.open();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public final void dispose() {
 		close();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @param event can be null
-	 * <p>
-	 * Subclasses may extend.
-	 * </p>
-	 */
 	public void widgetDisposed(DisposeEvent event) {
 		removeHandlerAndKeyBindingSupport();
 		fTreeViewer= null;
 		fFilterText= null;
 	}
 
-	/**
-	 * Adds handler and key binding support.
-	 *
-	 * @since 3.2
-	 */
 	protected void addHandlerAndKeyBindingSupport() {
 		// Register action with command support
 		if (fShowViewMenuHandlerSubmission == null) {
-			fShowViewMenuHandlerSubmission= new HandlerSubmission(null, getShell(), null, fShowViewMenuAction.getActionDefinitionId(), new ActionHandler(fShowViewMenuAction), Priority.MEDIUM);
-			PlatformUI.getWorkbench().getCommandSupport().addHandlerSubmission(fShowViewMenuHandlerSubmission);
+			fShowViewMenuHandlerSubmission= new HandlerSubmission(null, getShell(),
+					null, fShowViewMenuAction.getActionDefinitionId(), 
+					new ActionHandler(fShowViewMenuAction), Priority.MEDIUM);
+			PlatformUI.getWorkbench().getCommandSupport()
+			    .addHandlerSubmission(fShowViewMenuHandlerSubmission);
 		}
 	}
 
-	/**
-	 * Removes handler and key binding support.
-	 *
-	 * @since 3.2
-	 */
 	protected void removeHandlerAndKeyBindingSupport() {
 		// Remove handler submission
 		if (fShowViewMenuHandlerSubmission != null)
-			PlatformUI.getWorkbench().getCommandSupport().removeHandlerSubmission(fShowViewMenuHandlerSubmission);
+			PlatformUI.getWorkbench().getCommandSupport()
+			    .removeHandlerSubmission(fShowViewMenuHandlerSubmission);
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public boolean hasContents() {
 		return fTreeViewer != null && fTreeViewer.getInput() != null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setSizeConstraints(int maxWidth, int maxHeight) {
 		// ignore
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public Point computeSizeHint() {
 		// return the shell's size - note that it already has the persisted size if persisting
 		// is enabled.
 		return getShell().getSize();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setLocation(Point location) {
 		/*
 		 * If the location is persisted, it gets managed by PopupDialog - fine. Otherwise, the location is
@@ -695,66 +679,39 @@ public abstract class Popup extends PopupDialog
 			getShell().setLocation(location);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setSize(int width, int height) {
 		getShell().setSize(width, height);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void addDisposeListener(DisposeListener listener) {
 		getShell().addDisposeListener(listener);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void removeDisposeListener(DisposeListener listener) {
 		getShell().removeDisposeListener(listener);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setForegroundColor(Color foreground) {
 		applyForegroundColor(foreground, getContents());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setBackgroundColor(Color background) {
 		applyBackgroundColor(background, getContents());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public boolean isFocusControl() {
 		return getShell().getDisplay().getActiveShell() == getShell();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setFocus() {
 		getShell().forceFocus();
 		fFilterText.setFocus();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void addFocusListener(FocusListener listener) {
 		getShell().addFocusListener(listener);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void removeFocusListener(FocusListener listener) {
 		getShell().removeFocusListener(listener);
 	}
@@ -779,9 +736,6 @@ public abstract class Popup extends PopupDialog
 		return fInvokingCommandKeySequences;
 	}*/
 
-	/*
-	 * @see org.eclipse.jface.dialogs.PopupDialog#getDialogSettings()
-	 */
 	@Override
 	protected IDialogSettings getDialogSettings() {
 		String sectionName= getId();
@@ -839,9 +793,6 @@ public abstract class Popup extends PopupDialog
 		return fFilterText;
 	}
 
-	/*
-	 * @see org.eclipse.jface.dialogs.PopupDialog#setTabOrder(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	protected void setTabOrder(Composite composite) {
 		if (hasHeader()) {
