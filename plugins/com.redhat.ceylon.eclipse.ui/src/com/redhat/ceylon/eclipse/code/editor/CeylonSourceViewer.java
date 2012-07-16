@@ -63,10 +63,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
      */
     public static final int CORRECT_INDENTATION= 60;
 
-    private IInformationPresenter fOutlinePresenter;
-    private IInformationPresenter fStructurePresenter;
-    private IInformationPresenter fHierarchyPresenter;
-    private IAutoEditStrategy fAutoEditStrategy;
+    private IInformationPresenter outlinePresenter;
+    private IInformationPresenter structurePresenter;
+    private IInformationPresenter hierarchyPresenter;
+    private IAutoEditStrategy autoEditStrategy;
 
     public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
     		IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
@@ -76,15 +76,15 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public boolean canDoOperation(int operation) {
         switch(operation) {
         case SHOW_OUTLINE:
-            return fOutlinePresenter != null;
+            return outlinePresenter != null;
         case OPEN_STRUCTURE:
-            return fStructurePresenter != null;
+            return structurePresenter != null;
         case SHOW_HIERARCHY:
-            return fHierarchyPresenter != null;
+            return hierarchyPresenter != null;
         case TOGGLE_COMMENT:
             return true;
         case CORRECT_INDENTATION:
-            return fAutoEditStrategy != null;
+            return autoEditStrategy != null;
         }
         return super.canDoOperation(operation);
     }
@@ -94,16 +94,16 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return;
         switch (operation) {
         case SHOW_OUTLINE:
-            if (fOutlinePresenter != null)
-                fOutlinePresenter.showInformation();
+            if (outlinePresenter != null)
+                outlinePresenter.showInformation();
             return;
         case OPEN_STRUCTURE:
-            if (fStructurePresenter != null)
-                fStructurePresenter.showInformation();
+            if (structurePresenter != null)
+                structurePresenter.showInformation();
             return;
         case SHOW_HIERARCHY:
-            if (fHierarchyPresenter != null)
-                fHierarchyPresenter.showInformation();
+            if (hierarchyPresenter != null)
+                hierarchyPresenter.showInformation();
             return;
         case TOGGLE_COMMENT:
             doToggleComment();
@@ -251,7 +251,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 cmd.doit= true;
                 cmd.shiftsCaret= false;
 //              boolean saveMode= fAutoEditStrategy.setFixMode(true);
-                fAutoEditStrategy.customizeDocumentCommand(doc, cmd);
+                autoEditStrategy.customizeDocumentCommand(doc, cmd);
 //              fAutoEditStrategy.setFixMode(saveMode);
                 doc.replace(cmd.offset, cmd.length, cmd.text);
             }
@@ -283,9 +283,6 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return false;
     }
 
-    /*
-     * @see ISourceViewer#configure(SourceViewerConfiguration)
-     */
     public void configure(SourceViewerConfiguration configuration) {
         /*
          * Prevent access to colors disposed in unconfigure(), see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=53641
@@ -304,19 +301,19 @@ public class CeylonSourceViewer extends ProjectionViewer {
         if (configuration instanceof CeylonSourceViewerConfiguration) {
             CeylonSourceViewerConfiguration svc= (CeylonSourceViewerConfiguration) configuration;
 
-            fOutlinePresenter= svc.getOutlinePresenter(this);
-            if (fOutlinePresenter != null)
-                fOutlinePresenter.install(this);
+            outlinePresenter= svc.getOutlinePresenter(this);
+            if (outlinePresenter != null)
+                outlinePresenter.install(this);
 
-            fStructurePresenter= svc.getOutlinePresenter(this);
-            if (fStructurePresenter != null)
-                fStructurePresenter.install(this);
+            structurePresenter= svc.getOutlinePresenter(this);
+            if (structurePresenter != null)
+                structurePresenter.install(this);
 
-            fHierarchyPresenter= svc.getHierarchyPresenter(this, true);
-            if (fHierarchyPresenter != null)
-                fHierarchyPresenter.install(this);
+            hierarchyPresenter= svc.getHierarchyPresenter(this, true);
+            if (hierarchyPresenter != null)
+                hierarchyPresenter.install(this);
 
-            fAutoEditStrategy = new CeylonAutoEditStrategy();
+            autoEditStrategy = new CeylonAutoEditStrategy();
             
             fQuickAssistAssistant = svc.getQuickAssistAssistant(this);
             if (fQuickAssistAssistant != null)
@@ -328,22 +325,18 @@ public class CeylonSourceViewer extends ProjectionViewer {
         //	}
     }
 
-    /*
-     * @see org.eclipse.jface.text.source.ISourceViewerExtension2#unconfigure()
-     * @since 3.0
-     */
     public void unconfigure() {
-        if (fOutlinePresenter != null) {
-            fOutlinePresenter.uninstall();
-            fOutlinePresenter= null;
+        if (outlinePresenter != null) {
+            outlinePresenter.uninstall();
+            outlinePresenter= null;
         }
-        if (fStructurePresenter != null) {
-            fStructurePresenter.uninstall();
-            fStructurePresenter= null;
+        if (structurePresenter != null) {
+            structurePresenter.uninstall();
+            structurePresenter= null;
         }
-        if (fHierarchyPresenter != null) {
-            fHierarchyPresenter.uninstall();
-            fHierarchyPresenter= null;
+        if (hierarchyPresenter != null) {
+            hierarchyPresenter.uninstall();
+            hierarchyPresenter= null;
         }
         // if (fForegroundColor != null) {
         // fForegroundColor.dispose();
