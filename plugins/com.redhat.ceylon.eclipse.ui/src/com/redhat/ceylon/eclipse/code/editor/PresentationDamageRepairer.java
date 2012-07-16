@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -21,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 class PresentationDamageRepairer implements IPresentationDamager, IPresentationRepairer {
 	
 	private final CeylonEditor editor;
-	boolean applyImmediately;
+	private Region applyImmediately;
 
 	PresentationDamageRepairer(CeylonEditor ceylonEditor) {
 		this.editor = ceylonEditor;
@@ -32,8 +31,8 @@ class PresentationDamageRepairer implements IPresentationDamager, IPresentationR
 		// TODO: figure how much of the document presentation 
 		//       needs to be recomputed
 		if (noTextChange(event)) {
-			applyImmediately = true;
-			return new Region(event.getOffset(), event.getLength());
+			applyImmediately = new Region(event.getOffset(), event.getLength());
+			return applyImmediately;
 		}
 		/*CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(event.getDocument().get()));
 		CommonTokenStream cts = new CommonTokenStream(lexer);
@@ -112,20 +111,26 @@ class PresentationDamageRepairer implements IPresentationDamager, IPresentationR
 		}
 	}
 	
-	public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
+	public void createPresentation(TextPresentation presentation, 
+			ITypedRegion damage) {
 		try {
-			if (editor.getPresentationController()!=null) {
-				editor.getPresentationController().damage(damage);
-				if (applyImmediately) {
+			PresentationController pc = editor.getPresentationController();
+			if (pc!=null) {
+				if (applyImmediately!=null &&
+						applyImmediately.getOffset()==damage.getOffset() &&
+						applyImmediately.getLength()==damage.getLength()) {
 					//these updates represent hyperlink decorations
 					//or editor annotation updates - we can't rely
 					//upon the parser controller being called at
 					//all so we have no choice but to repair it up
 					//front, and hope that this doesn't screw
 					//anything up
-					editor.getPresentationController()
-					        .repair(editor.getParseController(), 
-							        new NullProgressMonitor());
+					applyImmediately = null;
+					pc.repairDamage(editor.getParseController(), 
+							null, damage); //null monitor here is important!
+				}
+				else {
+					pc.registerDamage(damage);
 				}
 			}
 		} 

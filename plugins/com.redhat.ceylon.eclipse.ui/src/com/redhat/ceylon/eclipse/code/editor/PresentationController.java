@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
@@ -20,7 +23,6 @@ import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
@@ -38,7 +40,7 @@ public class PresentationController implements TreeLifecycleListener {
     private final ISourceViewer sourceViewer;
     private final CeylonTokenColorer tokenColorer;
     
-    private final Stack<IRegion> workItems= new Stack<IRegion>();
+    private final Stack<IRegion> damagedItems= new Stack<IRegion>();
 
     public PresentationController(ISourceViewer sourceViewer) {
         this.sourceViewer= sourceViewer;
@@ -55,25 +57,21 @@ public class PresentationController implements TreeLifecycleListener {
     @Override
     public void update(CeylonParseController parseController,
     		IProgressMonitor monitor) {
-    	repair(parseController, monitor);
+    	repairRegisteredDamage(parseController, monitor);
     }
     
     /**
      * Push the damaged area onto the work queue for repair 
      * when we get scheduled to process the queue
      */
-    public void damage(IRegion region) {
+    public void registerDamage(IRegion region) {
         if (tokenColorer == null)
             return;
 
-        synchronized (workItems) {
-        	for (Iterator<IRegion> iterator = workItems.iterator(); 
+        synchronized (damagedItems) {
+        	for (Iterator<IRegion> iterator = damagedItems.iterator(); 
         			iterator.hasNext();) {
 				IRegion reg = iterator.next();
-				//in practice the following is
-				//a waste of code, because the
-				//workItems stack is essentially
-				//always empty!
 				if (contains(region, reg)) {
         			return;
         		}
@@ -84,10 +82,9 @@ public class PresentationController implements TreeLifecycleListener {
 					iterator.remove();
 					region = new Region(reg.getOffset(), 
 							reg.getLength()+region.getLength());
-					System.out.println(region);
 				}
 			}
-        	workItems.push(region);
+        	damagedItems.push(region);
         }
     }
     
@@ -100,76 +97,90 @@ public class PresentationController implements TreeLifecycleListener {
         		r2.getOffset() + r2.getLength() >= r1.getOffset() + r1.getLength();
     }
 
-    public void repair(CeylonParseController controller, IProgressMonitor monitor) {
+    public void repairRegisteredDamage(CeylonParseController controller, 
+    		IProgressMonitor monitor) {
         if (!monitor.isCanceled() && sourceViewer!=null && 
         		sourceViewer.getDocument()!=null) {
-            synchronized (workItems) {
-                if (workItems.size()==0 && sourceViewer.getDocument()!=null) {
+            synchronized (damagedItems) {
+                if (damagedItems.isEmpty() && sourceViewer.getDocument()!=null) {
                     // TODO Shouldn't need to re-color the entire source file here.
                     // This is intended to handle the case that the parser finishes 
                 	// *after* the PresentationRepairer asks for an update().
                     // We could do a more focused update, if we knew what part of 
                 	// the file had changed.
-                    workItems.add(new Region(0, sourceViewer.getDocument().getLength()));
+                    //damagedItems.add(new Region(0, sourceViewer.getDocument().getLength()));
                 }
                 // TODO Optimization: when there are multiple work items, control 
                 // redrawing explicitly. See JavaDoc regarding ITextViewer.changeTextPresentation()'s 
                 // 2nd argument. Probably not very common (only refactoring or 
                 // search/replace?), but perhaps worthwhile.
-                for (int n= workItems.size()-1; !monitor.isCanceled() && n>=0; n--) {
-                    changeTextPresentationForRegion(controller, monitor, 
-                    		workItems.get(n));
+                for (int n= damagedItems.size()-1; !monitor.isCanceled() && n>=0; n--) {
+                    repairDamage(controller, monitor, damagedItems.get(n));
                 }
                 // TODO Remove the work items we actually processed, whether the 
                 // monitor was canceled or not
                 if (!monitor.isCanceled()) {
-                    workItems.removeAllElements();
+                    damagedItems.removeAllElements();
                 }
             }
         }
     }
 
-    private void changeTextPresentationForRegion(CeylonParseController parseController, 
+    public void repairDamage(CeylonParseController parseController, 
     		IProgressMonitor monitor, IRegion damage) {
-        if (parseController==null) {
-            return;
-        }
-        final TextPresentation presentation= new TextPresentation();
-        aggregateTextPresentation(parseController, monitor, damage, presentation);
-        if (!monitor.isCanceled() && !presentation.isEmpty()) {
-            submitTextPresentation(presentation);
+        if (parseController!=null) {
+        	TextPresentation presentation= new TextPresentation();
+        	aggregateTextPresentation(parseController, monitor, damage, presentation);
+        	if (!presentation.isEmpty()) {
+        		if (monitor==null || !monitor.isCanceled()) {
+        			submitTextPresentationChange(presentation);
+        		}
+        		//Note: the following approach did not work
+        		//      because the changes ended up getting
+        		//      processed out of order
+//        		if (monitor==null) {
+//        			//called from UI thread
+//        			applyTextPresentationChange(presentation);
+//        		}
+//        		else if (!monitor.isCanceled()) {
+//        			//called async from job
+//        			submitTextPresentationChange(presentation);
+//        		}
+        	}
         }
     }
 
     private void aggregateTextPresentation(CeylonParseController parseController, 
     		IProgressMonitor monitor, IRegion damage, TextPresentation presentation) {
-        CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
-        int prevOffset= -1;
-        int prevEnd= -1;
+        int prevStartOffset= -1;
+        int prevEndOffset= -1;
         Iterator tokenIterator= parseController.getTokenIterator(damage);
-        if (tokenIterator == null) {
-            return;
-        }
-        for (Iterator<Object> iter= tokenIterator; 
-        		iter.hasNext() && !monitor.isCanceled(); ) {
-            Object token= iter.next();
-            int offset= locator.getStartOffset(token);
-            int end= locator.getEndOffset(token);
-            if (offset <= prevEnd && end >= prevOffset) {
-                continue;
-            }
-            changeTokenPresentation(parseController, presentation, token, locator);
-            prevOffset= offset;
-            prevEnd= end;
+        if (tokenIterator!=null) {
+        	for (Iterator<Object> iter= tokenIterator; iter.hasNext();) {
+        		if (monitor!=null && monitor.isCanceled()) {
+        			break;
+        		}
+        		Object token= iter.next();
+        		int startOffset= getStartOffset(token);
+        		int endOffset= getEndOffset(token);
+        		if (startOffset <= prevEndOffset && endOffset >= prevStartOffset) {
+        			continue;
+        		}
+        		changeTokenPresentation(parseController, presentation, 
+        				tokenColorer.getColoring(parseController, token), 
+        				startOffset, endOffset);
+        		prevStartOffset= startOffset;
+        		prevEndOffset= endOffset;
+        	}
         }
     }
 
     private void changeTokenPresentation(CeylonParseController controller, 
-    		TextPresentation presentation, Object token, CeylonSourcePositionLocator locator) {
-        TextAttribute attribute= tokenColorer.getColoring(controller, token);
-
-        StyleRange styleRange= new StyleRange(locator.getStartOffset(token), 
-        		locator.getEndOffset(token)-locator.getStartOffset(token)+1,
+    		TextPresentation presentation, TextAttribute attribute, 
+    		int startOffset, int endOffset) {
+    	        
+		StyleRange styleRange= new StyleRange(startOffset, 
+        		endOffset-startOffset+1,
                 attribute == null ? null : attribute.getForeground(),
                 attribute == null ? null : attribute.getBackground(),
                 attribute == null ? SWT.NORMAL : attribute.getStyle());
@@ -177,49 +188,53 @@ public class PresentationController implements TreeLifecycleListener {
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)
         if (styleRange.length <= 0 || 
-        		styleRange.start+styleRange.length > sourceViewer.getDocument().getLength()) {
+        		styleRange.start+styleRange.length > 
+                        sourceViewer.getDocument().getLength()) {
+        	//do nothing
         } 
         else {
             presentation.addStyleRange(styleRange);
         }
     }
 
-    private void submitTextPresentation(final TextPresentation presentation) {
-        if (sourceViewer == null) {
-            return;
-        }
-
-        final int docLength= (sourceViewer.getDocument() != null) ? 
-        		sourceViewer.getDocument().getLength() : 0;
-        final TextPresentation newPresentation= fixPresentation(presentation, docLength, false /*sort?*/);
-
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-        	    try {
-                    if (sourceViewer != null) {
-            	        // The document might have changed since the presentation was computed, so
-            	        // trim the presentation's "result window" to the current document's extent.
-            	        // This avoids upsetting SWT, but there's still a question as to whether
-            	        // this is really the right thing to do. i.e., this assumes that the
-            	        // presentation will get recomputed later on, when the new document change
-            	        // gets noticed. But will it?
-            	        int newDocLength= (sourceViewer.getDocument() != null) ? 
-            	        		sourceViewer.getDocument().getLength() : 0;
-            	        IRegion presExtent= newPresentation.getExtent();
-            	        if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-            	            newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
-            	            		newDocLength - presExtent.getOffset()));
-            	        }
-        	    		sourceViewer.changeTextPresentation(newPresentation, true);
-        	    	}
-        	    } 
-        	    catch (IllegalArgumentException e) {
-                    int curDocLength= (sourceViewer.getDocument() != null) ? 
-                    		sourceViewer.getDocument().getLength() : 0;
-        	        diagnoseStyleRangeError(presentation, curDocLength, e);
-        	    }
-            }
-        });
+	private void applyTextPresentationChange(TextPresentation newPresentation) {
+		if (sourceViewer!=null) {
+			// The document might have changed since the presentation was computed, so
+			// trim the presentation's "result window" to the current document's extent.
+			// This avoids upsetting SWT, but there's still a question as to whether
+			// this is really the right thing to do. i.e., this assumes that the
+			// presentation will get recomputed later on, when the new document change
+			// gets noticed. But will it?
+			IDocument doc = sourceViewer.getDocument();
+			int newDocLength= doc!=null ? doc.getLength() : 0;
+			IRegion presExtent= newPresentation.getExtent();
+			if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
+				newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
+						newDocLength - presExtent.getOffset()));
+			}
+			sourceViewer.changeTextPresentation(newPresentation, true);
+		}
+	}
+	
+    private void submitTextPresentationChange(TextPresentation presentation) {
+    	if (sourceViewer!=null) {
+    		IDocument doc = sourceViewer.getDocument();
+			int docLength= doc!=null ? doc.getLength() : 0;
+			final TextPresentation newPresentation= fixPresentation(presentation, docLength);
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					try {
+						applyTextPresentationChange(newPresentation);
+					} 
+					catch (IllegalArgumentException e) {
+						/*int curDocLength= sourceViewer.getDocument()!=null ? 
+								sourceViewer.getDocument().getLength() : 0;
+						diagnoseStyleRangeError(presentation, curDocLength, e);*/
+						e.printStackTrace();
+					}
+				}
+			});
+    	}
     }
 
     /**
@@ -227,10 +242,11 @@ public class PresentationController implements TreeLifecycleListener {
      * that should be acceptable to ITextViewer.changeTextPresentation().
      * In particular, no range will extend beyond the end of the source text,
      * and their lengths will all be positive.
-     * Optionally, will also sort the ranges, and ensure that they don't overlap. 
+     * 
+     * Sort the ranges, and ensure that they don't overlap. 
      */
-    private TextPresentation fixPresentation(final TextPresentation presentation, 
-    		int docLen, boolean sort) {
+    private TextPresentation fixPresentation(TextPresentation presentation, 
+    		int docLen) {
         if (checkPresentation(presentation, docLen)) {
             return presentation;
         }
@@ -321,7 +337,7 @@ public class PresentationController implements TreeLifecycleListener {
      * Try to determine the real cause of the problem, and add an appropriate message
      * for the exception in the plugin log.
      */
-    private void diagnoseStyleRangeError(final TextPresentation presentation, 
+    /*private void diagnoseStyleRangeError(final TextPresentation presentation, 
     		int charCount, IllegalArgumentException e) {
         // Possible causes (not necessarily complete):
         // - negative length in a style range
@@ -374,7 +390,5 @@ public class PresentationController implements TreeLifecycleListener {
         		explanation.append("Cause not identified");
         	}
         }
-
-        e.printStackTrace();
-    }
+    }*/
 }
