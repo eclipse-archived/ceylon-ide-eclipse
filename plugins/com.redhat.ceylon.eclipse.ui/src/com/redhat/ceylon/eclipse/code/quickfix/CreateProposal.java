@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;

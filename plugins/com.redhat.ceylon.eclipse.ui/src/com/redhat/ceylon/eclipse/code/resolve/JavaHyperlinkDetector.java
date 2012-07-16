@@ -36,11 +36,11 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
-public class JavaReferenceResolver implements IHyperlinkDetector {
+public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
     private CeylonEditor editor;
     
-    public JavaReferenceResolver(CeylonEditor editor) {
+    public JavaHyperlinkDetector(CeylonEditor editor) {
         this.editor = editor;
     }
     
@@ -97,7 +97,7 @@ public class JavaReferenceResolver implements IHyperlinkDetector {
                 return null;
             }
             else {
-                final Node id = getIdentifyingNode(node);
+                Node id = getIdentifyingNode(node);
                 Declaration dec = getReferencedDeclaration(node);
                 if (dec==null) {
                     return null;

@@ -12,6 +12,8 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
 
+	public FindReferencesAction() {}
+	
     public FindReferencesAction(IEditorPart editor) {
 		super("Find References", editor);
 		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");

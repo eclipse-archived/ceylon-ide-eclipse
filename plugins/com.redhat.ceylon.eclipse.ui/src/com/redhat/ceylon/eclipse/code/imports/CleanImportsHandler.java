@@ -205,7 +205,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 editor instanceof CeylonEditor &&
                 editor.getEditorInput() instanceof IFileEditorInput) {
             CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-            return cpc.getRootNode()==null ? false :
+            return cpc==null || cpc.getRootNode()==null ? false :
                 !cpc.getRootNode().getImportList().getImports().isEmpty();
         }
         return false;

@@ -10,8 +10,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.imp.builder.ProjectNatureBase;
-import org.eclipse.imp.runtime.IPluginLog;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -107,11 +105,7 @@ public class CeylonNature extends ProjectNatureBase {
     protected void refreshPrefs() {
         // TODO implement preferences and hook in here
     }
-    
-    public IPluginLog getLog() {
-        return CeylonPlugin.getInstance();
-    }
-    
+        
     /**
      * Run the Java builder before the Ceylon builder, since
      * it's more common for Ceylon to call Java than the

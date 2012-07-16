@@ -3,40 +3,32 @@ package com.redhat.ceylon.eclipse.code.parse;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
-class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
+public class CeylonLanguageSyntaxProperties {
     
-    static final ILanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
+    public static final CeylonLanguageSyntaxProperties INSTANCE = new CeylonLanguageSyntaxProperties();
     
-    @Override
 	public boolean isWhitespace(char ch) {
 		return ch==' '||ch=='\r'||ch=='\n'||ch=='\t'||ch=='\u000C';
 	}
     
-    @Override
 	public boolean isIdentifierStart(char ch) {
 		return Character.isJavaIdentifierStart(ch) && ch!='$';
 	}
     
-    @Override
 	public boolean isIdentifierPart(char ch) {
 		return Character.isJavaIdentifierPart(ch) && ch!='$';
 	}
     
-    @Override
 	public String getSingleLineCommentPrefix() {
 		return "//";
 	}
     
-    @Override
 	public String getIdentifierConstituentChars() {
 		return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 	}
     
-    @Override
 	public int[] getIdentifierComponents(String ident) {
 		//this doesn't seem to actually work...
         List<Integer> listResult= new LinkedList<Integer>();
@@ -54,13 +46,11 @@ class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
         return result;
 	}
     
-    @Override
 	public String[][] getFences() {
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}
     
-    @Override
-	public IRegion getDoubleClickRegion(int offset, IParseController pc) {
+	public IRegion getDoubleClickRegion(int offset, CeylonParseController pc) {
 		//this seems to be unnecessary ... default behavior is fine
 	    /*CommonTokenStream stream = (CommonTokenStream) parser.getTokenStream();
 	    if (stream!=null) {
@@ -75,17 +65,14 @@ class CeylonLanguageSyntaxProperties implements ILanguageSyntaxProperties {
 		return null;
 	}
     
-    @Override
 	public String getBlockCommentStart() {
 		return "/*";
 	}
     
-    @Override
 	public String getBlockCommentEnd() {
 		return "*/";
 	}
     
-    @Override
 	public String getBlockCommentContinuation() {
 		return null;
 	}

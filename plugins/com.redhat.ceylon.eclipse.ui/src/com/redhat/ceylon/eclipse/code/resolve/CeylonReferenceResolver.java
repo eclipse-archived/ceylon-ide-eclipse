@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.imp.parser.IParseController;
-import org.eclipse.imp.services.IReferenceResolver;
 
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -23,37 +21,37 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 
-public class CeylonReferenceResolver implements IReferenceResolver {
+public class CeylonReferenceResolver {
 
-    /**
-     * Get the text associated with the given node for use in a link from (or
-     * to) that node
-     */
-    public String getLinkText(Object node) {
-        if (node instanceof Node) {
-            return getNodeDeclarationName((Node) node);
-        } 
-        else {
-            return null;
-        }
-    }
-
-    /**
-     * Get the target for the given source node in the AST produced by the given
-     * Parse Controller.
-     */
-    public Tree.Declaration getLinkTarget(Object node, 
-    		IParseController controller) {
-        if (node instanceof Node) {
-            return getReferencedNode(node, controller);
-        }
-        else {
-            return null;
-        }
-    }
+//    /**
+//     * Get the text associated with the given node for use in a link from (or
+//     * to) that node
+//     */
+//    public String getLinkText(Object node) {
+//        if (node instanceof Node) {
+//            return getNodeDeclarationName((Node) node);
+//        } 
+//        else {
+//            return null;
+//        }
+//    }
+//
+//    /**
+//     * Get the target for the given source node in the AST produced by the given
+//     * Parse Controller.
+//     */
+//    public Tree.Declaration getLinkTarget(Object node, 
+//    		IParseController controller) {
+//        if (node instanceof Node) {
+//            return getReferencedNode(node, controller);
+//        }
+//        else {
+//            return null;
+//        }
+//    }
 
     public static Tree.Declaration getReferencedNode(Object node, 
-    		IParseController controller) {
+    		CeylonParseController controller) {
         return getReferencedNode(getReferencedDeclaration(node), 
             getCompilationUnit((CeylonParseController) controller, 
             		getReferencedDeclaration(node)));
@@ -196,18 +194,23 @@ public class CeylonReferenceResolver implements IReferenceResolver {
 						    if (requiredProjectLoader == null) {
 						        continue;
 						    }
-						    Declaration originalDecl = requiredProjectLoader.getDeclaration(dec.getQualifiedNameString(), DeclarationType.TYPE);
+						    Declaration originalDecl = requiredProjectLoader
+						    		.getDeclaration(dec.getQualifiedNameString(), 
+						    		        DeclarationType.TYPE);
 						    if (originalDecl != null) {
 						        String fileName = originalDecl.getUnit().getFilename();
-						        String packagePath = originalDecl.getUnit().getPackage().getQualifiedNameString().replace('.', '/');
+						        String packagePath = originalDecl.getUnit().getPackage()
+						        		.getQualifiedNameString().replace('.', '/');
 						        String fileRelativePath = packagePath + "/" + fileName;
 
 						        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
-						        if (requiredProjectTypeChecker == null) {
+						        if (requiredProjectTypeChecker==null) {
 						            continue;
 						        }
-						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker.getPhasedUnitFromRelativePath(fileRelativePath);
-						        if (requiredProjectPhasedUnit != null && requiredProjectPhasedUnit.isFullyTyped()) {
+						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker
+						        		.getPhasedUnitFromRelativePath(fileRelativePath);
+						        if (requiredProjectPhasedUnit != null 
+						        		&& requiredProjectPhasedUnit.isFullyTyped()) {
 						            pu = requiredProjectPhasedUnit;
 						            break;
 						        }
