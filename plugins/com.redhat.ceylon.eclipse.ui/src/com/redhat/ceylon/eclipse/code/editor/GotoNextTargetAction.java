@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_NEXT_TARGET;
 
 class GotoNextTargetAction extends TargetNavigationAction {
     public GotoNextTargetAction() {

@@ -25,7 +25,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 /**
  * An implementation of the IMessageHandler interface that creates editor annotations
@@ -33,7 +33,7 @@ import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
  * which uses the class MarkerCreator to create markers).
  * @author rmfuhrer
  */
-public class AnnotationCreator implements IMessageHandler {
+public class AnnotationCreator implements MessageHandler {
     private static class PositionedMessage {
         public final String message;
         /**

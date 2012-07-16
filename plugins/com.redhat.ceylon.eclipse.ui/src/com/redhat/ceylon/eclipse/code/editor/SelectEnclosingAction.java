@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
 
 import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;

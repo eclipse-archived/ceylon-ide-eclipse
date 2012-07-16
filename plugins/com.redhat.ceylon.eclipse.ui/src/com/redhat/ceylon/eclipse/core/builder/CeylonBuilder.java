@@ -120,7 +120,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
@@ -1893,7 +1893,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 int priority = priority(token);
                 if (priority>=0) {
                     Map<String, Object> attributes = new HashMap<String, Object>();
-                    attributes.put(IMessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
+                    attributes.put(MessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
                     attributes.put(IMarker.PRIORITY, priority);
                     attributes.put(IMarker.USER_EDITABLE, false);
                     new MarkerCreator(file, IMarker.TASK)

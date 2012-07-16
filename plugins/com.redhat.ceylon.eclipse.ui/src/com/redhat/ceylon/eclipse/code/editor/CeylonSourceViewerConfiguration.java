@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
@@ -72,8 +72,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
-        reconciler.setRepairer(fEditor.new PresentationRepairer(), DEFAULT_CONTENT_TYPE);
-        reconciler.setDamager(fEditor.new PresentationDamager(), DEFAULT_CONTENT_TYPE);
+        CeylonEditor.PresentationDamageRepairer damageRepairer = fEditor.new PresentationDamageRepairer();
+        reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
+		reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
     }
 

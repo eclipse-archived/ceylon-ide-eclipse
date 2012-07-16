@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Iterator;
@@ -24,18 +25,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.code.parse.IModelListener;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
- * Responsible for adding refinement annotations to 
- * the vertical ruler, and updating the highlight
- * range in the vertical ruler.
- * 
- * @author gavin
+ * Responsible for adding refinement annotations to the 
+ * vertical ruler, and updating the highlight range in 
+ * the vertical ruler.
  *
  */
-public class EditorAnnotationService implements IModelListener {
+public class EditorAnnotationService implements TreeLifecycleListener {
     
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
@@ -49,8 +48,8 @@ public class EditorAnnotationService implements IModelListener {
 	}
 
 	@Override
-    public AnalysisRequired getAnalysisRequired() {
-        return AnalysisRequired.NONE;
+    public Stage getStage() {
+        return TYPE_ANALYSIS;
     }
     
     @Override

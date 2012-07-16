@@ -18,7 +18,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
