@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -43,20 +44,21 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecycleListener {
 	
-    private final ITreeContentProvider fContentProvider;
-    private final CeylonOutlineBuilder fModelBuilder;
-    private final CeylonLabelProvider fLabelProvider;
-    private final CeylonParseController fParseController;
+    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + ".outline.popupMenu";
+    
+	private final ITreeContentProvider contentProvider;
+    private final CeylonOutlineBuilder modelBuilder;
+    private final CeylonLabelProvider labelProvider;
+    private final CeylonParseController parseController;
 
     public CeylonOutlinePage(CeylonParseController parseController,
-            CeylonOutlineBuilder modelBuilder,
-            CeylonLabelProvider labelProvider) {
+            CeylonOutlineBuilder modelBuilder) {
     	
-        fParseController= parseController;
-        fModelBuilder= modelBuilder;
-        fLabelProvider= labelProvider;
+        this.parseController= parseController;
+        this.modelBuilder= modelBuilder;
+        labelProvider= new CeylonLabelProvider();
 
-        fContentProvider= new ITreeContentProvider() {
+        contentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {
             	return ((CeylonOutlineNode) element).getChildren().toArray();
             }
@@ -82,16 +84,23 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
     }
     
     @Override
-    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
+    public void update(CeylonParseController parseController, 
+    		IProgressMonitor monitor) {
     	update(parseController);
     }
 
     public void update(final CeylonParseController parseController) {
-        if (getTreeViewer()!=null && !getTreeViewer().getTree().isDisposed()) {
-            getTreeViewer().getTree().getDisplay().asyncExec(new Runnable() {
+        TreeViewer treeViewer = getTreeViewer();
+		if (treeViewer!=null && 
+        		!treeViewer.getTree().isDisposed()) {
+            treeViewer.getTree().getDisplay()
+                   .asyncExec(new Runnable() {
                 public void run() {
-                	if (getTreeViewer() != null && !getTreeViewer().getTree().isDisposed())
-                		getTreeViewer().setInput(fModelBuilder.buildTree(fParseController.getRootNode()));
+                	TreeViewer treeViewer = getTreeViewer();
+                	if (treeViewer!=null && 
+                			!treeViewer.getTree().isDisposed()) {
+                		treeViewer.setInput(modelBuilder.buildTree(parseController.getRootNode()));
+                	}
                 }
             });
         }
@@ -102,7 +111,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
         super.selectionChanged(event);
         ITreeSelection sel= (ITreeSelection) event.getSelection();
         if (!sel.isEmpty()) {
-        	CeylonSourcePositionLocator locator= fParseController.getSourcePositionLocator();
+        	CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
         	Node node = ((CeylonOutlineNode) sel.getFirstElement()).getASTNode();
         	int startOffset= locator.getStartOffset(node);
         	int endOffset= locator.getEndOffset(node);
@@ -114,14 +123,14 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
     public void createControl(Composite parent) {
         super.createControl(parent);
         TreeViewer viewer= getTreeViewer();
-        viewer.setContentProvider(fContentProvider);
-        if (fLabelProvider != null) {
-            viewer.setLabelProvider(fLabelProvider);
+        viewer.setContentProvider(contentProvider);
+        if (labelProvider != null) {
+            viewer.setLabelProvider(labelProvider);
         }
         viewer.addSelectionChangedListener(this);
-        CeylonOutlineNode rootNode= fModelBuilder.buildTree(fParseController.getRootNode());
+        CeylonOutlineNode rootNode= modelBuilder.buildTree(parseController.getRootNode());
+        viewer.setAutoExpandLevel(4);
         viewer.setInput(rootNode);
-        viewer.setAutoExpandLevel(3);
 
         IPageSite site= getSite();
         IActionBars actionBars= site.getActionBars();
@@ -136,7 +145,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
 		mm.add(new GroupMarker("refactor"));
 		mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 		
-		getSite().registerContextMenu("com.redhat.ceylon.eclipse.ui.outline.popupMenu", 
+		getSite().registerContextMenu(OUTLINE_POPUP_MENU_ID, 
 				mm, getSite().getSelectionProvider());
 
 		viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
@@ -153,13 +162,13 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
                 int cat2= t2.getCategory();
 
                 if (cat1 == cat2) {
-                    return fLabelProvider.getText(t1).compareTo(fLabelProvider.getText(t2));
+                    return labelProvider.getText(t1).compareTo(labelProvider.getText(t2));
                 }
                 return cat1 - cat2;
             }
         };
         
-        private CeylonSourcePositionLocator fLocator= fParseController.getSourcePositionLocator();
+        private CeylonSourcePositionLocator fLocator= parseController.getSourcePositionLocator();
 
         private ViewerComparator fPositionComparator= new ViewerComparator() {
             @Override
