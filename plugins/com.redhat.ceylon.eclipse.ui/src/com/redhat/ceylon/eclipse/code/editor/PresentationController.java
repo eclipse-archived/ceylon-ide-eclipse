@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,24 +29,27 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
  * for an associated ISourceViewer. Calls to damage(IRegion) simply 
  * accumulate damaged regions into a work queue, which is processed
  * at the subsequent call to update(IParseController, IProgressMonitor).
+ * 
  * @author Claffra
  * @author rfuhrer@watson.ibm.com
  */
 public class PresentationController implements TreeLifecycleListener {
 
-    private final ISourceViewer fSourceViewer;
-    private final CeylonTokenColorer fColorer;
+    private final ISourceViewer sourceViewer;
+    private final CeylonTokenColorer tokenColorer;
     
-    private final Stack<IRegion> fWorkItems= new Stack<IRegion>();
+    private final Stack<IRegion> workItems= new Stack<IRegion>();
 
     public PresentationController(ISourceViewer sourceViewer) {
-        fSourceViewer= sourceViewer;
-        fColorer= new CeylonTokenColorer();
+        this.sourceViewer= sourceViewer;
+        tokenColorer= new CeylonTokenColorer();
     }
 
     @Override
     public Stage getStage() {
-    	return LEXICAL_ANALYSIS;
+    	//we need to finish parsing to get the right
+    	//token types assigned to the annotations
+    	return SYNTACTIC_ANALYSIS;
     }
     
     @Override
@@ -60,23 +63,36 @@ public class PresentationController implements TreeLifecycleListener {
      * when we get scheduled to process the queue
      */
     public void damage(IRegion region) {
-        if (fColorer == null)
+        if (tokenColorer == null)
             return;
 
-        IRegion bigRegion=region;
-        if (bigRegion != null) {
-            synchronized (fWorkItems) {
-                boolean redundant= false;
-                for(IRegion dr : fWorkItems) {
-                    if (contains(bigRegion, dr)) {
-                        redundant= true;
-                    }
-                }
-                if (!redundant) {
-                    fWorkItems.push(bigRegion);
-                }
-            }
+        synchronized (workItems) {
+        	for (Iterator<IRegion> iterator = workItems.iterator(); 
+        			iterator.hasNext();) {
+				IRegion reg = iterator.next();
+				//in practice the following is
+				//a waste of code, because the
+				//workItems stack is essentially
+				//always empty!
+				if (contains(region, reg)) {
+        			return;
+        		}
+				else if (contains(reg, region)) {
+					iterator.remove();
+				}
+				else if (contiguous(region, reg)) {
+					iterator.remove();
+					region = new Region(reg.getOffset(), 
+							reg.getLength()+region.getLength());
+					System.out.println(region);
+				}
+			}
+        	workItems.push(region);
         }
+    }
+    
+    private boolean contiguous(IRegion r1, IRegion r2) {
+    	return r1.getOffset() == r2.getOffset() + r2.getLength();
     }
 
     private boolean contains(IRegion r1, IRegion r2) {
@@ -85,29 +101,29 @@ public class PresentationController implements TreeLifecycleListener {
     }
 
     public void repair(CeylonParseController controller, IProgressMonitor monitor) {
-        if (!monitor.isCanceled() && fSourceViewer!=null && 
-        		fSourceViewer.getDocument()!=null) {
-            synchronized (fWorkItems) {
-                if (fWorkItems.size()==0 && fSourceViewer.getDocument()!=null) {
+        if (!monitor.isCanceled() && sourceViewer!=null && 
+        		sourceViewer.getDocument()!=null) {
+            synchronized (workItems) {
+                if (workItems.size()==0 && sourceViewer.getDocument()!=null) {
                     // TODO Shouldn't need to re-color the entire source file here.
                     // This is intended to handle the case that the parser finishes 
                 	// *after* the PresentationRepairer asks for an update().
                     // We could do a more focused update, if we knew what part of 
                 	// the file had changed.
-                    fWorkItems.add(new Region(0, fSourceViewer.getDocument().getLength()));
+                    workItems.add(new Region(0, sourceViewer.getDocument().getLength()));
                 }
                 // TODO Optimization: when there are multiple work items, control 
                 // redrawing explicitly. See JavaDoc regarding ITextViewer.changeTextPresentation()'s 
                 // 2nd argument. Probably not very common (only refactoring or 
                 // search/replace?), but perhaps worthwhile.
-                for(int n= fWorkItems.size()-1; !monitor.isCanceled() && n>=0; n--) {
+                for (int n= workItems.size()-1; !monitor.isCanceled() && n>=0; n--) {
                     changeTextPresentationForRegion(controller, monitor, 
-                    		fWorkItems.get(n));
+                    		workItems.get(n));
                 }
                 // TODO Remove the work items we actually processed, whether the 
                 // monitor was canceled or not
                 if (!monitor.isCanceled()) {
-                    fWorkItems.removeAllElements();
+                    workItems.removeAllElements();
                 }
             }
         }
@@ -119,27 +135,26 @@ public class PresentationController implements TreeLifecycleListener {
             return;
         }
         final TextPresentation presentation= new TextPresentation();
-        CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
-        aggregateTextPresentation(parseController, monitor, damage, presentation, locator);
+        aggregateTextPresentation(parseController, monitor, damage, presentation);
         if (!monitor.isCanceled() && !presentation.isEmpty()) {
             submitTextPresentation(presentation);
         }
     }
 
     private void aggregateTextPresentation(CeylonParseController parseController, 
-    		IProgressMonitor monitor, IRegion damage, TextPresentation presentation,
-    		CeylonSourcePositionLocator locator) {
+    		IProgressMonitor monitor, IRegion damage, TextPresentation presentation) {
+        CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
         int prevOffset= -1;
         int prevEnd= -1;
         Iterator tokenIterator= parseController.getTokenIterator(damage);
         if (tokenIterator == null) {
             return;
         }
-        for(Iterator<Object> iter= tokenIterator; iter.hasNext() && !monitor.isCanceled(); ) {
+        for (Iterator<Object> iter= tokenIterator; 
+        		iter.hasNext() && !monitor.isCanceled(); ) {
             Object token= iter.next();
             int offset= locator.getStartOffset(token);
             int end= locator.getEndOffset(token);
-
             if (offset <= prevEnd && end >= prevOffset) {
                 continue;
             }
@@ -151,7 +166,7 @@ public class PresentationController implements TreeLifecycleListener {
 
     private void changeTokenPresentation(CeylonParseController controller, 
     		TextPresentation presentation, Object token, CeylonSourcePositionLocator locator) {
-        TextAttribute attribute= fColorer.getColoring(controller, token);
+        TextAttribute attribute= tokenColorer.getColoring(controller, token);
 
         StyleRange styleRange= new StyleRange(locator.getStartOffset(token), 
         		locator.getEndOffset(token)-locator.getStartOffset(token)+1,
@@ -162,7 +177,7 @@ public class PresentationController implements TreeLifecycleListener {
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)
         if (styleRange.length <= 0 || 
-        		styleRange.start+styleRange.length > fSourceViewer.getDocument().getLength()) {
+        		styleRange.start+styleRange.length > sourceViewer.getDocument().getLength()) {
         } 
         else {
             presentation.addStyleRange(styleRange);
@@ -170,39 +185,37 @@ public class PresentationController implements TreeLifecycleListener {
     }
 
     private void submitTextPresentation(final TextPresentation presentation) {
-        if (fSourceViewer == null) {
+        if (sourceViewer == null) {
             return;
         }
 
-        final int docLength= (fSourceViewer.getDocument() != null) ? 
-        		fSourceViewer.getDocument().getLength() : 0;
+        final int docLength= (sourceViewer.getDocument() != null) ? 
+        		sourceViewer.getDocument().getLength() : 0;
         final TextPresentation newPresentation= fixPresentation(presentation, docLength, false /*sort?*/);
 
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
         	    try {
-                    if (fSourceViewer != null) {
+                    if (sourceViewer != null) {
             	        // The document might have changed since the presentation was computed, so
             	        // trim the presentation's "result window" to the current document's extent.
             	        // This avoids upsetting SWT, but there's still a question as to whether
             	        // this is really the right thing to do. i.e., this assumes that the
             	        // presentation will get recomputed later on, when the new document change
             	        // gets noticed. But will it?
-            	        int newDocLength= (fSourceViewer.getDocument() != null) ? 
-            	        		fSourceViewer.getDocument().getLength() : 0;
+            	        int newDocLength= (sourceViewer.getDocument() != null) ? 
+            	        		sourceViewer.getDocument().getLength() : 0;
             	        IRegion presExtent= newPresentation.getExtent();
-
             	        if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-//            	            System.out.println("Trimming result window...");
             	            newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
             	            		newDocLength - presExtent.getOffset()));
             	        }
-        	    		fSourceViewer.changeTextPresentation(newPresentation, true);
+        	    		sourceViewer.changeTextPresentation(newPresentation, true);
         	    	}
         	    } 
         	    catch (IllegalArgumentException e) {
-                    int curDocLength= (fSourceViewer.getDocument() != null) ? 
-                    		fSourceViewer.getDocument().getLength() : 0;
+                    int curDocLength= (sourceViewer.getDocument() != null) ? 
+                    		sourceViewer.getDocument().getLength() : 0;
         	        diagnoseStyleRangeError(presentation, curDocLength, e);
         	    }
             }
@@ -210,8 +223,8 @@ public class PresentationController implements TreeLifecycleListener {
     }
 
     /**
-     * Adjusts the StyleRanges in the given presentation as necessary to ones that
-     * should be acceptable to ITextViewer.changeTextPresentation().
+     * Adjusts the StyleRanges in the given presentation as necessary to ones 
+     * that should be acceptable to ITextViewer.changeTextPresentation().
      * In particular, no range will extend beyond the end of the source text,
      * and their lengths will all be positive.
      * Optionally, will also sort the ranges, and ensure that they don't overlap. 

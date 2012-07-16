@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -39,6 +40,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
 	
 	private static Language LANGUAGE;
+	
+	private FontRegistry fontRegistry;
 
 	/**
 	 * The unique instance of this plugin class
@@ -247,6 +250,16 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 		if (LANGUAGE==null) LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
 		return LANGUAGE;
 	}
+	
+    public FontRegistry getFontRegistry() {
+        // Hopefully this gets called late enough, i.e., after a Display has been
+        // created on the current thread (see FontRegistry constructor).
+        if (fontRegistry == null) {
+            fontRegistry= new FontRegistry();
+        }
+        return fontRegistry;
+    }
+
 
 }
 

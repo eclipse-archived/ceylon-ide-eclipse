@@ -21,7 +21,6 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.ResourceBundle.getBundle;
@@ -50,9 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -65,14 +61,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
 import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.imp.model.ModelFactory;
 import org.eclipse.imp.model.ModelFactory.ModelException;
-import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -89,14 +83,10 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewerExtension5;
-import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
-import org.eclipse.jface.text.presentation.IPresentationDamager;
-import org.eclipse.jface.text.presentation.IPresentationRepairer;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
@@ -137,7 +127,6 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
@@ -163,7 +152,7 @@ public class CeylonEditor extends TextEditor {
 	public static final String MESSAGE_BUNDLE= "org.eclipse.imp.editor.messages";
     public static final String PARSE_ANNOTATION_TYPE= "org.eclipse.imp.editor.parseAnnotation";
 
-    private static final int REPARSE_SCHEDULE_DELAY= 250;
+    private static final int REPARSE_SCHEDULE_DELAY= 200;
 
     /**
      * Annotation ID for a parser annotation w/ severity = error. Must match the ID of the
@@ -189,19 +178,18 @@ public class CeylonEditor extends TextEditor {
     /** Preference key for matching brackets color */
     protected final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
 
-    private CeylonParserScheduler fParserScheduler;
-    private IDocumentProvider fZipDocProvider;
-    private ProjectionAnnotationModel fAnnotationModel;
-    private ProblemMarkerManager fProblemMarkerManager;
-    private ICharacterPairMatcher fBracketMatcher;
+    private CeylonParserScheduler parserScheduler;
+    private IDocumentProvider zipDocProvider;
+    private ProblemMarkerManager problemMarkerManager;
+    private ICharacterPairMatcher bracketMatcher;
     //private SubActionBars fActionBars;
     //private DefaultPartListener fRefreshContributions;
-    private ToggleBreakpointAction fToggleBreakpointAction;
-    private IAction fEnableDisableBreakpointAction;
+    private ToggleBreakpointAction toggleBreakpointAction;
+    private IAction enableDisableBreakpointAction;
     private IResourceChangeListener buildListener;
     private IResourceChangeListener moveListener;
-    private IDocumentListener fDocumentListener;
-    private FoldingActionGroup fFoldingActionGroup;
+    private IDocumentListener documentListener;
+    private FoldingActionGroup foldingActionGroup;
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
     private ToggleBreakpointAdapter toggleBreakpointTarget;
     private CeylonOutlinePage outlinePage;
@@ -220,7 +208,7 @@ public class CeylonEditor extends TextEditor {
         setSourceViewerConfiguration(createSourceViewerConfiguration());
         configureInsertMode(SMART_INSERT, true);
         setInsertMode(SMART_INSERT);
-        fProblemMarkerManager= new ProblemMarkerManager();
+        problemMarkerManager= new ProblemMarkerManager();
 	}
 
     /**
@@ -261,7 +249,7 @@ public class CeylonEditor extends TextEditor {
 		if (outlinePage == null) {
 		    outlinePage = new CeylonOutlinePage(getParseController(),
 		            new CeylonOutlineBuilder(), new CeylonLabelProvider());
-		    fParserScheduler.addModelListener(outlinePage);
+		    parserScheduler.addModelListener(outlinePage);
 		    //myOutlinePage.update(parseController);
 		 }
 		 return outlinePage;
@@ -277,12 +265,12 @@ public class CeylonEditor extends TextEditor {
         setAction("ContentAssistProposal", action);
         markAsStateDependentAction("ContentAssistProposal", true);
 
-        fToggleBreakpointAction= new ToggleBreakpointAction(this, 
+        toggleBreakpointAction= new ToggleBreakpointAction(this, 
         		getDocumentProvider().getDocument(getEditorInput()), 
         		getVerticalRuler());
         setAction("ToggleBreakpoint", action);
         
-        fEnableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
+        enableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
         		getVerticalRuler());
         setAction("ToggleBreakpoint", action);
 
@@ -332,7 +320,7 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(SHOW_CEYLON_HIERARCHY);
         setAction(SHOW_CEYLON_HIERARCHY, action);
 
-        fFoldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
+        foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
     }
     
@@ -740,8 +728,8 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private void addDebugActions(IMenuManager menu) {
-        menu.add(fToggleBreakpointAction);
-        menu.add(fEnableDisableBreakpointAction);
+        menu.add(toggleBreakpointAction);
+        menu.add(enableDisableBreakpointAction);
     }
 
     /**
@@ -768,7 +756,7 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public ProblemMarkerManager getProblemMarkerManager() {
-        return fProblemMarkerManager;
+        return problemMarkerManager;
     }
 
     public void updatedTitleImage(Image image) {
@@ -910,10 +898,10 @@ extends PreviousSubWordAction implements IUpdate {
         }
         IEditorInput editorInput= getEditorInput();
         if (ZipStorageEditorDocumentProvider.canHandle(editorInput)) {
-            if (fZipDocProvider == null) {
-                fZipDocProvider= new ZipStorageEditorDocumentProvider();
+            if (zipDocProvider == null) {
+                zipDocProvider= new ZipStorageEditorDocumentProvider();
             }
-            return fZipDocProvider;
+            return zipDocProvider;
         }
     	return super.getDocumentProvider();
     }
@@ -958,14 +946,14 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public void scheduleParsing() {
-    	CeylonParserScheduler scheduler = fParserScheduler;
+    	CeylonParserScheduler scheduler = parserScheduler;
     	if (scheduler!=null) {
     		scheduler.cancel();
     		scheduler.schedule(0);
     	}
     }
 
-    private CeylonParseController parseController;
+    CeylonParseController parseController;
     private PresentationController presentationController;
     
     private void initializeParseController() {
@@ -976,7 +964,7 @@ extends PreviousSubWordAction implements IUpdate {
         	parseController = new CeylonParseController();
             IProject project= file!=null && file.exists() ? file.getProject() : null;
             ISourceProject srcProject= project!=null ? ModelFactory.open(project) : null;
-            parseController.initialize(filePath, srcProject, fAnnotationCreator);
+            parseController.initialize(filePath, srcProject, annotationCreator);
         } 
         catch (ModelException e) {
             e.printStackTrace();
@@ -985,11 +973,11 @@ extends PreviousSubWordAction implements IUpdate {
 
     private void watchDocument() {
         getSourceViewer().getDocument()
-                .addDocumentListener(fDocumentListener= new IDocumentListener() {
+                .addDocumentListener(documentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
-                fParserScheduler.cancel();
-                fParserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+                parserScheduler.cancel();
+                parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
             }
         });
     }
@@ -1104,8 +1092,8 @@ extends PreviousSubWordAction implements IUpdate {
                 IDocument curDoc= getDocumentProvider().getDocument(getEditorInput()); 
                 if (curDoc!=oldDoc) {
                     // Need to unwatch the old document and watch the new document
-                    oldDoc.removeDocumentListener(fDocumentListener);
-                    curDoc.addDocumentListener(fDocumentListener);
+                    oldDoc.removeDocumentListener(documentListener);
+                    curDoc.addDocumentListener(documentListener);
                 }
             }
         }
@@ -1136,7 +1124,7 @@ extends PreviousSubWordAction implements IUpdate {
         										.getProject(newProjName));
         							// Tell the IParseController about the move - it caches the path
         							// fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-        							parseController.initialize(newProjRelPath, proj, fAnnotationCreator);
+        							parseController.initialize(newProjRelPath, proj, annotationCreator);
         						} 
         						catch (ModelException e) {
         							e.printStackTrace();
@@ -1152,7 +1140,7 @@ extends PreviousSubWordAction implements IUpdate {
     private void setSourceFontFromPreference() {
         String fontName = WorkbenchPlugin.getDefault().getPreferenceStore()
         		.getString(JFaceResources.TEXT_FONT);
-        FontRegistry fontRegistry= RuntimePlugin.getInstance().getFontRegistry();
+        FontRegistry fontRegistry= CeylonPlugin.getInstance().getFontRegistry();
         if (!fontRegistry.hasValueFor(fontName)) {
             fontRegistry.put(fontName, PreferenceConverter.readFontData(fontName));
         }
@@ -1165,11 +1153,8 @@ extends PreviousSubWordAction implements IUpdate {
     private void initiateServiceControllers() {
         try {
             final CeylonSourceViewer sourceViewer = (CeylonSourceViewer) getSourceViewer();
-
-            fEditorErrorTickUpdater= new EditorErrorTickUpdater(this);
-            fProblemMarkerManager.addListener(fEditorErrorTickUpdater);
-            
-            fAnnotationUpdater= new IProblemChangedListener() {
+                        
+            annotationUpdater= new IProblemChangedListener() {
                 public void problemsChanged(IResource[] changedResources, 
                 		boolean isMarkerChange) {
                     // Remove annotations that were resolved by changes to 
@@ -1179,10 +1164,21 @@ extends PreviousSubWordAction implements IUpdate {
                     scheduleParsing();
                 }
             };
-            fProblemMarkerManager.addListener(fAnnotationUpdater);
+            problemMarkerManager.addListener(annotationUpdater);
             
-			fParserScheduler= new CeylonParserScheduler(parseController, this, 
-					getDocumentProvider(), fAnnotationCreator);
+            editorIconUpdater= new EditorIconUpdater(this);
+            problemMarkerManager.addListener(editorIconUpdater);
+
+			parserScheduler= new CeylonParserScheduler(parseController, this, 
+					getDocumentProvider(), annotationCreator);
+
+            //add this guy first in the list of model listeners so he
+            //gets notified first out of everyone
+            presentationController = new PresentationController(getSourceViewer());
+            presentationController.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            addModelListener(presentationController);
+            
+            addModelListener(new EditorAnnotationService(this));
 
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
@@ -1191,31 +1187,22 @@ extends PreviousSubWordAction implements IUpdate {
 			sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
             addModelListener(hover);
 
-            ProjectionSupport projectionSupport= new ProjectionSupport(sourceViewer, 
-            		getAnnotationAccess(), getSharedColors());
-            projectionSupport.install();
+            new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors()).install();
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
-            fAnnotationModel = sourceViewer.getProjectionAnnotationModel();
-            if (fAnnotationModel!=null) {
-            	addModelListener(new FoldingController(fAnnotationModel));
+            ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
+            if (projectionAnnotationModel!=null) {
+            	addModelListener(new FoldingController(projectionAnnotationModel));
             }
 
             if (isEditable()) {
                 addModelListener(new AnnotationCreatorListener());
             }
 
-            EditorAnnotationService editorService = new EditorAnnotationService(this);
-            addModelListener(editorService);
-
-            presentationController = new PresentationController(getSourceViewer());
-            presentationController.damage(new Region(0, sourceViewer.getDocument().getLength()));
-            addModelListener(presentationController);
-            
             watchDocument();
             watchForSourceMove();
             watchForSourceBuild();
             
-            fParserScheduler.schedule();
+            parserScheduler.schedule();
             
         } 
         catch (Exception e) {
@@ -1275,13 +1262,13 @@ extends PreviousSubWordAction implements IUpdate {
 	}*/
 	
     public void dispose() {
-        if (fEditorErrorTickUpdater!=null) {
-        	fEditorErrorTickUpdater.dispose();
-        	fEditorErrorTickUpdater = null;
+        if (editorIconUpdater!=null) {
+        	editorIconUpdater.dispose();
+        	editorIconUpdater = null;
         }
-        if (fAnnotationUpdater!=null) {
-            fProblemMarkerManager.removeListener(fAnnotationUpdater);
-            fAnnotationUpdater = null;
+        if (annotationUpdater!=null) {
+            problemMarkerManager.removeListener(annotationUpdater);
+            annotationUpdater = null;
         }
         
         /*if (fActionBars!=null) {
@@ -1303,13 +1290,13 @@ extends PreviousSubWordAction implements IUpdate {
         	moveListener = null;
         }
         
-        fToggleBreakpointAction.dispose(); // this holds onto the IDocument
-        fFoldingActionGroup.dispose();
+        toggleBreakpointAction.dispose(); // this holds onto the IDocument
+        foldingActionGroup.dispose();
 
-        if (fParserScheduler!=null) {
-        	fParserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
+        if (parserScheduler!=null) {
+        	parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
         }
-        fParserScheduler= null;
+        parserScheduler= null;
         parseController = null;
 
         super.dispose();
@@ -1400,8 +1387,8 @@ extends PreviousSubWordAction implements IUpdate {
                     sb.append(fences[i][0]);
                     sb.append(fences[i][1]);
                 }
-                fBracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
-                support.setCharacterPairMatcher(fBracketMatcher);
+                bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
+                support.setCharacterPairMatcher(bracketMatcher);
                 support.setMatchingCharacterPainterPreferenceKeys(MATCHING_BRACKETS, MATCHING_BRACKETS_COLOR);
             }
         }
@@ -1431,7 +1418,7 @@ extends PreviousSubWordAction implements IUpdate {
         if (isSurroundedByBrackets(document, sourceCaretOffset))
             sourceCaretOffset -= selection.getLength();
 
-        IRegion region= fBracketMatcher.match(document, sourceCaretOffset);
+        IRegion region= bracketMatcher.match(document, sourceCaretOffset);
         if (region == null) {
             setStatusLineErrorMessage("No matching fence!");
             sourceViewer.getTextWidget().getDisplay().beep();
@@ -1444,7 +1431,7 @@ extends PreviousSubWordAction implements IUpdate {
         if (length < 1)
             return;
 
-        int anchor= fBracketMatcher.getAnchor();
+        int anchor= bracketMatcher.getAnchor();
         // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
         int targetOffset= (ICharacterPairMatcher.RIGHT == anchor) ? offset + 1: offset + length;
 
@@ -1712,7 +1699,7 @@ extends PreviousSubWordAction implements IUpdate {
      * @param listener the listener to notify of Model changes
      */
     public void addModelListener(TreeLifecycleListener listener) {
-        fParserScheduler.addModelListener(listener);
+        parserScheduler.addModelListener(listener);
     }
 
     /**
@@ -1721,122 +1708,12 @@ extends PreviousSubWordAction implements IUpdate {
      * @param listener the listener to remove
      */
     public void removeModelListener(TreeLifecycleListener listener) {
-        fParserScheduler.removeModelListener(listener);
+        parserScheduler.removeModelListener(listener);
     }
 
-    class PresentationDamageRepairer implements IPresentationDamager, IPresentationRepairer {
-    	boolean firstTime;
-    	boolean applyImmediately;
-    	
-    	public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, 
-    			boolean documentPartitioningChanged) {
-    		if (firstTime) {
-    			firstTime=false;
-    			return partition;
-    		}
-    		// TODO: figure how much of the document presentation 
-    		//       needs to be recomputed
-    		if (noTextChange(event)) {
-    			applyImmediately = true;
-    			return new Region(event.getOffset(), event.getLength());
-    		}
-    		/*CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(event.getDocument().get()));
-			CommonTokenStream cts = new CommonTokenStream(lexer);
-			cts.fill();
-			List<CommonToken> tokens = new ArrayList<CommonToken>(cts.getTokens().size());
-			tokens.addAll(cts.getTokens());*/
-    		List<CommonToken> tokens = parseController.getTokens();
-    		if (tokens!=null) {
-    			int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
-    			if (i<0) {
-    				i=-i;
-    			}
-    			CommonToken t = tokens.get(i);
-    			boolean withinToken = false;
-    			if (t.getStartIndex()<=event.getOffset() && 
-    					t.getStopIndex()>=event.getOffset()+event.getLength()-1) {
-    				withinToken = true;
-    				int type = t.getType();
-					switch (type) {
-					case CeylonLexer.WS:
-						for (char c: event.getText().toCharArray()) {
-						    if (!Character.isWhitespace(c)) {
-						    	withinToken = false;
-						    }
-						}
-					break;
-					case CeylonLexer.UIDENTIFIER:
-					case CeylonLexer.LIDENTIFIER:
-						for (char c: event.getText().toCharArray()) {
-						    if (!Character.isJavaIdentifierPart(c)) {
-						    	withinToken = false;
-						    }
-						}
-					break;
-					case CeylonLexer.STRING_LITERAL:
-						for (char c: event.getText().toCharArray()) {
-						    if (c=='"') {
-						    	withinToken = false;
-						    }
-						}
-					break;
-					case CeylonLexer.MULTI_COMMENT:
-						for (char c: event.getText().toCharArray()) {
-						    if (c=='/'||c=='*') {
-						    	withinToken = false;
-						    }
-						}
-					break;
-					case CeylonLexer.LINE_COMMENT:
-						for (char c: event.getText().toCharArray()) {
-						    if (c=='\n'||c=='\f'||c=='\r') {
-						    	withinToken = false;
-						    }
-						}
-					break;
-					default:
-				    	withinToken = false;
-    			    }
-					if (withinToken) {
-						return new Region(event.getOffset(), 
-								event.getText().length());
-					}
-    			}
-    		}
-    		return partition;
-    	}
-
-    	boolean noTextChange(DocumentEvent event) {
-    		try {
-    			return event.getDocument()
-    					.get(event.getOffset(),event.getLength())
-    					.equals(event.getText());
-    		} 
-    		catch (BadLocationException e) {
-    			return false;
-    		}
-    	}
-    	
-    	public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
-			try {
-				if (presentationController!=null) {
-					presentationController.damage(damage);
-					if (applyImmediately) {
-						presentationController.repair(getParseController(), 
-								new NullProgressMonitor());
-					}
-				}
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-    	}
-        public void setDocument(IDocument document) {}
-    }
-
-    private MessageHandler fAnnotationCreator= new AnnotationCreator(this);
-    private EditorErrorTickUpdater fEditorErrorTickUpdater;
-    private IProblemChangedListener fAnnotationUpdater;
+    private MessageHandler annotationCreator= new AnnotationCreator(this);
+    private EditorIconUpdater editorIconUpdater;
+    private IProblemChangedListener annotationUpdater;
 
     private class AnnotationCreatorListener implements TreeLifecycleListener {
         public Stage getStage() {
@@ -1885,6 +1762,10 @@ extends PreviousSubWordAction implements IUpdate {
     public boolean canPerformFind() {
         return true;
     }
+
+	PresentationController getPresentationController() {
+		return presentationController;
+	}
 
     public CeylonParseController getParseController() {
         return parseController;
