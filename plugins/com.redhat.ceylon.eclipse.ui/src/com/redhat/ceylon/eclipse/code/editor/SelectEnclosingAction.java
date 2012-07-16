@@ -2,20 +2,16 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
-import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 class SelectEnclosingAction extends Action {
     private CeylonEditor fEditor;
-    private INavigationTargetFinder fNavTargetFinder;
+    //private INavigationTargetFinder fNavTargetFinder;
 
     public SelectEnclosingAction() {
         this(null);
@@ -28,15 +24,16 @@ class SelectEnclosingAction extends Action {
     }
 
     public void setEditor(ITextEditor editor) {
-        fNavTargetFinder= null;
+        //fNavTargetFinder= null;
         if (editor instanceof CeylonEditor) {
             fEditor= (CeylonEditor) editor;
-            fNavTargetFinder= null; //TODO???
+            //fNavTargetFinder= null; //TODO???
         } 
         else {
             fEditor= null;
         }
-        setEnabled(fNavTargetFinder != null);
+        //setEnabled(fNavTargetFinder != null);
+        setEnabled(false);
     }
 
     @Override
@@ -48,11 +45,11 @@ class SelectEnclosingAction extends Action {
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getRootNode();
         }
-        Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getRootNode());
+        /*Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getRootNode());
         if (enclosing != null) {
             int enclOffset= getStartOffset(enclosing);
             int enclEnd= getEndOffset(enclosing);
             fEditor.selectAndReveal(enclOffset, enclEnd - enclOffset + 1);
-        }
+        }*/
     }
 }

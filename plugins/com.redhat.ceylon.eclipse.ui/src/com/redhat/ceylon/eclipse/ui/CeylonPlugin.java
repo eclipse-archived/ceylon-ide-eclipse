@@ -19,8 +19,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -38,8 +36,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
-	
-	private static Language LANGUAGE;
 	
 	private FontRegistry fontRegistry;
 
@@ -209,6 +205,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         reg.put(ELE32, image("ceylon_icon_32px.png"));
 		reg.put(CEYLON_ERR, image("error_co.gif"));
 		reg.put(CEYLON_WARN, image("warning_co.gif"));
+		reg.put(CONFIG_ANN, image("configure_annotations.gif"));
+		reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
 
 	}
 	
@@ -246,11 +244,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         return Platform.getAdapterManager().getAdapter(object, type);
     }
 
-	public static Language getLanguage() {
-		if (LANGUAGE==null) LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_ID);
-		return LANGUAGE;
-	}
-	
     public FontRegistry getFontRegistry() {
         // Hopefully this gets called late enough, i.e., after a Display has been
         // created on the current thread (see FontRegistry constructor).

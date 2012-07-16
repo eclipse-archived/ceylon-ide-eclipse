@@ -25,19 +25,7 @@
                 contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"/>
       </editor>
    </extension>
-   
-   <!--extension
-         point="org.eclipse.imp.runtime.languageDescription">
-      <language
-            url="http://in.relation.to/Tutorials/IntroductionToCeylon"
-            icon="icons/template_obj.gif"
-            extensions="ceylon"
-            description="Say more, more clearly"
-            natureID="com.redhat.ceylon.eclipse.ui.ceylonNature"
-            language="ceylon">
-      </language>
-   </extension-->
-   
+      
    <extension
          id="ceylonNature"
          name="Ceylon Nature"
@@ -89,6 +77,30 @@
       <persistent value="true"/>
    </extension-->
    
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.error"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="1"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.info"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
+   </extension>
+
    <extension 
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator 
@@ -275,16 +287,6 @@
             overviewRulerPreferenceValue="true"/>
             
    </extension>
-   
-   <!--extension
-         point="org.eclipse.imp.runtime.quickFixAssistant">
-      <quickFixAssistant
-            class="com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant"
-            language="ceylon">
-         <supportedMarkerType
-               markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
-      </quickFixAssistant>
-   </extension-->
    
    <extension
          point="org.eclipse.compare.structureCreators">

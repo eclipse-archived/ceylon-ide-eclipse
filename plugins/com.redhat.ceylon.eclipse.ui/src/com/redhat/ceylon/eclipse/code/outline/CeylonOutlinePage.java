@@ -12,6 +12,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
@@ -111,10 +113,9 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
         super.selectionChanged(event);
         ITreeSelection sel= (ITreeSelection) event.getSelection();
         if (!sel.isEmpty()) {
-        	CeylonSourcePositionLocator locator= parseController.getSourcePositionLocator();
         	Node node = ((CeylonOutlineNode) sel.getFirstElement()).getASTNode();
-        	int startOffset= locator.getStartOffset(node);
-        	int endOffset= locator.getEndOffset(node);
+        	int startOffset= getStartOffset(node);
+        	int endOffset= getEndOffset(node);
         	int length= endOffset - startOffset + 1;
         	((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
         }

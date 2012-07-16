@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.parser.IParseController;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 
@@ -76,7 +75,7 @@ public class CeylonParseController {
      * 						from the parser
      */
     public void initialize(IPath filePath, IProject project, 
-    		org.eclipse.imp.parser.IMessageHandler handler) {
+    		MessageHandler handler) {
 		this.project= project;
 		this.filePath= filePath;
 		this.handler= (MessageHandler) handler;

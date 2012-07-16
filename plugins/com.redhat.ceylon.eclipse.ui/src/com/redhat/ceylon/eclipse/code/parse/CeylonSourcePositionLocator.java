@@ -16,7 +16,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -116,9 +115,6 @@ public class CeylonSourcePositionLocator {
     				parseController.getProject(),
     				parseController.getTypeChecker());
     	}
-    	else if (entity instanceof ICompilationUnit) {
-            return ((ICompilationUnit) entity).getPath();
-        }
     	else {
     		return null;
     	}

@@ -13,6 +13,7 @@ class GotoNextTargetAction extends TargetNavigationAction {
 
     @Override
     protected Object getNavTarget(Object o, Object astRoot) {
-        return fNavTargetFinder.getNextTarget(o, astRoot);
+    	return null;
+        //return fNavTargetFinder.getNextTarget(o, astRoot);
     }
 }

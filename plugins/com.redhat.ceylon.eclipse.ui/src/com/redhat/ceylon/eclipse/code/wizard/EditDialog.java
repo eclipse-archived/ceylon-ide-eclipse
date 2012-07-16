@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import org.eclipse.imp.preferences.PreferenceConstants;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.SWT;
@@ -14,8 +15,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 class EditDialog extends Dialog {
     
@@ -38,8 +37,8 @@ class EditDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         final Text text = new Text(composite, SWT.MULTI | SWT.BORDER| SWT.WRAP | SWT.V_SCROLL);
-        FontData fd = PreferenceConverter.getFontData(CeylonPlugin.getInstance().getPreferenceStore(),
-                PreferenceConstants.P_SOURCE_FONT);
+        FontData fd = PreferenceConverter.getFontData(getInstance().getPreferenceStore(),
+        		"sourceFont");
         text.setFont(new Font(getShell().getDisplay(), fd));
         text.setText(this.text);
         GridData gd = new GridData(GridData.FILL_BOTH);
