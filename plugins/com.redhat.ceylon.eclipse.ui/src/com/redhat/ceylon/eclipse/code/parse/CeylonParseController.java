@@ -134,7 +134,7 @@ public class CeylonParseController {
             if (!path.isAbsolute() && project!=null) {
                 resolvedPath = project.getFullPath().append(filePath);
                 //TODO: do we need to add in the source folder???
-                if (!resolvedPath.toFile().exists()) {
+                if (!project.getWorkspace().getRoot().exists(resolvedPath)) {
                 	// file has been deleted for example
                 	path = null;
                 	project = null;
