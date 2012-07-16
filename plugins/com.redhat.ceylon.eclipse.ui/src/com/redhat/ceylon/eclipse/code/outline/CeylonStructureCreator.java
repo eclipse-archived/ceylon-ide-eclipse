@@ -137,7 +137,7 @@ public class CeylonStructureCreator extends StructureCreator {
     	//TODO: pass some more info in here!
     	pc.initialize(null, null, null);
 
-    	Node astRoot= (Node) pc.parse(document.get(), monitor);
+    	Node astRoot= pc.parse(document.get(), monitor, null);
     	DocumentRangeNode compareRoot;
 
     	if (astRoot!=null) {

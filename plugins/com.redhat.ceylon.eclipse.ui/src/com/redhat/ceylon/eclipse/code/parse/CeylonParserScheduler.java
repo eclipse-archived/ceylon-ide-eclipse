@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -61,15 +60,14 @@ public class CeylonParserScheduler extends Job {
     }
 
     private boolean sourceStillExists() {
-        ISourceProject project= fParseController.getProject();
+        IProject project= fParseController.getProject();
         if (project == null) {
             return true; // this wasn't a workspace resource to begin with
         }
-        IProject rawProject= project.getRawProject();
-        if (!rawProject.exists()) {
+        if (!project.exists()) {
             return false;
         }
-        IFile file= rawProject.getFile(fParseController.getPath());
+        IFile file= project.getFile(fParseController.getPath());
         return file.exists();
     }
     

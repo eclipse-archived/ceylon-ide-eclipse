@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
@@ -46,7 +49,6 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
@@ -55,24 +57,27 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
-    protected final CeylonEditor fEditor;
+    protected final CeylonEditor editor;
     private final CompletionProcessor processor;
 
-    public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, CeylonEditor editor) {
+    private InformationPresenter infoPresenter;
+
+    public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, 
+    		CeylonEditor editor) {
         super(prefStore);
-        fEditor = editor;
+        this.editor = editor;
         processor = new CompletionProcessor();
     }
     
     @Override
     public int getTabWidth(ISourceViewer sourceViewer) {
-        return fEditor.getPrefStore().getInt(EDITOR_TAB_WIDTH);
+        return editor.getPrefStore().getInt(EDITOR_TAB_WIDTH);
     }
 
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
-        PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(fEditor);
+        PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(editor);
         reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
 		reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
@@ -98,12 +103,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
-        return new DoubleClickStrategy(fEditor.getParseController()); 
+        return new DoubleClickStrategy(editor.getParseController()); 
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-    	return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(fEditor), 
-    			new JavaHyperlinkDetector(fEditor) };
+    	return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(editor), 
+    			new JavaHyperlinkDetector(editor) };
     }
 
     /**
@@ -118,24 +123,23 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         };
     }
 
-    private InformationPresenter fInfoPresenter;
-
     public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
-        if (fInfoPresenter == null) {
-            fInfoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
-            fInfoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-            fInfoPresenter.setAnchor(ANCHOR_GLOBAL);
+        if (infoPresenter == null) {
+            infoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
+            infoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+            infoPresenter.setAnchor(ANCHOR_GLOBAL);
 
             IInformationProvider provider= new IInformationProvider() {
-            	private IAnnotationModel fAnnotationModel= fEditor.getDocumentProvider()
-            			.getAnnotationModel(fEditor.getEditorInput());
+            	private IAnnotationModel annotationModel= editor.getDocumentProvider()
+            			.getAnnotationModel(editor.getEditorInput());
 
                 private List<Annotation> getParserAnnotationsAtOffset(int offset) {
                     List<Annotation> result= new LinkedList<Annotation>();
-                    if (fAnnotationModel != null) {
-                        for(Iterator<Annotation> iter= fAnnotationModel.getAnnotationIterator(); iter.hasNext(); ) {
+                    if (annotationModel != null) {
+                        for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
+                        		iter.hasNext(); ) {
                             Annotation ann= iter.next();
-                            if (fAnnotationModel.getPosition(ann).includes(offset) && 
+                            if (annotationModel.getPosition(ann).includes(offset) && 
                             		isParseAnnotation(ann)) {
                                 result.add(ann);
                             }
@@ -149,14 +153,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
                 	if (parserAnnsAtOffset.size() > 0) {
                 		Annotation theAnn= parserAnnsAtOffset.get(0);
-                		Position pos= fAnnotationModel.getPosition(theAnn);
+                		Position pos= annotationModel.getPosition(theAnn);
                 		return new Region(pos.offset, pos.length);
                 	}
 
-                	CeylonParseController pc = fEditor.getParseController();
-                	CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
-                    Node selNode= locator.findNode(pc.getCurrentAst(), offset);
-                    return new Region(locator.getStartOffset(selNode), locator.getLength(selNode));
+                	Node selNode= findNode(editor.getParseController().getRootNode(), offset);
+                    return new Region(getStartOffset(selNode), getLength(selNode));
                 }
 
                 public String getInformation(ITextViewer textViewer, IRegion subject) {
@@ -166,21 +168,20 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
                 		return theAnn.getText();
                 	}
 
-                	CeylonParseController pc = fEditor.getParseController();
-                	Node selNode= pc.getSourcePositionLocator()
-                			.findNode(pc.getCurrentAst(), subject.getOffset());
+                	CeylonParseController pc = editor.getParseController();
+                	Node selNode= findNode(pc.getRootNode(), subject.getOffset());
                     return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
                 }
             };
-            fInfoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
-            fInfoPresenter.setSizeConstraints(60, 10, true, false);
-            fInfoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
+            infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
+            infoPresenter.setSizeConstraints(60, 10, true, false);
+            infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
         }
-        return fInfoPresenter;
+        return infoPresenter;
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new HoverHelpController(fEditor);
+        return new HoverHelpController(editor);
     }
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
@@ -195,11 +196,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		throw new UnsupportedOperationException();
     	}
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return builder.buildTree(fEditor.getParseController().getRootNode());
+    		return builder.buildTree(editor.getParseController().getRootNode());
     	}
     }
 
-    private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
+    private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, 
+    		final String commandId) {
     	return new IInformationControlCreator() {
     		@Override
     		public IInformationControl createInformationControl(Shell parent) {
@@ -208,7 +210,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	};
     }
 
-    private IInformationControlCreator getHierarchyPresenterControlCreator(ISourceViewer sourceViewer, final String commandId) {
+    private IInformationControlCreator getHierarchyPresenterControlCreator(ISourceViewer sourceViewer, 
+    		final String commandId) {
     	return new IInformationControlCreator() {
     		@Override
     		public IInformationControl createInformationControl(Shell parent) {
@@ -239,7 +242,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     private class HierarchyInformationProvider 
-    implements IInformationProvider, IInformationProviderExtension {
+            implements IInformationProvider, IInformationProviderExtension {
     	public IRegion getSubject(ITextViewer textViewer, int offset) {
     		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
     	}
@@ -248,7 +251,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		throw new UnsupportedOperationException();
     	}
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return fEditor;
+    		return editor;
     	}
     }
 
@@ -270,6 +273,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-        return new CeylonQuickFixController(fEditor);
+        return new CeylonQuickFixController(editor);
     }
 }

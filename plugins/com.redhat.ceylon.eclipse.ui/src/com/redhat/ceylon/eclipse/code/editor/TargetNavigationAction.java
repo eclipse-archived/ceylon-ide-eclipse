@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+
 import org.eclipse.imp.services.INavigationTargetFinder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
@@ -40,17 +43,14 @@ abstract class TargetNavigationAction extends Action {
     public void run() {
         IRegion selection= fEditor.getSelectedRegion();
         CeylonParseController pc= fEditor.getParseController();
-        CeylonSourcePositionLocator locator= pc.getSourcePositionLocator();
-        Object curNode= locator.findNode(pc.getCurrentAst(), selection.getOffset(), selection.getOffset() + selection.getLength() - 1);
+        Object curNode= findNode(pc.getRootNode(), selection.getOffset(), 
+        		selection.getOffset() + selection.getLength() - 1);
         if (curNode == null || selection.getOffset() == 0) {
-            curNode= pc.getCurrentAst();
+            curNode= pc.getRootNode();
         }
-        Object prev= getNavTarget(curNode, pc.getCurrentAst());
-    
-        if (prev != null) {
-            int prevOffset= locator.getStartOffset(prev);
-    
-            fEditor.selectAndReveal(prevOffset, 0);
+        Object prev= getNavTarget(curNode, pc.getRootNode());
+        if (prev!=null) {
+            fEditor.selectAndReveal(getStartOffset(prev), 0);
         }
     }
 }

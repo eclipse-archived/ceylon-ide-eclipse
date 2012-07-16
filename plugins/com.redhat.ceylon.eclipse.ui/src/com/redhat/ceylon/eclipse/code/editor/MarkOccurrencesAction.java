@@ -9,9 +9,7 @@ import java.util.Map;
 import org.eclipse.imp.runtime.RuntimePlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ISynchronizable;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
@@ -30,6 +28,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
@@ -72,11 +71,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
     private IDocument fDocument;
 
     /**
-     * The AST for the currently-active editor.
-     */
-    private Object fCompilationUnit;
-
-    /**
      * The language-specific "mark occurrences" service implementation, if any.
      */
     private CeylonOccurrenceMarker fOccurrenceMarker;
@@ -84,8 +78,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
     private Annotation[] fOccurrenceAnnotations;
 
     private ISelectionChangedListener fSelectionListener;
-
-    private IDocumentListener fDocumentListener;
 
     private IPartListener fPartListener;
 
@@ -127,7 +119,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             if (part == fActiveEditor) {
                 unregisterListeners();
                 fActiveEditor= null;
-                fCompilationUnit= null;
                 fDocumentProvider= null;
                 fDocument= null;
                 fParseController= null;
@@ -139,17 +130,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
         public void partBroughtToTop(IWorkbenchPart part) { }
         public void partDeactivated(IWorkbenchPart part) { }
         public void partOpened(IWorkbenchPart part) { }
-    }
-
-    /**
-     * Listens to document changes and invalidates the AST cache to force a re-parsing.
-     */
-    private final class DocumentListener implements IDocumentListener {
-        public void documentAboutToBeChanged(DocumentEvent event) { }
-
-        public void documentChanged(DocumentEvent event) {
-            fCompilationUnit= null;
-        }
     }
 
     /**
@@ -236,9 +216,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             return;
 
         fSelectionListener= new SelectionListener();
-        fDocumentListener= new DocumentListener();
         fActiveEditor.getSelectionProvider().addSelectionChangedListener(fSelectionListener);
-        document.addDocumentListener(fDocumentListener);
     }
 
     private void unregisterListeners() {
@@ -248,11 +226,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             ISelectionProvider provider = fActiveEditor.getSelectionProvider();
             if (provider != null)
                 fActiveEditor.getSelectionProvider().removeSelectionChangedListener(fSelectionListener);
-        }
-        if (fDocumentListener != null) {
-            IDocument document = getDocumentFromEditor();
-            if (document != null)
-                document.removeDocumentListener(fDocumentListener);
         }
         if (fPartListener != null) {
             fActiveEditor.getSite().getPage().removePartListener(fPartListener);
@@ -269,7 +242,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 
     private void recomputeAnnotationsForSelection(int offset, int length, IDocument document) {
         IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
-        Object root= getCompilationUnit();
+        Tree.CompilationUnit root= getCompilationUnit();
         if (root == null) {
             // Get this when "selecting" an error message that is shown in the editor view
             // but is not part of the source file; just returning should leave previous
@@ -369,7 +342,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
         return positions;
     }
 
-    private Object getCompilationUnit() {
+    private Tree.CompilationUnit getCompilationUnit() {
         // Do NOT compute fCompilationUnit conditionally based
         // on the AST being null; that causes problems when switching
         // between editor windows because the old value of the AST
@@ -378,8 +351,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
         // get the current AST (but in the future do something more
         // sophisticated to avoid needless recomputation but only
         // when it is truly needless).
-        fCompilationUnit= fParseController.getCurrentAst();
-        return fCompilationUnit;
+        return fParseController.getRootNode();
     }
 
     private IEditorInput getEditorInput() {

@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
-import org.eclipse.imp.model.ISourceProject;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -41,8 +40,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-        	ISourceProject project = pc.getProject();
-			gotoNode(node, project==null ? null : project.getRawProject(), 
+			gotoNode(node, pc.getProject(), 
 					pc.getTypeChecker());
         }
 

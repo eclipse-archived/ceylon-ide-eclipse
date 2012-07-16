@@ -24,29 +24,30 @@ public class CeylonOutlineNode {
 
     private List<CeylonOutlineNode> fChildren= new ArrayList<CeylonOutlineNode>();
 
-    private CeylonOutlineNode fParent;
+    private CeylonOutlineNode parent;
 
-    private final Node fASTNode;
+    private final Node astNode;
 
-    private final int fCategory;
+    private final int category;
 
     public CeylonOutlineNode(Node astNode) {
         this(astNode, DEFAULT_CATEGORY);
     }
 
     public CeylonOutlineNode(Node astNode, int category) {
-        fASTNode= astNode;
-        fCategory= category;
+        this.astNode= astNode;
+        this.category= category;
     }
 
     public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent) {
         this(astNode, parent, DEFAULT_CATEGORY);
     }
 
-    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, int category) {
-        fASTNode= astNode;
-        fParent= parent;
-        fCategory= category;
+    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, 
+    		int category) {
+        this.astNode= astNode;
+        this.parent= parent;
+        this.category= category;
     }
 
     public void addChild(CeylonOutlineNode child) {   
@@ -58,21 +59,21 @@ public class CeylonOutlineNode {
     }
 
     public CeylonOutlineNode getParent() {
-        return fParent;
+        return parent;
     }
 
     public Node getASTNode() {
-        return fASTNode;
+        return astNode;
     }
 
     public int getCategory() {
-        return fCategory;
+        return category;
     }
 
     public String toString() {
         StringBuilder sb= new StringBuilder();
 
-        sb.append(fASTNode.toString());
+        sb.append(astNode.toString());
         if (!fChildren.isEmpty()) {
             sb.append(" [");
             for(CeylonOutlineNode child: fChildren) {
