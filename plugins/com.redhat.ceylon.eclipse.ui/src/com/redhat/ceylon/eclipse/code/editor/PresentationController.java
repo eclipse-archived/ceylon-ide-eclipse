@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,15 +22,17 @@ import org.eclipse.swt.widgets.Display;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
 /**
- * A class that does the real work of repairing the text presentation for an associated ISourceViewer.
- * Calls to damage(IRegion) simply accumulate damaged regions into a work queue, which is processed
+ * A class that does the real work of repairing the text presentation 
+ * for an associated ISourceViewer. Calls to damage(IRegion) simply 
+ * accumulate damaged regions into a work queue, which is processed
  * at the subsequent call to update(IParseController, IProgressMonitor).
  * @author Claffra
  * @author rfuhrer@watson.ibm.com
  */
-public class PresentationController {
+public class PresentationController implements TreeLifecycleListener {
 
     private final ISourceViewer fSourceViewer;
     private final CeylonTokenColorer fColorer;
@@ -40,6 +44,17 @@ public class PresentationController {
         fColorer= new CeylonTokenColorer();
     }
 
+    @Override
+    public Stage getStage() {
+    	return LEXICAL_ANALYSIS;
+    }
+    
+    @Override
+    public void update(CeylonParseController parseController,
+    		IProgressMonitor monitor) {
+    	repair(parseController, monitor);
+    }
+    
     /**
      * Push the damaged area onto the work queue for repair 
      * when we get scheduled to process the queue
@@ -73,21 +88,24 @@ public class PresentationController {
         if (!monitor.isCanceled() && fSourceViewer!=null && 
         		fSourceViewer.getDocument()!=null) {
             synchronized (fWorkItems) {
-                if (fWorkItems.size() == 0 && fSourceViewer.getDocument() != null) {
+                if (fWorkItems.size()==0 && fSourceViewer.getDocument()!=null) {
                     // TODO Shouldn't need to re-color the entire source file here.
-                    // This is intended to handle the case that the parser finishes *after*
-                    // the PresentationRepairer asks for an update().
-                    // We could do a more focused update, if we knew what part of the file had changed.
+                    // This is intended to handle the case that the parser finishes 
+                	// *after* the PresentationRepairer asks for an update().
+                    // We could do a more focused update, if we knew what part of 
+                	// the file had changed.
                     fWorkItems.add(new Region(0, fSourceViewer.getDocument().getLength()));
                 }
-                // TODO Optimization: when there are multiple work items, control redrawing explicitly.
-                // See JavaDoc regarding ITextViewer.changeTextPresentation()'s 2nd argument.
-                // Probably not very common (only refactoring or search/replace?), but perhaps worthwhile.
-                for(int n= fWorkItems.size() - 1; !monitor.isCanceled() && n >= 0; n--) {
-                    Region damage= (Region) fWorkItems.get(n);
-                    changeTextPresentationForRegion(controller, monitor, damage);
+                // TODO Optimization: when there are multiple work items, control 
+                // redrawing explicitly. See JavaDoc regarding ITextViewer.changeTextPresentation()'s 
+                // 2nd argument. Probably not very common (only refactoring or 
+                // search/replace?), but perhaps worthwhile.
+                for(int n= fWorkItems.size()-1; !monitor.isCanceled() && n>=0; n--) {
+                    changeTextPresentationForRegion(controller, monitor, 
+                    		fWorkItems.get(n));
                 }
-                // TODO Remove the work items we actually processed, whether the monitor was canceled or not
+                // TODO Remove the work items we actually processed, whether the 
+                // monitor was canceled or not
                 if (!monitor.isCanceled()) {
                     fWorkItems.removeAllElements();
                 }
@@ -135,16 +153,18 @@ public class PresentationController {
     		TextPresentation presentation, Object token, CeylonSourcePositionLocator locator) {
         TextAttribute attribute= fColorer.getColoring(controller, token);
 
-        StyleRange styleRange= new StyleRange(locator.getStartOffset(token), locator.getEndOffset(token) - locator.getStartOffset(token) + 1,
+        StyleRange styleRange= new StyleRange(locator.getStartOffset(token), 
+        		locator.getEndOffset(token)-locator.getStartOffset(token)+1,
                 attribute == null ? null : attribute.getForeground(),
                 attribute == null ? null : attribute.getBackground(),
                 attribute == null ? SWT.NORMAL : attribute.getStyle());
 
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)
-        if (styleRange.length <= 0 || styleRange.start + styleRange.length > fSourceViewer.getDocument().getLength()) {
-//          System.err.println("Omitting token '" + token + "' w/ empty style range: " + styleRange.start + ":" + styleRange.length);
-        } else {
+        if (styleRange.length <= 0 || 
+        		styleRange.start+styleRange.length > fSourceViewer.getDocument().getLength()) {
+        } 
+        else {
             presentation.addStyleRange(styleRange);
         }
     }
@@ -154,7 +174,8 @@ public class PresentationController {
             return;
         }
 
-        final int docLength= (fSourceViewer.getDocument() != null) ? fSourceViewer.getDocument().getLength() : 0;
+        final int docLength= (fSourceViewer.getDocument() != null) ? 
+        		fSourceViewer.getDocument().getLength() : 0;
         final TextPresentation newPresentation= fixPresentation(presentation, docLength, false /*sort?*/);
 
         Display.getDefault().asyncExec(new Runnable() {
@@ -164,20 +185,24 @@ public class PresentationController {
             	        // The document might have changed since the presentation was computed, so
             	        // trim the presentation's "result window" to the current document's extent.
             	        // This avoids upsetting SWT, but there's still a question as to whether
-            	        // this is really the right thing to do. I.e., this assumes that the
+            	        // this is really the right thing to do. i.e., this assumes that the
             	        // presentation will get recomputed later on, when the new document change
             	        // gets noticed. But will it?
-            	        int newDocLength= (fSourceViewer.getDocument() != null) ? fSourceViewer.getDocument().getLength() : 0;
+            	        int newDocLength= (fSourceViewer.getDocument() != null) ? 
+            	        		fSourceViewer.getDocument().getLength() : 0;
             	        IRegion presExtent= newPresentation.getExtent();
 
             	        if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
 //            	            System.out.println("Trimming result window...");
-            	            newPresentation.setResultWindow(new Region(presExtent.getOffset(), newDocLength - presExtent.getOffset()));
+            	            newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
+            	            		newDocLength - presExtent.getOffset()));
             	        }
         	    		fSourceViewer.changeTextPresentation(newPresentation, true);
         	    	}
-        	    } catch (IllegalArgumentException e) {
-                    int curDocLength= (fSourceViewer.getDocument() != null) ? fSourceViewer.getDocument().getLength() : 0;
+        	    } 
+        	    catch (IllegalArgumentException e) {
+                    int curDocLength= (fSourceViewer.getDocument() != null) ? 
+                    		fSourceViewer.getDocument().getLength() : 0;
         	        diagnoseStyleRangeError(presentation, curDocLength, e);
         	    }
             }
@@ -191,7 +216,8 @@ public class PresentationController {
      * and their lengths will all be positive.
      * Optionally, will also sort the ranges, and ensure that they don't overlap. 
      */
-    private TextPresentation fixPresentation(final TextPresentation presentation, int docLen, boolean sort) {
+    private TextPresentation fixPresentation(final TextPresentation presentation, 
+    		int docLen, boolean sort) {
         if (checkPresentation(presentation, docLen)) {
             return presentation;
         }
@@ -282,7 +308,8 @@ public class PresentationController {
      * Try to determine the real cause of the problem, and add an appropriate message
      * for the exception in the plugin log.
      */
-    private void diagnoseStyleRangeError(final TextPresentation presentation, int charCount, IllegalArgumentException e) {
+    private void diagnoseStyleRangeError(final TextPresentation presentation, 
+    		int charCount, IllegalArgumentException e) {
         // Possible causes (not necessarily complete):
         // - negative length in a style range
         // - overlapping ranges
@@ -297,7 +324,8 @@ public class PresentationController {
         	StyleRange firstRange = rangesList.get(0);
 
         	if (firstRange.length < 0) {
-        		explanation.append("Style range with start = " + firstRange.start + " has negative length = " + firstRange.length);
+        		explanation.append("Style range with start = " + firstRange.start + 
+        				" has negative length = " + firstRange.length);
         	}
         	StyleRange prevRange= firstRange;
         	for (int i = 1; i < rangesList.size(); i++) {
@@ -305,14 +333,16 @@ public class PresentationController {
                 int currStart = currRange.start;
         	    int currLength = currRange.length;
         	    if (currLength < 0) {
-        	        explanation.append("Style range with start = " + currStart + " has negative length = " + currLength);
+        	        explanation.append("Style range with start = " + currStart + 
+        	        		" has negative length = " + currLength);
         	        break;
         	    }
 
         	    int prevStart = prevRange.start;
         	    int prevLength = prevRange.length;
         	    if (prevStart + prevLength - 1 >= currStart) {
-        	        explanation.append("Style range with start = " + prevStart + " and length = " + prevLength +
+        	        explanation.append("Style range with start = " + prevStart + 
+        	        		" and length = " + prevLength +
         	                " overlaps style range with start = " + currStart);
         	        break;
             	}
@@ -323,7 +353,8 @@ public class PresentationController {
         	int finalLength = presentation.getLastStyleRange().length;
         	int finalEnd = finalStart + finalLength;
         	if (finalEnd >= charCount) {
-        	    explanation.append("Final style range with start = " + finalStart + " and length = " + finalLength + 
+        	    explanation.append("Final style range with start = " + finalStart + 
+        	    		" and length = " + finalLength + 
         	            " extends beyond last character (character count = " + charCount + ")");
         	}
         	if (explanation.length() == 0) {

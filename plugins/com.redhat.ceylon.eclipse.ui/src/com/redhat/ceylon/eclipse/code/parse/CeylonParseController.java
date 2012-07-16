@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
@@ -52,6 +55,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
@@ -78,7 +82,7 @@ public class CeylonParseController implements IParseController {
     		org.eclipse.imp.parser.IMessageHandler handler) {
 		this.fProject= project;
 		this.fFilePath= filePath;
-		this.handler= (IMessageHandler) handler;
+		this.handler= (MessageHandler) handler;
         simpleAnnotationTypeInfo.addProblemMarkerType(PROBLEM_MARKER_ID);
     }
     
@@ -126,6 +130,10 @@ public class CeylonParseController implements IParseController {
     }
     
     public Object parse(String contents, IProgressMonitor monitor) {
+    	return parse(contents, monitor, null);
+    }
+    
+    public Object parse(String contents, IProgressMonitor monitor, Stager stager) {
         
         IPath path = getPath();
         ISourceProject sourceProject = getProject();
@@ -163,6 +171,14 @@ public class CeylonParseController implements IParseController {
         }
         CeylonLexer lexer = new CeylonLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        tokenStream.fill();
+        
+        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+        tokens.addAll(tokenStream.getTokens());
+
+        if (stager!=null) {
+        	stager.afterStage(LEXICAL_ANALYSIS, monitor);
+        }
         
         if (isCanceling(monitor)) {
             return fCurrentAst;
@@ -177,9 +193,12 @@ public class CeylonParseController implements IParseController {
             throw new RuntimeException(e);
         }
         
-        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-        tokens.addAll(tokenStream.getTokens());
-
+        collectLexAndParseErrors(lexer, parser, cu);
+        
+        if (stager!=null) {
+        	stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+        }
+        
         if (isCanceling(monitor)) {
             return fCurrentAst;
         }
@@ -207,26 +226,20 @@ public class CeylonParseController implements IParseController {
         	project = findProject(path);
         }
         
-        if (isCanceling(monitor)) {
-            return fCurrentAst;
-        }
-
         if (project != null) {
             if (!isModelAvailable(project)) {
-                return fCurrentAst; // TypeChecking has not been performed.
+                return fCurrentAst; // TypeChecking has not been performed
             }
             typeChecker = getProjectTypeChecker(project);
             //modelLoader = getProjectModelLoader(project);
         }
         
+        fCurrentAst = cu;
+        
         if (isCanceling(monitor)) {
             return fCurrentAst;
         }
 
-        collectLexAndParseErrors(lexer, parser, cu);
-        
-        fCurrentAst = cu;
-        
         boolean showWarnings = showWarnings(project);
         
         if (typeChecker == null) {
@@ -243,14 +256,13 @@ public class CeylonParseController implements IParseController {
         }
 
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
-        
         cu = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
         
-        if (isCanceling(monitor)) {
-            return fCurrentAst;
-        }
-        
         collectErrors(cu);
+        
+        if (stager!=null) {
+        	stager.afterStage(TYPE_ANALYSIS, monitor);
+        }
         
         return fCurrentAst;
     }
@@ -271,7 +283,6 @@ public class CeylonParseController implements IParseController {
 	}
 
 	private void collectErrors(Tree.CompilationUnit cu) {
-		final IMessageHandler handler = getHandler();
         if (handler!=null) {
             cu.visit(new ErrorVisitor(handler) {
                 @Override
@@ -494,9 +505,9 @@ public class CeylonParseController implements IParseController {
 	protected IPath fFilePath;
 
 	/**
-	 * The {@link IMessageHandler} to which parser/compiler messages are directed.
+	 * The {@link MessageHandler} to which parser/compiler messages are directed.
 	 */
-	protected IMessageHandler handler;
+	protected MessageHandler handler;
 
 	/**
 	 * The current AST (if any) produced by the most recent successful parse.<br>
@@ -511,10 +522,13 @@ public class CeylonParseController implements IParseController {
 	 */
 	protected IDocument fDocument;
 
-
 	public Object parse(IDocument doc, IProgressMonitor monitor) {
+		return parse(doc, monitor, null);
+	}
+
+	public Object parse(IDocument doc, IProgressMonitor monitor, Stager stager) {
 	    fDocument= doc;
-	    return parse(fDocument.get(), monitor);
+	    return parse(fDocument.get(), monitor, stager);
 	}
 
 	public ISourceProject getProject() {
@@ -523,10 +537,6 @@ public class CeylonParseController implements IParseController {
 
 	public IPath getPath() {
 		return fFilePath;
-	}
-
-	public IMessageHandler getHandler() {
-		return handler;
 	}
 
 	public Object getCurrentAst() {

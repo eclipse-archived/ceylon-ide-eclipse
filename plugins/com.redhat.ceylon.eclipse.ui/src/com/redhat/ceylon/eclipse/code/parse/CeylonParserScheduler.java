@@ -1,10 +1,6 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.LEXICAL_ANALYSIS;
-import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.POINTER_ANALYSIS;
-
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -20,6 +16,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+
 public class CeylonParserScheduler extends Job {
 
     private boolean canceling = false;
@@ -27,13 +25,13 @@ public class CeylonParserScheduler extends Job {
     private CeylonParseController fParseController;
     private IDocumentProvider fDocumentProvider;
     private IEditorPart fEditorPart;
-    private IMessageHandler fMsgHandler;
+    private MessageHandler fMsgHandler;
     
-    private final List<IModelListener> fAstListeners = new ArrayList<IModelListener>();
+    private final List<TreeLifecycleListener> fAstListeners = new ArrayList<TreeLifecycleListener>();
 
     public CeylonParserScheduler(CeylonParseController parseController,
             IEditorPart editorPart, IDocumentProvider docProvider,
-            final IMessageHandler msgHandler) {
+            final MessageHandler msgHandler) {
     	super("ParserScheduler for " + editorPart.getEditorInput().getName());
         setSystem(true); //do not show this job in the Progress view
         setPriority(SHORT);
@@ -54,6 +52,12 @@ public class CeylonParserScheduler extends Job {
 
     public boolean isCanceling() {
         return canceling;
+    }
+    
+    public class Stager {
+    	void afterStage(Stage stage, IProgressMonitor monitor) {
+    		notifyModelListeners(stage, monitor);
+    	}
     }
 
     private boolean sourceStillExists() {
@@ -111,58 +115,41 @@ public class CeylonParserScheduler extends Job {
                     // don't bother to retrieve the AST; we don't 
                 	// need it; just make sure the document gets 
                 	// parsed
-                    fParseController.parse(document, wrappedMonitor);
+                    fParseController.parse(document, wrappedMonitor, new Stager());
                     if (!wrappedMonitor.isCanceled()) {
                         fMsgHandler.endMessages();
                     }
                 }
-                if (!wrappedMonitor.isCanceled()) { //&& sourceStillExists()
-                    notifyModelListeners(wrappedMonitor);
-                } 
-                else {
-                    return Status.CANCEL_STATUS;
-                }
             } 
             catch (Exception e) {
                 e.printStackTrace();
-                // Notify the AST listeners even on an exception - 
-                // the compiler front end may have failed at some 
-                // phase, but there may be enough info to drive IDE 
-                // services
-                if (!wrappedMonitor.isCanceled()) {
-                    notifyModelListeners(wrappedMonitor);
-                } 
-                else {
-                    return Status.CANCEL_STATUS;
-                }
             }
-            return Status.OK_STATUS;
+            return wrappedMonitor.isCanceled() ? //&& sourceStillExists()
+            		Status.OK_STATUS : Status.CANCEL_STATUS;
         }
         finally {
             canceling = false;
         }
     }
 
-    public void addModelListener(IModelListener listener) {
+    public void addModelListener(TreeLifecycleListener listener) {
         fAstListeners.add(listener);
     }
 
-    public void removeModelListener(IModelListener listener) {
+    public void removeModelListener(TreeLifecycleListener listener) {
         fAstListeners.remove(listener);
     }
 
-    public void notifyModelListeners(IProgressMonitor monitor) {
+    private void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         // Suppress the notification if there's no AST (e.g. due to a parse error)
         if (fParseController!=null) {
-            for (IModelListener listener: fAstListeners) {
+            for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(fAstListeners)) {
             	if (monitor.isCanceled()) break;
                 // TODO: How to tell how far we got with the source analysis? 
             	//       CeylonParseController should tell us!
                 // Pretend to get through the highest level of analysis so 
             	// all services execute (for now)
-                int analysisLevel= fParseController.getCurrentAst()==null ?
-                		LEXICAL_ANALYSIS.level() : POINTER_ANALYSIS.level();
-                if (listener.getAnalysisRequired().level() <= analysisLevel) {
+                if (listener.getStage()==stage) {
                     listener.update(fParseController, monitor);
                 }
             }

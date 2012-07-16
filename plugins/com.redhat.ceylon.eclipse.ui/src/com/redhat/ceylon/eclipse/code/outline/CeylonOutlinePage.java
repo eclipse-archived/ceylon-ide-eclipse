@@ -12,7 +12,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.SYNTACTIC_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -38,10 +38,10 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.code.parse.IModelListener;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class CeylonOutlinePage extends ContentOutlinePage implements IModelListener {
+public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecycleListener {
 	
     private final ITreeContentProvider fContentProvider;
     private final CeylonOutlineBuilder fModelBuilder;
@@ -77,7 +77,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements IModelListe
         };
     }
 
-    public AnalysisRequired getAnalysisRequired() {
+    public Stage getStage() {
         return SYNTACTIC_ANALYSIS;
     }
     

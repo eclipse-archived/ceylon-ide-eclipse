@@ -11,17 +11,18 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FORMAT;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_NEXT_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_PREVIOUS_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.FORMAT;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_MATCHING_FENCE;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_NEXT_TARGET;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.GOTO_PREVIOUS_TARGET;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SELECT_ENCLOSING;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.SHOW_OUTLINE;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.TOGGLE_COMMENT;
-import static com.redhat.ceylon.eclipse.code.parse.IModelListener.AnalysisRequired.LEXICAL_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
@@ -49,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -133,6 +137,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
@@ -141,8 +146,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.IAnnotationTypeInfo;
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
-import com.redhat.ceylon.eclipse.code.parse.IModelListener;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -979,8 +984,8 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private void watchDocument() {
-        IDocument doc= getDocumentProvider().getDocument(getEditorInput());
-        doc.addDocumentListener(fDocumentListener= new IDocumentListener() {
+        getSourceViewer().getDocument()
+                .addDocumentListener(fDocumentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
                 fParserScheduler.cancel();
@@ -1200,36 +1205,17 @@ extends PreviousSubWordAction implements IUpdate {
             }
 
             EditorAnnotationService editorService = new EditorAnnotationService(this);
-            fParserScheduler.addModelListener(editorService);
+            addModelListener(editorService);
 
             presentationController = new PresentationController(getSourceViewer());
-            //Note: the following is not necessary at all because the eclipse 
-            //      PresentationReconciler also calls the PresentationController
-            //addModelListener(presentationController);
-            //presentationController.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            presentationController.damage(new Region(0, sourceViewer.getDocument().getLength()));
+            addModelListener(presentationController);
             
             watchDocument();
             watchForSourceMove();
             watchForSourceBuild();
             
             fParserScheduler.schedule();
-            
-            addModelListener(new IModelListener() {
-            	volatile boolean hasRun = false;
-				@Override
-				public void update(CeylonParseController parseController,
-						IProgressMonitor monitor) {
-					if (!hasRun) {
-						presentationController.damage(new Region(0, 
-								sourceViewer.getDocument().getLength()));
-						hasRun = true;
-					}
-				}
-				@Override
-				public AnalysisRequired getAnalysisRequired() {
-					return LEXICAL_ANALYSIS;
-				}
-			});
             
         } 
         catch (Exception e) {
@@ -1239,7 +1225,7 @@ extends PreviousSubWordAction implements IUpdate {
     
     private void setTitleImageFromLanguageIcon() {
     	IEditorInput editorInput= getEditorInput();
-    	Object fileOrPath= EditorInputUtils.getFile(editorInput);
+    	Object fileOrPath= getFile(editorInput);
     	if (fileOrPath==null) {
     		fileOrPath = getParseController().getPath();
     	}
@@ -1303,10 +1289,10 @@ extends PreviousSubWordAction implements IUpdate {
           fActionBars = null;
         }*/
 
-        if (fDocumentListener!=null) {
-        	getDocumentProvider().getDocument(getEditorInput())
+        /*if (fDocumentListener!=null) {
+        	getSourceViewer().getDocument()
         	    .removeDocumentListener(fDocumentListener);
-        }
+        }*/
         
         if (buildListener!=null) {
         	getWorkspace().removeResourceChangeListener(buildListener);
@@ -1725,7 +1711,7 @@ extends PreviousSubWordAction implements IUpdate {
      * 
      * @param listener the listener to notify of Model changes
      */
-    public void addModelListener(IModelListener listener) {
+    public void addModelListener(TreeLifecycleListener listener) {
         fParserScheduler.addModelListener(listener);
     }
 
@@ -1734,38 +1720,108 @@ extends PreviousSubWordAction implements IUpdate {
      * 
      * @param listener the listener to remove
      */
-    public void removeModelListener(IModelListener listener) {
+    public void removeModelListener(TreeLifecycleListener listener) {
         fParserScheduler.removeModelListener(listener);
     }
 
-    class PresentationDamager implements IPresentationDamager {
+    class PresentationDamageRepairer implements IPresentationDamager, IPresentationRepairer {
+    	boolean firstTime;
+    	boolean applyImmediately;
+    	
     	public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, 
     			boolean documentPartitioningChanged) {
+    		if (firstTime) {
+    			firstTime=false;
+    			return partition;
+    		}
     		// TODO: figure how much of the document presentation 
     		//       needs to be recomputed
+    		if (noTextChange(event)) {
+    			applyImmediately = true;
+    			return new Region(event.getOffset(), event.getLength());
+    		}
+    		/*CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(event.getDocument().get()));
+			CommonTokenStream cts = new CommonTokenStream(lexer);
+			cts.fill();
+			List<CommonToken> tokens = new ArrayList<CommonToken>(cts.getTokens().size());
+			tokens.addAll(cts.getTokens());*/
+    		List<CommonToken> tokens = parseController.getTokens();
+    		if (tokens!=null) {
+    			int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
+    			if (i<0) {
+    				i=-i;
+    			}
+    			CommonToken t = tokens.get(i);
+    			boolean withinToken = false;
+    			if (t.getStartIndex()<=event.getOffset() && 
+    					t.getStopIndex()>=event.getOffset()+event.getLength()-1) {
+    				withinToken = true;
+    				int type = t.getType();
+					switch (type) {
+					case CeylonLexer.WS:
+						for (char c: event.getText().toCharArray()) {
+						    if (!Character.isWhitespace(c)) {
+						    	withinToken = false;
+						    }
+						}
+					break;
+					case CeylonLexer.UIDENTIFIER:
+					case CeylonLexer.LIDENTIFIER:
+						for (char c: event.getText().toCharArray()) {
+						    if (!Character.isJavaIdentifierPart(c)) {
+						    	withinToken = false;
+						    }
+						}
+					break;
+					case CeylonLexer.STRING_LITERAL:
+						for (char c: event.getText().toCharArray()) {
+						    if (c=='"') {
+						    	withinToken = false;
+						    }
+						}
+					break;
+					case CeylonLexer.MULTI_COMMENT:
+						for (char c: event.getText().toCharArray()) {
+						    if (c=='/'||c=='*') {
+						    	withinToken = false;
+						    }
+						}
+					break;
+					case CeylonLexer.LINE_COMMENT:
+						for (char c: event.getText().toCharArray()) {
+						    if (c=='\n'||c=='\f'||c=='\r') {
+						    	withinToken = false;
+						    }
+						}
+					break;
+					default:
+				    	withinToken = false;
+    			    }
+					if (withinToken) {
+						return new Region(event.getOffset(), 
+								event.getText().length());
+					}
+    			}
+    		}
     		return partition;
     	}
-    	public void setDocument(IDocument document) {}
-    }
 
-    class PresentationRepairer implements IPresentationRepairer {
-    	// For checking whether the damage region has changed
-    	ITypedRegion previousDamage= null;
-
+    	boolean noTextChange(DocumentEvent event) {
+    		try {
+    			return event.getDocument()
+    					.get(event.getOffset(),event.getLength())
+    					.equals(event.getText());
+    		} 
+    		catch (BadLocationException e) {
+    			return false;
+    		}
+    	}
+    	
     	public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
-    		// If the given damage region is the same as the previous 
-    		// one, assume it's due to removing a hyperlink decoration
-    		boolean hyperlinkRestore= previousDamage!=null && 
-    				damage.getOffset()==previousDamage.getOffset() 
-    				&& damage.getLength()==previousDamage.getLength();
-
-			// BUG should we really just ignore the presentation 
-			// passed in? JavaDoc says we're responsible for 
-			//"merging" our changes in...
 			try {
 				if (presentationController!=null) {
 					presentationController.damage(damage);
-					if (hyperlinkRestore) {
+					if (applyImmediately) {
 						presentationController.repair(getParseController(), 
 								new NullProgressMonitor());
 					}
@@ -1774,20 +1830,19 @@ extends PreviousSubWordAction implements IUpdate {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			previousDamage= damage;
     	}
-
         public void setDocument(IDocument document) {}
     }
 
-    private IMessageHandler fAnnotationCreator= new AnnotationCreator(this);
+    private MessageHandler fAnnotationCreator= new AnnotationCreator(this);
     private EditorErrorTickUpdater fEditorErrorTickUpdater;
     private IProblemChangedListener fAnnotationUpdater;
 
-    private class AnnotationCreatorListener implements IModelListener {
-        public AnalysisRequired getAnalysisRequired() {
-            return AnalysisRequired.NONE; // Even if it doesn't scan, it's ok - this posts the error annotations!
+    private class AnnotationCreatorListener implements TreeLifecycleListener {
+        public Stage getStage() {
+        	//TODO: post the lex/parse errors earlier,
+        	//      before type checking is complete?
+            return TYPE_ANALYSIS;
         }
         public void update(CeylonParseController parseController, IProgressMonitor monitor) {
             // SMS 25 Apr 2007

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
-import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.SEVERITY_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.SEVERITY_KEY;
 
 import java.util.Map;
 

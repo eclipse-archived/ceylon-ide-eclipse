@@ -20,7 +20,7 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 public class AnnotationUtils {
     // Following is just used for debugging to discover new annotation types to filter out
@@ -92,7 +92,7 @@ public class AnnotationUtils {
 		} 
 		else if (annotation instanceof MarkerAnnotation) {
 			errorCode = ((MarkerAnnotation) annotation).getMarker()
-					.getAttribute(IMessageHandler.ERROR_CODE_KEY, -1);
+					.getAttribute(MessageHandler.ERROR_CODE_KEY, -1);
 		}
 		
 		// Fall back to comparing the text associated with this annotation

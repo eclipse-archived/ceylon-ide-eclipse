@@ -1,15 +1,15 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.ERROR_CODE_KEY;
-import static com.redhat.ceylon.eclipse.code.parse.IMessageHandler.SEVERITY_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.SEVERITY_KEY;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -23,10 +23,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public abstract class ErrorVisitor extends Visitor {
 	
-    private final IMessageHandler handler;
+    private final MessageHandler handler;
     private boolean warnForErrors = false;
     
-    public ErrorVisitor(IMessageHandler handler) {
+    public ErrorVisitor(MessageHandler handler) {
         this.handler = handler;
     }
 

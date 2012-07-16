@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.FOLDING_COLLAPSE_COMMENTS;
-import static com.redhat.ceylon.eclipse.code.editor.IEditorActionDefinitionIds.FOLDING_COLLAPSE_MEMBERS;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FOLDING_COLLAPSE_COMMENTS;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FOLDING_COLLAPSE_MEMBERS;
 import static org.eclipse.imp.actions.FoldingMessages.getResourceBundle;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE_ALL;

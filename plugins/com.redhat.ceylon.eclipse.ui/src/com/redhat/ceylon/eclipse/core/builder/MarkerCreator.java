@@ -5,7 +5,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 /**
  * This class provides a message handler that creates markers in
@@ -20,7 +20,7 @@ import com.redhat.ceylon.eclipse.code.parse.IMessageHandler;
  * token provided with each message, and attaches the marker to
  * the given file at the computed line.
  */
-public class MarkerCreator implements IMessageHandler {
+public class MarkerCreator implements MessageHandler {
     protected IFile file;
     protected String problemType;
 

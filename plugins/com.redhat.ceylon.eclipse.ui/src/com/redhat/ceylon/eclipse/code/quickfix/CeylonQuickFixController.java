@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.imp.model.ICompilationUnit;
 import org.eclipse.imp.model.ModelFactory;
-import org.eclipse.imp.utils.NullMessageHandler;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -92,7 +91,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant implements IQ
     	}
     	else if (model!=null) {
     		//TODO: this is really slow ... get the tree from CeylonBuilder
-    		return (Tree.CompilationUnit) model.getAST(new NullMessageHandler(), 
+    		return (Tree.CompilationUnit) model.getAST(null, 
     				new NullProgressMonitor());
     	}
     	else {

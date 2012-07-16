@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
  * can be bound to keystrokes in the UI.
  * @author rfuhrer@watson.ibm.com
  */
-public interface IEditorActionDefinitionIds {
+public interface EditorActionIds {
     /**
      * Action definition ID of the Edit -> Correct Indentation action
      * (value <code>"org.eclipse.imp.runtime.editor.correctIndentation"</code>).

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.formatAnnotationList;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForOffset;
 
@@ -16,10 +17,10 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.IModelListener;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
 public class HoverHelpController implements ITextHover, ITextHoverExtension, 
-        ITextHoverExtension2, IModelListener {
+        ITextHoverExtension2, TreeLifecycleListener {
 	
     private CeylonParseController controller;
     private HoverHelper hoverHelper;
@@ -30,8 +31,8 @@ public class HoverHelpController implements ITextHover, ITextHoverExtension,
         fHover = new BestMatchHover(editor);
     }
 
-    public AnalysisRequired getAnalysisRequired() {
-        return AnalysisRequired.NAME_ANALYSIS;
+    public Stage getStage() {
+        return TYPE_ANALYSIS;
     }
 
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
