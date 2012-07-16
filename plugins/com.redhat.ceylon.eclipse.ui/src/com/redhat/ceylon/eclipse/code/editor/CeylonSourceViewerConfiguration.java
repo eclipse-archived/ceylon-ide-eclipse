@@ -72,7 +72,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
-        CeylonEditor.PresentationDamageRepairer damageRepairer = fEditor.new PresentationDamageRepairer();
+        PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(fEditor);
         reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
 		reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;

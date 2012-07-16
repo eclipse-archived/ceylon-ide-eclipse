@@ -23,14 +23,16 @@ import org.eclipse.ui.IFileEditorInput;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 /**
+ * Updates the file icon at the top of the editor window.
+ * 
  * @author Robert M. Fuhrer
  */
-public class EditorErrorTickUpdater implements IProblemChangedListener {
+public class EditorIconUpdater implements IProblemChangedListener {
 	
     private final CeylonEditor fEditor;
     private final CeylonLabelProvider fLabelProvider= new CeylonLabelProvider();
 
-    public EditorErrorTickUpdater(CeylonEditor editor) {
+    public EditorIconUpdater(CeylonEditor editor) {
         Assert.isNotNull(editor);
         fEditor= editor;
         fEditor.getProblemMarkerManager().addListener(this);
