@@ -22,7 +22,7 @@ public abstract class AbstractHandler extends org.eclipse.core.commands.Abstract
     //TODO: copy/pasted from AbstractFindAction
     public static Node getSelectedNode(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
-        return cpc.getRootNode()==null ? null : 
+        return cpc==null || cpc.getRootNode()==null ? null : 
             findNode(cpc.getRootNode(), 
                 (ITextSelection) editor.getSelectionProvider().getSelection());
     }
