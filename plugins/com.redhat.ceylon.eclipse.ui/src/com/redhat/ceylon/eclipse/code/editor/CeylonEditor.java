@@ -248,7 +248,7 @@ public class CeylonEditor extends TextEditor {
 	public Object getOutlinePage() {
 		if (outlinePage == null) {
 		    outlinePage = new CeylonOutlinePage(getParseController(),
-		            new CeylonOutlineBuilder(), new CeylonLabelProvider());
+		            new CeylonOutlineBuilder());
 		    parserScheduler.addModelListener(outlinePage);
 		    //myOutlinePage.update(parseController);
 		 }
