@@ -14,9 +14,6 @@ public class CeylonElement {
 	
 	public CeylonElement(Tree.StatementOrArgument node, 
 			VirtualFile file, Token location) {
-		if (node==null) {
-			file.getName();
-		}
 		this.node = node;
 		this.file = file;
 		this.location = location;
