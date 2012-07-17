@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Widget;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends Popup {
@@ -140,11 +141,13 @@ public class OutlinePopup extends Popup {
         }
     }
 
-    public OutlinePopup(Shell parent, int shellStyle, int treeStyle, String commandId) {
+    public OutlinePopup(CeylonEditor editor, Shell parent, 
+    		int shellStyle, int treeStyle, String commandId) {
         super(parent, shellStyle, treeStyle, commandId, true);
+        setTitleText("Outline of '" + editor.getEditorInput().getName() + "'");
     }
 
-    protected TreeViewer createTreeViewer(Composite parent, int style) {
+	protected TreeViewer createTreeViewer(Composite parent, int style) {
         Tree tree= new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
         GridData gd= new GridData(GridData.FILL_BOTH);
         gd.heightHint= tree.getItemHeight() * 12;

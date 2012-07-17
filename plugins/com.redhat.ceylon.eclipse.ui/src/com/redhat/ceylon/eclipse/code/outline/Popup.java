@@ -333,7 +333,7 @@ public abstract class Popup extends PopupDialog
 	 */
 	protected boolean hasHeader() {
 		// default is to have no header
-		return false;
+		return true;
 	}
 
 	protected Text getFilterText() {
