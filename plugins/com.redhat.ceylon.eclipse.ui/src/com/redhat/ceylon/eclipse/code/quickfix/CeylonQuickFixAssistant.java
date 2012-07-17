@@ -493,7 +493,9 @@ public class CeylonQuickFixAssistant {
     private void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
         ProblemLocation problem, Collection<ICompletionProposal> proposals, 
         IProject project, TypeChecker tc, IFile file) {
-        String brokenName = getIdentifyingNode(node).getText();
+        Node idn = getIdentifyingNode(node);
+        if (idn==null) return;
+		String brokenName = idn.getText();
         if (brokenName.isEmpty()) return;
         //Tree.BaseType bt = (Tree.BaseType) node;
         FindContainerVisitor fdv = new FindContainerVisitor(node);
