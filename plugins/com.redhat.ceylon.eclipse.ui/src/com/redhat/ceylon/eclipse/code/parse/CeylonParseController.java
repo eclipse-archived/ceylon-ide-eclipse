@@ -185,6 +185,11 @@ public class CeylonParseController {
             throw new RuntimeException(e);
         }
         
+        //TODO: make the AST available now, so that
+        //      services like FoldingUpdater can
+        //      make use of it in the callback
+        rootNode = cu;
+        
         collectLexAndParseErrors(lexer, parser, cu);
         
         if (stager!=null) {
@@ -222,8 +227,6 @@ public class CeylonParseController {
             typeChecker = getProjectTypeChecker(project);
             //modelLoader = getProjectModelLoader(project);
         }
-        
-        rootNode = cu;
         
         if (isCanceling(monitor)) {
             return rootNode;
