@@ -80,9 +80,7 @@ public class CeylonTokenColorer  {
         packageAttribute = text(colorRegistry, PACKAGES, SWT.NORMAL);
     }
     
-    public TextAttribute getColoring(CeylonParseController controller, Object o) {
-        if (o == null) return null;
-        Token token = (Token) o;
+    public TextAttribute getColoring(Token token) {
         switch (token.getType()) {
             case CeylonParser.PIDENTIFIER:
                 return packageAttribute;

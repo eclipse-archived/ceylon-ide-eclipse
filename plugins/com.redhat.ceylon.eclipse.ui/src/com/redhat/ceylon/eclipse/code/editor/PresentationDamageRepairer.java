@@ -4,7 +4,10 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 
 import java.util.List;
 
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -16,6 +19,8 @@ import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class PresentationDamageRepairer implements IPresentationDamager, IPresentationRepairer {
 	
@@ -100,23 +105,12 @@ class PresentationDamageRepairer implements IPresentationDamager, IPresentationR
 		return partition;
 	}
 
-	boolean noTextChange(DocumentEvent event) {
-		try {
-			return event.getDocument()
-					.get(event.getOffset(),event.getLength())
-					.equals(event.getText());
-		} 
-		catch (BadLocationException e) {
-			return false;
-		}
-	}
-	
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
 		try {
 			PresentationController pc = editor.getPresentationController();
 			if (pc!=null) {
-				if (applyImmediately!=null &&
+				/*if (applyImmediately!=null &&
 						applyImmediately.getOffset()==damage.getOffset() &&
 						applyImmediately.getLength()==damage.getLength()) {
 					//these updates represent hyperlink decorations
@@ -131,12 +125,44 @@ class PresentationDamageRepairer implements IPresentationDamager, IPresentationR
 				}
 				else {
 					pc.registerDamage(damage);
-				}
+				}*/
+				List<CommonToken> tokens = parse(editor.getCeylonSourceViewer().getDocument().get());
+				pc.aggregateTextPresentation(tokens, null, damage, presentation);
+				pc.applyTextPresentationChange(presentation);
 			}
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	boolean noTextChange(DocumentEvent event) {
+		try {
+			return event.getDocument()
+					.get(event.getOffset(),event.getLength())
+					.equals(event.getText());
+		} 
+		catch (BadLocationException e) {
+			return false;
+		}
+	}
+	
+	List<CommonToken> parse(String text) {
+		ANTLRStringStream input = new ANTLRStringStream(text);
+        CeylonLexer lexer = new CeylonLexer(input);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        
+        CeylonParser parser = new CeylonParser(tokenStream);
+        Tree.CompilationUnit cu;
+        try {
+            cu = parser.compilationUnit();
+        }
+        catch (RecognitionException e) {
+            throw new RuntimeException(e);
+        }
+        
+        return tokenStream.getTokens(); 
+	}
+	
     public void setDocument(IDocument document) {}
 }
