@@ -959,10 +959,9 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public void scheduleParsing() {
-    	CeylonParserScheduler scheduler = parserScheduler;
-    	if (scheduler!=null) {
-    		scheduler.cancel();
-    		scheduler.schedule(0);
+    	if (parserScheduler!=null) {
+    		parserScheduler.cancel();
+    		parserScheduler.schedule(0);
     	}
     }
 
@@ -982,8 +981,10 @@ extends PreviousSubWordAction implements IUpdate {
                 .addDocumentListener(documentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
-                parserScheduler.cancel();
-                parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+            	if (parserScheduler!=null) {
+            		parserScheduler.cancel();
+            		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+            	}
             }
         });
     }
@@ -1268,9 +1269,9 @@ extends PreviousSubWordAction implements IUpdate {
           fActionBars = null;
         }*/
 
-        /*if (fDocumentListener!=null) {
+        /*if (documentListener!=null) {
         	getSourceViewer().getDocument()
-        	    .removeDocumentListener(fDocumentListener);
+        	    .removeDocumentListener(documentListener);
         }*/
         
         if (buildListener!=null) {
