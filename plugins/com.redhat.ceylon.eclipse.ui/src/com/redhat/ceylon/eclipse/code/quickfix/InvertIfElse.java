@@ -80,12 +80,14 @@ class InvertIfElse extends ChangeCorrectionProposal {
     				test = getInvertedEqualityTest(doc, (EqualityOp)bt);
     			} else if (bt instanceof ComparisonOp) {
     				test = getInvertedComparisonTest(doc, (ComparisonOp)bt);
-    			} else if ( ! (bt instanceof Tree.OperatorExpression)) {
+    			} else if (! (bt instanceof Tree.OperatorExpression) || bt instanceof Tree.UnaryOperatorExpression) {
     				term = removeEnclosingParenthesis(term);
     			}
+    		} else {
+   				term = removeEnclosingParenthesis(term);
     		}
     		if (test == null) {
-    			 test = "! " + term;
+    			 test = "!" + term;
     		}
 			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
 			String indent = CeylonAutoEditStrategy.getDefaultIndent();
@@ -103,7 +105,7 @@ class InvertIfElse extends ChangeCorrectionProposal {
 						replace.append(" ");
 					}
 					replace.append("else ")
-					.append(getTerm(doc, ifBlock)).append("\n");
+					.append(getTerm(doc, ifBlock));
 
 			TextChange change = new DocumentChange("Invert if-else", doc);
 			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
