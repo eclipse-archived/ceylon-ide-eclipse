@@ -2008,6 +2008,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return typeCheckers.keySet();
     }
 
+    public static Iterable<TypeChecker> getTypeCheckers() {
+        return typeCheckers.values();
+    }
+
     public static void removeProject(IProject project) {
         typeCheckers.remove(project);
         projectSources.remove(project);

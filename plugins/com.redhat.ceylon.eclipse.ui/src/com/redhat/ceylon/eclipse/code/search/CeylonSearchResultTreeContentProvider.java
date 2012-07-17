@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -170,18 +171,23 @@ class CeylonSearchResultTreeContentProvider implements
             return ((IResource) element).getParent();
         }
         if (element instanceof Package) {
-            return project;
+        	return project!=null ? project :
+        		((Package) element).getModule();
         }
         if (element instanceof Unit) {
-            return new WithProject(((Unit) element).getPackage(), project);
+        	Package pack = ((Unit) element).getPackage();
+			return project==null ? pack : 
+				new WithProject(pack, project);
         }
         if (element instanceof CeylonElement) {
             CeylonElement ce = (CeylonElement) element;
-            return new WithProject(ce.getNode().getUnit(), 
-                    ce.getFile().getProject());
+            IFile file = ce.getFile();
+            Unit unit = ce.getNode().getUnit();
+			return file==null ? unit :
+				new WithProject(unit, file.getProject());
         }
         return null;
-    }
+	}
     
     @Override
     public void clear() {

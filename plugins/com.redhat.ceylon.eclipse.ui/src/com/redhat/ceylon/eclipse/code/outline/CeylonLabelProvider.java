@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -81,6 +82,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
     public static Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
+    public static Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
@@ -158,6 +160,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         if (element instanceof Package) {
             return PACKAGE;
+        }
+        if (element instanceof Module) {
+            return ARCHIVE;
         }
         if (element instanceof Unit) {
             return FILE_IMAGE;
@@ -316,13 +321,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 pkg = "";
             }
-            return getStyledLabelFor(ce.getNode())
+            IFile file = ce.getFile();
+			String path = file==null ? 
+					ce.getVirtualFile().getPath() : 
+					file.getFullPath().toString();
+			return getStyledLabelFor(ce.getNode())
                     .append(pkg, QUALIFIER_STYLER)
-                    .append(" - " + ce.getFile().getFullPath().toString(), COUNTER_STYLER)
+                    .append(" - " + path, COUNTER_STYLER)
                     .append(":" + ce.getLocation(), COUNTER_STYLER);
         }
         else if (element instanceof Package) {
             return new StyledString(getLabel((Package) element), QUALIFIER_STYLER);
+        }
+        else if (element instanceof Module) {
+        	return new StyledString(getLabel((Module) element));
         }
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
@@ -532,9 +544,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static String getLabel(Package packageModel) {
-        String pkg = packageModel.getQualifiedNameString();
-        if (pkg.isEmpty()) pkg="default package";
-        return pkg;
+        String name = packageModel.getQualifiedNameString();
+        if (name.isEmpty()) name="default package";
+        return name;
+    }
+    
+    private static String getLabel(Module moduleModel) {
+        String name = moduleModel.getNameAsString();
+        if (name.isEmpty()) name="default module";
+        return name;
     }
     
     public static String getPackageLabel(Node decl) {

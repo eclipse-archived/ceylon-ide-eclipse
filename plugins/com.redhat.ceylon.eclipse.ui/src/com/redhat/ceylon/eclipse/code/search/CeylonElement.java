@@ -3,14 +3,20 @@ package com.redhat.ceylon.eclipse.code.search;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class CeylonElement {
 	Tree.StatementOrArgument node;
-	IFile file;
+	VirtualFile file;
 	Token location;
 	
-	public CeylonElement(Tree.StatementOrArgument node, IFile file, Token location) {
+	public CeylonElement(Tree.StatementOrArgument node, 
+			VirtualFile file, Token location) {
+		if (node==null) {
+			file.getName();
+		}
 		this.node = node;
 		this.file = file;
 		this.location = location;
@@ -24,8 +30,17 @@ public class CeylonElement {
 		return node;
 	}
 	
-	public IFile getFile() {
+	public VirtualFile getVirtualFile() {
 		return file;
+	}
+	
+	public IFile getFile() {
+		if (file instanceof IFileVirtualFile) {
+			return ((IFileVirtualFile) file).getFile();
+		}
+		else {
+			return null;
+		}
 	}
 	
 	@Override
