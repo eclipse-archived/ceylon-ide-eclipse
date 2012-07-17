@@ -48,7 +48,6 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
 		if (tokens==null) {
 			//parse and color the whole document the first time!
-			tokens = parse();
 			return partition;
 		}
 		
@@ -58,13 +57,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
 					event.getLength());
 		}
 		
-		//TODO: is this called in multiple threads?!
-		tokens = parse();
-		
 		int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
-		if (i<0) {
-			i=-i;
-		}
+		if (i<0) i=-i;
 		CommonToken t = tokens.get(i);
 		if (isWithinExistingToken(event, t)) {
 			if (isWithinTokenChange(event, t)) {
@@ -131,26 +125,36 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-		int prevStartOffset= -1;
-		int prevEndOffset= -1;
+		
+		//it sounds strange, but it's better to parse
+		//and cache here than in getDamageRegion(),
+		//because these methods get called in strange
+		//orders
+		tokens = parse();
+		
+		//int prevStartOffset= -1;
+		//int prevEndOffset= -1;
 		Iterator<CommonToken> iter= getTokenIterator(tokens, damage);
 		if (iter!=null) {
 			while (iter.hasNext()) {
 				CommonToken token= iter.next();
+				if (token.getType()==CeylonLexer.EOF) {
+					break;
+				}
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
-				if (startOffset <= prevEndOffset && 
+				/*if (startOffset <= prevEndOffset && 
 						endOffset >= prevStartOffset) {
 					//this case occurs when applying a
 					//quick fix, and causes an error
 					//from SWT if we let it through
 					continue;
-				}
+				}*/
 				changeTokenPresentation(presentation, 
 						tokenColorer.getColoring(token), 
 						startOffset, endOffset);
-				prevStartOffset= startOffset;
-				prevEndOffset= endOffset;
+				//prevStartOffset= startOffset;
+				//prevEndOffset= endOffset;
 			}
 		}
 		// The document might have changed since the presentation was computed, so
@@ -192,7 +196,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
     private boolean noTextChange(DocumentEvent event) {
 		try {
-			return event.getDocument()
+			return sourceViewer.getDocument()
 					.get(event.getOffset(),event.getLength())
 					.equals(event.getText());
 		} 
