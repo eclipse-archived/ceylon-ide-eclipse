@@ -205,7 +205,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	return new IInformationControlCreator() {
     		@Override
     		public IInformationControl createInformationControl(Shell parent) {
-    			return new OutlinePopup(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
+    			return new OutlinePopup(editor, parent, 
+    					SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
     		}
     	};
     }
@@ -215,7 +216,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	return new IInformationControlCreator() {
     		@Override
     		public IInformationControl createInformationControl(Shell parent) {
-    			return new HierarchyPopup(parent, SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
+    			return new HierarchyPopup(parent, 
+    					SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
     		}
     	};
     }
@@ -236,7 +238,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(100, 20, true, false);
+        presenter.setSizeConstraints(80, 20, true, false);
         //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
         return presenter;
     }
