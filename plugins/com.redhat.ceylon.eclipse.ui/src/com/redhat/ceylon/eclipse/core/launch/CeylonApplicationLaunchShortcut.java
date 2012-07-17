@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
@@ -391,7 +392,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
         @Override
         public Image getImage(Object element) {
-            return CeylonLabelProvider.PACKAGE;
+            return PACKAGE;
         }
     }
     

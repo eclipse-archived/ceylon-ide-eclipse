@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +10,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
@@ -56,8 +57,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
                 }
             };
             try {
-                ResourcesPlugin.getWorkspace().run(wr, null);
-            } catch (CoreException e) {
+                getWorkspace().run(wr, null);
+            } 
+            catch (CoreException e) {
                 throw new DebugException(e.getStatus());
             }
         }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +11,6 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
@@ -44,7 +44,7 @@ public class CleanImportsHandler extends AbstractHandler {
                         imports));
                 tfc.initializeValidationData(null);
                 try {
-                    ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tfc), 
+                    getWorkspace().run(new PerformChangeOperation(tfc), 
                             new NullProgressMonitor());
                 }
                 catch (CoreException ce) {
