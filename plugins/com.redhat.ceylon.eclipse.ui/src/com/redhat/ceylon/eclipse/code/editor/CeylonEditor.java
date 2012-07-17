@@ -146,32 +146,40 @@ public class CeylonEditor extends TextEditor {
 	
 	public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-	private static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".action.hierarchy";
+	private static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + 
+			".action.hierarchy";
 
     private static final int REPARSE_SCHEDULE_DELAY= 200;
 
     /** 
      * Parent annotation ID
      */
-    public static final String PARSE_ANNOTATION_TYPE = PLUGIN_ID + ".parseAnnotation";
+    public static final String PARSE_ANNOTATION_TYPE = PLUGIN_ID + 
+    		".parseAnnotation";
 
     /**
-     * Annotation ID for a parser annotation w/ severity = error. Must match the ID of the
-     * corresponding annotationTypes extension in the plugin.xml.
+     * Annotation ID for a parser annotation w/ severity = error.
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_ERROR= PLUGIN_ID + ".parseAnnotation.error";
+    public static final String PARSE_ANNOTATION_TYPE_ERROR= PARSE_ANNOTATION_TYPE + 
+    		".error";
 
     /**
-     * Annotation ID for a parser annotation w/ severity = warning. Must match the ID of the
-     * corresponding annotationTypes extension in the plugin.xml.
+     * Annotation ID for a parser annotation w/ severity = warning. 
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_WARNING= PLUGIN_ID + ".parseAnnotation.warning";
+    public static final String PARSE_ANNOTATION_TYPE_WARNING= PARSE_ANNOTATION_TYPE + 
+    		".warning";
 
     /**
-     * Annotation ID for a parser annotation w/ severity = info. Must match the ID of the
-     * corresponding annotationTypes extension in the plugin.xml.
+     * Annotation ID for a parser annotation w/ severity = info. 
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
      */
-    public static final String PARSE_ANNOTATION_TYPE_INFO= PLUGIN_ID + ".parseAnnotation.info";
+    public static final String PARSE_ANNOTATION_TYPE_INFO= PARSE_ANNOTATION_TYPE + 
+    		".info";
 
     /** Preference key for matching brackets */
     protected final static String MATCHING_BRACKETS= "matchingBrackets";
@@ -959,7 +967,6 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     CeylonParseController parseController;
-    private PresentationController presentationController;
     
     private void initializeParseController() {
         IEditorInput editorInput= getEditorInput();
@@ -1162,12 +1169,6 @@ extends PreviousSubWordAction implements IUpdate {
 
 			parserScheduler= new CeylonParserScheduler(parseController, this, 
 					getDocumentProvider(), annotationCreator);
-
-            //add this guy first in the list of model listeners so he
-            //gets notified first out of everyone
-            presentationController = new PresentationController(getSourceViewer());
-            presentationController.registerDamage(new Region(0, sourceViewer.getDocument().getLength()));
-            addModelListener(presentationController);
             
             addModelListener(new EditorAnnotationService(this));
 
@@ -1753,10 +1754,6 @@ extends PreviousSubWordAction implements IUpdate {
     public boolean canPerformFind() {
         return true;
     }
-
-	PresentationController getPresentationController() {
-		return presentationController;
-	}
 
     public CeylonParseController getParseController() {
         return parseController;
