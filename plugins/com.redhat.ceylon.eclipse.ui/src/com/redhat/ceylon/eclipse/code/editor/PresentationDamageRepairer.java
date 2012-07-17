@@ -12,7 +12,6 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -32,168 +31,160 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-class PresentationDamageRepairer implements IPresentationDamager, IPresentationRepairer {
+class PresentationDamageRepairer implements IPresentationDamager, 
+        IPresentationRepairer {
 	
-	private final CeylonEditor editor;
     private final ISourceViewer sourceViewer;
     private final CeylonTokenColorer tokenColorer;
-
-	PresentationDamageRepairer(CeylonEditor ceylonEditor) {
-		editor = ceylonEditor;
-		sourceViewer = editor.getCeylonSourceViewer();
+    private volatile List<CommonToken> tokens;
+    
+	PresentationDamageRepairer(ISourceViewer sourceViewer) {
+		this.sourceViewer = sourceViewer;
 		tokenColorer = new CeylonTokenColorer();
 	}
 	
-	public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, 
-			boolean documentPartitioningChanged) {
+	public IRegion getDamageRegion(ITypedRegion partition, 
+			DocumentEvent event, boolean documentPartitioningChanged) {
 
-		if (noTextChange(event)) {
-			return new Region(event.getOffset(), event.getLength());
+		if (tokens==null) {
+			//parse and color the whole document the first time!
+			tokens = parse();
+			return partition;
 		}
 		
-		List<CommonToken> tokens = editor.getParseController().getTokens();
+		if (noTextChange(event)) {
+			//it was a change to annotations - don't reparse
+			return new Region(event.getOffset(), 
+					event.getLength());
+		}
 		
-		//TODO: Can we instead tokenize and cache the tokens here?
-		//      Do we have a guarantee that we aren't called in
-		//      parellel by different threads?
-		/*CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(event.getDocument().get()));
-		CommonTokenStream cts = new CommonTokenStream(lexer);
-		cts.fill();
-		List<CommonToken> tokens = new ArrayList<CommonToken>(cts.getTokens().size());
-		tokens.addAll(cts.getTokens());*/		
+		//TODO: is this called in multiple threads?!
+		tokens = parse();
 		
-		if (tokens!=null) {
-			int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
-			if (i<0) {
-				i=-i;
-			}
-			CommonToken t = tokens.get(i);
-			boolean withinToken = false;
-			if (t.getStartIndex()<=event.getOffset() && 
-					t.getStopIndex()>=event.getOffset()+event.getLength()-1) {
-				withinToken = true;
-				int type = t.getType();
-				switch (type) {
-				case CeylonLexer.WS:
-					for (char c: event.getText().toCharArray()) {
-					    if (!Character.isWhitespace(c)) {
-					    	withinToken = false;
-					    }
-					}
-				break;
-				case CeylonLexer.UIDENTIFIER:
-				case CeylonLexer.LIDENTIFIER:
-					for (char c: event.getText().toCharArray()) {
-					    if (!Character.isJavaIdentifierPart(c)) {
-					    	withinToken = false;
-					    }
-					}
-				break;
-				case CeylonLexer.STRING_LITERAL:
-					for (char c: event.getText().toCharArray()) {
-					    if (c=='"') {
-					    	withinToken = false;
-					    }
-					}
-				break;
-				case CeylonLexer.MULTI_COMMENT:
-					for (char c: event.getText().toCharArray()) {
-					    if (c=='/'||c=='*') {
-					    	withinToken = false;
-					    }
-					}
-				break;
-				case CeylonLexer.LINE_COMMENT:
-					for (char c: event.getText().toCharArray()) {
-					    if (c=='\n'||c=='\f'||c=='\r') {
-					    	withinToken = false;
-					    }
-					}
-				break;
-				default:
-			    	withinToken = false;
-			    }
-				if (withinToken) {
-					return new Region(event.getOffset(), 
-							event.getText().length());
-				}
+		int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
+		if (i<0) {
+			i=-i;
+		}
+		CommonToken t = tokens.get(i);
+		if (isWithinExistingToken(event, t)) {
+			if (isWithinTokenChange(event, t)) {
+				//the edit just changes the text inside
+				//a token, leaving the rest of the
+				//document structure unchanged
+				return new Region(event.getOffset(), 
+						event.getText().length());
 			}
 		}
 		return partition;
 	}
 
+	public boolean isWithinExistingToken(DocumentEvent event, 
+			CommonToken t) {
+		return t.getStartIndex()<=event.getOffset() && 
+				t.getStopIndex()>=event.getOffset()+event.getLength()-1;
+	}
+
+	public boolean isWithinTokenChange(DocumentEvent event,
+			CommonToken t) {
+		switch (t.getType()) {
+		case CeylonLexer.WS:
+			for (char c: event.getText().toCharArray()) {
+				if (!Character.isWhitespace(c)) {
+					return false;
+				}
+			}
+			break;
+		case CeylonLexer.UIDENTIFIER:
+		case CeylonLexer.LIDENTIFIER:
+			for (char c: event.getText().toCharArray()) {
+				if (!Character.isJavaIdentifierPart(c)) {
+					return false;
+				}
+			}
+			break;
+		case CeylonLexer.STRING_LITERAL:
+			for (char c: event.getText().toCharArray()) {
+				if (c=='"') {
+					return false;
+				}
+			}
+			break;
+		case CeylonLexer.MULTI_COMMENT:
+			for (char c: event.getText().toCharArray()) {
+				if (c=='/'||c=='*') {
+					return false;
+				}
+			}
+			break;
+		case CeylonLexer.LINE_COMMENT:
+			for (char c: event.getText().toCharArray()) {
+				if (c=='\n'||c=='\f'||c=='\r') {
+					return false;
+				}
+			}
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
+
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-		List<CommonToken> tokens = parse(editor.getCeylonSourceViewer().getDocument().get());
-		aggregateTextPresentation(tokens, null, damage, presentation);
-		applyTextPresentationChange(presentation);
-	}
-	
-	private void applyTextPresentationChange(TextPresentation newPresentation) {
-		if (sourceViewer!=null) {
-			// The document might have changed since the presentation was computed, so
-			// trim the presentation's "result window" to the current document's extent.
-			// This avoids upsetting SWT, but there's still a question as to whether
-			// this is really the right thing to do. i.e., this assumes that the
-			// presentation will get recomputed later on, when the new document change
-			// gets noticed. But will it?
-			IDocument doc = sourceViewer.getDocument();
-			int newDocLength= doc!=null ? doc.getLength() : 0;
-			IRegion presExtent= newPresentation.getExtent();
-			if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-				newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
-						newDocLength - presExtent.getOffset()));
+		//int prevStartOffset= -1;
+		//int prevEndOffset= -1;
+		Iterator<CommonToken> iter= getTokenIterator(tokens, damage);
+		if (iter!=null) {
+			while (iter.hasNext()) {
+				CommonToken token= iter.next();
+				int startOffset= getStartOffset(token);
+				int endOffset= getEndOffset(token);
+				/*if (startOffset <= prevEndOffset && 
+						endOffset >= prevStartOffset) {
+					continue;
+				}*/
+				changeTokenPresentation(presentation, 
+						tokenColorer.getColoring(token), 
+						startOffset, endOffset);
+				/*prevStartOffset= startOffset;
+				prevEndOffset= endOffset;*/
 			}
-			sourceViewer.changeTextPresentation(newPresentation, true);
 		}
+		// The document might have changed since the presentation was computed, so
+		// trim the presentation's "result window" to the current document's extent.
+		// This avoids upsetting SWT, but there's still a question as to whether
+		// this is really the right thing to do. i.e., this assumes that the
+		// presentation will get recomputed later on, when the new document change
+		// gets noticed. But will it?
+		/*IDocument doc = sourceViewer.getDocument();
+		int newDocLength= doc!=null ? doc.getLength() : 0;
+		IRegion presExtent= newPresentation.getExtent();
+		if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
+			newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
+					newDocLength - presExtent.getOffset()));
+		}*/
+		sourceViewer.changeTextPresentation(presentation, true);
 	}
 	
-	private void aggregateTextPresentation(List<CommonToken> tokens, 
-    		IProgressMonitor monitor, IRegion damage, 
-    		TextPresentation presentation) {
-        int prevStartOffset= -1;
-        int prevEndOffset= -1;
-        Iterator<CommonToken> iter= getTokenIterator(tokens, damage);
-        if (iter!=null) {
-        	while (iter.hasNext()) {
-        		if (monitor!=null && monitor.isCanceled()) {
-        			break;
-        		}
-        		CommonToken token= iter.next();
-        		int startOffset= getStartOffset(token);
-        		int endOffset= getEndOffset(token);
-        		if (startOffset <= prevEndOffset && 
-        				endOffset >= prevStartOffset) {
-        			continue;
-        		}
-        		changeTokenPresentation(presentation, 
-        				tokenColorer.getColoring(token), 
-        				startOffset, endOffset);
-        		prevStartOffset= startOffset;
-        		prevEndOffset= endOffset;
-        	}
-        }
-    }
-
     private void changeTokenPresentation(TextPresentation presentation, 
     		TextAttribute attribute, int startOffset, int endOffset) {
     	        
 		StyleRange styleRange= new StyleRange(startOffset, 
         		endOffset-startOffset+1,
-                attribute == null ? null : attribute.getForeground(),
-                attribute == null ? null : attribute.getBackground(),
-                attribute == null ? SWT.NORMAL : attribute.getStyle());
+                attribute==null ? null : attribute.getForeground(),
+                attribute==null ? null : attribute.getBackground(),
+                attribute==null ? SWT.NORMAL : attribute.getStyle());
 
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)
-        if (styleRange.length <= 0 || 
+        /*if (styleRange.length <= 0 || 
         		styleRange.start+styleRange.length > 
                         sourceViewer.getDocument().getLength()) {
         	//do nothing
         } 
-        else {
+        else {*/
             presentation.addStyleRange(styleRange);
-        }
+        //}
     }
 
     private boolean noTextChange(DocumentEvent event) {
@@ -207,7 +198,8 @@ class PresentationDamageRepairer implements IPresentationDamager, IPresentationR
 		}
 	}
 	
-	private List<CommonToken> parse(String text) {
+	private List<CommonToken> parse() {
+		String text = sourceViewer.getDocument().get();
 		ANTLRStringStream input = new ANTLRStringStream(text);
         CeylonLexer lexer = new CeylonLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
