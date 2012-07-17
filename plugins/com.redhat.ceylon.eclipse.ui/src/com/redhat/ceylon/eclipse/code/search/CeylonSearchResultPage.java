@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
@@ -23,13 +26,19 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             if (e1 instanceof CeylonElement && e2 instanceof CeylonElement) {
             	CeylonElement ce1 = (CeylonElement) e1;
             	CeylonElement ce2 = (CeylonElement) e2;
-            	int result = ce1.file.getFullPath().toString().compareTo(ce2.file.getFullPath().toString());
-            	if (result==0) {
-            		return new Integer(ce1.getLocation()).compareTo(ce2.getLocation());
+            	//IFile f1 = ce1.getFile();
+				//IFile f2 = ce2.getFile();
+				int result;
+				/*if (f1!=null && f2!=null) {
+            		result = f1.getFullPath().toString()
+            				.compareTo(f2.getFullPath().toString());
             	}
-            	else {
-            		return result;
-            	}
+            	else {*/
+            		result = ce1.getVirtualFile().getPath()
+            				.compareTo(ce2.getVirtualFile().getPath());
+            	//}
+            	return result!=0 ? result :
+            		    Integer.compare(ce1.getLocation(), ce2.getLocation());
             }
             else {
                 //TODO: something much better for Units and Packages!
@@ -103,13 +112,20 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	@Override
 	protected void showMatch(Match match, int offset, int length, boolean activate)
 			throws PartInitException {
-        IFile file = ((CeylonElement) match.getElement()).getFile();
-        IWorkbenchPage page = getSite().getPage();
-        if (offset >= 0 && length != 0) {
-            openAndSelect(page, file, offset, length, activate);
-        } 
+        CeylonElement element = (CeylonElement) match.getElement();
+		IFile file = element.getFile();
+        if (file==null) {
+        	Path path = new Path(element.getVirtualFile().getPath());
+        	gotoLocation(path, offset, length);
+        }
         else {
-            open(page, file, activate);
+        	IWorkbenchPage page = getSite().getPage();
+        	if (offset >= 0 && length != 0) {
+        		openAndSelect(page, file, offset, length, activate);
+        	} 
+        	else {
+        		open(page, file, activate);
+        	}
         }
     }
 }

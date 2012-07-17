@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -17,7 +15,9 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -44,31 +44,41 @@ abstract class FindSearchQuery implements ISearchQuery {
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
 	    //List<PhasedUnit> units = CeylonBuilder.getUnits(project);
-	    //if (units==null) units = CeylonBuilder.getUnits();
-	    
-	    List<PhasedUnit> units = getUnits();
-        for (PhasedUnit pu: units) {
-	        CompilationUnit cu = getRootNode(pu);
-            Set<Node> nodes = getNodes(cu);
-	        //TODO: should really add these as we find them:
-            for (Node node: nodes) {
-    			FindContainerVisitor fcv = new FindContainerVisitor(node);
-    			cu.visit(fcv);
-                if (node.getToken()==null) {
-                    //a synthetic node inserted in the tree
-                }
-                else {
-                    node = getIdentifyingNode(node);
-        			result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
-        			        CeylonBuilder.getFile(pu), 
-        					node.getStartIndex(), 
-        					node.getStopIndex()-node.getStartIndex()+1,
-        					node.getToken()));
-                }
-    		}
-    		count+=nodes.size();
+		//if (units==null) units = CeylonBuilder.getUnits();
+
+		//List<PhasedUnit> units = getUnits();
+		for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
+			findInUnits(tc.getPhasedUnits());
+			for (PhasedUnits units: tc.getPhasedUnitsOfDependencies()) {
+				//TODO: eliminate dupe hits in repos!!!
+				findInUnits(units);
+			}
         }
 		return Status.OK_STATUS;
+	}
+
+	public void findInUnits(PhasedUnits units) {
+		for (PhasedUnit pu: units.getPhasedUnits()) {
+			CompilationUnit cu = getRootNode(pu);
+			Set<Node> nodes = getNodes(cu);
+			//TODO: should really add these as we find them:
+			for (Node node: nodes) {
+				FindContainerVisitor fcv = new FindContainerVisitor(node);
+				cu.visit(fcv);
+				if (node.getToken()==null) {
+					//a synthetic node inserted in the tree
+				}
+				else {
+					node = getIdentifyingNode(node);
+					result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
+							pu.getUnitFile(), 
+							node.getStartIndex(), 
+							node.getStopIndex()-node.getStartIndex()+1,
+							node.getToken()));
+				}
+			}
+			count+=nodes.size();
+		}
 	}
 
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {

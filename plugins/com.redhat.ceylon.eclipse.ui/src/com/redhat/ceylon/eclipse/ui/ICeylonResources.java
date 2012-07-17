@@ -16,6 +16,7 @@ public interface ICeylonResources {
     public static final String CEYLON_LOCAL_ATTRIBUTE = "ceylon_local_attribute";
     public static final String CEYLON_PARAMETER = "ceylon_parameter";
     
+    public static final String CEYLON_ARCHIVE = "ceylon_archive";
     public static final String CEYLON_PACKAGE = "ceylon_package";
     public static final String CEYLON_IMPORT = "ceylon_import";
     public static final String CEYLON_IMPORT_LIST = "ceylon_import_list";

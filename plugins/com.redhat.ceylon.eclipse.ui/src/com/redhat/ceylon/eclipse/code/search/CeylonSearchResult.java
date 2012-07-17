@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -71,7 +73,19 @@ public class CeylonSearchResult extends AbstractTextSearchResult
     public Match[] getMatchesForFile(IFile file) {
         List<Match> matches = new ArrayList<Match>();
 	    for (Object element: this.getElements()) {
-	        if ( getFile(element).equals(file) ) {
+	        IFile elementFile = getFile(element);
+			if ( elementFile!=null && elementFile.equals(file) ) {
+	            matches.addAll(Arrays.asList(getMatches(element)));
+	        }
+	    }
+		return matches.toArray(new Match[matches.size()]);
+    }
+
+    public Match[] getMatchesForURI(URI uri) {
+        List<Match> matches = new ArrayList<Match>();
+	    for (Object element: this.getElements()) {
+	    	String path = ((CeylonElement) element).getVirtualFile().getPath();
+			if (uri.toString().endsWith(path)) {
 	            matches.addAll(Arrays.asList(getMatches(element)));
 	        }
 	    }
@@ -85,7 +99,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		else if (element instanceof CeylonElement)
 			return ((CeylonElement) element).getFile();
 		else 
-			throw new RuntimeException();
+			return null;
 	}
 
 	@Override
@@ -94,6 +108,9 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			return getMatchesForFile(Util.getFile(ei));
+		}
+		else if (ei instanceof FileStoreEditorInput) {
+			return getMatchesForURI(((FileStoreEditorInput)ei).getURI());
 		}
 		else {
 			return new Match[0];
@@ -104,7 +121,12 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 	public boolean isShownInEditor(Match match, IEditorPart editor) {
 		IEditorInput ei= editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
-			return getFile(match.getElement()).equals(Util.getFile(ei));
+			IFile file = getFile(match.getElement());
+			return file!=null && file.equals(Util.getFile(ei));
+		}
+		else if (ei instanceof FileStoreEditorInput) {
+			String path = ((CeylonElement) match.getElement()).getVirtualFile().getPath();
+			return ((FileStoreEditorInput)ei).getURI().toString().endsWith(path);
 		}
 		else {
 			return false;
