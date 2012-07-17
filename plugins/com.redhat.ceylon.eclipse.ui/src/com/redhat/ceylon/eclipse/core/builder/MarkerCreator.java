@@ -21,6 +21,7 @@ import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
  * the given file at the computed line.
  */
 public class MarkerCreator implements MessageHandler {
+	
     protected IFile file;
     protected String problemType;
 
@@ -39,13 +40,16 @@ public class MarkerCreator implements MessageHandler {
 
     void createMarker(String msg, int startOffset, int endOffset,
                       int startCol, int endCol,
-                      int startLine, int endLine, Map<String, Object> attributes)
+                      int startLine, int endLine, 
+                      Map<String,Object> attributes)
     {
         String[] attributeNames= new String[] {
-                IMarker.LINE_NUMBER, IMarker.CHAR_START, IMarker.CHAR_END, IMarker.MESSAGE, IMarker.PRIORITY, IMarker.SEVERITY
+                IMarker.LINE_NUMBER, IMarker.CHAR_START, IMarker.CHAR_END, 
+                IMarker.MESSAGE, IMarker.PRIORITY, IMarker.SEVERITY
         };
         Object[] values= new Object[] {
-                startLine, startOffset, endOffset, msg, IMarker.PRIORITY_HIGH, IMarker.SEVERITY_ERROR
+                startLine, startOffset, endOffset, msg, IMarker.PRIORITY_HIGH, 
+                IMarker.SEVERITY_ERROR
         };
         try {
             IMarker m= file.createMarker(problemType);
@@ -55,7 +59,8 @@ public class MarkerCreator implements MessageHandler {
                     m.setAttribute(key, attributes.get(key));
                 }
             }
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -63,15 +68,15 @@ public class MarkerCreator implements MessageHandler {
     public void handleSimpleMessage(String msg, int startOffset, int endOffset,
 			int startCol, int endCol, int startLine, int endLine,
 			Map<String, Object> attributes) {
-		
-    	createMarker(msg, startOffset, endOffset, startCol, endCol, startLine, endLine, attributes);
+    	createMarker(msg, startOffset, endOffset, startCol, endCol, 
+    			startLine, endLine, attributes);
 	}
 
 	public void handleSimpleMessage(String msg, int startOffset, int endOffset,
             int startCol, int endCol,
-            int startLine, int endLine)
-    {	
-		createMarker(msg, startOffset, endOffset, startCol, endCol, startLine, endLine, null);
+            int startLine, int endLine) {	
+		createMarker(msg, startOffset, endOffset, startCol, endCol, 
+				startLine, endLine, null);
     }
 
     public void endMessageGroup() { }

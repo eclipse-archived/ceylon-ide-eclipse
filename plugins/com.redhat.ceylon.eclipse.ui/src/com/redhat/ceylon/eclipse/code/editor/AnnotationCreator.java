@@ -45,7 +45,8 @@ public class AnnotationCreator implements MessageHandler {
          */
         public final Map<String, Object> attributes;
 
-        public PositionedMessage(String msg, Position pos, Map<String, Object> attributes) {
+        public PositionedMessage(String msg, Position pos, Map<String, 
+        		Object> attributes) {
             this.message= msg;
             this.pos= pos;
             this.attributes= attributes;
@@ -101,8 +102,8 @@ public class AnnotationCreator implements MessageHandler {
             if (model instanceof IAnnotationModelExtension) {
                 IAnnotationModelExtension modelExt= (IAnnotationModelExtension) model;
                 Annotation[] oldAnnotations= fAnnotations.toArray(new Annotation[fAnnotations.size()]);
-                Map<Annotation, Position> newAnnotations= new HashMap<Annotation, Position>(fMessages.size());
-                for(PositionedMessage pm: fMessages) {
+                Map<Annotation,Position> newAnnotations= new HashMap<Annotation,Position>(fMessages.size());
+                for (PositionedMessage pm: fMessages) {
                     Annotation anno= createAnnotation(pm);
                     newAnnotations.put(anno, pm.pos);
                     fAnnotations.add(anno);
@@ -110,7 +111,7 @@ public class AnnotationCreator implements MessageHandler {
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
-                for(Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
+                for (Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
                     Annotation a= (Annotation) i.next();
                     if (CeylonEditor.isParseAnnotation(a)) {
                         model.removeAnnotation(a);

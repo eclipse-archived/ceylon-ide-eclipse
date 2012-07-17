@@ -40,7 +40,6 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -171,13 +170,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
             }
         };
         
-        private CeylonSourcePositionLocator fLocator= parseController.getSourcePositionLocator();
-
         private ViewerComparator fPositionComparator= new ViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                int pos1= fLocator.getStartOffset(e1);
-                int pos2= fLocator.getStartOffset(e2);
+                int pos1= getStartOffset(e1);
+                int pos2= getStartOffset(e2);
 
                 return pos1 - pos2;
             }

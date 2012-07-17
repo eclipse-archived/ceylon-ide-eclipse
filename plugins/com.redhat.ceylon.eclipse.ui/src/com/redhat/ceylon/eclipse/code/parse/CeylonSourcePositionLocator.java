@@ -55,13 +55,7 @@ import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
  * @since May 15, 2007
  */
 public class CeylonSourcePositionLocator {
-    
-    private CeylonParseController parseController;
-    
-    public CeylonSourcePositionLocator(CeylonParseController parseController) {
-        this.parseController= parseController;
-    }
-    
+        
     public static Node findNode(Tree.CompilationUnit cu, int offset) {
         return findNode(cu, offset, offset+1);
     }
@@ -108,23 +102,6 @@ public class CeylonSourcePositionLocator {
     
     public static int getLength(Object node) {
         return getEndOffset(node) - getStartOffset(node);
-    }
-    
-    public IPath getPath(Object entity) {
-    	if (entity instanceof Node) {
-    		return getNodePath((Node) entity, 
-    				parseController.getProject(),
-    				parseController.getTypeChecker());
-    	}
-    	else {
-    		return null;
-    	}
-    }
-    
-    public void gotoNode(Node node) {
-        gotoNode(node, 
-        		parseController.getProject(),
-        		parseController.getTypeChecker());
     }
     
     public static Node getIdentifyingNode(Node node) {
@@ -240,7 +217,7 @@ public class CeylonSourcePositionLocator {
     	return null;
 	}
     
-    private static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
+    public static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
     	Unit unit = node.getUnit();
     	
     	//look for a source file in a project

@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +14,6 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 /**
  * FolderBase is an abstract base type for a source-text folding service.
@@ -63,18 +65,8 @@ public abstract class FolderBase {
      * @param n an Object representing a program entity
      */
     public void makeAnnotation(Object n, boolean collapsed) {
-		CeylonSourcePositionLocator nodeLocator = parseController.getSourcePositionLocator();
-		int startOffset = 0;
-		int endOffset = 0;
-
-		try {
-			startOffset = nodeLocator.getStartOffset(n);
-			endOffset = nodeLocator.getEndOffset(n);
-		} 
-		catch (Exception e) {
-		    e.printStackTrace();
-			return;
-		}
+		int startOffset = getStartOffset(n);
+		int endOffset = getEndOffset(n);
 		makeAnnotation(startOffset, endOffset-startOffset+1, collapsed);
     }
 

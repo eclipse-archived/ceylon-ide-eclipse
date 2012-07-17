@@ -4,7 +4,6 @@ import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -60,41 +59,58 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 public class CeylonParseController {
     
-    private final SimpleAnnotationTypeInfo simpleAnnotationTypeInfo = new SimpleAnnotationTypeInfo();
-    private CeylonSourcePositionLocator sourcePositionLocator;
+    /**
+     * The project containing the source being parsed by this 
+     * IParseController. May be null if the source isn't actually 
+     * part of an Eclipse project (e.g., a random bit of source
+     * text living outside the workspace).
+     */
+	protected IProject project;
+
+	/**
+	 * The path to the file containing the source being parsed 
+	 * by this {@link IParseController}.
+	 */
+	protected IPath filePath;
+
+	/**
+	 * The {@link MessageHandler} to which parser/compiler 
+	 * messages are directed.
+	 */
+	protected MessageHandler handler;
+
+	/**
+	 * The current AST (if any) produced by the most recent 
+	 * successful parse.<br>
+	 * N.B.: "Successful" may mean that there were syntax 
+	 * errors, but the parser managed to perform error recovery 
+	 * and still produce an AST.
+	 */
+	protected Tree.CompilationUnit rootNode;
+
+	/**
+	 * The most-recently parsed source document. May be null 
+	 * if this parse controller has never parsed an IDocument 
+	 * before.
+	 */
+	protected IDocument document;
 
     private List<CommonToken> tokens;
     private TypeChecker typeChecker;
     
     /**
-     * @param filePath		Project-relative path of file
-     * @param project		Project that contains the file
-     * @param handler		A message handler to receive error messages (or any others)
-     * 						from the parser
+     * @param filePath		the project-relative path of file
+     * @param project		the project that contains the file
+     * @param handler		a message handler to receive error 
+     *                      messages/warnings
      */
     public void initialize(IPath filePath, IProject project, 
     		MessageHandler handler) {
 		this.project= project;
 		this.filePath= filePath;
 		this.handler= (MessageHandler) handler;
-        simpleAnnotationTypeInfo.addProblemMarkerType(PROBLEM_MARKER_ID);
     }
-    
-    public CeylonSourcePositionLocator getSourcePositionLocator() {
-        if (sourcePositionLocator == null) {
-            sourcePositionLocator= new CeylonSourcePositionLocator(this);
-        }
-        return sourcePositionLocator;
-    }
-    
-    public CeylonLanguageSyntaxProperties getSyntaxProperties() {
-        return CeylonLanguageSyntaxProperties.INSTANCE;
-    }
-    
-    public IAnnotationTypeInfo getAnnotationTypeInfo() {
-        return simpleAnnotationTypeInfo;
-    }
-    
+        
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
         if (monitor != null) {
@@ -448,7 +464,8 @@ public class CeylonParseController {
         // If the path is outside the workspace, or pointing inside the workspace, 
         // but is still file-system-absolute.
         return path!=null && path.isAbsolute() && 
-        		(wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path));
+        		(wsRoot.getLocation().isPrefixOf(path) || 
+        				!wsRoot.exists(path));
     }
     
     private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
@@ -466,10 +483,6 @@ public class CeylonParseController {
         return null;
     }
     
-    /*public Iterator<CommonToken> getTokenIterator(IRegion region) {
-        return CeylonSourcePositionLocator.getTokenIterator(getTokens(), region);
-    }*/
-    
     public List<CommonToken> getTokens() {
         return tokens;
     }
@@ -482,40 +495,10 @@ public class CeylonParseController {
         return rootNode;
     }
     
-    /**
-     * The project containing the source being parsed by this IParseController. May be null
-     * if the source isn't actually part of an Eclipse project (e.g., a random bit of source
-     * text living outside the workspace).
-     */
-	protected IProject project;
-
-	/**
-	 * The path to the file containing the source being parsed by this {@link IParseController}.
-	 */
-	protected IPath filePath;
-
-	/**
-	 * The {@link MessageHandler} to which parser/compiler messages are directed.
-	 */
-	protected MessageHandler handler;
-
-	/**
-	 * The current AST (if any) produced by the most recent successful parse.<br>
-	 * N.B.: "Successful" may mean that there were syntax errors, but the parser managed
-	 * to perform error recovery and still produce an AST.
-	 */
-	protected Tree.CompilationUnit rootNode;
-
-	/**
-	 * The most-recently parsed source document. May be null if this parse controller
-	 * has never parsed an IDocument before.
-	 */
-	protected IDocument fDocument;
-
 	public Tree.CompilationUnit parse(IDocument doc, 
 			IProgressMonitor monitor, Stager stager) {
-	    fDocument= doc;
-	    return parse(fDocument.get(), monitor, stager);
+	    document= doc;
+	    return parse(document.get(), monitor, stager);
 	}
 
 	public IProject getProject() {
@@ -527,7 +510,7 @@ public class CeylonParseController {
 	}
 
 	public IDocument getDocument() {
-	    return fDocument;
+	    return document;
 	}
 }
 

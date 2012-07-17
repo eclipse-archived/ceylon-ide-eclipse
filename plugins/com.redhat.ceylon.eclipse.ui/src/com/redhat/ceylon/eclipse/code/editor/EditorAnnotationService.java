@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
@@ -24,7 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
@@ -72,8 +73,7 @@ public class EditorAnnotationService implements TreeLifecycleListener {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        addRefinementAnnotation(cpc.getSourcePositionLocator(), 
-                                model, that, dec);
+                        addRefinementAnnotation(model, that, dec);
                     }
                 }
             }
@@ -95,7 +95,8 @@ public class EditorAnnotationService implements TreeLifecycleListener {
         }
         else {
             //TODO: improve this:
-            ClassOrInterface etd = ((ClassOrInterface) dec.getContainer()).getExtendedTypeDeclaration();
+            ClassOrInterface etd = ((ClassOrInterface) dec.getContainer())
+            		.getExtendedTypeDeclaration();
             if (etd==null) {
                 return null;
             }
@@ -114,20 +115,21 @@ public class EditorAnnotationService implements TreeLifecycleListener {
         }
     }
     
-    private void addRefinementAnnotation(CeylonSourcePositionLocator spl,
-            IAnnotationModel model, Tree.Declaration that, Declaration dec) {
+    private void addRefinementAnnotation(IAnnotationModel model, 
+    		Tree.Declaration that, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
             RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
                     that.getIdentifier().getToken().getLine());
-            model.addAnnotation(ra, new Position(spl.getStartOffset(that), 
-                            spl.getLength(that)+1));
+            model.addAnnotation(ra, new Position(getStartOffset(that), 
+            		getLength(that)+1));
         }
     }
     
     private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
         model.addAnnotation(new Annotation(TODO_ANNOTATION_TYPE, false, null), 
-                new Position(token.getStartIndex(), token.getStopIndex()-token.getStartIndex()+1));
+                new Position(token.getStartIndex(), 
+                		token.getStopIndex()-token.getStartIndex()+1));
     }
     
     class SelectionListener implements ISelectionChangedListener {
