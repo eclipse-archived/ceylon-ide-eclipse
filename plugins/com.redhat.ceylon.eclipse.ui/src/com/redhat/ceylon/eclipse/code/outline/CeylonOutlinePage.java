@@ -14,7 +14,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,9 +44,11 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecycleListener {
+public class CeylonOutlinePage extends ContentOutlinePage 
+        implements TreeLifecycleListener {
 	
-    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + ".outline.popupMenu";
+    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + 
+    		".outline.popupMenu";
     
 	private final ITreeContentProvider contentProvider;
     private final CeylonOutlineBuilder modelBuilder;
@@ -82,7 +84,7 @@ public class CeylonOutlinePage extends ContentOutlinePage implements TreeLifecyc
     }
 
     public Stage getStage() {
-        return SYNTACTIC_ANALYSIS;
+        return TYPE_ANALYSIS;
     }
     
     @Override
