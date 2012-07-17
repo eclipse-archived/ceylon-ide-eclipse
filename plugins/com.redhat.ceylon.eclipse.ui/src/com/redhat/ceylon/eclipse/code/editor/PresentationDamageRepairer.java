@@ -131,23 +131,26 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-		//int prevStartOffset= -1;
-		//int prevEndOffset= -1;
+		int prevStartOffset= -1;
+		int prevEndOffset= -1;
 		Iterator<CommonToken> iter= getTokenIterator(tokens, damage);
 		if (iter!=null) {
 			while (iter.hasNext()) {
 				CommonToken token= iter.next();
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
-				/*if (startOffset <= prevEndOffset && 
+				if (startOffset <= prevEndOffset && 
 						endOffset >= prevStartOffset) {
+					//this case occurs when applying a
+					//quick fix, and causes an error
+					//from SWT if we let it through
 					continue;
-				}*/
+				}
 				changeTokenPresentation(presentation, 
 						tokenColorer.getColoring(token), 
 						startOffset, endOffset);
-				/*prevStartOffset= startOffset;
-				prevEndOffset= endOffset;*/
+				prevStartOffset= startOffset;
+				prevEndOffset= endOffset;
 			}
 		}
 		// The document might have changed since the presentation was computed, so
@@ -158,9 +161,9 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		// gets noticed. But will it?
 		/*IDocument doc = sourceViewer.getDocument();
 		int newDocLength= doc!=null ? doc.getLength() : 0;
-		IRegion presExtent= newPresentation.getExtent();
+		IRegion presExtent= presentation.getExtent();
 		if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-			newPresentation.setResultWindow(new Region(presExtent.getOffset(), 
+			presentation.setResultWindow(new Region(presExtent.getOffset(), 
 					newDocLength - presExtent.getOffset()));
 		}*/
 		sourceViewer.changeTextPresentation(presentation, true);
