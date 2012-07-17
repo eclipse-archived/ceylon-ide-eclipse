@@ -217,7 +217,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
 	}
 
 	private void doCorrectIndentation() {
-        IDocument doc= this.getDocument();
+        IDocument doc= getDocument();
         DocumentRewriteSession rewriteSession= null;
         Point p= this.getSelectedRange();
 

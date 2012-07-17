@@ -906,6 +906,10 @@ extends PreviousSubWordAction implements IUpdate {
         }
     	return super.getDocumentProvider();
     }
+    
+    public CeylonSourceViewer getCeylonSourceViewer() {
+    	return (CeylonSourceViewer) super.getSourceViewer();
+    }
 
     public void createPartControl(Composite parent) {
         

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -130,7 +132,8 @@ public class PresentationController implements TreeLifecycleListener {
     		IProgressMonitor monitor, IRegion damage) {
         if (parseController!=null) {
         	TextPresentation presentation= new TextPresentation();
-        	aggregateTextPresentation(parseController, monitor, damage, presentation);
+        	aggregateTextPresentation(parseController.getTokens(), 
+        			monitor, damage, presentation);
         	if (!presentation.isEmpty()) {
         		if (monitor==null || !monitor.isCanceled()) {
         			submitTextPresentationChange(presentation);
@@ -150,24 +153,25 @@ public class PresentationController implements TreeLifecycleListener {
         }
     }
 
-    private void aggregateTextPresentation(CeylonParseController parseController, 
-    		IProgressMonitor monitor, IRegion damage, TextPresentation presentation) {
+    public void aggregateTextPresentation(List<CommonToken> tokens, 
+    		IProgressMonitor monitor, IRegion damage, 
+    		TextPresentation presentation) {
         int prevStartOffset= -1;
         int prevEndOffset= -1;
-        Iterator tokenIterator= parseController.getTokenIterator(damage);
+        Iterator<CommonToken> tokenIterator= getTokenIterator(tokens, damage);
         if (tokenIterator!=null) {
-        	for (Iterator<Object> iter= tokenIterator; iter.hasNext();) {
+        	while (tokenIterator.hasNext()) {
         		if (monitor!=null && monitor.isCanceled()) {
         			break;
         		}
-        		Object token= iter.next();
+        		CommonToken token= tokenIterator.next();
         		int startOffset= getStartOffset(token);
         		int endOffset= getEndOffset(token);
         		if (startOffset <= prevEndOffset && endOffset >= prevStartOffset) {
         			continue;
         		}
-        		changeTokenPresentation(parseController, presentation, 
-        				tokenColorer.getColoring(parseController, token), 
+        		changeTokenPresentation(presentation, 
+        				tokenColorer.getColoring(token), 
         				startOffset, endOffset);
         		prevStartOffset= startOffset;
         		prevEndOffset= endOffset;
@@ -175,9 +179,8 @@ public class PresentationController implements TreeLifecycleListener {
         }
     }
 
-    private void changeTokenPresentation(CeylonParseController controller, 
-    		TextPresentation presentation, TextAttribute attribute, 
-    		int startOffset, int endOffset) {
+    private void changeTokenPresentation(TextPresentation presentation, 
+    		TextAttribute attribute, int startOffset, int endOffset) {
     	        
 		StyleRange styleRange= new StyleRange(startOffset, 
         		endOffset-startOffset+1,
@@ -197,7 +200,7 @@ public class PresentationController implements TreeLifecycleListener {
         }
     }
 
-	private void applyTextPresentationChange(TextPresentation newPresentation) {
+	public void applyTextPresentationChange(TextPresentation newPresentation) {
 		if (sourceViewer!=null) {
 			// The document might have changed since the presentation was computed, so
 			// trim the presentation's "result window" to the current document's extent.
@@ -216,7 +219,7 @@ public class PresentationController implements TreeLifecycleListener {
 		}
 	}
 	
-    private void submitTextPresentationChange(TextPresentation presentation) {
+    public void submitTextPresentationChange(TextPresentation presentation) {
     	if (sourceViewer!=null) {
     		IDocument doc = sourceViewer.getDocument();
 			int docLength= doc!=null ? doc.getLength() : 0;

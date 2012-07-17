@@ -468,9 +468,9 @@ public class CeylonParseController {
         return null;
     }
     
-    public Iterator<CommonToken> getTokenIterator(IRegion region) {
+    /*public Iterator<CommonToken> getTokenIterator(IRegion region) {
         return CeylonSourcePositionLocator.getTokenIterator(getTokens(), region);
-    }
+    }*/
     
     public List<CommonToken> getTokens() {
         return tokens;
