@@ -15,7 +15,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
-import org.eclipse.jdt.internal.ui.text.JavaElementPrefixPatternMatcher;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -411,7 +410,6 @@ public abstract class Popup extends PopupDialog
 	 * @param pattern the pattern
 	 * @param update <code>true</code> if the viewer should be updated
 	 * 
-	 * @see JavaElementPrefixPatternMatcher
 	 */
 	protected void setMatcherString(String pattern, boolean update) {
 		/*if (pattern.length() == 0) {
