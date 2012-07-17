@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.imp.editor.quickfix.ChangeCorrectionProposal;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -64,8 +63,8 @@ class InvertIfElse extends ChangeCorrectionProposal {
     		IfClause ifClause = ifStmt.getIfClause();
     		Block ifBlock = ifClause.getBlock();
     		Block elseBlock = ifStmt.getElseClause().getBlock();
-			String elseStr = getTerm(doc, elseBlock);
     		Condition ifCondition = ifClause.getCondition();
+    		
     		String test = null;
     		String term = getTerm(doc, ifCondition);
     		if (term.equals("(true)")) {
@@ -76,20 +75,22 @@ class InvertIfElse extends ChangeCorrectionProposal {
     			BooleanCondition boolCond = (BooleanCondition) ifCondition;
     			Term bt = boolCond.getExpression().getTerm();
     			if (bt instanceof NotOp) {
-    				NotOp notOp = (NotOp) bt;
-    				test = getTerm(doc, notOp.getTerm());
+    				test = removeEnclosingParenthesis(getTerm(doc, ((NotOp) bt).getTerm()));
     			} else if (bt instanceof EqualityOp) {
     				test = getInvertedEqualityTest(doc, (EqualityOp)bt);
     			} else if (bt instanceof ComparisonOp) {
     				test = getInvertedComparisonTest(doc, (ComparisonOp)bt);
-    			} 
+    			} else if ( ! (bt instanceof Tree.OperatorExpression)) {
+    				term = removeEnclosingParenthesis(term);
+    			}
     		}
-			if (test == null) {
-	    		test = "! " + removeEnclosingParenthesis(term);
+    		if (test == null) {
+    			 test = "! " + term;
     		}
 			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
 			String indent = CeylonAutoEditStrategy.getDefaultIndent();
 
+			String elseStr = getTerm(doc, elseBlock);
 			elseStr = addEnclosingBraces(elseStr, baseIndent, indent);
     		test = removeEnclosingParenthesis(test);
 
@@ -104,7 +105,7 @@ class InvertIfElse extends ChangeCorrectionProposal {
 					replace.append("else ")
 					.append(getTerm(doc, ifBlock)).append("\n");
 
-			TextChange change = new DocumentChange("Convert To if-else", doc);
+			TextChange change = new DocumentChange("Invert if-else", doc);
 			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
 			proposals.add(new InvertIfElse(statement.getStartIndex(), file, change));
 		} catch (Exception e) {
@@ -159,8 +160,8 @@ class InvertIfElse extends ChangeCorrectionProposal {
 
 	private static String removeEnclosingParenthesis(String s) {
     	if (s.charAt(0) == '(') {
-    		int endIndex = 1;
-    		int startIndex = 1;
+    		int endIndex = 0;
+    		int startIndex = 0;
     		//Make sure we are not in this case ((a) == (b))
     		while ((endIndex = s.indexOf(')', endIndex + 1)) > 0) {
     			if (endIndex == s.length() -1 ) {
