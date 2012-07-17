@@ -10,6 +10,9 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,14 +35,14 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 /**
  * @author rfuhrer
  */
 public class CeylonStructureCreator extends StructureCreator {
 	
-    public class TreeCompareNode extends DocumentRangeNode implements ITypedElement {
+    public class TreeCompareNode extends DocumentRangeNode 
+            implements ITypedElement {
         private final Node fASTNode;
 
         /**
@@ -59,8 +62,8 @@ public class CeylonStructureCreator extends StructureCreator {
         		IDocument document) {
             super(parent, CeylonStructureCreator.getTypeCode(treeNode.getASTNode()), 
                     getID(treeNode.getASTNode()), document,
-                    fSrcPositionLocator.getStartOffset(treeNode.getASTNode()), 
-                    fSrcPositionLocator.getLength(treeNode.getASTNode()));
+                    getStartOffset(treeNode.getASTNode()), 
+                    getLength(treeNode.getASTNode()));
             fASTNode= treeNode.getASTNode();
         }
 
@@ -85,7 +88,6 @@ public class CeylonStructureCreator extends StructureCreator {
     }
 
     private CeylonLabelProvider fLabelProvider;
-    private CeylonSourcePositionLocator fSrcPositionLocator;
     
     static int getTypeCode(Object o) {
         if (o instanceof CeylonOutlineNode) {
@@ -128,11 +130,9 @@ public class CeylonStructureCreator extends StructureCreator {
     		IProgressMonitor monitor) 
     				throws CoreException {
 
-    	//ServiceFactory svcFactory= ServiceFactory.getInstance();
     	CeylonParseController pc= new CeylonParseController();
     	fLabelProvider= new CeylonLabelProvider();
     	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
-    	fSrcPositionLocator= pc.getSourcePositionLocator();
         
     	//TODO: pass some more info in here!
     	pc.initialize(null, null, null);

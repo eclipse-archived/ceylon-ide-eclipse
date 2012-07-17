@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
@@ -46,9 +47,10 @@ public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
                 if (ra.getLine()==line) {
                     Declaration dec = ra.getDeclaration();
                     CeylonParseController cpc = editor.getParseController();
-                    cpc.getSourcePositionLocator()
-                            .gotoNode(getReferencedNode(dec, 
-                                    getCompilationUnit(cpc, dec)));
+                    gotoNode(getReferencedNode(dec, 
+                            getCompilationUnit(cpc, dec)), 
+                            cpc.getProject(),
+                            cpc.getTypeChecker());
                 }
             }
         }

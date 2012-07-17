@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMME
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
@@ -130,7 +131,6 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
-import com.redhat.ceylon.eclipse.code.parse.IAnnotationTypeInfo;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -1721,13 +1721,7 @@ extends PreviousSubWordAction implements IUpdate {
             // annotations after every update to the document annotation model
             // since there will be many of these, including possibly many that
             // don't relate to problem markers.
-            final IAnnotationTypeInfo annotationTypeInfo= parseController.getAnnotationTypeInfo();
-            if (annotationTypeInfo != null) {
-                List<String> problemMarkerTypes = annotationTypeInfo.getProblemMarkerTypes();
-                for (int i = 0; i < problemMarkerTypes.size(); i++) {
-                    refreshMarkerAnnotations(problemMarkerTypes.get(i));
-                }
-            }
+            refreshMarkerAnnotations(PROBLEM_MARKER_ID);
         }
     }
 

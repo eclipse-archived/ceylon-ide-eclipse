@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.ArrayList;
@@ -29,9 +32,9 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -250,10 +253,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             // markings, if any, as they were (which is probably fine)
             // Also get this when the current AST is null, e.g., as in the event of
             // a parse error
-//          System.err.println("MarkOccurrencesAction.recomputeAnnotationsForSelection(..):  root of current AST is null; returning");
             return;
         }
-        Object selectedNode= fParseController.getSourcePositionLocator().findNode(root, offset, offset+length-1);
+        Node selectedNode= findNode(root, offset, offset+length-1);
         if (fOccurrenceMarker == null) {
             // It might be possible to set the active editor at this point under
             // some circumstances, but attempting to do so under other circumstances
@@ -264,7 +266,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             List<Object> occurrences= fOccurrenceMarker.getOccurrencesOf(fParseController, selectedNode);
             if (occurrences != null) {
                 Position[] positions= convertRefNodesToPositions(occurrences);
-
                 placeAnnotations(convertPositionsToAnnotationMap(positions, document), annotationModel);
             }
         } 
@@ -280,9 +281,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             Position position= positions[i];
             try { // Create & add annotation
                 String message= document.get(position.offset, position.length);
-
                 annotationMap.put(new Annotation(OCCURRENCE_ANNOTATION, false, message), position);
-            } catch (BadLocationException ex) {
+            } 
+            catch (BadLocationException ex) {
                 continue; // skip apparently bogus position
             }
         }
@@ -335,10 +336,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
     private Position[] convertRefNodesToPositions(List<Object> refs) {
         Position[] positions= new Position[refs.size()];
         int i= 0;
-        CeylonSourcePositionLocator locator= fParseController.getSourcePositionLocator();
         for(Iterator<Object> iter= refs.iterator(); iter.hasNext(); i++) {
             Object node= iter.next();
-            positions[i]= new Position(locator.getStartOffset(node), locator.getLength(node)+1);
+            positions[i]= new Position(getStartOffset(node), getLength(node)+1);
         }
         return positions;
     }

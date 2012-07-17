@@ -3,12 +3,15 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -16,7 +19,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
@@ -45,9 +47,10 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
 
     private void go(Tree.Declaration dec) {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
-        CeylonSourcePositionLocator locator= editor.getParseController().getSourcePositionLocator();
         if (dec != null) {
-            gotoLocation(locator.getPath(dec), locator.getStartOffset(dec));
+            IPath path = getNodePath(dec, editor.getParseController().getProject(), 
+            		editor.getParseController().getTypeChecker());
+			gotoLocation(path, getStartOffset(dec));
         }
     }
     
