@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
@@ -242,6 +243,7 @@ public class CeylonSourcePositionLocator {
     private static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
     	Unit unit = node.getUnit();
     	
+    	//look for a source file in a project
     	if (project!=null) {
     		//first look for it in the current project
     		IPath path = getPath(unit, project);
@@ -257,6 +259,16 @@ public class CeylonSourcePositionLocator {
     		catch (CoreException e) {
     			e.printStackTrace();
     		}
+    	}
+    	else for (IProject p: CeylonBuilder.getProjects()) {
+    		//if we weren't given a project,
+    		//iterate over all of them (note
+    		//that this case happens in the 
+    		//hierarchy popup for an archive
+    		//unit that is extended by a 
+    		//project source file)
+    		IPath path = getPath(unit, p);
+    		if (path!=null) return path;
     	}
 
     	//finally look for it in a module archive 
