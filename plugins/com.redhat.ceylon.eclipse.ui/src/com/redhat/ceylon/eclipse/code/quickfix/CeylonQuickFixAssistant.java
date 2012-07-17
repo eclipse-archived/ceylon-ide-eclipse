@@ -196,6 +196,8 @@ public class CeylonQuickFixAssistant {
 
             Statement statement = findStatement(cu, node);
             ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, statement);
+            InvertIfElse.addReverseIfElseProposal(doc, proposals, file, statement);
+            
         }
 
         CreateSubtypeProposal.add(proposals, editor);
