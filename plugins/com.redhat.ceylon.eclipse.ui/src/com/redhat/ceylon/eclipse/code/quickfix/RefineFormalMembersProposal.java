@@ -4,12 +4,12 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
@@ -141,7 +141,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         change.setEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {
-            ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(change), 
+            getWorkspace().run(new PerformChangeOperation(change), 
                     new NullProgressMonitor());
         }
         catch (CoreException ce) {

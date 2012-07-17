@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractHandler.getSelectedNode;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
@@ -112,7 +112,7 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
             tc.addEdit(new ReplaceEdit(start, length, result.toString()));
             tc.initializeValidationData(null);
             try {
-                ResourcesPlugin.getWorkspace().run(new PerformChangeOperation(tc), 
+                getWorkspace().run(new PerformChangeOperation(tc), 
                         new NullProgressMonitor());
             }
             catch (CoreException ce) {
