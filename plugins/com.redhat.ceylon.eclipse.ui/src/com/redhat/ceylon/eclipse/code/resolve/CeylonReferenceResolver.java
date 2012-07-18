@@ -52,9 +52,12 @@ public class CeylonReferenceResolver {
 
     public static Tree.Declaration getReferencedNode(Object node, 
     		CeylonParseController controller) {
-        return getReferencedNode(getReferencedDeclaration(node), 
-            getCompilationUnit((CeylonParseController) controller, 
-            		getReferencedDeclaration(node)));
+        return getReferencedNode(getReferencedDeclaration(node), controller);
+    }
+
+    public static Tree.Declaration getReferencedNode(Declaration dec, 
+    		CeylonParseController controller) {
+        return getReferencedNode(dec, getCompilationUnit(controller,dec));
     }
 
     public static Declaration getReferencedDeclaration(Object node) {

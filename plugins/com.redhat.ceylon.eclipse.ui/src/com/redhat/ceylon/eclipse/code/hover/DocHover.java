@@ -16,9 +16,20 @@ import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.s
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static org.eclipse.jdt.internal.ui.JavaPluginImages.DESC_DLCL_OPEN_BROWSER;
+import static org.eclipse.jdt.internal.ui.JavaPluginImages.DESC_ELCL_OPEN_BROWSER;
+import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+import static org.eclipse.jface.internal.text.html.BrowserInformationControl.isAvailable;
+import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
+import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
+import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
+import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,17 +42,11 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.internal.ui.actions.OpenBrowserUtil;
 import org.eclipse.jdt.internal.ui.actions.SimpleSelectionProvider;
-import org.eclipse.jdt.internal.ui.infoviews.JavadocView;
 import org.eclipse.jdt.internal.ui.text.java.hover.AbstractJavaEditorTextHover;
-import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jdt.ui.actions.OpenAttachedJavadocAction;
 import org.eclipse.jface.action.Action;
@@ -61,16 +66,13 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.osgi.framework.Bundle;
 
@@ -116,9 +118,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		public BackAction(BrowserInformationControl infoControl) {
 			fInfoControl= infoControl;
 			setText("Back");
-			ISharedImages images= PlatformUI.getWorkbench().getSharedImages();
-			setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_BACK));
-			setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_BACK_DISABLED));
+			ISharedImages images= getWorkbench().getSharedImages();
+			setImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK));
+			setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK_DISABLED));
 
 			update();
 		}
@@ -133,10 +135,10 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 		public void update() {
 			BrowserInformationControlInput current= fInfoControl.getInput();
-
 			if (current != null && current.getPrevious() != null) {
 				BrowserInput previous= current.getPrevious();
-				setToolTipText(Messages.format("Back to {0}", BasicElementLabels.getJavaElementName(previous.getInputName())));
+				setToolTipText(Messages.format("Back to {0}", 
+						previous.getInputName()));
 				setEnabled(true);
 			} else {
 				setToolTipText("Back");
@@ -156,9 +158,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		public ForwardAction(BrowserInformationControl infoControl) {
 			fInfoControl= infoControl;
 			setText("Forward");
-			ISharedImages images= PlatformUI.getWorkbench().getSharedImages();
-			setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD));
-			setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD_DISABLED));
+			ISharedImages images= getWorkbench().getSharedImages();
+			setImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD));
+			setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD_DISABLED));
 
 			update();
 		}
@@ -173,10 +175,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 		public void update() {
 			BrowserInformationControlInput current= fInfoControl.getInput();
-
 			if (current != null && current.getNext() != null) {
 				setToolTipText(Messages.format("Forward to {0}", 
-						BasicElementLabels.getJavaElementName(current.getNext().getInputName())));
+						current.getNext().getInputName()));
 				setEnabled(true);
 			} else {
 				setToolTipText("Forward");
@@ -218,13 +219,13 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 *
 	 * @since 3.4
 	 */
-	private static final class OpenDeclarationAction extends Action {
+	private final class OpenDeclarationAction extends Action {
 		private final BrowserInformationControl fInfoControl;
 
 		public OpenDeclarationAction(BrowserInformationControl infoControl) {
 			fInfoControl= infoControl;
 			setText("Open Declaration");
-			JavaPluginImages.setLocalImageDescriptors(this, "goto_input.gif");  //TODO: better images
+			setLocalImageDescriptors(this, "goto_input.gif");  //TODO: better images
 		}
 
 		@Override
@@ -233,14 +234,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			fInfoControl.notifyDelayedInputChange(null);
 			fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
 
-			/*try {
-				//FIXME: add hover location to editor navigation history?
-				JavaUI.openInEditor(infoInput.getElement());
-			} catch (PartInitException e) {
-				JavaPlugin.log(e);
-			} catch (JavaModelException e) {
-				JavaPlugin.log(e);
-			}*/
+			CeylonParseController parseController = editor.getParseController();
+			gotoNode(getReferencedNode((Declaration) infoInput.getInputElement(), parseController), 
+					parseController.getProject(), parseController.getTypeChecker());
 		}
 	}
 
@@ -250,7 +246,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 *
 	 * @since 3.3
 	 */
-	public static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
+	public final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
 
 		private IWorkbenchSite fSite;
 
@@ -266,10 +262,10 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 		@Override
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			if (BrowserInformationControl.isAvailable(parent)) {
+			if (isAvailable(parent)) {
 				ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
-				String font= PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-				BrowserInformationControl iControl= new BrowserInformationControl(parent, font, tbm);
+				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
+						APPEARANCE_JAVADOC_FONT, tbm);
 
 				final BackAction backAction= new BackAction(iControl);
 				backAction.setEnabled(false);
@@ -284,15 +280,17 @@ public class DocHover extends AbstractJavaEditorTextHover {
 				tbm.add(openDeclarationAction);
 
 				final SimpleSelectionProvider selectionProvider= new SimpleSelectionProvider();
-				if (fSite != null) {
+				//TODO: an action to open the generated ceylondoc  
+				//      from the doc archive, in a browser window
+				/*if (fSite != null) {
 					OpenAttachedJavadocAction openAttachedJavadocAction= new OpenAttachedJavadocAction(fSite);
 					openAttachedJavadocAction.setSpecialSelectionProvider(selectionProvider);
-					openAttachedJavadocAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_OPEN_BROWSER);
-					openAttachedJavadocAction.setDisabledImageDescriptor(JavaPluginImages.DESC_DLCL_OPEN_BROWSER);
+					openAttachedJavadocAction.setImageDescriptor(DESC_ELCL_OPEN_BROWSER);
+					openAttachedJavadocAction.setDisabledImageDescriptor(DESC_DLCL_OPEN_BROWSER);
 					selectionProvider.addSelectionChangedListener(openAttachedJavadocAction);
 					selectionProvider.setSelection(new StructuredSelection());
 					tbm.add(openAttachedJavadocAction);
-				}
+				}*/
 
 				IInputChangedListener inputChangeListener= new IInputChangedListener() {
 					public void inputChanged(Object newInput) {
@@ -304,9 +302,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 							BrowserInformationControlInput input= (BrowserInformationControlInput) newInput;
 							Object inputElement= input.getInputElement();
 							selectionProvider.setSelection(new StructuredSelection(inputElement));
-							boolean isJavaElementInput= inputElement instanceof IJavaElement;
+							boolean isDeclarationElementInput= inputElement instanceof Declaration;
 							//showInJavadocViewAction.setEnabled(isJavaElementInput);
-							openDeclarationAction.setEnabled(isJavaElementInput);
+							openDeclarationAction.setEnabled(isDeclarationElementInput);
 						}
 					}
 				};
@@ -366,8 +364,8 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			String tooltipAffordanceString= fAdditionalInfoAffordance ? 
 					JavaPlugin.getAdditionalInfoAffordanceString() : EditorsUI.getTooltipAffordanceString();
 			if (BrowserInformationControl.isAvailable(parent)) {
-				String font= PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-				BrowserInformationControl iControl= new BrowserInformationControl(parent, font, tooltipAffordanceString) {
+				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
+						APPEARANCE_JAVADOC_FONT, tooltipAffordanceString) {
 					@Override
 					public IInformationControlCreator getInformationPresenterControlCreator() {
 						return fInformationPresenterControlCreator;
@@ -422,21 +420,8 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	@Override
 	public IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fPresenterControlCreator == null)
-			fPresenterControlCreator= new PresenterControlCreator(getSite());
+			fPresenterControlCreator= new PresenterControlCreator(editor.getEditorSite());
 		return fPresenterControlCreator;
-	}
-
-	private IWorkbenchSite getSite() {
-		IEditorPart editor= getEditor();
-		if (editor == null) {
-			IWorkbenchPage page= JavaPlugin.getActivePage();
-			if (page != null)
-				editor= page.getActiveEditor();
-		}
-		if (editor != null)
-			return editor.getSite();
-
-		return null;
 	}
 
 	@Override
@@ -447,50 +432,16 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	}
 
 	private static void addLinkListener(final BrowserInformationControl control) {
-		control.addLocationListener(JavaElementLinks.createLocationListener(new JavaElementLinks.ILinkHandler() {
-			public void handleJavadocViewLink(IJavaElement linkTarget) {
-				control.notifyDelayedInputChange(null);
-				control.setVisible(false);
-				control.dispose(); //FIXME: should have protocol to hide, rather than dispose
-				try {
-					JavadocView view= (JavadocView) JavaPlugin.getActivePage().showView(JavaUI.ID_JAVADOC_VIEW);
-					view.setInput(linkTarget);
-				} catch (PartInitException e) {
-					JavaPlugin.log(e);
-				}
+		control.addLocationListener(new LocationListener() {
+			@Override
+			public void changing(LocationEvent event) {
+				System.out.println(event);				
 			}
-			public void handleInlineJavadocLink(IJavaElement linkTarget) {
-				/*JavadocBrowserInformationControlInput hoverInfo= getHoverInfo(new IJavaElement[] { linkTarget }, 
-				          null, null, (JavadocBrowserInformationControlInput) control.getInput());
-				if (control.hasDelayedInputChangeListener())
-					control.notifyDelayedInputChange(hoverInfo);
-				else
-					control.setInput(hoverInfo);*/
+			@Override
+			public void changed(LocationEvent event) {
+				System.out.println(event);
 			}
-			public void handleDeclarationLink(IJavaElement linkTarget) {
-				control.notifyDelayedInputChange(null);
-				control.dispose(); //FIXME: should have protocol to hide, rather than dispose
-				try {
-					//FIXME: add hover location to editor navigation history?
-					JavaUI.openInEditor(linkTarget);
-				} catch (PartInitException e) {
-					JavaPlugin.log(e);
-				} catch (JavaModelException e) {
-					JavaPlugin.log(e);
-				}
-			}
-			public boolean handleExternalLink(URL url, Display display) {
-				control.notifyDelayedInputChange(null);
-				control.dispose(); //FIXME: should have protocol to hide, rather than dispose
-
-				// Open attached Javadoc links
-				OpenBrowserUtil.open(url, display);
-
-				return true;
-			}
-
-			public void handleTextSet() {}
-		}));
+		});
 	}
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
@@ -506,7 +457,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
-		return getHoverInfo(node, hoverRegion, null);
+		return getHoverInfo(getReferencedDeclaration(node), hoverRegion, null);
 	}
 	
 	private String getIcon(Object obj) {
@@ -554,12 +505,11 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	private DocBrowserInformationControlInput getHoverInfo(Node node, IRegion hoverRegion, 
+	private DocBrowserInformationControlInput getHoverInfo(Declaration dec, IRegion hoverRegion, 
 			DocBrowserInformationControlInput previousInput) {
 		
 		StringBuffer buffer= new StringBuffer();
 		
-		Declaration dec = getReferencedDeclaration(node);
 		if (dec == null) return null;		
 		Package pack = dec.getUnit().getPackage();
 		
@@ -581,7 +531,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		}
 
 		CeylonParseController parseController = editor.getParseController();
-		appendDocAnnotationContent(getReferencedNode(node, parseController), buffer);
+		appendDocAnnotationContent(getReferencedNode(dec, parseController), buffer);
 
 		boolean extraBreak = false;
 		if (dec instanceof Class) {
@@ -607,7 +557,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		if (buffer.length() > 0) {
 			HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 			HTMLPrinter.addPageEpilog(buffer);
-			return new DocBrowserInformationControlInput(previousInput, null, 
+			return new DocBrowserInformationControlInput(previousInput, dec, 
 					buffer.toString(), 20);
 		}
 
@@ -653,20 +603,6 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-
-	/**
-	 * Creates and returns a formatted message for the given
-	 * constant with its hex value.
-	 *
-	 * @param constantValue the constant value
-	 * @param hexValue the hex value
-	 * @return a formatted string with constant and hex values
-	 * @since 3.4
-	 */
-	private static String formatWithHexValue(Object constantValue, String hexValue) {
-		return Messages.format("{0} [{1}]", new String[] { constantValue.toString(), hexValue });
 	}
 
 	/**
