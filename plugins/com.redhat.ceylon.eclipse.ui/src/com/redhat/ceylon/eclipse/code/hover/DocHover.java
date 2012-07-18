@@ -81,6 +81,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -640,14 +641,20 @@ public class DocHover extends AbstractJavaEditorTextHover {
                             for (Tree.PositionalArgument arg: args) {
                                 Term term = arg.getExpression().getTerm();
 								if (term instanceof BaseMemberOrTypeExpression) {
-									Declaration dec = ((BaseMemberOrTypeExpression) term).getTarget().getDeclaration();
-									addImageAndLabel(documentation, null, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
-											"<tt>see <a "+link(dec)+">"+dec.getName()+"</a></tt>", 20, 2);
+									ProducedReference target = ((BaseMemberOrTypeExpression) term).getTarget();
+									if (target!=null) {
+										Declaration dec = target.getDeclaration();
+										addImageAndLabel(documentation, null, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
+												"<tt>see <a "+link(dec)+">"+dec.getName()+"</a></tt>", 20, 2);
+									}
 								}
 								if (term instanceof QualifiedMemberOrTypeExpression) {
 	                            	documentation.append("<p><tt>see ");
-									Declaration dec = ((QualifiedMemberOrTypeExpression) term).getTarget().getDeclaration();
-									documentation.append(dec.getQualifiedNameString());
+									ProducedReference target = ((QualifiedMemberOrTypeExpression) term).getTarget();
+									if (target!=null) {
+										Declaration dec = target.getDeclaration();
+										documentation.append(dec.getQualifiedNameString());
+									}
 									documentation.append("</tt></p>");
 								}
                             }
