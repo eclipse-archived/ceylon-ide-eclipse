@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 /**
  * Browser input for Javadoc hover.
@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
  */
 class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 
-	private final Tree.Declaration node;
+	private final Declaration declaration;
 	private final String fHtml;
 	private final int fLeadingImageWidth;
 	/**
@@ -23,10 +23,11 @@ class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 	 * @param html HTML contents, must not be null
 	 * @param leadingImageWidth the indent required for the element image
 	 */
-	public DocBrowserInformationControlInput(DocBrowserInformationControlInput previous, Tree.Declaration node, String html, int leadingImageWidth) {
+	public DocBrowserInformationControlInput(DocBrowserInformationControlInput previous, 
+			Declaration declaration, String html, int leadingImageWidth) {
 		super(previous);
 		Assert.isNotNull(html);
-		this.node= node;
+		this.declaration= declaration;
 		fHtml= html;
 		fLeadingImageWidth= leadingImageWidth;
 	}
@@ -53,7 +54,7 @@ class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 	 */
 	@Override
 	public Object getInputElement() {
-		return node == null ? (Object) fHtml : node;
+		return declaration == null ? (Object) fHtml : declaration;
 	}
 
 	/*
@@ -61,7 +62,7 @@ class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 	 */
 	@Override
 	public String getInputName() {
-		return node == null ? "" : node.getIdentifier().getText();
+		return declaration == null ? "" : declaration.getName();
 	}
 
 }
