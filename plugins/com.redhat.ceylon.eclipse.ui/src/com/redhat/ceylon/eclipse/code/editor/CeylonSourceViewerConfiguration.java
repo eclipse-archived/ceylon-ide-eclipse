@@ -130,50 +130,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             infoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
             infoPresenter.setAnchor(ANCHOR_GLOBAL);
 
-            IInformationProvider provider= new IInformationProvider() {
-            	private IAnnotationModel annotationModel= editor.getDocumentProvider()
-            			.getAnnotationModel(editor.getEditorInput());
-
-                private List<Annotation> getParserAnnotationsAtOffset(int offset) {
-                    List<Annotation> result= new LinkedList<Annotation>();
-                    if (annotationModel != null) {
-                        for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
-                        		iter.hasNext(); ) {
-                            Annotation ann= iter.next();
-                            if (annotationModel.getPosition(ann).includes(offset) && 
-                            		isParseAnnotation(ann)) {
-                                result.add(ann);
-                            }
-                        }
-                    }
-                    return result;
-                }
-
-            	public IRegion getSubject(ITextViewer textViewer, int offset) {
-                	List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(offset);
-
-                	if (parserAnnsAtOffset.size() > 0) {
-                		Annotation theAnn= parserAnnsAtOffset.get(0);
-                		Position pos= annotationModel.getPosition(theAnn);
-                		return new Region(pos.offset, pos.length);
-                	}
-
-                	Node selNode= findNode(editor.getParseController().getRootNode(), offset);
-                    return new Region(getStartOffset(selNode), getLength(selNode));
-                }
-
-                public String getInformation(ITextViewer textViewer, IRegion subject) {
-                	List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
-                	if (parserAnnsAtOffset.size() > 0) {
-                		Annotation theAnn= parserAnnsAtOffset.get(0);
-                		return theAnn.getText();
-                	}
-
-                	CeylonParseController pc = editor.getParseController();
-                	Node selNode= findNode(pc.getRootNode(), subject.getOffset());
-                    return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
-                }
-            };
+            IInformationProvider provider= new HoverInformationProvider();
             infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
             infoPresenter.setSizeConstraints(60, 10, true, false);
             infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
@@ -187,8 +144,51 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
 
-    private class OutlineInformationProvider 
-    implements IInformationProvider, IInformationProviderExtension {
+    private final class HoverInformationProvider implements IInformationProvider {
+		private IAnnotationModel annotationModel= editor.getDocumentProvider()
+				.getAnnotationModel(editor.getEditorInput());
+
+		private List<Annotation> getParserAnnotationsAtOffset(int offset) {
+		    List<Annotation> result= new LinkedList<Annotation>();
+		    if (annotationModel != null) {
+		        for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
+		        		iter.hasNext(); ) {
+		            Annotation ann= iter.next();
+		            if (annotationModel.getPosition(ann).includes(offset) && 
+		            		isParseAnnotation(ann)) {
+		                result.add(ann);
+		            }
+		        }
+		    }
+		    return result;
+		}
+
+		public IRegion getSubject(ITextViewer textViewer, int offset) {
+			List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(offset);
+			if (!parserAnnsAtOffset.isEmpty()) {
+				Annotation ann= parserAnnsAtOffset.get(0);
+				Position pos= annotationModel.getPosition(ann);
+				return new Region(pos.offset, pos.length);
+			}
+			Node selNode= findNode(editor.getParseController().getRootNode(), offset);
+		    return new Region(getStartOffset(selNode), getLength(selNode));
+		}
+
+		public String getInformation(ITextViewer textViewer, IRegion subject) {
+			List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
+			if (!parserAnnsAtOffset.isEmpty()) {
+				return parserAnnsAtOffset.get(0).getText();
+			}
+
+			CeylonParseController pc = editor.getParseController();
+			Node selNode= findNode(pc.getRootNode(), subject.getOffset());
+		    return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
+		}
+	}
+
+	private class OutlineInformationProvider 
+            implements IInformationProvider, IInformationProviderExtension {
+		
     	public IRegion getSubject(ITextViewer textViewer, int offset) {
     		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
     	}
@@ -200,6 +200,20 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		return builder.buildTree(editor.getParseController().getRootNode());
     	}
     }
+
+	private class HierarchyInformationProvider 
+	        implements IInformationProvider, IInformationProviderExtension {
+		public IRegion getSubject(ITextViewer textViewer, int offset) {
+			return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+		}
+		public String getInformation(ITextViewer textViewer, IRegion subject) {
+			// shouldn't be called, given IInformationProviderExtension???
+			throw new UnsupportedOperationException();
+		}
+		public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+			return editor;
+		}
+	}
 
     private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, 
     		final String commandId) {
@@ -242,20 +256,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setSizeConstraints(80, 20, true, false);
         //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
         return presenter;
-    }
-
-    private class HierarchyInformationProvider 
-            implements IInformationProvider, IInformationProviderExtension {
-    	public IRegion getSubject(ITextViewer textViewer, int offset) {
-    		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
-    	}
-    	public String getInformation(ITextViewer textViewer, IRegion subject) {
-    		// shouldn't be called, given IInformationProviderExtension???
-    		throw new UnsupportedOperationException();
-    	}
-    	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return editor;
-    	}
     }
 
     /**

@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
@@ -71,8 +70,6 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
-
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
 /**
@@ -594,7 +591,7 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		}
 	}
 
-	private final IPreferenceStore fStore= CeylonPlugin.getInstance().getPreferenceStore();
+	//private final IPreferenceStore fStore= CeylonPlugin.getInstance().getPreferenceStore();
 	private final DefaultMarkerAnnotationAccess fAnnotationAccess= new DefaultMarkerAnnotationAccess();
 	private final boolean fAllAnnotations;
 
