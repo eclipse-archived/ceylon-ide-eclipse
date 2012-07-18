@@ -87,6 +87,9 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -541,8 +544,10 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		}
 
 		CeylonParseController parseController = editor.getParseController();
-		appendDocAnnotationContent(getReferencedNode(dec, parseController), buffer);
-
+		Tree.Declaration refnode = getReferencedNode(dec, parseController);
+		appendDocAnnotationContent(refnode, buffer);
+		appendSeeAnnotationContent(refnode, buffer);
+		
 		boolean extraBreak = false;
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
@@ -563,8 +568,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		}
 		
 		if (extraBreak) buffer.append("<br/>");
-		addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-				16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ dec.getUnit().getFilename() + "</tt>", 20, 2);
+			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
+				16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+						dec.getUnit().getFilename() + "</tt>", 20, 2);
 //		buffer.append("<p><em>Go to <a href='declaration:'><tt>" + dec.getName() + 
 //				"</tt></a> in <tt>" + dec.getUnit().getFilename() + "</tt></em></p>");
 
@@ -584,7 +590,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			    + ":" + dec.getName() + "'";
 	}
 
-    public static void appendDocAnnotationContent(Tree.Declaration decl,
+    private void appendDocAnnotationContent(Tree.Declaration decl,
             StringBuffer documentation) {
         Tree.AnnotationList annotationList = decl.getAnnotationList();
         if (annotationList != null)
@@ -601,11 +607,52 @@ public class DocHover extends AbstractJavaEditorTextHover {
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             if (!args.isEmpty()) {
-                                String docLine = args.get(0).getExpression().getTerm().getText();
+                            	//TODO: properly process the markdown!!
+                                String docLine = sanitize(args.get(0).getExpression().getTerm().getText());
                                 documentation.append("<p>")
                                     .append(docLine.subSequence(1, docLine.length()-1).toString()
                                 		.replaceAll("`([^`]+)`", "<tt>$1</tt>"))
                                 	.append("</p>");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void appendSeeAnnotationContent(Tree.Declaration decl,
+            StringBuffer documentation) {
+        Tree.AnnotationList annotationList = decl.getAnnotationList();
+        if (annotationList != null)
+        {
+            for (Tree.Annotation annotation : annotationList.getAnnotations())
+            {
+                Tree.Primary annotPrim = annotation.getPrimary();
+                if (annotPrim instanceof BaseMemberExpression)
+                {
+                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                    if ("see".equals(name))
+                    {
+                        Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+                        if (argList!=null) {
+                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                            for (Tree.PositionalArgument arg: args) {
+                                Term term = arg.getExpression().getTerm();
+								if (term instanceof BaseMemberOrTypeExpression) {
+									Declaration dec = ((BaseMemberOrTypeExpression) term).getTarget().getDeclaration();
+									addImageAndLabel(documentation, null, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
+											"<tt>see <a "+link(dec)+">"+dec.getName()+"</a></tt>", 20, 2);
+								}
+								if (term instanceof QualifiedMemberOrTypeExpression) {
+	                            	documentation.append("<p><tt>see ");
+									Declaration dec = ((QualifiedMemberOrTypeExpression) term).getTarget().getDeclaration();
+									documentation.append(dec.getQualifiedNameString());
+									documentation.append("</tt></p>");
+								}
+                            }
+                            if (!args.isEmpty()) {
+                            	documentation.append("<br/>");
                             }
                         }
                     }
