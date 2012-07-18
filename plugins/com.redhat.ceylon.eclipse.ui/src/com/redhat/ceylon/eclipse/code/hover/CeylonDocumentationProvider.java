@@ -245,7 +245,7 @@ public class CeylonDocumentationProvider {
         }
     }
     
-    private static String sanitize(String s) {
+    public static String sanitize(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
     

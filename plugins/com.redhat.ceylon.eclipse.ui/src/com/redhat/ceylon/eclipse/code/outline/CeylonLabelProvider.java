@@ -560,6 +560,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             getLabel(decl.getUnit().getPackage());
     }
     
+    public static String getModuleLabel(Node decl) {
+        return decl.getUnit()==null ? "unknown module" : 
+            getLabel(decl.getUnit().getPackage().getModule());
+    }
+    
+    public static String getModuleLabel(Declaration decl) {
+        return decl.getUnit()==null ? "unknown module" : 
+            getLabel(decl.getUnit().getPackage().getModule());
+    }
+    
     public static String getPackageLabel(Declaration decl) {
         return getLabel(decl.getUnit().getPackage());
     }
