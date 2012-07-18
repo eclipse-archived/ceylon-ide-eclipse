@@ -74,6 +74,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.osgi.framework.Bundle;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -436,8 +437,17 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		control.addLocationListener(new LocationListener() {
 			@Override
 			public void changing(LocationEvent event) {
-				if ("declaration:".equals(event.location))
-					gotoDeclaration((BrowserInformationControl) control);		
+				String location = event.location;
+				if ("declaration:".equals(location)) {
+					gotoDeclaration((BrowserInformationControl) control);
+				}
+				else if (location.startsWith("doc:")) {
+					String[] bits = location.split(":");
+					Declaration dec = (Declaration) control.getInput().getInputElement();
+					Declaration target = dec.getUnit().getPackage().getModule().getPackage(bits[1]).getDirectMember(bits[2], null);
+					DocBrowserInformationControlInput prev = (DocBrowserInformationControlInput)control.getInput();
+					control.setInput(getHoverInfo(target, prev));
+				}
 			}
 			@Override
 			public void changed(LocationEvent event) {}
@@ -457,7 +467,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
-		return getHoverInfo(getReferencedDeclaration(node), hoverRegion, null);
+		return getHoverInfo(getReferencedDeclaration(node), null);
 	}
 	
 	private String getIcon(Object obj) {
@@ -496,16 +506,15 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 	/**
 	 * Computes the hover info.
-	 *
+	 * @param previousInput the previous input, or <code>null</code>
 	 * @param elements the resolved elements
 	 * @param editorInputElement the editor input, or <code>null</code>
-	 * @param hoverRegion the text range of the hovered word, or <code>null</code>
-	 * @param previousInput the previous input, or <code>null</code>
+	 *
 	 * @return the HTML hover info for the given element(s) or <code>null</code> 
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	private DocBrowserInformationControlInput getHoverInfo(Declaration dec, IRegion hoverRegion, 
+	private DocBrowserInformationControlInput getHoverInfo(Declaration dec, 
 			DocBrowserInformationControlInput previousInput) {
 		
 		StringBuffer buffer= new StringBuffer();
@@ -518,9 +527,10 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		buffer.append("<br/>");
 		
 		if (dec.isClassOrInterfaceMember()) {
+			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
 			addImageAndLabel(buffer, null, fileUrl(getIcon(dec.getContainer())).toExternalForm(), 16, 16, 
-					"member of&nbsp;&nbsp;<tt>" + sanitize(getDescriptionFor((Declaration)dec.getContainer())) + "</tt>", 
-					20, 2);
+					"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
+			        sanitize(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 		}
 
 		if (dec.isShared()) {
@@ -538,14 +548,16 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
 				addImageAndLabel(buffer, null, fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "<tt>extends " + sanitize(sup.getProducedTypeName()) +"</tt>", 20, 2);
+						16, 16, "<tt>extends <a " + link(sup.getDeclaration()) + ">" + 
+				        sanitize(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
 				extraBreak = true;
 			}
 		}
 		if (dec instanceof TypeDeclaration) {
 			for (ProducedType td: ((TypeDeclaration) dec).getSatisfiedTypes()) {
 				addImageAndLabel(buffer, null, fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "<tt>satisfies " + sanitize(td.getProducedTypeName()) +"</tt>", 20, 2);
+						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
+				        sanitize(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 				extraBreak = true;
 			}
 		}
@@ -564,6 +576,12 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		}
 
 		return null;
+	}
+	
+	String link(Declaration dec) {
+		if (!dec.isToplevel()) return "";
+		return "href='doc:" + dec.getUnit().getPackage().getQualifiedNameString() 
+			    + ":" + dec.getName() + "'";
 	}
 
     public static void appendDocAnnotationContent(Tree.Declaration decl,
