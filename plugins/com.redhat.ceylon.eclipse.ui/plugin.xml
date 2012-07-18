@@ -77,30 +77,6 @@
       <persistent value="true"/>
    </extension-->
    
-   <extension
-         point="org.eclipse.ui.editors.annotationTypes">
-      <type
-            markerSeverity="2"
-            name="com.redhat.ceylon.eclipse.ui.parseAnnotation"
-            super="org.eclipse.ui.workbench.texteditor.error"/>
-      <type
-            markerSeverity="2"
-            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.error"
-            super="org.eclipse.ui.workbench.texteditor.error"/>
-      <type
-            markerSeverity="1"
-            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
-            super="org.eclipse.ui.workbench.texteditor.warning"/>
-      <type
-            markerSeverity="0"
-            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.info"
-            super="org.eclipse.ui.workbench.texteditor.info"/>
-      <type
-            markerSeverity="0"
-            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
-            super="org.eclipse.ui.workbench.texteditor.info"/>
-   </extension>
-
    <extension 
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator 
@@ -198,6 +174,26 @@
    
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="2"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.error"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="1"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.parseAnnotation.info"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
+      <type
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
       <type name="com.redhat.ceylon.eclipse.ui.refinement"
             markerSeverity="0"/>
       <type name="com.redhat.ceylon.eclipse.ui.todo"
@@ -207,6 +203,62 @@
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
          
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.parseAnnotation.error"
+            label="Ceylon Compilation Error"
+            symbolicIcon="error"
+            presentationLayer="6"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="errorAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="errorAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.color"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.text"
+            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.textStyle"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.highlight"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.ruler"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.error.overview"
+            
+            colorPreferenceValue="255,0,128"
+            textPreferenceValue="true"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/>
+            
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
+            label="Ceylon Compilation Warning"
+            symbolicIcon="warning"
+            presentationLayer="5"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="warningAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="warningAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.color"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.text"
+            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.textStyle"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.highlight"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.ruler"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.overview"
+            
+            colorPreferenceValue="244,200,45"
+            textPreferenceValue="true"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/>
+            
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             label="Ceylon Refinement Indicators"
