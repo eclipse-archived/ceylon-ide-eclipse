@@ -20,8 +20,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
-import static org.eclipse.jdt.internal.ui.JavaPluginImages.DESC_DLCL_OPEN_BROWSER;
-import static org.eclipse.jdt.internal.ui.JavaPluginImages.DESC_ELCL_OPEN_BROWSER;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.internal.text.html.BrowserInformationControl.isAvailable;
@@ -48,7 +46,6 @@ import org.eclipse.jdt.internal.ui.actions.SimpleSelectionProvider;
 import org.eclipse.jdt.internal.ui.text.java.hover.AbstractJavaEditorTextHover;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jdt.ui.actions.OpenAttachedJavadocAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.internal.text.html.BrowserInformationControl;
@@ -225,19 +222,23 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		public OpenDeclarationAction(BrowserInformationControl infoControl) {
 			fInfoControl= infoControl;
 			setText("Open Declaration");
-			setLocalImageDescriptors(this, "goto_input.gif");  //TODO: better images
+			setLocalImageDescriptors(this, "goto_input.gif");
 		}
 
 		@Override
 		public void run() {
-			DocBrowserInformationControlInput infoInput= (DocBrowserInformationControlInput) fInfoControl.getInput(); //TODO: check cast
-			fInfoControl.notifyDelayedInputChange(null);
-			fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
-
-			CeylonParseController parseController = editor.getParseController();
-			gotoNode(getReferencedNode((Declaration) infoInput.getInputElement(), parseController), 
-					parseController.getProject(), parseController.getTypeChecker());
+			gotoDeclaration(fInfoControl);
 		}
+	}
+	
+	private void gotoDeclaration(BrowserInformationControl control) {
+		DocBrowserInformationControlInput infoInput= (DocBrowserInformationControlInput) control.getInput();
+		control.notifyDelayedInputChange(null);
+		control.dispose(); //FIXME: should have protocol to hide, rather than dispose
+
+		CeylonParseController parseController = editor.getParseController();
+		gotoNode(getReferencedNode((Declaration) infoInput.getInputElement(), parseController), 
+				parseController.getProject(), parseController.getTypeChecker());
 	}
 
 
@@ -327,7 +328,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 *
 	 * @since 3.3
 	 */
-	public static final class HoverControlCreator extends AbstractReusableInformationControlCreator {
+	public final class HoverControlCreator extends AbstractReusableInformationControlCreator {
 		/**
 		 * The information presenter control creator.
 		 * @since 3.4
@@ -431,16 +432,15 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		return fHoverControlCreator;
 	}
 
-	private static void addLinkListener(final BrowserInformationControl control) {
+	private void addLinkListener(final BrowserInformationControl control) {
 		control.addLocationListener(new LocationListener() {
 			@Override
 			public void changing(LocationEvent event) {
-				System.out.println(event);				
+				if ("declaration:".equals(event.location))
+					gotoDeclaration((BrowserInformationControl) control);		
 			}
 			@Override
-			public void changed(LocationEvent event) {
-				System.out.println(event);
-			}
+			public void changed(LocationEvent event) {}
 		});
 	}
 
@@ -552,7 +552,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		
 		if (extraBreak) buffer.append("<br/>");
 		addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-				16, 16, "declared in unit&nbsp;&nbsp;<tt>"+ dec.getUnit().getFilename() + "</tt>", 20, 2);
+				16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ dec.getUnit().getFilename() + "</tt>", 20, 2);
+//		buffer.append("<p><em>Go to <a href='declaration:'><tt>" + dec.getName() + 
+//				"</tt></a> in <tt>" + dec.getUnit().getFilename() + "</tt></em></p>");
 
 		if (buffer.length() > 0) {
 			HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
