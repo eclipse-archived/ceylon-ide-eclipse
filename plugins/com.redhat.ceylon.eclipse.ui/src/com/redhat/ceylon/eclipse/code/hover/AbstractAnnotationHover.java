@@ -146,16 +146,10 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			create();
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.IInformationControl#setInformation(java.lang.String)
-		 */
 		public void setInformation(String information) {
 			//replaced by IInformationControlExtension2#setInput
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.IInformationControlExtension2#setInput(java.lang.Object)
-		 */
 		public void setInput(Object input) {
 			Assert.isLegal(input instanceof AnnotationInfo);
 			fInput= (AnnotationInfo)input;
@@ -163,9 +157,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			deferredCreateContent();
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.IInformationControlExtension#hasContents()
-		 */
 		public boolean hasContents() {
 			return fInput != null;
 		}
@@ -174,18 +165,12 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			return fInput;
 		}
 
-		/*
-		 * @see org.eclipse.jdt.internal.ui.text.java.hover.AbstractAnnotationHover.AbstractInformationControl#setFocus()
-		 */
 		public void setFocus() {
 			super.setFocus();
 			if (fFocusControl != null)
 				fFocusControl.setFocus();
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.AbstractInformationControl#setVisible(boolean)
-		 */
 		public final void setVisible(boolean visible) {
 			if (!visible)
 				disposeDeferredCreatedContent();
@@ -202,9 +187,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 				toolBarManager.removeAll();
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.AbstractInformationControl#createContent(org.eclipse.swt.widgets.Composite)
-		 */
 		protected void createContent(Composite parent) {
 			fParent= parent;
 			GridLayout layout= new GridLayout(1, false);
@@ -214,9 +196,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			fParent.setLayout(layout);
 		}
 
-		/*
-		 * @see org.eclipse.jface.text.AbstractInformationControl#computeSizeHint()
-		 */
 		public Point computeSizeHint() {
 			Point preferedSize= getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 
@@ -506,9 +485,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 	 * @since 3.4
 	 */
 	private static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
-		/*
-		 * @see org.eclipse.jdt.internal.ui.text.java.hover.AbstractReusableInformationControlCreator#doCreateInformationControl(org.eclipse.swt.widgets.Shell)
-		 */
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT));
 		}
@@ -527,9 +503,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			fPresenterControlCreator= presenterControlCreator;
 		}
 
-		/*
-		 * @see org.eclipse.jdt.internal.ui.text.java.hover.AbstractReusableInformationControlCreator#doCreateInformationControl(org.eclipse.swt.widgets.Shell)
-		 */
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			return new AnnotationInformationControl(parent, EditorsUI.getTooltipAffordanceString()) {
 				/*
@@ -541,9 +514,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			};
 		}
 
-		/*
-		 * @see org.eclipse.jdt.internal.ui.text.java.hover.AbstractReusableInformationControlCreator#canReuse(org.eclipse.jface.text.IInformationControl)
-		 */
 		public boolean canReuse(IInformationControl control) {
 			if (!super.canReuse(control))
 				return false;
@@ -613,9 +583,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		fAllAnnotations= allAnnotations;
 	}
 
-	/*
-	 * @see org.eclipse.jface.text.ITextHover#getHoverInfo(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
-	 */
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		return null;
 	}
@@ -687,20 +654,12 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		return new AnnotationInfo(annotation, position, textViewer);
 	}
 
-	/*
-	 * @see ITextHoverExtension#getHoverControlCreator()
-	 * @since 3.4
-	 */
 	public IInformationControlCreator getHoverControlCreator() {
 		if (fHoverControlCreator == null)
 			fHoverControlCreator= new HoverControlCreator(getInformationPresenterControlCreator());
 		return fHoverControlCreator;
 	}
 
-	/*
-	 * @see org.eclipse.jface.text.ITextHoverExtension2#getInformationPresenterControlCreator()
-	 * @since 3.4
-	 */
 	public IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fPresenterControlCreator == null)
 			fPresenterControlCreator= new PresenterControlCreator();
