@@ -57,7 +57,7 @@ public class CeylonReferenceResolver {
             		getReferencedDeclaration(node)));
     }
 
-    private static Declaration getReferencedDeclaration(Object node) {
+    public static Declaration getReferencedDeclaration(Object node) {
         Declaration dec;
         if (node instanceof Tree.ImportPath) {
             Package p = ((Tree.ImportPath) node).getPackageModel();

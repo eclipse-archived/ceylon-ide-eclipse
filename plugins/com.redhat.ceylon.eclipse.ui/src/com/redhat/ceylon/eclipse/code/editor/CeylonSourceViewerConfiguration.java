@@ -132,8 +132,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
             IInformationProvider provider= new HoverInformationProvider();
             infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
-            infoPresenter.setSizeConstraints(60, 10, true, false);
-            infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
+            //infoPresenter.setSizeConstraints(500, 100, true, false);
+            //infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
         }
         return infoPresenter;
     }

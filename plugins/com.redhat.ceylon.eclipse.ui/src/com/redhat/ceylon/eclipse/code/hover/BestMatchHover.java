@@ -34,13 +34,9 @@ public class BestMatchHover extends AbstractTextHover {
 	private List fInstantiatedTextHovers;
 	private ITextHover fBestHover;
 
-	public BestMatchHover() {
-		installTextHovers();
-	}
-
 	public BestMatchHover(CeylonEditor editor) {
-		this();
 		setEditor(editor);
+		installTextHovers();
 	}
 
 	/**
@@ -53,45 +49,11 @@ public class BestMatchHover extends AbstractTextHover {
 		fInstantiatedTextHovers= new ArrayList(2);
 		
 		fInstantiatedTextHovers.add(new ProblemHover());
-
-		// populate list
-//		JavaEditorTextHoverDescriptor[] hoverDescs= JavaPlugin.getDefault().getJavaEditorTextHoverDescriptors();
-//		for (int i= 0; i < hoverDescs.length; i++) {
-//			// ensure that we don't add ourselves to the list
-//			if (!PreferenceConstants.ID_BESTMATCH_HOVER.equals(hoverDescs[i].getId()))
-//				fTextHoverSpecifications.add(hoverDescs[i]);
-//		}
-		
-		//fTextHoverSpecifications.add(new ProblemHover());
+		fInstantiatedTextHovers.add(new DocHover(getEditor()));
 	}
 
-	private void checkTextHovers() {
-		if (fTextHoverSpecifications.size() == 0)
-			return;
-
-//		for (Iterator iterator= new ArrayList(fTextHoverSpecifications).iterator(); iterator.hasNext(); ) {
-//			JavaEditorTextHoverDescriptor spec= (JavaEditorTextHoverDescriptor) iterator.next();
-//
-//			IJavaEditorTextHover hover= spec.createTextHover();
-//			if (hover != null) {
-//				hover.setEditor(getEditor());
-//				addTextHover(hover);
-//				fTextHoverSpecifications.remove(spec);
-//			}
-//		}
-	}
-
-	protected void addTextHover(ITextHover hover) {
-		if (!fInstantiatedTextHovers.contains(hover))
-			fInstantiatedTextHovers.add(hover);
-	}
-
-	/*
-	 * @see ITextHover#getHoverInfo(ITextViewer, IRegion)
-	 */
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 
-		checkTextHovers();
 		fBestHover= null;
 
 		if (fInstantiatedTextHovers == null)
@@ -109,14 +71,9 @@ public class BestMatchHover extends AbstractTextHover {
 
 		return null;
 	}
-
-	/*
-	 * @see org.eclipse.jface.text.ITextHoverExtension2#getHoverInfo2(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
-	 */
 	
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 
-		checkTextHovers();
 		fBestHover= null;
 
 		if (fInstantiatedTextHovers == null)
@@ -143,10 +100,6 @@ public class BestMatchHover extends AbstractTextHover {
 		return null;
 	}
 
-	/*
-	 * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
-	 * @since 3.0
-	 */
 	public IInformationControlCreator getHoverControlCreator() {
 		if (fBestHover instanceof ITextHoverExtension)
 			return ((ITextHoverExtension)fBestHover).getHoverControlCreator();
@@ -154,10 +107,6 @@ public class BestMatchHover extends AbstractTextHover {
 		return null;
 	}
 
-	/*
-	 * @see org.eclipse.jface.text.information.IInformationProviderExtension2#getInformationPresenterControlCreator()
-	 * @since 3.0
-	 */
 	public IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fBestHover instanceof IInformationProviderExtension2) // this is wrong, but left here for backwards compatibility
 			return ((IInformationProviderExtension2)fBestHover).getInformationPresenterControlCreator();
