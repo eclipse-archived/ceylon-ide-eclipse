@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
@@ -14,8 +15,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -39,12 +42,14 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider;
+import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
@@ -67,7 +72,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		CeylonEditor editor) {
         super(prefStore);
         this.editor = editor;
-        processor = new CompletionProcessor();
+        processor = new CompletionProcessor(editor);
     }
     
     @Override
@@ -85,9 +90,30 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        ContentAssistant ca= new ContentAssistant();
+        ContentAssistant ca= new ContentAssistant() {
+        	protected void install() {
+                /*setInformationControlCreator(new AbstractReusableInformationControlCreator() {
+					@Override
+					protected IInformationControl doCreateInformationControl(
+							Shell parent) {
+						return new BrowserInformationControl(parent, 
+								APPEARANCE_JAVADOC_FONT, (String)null) {
+							@Override
+							public Rectangle computeTrim() {
+								Rectangle trim= getShell().computeTrim(0, 0, 0, 0);
+								return trim;
+							}
+						};
+					}
+                });*/
+                setInformationControlCreator(new DocHover(editor)
+                        .getHoverControlCreator("Click for focus"));
+        		super.install();
+        	}
+        };
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
-        ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        ca.enableAutoInsert(true);
+        ca.enableAutoActivation(true);
         return ca;
     }
 

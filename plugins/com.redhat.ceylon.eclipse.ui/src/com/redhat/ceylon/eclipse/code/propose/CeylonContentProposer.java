@@ -9,7 +9,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.getDocumentation;
+import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
@@ -28,8 +28,6 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARG
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -444,9 +442,9 @@ public class CeylonContentProposer {
                             }
                         }
                         if (!already) {
+                        	//TOOD: render HTML describing the package!
                             result.add(new Proposal(offset, prefix, PACKAGE, 
-                                    "package " + pkg, pkg, 
-                                    pkg.substring(len), false));
+                                    null, pkg, pkg.substring(len), false));
                         }
                     }
                 //}
@@ -864,7 +862,7 @@ public class CeylonContentProposer {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
                     /*&& !keyword.equals(prefix)*/) {
                 result.add(new Proposal(offset, prefix, null, 
-                        keyword + " keyword", keyword, keyword + " ", 
+                        null, keyword, keyword + " ", 
                         true));
             }
         }
@@ -909,9 +907,9 @@ public class CeylonContentProposer {
         }
     }*/
     
-    private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
+    /*private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
         return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
-    }
+    }*/
     
     private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
             final ProducedType type, Map<String, DeclarationWithProximity> proposals) {

@@ -30,7 +30,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 @SuppressWarnings({"unchecked", "deprecation"})
 public class BestMatchHover extends AbstractTextHover {
 
-	private List fTextHoverSpecifications;
 	private List fInstantiatedTextHovers;
 	private ITextHover fBestHover;
 
@@ -43,11 +42,7 @@ public class BestMatchHover extends AbstractTextHover {
 	 * Installs all text hovers.
 	 */
 	private void installTextHovers() {
-
-		// initialize lists - indicates that the initialization happened
-		fTextHoverSpecifications= new ArrayList(2);
 		fInstantiatedTextHovers= new ArrayList(2);
-		
 		fInstantiatedTextHovers.add(new ProblemHover());
 		fInstantiatedTextHovers.add(new DocHover(getEditor()));
 	}
