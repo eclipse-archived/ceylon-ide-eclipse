@@ -195,7 +195,7 @@ public class CeylonQuickFixAssistant {
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
 
             Statement statement = findStatement(cu, node);
-            ConvertThenElseToIfElse.addConvertToGetterProposal(doc, proposals, file, statement);
+            ConvertThenElseToIfElse.addConvertToIfElseProposal(doc, proposals, file, statement);
             InvertIfElse.addReverseIfElseProposal(doc, proposals, file, statement);
             
         }
