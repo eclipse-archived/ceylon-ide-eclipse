@@ -941,6 +941,9 @@
                   relative="org.eclipse.ui.views.ProblemView"
                   relationship="right"
                   ratio="0.6"/>
+            <view id="org.eclipse.ui.views.ProgressView"
+                  relative="org.eclipse.ui.console.ConsoleView"
+                  relationship="stack"/>
             <view id="org.eclipse.jdt.ui.PackageExplorer"
                   relative="org.eclipse.ui.editorss"
                   closeable="false"
