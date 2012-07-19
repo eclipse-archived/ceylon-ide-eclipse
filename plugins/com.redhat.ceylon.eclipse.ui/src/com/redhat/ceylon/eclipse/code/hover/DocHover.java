@@ -75,6 +75,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -588,6 +589,9 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		buffer.append("<br/>Contains:&nbsp;&nbsp;");
 		boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
+			if (dec instanceof Class && ((Class)dec).isOverloaded()) {
+				continue;
+			}
 			if (first) {
 				first = false;
 			}
@@ -661,6 +665,9 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				buffer.append("<br/>Members:&nbsp;&nbsp;");
 				boolean first = true;
 				for (Declaration mem: dec.getMembers()) {
+					if (mem instanceof Method && ((Method)mem).isOverloaded()) {
+						continue;
+					}
 					if (first) {
 						first = false;
 					}
