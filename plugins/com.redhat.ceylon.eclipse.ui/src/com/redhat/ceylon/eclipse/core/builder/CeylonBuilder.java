@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResou
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
+import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +60,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -131,6 +133,8 @@ import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.sun.source.util.TaskEvent;
+import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
 import com.sun.tools.javac.file.ZipFileIndexCache;
 import com.sun.tools.javac.util.Log;
@@ -311,12 +315,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 	
 	@Override
-    protected IProject[] build(final int kind, Map args, final IProgressMonitor monitor) 
+    protected IProject[] build(final int kind, Map args, IProgressMonitor monitor) 
     		throws CoreException {
-		
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-        final Collection<IFile> sourceToCompile= new HashSet<IFile>();
+        monitor.beginTask("Ceylon build of project " + project.getName(), 100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
@@ -387,7 +390,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             boolean binariesGenerationOK;
             final TypeChecker typeChecker;
             if (mustDoFullBuild.value) {
-                monitor.beginTask("Full Ceylon build of project " + project.getName(), 11);
+                monitor.subTask("Full Ceylon build of project " + project.getName());
                 getConsoleStream().println(timedMessage("Full build of model"));
                 
                 if (monitor.isCanceled()) {
@@ -411,7 +414,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     monitor.subTask("Parsing source of project " + project.getName());
                 	//if we already resolved the classpath, the
                 	//model has already been freshly-parsed
-                    typeChecker = parseCeylonModel(project, monitor);
+                    typeChecker = parseCeylonModel(project, 
+                    		new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
                     monitor.worked(1);
                 }
                 else {
@@ -422,9 +426,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
 
-                monitor.subTask("Typechecking source of project " + project.getName());
+                monitor.subTask("Typechecking all source  files of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = fullTypeCheck(project, typeChecker, monitor);
+                builtPhasedUnits = fullTypeCheck(project, typeChecker, 
+                		new SubProgressMonitor(monitor, 35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
@@ -441,19 +446,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
 
                 monitor.subTask("Generating binaries for project " + project.getName());
-                getConsoleStream().println(timedMessage("Full generation of class files..."));
                 final List<IFile> allSources = getProjectSources(project);
+                getConsoleStream().println(timedMessage("Full generation of class files..."));
                 getConsoleStream().println("             ...compiling " + 
                         allSources.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject, 
-                		allSources, typeChecker, monitor);
+                		allSources, typeChecker, 
+                		new SubProgressMonitor(monitor, 45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
             }
             else
             {
-                monitor.beginTask("Incremental Ceylon build of project " + project.getName(), 7);
+                monitor.subTask("Incremental Ceylon build of project " + project.getName());
                 getConsoleStream().println(timedMessage("Incremental build of model"));
                 
                 List<IFile> filesToRemove = new ArrayList<IFile>();
@@ -472,9 +478,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
                 monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
+                final Collection<IFile> sourceToCompile= new HashSet<IFile>();
+                
                 calculateDependencies(project, sourceToCompile, currentDelta, 
                 		changedSources, typeChecker, phasedUnits, monitor);
-
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -489,13 +496,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     throw new OperationCanceledException();
                 }
 
-                monitor.subTask("Compiling " + sourceToCompile + " source files in project " + 
-                        project.getName()); 
                 /*if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(sourceToCompile);
                 }*/
-                builtPhasedUnits = incrementalBuild(project, sourceToCompile, monitor);                
+                monitor.subTask("Compiling " + sourceToCompile.size() + " source files in project " + 
+                        project.getName());
+                builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
+                		new SubProgressMonitor(monitor, 35, PREPEND_MAIN_LABEL_TO_SUBTASK));                
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     return project.getReferencedProjects();
                 }
@@ -518,10 +526,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 getConsoleStream().println("             ...compiling " + 
                         sourceToCompile.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject,
-                		sourceToCompile, typeChecker, monitor);
+                		sourceToCompile, typeChecker, 
+                		new SubProgressMonitor(monitor, 45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
-
+                
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -955,6 +964,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private List<PhasedUnit> incrementalBuild(IProject project, Collection<IFile> sourceToCompile,
             IProgressMonitor monitor) {
+    	
+        monitor.beginTask("Typechecking " + sourceToCompile.size() + " source files in project " + 
+                project.getName(), sourceToCompile.size()*6); 
+
         TypeChecker typeChecker = typeCheckers.get(project);
         PhasedUnits pus = typeChecker.getPhasedUnits();
 		JDTModuleManager moduleManager = (JDTModuleManager) pus.getModuleManager(); 
@@ -1045,8 +1058,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isDeclarationsScanned()) {
+            	monitor.subTask("- scanning declarations " + phasedUnit.getUnit().getFilename());
                 phasedUnit.scanDeclarations();
             }
+            monitor.worked(1);
         }
 
         if (monitor.isCanceled()) {
@@ -1054,8 +1069,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isTypeDeclarationsScanned()) {
+            	monitor.subTask("- scanning type declarations " + phasedUnit.getUnit().getFilename());
                 phasedUnit.scanTypeDeclarations();
             }
+            monitor.worked(2);
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1070,10 +1087,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isFullyTyped()) {
+            	monitor.subTask("- typechecking " + phasedUnit.getUnit().getFilename());
                 phasedUnit.analyseTypes();
                 if (showWarnings(project)) {
                 	phasedUnit.analyseUsage();
                 }
+                monitor.worked(3);
             }
         }
         if (monitor.isCanceled()) {
@@ -1092,6 +1111,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
+        
+        monitor.done();
 
         return phasedUnitsToUpdate;
     }
@@ -1120,38 +1141,48 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     		TypeChecker typeChecker, IProgressMonitor monitor) 
     				throws CoreException {
 
-        monitor.subTask("Typechecking source archives for project " 
-                + project.getName());
-
         List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
 
         List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
  
-        for (PhasedUnits phasedUnits : phasedUnitsOfDependencies) {
-            for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
+        for (PhasedUnits phasedUnits: phasedUnitsOfDependencies) {
+            for (PhasedUnit phasedUnit: phasedUnits.getPhasedUnits()) {
                 dependencies.add(phasedUnit);
             }
         }
 
+        final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
+
+        monitor.beginTask("Typechecking " + listOfUnits.size() + " source files of project " + 
+                project.getName(), dependencies.size()*5+listOfUnits.size()*6);
+        
+        monitor.subTask("- typechecking source archives for project " 
+                + project.getName());
+
         JDTModelLoader loader = getModelLoader(typeChecker);
         loader.reset();
         
-        for (PhasedUnits dependencyPhasedUnits : phasedUnitsOfDependencies) {
+        for (PhasedUnits dependencyPhasedUnits: phasedUnitsOfDependencies) {
             loader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
         }
         
-        for (PhasedUnit pu : dependencies) {
+        for (PhasedUnit pu: dependencies) {
+        	monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
+            monitor.worked(1);
         }
-        for (PhasedUnit pu : dependencies) {
+        for (PhasedUnit pu: dependencies) {
+        	monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
             pu.scanTypeDeclarations();
+            monitor.worked(2);
         }
         
         if (compileWithJDTModelLoader()) {
             loader.completeFromClasses();
+            monitor.worked(2);
         }
         
-        for (PhasedUnit pu : dependencies) {
+        for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
 
@@ -1161,15 +1192,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         loader.loadPackageDescriptors();
         
         
-        final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
-
-        monitor.subTask("Typechecking source files for project " 
-                + project.getName());
+        monitor.subTask("(typechecking source files for project " 
+                + project.getName() +")");
 
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isDeclarationsScanned()) {
+            	monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
                 pu.validateTree();
                 pu.scanDeclarations();
+                monitor.worked(1);
             }
         }
         
@@ -1178,7 +1209,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isTypeDeclarationsScanned()) {
+            	monitor.subTask("- scanning types " + pu.getUnit().getFilename());
                 pu.scanTypeDeclarations();
+                monitor.worked(2);
             }
         }
         if (monitor.isCanceled()) {
@@ -1194,10 +1227,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isFullyTyped()) {
+            	monitor.subTask("- typechecking " + pu.getUnit().getFilename());
                 pu.analyseTypes();
                 if (showWarnings(project)) {
                 	pu.analyseUsage();
                 }
+                monitor.worked(3);
             }
         }
         if (monitor.isCanceled()) {
@@ -1210,6 +1245,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
+        
+        monitor.done();
         
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
@@ -1225,8 +1262,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     	typeCheckers.remove(project);
     	projectSources.remove(project);
         
-        monitor.subTask("Setting up typechecker for project " 
-                + project.getName());
+        monitor.beginTask("Setting up typechecker for project " 
+                + project.getName(), 5);
 
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1257,7 +1294,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         monitor.worked(1);
         
-        monitor.subTask("Parsing source files for project " 
+        monitor.subTask("- parsing source files for project " 
                     + project.getName());
 
         if (monitor.isCanceled()) {
@@ -1283,7 +1320,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             throw new OperationCanceledException();
         }
 
-        monitor.subTask("Determining module dependencies for " 
+        monitor.subTask("- determining module dependencies for " 
                 + project.getName());
 
         phasedUnits.getModuleManager().prepareForTypeChecking();
@@ -1315,6 +1352,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         typeCheckers.put(project, typeChecker);
         projectSources.put(project, scannedSources);
         modelStates.put(project, ModelState.Parsed);
+        
+        monitor.done();
         
         return typeChecker;
 
@@ -1450,18 +1489,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 javaSourceFiles.add(file.getRawLocation().toFile());
         }
 
-        if (sourceFiles.size() > 0 || javaSourceFiles.size() > 0) {
+        if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
             PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
-
             boolean success = true;
             if (compileWithJDTModelLoader()) {
                 sourceFiles.addAll(javaSourceFiles);
             } 
             if(!sourceFiles.isEmpty()){
                 success = compile(project, javaProject, options, sourceFiles, 
-                		typeChecker, printWriter);
+                		typeChecker, printWriter, monitor);
             }
-            
             return success;
         }
         else
@@ -1470,8 +1507,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     private boolean compile(final IProject project, IJavaProject javaProject, 
     		List<String> options, java.util.List<File> sourceFiles, 
-    		final TypeChecker typeChecker, PrintWriter printWriter) 
+    		final TypeChecker typeChecker, PrintWriter printWriter,
+    		final IProgressMonitor monitor) 
     				throws VerifyError {
+    	
+        monitor.beginTask("Generating binaries for " + sourceFiles.size() + 
+        		" source files in project " + project.getName(), 
+        		sourceFiles.size());
+
         CeyloncTool compiler;
         try {
             compiler = new CeyloncTool();
@@ -1516,6 +1559,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                 fileManager, null, options, null, compilationUnits);
+        task.setTaskListener(new TaskListener() {
+			@Override
+			public void started(TaskEvent ta) {
+				String name = ta.getSourceFile().getName();
+				name = name.substring(name.lastIndexOf("/")+1);
+				monitor.subTask("- compiling " + name);
+			}
+			@Override
+			public void finished(TaskEvent ta) {
+				monitor.worked(1);
+			}
+		});
         boolean success=false;
         try {
             success = task.call();
@@ -1523,6 +1578,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         catch (Exception e) {
             e.printStackTrace();
         }
+        monitor.done();
         return success;
     }
 
