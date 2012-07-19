@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -47,7 +46,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset);
     }
     
-    static void addConvertToGetterProposal(IDocument doc,
+    static void addConvertToIfElseProposal(IDocument doc,
     			Collection<ICompletionProposal> proposals, IFile file,
     			Statement statement) {
     	try {
@@ -77,6 +76,10 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				Tree.AssignOp assignOp = (Tree.AssignOp) expression.getChildren().get(0);
     			action = getTerm(doc, assignOp.getLeftTerm()) + " := ";
     			operation = assignOp.getRightTerm();
+    		} else if (statement instanceof Tree.SpecifierStatement) {
+    			Tree.SpecifierStatement specifierStmt = (Tree.SpecifierStatement) statement;
+    			action = getTerm(doc, specifierStmt.getBaseMemberExpression()) + " = ";
+    			operation = specifierStmt.getSpecifierExpression().getExpression();
     		} else if (statement instanceof CustomTree.AttributeDeclaration) {
     			CustomTree.AttributeDeclaration attrDecl = (CustomTree.AttributeDeclaration) statement;
     			String identifier = getTerm(doc, attrDecl.getIdentifier());
