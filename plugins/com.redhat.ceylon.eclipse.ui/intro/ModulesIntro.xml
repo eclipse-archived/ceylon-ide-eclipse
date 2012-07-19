@@ -58,7 +58,7 @@
             the module descriptor, just before the closing brace:
             <br/>
             <br/>
-            <b>Import { name='ceylon.math'; version='0.3.1'; }</b>
+            <b>Import { name='ceylon.math'; version='0.3.2'; }</b>
             <br/>
             <br/>
             Remember to save the file.
