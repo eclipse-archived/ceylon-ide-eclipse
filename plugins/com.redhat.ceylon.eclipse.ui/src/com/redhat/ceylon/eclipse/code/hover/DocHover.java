@@ -657,23 +657,25 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		}
 		
 		if (dec instanceof ClassOrInterface) {
-			buffer.append("<br/>Members:&nbsp;&nbsp;");
-			boolean first = true;
-			for (Declaration mem: dec.getMembers()) {
-				if (first) {
-					first = false;
-				}
-				else {
-					buffer.append(", ");
-				}
+			if (!dec.getMembers().isEmpty()) {
+				buffer.append("<br/>Members:&nbsp;&nbsp;");
+				boolean first = true;
+				for (Declaration mem: dec.getMembers()) {
+					if (first) {
+						first = false;
+					}
+					else {
+						buffer.append(", ");
+					}
 
-				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+					/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
-				buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
+					buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
+				}
+				buffer.append(".<br/>");
+				extraBreak = true;
 			}
-			buffer.append(".<br/>");
-			extraBreak = true;
 		}
 		
 		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
