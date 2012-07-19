@@ -463,7 +463,10 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					String[] bits = location.split(":");
 					Object model = control.getInput().getInputElement();
 					Module module;
-					if (model instanceof Declaration) {
+					if (model instanceof String) {
+						module = editor.getParseController().getRootNode().getUnit().getPackage().getModule();
+					}
+					else if (model instanceof Declaration) {
 						Declaration dec = (Declaration) model;
 						module = dec.getUnit().getPackage().getModule();
 					}
@@ -478,8 +481,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					for (int i=2; i<bits.length; i++) {
 						target = ((Scope) target).getDirectMember(bits[2], null);
 					}
-					DocBrowserInformationControlInput prev = (DocBrowserInformationControlInput)control.getInput();
-					control.setInput(getHoverInfo(target, prev));
+					control.setInput(getHoverInfo(target, control.getInput()));
 				}
 			}
 			@Override
@@ -553,7 +555,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	 * @since 3.4
 	 */
 	private DocBrowserInformationControlInput getHoverInfo(Object model, 
-			DocBrowserInformationControlInput previousInput) {
+			BrowserInformationControlInput previousInput) {
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			return new DocBrowserInformationControlInput(previousInput, dec, 

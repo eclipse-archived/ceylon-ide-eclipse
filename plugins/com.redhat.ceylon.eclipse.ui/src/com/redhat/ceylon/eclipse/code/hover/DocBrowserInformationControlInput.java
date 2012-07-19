@@ -24,7 +24,7 @@ class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 	 * @param html HTML contents, must not be null
 	 * @param leadingImageWidth the indent required for the element image
 	 */
-	public DocBrowserInformationControlInput(DocBrowserInformationControlInput previous, 
+	public DocBrowserInformationControlInput(BrowserInformationControlInput previous, 
 			Object model, String html, int leadingImageWidth) {
 		super(previous);
 		Assert.isNotNull(html);
