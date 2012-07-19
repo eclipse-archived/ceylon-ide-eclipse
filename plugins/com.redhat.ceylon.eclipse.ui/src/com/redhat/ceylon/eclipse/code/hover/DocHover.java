@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.sanitize;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
@@ -85,6 +86,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -459,8 +461,23 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				}
 				else if (location.startsWith("doc:")) {
 					String[] bits = location.split(":");
-					Declaration dec = (Declaration) control.getInput().getInputElement();
-					Declaration target = dec.getUnit().getPackage().getModule().getPackage(bits[1]).getDirectMember(bits[2], null);
+					Object model = control.getInput().getInputElement();
+					Module module;
+					if (model instanceof Declaration) {
+						Declaration dec = (Declaration) model;
+						module = dec.getUnit().getPackage().getModule();
+					}
+					else if (model instanceof Package){
+						Package pack = (Package) model;
+						module = pack.getModule();
+					}
+					else {
+						return;
+					}
+					Object target = module.getPackage(bits[1]);
+					for (int i=2; i<bits.length; i++) {
+						target = ((Scope) target).getDirectMember(bits[2], null);
+					}
 					DocBrowserInformationControlInput prev = (DocBrowserInformationControlInput)control.getInput();
 					control.setInput(getHoverInfo(target, prev));
 				}
@@ -483,7 +500,12 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
-		return getHoverInfo(getReferencedDeclaration(node), null);
+		if (node instanceof Tree.ImportPath) {
+			return getHoverInfo(((Tree.ImportPath) node).getPackageModel(), null);
+		}
+		else {
+			return getHoverInfo(getReferencedDeclaration(node), null);
+		}
 	}
 	
 	private static String getIcon(Object obj) {
@@ -530,14 +552,39 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	private DocBrowserInformationControlInput getHoverInfo(Declaration dec, 
+	private DocBrowserInformationControlInput getHoverInfo(Object model, 
 			DocBrowserInformationControlInput previousInput) {
-		if (dec == null) return null;		
-		return new DocBrowserInformationControlInput(previousInput, dec, 
-				getDocumentationFor(editor.getParseController(), dec), 20);
-
+		if (model instanceof Declaration) {
+			Declaration dec = (Declaration) model;
+			return new DocBrowserInformationControlInput(previousInput, dec, 
+					getDocumentationFor(editor.getParseController(), dec), 20);
+		}
+		if (model instanceof Package) {
+			Package dec = (Package) model;
+			return new DocBrowserInformationControlInput(previousInput, dec, 
+					getDocumentationFor(editor.getParseController(), dec), 20);
+		}
+		else {
+			return null;
+		}
 	}
 
+	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
+		StringBuffer buffer= new StringBuffer();
+		
+		addImageAndLabel(buffer, null, fileUrl(getIcon(pack)).toExternalForm(), 
+				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 2);
+		
+		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
+				16, 16, "in module&nbsp;&nbsp;<tt>" + getLabel(pack.getModule()) +"</tt>", 20, 2);
+
+		//TODO: add package doc string
+		
+		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.addPageEpilog(buffer);
+		return buffer.toString();
+		
+	}
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec) {
 		StringBuffer buffer= new StringBuffer();
 		
@@ -556,7 +603,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 		if (dec.isShared()) {
 			addImageAndLabel(buffer, null, fileUrl(getIcon(pack)).toExternalForm(), 
-					16, 16, "in package&nbsp;&nbsp;<tt>" + getPackageLabel(dec) +"</tt>", 20, 2);
+					16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
+			        getPackageLabel(dec) +"</a></tt>", 20, 2);
 			addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
 					16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
 		}
@@ -598,10 +646,21 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		return buffer.toString();
 	}
 	
-	private static String link(Declaration dec) {
-		if (!dec.isToplevel()) return "";
-		return "href='doc:" + dec.getUnit().getPackage().getQualifiedNameString() 
-			    + ":" + dec.getName() + "'";
+	private static String link(Object model) {
+		return "href='doc:" + declink(model) + "'";
+	}
+	
+	private static String declink(Object model) {
+		if (model instanceof Package) {
+			return ((Package)model).getQualifiedNameString();
+		}
+		else if (model instanceof Declaration) {
+			return declink(((Declaration) model).getContainer())
+					+ ":" + ((Declaration) model).getName();
+		}
+		else {
+		   return "";
+		}
 	}
 
     private static void appendDocAnnotationContent(Tree.Declaration decl,

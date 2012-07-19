@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 
 /**
  * Browser input for Javadoc hover.
@@ -12,57 +13,52 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
  */
 class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 
-	private final Declaration declaration;
+	private final Object model;
 	private final String fHtml;
 	private final int fLeadingImageWidth;
 	/**
 	 * Creates a new browser information control input.
 	 *
 	 * @param previous previous input, or <code>null</code> if none available
-	 * @param element the element, or <code>null</code> if none available
+	 * @param model the model object, or <code>null</code> if none available
 	 * @param html HTML contents, must not be null
 	 * @param leadingImageWidth the indent required for the element image
 	 */
 	public DocBrowserInformationControlInput(DocBrowserInformationControlInput previous, 
-			Declaration declaration, String html, int leadingImageWidth) {
+			Object model, String html, int leadingImageWidth) {
 		super(previous);
 		Assert.isNotNull(html);
-		this.declaration= declaration;
+		this.model= model;
 		fHtml= html;
 		fLeadingImageWidth= leadingImageWidth;
 	}
 
-	/*
-	 * @see org.eclipse.jface.internal.text.html.BrowserInformationControlInput#getLeadingImageWidth()
-	 * @since 3.4
-	 */
 	@Override
 	public int getLeadingImageWidth() {
 		return fLeadingImageWidth;
 	}
 
-	/*
-	 * @see org.eclipse.jface.internal.text.html.BrowserInput#getHtml()
-	 */
 	@Override
 	public String getHtml() {
 		return fHtml;
 	}
 
-	/*
-	 * @see org.eclipse.jdt.internal.ui.infoviews.BrowserInput#getInputElement()
-	 */
 	@Override
 	public Object getInputElement() {
-		return declaration == null ? (Object) fHtml : declaration;
+		return model == null ? (Object) fHtml : model;
 	}
 
-	/*
-	 * @see org.eclipse.jdt.internal.ui.infoviews.BrowserInput#getInputName()
-	 */
 	@Override
 	public String getInputName() {
-		return declaration == null ? "" : declaration.getName();
+		if (model instanceof Declaration) {
+			return ((Declaration) model).getName();
+		}
+		else if (model instanceof Package) {
+			return ((Package) model).getQualifiedNameString();
+		}
+		else {
+			return null;
+		}
 	}
 
 }

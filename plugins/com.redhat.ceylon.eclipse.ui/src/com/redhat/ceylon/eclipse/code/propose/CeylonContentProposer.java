@@ -410,11 +410,12 @@ public class CeylonContentProposer {
         int len = fullPath.length();
         fullPath.append(prefix);
         String pfp = fullPath.toString();
-        addPackageCompletions(offset, prefix, node, result, len, pfp);
+        addPackageCompletions(offset, prefix, node, result, len, pfp, cpc);
     }
 
     private static void addPackageCompletions(int offset, String prefix,
-            Node node, List<ICompletionProposal> result, int len, String pfp) {
+            Node node, List<ICompletionProposal> result, int len, String pfp,
+            CeylonParseController cpc) {
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
@@ -444,7 +445,8 @@ public class CeylonContentProposer {
                         if (!already) {
                         	//TOOD: render HTML describing the package!
                             result.add(new Proposal(offset, prefix, PACKAGE, 
-                                    null, pkg, pkg.substring(len), false));
+                                    getDocumentationFor(cpc, p), pkg, 
+                                    pkg.substring(len), false));
                         }
                     }
                 //}
