@@ -543,13 +543,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         fListeners.remove(listener);
     }
     
-    private static String getLabel(Package packageModel) {
+    public static String getLabel(Package packageModel) {
         String name = packageModel.getQualifiedNameString();
         if (name.isEmpty()) name="default package";
         return name;
     }
     
-    private static String getLabel(Module moduleModel) {
+    public static String getLabel(Module moduleModel) {
         String name = moduleModel.getNameAsString();
         if (name.isEmpty()) name="default module";
         return name;
