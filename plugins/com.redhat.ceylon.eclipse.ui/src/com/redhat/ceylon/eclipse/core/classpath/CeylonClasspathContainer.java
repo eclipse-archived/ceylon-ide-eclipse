@@ -25,6 +25,7 @@ import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCe
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
@@ -46,6 +47,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -310,7 +312,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			    typeChecker = getProjectTypeChecker(project);
 			} 
 			if (typeChecker==null) {
-				typeChecker = parseCeylonModel(project, monitor);
+				typeChecker = parseCeylonModel(project, 
+						new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
 			}
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
@@ -319,7 +322,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
 
 			setClasspathContainer(path, new IJavaProject[] {javaProject},
-					new IClasspathContainer[] {this}, monitor);
+					new IClasspathContainer[] {this}, new SubProgressMonitor(monitor, 1));
 
 			//update the package manager UI
 			new Job("update package manager") {
