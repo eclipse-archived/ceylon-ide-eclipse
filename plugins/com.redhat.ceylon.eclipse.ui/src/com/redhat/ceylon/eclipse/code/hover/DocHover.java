@@ -232,17 +232,16 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 		@Override
 		public void run() {
-			gotoDeclaration(fInfoControl);
+			gotoDeclaration(fInfoControl, fInfoControl.getInput().getInputElement());
 		}
 	}
 	
-	private void gotoDeclaration(BrowserInformationControl control) {
-		DocBrowserInformationControlInput infoInput= (DocBrowserInformationControlInput) control.getInput();
+	private void gotoDeclaration(BrowserInformationControl control, Object model) {
 		control.notifyDelayedInputChange(null);
 		control.dispose(); //FIXME: should have protocol to hide, rather than dispose
 
 		CeylonParseController parseController = editor.getParseController();
-		gotoNode(getReferencedNode((Declaration) infoInput.getInputElement(), parseController), 
+		gotoNode(getReferencedNode((Declaration)model, parseController), 
 				parseController.getProject(), parseController.getTypeChecker());
 	}
 
@@ -449,37 +448,48 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			@Override
 			public void changing(LocationEvent event) {
 				String location = event.location;
-				if ("declaration:".equals(location)) {
-					gotoDeclaration((BrowserInformationControl) control);
+				if (location.startsWith("dec:")) {
+					Object target = getModel(control, location);
+					if (target!=null) {
+						gotoDeclaration(control, target);
+					}
 				}
 				else if (location.startsWith("doc:")) {
-					String[] bits = location.split(":");
-					Object model = control.getInput().getInputElement();
-					Module module;
-					if (model instanceof String) {
-						module = editor.getParseController().getRootNode().getUnit().getPackage().getModule();
+					Object target = getModel(control, location);
+					if (target!=null) {
+						control.setInput(getHoverInfo(target, control.getInput()));
 					}
-					else if (model instanceof Declaration) {
-						Declaration dec = (Declaration) model;
-						module = dec.getUnit().getPackage().getModule();
-					}
-					else if (model instanceof Package){
-						Package pack = (Package) model;
-						module = pack.getModule();
-					}
-					else {
-						return;
-					}
-					Object target = module.getPackage(bits[1]);
-					for (int i=2; i<bits.length; i++) {
-						target = ((Scope) target).getDirectMemberOrParameter(bits[i], null);
-					}
-					control.setInput(getHoverInfo(target, control.getInput()));
 				}
 			}
 			@Override
 			public void changed(LocationEvent event) {}
 		});
+	}
+
+	public Object getModel(final BrowserInformationControl control,
+			String location) {
+		String[] bits = location.split(":");
+		Object model = control.getInput().getInputElement();
+		Module module;
+		if (model instanceof String) {
+			module = editor.getParseController().getRootNode().getUnit().getPackage().getModule();
+		}
+		else if (model instanceof Declaration) {
+			Declaration dec = (Declaration) model;
+			module = dec.getUnit().getPackage().getModule();
+		}
+		else if (model instanceof Package){
+			Package pack = (Package) model;
+			module = pack.getModule();
+		}
+		else {
+			return null;
+		}
+		Object target = module.getPackage(bits[1]);
+		for (int i=2; i<bits.length; i++) {
+			target = ((Scope) target).getDirectMemberOrParameter(bits[i], null);
+		}
+		return target;
 	}
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
@@ -669,7 +679,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
 			if (extraBreak) buffer.append("<br/>");
 			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-					16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+					16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
 							dec.getUnit().getFilename() + "</tt>", 20, 2);
 		}
 		
