@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.sanitize;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -33,19 +34,13 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.actions.SimpleSelectionProvider;
-import org.eclipse.jdt.internal.ui.text.JavaWordFinder;
-import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -114,7 +109,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	}
 
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-		return JavaWordFinder.findWord(textViewer.getDocument(), offset);
+		return findWord(textViewer.getDocument(), offset);
 	}
 	/**
 	 * Action to go back to the previous input in the hover control.
@@ -146,8 +141,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			BrowserInformationControlInput current= fInfoControl.getInput();
 			if (current != null && current.getPrevious() != null) {
 				BrowserInput previous= current.getPrevious();
-				setToolTipText(Messages.format("Back to {0}", 
-						previous.getInputName()));
+				setToolTipText("Back to " + previous.getInputName());
 				setEnabled(true);
 			} else {
 				setToolTipText("Back");
@@ -185,8 +179,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		public void update() {
 			BrowserInformationControlInput current= fInfoControl.getInput();
 			if (current != null && current.getNext() != null) {
-				setToolTipText(Messages.format("Forward to {0}", 
-						current.getNext().getInputName()));
+				setToolTipText("Forward to " + current.getNext().getInputName());
 				setEnabled(true);
 			} else {
 				setToolTipText("Forward");
@@ -574,7 +567,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
 		StringBuffer buffer= new StringBuffer();
 		
-		addImageAndLabel(buffer, null, fileUrl(getIcon(pack)).toExternalForm(), 
+		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 2);
 		
 		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
@@ -609,19 +602,19 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		
 		Package pack = dec.getUnit().getPackage();
 		
-		addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
 				16, 16, "<b><tt>" + sanitize(getDescriptionFor(dec)) + "</tt></b>", 20, 2);
 		buffer.append("<br/>");
 		
 		if (dec.isClassOrInterfaceMember()) {
 			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
-			addImageAndLabel(buffer, null, fileUrl(getIcon(dec.getContainer())).toExternalForm(), 16, 16, 
+			addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
 					"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
 			        sanitize(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 		}
 
 		if (dec.isShared()) {
-			addImageAndLabel(buffer, null, fileUrl(getIcon(pack)).toExternalForm(), 
+			addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 					16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
 			        getPackageLabel(dec) +"</a></tt>", 20, 2);
 			addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
@@ -638,7 +631,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
-				addImageAndLabel(buffer, null, fileUrl("super_co.gif").toExternalForm(), 
+				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>extends <a " + link(sup.getDeclaration()) + ">" + 
 				        sanitize(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
 				extraBreak = true;
@@ -646,7 +639,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		}
 		if (dec instanceof TypeDeclaration) {
 			for (ProducedType td: ((TypeDeclaration) dec).getSatisfiedTypes()) {
-				addImageAndLabel(buffer, null, fileUrl("super_co.gif").toExternalForm(), 
+				addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
 				        sanitize(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 				extraBreak = true;
@@ -755,7 +748,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 									ProducedReference target = ((BaseMemberOrTypeExpression) term).getTarget();
 									if (target!=null) {
 										Declaration dec = target.getDeclaration();
-										addImageAndLabel(documentation, null, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
+										addImageAndLabel(documentation, dec, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
 												"<tt>see <a "+link(dec)+">"+dec.getName()+"</a></tt>", 20, 2);
 									}
 								}
@@ -842,7 +835,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		return null;
 	}
 
-	public static void addImageAndLabel(StringBuffer buf, IJavaElement element, String imageSrcPath, 
+	public static void addImageAndLabel(StringBuffer buf, Object model, String imageSrcPath, 
 			int imageWidth, int imageHeight, String label, int labelLeft, int labelTop) {
 		buf.append("<div style='word-wrap: break-word; position: relative; "); 
 		
@@ -853,17 +846,12 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 		buf.append("'>"); 
 		if (imageSrcPath != null) {
-			if (element != null) {
-				try {
-					String uri= JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element);
-					buf.append("<a href='").append(uri).append("'>");  
-				} catch (URISyntaxException e) {
-					element= null; // no link
-				}
+			if (model!=null) {
+				buf.append("<a ").append(link(model)).append(">");  
 			}
 			addImage(buf, imageSrcPath, imageWidth, imageHeight,
 					labelLeft);
-			if (element != null) {
+			if (model!=null) {
 				buf.append("</a>"); 
 			}
 		}
