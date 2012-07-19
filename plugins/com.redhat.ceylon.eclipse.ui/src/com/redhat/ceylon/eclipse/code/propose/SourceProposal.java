@@ -4,11 +4,12 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-public class SourceProposal implements ICompletionProposal {
+public class SourceProposal implements ICompletionProposal, ICompletionProposalExtension4 {
     /**
      * The text shown to the user in the popup view
      */
@@ -143,5 +144,10 @@ public class SourceProposal implements ICompletionProposal {
 
     public IContextInformation getContextInformation() {
         return null;
+    }
+    
+    @Override
+    public boolean isAutoInsertable() {
+    	return true;
     }
 }
