@@ -18,7 +18,8 @@ class Proposal extends SourceProposal {
             String desc, String text, boolean selectParams) {
         super(desc, text, "", 
                 new Region(offset-prefix.length(), prefix.length()), 
-                offset + text.length(), doc);
+                offset + text.length(), 
+                doc/*.replaceAll("<a[^>]*>", "").replaceAll("</a>","")*/);
         this.text=text;
         this.image = image;
         this.selectParams = selectParams;
