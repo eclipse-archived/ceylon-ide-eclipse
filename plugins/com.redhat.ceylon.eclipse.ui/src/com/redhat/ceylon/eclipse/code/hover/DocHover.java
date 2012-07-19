@@ -728,7 +728,12 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
                                 String docLine = sanitize(args.get(0).getExpression().getTerm().getText());
                                 documentation.append("<p>")
                                     .append(docLine.subSequence(1, docLine.length()-1).toString()
-                                		.replaceAll("`([^`]+)`", "<tt>$1</tt>"))
+                                		.replaceAll("`([^`]+)`", "<tt>$1</tt>")
+                                		.replaceAll("_([^_]+)_", "<em>$1</em>")
+                                		.replaceAll("\\*([^*]+)\\*", "<em>$1</em>")
+                                		.replaceAll("\n-([^\n]+)", "<li>$1</li>")
+                                		.replaceAll("\n    ([^\n]+)", "<br/><tt>$1</tt>")
+                                		.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>"))
                                 	.append("</p>");
                             }
                         }
