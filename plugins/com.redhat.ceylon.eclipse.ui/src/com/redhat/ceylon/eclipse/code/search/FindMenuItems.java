@@ -39,15 +39,19 @@ public class FindMenuItems extends CompoundContributionItem {
         return new IContributionItem[] {
                 //new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findReferences", "Find References",
-                        new FindReferencesAction(editor).isEnabled(), AbstractFindAction.REFS),
+                        editor==null ? false : new FindReferencesAction(editor).isEnabled(), 
+                        		AbstractFindAction.REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findAssignments", "Find Assignments",
-                        new FindAssignmentsAction(editor).isEnabled(), AbstractFindAction.REFS),
+                		editor==null ? false : new FindAssignmentsAction(editor).isEnabled(), 
+                				AbstractFindAction.REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findRefinements", "Find Refinements",
-                        new FindRefinementsAction(editor).isEnabled(), AbstractFindAction.DECS),
+                		editor==null ? false : new FindRefinementsAction(editor).isEnabled(), 
+                				AbstractFindAction.DECS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findSubtypes", "Find Subtypes",
-                        new FindSubtypesAction(editor).isEnabled(), AbstractFindAction.DECS)
+                		editor==null ? false : new FindSubtypesAction(editor).isEnabled(), 
+                				AbstractFindAction.DECS)
                 //new Separator()
             };
     }
-    
+
 }
