@@ -479,7 +479,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					}
 					Object target = module.getPackage(bits[1]);
 					for (int i=2; i<bits.length; i++) {
-						target = ((Scope) target).getDirectMember(bits[2], null);
+						target = ((Scope) target).getDirectMemberOrParameter(bits[i], null);
 					}
 					control.setInput(getHoverInfo(target, control.getInput()));
 				}
@@ -582,6 +582,23 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 		//TODO: add package doc string
 		
+		buffer.append("<br/>Contains:&nbsp;&nbsp;");
+		boolean first = true;
+		for (Declaration dec: pack.getMembers()) {
+			if (first) {
+				first = false;
+			}
+			else {
+				buffer.append(", ");
+			}
+			
+			/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+					16, 16, "<tt><a " + link(dec) + ">" + 
+			        dec.getName() + "</a></tt>", 20, 2);*/
+			buffer.append("<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>");
+		}
+		buffer.append(".<br/>");
+		
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
 		return buffer.toString();
@@ -634,6 +651,26 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				        sanitize(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 				extraBreak = true;
 			}
+		}
+		
+		if (dec instanceof ClassOrInterface) {
+			buffer.append("<br/>Members:&nbsp;&nbsp;");
+			boolean first = true;
+			for (Declaration mem: dec.getMembers()) {
+				if (first) {
+					first = false;
+				}
+				else {
+					buffer.append(", ");
+				}
+
+				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+					16, 16, "<tt><a " + link(dec) + ">" + 
+			        dec.getName() + "</a></tt>", 20, 2);*/
+				buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
+			}
+			buffer.append(".<br/>");
+			extraBreak = true;
 		}
 		
 		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
