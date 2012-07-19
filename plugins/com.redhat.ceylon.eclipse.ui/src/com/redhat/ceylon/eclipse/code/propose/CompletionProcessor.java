@@ -7,26 +7,26 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CompletionProcessor implements IContentAssistProcessor {
+	
     private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
-
     private ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
 
-    private CeylonContentProposer fContentProposer;
+    private CeylonContentProposer contentProposer;
+    
+    private CeylonEditor editor;
 
     // private HippieProposalProcessor hippieProcessor= new HippieProposalProcessor();
 
-    public CompletionProcessor() {
-        fContentProposer= new CeylonContentProposer();
+    public CompletionProcessor(CeylonEditor editor) {
+        contentProposer= new CeylonContentProposer();
+        this.editor=editor;
     }
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         try {
-        	CeylonParseController pc = ((CeylonEditor)Util.getCurrentEditor()).getParseController();
-			return fContentProposer.getContentProposals(pc, offset, viewer);
+        	return contentProposer.getContentProposals(editor.getParseController(), offset, viewer);
             // TODO Once we move to 3.2, delegate to the HippieProposalProcessor
             // return hippieProcessor.computeCompletionProposals(viewer, offset);
         } 
@@ -41,7 +41,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return ".abcdefghijklmnopqrstuvwxyz".toCharArray();
+        return ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".toCharArray();
     }
 
     public char[] getContextInformationAutoActivationCharacters() {

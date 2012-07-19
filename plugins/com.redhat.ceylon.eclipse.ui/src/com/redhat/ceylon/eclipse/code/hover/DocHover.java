@@ -43,7 +43,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.actions.SimpleSelectionProvider;
-import org.eclipse.jdt.internal.ui.text.java.hover.AbstractJavaEditorTextHover;
+import org.eclipse.jdt.internal.ui.text.JavaWordFinder;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
@@ -60,6 +60,9 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension4;
 import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextHoverExtension;
+import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -70,7 +73,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.osgi.framework.Bundle;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -101,7 +103,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
-public class DocHover extends AbstractJavaEditorTextHover {
+public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
 	
@@ -109,6 +111,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		this.editor = editor;
 	}
 
+	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+		return JavaWordFinder.findWord(textViewer.getDocument(), offset);
+	}
 	/**
 	 * Action to go back to the previous input in the hover control.
 	 *
@@ -321,7 +326,8 @@ public class DocHover extends AbstractJavaEditorTextHover {
 				addLinkListener(iControl);
 				return iControl;
 
-			} else {
+			} 
+			else {
 				return new DefaultInformationControl(parent, true);
 			}
 		}
@@ -334,6 +340,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 * @since 3.3
 	 */
 	public final class HoverControlCreator extends AbstractReusableInformationControlCreator {
+		private String statusLineMessage;
 		/**
 		 * The information presenter control creator.
 		 * @since 3.4
@@ -349,8 +356,10 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		 * @param informationPresenterControlCreator control creator for enriched hover
 		 * @since 3.4
 		 */
-		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator) {
+		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator,
+				String statusLineMessage) {
 			this(informationPresenterControlCreator, false);
+			this.statusLineMessage = statusLineMessage;
 		}
 
 		/**
@@ -367,11 +376,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 		@Override
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			String tooltipAffordanceString= fAdditionalInfoAffordance ? 
-					JavaPlugin.getAdditionalInfoAffordanceString() : EditorsUI.getTooltipAffordanceString();
-			if (BrowserInformationControl.isAvailable(parent)) {
+			if (isAvailable(parent)) {
 				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, tooltipAffordanceString) {
+						APPEARANCE_JAVADOC_FONT, statusLineMessage) {
 					@Override
 					public IInformationControlCreator getInformationPresenterControlCreator() {
 						return fInformationPresenterControlCreator;
@@ -384,8 +391,9 @@ public class DocHover extends AbstractJavaEditorTextHover {
 				};
 				addLinkListener(iControl);
 				return iControl;
-			} else {
-				return new DefaultInformationControl(parent, tooltipAffordanceString);
+			} 
+			else {
+				return new DefaultInformationControl(parent, statusLineMessage);
 			}
 		}
 
@@ -395,9 +403,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 				return false;
 
 			if (control instanceof IInformationControlExtension4) {
-				String tooltipAffordanceString= fAdditionalInfoAffordance ? 
-						JavaPlugin.getAdditionalInfoAffordanceString() : EditorsUI.getTooltipAffordanceString();
-				((IInformationControlExtension4)control).setStatusText(tooltipAffordanceString);
+				//((IInformationControlExtension4)control).setStatusText(tooltipAffordanceString);
 			}
 
 			return true;
@@ -423,8 +429,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 */
 	private IInformationControlCreator fPresenterControlCreator;
 
-	@Override
-	public IInformationControlCreator getInformationPresenterControlCreator() {
+	private  IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fPresenterControlCreator == null)
 			fPresenterControlCreator= new PresenterControlCreator(editor.getEditorSite());
 		return fPresenterControlCreator;
@@ -432,8 +437,15 @@ public class DocHover extends AbstractJavaEditorTextHover {
 
 	@Override
 	public IInformationControlCreator getHoverControlCreator() {
-		if (fHoverControlCreator == null)
-			fHoverControlCreator= new HoverControlCreator(getInformationPresenterControlCreator());
+		return getHoverControlCreator("F2 for focus");
+	}
+
+	public IInformationControlCreator getHoverControlCreator(
+			String statusLineMessage) {
+		if (fHoverControlCreator == null) {
+			fHoverControlCreator= new HoverControlCreator(getInformationPresenterControlCreator(), 
+					statusLineMessage);
+		}
 		return fHoverControlCreator;
 	}
 
@@ -474,7 +486,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
 		return getHoverInfo(getReferencedDeclaration(node), null);
 	}
 	
-	private String getIcon(Object obj) {
+	private static String getIcon(Object obj) {
 		if (obj instanceof Module) {
 			return "jar_l_obj.gif";
 		}
@@ -520,10 +532,15 @@ public class DocHover extends AbstractJavaEditorTextHover {
 	 */
 	private DocBrowserInformationControlInput getHoverInfo(Declaration dec, 
 			DocBrowserInformationControlInput previousInput) {
-		
+		if (dec == null) return null;		
+		return new DocBrowserInformationControlInput(previousInput, dec, 
+				getDocumentationFor(editor.getParseController(), dec), 20);
+
+	}
+
+	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec) {
 		StringBuffer buffer= new StringBuffer();
 		
-		if (dec == null) return null;		
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
@@ -544,10 +561,11 @@ public class DocHover extends AbstractJavaEditorTextHover {
 					16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
 		}
 
-		CeylonParseController parseController = editor.getParseController();
-		Tree.Declaration refnode = getReferencedNode(dec, parseController);
-		appendDocAnnotationContent(refnode, buffer);
-		appendSeeAnnotationContent(refnode, buffer);
+		Tree.Declaration refnode = getReferencedNode(dec, cpc);
+		if (refnode!=null) {
+			appendDocAnnotationContent(refnode, buffer);
+			appendSeeAnnotationContent(refnode, buffer);
+		}
 		
 		boolean extraBreak = false;
 		if (dec instanceof Class) {
@@ -568,30 +586,25 @@ public class DocHover extends AbstractJavaEditorTextHover {
 			}
 		}
 		
-		if (extraBreak) buffer.append("<br/>");
+		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
+			if (extraBreak) buffer.append("<br/>");
 			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-				16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-						dec.getUnit().getFilename() + "</tt>", 20, 2);
-//		buffer.append("<p><em>Go to <a href='declaration:'><tt>" + dec.getName() + 
-//				"</tt></a> in <tt>" + dec.getUnit().getFilename() + "</tt></em></p>");
-
-		if (buffer.length() > 0) {
-			HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
-			HTMLPrinter.addPageEpilog(buffer);
-			return new DocBrowserInformationControlInput(previousInput, dec, 
-					buffer.toString(), 20);
+					16, 16, "<a href='declaration:'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+							dec.getUnit().getFilename() + "</tt>", 20, 2);
 		}
-
-		return null;
+		
+		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.addPageEpilog(buffer);
+		return buffer.toString();
 	}
 	
-	String link(Declaration dec) {
+	private static String link(Declaration dec) {
 		if (!dec.isToplevel()) return "";
 		return "href='doc:" + dec.getUnit().getPackage().getQualifiedNameString() 
 			    + ":" + dec.getName() + "'";
 	}
 
-    private void appendDocAnnotationContent(Tree.Declaration decl,
+    private static void appendDocAnnotationContent(Tree.Declaration decl,
             StringBuffer documentation) {
         Tree.AnnotationList annotationList = decl.getAnnotationList();
         if (annotationList != null)
@@ -622,7 +635,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
         }
     }
     
-    private void appendSeeAnnotationContent(Tree.Declaration decl,
+    private static void appendSeeAnnotationContent(Tree.Declaration decl,
             StringBuffer documentation) {
         Tree.AnnotationList annotationList = decl.getAnnotationList();
         if (annotationList != null)
@@ -668,7 +681,7 @@ public class DocHover extends AbstractJavaEditorTextHover {
         }
     }
     
-	public URL fileUrl(String icon) {
+	private static URL fileUrl(String icon) {
 		try {
 			return FileLocator.toFileURL(FileLocator.find(CeylonPlugin.getInstance().getBundle(), 
 					new Path("icons/").append(icon), null));
