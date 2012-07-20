@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.getRefinementDocumentation;
+
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -18,8 +23,11 @@ import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
+import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 public class AnnotationUtils {
@@ -44,25 +52,13 @@ public class AnnotationUtils {
      * @return a nicely-formatted plain text string for the given set of annotations
      */
     public static String formatAnnotationList(List<Annotation> annotations) {
-        if (annotations != null) {
-            if (annotations.size() == 1) {
-                // optimization
-                Annotation annotation= (Annotation) annotations.get(0);
-                String message= annotation.getText();
-                if (message != null && message.trim().length() > 0)
-                    return HTMLPrinter.formatSingleMessage(message);
-            } else {
-                List<String> messages= new ArrayList<String>();
-                for(Annotation annotation : annotations) {
-                    String message= annotation.getText();
-                    if (message != null && message.trim().length() > 0)
-                        messages.add(message.trim());
-                }
-                if (messages.size() == 1)
-                    return HTMLPrinter.formatSingleMessage((String) messages.get(0));
-                if (messages.size() > 1)
-                    return HTMLPrinter.formatMultipleMessages(messages);
-            }
+        if (annotations!=null) {
+        	if (annotations.size()==1) {
+        		return AnnotationUtils.formatSingleMessage(annotations.get(0));
+        	}
+        	else {
+        		return AnnotationUtils.formatMultipleMessages(annotations);
+        	}
         }
         return null;
     }
@@ -228,6 +224,60 @@ public class AnnotationUtils {
 
         return formatAnnotationList(annotations);
     }
+
+	public static void addMessageImageAndLabel(Annotation message,
+			StringBuffer buffer) {
+		URL icon = null;
+		String text = null;
+	    if (message instanceof CeylonAnnotation) {
+	    	text = message.getText();
+	    	Integer sev = (Integer) ((CeylonAnnotation) message).getAttribute(MessageHandler.SEVERITY_KEY);
+	    	if (sev!=null) {
+	    		if (sev==IStatus.ERROR) {
+	    			icon = DocHover.fileUrl("error_obj.gif");
+	    		}
+	    		else if (sev==IStatus.WARNING) {
+	    			icon = DocHover.fileUrl("warning_obj.gif");
+	    		}
+	    	}
+	    }
+	    else if (message instanceof RefinementAnnotation) {
+	    	Declaration dec = ((RefinementAnnotation) message).getDeclaration();
+	    	icon = dec.isFormal() ? DocHover.fileUrl("implm_co.gif") : DocHover.fileUrl("over_co.gif");
+			text = getRefinementDocumentation(dec);
+	    }
+	    if (icon!=null) {
+	    	DocHover.addImageAndLabel(buffer, null,
+	    			icon.toExternalForm(), 16, 16, 
+	    			HTMLPrinter.convertToHTMLContent(text), 20, 2);
+	    }
+	}
+
+	/**
+	 * Formats a message as HTML text.
+	 */
+	public static String formatSingleMessage(Annotation message) {
+	    StringBuffer buffer= new StringBuffer();
+	    HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+	    addMessageImageAndLabel(message, buffer);
+	    HTMLPrinter.addPageEpilog(buffer);
+	    return buffer.toString();
+	}
+
+	/**
+	 * Formats several messages as HTML text.
+	 */
+	public static String formatMultipleMessages(List<Annotation> messages) {
+	    StringBuffer buffer= new StringBuffer();
+	    HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+	    buffer.append(HTMLPrinter.convertToHTMLContent("Multiple messages at this line:"));
+	    buffer.append("<br/><br/>");
+	    for(Annotation message: messages) {
+	    	addMessageImageAndLabel(message, buffer);
+	    }
+	    HTMLPrinter.addPageEpilog(buffer);
+	    return buffer.toString();
+	}
 }
 
 /**

@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
@@ -13,10 +14,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
+import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -39,6 +38,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
@@ -55,7 +55,6 @@ import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
@@ -117,6 +116,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return new CeylonAnnotationHover();
     }
 
+    public CeylonAnnotationHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
+        return new CeylonAnnotationHover();
+    }
+
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
         return new IAutoEditStrategy[] { getAutoEditStrategy() };
     }
@@ -140,8 +143,14 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
         return new IInformationControlCreator() {
             public IInformationControl createInformationControl(Shell parent) {
-                return new DefaultInformationControl(parent, "Press 'F2' for focus", 
-                		new HTMLTextPresenter(true));
+                return new BrowserInformationControl(parent, 
+                		APPEARANCE_JAVADOC_FONT, (String)null) {
+					@Override
+					public Point computeSizeHint() {
+						Point sh = super.computeSizeHint();
+						return new Point(sh.x+20, sh.y*3/2);
+					}
+                };
             }
         };
     }
@@ -278,22 +287,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setSizeConstraints(80, 20, true, false);
         //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
         return presenter;
-    }
-
-    /**
-     * Returns the settings for the given section.
-     * 
-     * @param sectionName
-     *            the section name
-     * @return the settings
-     * @since 3.0
-     */
-    private IDialogSettings getSettings(String sectionName) {
-        IDialogSettings dialogSettings = CeylonPlugin.getInstance().getDialogSettings();
-		IDialogSettings settings= dialogSettings.getSection(sectionName);
-        if (settings==null)
-            settings = dialogSettings.addNewSection(sectionName);
-        return settings;
     }
 
     @Override
