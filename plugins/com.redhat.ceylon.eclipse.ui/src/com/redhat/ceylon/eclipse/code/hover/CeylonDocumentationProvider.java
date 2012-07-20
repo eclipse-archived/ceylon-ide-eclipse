@@ -186,8 +186,6 @@ public class CeylonDocumentationProvider {
 
     private static void appendRefinement(StringBuilder documentation, Declaration refined) {
         TypeDeclaration supertype = (TypeDeclaration) refined.getContainer();
-        String spkg = supertype.getUnit().getPackage().getQualifiedNameString();
-        if (spkg.isEmpty()) spkg="default package";
         documentation.append("refines '").append(CeylonContentProposer.getDescriptionFor(refined)) 
                 .append("' declared by ").append(supertype.getName());
         if (refined.isToplevel()) {
