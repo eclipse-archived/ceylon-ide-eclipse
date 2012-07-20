@@ -24,11 +24,13 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
+import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 
 public class AnnotationUtils {
     // Following is just used for debugging to discover new annotation types to filter out
@@ -230,7 +232,7 @@ public class AnnotationUtils {
 		URL icon = null;
 		String text = null;
 	    if (message instanceof CeylonAnnotation) {
-	    	text = message.getText();
+	    	text = HTMLPrinter.convertToHTMLContent(message.getText());
 	    	Integer sev = (Integer) ((CeylonAnnotation) message).getAttribute(MessageHandler.SEVERITY_KEY);
 	    	if (sev!=null) {
 	    		if (sev==IStatus.ERROR) {
@@ -244,12 +246,12 @@ public class AnnotationUtils {
 	    else if (message instanceof RefinementAnnotation) {
 	    	Declaration dec = ((RefinementAnnotation) message).getDeclaration();
 	    	icon = dec.isFormal() ? DocHover.fileUrl("implm_co.gif") : DocHover.fileUrl("over_co.gif");
-			text = getRefinementDocumentation(dec);
+			text = "refines&nbsp;&nbsp;<tt>" + HTMLPrinter.convertToHTMLContent(CeylonContentProposer.getDescriptionFor(dec))
+					+ "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + ((TypeDeclaration) dec.getContainer()).getName() + 
+					"</b></tt>";
 	    }
 	    if (icon!=null) {
-	    	DocHover.addImageAndLabel(buffer, null,
-	    			icon.toExternalForm(), 16, 16, 
-	    			HTMLPrinter.convertToHTMLContent(text), 20, 2);
+	    	DocHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
 	    }
 	}
 
