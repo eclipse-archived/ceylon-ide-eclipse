@@ -320,6 +320,7 @@ public class CeylonQuickFixAssistant {
         	break;
         case 2100:
         	addChangeTypeProposals(cu, node, problem, proposals, project);
+        	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
