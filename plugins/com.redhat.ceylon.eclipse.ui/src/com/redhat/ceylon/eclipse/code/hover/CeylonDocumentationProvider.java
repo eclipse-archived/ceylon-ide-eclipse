@@ -249,7 +249,7 @@ public class CeylonDocumentationProvider {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
     
-    static String getRefinementDocumentation(Declaration refined) {
+    public static String getRefinementDocumentation(Declaration refined) {
         StringBuilder result = new StringBuilder();
         appendRefinement(result, refined);
         return result.toString();

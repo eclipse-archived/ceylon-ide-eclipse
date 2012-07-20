@@ -341,11 +341,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		 * @since 3.4
 		 */
 		private final IInformationControlCreator fInformationPresenterControlCreator;
-		/**
-		 * <code>true</code> to use the additional info affordance, 
-		 * <code>false</code> to use the hover affordance.
-		 */
-		private final boolean fAdditionalInfoAffordance;
 
 		/**
 		 * @param informationPresenterControlCreator control creator for enriched hover
@@ -353,7 +348,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		 */
 		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator,
 				String statusLineMessage) {
-			this(informationPresenterControlCreator, false);
+			this(informationPresenterControlCreator);
 			this.statusLineMessage = statusLineMessage;
 		}
 
@@ -363,10 +358,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		 *                                 <code>false</code> to use the hover affordance
 		 * @since 3.4
 		 */
-		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator, 
-				boolean additionalInfoAffordance) {
+		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator) {
 			fInformationPresenterControlCreator= informationPresenterControlCreator;
-			fAdditionalInfoAffordance= additionalInfoAffordance;
 		}
 
 		@Override
@@ -796,7 +789,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
         }
     }
     
-	private static URL fileUrl(String icon) {
+	public static URL fileUrl(String icon) {
 		try {
 			return FileLocator.toFileURL(FileLocator.find(CeylonPlugin.getInstance().getBundle(), 
 					new Path("icons/").append(icon), null));
@@ -812,7 +805,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	 * @return the updated style sheet
 	 * @since 3.4
 	 */
-	private static String getStyleSheet() {
+	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
 			fgStyleSheet= loadStyleSheet();
 		String css= fgStyleSheet;

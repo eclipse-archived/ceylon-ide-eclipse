@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN_DIS;
 
-import java.text.MessageFormat;
 import java.util.Iterator;
 
 import org.eclipse.core.filebuffers.FileBuffers;
@@ -125,7 +124,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 	 *
 	 * @since 3.4
 	 */
-	private static class AnnotationInformationControl extends AbstractInformationControl implements IInformationControlExtension2 {
+	private static class AnnotationInformationControl extends AbstractInformationControl 
+	        implements IInformationControlExtension2 {
 
 		private final DefaultMarkerAnnotationAccess fMarkerAnnotationAccess;
 		private Control fFocusControl;
@@ -231,7 +231,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			fillToolbar();
 
 			createAnnotationInformation(fParent, getAnnotationInfo().annotation);
-			setColorAndFont(fParent, fParent.getForeground(), fParent.getBackground(), JFaceResources.getDialogFont());
+			setColorAndFont(fParent, fParent.getForeground(), fParent.getBackground(), 
+					JFaceResources.getDialogFont());
 
 			ICompletionProposal[] proposals= getAnnotationInfo().getCompletionProposals();
 			if (proposals.length > 0)
@@ -303,11 +304,12 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			if (proposals.length == 1) {
 				text= "1 quick fix available:";
 			} else {
-				text= MessageFormat.format("{0} quick fixes available:", new Object[] { String.valueOf(proposals.length) });
+				text= proposals.length + "quick fixes available:";
 			}
 			quickFixLabel.setText(text);
 
-			setColorAndFont(composite, parent.getForeground(), parent.getBackground(), JFaceResources.getDialogFont());
+			setColorAndFont(composite, parent.getForeground(), parent.getBackground(), 
+					JFaceResources.getDialogFont());
 			createCompletionProposalsList(composite, proposals);
 		}
 
@@ -335,7 +337,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			}
 
 			scrolledComposite.setContent(composite);
-			setColorAndFont(scrolledComposite, parent.getForeground(), parent.getBackground(), JFaceResources.getDialogFont());
+			setColorAndFont(scrolledComposite, parent.getForeground(), parent.getBackground(), 
+					JFaceResources.getDialogFont());
 
 			Point contentSize= composite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 			composite.setSize(contentSize);
@@ -505,9 +508,6 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			return new AnnotationInformationControl(parent, EditorsUI.getTooltipAffordanceString()) {
-				/*
-				 * @see org.eclipse.jface.text.IInformationControlExtension5#getInformationPresenterControlCreator()
-				 */
 				public IInformationControlCreator getInformationPresenterControlCreator() {
 					return fPresenterControlCreator;
 				}
@@ -557,7 +557,9 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 				data= preference.getPreferenceLabel();
 
 			fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
-			PreferencesUtil.createPreferenceDialogOn(shell, "org.eclipse.ui.editors.preferencePages.Annotations", null, data).open(); //$NON-NLS-1$
+			PreferencesUtil.createPreferenceDialogOn(shell, 
+					"org.eclipse.ui.editors.preferencePages.Annotations", 
+					null, data).open(); //$NON-NLS-1$
 		}
 	}
 
@@ -605,7 +607,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		try {
 			Iterator parent;
 			if (model instanceof IAnnotationModelExtension2)
-				parent= ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), hoverRegion.getLength(), true, true);
+				parent= ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), 
+						hoverRegion.getLength(), true, true);
 			else
 				parent= model.getAnnotationIterator();
 			Iterator e= new AnnotationIterator(parent, fAllAnnotations);
@@ -650,7 +653,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		return null;
 	}
 
-	protected AnnotationInfo createAnnotationInfo(Annotation annotation, Position position, ITextViewer textViewer) {
+	protected AnnotationInfo createAnnotationInfo(Annotation annotation, 
+			Position position, ITextViewer textViewer) {
 		return new AnnotationInfo(annotation, position, textViewer);
 	}
 
