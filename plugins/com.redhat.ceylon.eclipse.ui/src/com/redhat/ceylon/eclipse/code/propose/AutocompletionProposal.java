@@ -48,11 +48,16 @@ final class AutocompletionProposal extends Proposal {
 	
 	@Override
 	public Point getSelection(IDocument document) {
-		int importLength = importEdit(cpc.getRootNode(), 
-				d.getUnit().getPackage().getNameAsString(), 
-				d.getName()).getText().length();
-		Point selection = super.getSelection(document);
-		selection.x+=importLength;
-		return selection;
+		if (addimport) {
+			int importLength = importEdit(cpc.getRootNode(), 
+					d.getUnit().getPackage().getNameAsString(), 
+					d.getName()).getText().length();
+			Point selection = super.getSelection(document);
+			selection.x+=importLength;
+			return selection;
+		}
+		else {
+			return super.getSelection(document);
+		}
 	}
 }
