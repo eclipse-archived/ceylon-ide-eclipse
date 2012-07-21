@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.getRefinementDocumentation;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -260,7 +261,7 @@ public class AnnotationUtils {
 	 */
 	public static String formatSingleMessage(Annotation message) {
 	    StringBuffer buffer= new StringBuffer();
-	    HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+	    HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 	    addMessageImageAndLabel(message, buffer);
 	    HTMLPrinter.addPageEpilog(buffer);
 	    return buffer.toString();
@@ -271,7 +272,7 @@ public class AnnotationUtils {
 	 */
 	public static String formatMultipleMessages(List<Annotation> messages) {
 	    StringBuffer buffer= new StringBuffer();
-	    HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+	    HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 	    buffer.append(HTMLPrinter.convertToHTMLContent("Multiple messages at this line:"));
 	    buffer.append("<br/><br/>");
 	    for(Annotation message: messages) {
@@ -280,6 +281,22 @@ public class AnnotationUtils {
 	    HTMLPrinter.addPageEpilog(buffer);
 	    return buffer.toString();
 	}
+	
+	private static String fgStyleSheet;
+
+	public static String getStyleSheet() {
+		if (fgStyleSheet == null)
+			fgStyleSheet= DocHover.loadStyleSheet() + "body { background-color: #FFDDDD }";
+		String css= fgStyleSheet;
+		if (css != null) {
+			FontData fontData= JFaceResources.getFontRegistry()
+					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
+			css= HTMLPrinter.convertTopLevelFont(css, fontData);
+		}
+
+		return css;
+	}
+
 }
 
 /**

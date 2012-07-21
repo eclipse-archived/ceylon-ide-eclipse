@@ -28,7 +28,6 @@ import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -124,7 +123,6 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -1176,9 +1174,9 @@ extends PreviousSubWordAction implements IUpdate {
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
             // the source viewer, now that we actually have the hover provider.
-            HoverHelpController hover = new HoverHelpController(this);
-			sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
-            addModelListener(hover);
+            //HoverHelpController hover = new HoverHelpController(this);
+			//sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
+            //addModelListener(hover);
 
             new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors()).install();
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);

@@ -24,9 +24,13 @@ import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension4;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.IRewriteTarget;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextHoverExtension;
+import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
@@ -61,8 +65,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -77,7 +79,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
  *
  * @since 3.0
  */
-public abstract class AbstractAnnotationHover extends AbstractTextHover {
+public abstract class AbstractAnnotationHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 
 	/**
 	 * An annotation info contains information about an {@link Annotation}
@@ -596,20 +598,21 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 
 	
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-		IPath path;
+		//IPath path;
 		IAnnotationModel model;
 		if (textViewer instanceof ISourceViewer) {
-			path= null;
+			//path= null;
 			model= ((ISourceViewer)textViewer).getAnnotationModel();
 		} else {
 			// Get annotation model from file buffer manager
-			path= getEditorInputPath();
-			model= getAnnotationModel(path);
+			//path= getEditorInputPath();
+			//model= getAnnotationModel(path);
+			model=null;
 		}
 		if (model == null)
 			return null;
 
-		try {
+		//try {
 			Iterator parent;
 			if (model instanceof IAnnotationModelExtension2)
 				parent= ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), 
@@ -644,7 +647,7 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			if (layer > -1)
 				return createAnnotationInfo(annotation, position, textViewer);
 
-		} finally {
+			/*} finally {
 			try {
 				if (path != null) {
 					ITextFileBufferManager manager= FileBuffers.getTextFileBufferManager();
@@ -653,7 +656,7 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			} catch (CoreException ex) {
 				//JavaPlugin.log(ex.getStatus());
 			}
-		}
+		}*/
 
 		return null;
 	}
@@ -675,11 +678,11 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		return fPresenterControlCreator;
 	}
 
-	private IPath getEditorInputPath() {
-		if (getEditor() == null)
+	/*private IPath getEditorInputPath() {
+		if (editor == null)
 			return null;
 
-		IEditorInput input= getEditor().getEditorInput();
+		IEditorInput input= editor.getEditorInput();
 		if (input instanceof IStorageEditorInput) {
 			try {
 				return ((IStorageEditorInput)input).getStorage().getFullPath();
@@ -688,7 +691,7 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 			}
 		}
 		return null;
-	}
+	}*/
 
 	private IAnnotationModel getAnnotationModel(IPath path) {
 		if (path == null)
@@ -720,6 +723,10 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		}
 	}
 
+    public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+        return new Region(offset, 0);
+    }
+    
 	/**
 	 * Returns the annotation preference for the given annotation.
 	 *

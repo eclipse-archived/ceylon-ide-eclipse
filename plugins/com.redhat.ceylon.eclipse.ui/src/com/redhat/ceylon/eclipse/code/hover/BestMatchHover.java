@@ -11,7 +11,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -20,6 +19,7 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -27,14 +27,16 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 /**
  * Caution: this implementation is a layer breaker and contains some "shortcuts"
  */
-@SuppressWarnings({"unchecked", "deprecation"})
-public class BestMatchHover extends AbstractTextHover {
+@SuppressWarnings({"deprecation"})
+public class BestMatchHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+	
+	private CeylonEditor editor;
 
-	private List fInstantiatedTextHovers;
+	private List<ITextHover> fInstantiatedTextHovers;
 	private ITextHover fBestHover;
 
 	public BestMatchHover(CeylonEditor editor) {
-		setEditor(editor);
+		this.editor=editor;
 		installTextHovers();
 	}
 
@@ -42,9 +44,9 @@ public class BestMatchHover extends AbstractTextHover {
 	 * Installs all text hovers.
 	 */
 	private void installTextHovers() {
-		fInstantiatedTextHovers= new ArrayList(2);
+		fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
 		fInstantiatedTextHovers.add(new ProblemHover());
-		fInstantiatedTextHovers.add(new DocHover(getEditor()));
+		fInstantiatedTextHovers.add(new DocHover(editor));
 	}
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
@@ -54,11 +56,9 @@ public class BestMatchHover extends AbstractTextHover {
 		if (fInstantiatedTextHovers == null)
 			return null;
 
-		for (Iterator iterator= fInstantiatedTextHovers.iterator(); iterator.hasNext(); ) {
-			ITextHover hover= (ITextHover)iterator.next();
-
+		for (ITextHover hover: fInstantiatedTextHovers) {
 			String s= hover.getHoverInfo(textViewer, hoverRegion);
-			if (s != null && s.trim().length() > 0) {
+			if (s!=null && !s.trim().isEmpty()) {
 				fBestHover= hover;
 				return s;
 			}
@@ -74,18 +74,17 @@ public class BestMatchHover extends AbstractTextHover {
 		if (fInstantiatedTextHovers == null)
 			return null;
 
-		for (Iterator iterator= fInstantiatedTextHovers.iterator(); iterator.hasNext(); ) {
-			ITextHover hover= (ITextHover)iterator.next();
-
+		for (ITextHover hover: fInstantiatedTextHovers) {
 			if (hover instanceof ITextHoverExtension2) {
 				Object info= ((ITextHoverExtension2) hover).getHoverInfo2(textViewer, hoverRegion);
 				if (info != null) {
 					fBestHover= hover;
 					return info;
 				}
-			} else {
+			} 
+			else {
 				String s= hover.getHoverInfo(textViewer, hoverRegion);
-				if (s != null && s.trim().length() > 0) {
+				if (s!=null && !s.isEmpty()) {
 					fBestHover= hover;
 					return s;
 				}
@@ -95,6 +94,10 @@ public class BestMatchHover extends AbstractTextHover {
 		return null;
 	}
 
+    public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+        return new Region(offset, 0);
+    }
+    
 	public IInformationControlCreator getHoverControlCreator() {
 		if (fBestHover instanceof ITextHoverExtension)
 			return ((ITextHoverExtension)fBestHover).getHoverControlCreator();

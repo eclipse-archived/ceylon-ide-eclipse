@@ -42,11 +42,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
-import com.redhat.ceylon.eclipse.code.hover.HoverHelpController;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
@@ -172,7 +172,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new HoverHelpController(editor);
+        return new BestMatchHover(editor);
     }
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
