@@ -294,7 +294,7 @@ public class AnnotationUtils {
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
 			fgStyleSheet= DocHover.loadStyleSheet() ;
-		Color c = CeylonTokenColorer.getCurrentThemeColor("problemHover");
+		Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
 		String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
 		String css= fgStyleSheet+ "body { background-color: #" + color + " }";
 		if (css != null) {
