@@ -573,14 +573,14 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 2);
-		
+				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 4);
+		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
 				16, 16, "in module&nbsp;&nbsp;<tt>" + getLabel(pack.getModule()) +"</tt>", 20, 2);
 
 		//TODO: add package doc string
 		
-		buffer.append("<br/>Contains:&nbsp;&nbsp;");
+		buffer.append("<hr/>Contains:&nbsp;&nbsp;");
 		boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
 			if (dec instanceof Class && ((Class)dec).isOverloaded()) {
@@ -611,8 +611,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
-				16, 16, "<b><tt>" + sanitize(getDescriptionFor(dec)) + "</tt></b>", 20, 2);
-		buffer.append("<br/>");
+				16, 16, "<b><tt>" + sanitize(getDescriptionFor(dec)) + "</tt></b>", 20, 4);
+		buffer.append("<hr/>");
 		
 		if (dec.isClassOrInterfaceMember()) {
 			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
@@ -635,14 +635,14 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			appendSeeAnnotationContent(refnode, buffer);
 		}
 		
-		boolean extraBreak = false;
+		//boolean extraBreak = false;
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
 				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>extends <a " + link(sup.getDeclaration()) + ">" + 
 				        sanitize(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
-				extraBreak = true;
+				//extraBreak = true;
 			}
 		}
 		if (dec instanceof TypeDeclaration) {
@@ -650,13 +650,13 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
 				        sanitize(td.getProducedTypeName()) +"</a></tt>", 20, 2);
-				extraBreak = true;
+				//extraBreak = true;
 			}
 		}
 		
 		if (dec instanceof ClassOrInterface) {
 			if (!dec.getMembers().isEmpty()) {
-				buffer.append("<br/>Members:&nbsp;&nbsp;");
+				buffer.append("<hr/>Members:&nbsp;&nbsp;");
 				boolean first = true;
 				for (Declaration mem: dec.getMembers()) {
 					if (mem instanceof Method && ((Method)mem).isOverloaded()) {
@@ -675,12 +675,13 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
 				}
 				buffer.append(".<br/>");
-				extraBreak = true;
+				//extraBreak = true;
 			}
 		}
 		
 		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
-			if (extraBreak) buffer.append("<br/>");
+			//if (extraBreak) 
+				buffer.append("<hr/>");
 			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
 					16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
 							dec.getUnit().getFilename() + "</tt>", 20, 2);
