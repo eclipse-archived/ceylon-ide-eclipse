@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static java.lang.Integer.toHexString;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -30,6 +33,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 
@@ -289,8 +293,10 @@ public class AnnotationUtils {
 
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
-			fgStyleSheet= DocHover.loadStyleSheet() + "body { background-color: #FFDDDD }";
-		String css= fgStyleSheet;
+			fgStyleSheet= DocHover.loadStyleSheet() ;
+		Color c = CeylonTokenColorer.getCurrentThemeColor("problemHover");
+		String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
+		String css= fgStyleSheet+ "body { background-color: #" + color + " }";
 		if (css != null) {
 			FontData fontData= JFaceResources.getFontRegistry()
 					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
