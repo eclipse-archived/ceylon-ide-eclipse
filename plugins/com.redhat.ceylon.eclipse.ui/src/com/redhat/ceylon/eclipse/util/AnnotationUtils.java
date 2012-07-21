@@ -275,8 +275,7 @@ public class AnnotationUtils {
 	public static String formatMultipleMessages(List<Annotation> messages) {
 	    StringBuffer buffer= new StringBuffer();
 	    HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-	    buffer.append(HTMLPrinter.convertToHTMLContent("Multiple messages at this line:"));
-	    buffer.append("<br/><br/>");
+	    buffer.append("Multiple messages at this line:<hr/>");
 	    for(Annotation message: messages) {
 	    	addMessageImageAndLabel(message, buffer);
 	    }
