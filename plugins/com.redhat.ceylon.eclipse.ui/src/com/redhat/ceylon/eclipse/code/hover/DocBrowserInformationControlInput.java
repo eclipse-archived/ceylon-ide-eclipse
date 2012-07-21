@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;

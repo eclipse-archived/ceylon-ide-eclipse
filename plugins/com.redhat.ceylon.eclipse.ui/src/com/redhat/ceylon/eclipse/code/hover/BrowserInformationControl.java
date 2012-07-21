@@ -18,7 +18,6 @@ import java.util.Iterator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 import org.eclipse.jface.internal.text.html.HTML2TextReader;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -141,6 +140,8 @@ public class BrowserInformationControl extends AbstractInformationControl implem
 	private TextStyle fBoldStyle;
 
 	private BrowserInformationControlInput fInput;
+	
+	private final Color color;
 
 	/**
 	 * <code>true</code> iff the browser has completed loading of the last
@@ -180,6 +181,7 @@ public class BrowserInformationControl extends AbstractInformationControl implem
 			boolean resizable, Color color) {
 		super(parent, resizable, color);
 		fSymbolicFontName= symbolicFontName;
+		this.color=color;
 		create();
 	}
 
@@ -196,6 +198,7 @@ public class BrowserInformationControl extends AbstractInformationControl implem
 			String statusFieldText, Color color) {
 		super(parent, statusFieldText, color);
 		fSymbolicFontName= symbolicFontName;
+		this.color=color;
 		create();
 	}
 
@@ -211,6 +214,7 @@ public class BrowserInformationControl extends AbstractInformationControl implem
 			ToolBarManager toolBarManager, Color color) {
 		super(parent, toolBarManager, color);
 		fSymbolicFontName= symbolicFontName;
+		this.color=color;
 		create();
 	}
 
@@ -223,7 +227,7 @@ public class BrowserInformationControl extends AbstractInformationControl implem
 
 		Display display= getShell().getDisplay();
 		fBrowser.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-		fBrowser.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+		fBrowser.setBackground(color);
 
 		fBrowser.addProgressListener(new ProgressAdapter() {
 			public void completed(ProgressEvent event) {

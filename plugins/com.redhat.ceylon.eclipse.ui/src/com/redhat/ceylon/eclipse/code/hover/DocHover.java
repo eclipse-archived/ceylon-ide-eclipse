@@ -44,7 +44,6 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 import org.eclipse.jface.internal.text.html.BrowserInput;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -810,7 +809,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
 			fgStyleSheet= loadStyleSheet();
-		String css= fgStyleSheet;
+		String css= fgStyleSheet + "body { background-color: #DDDDFF }";
 		if (css != null) {
 			FontData fontData= JFaceResources.getFontRegistry()
 					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
@@ -825,7 +824,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	 * @return the style sheet, or <code>null</code> if unable to load
 	 * @since 3.4
 	 */
-	private static String loadStyleSheet() {
+	public static String loadStyleSheet() {
 		Bundle bundle= Platform.getBundle(JavaPlugin.getPluginId());
 		URL styleSheetURL= bundle.getEntry("/JavadocHoverStyleSheet.css"); 
 		if (styleSheetURL != null) {
