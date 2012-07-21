@@ -275,7 +275,9 @@ public class AnnotationUtils {
 	public static String formatMultipleMessages(List<Annotation> messages) {
 	    StringBuffer buffer= new StringBuffer();
 	    HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-	    buffer.append("Multiple messages at this line:<hr/>");
+	    DocHover.addImageAndLabel(buffer, null, DocHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
+	    		16, 16, "Multiple messages at this line:", 20, 2);
+	    buffer.append("<hr/>");
 	    for(Annotation message: messages) {
 	    	addMessageImageAndLabel(message, buffer);
 	    }
