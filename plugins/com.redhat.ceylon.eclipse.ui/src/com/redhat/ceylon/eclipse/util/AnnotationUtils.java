@@ -54,7 +54,7 @@ public class AnnotationUtils {
      * @return a nicely-formatted plain text string for the given set of annotations
      */
     public static String formatAnnotationList(List<Annotation> annotations) {
-        if (annotations!=null) {
+        if (annotations!=null && !annotations.isEmpty()) {
         	if (annotations.size()==1) {
         		return AnnotationUtils.formatSingleMessage(annotations.get(0));
         	}

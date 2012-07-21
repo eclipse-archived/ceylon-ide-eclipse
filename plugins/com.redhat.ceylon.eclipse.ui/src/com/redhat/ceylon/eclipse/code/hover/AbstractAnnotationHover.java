@@ -16,7 +16,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -69,6 +68,8 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
+
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 
 /**
@@ -132,15 +133,17 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		private AnnotationInfo fInput;
 		private Composite fParent;
 
-		public AnnotationInformationControl(Shell parentShell, String statusFieldText) {
-			super(parentShell, statusFieldText);
+		public AnnotationInformationControl(Shell parentShell, 
+				String statusFieldText, Color color) {
+			super(parentShell, statusFieldText, color);
 
 			fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
 			create();
 		}
 
-		public AnnotationInformationControl(Shell parentShell, ToolBarManager toolBarManager) {
-			super(parentShell, toolBarManager);
+		public AnnotationInformationControl(Shell parentShell, 
+				ToolBarManager toolBarManager, Color color) {
+			super(parentShell, toolBarManager, color);
 
 			fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
 			create();
@@ -489,7 +492,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 	 */
 	private static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT));
+			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT),
+					CeylonTokenColorer.getCurrentThemeColor("messageHover"));
 		}
 	}
 
@@ -507,7 +511,8 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 		}
 
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, EditorsUI.getTooltipAffordanceString()) {
+			return new AnnotationInformationControl(parent, "F2 for focus",
+					CeylonTokenColorer.getCurrentThemeColor("messageHover")) {
 				public IInformationControlCreator getInformationPresenterControlCreator() {
 					return fPresenterControlCreator;
 				}
@@ -519,7 +524,7 @@ public abstract class AbstractAnnotationHover extends AbstractTextHover {
 				return false;
 
 			if (control instanceof IInformationControlExtension4)
-				((IInformationControlExtension4) control).setStatusText(EditorsUI.getTooltipAffordanceString());
+				((IInformationControlExtension4) control).setStatusText("F2 for focus");
 
 			return true;
 		}

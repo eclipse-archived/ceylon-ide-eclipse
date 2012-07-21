@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -43,6 +42,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
@@ -51,6 +51,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
@@ -144,7 +145,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return new IInformationControlCreator() {
             public IInformationControl createInformationControl(Shell parent) {
                 return new BrowserInformationControl(parent, 
-                		APPEARANCE_JAVADOC_FONT, (String)null) {
+                		APPEARANCE_JAVADOC_FONT, (String)null,
+                		CeylonTokenColorer.getCurrentThemeColor("docHover")) {
 					@Override
 					public Point computeSizeHint() {
 						Point sh = super.computeSizeHint();
