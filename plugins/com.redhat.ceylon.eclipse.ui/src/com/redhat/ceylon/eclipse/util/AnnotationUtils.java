@@ -183,6 +183,8 @@ public class AnnotationUtils {
 			Annotation annotation = (Annotation) iterator.next();
 			Position position = model.getPosition(annotation);
 			
+			if (annotation instanceof MarkerAnnotation)
+				continue;
 			if (position == null)
 				continue;
 			if (!posPred.matchPosition(position))
