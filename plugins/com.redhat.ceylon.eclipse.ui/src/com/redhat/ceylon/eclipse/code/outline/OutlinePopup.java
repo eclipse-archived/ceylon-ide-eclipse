@@ -38,12 +38,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends Popup {
 	
-    private CeylonOutlineContentProvider fOutlineContentProvider;
-    private Object fInput= null;
-    private OutlineSorter fOutlineSorter;
-    private CeylonOutlineLabelProvider fInnerLabelProvider;
-    private LexicalSortingAction fLexicalSortingAction;
-    private CeylonLabelProvider fLangLabelProvider;
+    private CeylonOutlineContentProvider outlineContentProvider;
+    private OutlineSorter outlineSorter;
+    private CeylonLabelProvider labelProvider;
+    private LexicalSortingAction lexicalSortingAction;
 
     protected static final Object[] NO_CHILDREN= new Object[0];
 
@@ -90,7 +88,7 @@ public class OutlinePopup extends Popup {
         private static final int OTHER= 1;
 
         public void sort(Viewer viewer, Object[] elements) {
-            if (!fLexicalSortingAction.isChecked())
+            if (!lexicalSortingAction.isChecked())
                 return;
             super.sort(viewer, elements);
         }
@@ -100,8 +98,8 @@ public class OutlinePopup extends Popup {
             int cat2= category(e2);
             if (cat1 != cat2)
                 return cat1 - cat2;
-            String label1= fLangLabelProvider.getText(e1);
-            String label2= fLangLabelProvider.getText(e2);
+            String label1= labelProvider.getText(e1);
+            String label2= labelProvider.getText(e2);
 
             return label1.compareTo(label2);
         }
@@ -153,21 +151,16 @@ public class OutlinePopup extends Popup {
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer= new OutlineTreeViewer(tree);
-        fLexicalSortingAction= new LexicalSortingAction(treeViewer);
-        fOutlineContentProvider= new CeylonOutlineContentProvider();
-        fLangLabelProvider= new CeylonLabelProvider();
-        fInnerLabelProvider= new CeylonOutlineLabelProvider(fLangLabelProvider);
-        //fInnerLabelProvider.addLabelDecorator(new CeylonLabelDecorator());
-        //	IDecoratorManager decoratorMgr= PlatformUI.getWorkbench().getDecoratorManager();
-        //	if (decoratorMgr.getEnabled("org.eclipse.jdt.ui.override.decorator")) //$NON-NLS-1$
-        //	    fInnerLabelProvider.addLabelDecorator(new OverrideIndicatorLabelDecorator(null));
-        treeViewer.setLabelProvider(fInnerLabelProvider);
+        lexicalSortingAction= new LexicalSortingAction(treeViewer);
+        outlineContentProvider= new CeylonOutlineContentProvider();
+        labelProvider= new CeylonLabelProvider();
+        treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new NamePatternFilter());
         //	fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
         //	fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
-        treeViewer.setContentProvider(fOutlineContentProvider);
-        fOutlineSorter= new OutlineSorter();
-        treeViewer.setSorter(fOutlineSorter);
+        treeViewer.setContentProvider(outlineContentProvider);
+        outlineSorter= new OutlineSorter();
+        treeViewer.setSorter(outlineSorter);
         treeViewer.setAutoExpandLevel(ALL_LEVELS);
         //treeViewer.getTree().addKeyListener(getKeyAdapter());
         return treeViewer;
@@ -180,18 +173,18 @@ public class OutlinePopup extends Popup {
     public void setInput(Object information) {
         if (information == null || information instanceof String) {
             inputChanged(null, null);
-            return;
         }
-        fInput= information;
-        inputChanged(fInput, information);
+        else {
+        	inputChanged(information, information);
+        }
     }
 
     protected void fillViewMenu(IMenuManager viewMenu) {
         super.fillViewMenu(viewMenu);
         //	viewMenu.add(fShowOnlyMainTypeAction); //$NON-NLS-1$
         viewMenu.add(new Separator("Sorters")); //$NON-NLS-1$
-        if (fLexicalSortingAction != null)
-            viewMenu.add(fLexicalSortingAction);
+        if (lexicalSortingAction != null)
+            viewMenu.add(lexicalSortingAction);
         //	viewMenu.add(fSortByDefiningTypeAction);
     }
 

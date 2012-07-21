@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImage;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -33,10 +35,14 @@ final class CeylonHierarchyLabelProvider extends
 
 	StyledString getStyledText(Object element) {
 	    Declaration d = getDisplayedDeclaration(element);
-	    StyledString result = new StyledString(getDescriptionFor(d));
-	    if (d.getContainer() instanceof Declaration) {
+	    StyledString result = getStyledDescriptionFor(d);
+	    /*if (d.getContainer() instanceof Declaration) {
 	        result.append(" in ")
-	                .append(getDescriptionFor((Declaration) d.getContainer()));
+	                .append(getStyledDescriptionFor((Declaration) d.getContainer()));
+	    }*/
+	    if (d.isClassOrInterfaceMember()) {
+	        result.append(" in ")
+	                .append(((Declaration) d.getContainer()).getName(), TYPE_ID_STYLER);
 	    }
 	    result.append(" - ", QUALIFIER_STYLER)
 	            .append(CeylonLabelProvider.getPackageLabel(d), QUALIFIER_STYLER);
@@ -57,7 +63,7 @@ final class CeylonHierarchyLabelProvider extends
 		StyledString styledText = getStyledText(element);
 		cell.setText(styledText.toString());
 		cell.setStyleRanges(styledText.getStyleRanges());
-		cell.setImage(CeylonLabelProvider.getImage(getDisplayedDeclaration(element)));
+		cell.setImage(getImage(getDisplayedDeclaration(element)));
 		super.update(cell);
 	}
 }

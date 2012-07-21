@@ -23,7 +23,6 @@ import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 
 public class HierarchyPopup extends Popup {
 
-    private Object fInput= null;
     private CeylonEditor editor;
     private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
@@ -78,27 +77,28 @@ public class HierarchyPopup extends Popup {
 	public void setInput(Object information) {
         if (information == null || information instanceof String) {
             inputChanged(null, null);
-            return;
         }
-        if (information instanceof CeylonEditor) {
-        	this.editor = (CeylonEditor) information;
-        	Node selectedNode = getSelectedNode(editor);
-			Declaration declaration = getReferencedDeclaration(selectedNode);
-        	if (declaration==null) {
-        		FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
-        		fcv.visit(editor.getParseController().getRootNode());
-        		com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument node = fcv.getDeclaration();
-        		if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
-        			declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
+        else {
+        	if (information instanceof CeylonEditor) {
+        		this.editor = (CeylonEditor) information;
+        		Node selectedNode = getSelectedNode(editor);
+        		Declaration declaration = getReferencedDeclaration(selectedNode);
+        		if (declaration==null) {
+        			FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
+        			fcv.visit(editor.getParseController().getRootNode());
+        			com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument node = fcv.getDeclaration();
+        			if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
+        				declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
+        			}
         		}
+        		Object input=null;
+        		if (declaration!=null) {
+        			setTitleText("Hierarchy of '" + getDescriptionFor(declaration) + "'");
+        			input = contentProvider.init(declaration, editor);
+        			labelProvider.isMember = !(declaration instanceof TypeDeclaration);
+        		}
+        		inputChanged(input, information);
         	}
-        	if (declaration!=null) {
-        		setTitleText("Hierarchy of '" + getDescriptionFor(declaration) + "'");
-        		fInput = contentProvider.init(declaration, editor);
-        		labelProvider.isMember = !(declaration instanceof TypeDeclaration);
-        		setInput(fInput);
-        	}
-            inputChanged(fInput, information);
         }
 	}
     
