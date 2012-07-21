@@ -309,7 +309,7 @@ public abstract class AbstractAnnotationHover implements ITextHover, ITextHoverE
 			if (proposals.length == 1) {
 				text= "1 quick fix available:";
 			} else {
-				text= proposals.length + "quick fixes available:";
+				text= proposals.length + " quick fixes available:";
 			}
 			quickFixLabel.setText(text);
 
