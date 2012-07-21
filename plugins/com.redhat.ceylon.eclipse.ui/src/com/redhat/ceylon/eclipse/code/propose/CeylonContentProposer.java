@@ -679,14 +679,12 @@ public class CeylonContentProposer {
     }
     
     private static void addBasicProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, 
+            final CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, final Declaration d, 
             OccurrenceLocation ol) {
-        result.add(new Proposal(offset, prefix, 
-                CeylonLabelProvider.getImage(d),
-                getDocumentationFor(cpc, d), 
-                getDescriptionFor(dwp, ol), 
-                getTextFor(dwp, ol), true));
+    	result.add(new AutocompletionProposal(offset, prefix,
+    			getDescriptionFor(dwp, ol), getTextFor(dwp, ol), 
+    			true, cpc, d, dwp.isUnimported()));
     }
 
     private static void addForProposal(int offset, String prefix, 
@@ -722,49 +720,53 @@ public class CeylonContentProposer {
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol) {
-        if (d instanceof Value || 
-                d instanceof ValueParameter) {
-            TypedDeclaration v = (TypedDeclaration) d;
-            if (v.getType()!=null &&
-                    d.getUnit().isOptionalType(v.getType()) && 
-                    !v.isVariable()) {
-                result.add(new Proposal(offset, prefix, 
-                        CeylonLabelProvider.getImage(d),
-                        getDocumentationFor(cpc, d), 
-                        "if (exists " + getDescriptionFor(dwp, ol) + ")", 
-                        "if (exists " + getTextFor(dwp, ol) + ") {}", true));
-            }
-        }
+    	if (!dwp.isUnimported()) {
+    		if (d instanceof Value || 
+    				d instanceof ValueParameter) {
+    			TypedDeclaration v = (TypedDeclaration) d;
+    			if (v.getType()!=null &&
+    					d.getUnit().isOptionalType(v.getType()) && 
+    					!v.isVariable()) {
+    				result.add(new Proposal(offset, prefix, 
+    						CeylonLabelProvider.getImage(d),
+    						getDocumentationFor(cpc, d), 
+    						"if (exists " + getDescriptionFor(dwp, ol) + ")", 
+    						"if (exists " + getTextFor(dwp, ol) + ") {}", true));
+    			}
+    		}
+    	}
     }
 
     private static void addSwitchProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol, Node node, IDocument doc) {
-        if (d instanceof Value || 
-                d instanceof ValueParameter) {
-            TypedDeclaration v = (TypedDeclaration) d;
-            if (v.getType()!=null &&
-                    v.getType().getCaseTypes()!=null && 
-                    !v.isVariable()) {
-                StringBuilder body = new StringBuilder();
-                String indent = getIndent(node, doc);
-                for (ProducedType pt: v.getType().getCaseTypes()) {
-                    body.append(indent).append("case (");
-                    if (!pt.getDeclaration().isAnonymous()) {
-                        body.append("is ");
-                    }
-                    body.append(pt.getProducedTypeName());
-                    body.append(") {}\n");
-                }
-                body.append(indent);
-                result.add(new Proposal(offset, prefix, 
-                        CeylonLabelProvider.getImage(d),
-                        getDocumentationFor(cpc, d), 
-                        "switch (" + getDescriptionFor(dwp, ol) + ")", 
-                        "switch (" + getTextFor(dwp, ol) + ")\n" + body, true));
-            }
-        }
+    	if (!dwp.isUnimported()) {
+    		if (d instanceof Value || 
+    				d instanceof ValueParameter) {
+    			TypedDeclaration v = (TypedDeclaration) d;
+    			if (v.getType()!=null &&
+    					v.getType().getCaseTypes()!=null && 
+    					!v.isVariable()) {
+    				StringBuilder body = new StringBuilder();
+    				String indent = getIndent(node, doc);
+    				for (ProducedType pt: v.getType().getCaseTypes()) {
+    					body.append(indent).append("case (");
+    					if (!pt.getDeclaration().isAnonymous()) {
+    						body.append("is ");
+    					}
+    					body.append(pt.getProducedTypeName());
+    					body.append(") {}\n");
+    				}
+    				body.append(indent);
+    				result.add(new Proposal(offset, prefix, 
+    						CeylonLabelProvider.getImage(d),
+    						getDocumentationFor(cpc, d), 
+    						"switch (" + getDescriptionFor(dwp, ol) + ")", 
+    						"switch (" + getTextFor(dwp, ol) + ")\n" + body, true));
+    			}
+    		}
+    	}
     }
 
     private static void addNamedArgumentProposal(int offset, String prefix, 
@@ -796,35 +798,31 @@ public class CeylonContentProposer {
             }
             if (!isAbstractClass || ol==EXTENDS) {
                 if (defaulted>0) {
-                    result.add(new Proposal(offset, prefix, 
-                            CeylonLabelProvider.getImage(d),
-                            getDocumentationFor(cpc, d), 
+                    result.add(new AutocompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
-                            getPositionalInvocationTextFor(dwp, ol, pr, false), true));
+                            getPositionalInvocationTextFor(dwp, ol, pr, false), true,
+                            cpc, d, dwp.isUnimported()));
                 }
-                result.add(new Proposal(offset, prefix, 
-                        CeylonLabelProvider.getImage(d),
-                        getDocumentationFor(cpc, d), 
+                result.add(new AutocompletionProposal(offset, prefix, 
                         getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
-                        getPositionalInvocationTextFor(dwp, ol, pr, true), true));
+                        getPositionalInvocationTextFor(dwp, ol, pr, true), true,
+                        cpc, d, dwp.isUnimported()));
             }
             if (!isAbstractClass && ol!=EXTENDS && 
                     !fd.isOverloaded()) {
                 //if there is more than one parameter, 
                 //suggest a named argument invocation 
                 if (defaulted>0 && ps.size()-defaulted>1) {
-                    result.add(new Proposal(offset, prefix, 
-                            CeylonLabelProvider.getImage(d),
-                            getDocumentationFor(cpc, d), 
+                    result.add(new AutocompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, false), 
-                            getNamedInvocationTextFor(dwp, pr, false), true));
+                            getNamedInvocationTextFor(dwp, pr, false), true,
+                            cpc, d, dwp.isUnimported()));
                 }
                 if (ps.size()>1) {
-                    result.add(new Proposal(offset, prefix, 
-                            CeylonLabelProvider.getImage(d),
-                            getDocumentationFor(cpc, d), 
+                    result.add(new AutocompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, true), 
-                            getNamedInvocationTextFor(dwp, pr, true), true));
+                            getNamedInvocationTextFor(dwp, pr, true), true,
+                            cpc, d, dwp.isUnimported()));
                 }
             }
         }
@@ -1069,7 +1067,7 @@ public class CeylonContentProposer {
         if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
             for (Package languageScope: languageModule.getPackages() ) {
                 for (Map.Entry<String, DeclarationWithProximity> entry: 
-                    languageScope.getMatchingDeclarations(null, prefix, 1000).entrySet()) {
+                    languageScope.getMatchingDeclarations(null, prefix, 100).entrySet()) {
                     if (entry.getValue().getDeclaration().isShared()) {
                         result.put(entry.getKey(), entry.getValue());
                     }                    
