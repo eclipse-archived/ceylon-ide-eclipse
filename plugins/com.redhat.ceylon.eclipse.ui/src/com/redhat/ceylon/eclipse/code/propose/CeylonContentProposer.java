@@ -579,6 +579,7 @@ public class CeylonContentProposer {
                         dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
                         dec instanceof Value && dec.getContainer().equals(scope) ||
                         ol!=PARAMETER_LIST) &&
+                (ol!=IMPORT || !dwp.isUnimported()) &&
                 ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
     }
 
