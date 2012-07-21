@@ -82,6 +82,14 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         }
     }
     
+    AbstractFindAction(String text, IEditorPart editor, Declaration dec) {
+        super(text);
+        this.site = editor.getSite();
+        project = editor==null ? null : getProject(editor);
+        declaration = dec;
+        setEnabled(true);
+    }
+    
     @Override
     public void run(IAction action) {
     	run();

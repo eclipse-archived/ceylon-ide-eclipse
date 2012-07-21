@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
@@ -22,11 +23,17 @@ public class FindAssignmentsAction extends AbstractFindAction {
 		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
 	}
 	
+    public FindAssignmentsAction(IEditorPart editor, Declaration dec) {
+		super("Find Assignments", editor, dec);
+		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
+	}
+	
     @Override
     boolean isValidSelection() {
         return declaration instanceof Value ||
                 declaration instanceof Parameter ||
-                declaration instanceof Getter;
+                declaration instanceof Getter && 
+                    ((Getter)declaration).isVariable();
     }
 
 	@Override

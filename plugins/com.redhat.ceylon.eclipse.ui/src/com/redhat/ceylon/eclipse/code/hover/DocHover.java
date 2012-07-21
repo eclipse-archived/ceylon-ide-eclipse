@@ -72,6 +72,7 @@ import org.osgi.framework.Bundle;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -83,6 +84,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
@@ -92,6 +94,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
+import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
+import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
+import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -455,6 +461,22 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 						control.setInput(getHoverInfo(target, control.getInput()));
 					}
 				}
+				else if (location.startsWith("ref:")) {
+					Object target = getModel(control, location);
+					new FindReferencesAction(editor, (Declaration) target).run();
+				}
+				else if (location.startsWith("sub:")) {
+					Object target = getModel(control, location);
+					new FindSubtypesAction(editor, (Declaration) target).run();
+				}
+				else if (location.startsWith("act:")) {
+					Object target = getModel(control, location);
+					new FindRefinementsAction(editor, (Declaration) target).run();
+				}
+				else if (location.startsWith("ass:")) {
+					Object target = getModel(control, location);
+					new FindAssignmentsAction(editor, (Declaration) target).run();
+				}
 			}
 			@Override
 			public void changed(LocationEvent event) {}
@@ -681,10 +703,31 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		
 		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
 			//if (extraBreak) 
-				buffer.append("<hr/>");
+			buffer.append("<hr/>");
 			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
 					16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
 							dec.getUnit().getFilename() + "</tt>", 20, 2);
+		}
+		buffer.append("<hr/>");
+		addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+				16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
+		            dec.getName() + "</tt>", 20, 2);
+		if (dec instanceof ClassOrInterface) {
+			addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+					16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
+							dec.getName() + "</tt>", 20, 2);
+		}
+		if (dec instanceof Value
+				|| dec instanceof Parameter
+				|| dec instanceof Getter && ((Getter)dec).isVariable()) {
+			addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+					16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
+							dec.getName() + "</tt>", 20, 2);
+		}
+		if (dec.isFormal()||dec.isDefault()) {
+			addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+					16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
+							dec.getName() + "</tt>", 20, 2);
 		}
 		
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
@@ -16,6 +17,11 @@ public class FindReferencesAction extends AbstractFindAction {
 	
     public FindReferencesAction(IEditorPart editor) {
 		super("Find References", editor);
+		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
+	}
+	
+    public FindReferencesAction(IEditorPart editor, Declaration dec) {
+		super("Find References", editor, dec);
 		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
 	}
 	
