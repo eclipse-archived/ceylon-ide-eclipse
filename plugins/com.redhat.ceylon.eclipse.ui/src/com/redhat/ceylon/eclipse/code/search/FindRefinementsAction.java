@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -20,6 +21,11 @@ public class FindRefinementsAction extends AbstractFindAction {
 	
     public FindRefinementsAction(IEditorPart editor) {
 		super("Find Refinements", editor);
+		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
+	}
+    
+    public FindRefinementsAction(IEditorPart editor, Declaration dec) {
+		super("Find Refinements", editor, dec);
 		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
 	}
     

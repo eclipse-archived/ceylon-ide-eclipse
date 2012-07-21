@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -19,6 +20,11 @@ public class FindSubtypesAction extends AbstractFindAction {
 	
     public FindSubtypesAction(IEditorPart editor) {
 		super("Find Subtypes", editor);
+		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
+	}
+    
+    public FindSubtypesAction(IEditorPart editor, Declaration dec) {
+		super("Find Subtypes", editor, dec);
 		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
 	}
     
