@@ -588,7 +588,7 @@ public abstract class Popup extends PopupDialog
 	}
 
 	protected void inputChanged(Object newInput, Object newSelection) {
-		fFilterText.setText(""); //$NON-NLS-1$
+		fFilterText.setText("");
 		/*fInitiallySelectedType= null;
 		if (newSelection instanceof IJavaElement) {
 			IJavaElement javaElement= ((IJavaElement)newSelection);
