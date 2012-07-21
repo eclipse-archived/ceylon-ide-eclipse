@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
+import static java.lang.Integer.toHexString;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -68,6 +69,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
@@ -889,7 +891,9 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
 			fgStyleSheet= loadStyleSheet();
-		String css= fgStyleSheet + "body { background-color: #DDDDFF }";
+		Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
+		String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
+		String css= fgStyleSheet + "body { background-color: #" + color+ " }";
 		if (css != null) {
 			FontData fontData= JFaceResources.getFontRegistry()
 					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
