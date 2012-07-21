@@ -242,6 +242,7 @@ public class CeylonQuickFixAssistant {
         		ImplementFormalMembersProposal.addImplementFormalMembersProposal(cu, node, proposals, file,
         				context.getSourceViewer().getDocument());
         	}
+        	addMakeAbstractProposal(proposals, project, node);
         	break;
         case 400:
         	addMakeSharedProposal(proposals, project, node);
@@ -280,14 +281,13 @@ public class CeylonQuickFixAssistant {
         	addFixAssignmentProposal(problem, proposals, project, file, node);
         	break;
         case 900:
-        	addMakeAbstractProposal(proposals, project, node);
+        case 1100:
+        	addMakeContainerAbstractProposal(proposals, project, node);
+        	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
         	break;
         case 1000:
         	AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
         	ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
-        	break;
-        case 1100:
-        	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
         	break;
         case 1200:
         case 1201:
@@ -374,6 +374,19 @@ public class CeylonQuickFixAssistant {
     }
 
     private void addMakeAbstractProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
+        Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            dec = (Declaration) ((Tree.Declaration) node).getDeclarationModel();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
+        addAddAnnotationProposal(node, "abstract ", "Make Abstract", dec, 
+                proposals, project);
+    }
+
+    private void addMakeContainerAbstractProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
