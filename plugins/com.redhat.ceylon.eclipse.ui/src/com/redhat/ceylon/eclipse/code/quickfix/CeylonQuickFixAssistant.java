@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMET
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
@@ -18,7 +19,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +27,6 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -38,7 +37,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -1133,15 +1131,18 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private ICompletionProposal createImportProposal(Tree.CompilationUnit cu, IFile file,
+    private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, IFile file,
             String packageName, String declaration) {
-        
-        Tree.Import importNode = findImportNode(cu, packageName);
-        
         TextFileChange change = new TextFileChange("Add Import", file);
-        TextEdit edit;
+        change.setEdit(importEdit(cu, packageName, declaration));
+        return new ChangeCorrectionProposal("Add import of '" + declaration + "'" + 
+                " in package " + packageName, change, 50, CeylonLabelProvider.IMPORT);
+    }
 
-        if (importNode != null) {
+	public static InsertEdit importEdit(Tree.CompilationUnit cu, String packageName, 
+			String declaration) {
+        Tree.Import importNode = findImportNode(cu, packageName);
+		if (importNode != null) {
             int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
             String text;
             ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
@@ -1154,7 +1155,7 @@ public class CeylonQuickFixAssistant {
             else {
                 text = ", " + declaration;
             }
-            edit = new InsertEdit(insertPosition, text);
+            return new InsertEdit(insertPosition, text);
         } 
         else {
             int insertPosition = getBestImportInsertPosition(cu);
@@ -1165,27 +1166,23 @@ public class CeylonQuickFixAssistant {
             else {
                 text = "\n" + text;
             }
-            edit = new InsertEdit(insertPosition, text);
+            return new InsertEdit(insertPosition, text);
         }
-        
-        change.setEdit(edit);
-        return new ChangeCorrectionProposal("Add import of '" + declaration + "'" + 
-                " in package " + packageName, change, 50, CeylonLabelProvider.IMPORT);
-    }
+	}
     
-    private int getBestImportInsertPosition(Tree.CompilationUnit cu) {
+    private static int getBestImportInsertPosition(Tree.CompilationUnit cu) {
         Integer stopIndex = cu.getImportList().getStopIndex();
         if (stopIndex == null) return 0;
         return stopIndex+1;
     }
 
-    private Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
+    private static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
         FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();
     }
 
-    private int getBestImportMemberInsertPosition(Tree.Import importNode,
+    private static int getBestImportMemberInsertPosition(Tree.Import importNode,
             String declaration) {
         ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
         if (imtl.getImportWildcard()!=null) {
