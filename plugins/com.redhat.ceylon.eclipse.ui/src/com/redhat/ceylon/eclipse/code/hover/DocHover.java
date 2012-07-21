@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.sanitize;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
@@ -24,7 +25,6 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static org.eclipse.jface.internal.text.html.BrowserInformationControl.isAvailable;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -44,7 +44,6 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 import org.eclipse.jface.internal.text.html.BrowserInput;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
@@ -93,6 +92,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -271,7 +271,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			if (isAvailable(parent)) {
 				ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
 				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, tbm);
+						APPEARANCE_JAVADOC_FONT, tbm, 
+						CeylonTokenColorer.getCurrentThemeColor("docHover"));
 
 				final BackAction backAction= new BackAction(iControl);
 				backAction.setEnabled(false);
@@ -366,7 +367,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			if (isAvailable(parent)) {
 				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, statusLineMessage) {
+						APPEARANCE_JAVADOC_FONT, statusLineMessage,
+						CeylonTokenColorer.getCurrentThemeColor("docHover")) {
 					@Override
 					public IInformationControlCreator getInformationPresenterControlCreator() {
 						return fInformationPresenterControlCreator;

@@ -59,7 +59,7 @@ public abstract class AbstractTextHover implements ITextHover, ITextHoverExtensi
 	public IInformationControlCreator getHoverControlCreator() {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
-				return new DefaultInformationControl(parent, EditorsUI.getTooltipAffordanceString());
+				return new DefaultInformationControl(parent, "F2 for focus");
 			}
 		};
 	}

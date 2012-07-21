@@ -53,7 +53,7 @@ public class CeylonTokenColorer  {
     }
     
     static {
-        final ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();        
+        final ITheme currentTheme = getCurrentTheme();        
         initColors(currentTheme.getColorRegistry());
         currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
@@ -64,6 +64,14 @@ public class CeylonTokenColorer  {
             }
         });
     }
+
+	public static ITheme getCurrentTheme() {
+		return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+	}
+	
+	public static Color getCurrentThemeColor(String key) {
+		return color(getCurrentTheme().getColorRegistry(), key);
+	}
 
     private static void initColors(ColorRegistry colorRegistry) {
         identifierAttribute = text(colorRegistry, IDENTIFIERS, SWT.NORMAL);
