@@ -13,7 +13,6 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl.isAvailable;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider.sanitize;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
@@ -23,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -37,9 +37,15 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
@@ -458,7 +464,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				else if (location.startsWith("doc:")) {
 					Object target = getModel(control, location);
 					if (target!=null) {
-						control.setInput(getHoverInfo(target, control.getInput()));
+						control.setInput(getHoverInfo(target, control.getInput(), null));
 					}
 				}
 				else if (location.startsWith("ref:")) {
@@ -523,10 +529,10 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
 		if (node instanceof Tree.ImportPath) {
-			return getHoverInfo(((Tree.ImportPath) node).getPackageModel(), null);
+			return getHoverInfo(((Tree.ImportPath) node).getPackageModel(), null, node);
 		}
 		else {
-			return getHoverInfo(getReferencedDeclaration(node), null);
+			return getHoverInfo(getReferencedDeclaration(node), null, node);
 		}
 	}
 	
@@ -567,6 +573,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	/**
 	 * Computes the hover info.
 	 * @param previousInput the previous input, or <code>null</code>
+	 * @param node 
 	 * @param elements the resolved elements
 	 * @param editorInputElement the editor input, or <code>null</code>
 	 *
@@ -575,11 +582,11 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	 * @since 3.4
 	 */
 	private DocBrowserInformationControlInput getHoverInfo(Object model, 
-			BrowserInformationControlInput previousInput) {
+			BrowserInformationControlInput previousInput, Node node) {
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			return new DocBrowserInformationControlInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec), 20);
+					getDocumentationFor(editor.getParseController(), dec, node), 20);
 		}
 		if (model instanceof Package) {
 			Package dec = (Package) model;
@@ -627,20 +634,25 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		return buffer.toString();
 		
 	}
+
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec) {
+		return getDocumentationFor(cpc, dec, null);
+	}
+	
+	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		StringBuffer buffer= new StringBuffer();
 		
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
-				16, 16, "<b><tt>" + sanitize(getDescriptionFor(dec)) + "</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(getDescriptionFor(dec)) + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
 		if (dec.isClassOrInterfaceMember()) {
 			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
 			addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
 					"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
-			        sanitize(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
+			        HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 		}
 
 		if (dec.isShared()) {
@@ -657,13 +669,15 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			appendSeeAnnotationContent(refnode, buffer);
 		}
 		
+		appendJavadoc(dec, cpc.getProject(), buffer, node);
+		
 		//boolean extraBreak = false;
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
 				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>extends <a " + link(sup.getDeclaration()) + ">" + 
-				        sanitize(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
+				        HTMLPrinter.convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
 				//extraBreak = true;
 			}
 		}
@@ -671,7 +685,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			for (ProducedType td: ((TypeDeclaration) dec).getSatisfiedTypes()) {
 				addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
 						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
-				        sanitize(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+				        HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 				//extraBreak = true;
 			}
 		}
@@ -752,6 +766,25 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		}
 	}
 
+    private static void appendJavadoc(Declaration model, IProject project,
+            StringBuffer documentation, Node node) {
+        IJavaProject jp = JavaCore.create(project);
+        if (jp!=null) {
+            try {
+                IJavaElement je = getJavaElement(model, jp, node);
+                if (je!=null) {
+                    String javadoc = je.getAttachedJavadoc(new NullProgressMonitor());
+                    if (javadoc!=null) {
+                        documentation.append(javadoc);
+                    }
+                }
+            }
+            catch (JavaModelException jme) {
+                jme.printStackTrace();
+            }
+        }
+    }
+
     private static void appendDocAnnotationContent(Tree.Declaration decl,
             StringBuffer documentation) {
         Tree.AnnotationList annotationList = decl.getAnnotationList();
@@ -770,16 +803,19 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             if (!args.isEmpty()) {
                             	//TODO: properly process the markdown!!
-                                String docLine = sanitize(args.get(0).getExpression().getTerm().getText());
-                                documentation.append("<p>")
-                                    .append(docLine.subSequence(1, docLine.length()-1).toString()
-                                		.replaceAll("`([^`]+)`", "<tt>$1</tt>")
-                                		.replaceAll("_([^_]+)_", "<em>$1</em>")
-                                		.replaceAll("\\*([^*]+)\\*", "<em>$1</em>")
-                                		.replaceAll("\n-([^\n]+)", "<li>$1</li>")
-                                		.replaceAll("\n    ([^\n]+)", "<br/><tt>$1</tt>")
-                                		.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>"))
-                                	.append("</p>");
+                                String text = args.get(0).getExpression().getTerm().getText();
+                                if (text!=null) {
+                                	String docLine = HTMLPrinter.convertToHTMLContent(text.substring(1, text.length()-1).toString());
+                                	documentation.append("<p>")
+                                	    .append(docLine
+                                			.replaceAll("`([^`]+)`", "<tt>$1</tt>")
+                                			.replaceAll("_([^_]+)_", "<em>$1</em>")
+                                			.replaceAll("\\*([^*]+)\\*", "<em>$1</em>")
+                                			.replaceAll("\n-([^\n]+)", "<li>$1</li>")
+                                			.replaceAll("\n    ([^\n]+)", "<br/><tt>$1</tt>")
+                                			.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>"))
+                                			.append("</p>");
+                                }
                             }
                         }
                     }

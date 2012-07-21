@@ -45,12 +45,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
-import com.redhat.ceylon.eclipse.code.hover.CeylonDocumentationProvider;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
@@ -158,7 +156,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
-        if (infoPresenter == null) {
+        /*if (infoPresenter == null) {
             infoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
             infoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
             infoPresenter.setAnchor(ANCHOR_GLOBAL);
@@ -167,7 +165,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
             //infoPresenter.setSizeConstraints(500, 100, true, false);
             //infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
-        }
+        }*/
         return infoPresenter;
     }
 
@@ -177,7 +175,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
 
-    private final class HoverInformationProvider implements IInformationProvider {
+    /*private final class HoverInformationProvider implements IInformationProvider {
 		private IAnnotationModel annotationModel= editor.getDocumentProvider()
 				.getAnnotationModel(editor.getEditorInput());
 
@@ -216,8 +214,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			CeylonParseController pc = editor.getParseController();
 			Node selNode= findNode(pc.getRootNode(), subject.getOffset());
 		    return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
+			return null;
 		}
-	}
+	}*/
 
 	private class OutlineInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
