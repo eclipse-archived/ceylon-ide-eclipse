@@ -60,7 +60,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -244,18 +244,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public String getBuilderID() {
         return BUILDER_ID;
     }
-
-    protected String getErrorMarkerID() {
-        return PROBLEM_MARKER_ID;
-    }
-
-    protected String getWarningMarkerID() {
-        return PROBLEM_MARKER_ID;
-    }
-
-    protected String getInfoMarkerID() {
-        return PROBLEM_MARKER_ID;
-    }
     
     public static boolean isCeylon(IFile file) {
         String ext = file.getFileExtension();
@@ -315,11 +303,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 	
 	@Override
-    protected IProject[] build(final int kind, Map args, IProgressMonitor monitor) 
+    protected IProject[] build(final int kind, Map args, IProgressMonitor mon) 
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-        monitor.beginTask("Ceylon build of project " + project.getName(), 100);
+		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(),100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
@@ -415,7 +403,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 	//if we already resolved the classpath, the
                 	//model has already been freshly-parsed
                     typeChecker = parseCeylonModel(project, 
-                    		new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                    		monitor.newChild(5, PREPEND_MAIN_LABEL_TO_SUBTASK));
                     monitor.worked(1);
                 }
                 else {
@@ -429,7 +417,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.subTask("Typechecking all source  files of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
                 builtPhasedUnits = fullTypeCheck(project, typeChecker, 
-                		new SubProgressMonitor(monitor, 35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                		monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
@@ -452,7 +440,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         allSources.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject, 
                 		allSources, typeChecker, 
-                		new SubProgressMonitor(monitor, 45, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
@@ -503,7 +491,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 monitor.subTask("Compiling " + sourceToCompile.size() + " source files in project " + 
                         project.getName());
                 builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
-                		new SubProgressMonitor(monitor, 35, PREPEND_MAIN_LABEL_TO_SUBTASK));                
+                		monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));                
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     return project.getReferencedProjects();
                 }
@@ -527,7 +515,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                         sourceToCompile.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject,
                 		sourceToCompile, typeChecker, 
-                		new SubProgressMonitor(monitor, 45, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
@@ -963,9 +951,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project, Collection<IFile> sourceToCompile,
-            IProgressMonitor monitor) {
+            IProgressMonitor mon) {
     	
-        monitor.beginTask("Typechecking " + sourceToCompile.size() + " source files in project " + 
+        SubMonitor monitor = SubMonitor.convert(mon,
+        		"Typechecking " + sourceToCompile.size() + " source files in project " + 
                 project.getName(), sourceToCompile.size()*6); 
 
         TypeChecker typeChecker = typeCheckers.get(project);
@@ -1138,7 +1127,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private List<PhasedUnit> fullTypeCheck(IProject project, 
-    		TypeChecker typeChecker, IProgressMonitor monitor) 
+    		TypeChecker typeChecker, IProgressMonitor mon) 
     				throws CoreException {
 
         List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
@@ -1153,7 +1142,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
-        monitor.beginTask("Typechecking " + listOfUnits.size() + " source files of project " + 
+        SubMonitor monitor = SubMonitor.convert(mon,
+        		"Typechecking " + listOfUnits.size() + " source files of project " + 
                 project.getName(), dependencies.size()*5+listOfUnits.size()*6);
         
         monitor.subTask("- typechecking source archives for project " 
@@ -1256,14 +1246,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     public static TypeChecker parseCeylonModel(IProject project,
-            IProgressMonitor monitor) throws CoreException {
+            IProgressMonitor mon) throws CoreException {
 
     	modelStates.put(project, ModelState.Parsing);
     	typeCheckers.remove(project);
     	projectSources.remove(project);
         
-        monitor.beginTask("Setting up typechecker for project " 
-                + project.getName(), 5);
+        SubMonitor monitor = SubMonitor.convert(mon,
+        		"Setting up typechecker for project " + project.getName(), 5);
 
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1508,10 +1498,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private boolean compile(final IProject project, IJavaProject javaProject, 
     		List<String> options, java.util.List<File> sourceFiles, 
     		final TypeChecker typeChecker, PrintWriter printWriter,
-    		final IProgressMonitor monitor) 
+    		IProgressMonitor mon) 
     				throws VerifyError {
     	
-        monitor.beginTask("Generating binaries for " + sourceFiles.size() + 
+    	final SubMonitor monitor = SubMonitor.convert(mon, 
+        		"Generating binaries for " + sourceFiles.size() + 
         		" source files in project " + project.getName(), 
         		sourceFiles.size());
 
