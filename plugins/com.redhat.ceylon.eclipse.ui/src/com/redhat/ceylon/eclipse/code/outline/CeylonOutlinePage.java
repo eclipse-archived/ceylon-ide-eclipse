@@ -142,6 +142,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         IActionBars actionBars= site.getActionBars();
 
         IToolBarManager toolBarManager= actionBars.getToolBarManager();
+        toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new CollapseAllAction(viewer));
 		toolBarManager.add(new LexicalSortingAction());
 		toolBarManager.add(new HideNonSharedAction());
@@ -157,6 +158,26 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
 		viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
      }
+    
+    private class ExpandAllAction extends Action {
+
+        public ExpandAllAction() {
+            super("Expand All");
+            setToolTipText("Expand All");
+            
+            ImageDescriptor desc= CeylonPlugin.getInstance().image("expandall.gif"); //$NON-NLS-1$
+            setHoverImageDescriptor(desc);
+            setImageDescriptor(desc);
+        }
+
+        public void run() {
+            TreeViewer outlineViewer = getTreeViewer();
+            if (outlineViewer != null) {
+                outlineViewer.expandAll();
+            }
+        }
+        
+    }
 
     class LexicalSortingAction extends Action {
 
