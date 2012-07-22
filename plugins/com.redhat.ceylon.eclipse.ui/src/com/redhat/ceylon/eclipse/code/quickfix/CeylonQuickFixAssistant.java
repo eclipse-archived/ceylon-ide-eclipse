@@ -50,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -57,6 +58,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
@@ -852,7 +854,7 @@ public class CeylonQuickFixAssistant {
                         Tree.Type typeNode = decNode.getType();
                         ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
                         ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
-                                newType, getFile(unit));
+                                newType, getFile(unit), unit.getCompilationUnit());
                     }
                 }
             }
@@ -1247,26 +1249,42 @@ public class CeylonQuickFixAssistant {
 	public static int importType(TextChange tfc, ProducedType type, 
 			Tree.CompilationUnit rootNode) {
 		if (type==null) return 0;
-		TypeDeclaration td = type.getDeclaration();
-		if (td instanceof ClassOrInterface && 
-				td.isToplevel()) {
-			if (!td.getQualifiedNameString().startsWith("ceylon.language")) {
-				boolean imported = false;
-				for (Import i: rootNode.getUnit().getImports()) {
-					if (i.getDeclaration().equals(td)) {
-						imported = true;
+		if (type.getDeclaration() instanceof UnionType) {
+			int result = 0;
+			for (ProducedType t: type.getDeclaration().getCaseTypes()) {
+				result+=importType(tfc, t, rootNode);
+			}
+			return result;
+		}
+		else if (type.getDeclaration() instanceof IntersectionType) {
+			int result = 0;
+			for (ProducedType t: type.getDeclaration().getSatisfiedTypes()) {
+				result+=importType(tfc, t, rootNode);
+			}
+			return result;
+		}
+		else {
+			TypeDeclaration td = type.getDeclaration();
+			if (td instanceof ClassOrInterface && 
+					td.isToplevel()) {
+				if (!td.getQualifiedNameString().startsWith("ceylon.language")) {
+					boolean imported = false;
+					for (Import i: rootNode.getUnit().getImports()) {
+						if (i.getDeclaration().equals(td)) {
+							imported = true;
+						}
+					}
+					if (!imported) {
+						InsertEdit ie = importEdit(rootNode, 
+								((Package)td.getContainer()).getNameAsString(),
+								td.getName());
+						tfc.addEdit(ie);
+						return ie.getText().length();
 					}
 				}
-				if (!imported) {
-					InsertEdit ie = importEdit(rootNode, 
-							((Package)td.getContainer()).getNameAsString(),
-							td.getName());
-					tfc.addEdit(ie);
-					return ie.getText().length();
-				}
 			}
+			return 0;
 		}
-		return 0;
 	}
 
 }
