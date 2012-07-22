@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STY
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -82,7 +81,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
@@ -415,7 +413,7 @@ public class CeylonContentProposer {
 
     private static void addPackageCompletions(int offset, String prefix,
             Node node, List<ICompletionProposal> result, int len, String pfp,
-            CeylonParseController cpc) {
+            final CeylonParseController cpc) {
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
@@ -425,7 +423,7 @@ public class CeylonContentProposer {
         Unit unit = node.getUnit();
         if (unit!=null) { //a null unit can occur if we have not finished parsing the file
             Module module = unit.getPackage().getModule();
-            for (Package p: module.getAllPackages()) {
+            for (final Package p: module.getAllPackages()) {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {
@@ -444,9 +442,13 @@ public class CeylonContentProposer {
                         }
                         if (!already) {
                         	//TOOD: render HTML describing the package!
-                            result.add(new Proposal(offset, prefix, PACKAGE, 
-                                    getDocumentationFor(cpc, p), pkg, 
-                                    pkg.substring(len), false));
+                            result.add(new CompletionProposal(offset, prefix, PACKAGE, 
+                                    pkg, pkg.substring(len), false) {
+                            	@Override
+                            	public String getAdditionalProposalInfo() {
+                            		return getDocumentationFor(cpc, p);
+                            	}
+                            });
                         }
                     }
                 //}
@@ -595,10 +597,10 @@ public class CeylonContentProposer {
         //TODO: type argument substitution using the ProducedReference of the primary node
         if (d instanceof Parameter) {
             Parameter p = (Parameter) d;
-            result.add(new Proposal(offset, prefix, PARAMETER, 
-                    getDocumentationFor(cpc, d), 
-                    getInlineFunctionDescriptionFor(p, null), 
-                    getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)), false));
+            result.add(new DeclarationCompletionProposal(offset, prefix,
+                    getInlineFunctionDescriptionFor(p, null),
+                    getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)),
+                    false, cpc, d));
         }
     }
 
@@ -623,18 +625,23 @@ public class CeylonContentProposer {
         return node.getScope()==d.getNamedArgumentList();
     }
 
-    private static void addRefinementProposal(int offset, String prefix, CeylonParseController cpc,
-            Node node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
+    private static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
+            Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc) {
         if ((d.isDefault() || d.isFormal()) &&
                 node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: if it is equals() or hash, fill in the implementation
-            result.add(new Proposal(offset, prefix, 
+            result.add(new CompletionProposal(offset, prefix, 
                     d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
-                            getDocumentationFor(cpc, d), 
-                            getRefinementDescriptionFor(d, pr), 
-                            getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), false));
+                    getRefinementDescriptionFor(d, pr), 
+                    getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), 
+                    false) {
+            	@Override
+            	public String getAdditionalProposalInfo() {
+            		return getDocumentationFor(cpc, d);
+            	}
+            });
         }
     }
     
@@ -680,10 +687,10 @@ public class CeylonContentProposer {
     }
     
     private static void addBasicProposal(int offset, String prefix, 
-            final CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, final Declaration d, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol) {
-    	result.add(new AutocompletionProposal(offset, prefix,
+    	result.add(new DeclarationCompletionProposal(offset, prefix,
     			getDescriptionFor(dwp, ol), getTextFor(dwp, ol), 
     			true, cpc, d, dwp.isUnimported()));
     }
@@ -708,11 +715,10 @@ public class CeylonContentProposer {
                 else {
                     elemName = d.getName().substring(0, 1);
                 }
-                result.add(new Proposal(offset, prefix, 
-                        CeylonLabelProvider.getImage(d),
-                        getDocumentationFor(cpc, d), 
+                result.add(new DeclarationCompletionProposal(offset, prefix, 
                         "for (" + elemName + " in " + getDescriptionFor(dwp, ol) + ")", 
-                        "for (" + elemName + " in " + getTextFor(dwp, ol) + ") {}", true));
+                        "for (" + elemName + " in " + getTextFor(dwp, ol) + ") {}",
+                		true, cpc, d));
             }
         }
     }
@@ -728,11 +734,10 @@ public class CeylonContentProposer {
     			if (v.getType()!=null &&
     					d.getUnit().isOptionalType(v.getType()) && 
     					!v.isVariable()) {
-    				result.add(new Proposal(offset, prefix, 
-    						CeylonLabelProvider.getImage(d),
-    						getDocumentationFor(cpc, d), 
+    				result.add(new DeclarationCompletionProposal(offset, prefix, 
     						"if (exists " + getDescriptionFor(dwp, ol) + ")", 
-    						"if (exists " + getTextFor(dwp, ol) + ") {}", true));
+    						"if (exists " + getTextFor(dwp, ol) + ") {}", 
+    						true, cpc, d));
     			}
     		}
     	}
@@ -760,11 +765,10 @@ public class CeylonContentProposer {
     					body.append(") {}\n");
     				}
     				body.append(indent);
-    				result.add(new Proposal(offset, prefix, 
-    						CeylonLabelProvider.getImage(d),
-    						getDocumentationFor(cpc, d), 
+    				result.add(new DeclarationCompletionProposal(offset, prefix, 
     						"switch (" + getDescriptionFor(dwp, ol) + ")", 
-    						"switch (" + getTextFor(dwp, ol) + ")\n" + body, true));
+    						"switch (" + getTextFor(dwp, ol) + ")\n" + body, 
+    						true, cpc, d));
     			}
     		}
     	}
@@ -774,11 +778,10 @@ public class CeylonContentProposer {
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol) {
-        result.add(new Proposal(offset, prefix, 
-                CeylonLabelProvider.PARAMETER,
-                getDocumentationFor(cpc, d), 
+        result.add(new DeclarationCompletionProposal(offset, prefix, 
                 getDescriptionFor(dwp, ol), 
-                getTextFor(dwp, ol) + " = bottom;", true));
+                getTextFor(dwp, ol) + " = bottom;", 
+                true, cpc, d));
     }
 
     private static void addInvocationProposals(int offset, String prefix, 
@@ -799,12 +802,12 @@ public class CeylonContentProposer {
             }
             if (!isAbstractClass || ol==EXTENDS) {
                 if (defaulted>0) {
-                    result.add(new AutocompletionProposal(offset, prefix, 
+                    result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
                             getPositionalInvocationTextFor(dwp, ol, pr, false), true,
                             cpc, d, dwp.isUnimported()));
                 }
-                result.add(new AutocompletionProposal(offset, prefix, 
+                result.add(new DeclarationCompletionProposal(offset, prefix, 
                         getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
                         getPositionalInvocationTextFor(dwp, ol, pr, true), true,
                         cpc, d, dwp.isUnimported()));
@@ -814,13 +817,13 @@ public class CeylonContentProposer {
                 //if there is more than one parameter, 
                 //suggest a named argument invocation 
                 if (defaulted>0 && ps.size()-defaulted>1) {
-                    result.add(new AutocompletionProposal(offset, prefix, 
+                    result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, false), 
                             getNamedInvocationTextFor(dwp, pr, false), true,
                             cpc, d, dwp.isUnimported()));
                 }
                 if (ps.size()>1) {
-                    result.add(new AutocompletionProposal(offset, prefix, 
+                    result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, true), 
                             getNamedInvocationTextFor(dwp, pr, true), true,
                             cpc, d, dwp.isUnimported()));
@@ -851,20 +854,28 @@ public class CeylonContentProposer {
             else {
                 text = suggestedName;
             }
-            result.add(new Proposal(offset, "", null, 
-                    "proposed name for new declaration", 
-                    suggestedName, text, false));
+            result.add(new CompletionProposal(offset, "", null,
+                    suggestedName, text, false) /*{
+            	@Override
+            	public String getAdditionalProposalInfo() {
+            		return "proposed name for new declaration";
+            	}
+            }*/);
         }
     }
     
     private static void addKeywordProposals(int offset, String prefix, 
             List<ICompletionProposal> result) {
-        for (String keyword: keywords) {
+        for (final String keyword: keywords) {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
                     /*&& !keyword.equals(prefix)*/) {
-                result.add(new Proposal(offset, prefix, null, 
-                        null, keyword, keyword + " ", 
-                        true));
+                result.add(new CompletionProposal(offset, prefix, null, 
+                		keyword, keyword, true) /*{
+                	@Override
+                	public String getAdditionalProposalInfo() {
+                		return keyword;
+                	}
+                }*/);
             }
         }
     }

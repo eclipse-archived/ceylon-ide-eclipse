@@ -10,17 +10,25 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-final class AutocompletionProposal extends Proposal {
+final class DeclarationCompletionProposal extends CompletionProposal {
+	
 	private final CeylonParseController cpc;
 	private final Declaration d;
 	private final boolean addimport;
 
-	AutocompletionProposal(int offset, String prefix, 
+	DeclarationCompletionProposal(int offset, String prefix, 
+			String desc, String text, boolean selectParams,
+			CeylonParseController cpc, Declaration d) {
+		this(offset, prefix, desc, text, selectParams,
+				cpc, d, false);
+	}
+	
+	DeclarationCompletionProposal(int offset, String prefix, 
 			String desc, String text, boolean selectParams,
 			CeylonParseController cpc, Declaration d, 
 			boolean addimport) {
 		super(offset, prefix, CeylonLabelProvider.getImage(d), 
-				"", desc, text, selectParams);
+				desc, text, selectParams);
 		this.cpc = cpc;
 		this.d = d;
 		this.addimport = addimport;
@@ -32,8 +40,8 @@ final class AutocompletionProposal extends Proposal {
 		if (addimport) {
 			try {
 				importEdit(cpc.getRootNode(), 
-						d.getUnit().getPackage().getNameAsString(), 
-						d.getName())
+					d.getUnit().getPackage().getNameAsString(), 
+					d.getName())
 						.apply(document);
 			} 
 			catch (Exception e) {
