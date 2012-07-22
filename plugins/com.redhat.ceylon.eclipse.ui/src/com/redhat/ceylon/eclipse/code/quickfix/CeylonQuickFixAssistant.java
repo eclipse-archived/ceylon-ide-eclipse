@@ -33,6 +33,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
@@ -46,12 +47,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
@@ -1104,8 +1107,7 @@ public class CeylonQuickFixAssistant {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
             String brokenName = getIdentifyingNode(node).getText();
-            Collection<Declaration> candidates = findImportCandidates(cu, brokenName);
-            for (Declaration decl: candidates) {
+            for (Declaration decl: findImportCandidates(cu, brokenName)) {
                 proposals.add(createImportProposal(cu, file, 
                         decl.getContainer().getQualifiedNameString(), 
                         decl.getName()));
@@ -1116,8 +1118,8 @@ public class CeylonQuickFixAssistant {
     private static Collection<Declaration> findImportCandidates(Tree.CompilationUnit cu, 
             String name) {
         List<Declaration> result = new ArrayList<Declaration>();
-        Module currentModule = cu.getUnit().getPackage().getModule();
-        addImportProposalsForModule(result, currentModule, name);
+        addImportProposalsForModule(result, 
+        		cu.getUnit().getPackage().getModule(), name);
         return result;
     }
 
@@ -1125,7 +1127,7 @@ public class CeylonQuickFixAssistant {
             Module module, String name) {
         for (Package pkg: module.getAllPackages()) {
             Declaration member = pkg.getMember(name, null);
-            if (member != null) {
+            if (member!=null) {
                 output.add(member);
             }
         }
@@ -1235,5 +1237,24 @@ public class CeylonQuickFixAssistant {
             }
         }
     }
+
+	public static void importType(TextChange tfc, ProducedType type, 
+			Tree.CompilationUnit rootNode) {
+		TypeDeclaration td = type.getDeclaration();
+		if (td instanceof ClassOrInterface && 
+				td.isToplevel()) {
+			boolean imported = false;
+			for (Import i: rootNode.getUnit().getImports()) {
+				if (i.getDeclaration().equals(td)) {
+					imported = true;
+				}
+			}
+			if (!imported) {
+				tfc.addEdit(importEdit(rootNode, 
+						((Package)td.getContainer()).getNameAsString(),
+						td.getName()));
+			}
+		}
+	}
 
 }
