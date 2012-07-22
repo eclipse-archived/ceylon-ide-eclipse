@@ -17,6 +17,9 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
@@ -324,22 +327,24 @@ public class CeylonOutlinePage extends ContentOutlinePage
     	CompilationUnit rootNode = parseController.getRootNode();
     	OutlineNodeVisitor v = new OutlineNodeVisitor(event.caretOffset);
     	rootNode.visit(v);
-    	if (v.result!=null) {
+    	if (!v.result.isEmpty()) {
     		//List<CeylonOutlineNode> segments = new ArrayList<CeylonOutlineNode>();
     		//segments.add(new CeylonOutlineNode(rootNode, CeylonOutlineNode.ROOT_CATEGORY));
     		//segments.add(new CeylonOutlineNode(v.result));
-    		setSelection(new TreeSelection(new TreePath(new Object[]{new CeylonOutlineNode(v.result)})));
+    		setSelection(new TreeSelection(new TreePath(v.result.toArray())));
     	}
 		suspend = false;
     }
     
 	class OutlineNodeVisitor extends Visitor {
-		int offset;
+		private final int offset;
+		private final boolean hideNonshared;
 		OutlineNodeVisitor(int offset) {
-			super();
 			this.offset = offset;
+			hideNonshared = CeylonPlugin.getInstance().getPreferenceStore()
+            		.getBoolean("HideNonSharedAction.isChecked");
 		}
-		Node result = null;
+		List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
 		@Override
 		public void visit(Tree.Declaration that) {
 			if ( !(that instanceof Tree.Parameter) &&
@@ -348,32 +353,32 @@ public class CeylonOutlinePage extends ContentOutlinePage
 					!(that instanceof Tree.Variable && 
 							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
 				if (inBounds(that)) {
-					result = that;
+					if (!hideNonshared||that.getDeclarationModel().isShared()) {
+						result.add(new CeylonOutlineNode(that));
+						super.visit(that);
+					}
+				}
+				else {
+					super.visit(that);
 				}
 			}
-			super.visit(that);
+			else {
+				super.visit(that);
+			}
 		}
 		@Override
 		public void visit(Tree.Import that) {
 			if (inBounds(that)) {
-				result = that;
+				result.add(new CeylonOutlineNode(that));
 			}
 			super.visit(that);
 		}
-
 		private boolean inBounds(Node that) {
-			return inBounds(that, that);
-		}					    
-		private boolean inBounds(Node left, Node right) {
-			if (left==null) return false;
-			if (right==null) left=right;
-			Integer tokenStartIndex = left.getStartIndex();
-			Integer tokenStopIndex = right.getStopIndex();
+			Integer tokenStartIndex = that.getStartIndex();
+			Integer tokenStopIndex = that.getStopIndex();
 			return tokenStartIndex!=null && tokenStopIndex!=null &&
-					tokenStartIndex <= offset && 
-					tokenStopIndex+1 >= offset;
+					tokenStartIndex<=offset && tokenStopIndex+1>=offset;
 		}
-
 	}
 	
 }
