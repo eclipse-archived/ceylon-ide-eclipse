@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.PACKAGE_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
 
 import java.util.Stack;
@@ -31,7 +33,7 @@ public class CeylonOutlineBuilder {
 			Package pkg = unit.getPackage();
 			pn.setPackageName(pkg.getQualifiedNameString());
 		}
-		createSubItem(pn, ROOT_CATEGORY);
+		createSubItem(pn, PACKAGE_CATEGORY);
 		//createSubItem(rootNode);
 		/*pushSubItem(rootNode.getImportList());
 		for (Tree.Import i: rootNode.getImportList().getImports()) {
@@ -59,7 +61,7 @@ public class CeylonOutlineBuilder {
 			}
 			else if (that instanceof Tree.ImportList) {
 			    if (!((Tree.ImportList) that).getImports().isEmpty()) {
-                    pushSubItem(that, ROOT_CATEGORY);
+                    pushSubItem(that, IMPORT_LIST_CATEGORY);
                     super.visitAny(that);
                     popSubItem();
 			    }
