@@ -611,25 +611,29 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 		//TODO: add package doc string
 		
-		buffer.append("<hr/>Contains:&nbsp;&nbsp;");
 		boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
 			if (dec instanceof Class && ((Class)dec).isOverloaded()) {
 				continue;
 			}
-			if (first) {
-				first = false;
-			}
-			else {
-				buffer.append(", ");
-			}
-			
-			/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+			if (dec.isShared() && !dec.isAnonymous()) {
+				if (first) {
+					buffer.append("<hr/>Contains:&nbsp;&nbsp;");
+					first = false;
+				}
+				else {
+					buffer.append(", ");
+				}
+
+				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
-			buffer.append("<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>");
+				buffer.append("<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>");
+			}
 		}
-		buffer.append(".<br/>");
+		if (!first) {
+			buffer.append(".<br/>");
+		}
 		
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
@@ -694,26 +698,30 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		
 		if (dec instanceof ClassOrInterface) {
 			if (!dec.getMembers().isEmpty()) {
-				buffer.append("<hr/>Members:&nbsp;&nbsp;");
 				boolean first = true;
 				for (Declaration mem: dec.getMembers()) {
 					if (mem instanceof Method && ((Method)mem).isOverloaded()) {
 						continue;
 					}
-					if (first) {
-						first = false;
-					}
-					else {
-						buffer.append(", ");
-					}
+					if (mem.isShared() && !dec.isAnonymous()) {
+						if (first) {
+							buffer.append("<hr/>Members:&nbsp;&nbsp;");
+							first = false;
+						}
+						else {
+							buffer.append(", ");
+						}
 
-					/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+						/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
-					buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
+						buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
+					}
 				}
-				buffer.append(".<br/>");
-				//extraBreak = true;
+				if (!first) {
+					buffer.append(".<br/>");
+					//extraBreak = true;
+				}
 			}
 		}
 		
