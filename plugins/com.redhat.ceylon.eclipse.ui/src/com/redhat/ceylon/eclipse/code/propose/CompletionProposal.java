@@ -1,30 +1,31 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 
-class Proposal extends SourceProposal {
+class CompletionProposal implements ICompletionProposal, ICompletionProposalExtension4 {
     
     private final String text;
     private final Image image;
     private final boolean selectParams;
     private final int offset;
     private final String prefix;
+    private final String description;
     
-    Proposal(int offset, String prefix, Image image, String doc, 
+    CompletionProposal(int offset, String prefix, Image image,
             String desc, String text, boolean selectParams) {
-        super(desc, text, "", 
-                new Region(offset-prefix.length(), prefix.length()), 
-                offset + text.length(), 
-                doc/*.replaceAll("<a[^>]*>", "").replaceAll("</a>","")*/);
         this.text=text;
         this.image = image;
         this.selectParams = selectParams;
         this.offset = offset;
         this.prefix = prefix;
+        this.description = desc;
     }
     
     @Override
@@ -76,4 +77,32 @@ class Proposal extends SourceProposal {
             return new Point(start, length);
         }
     }
+    
+    public void apply(IDocument document) {
+        try {
+            document.replace(offset-prefix.length(), prefix.length(), text);
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public String getDisplayString() {
+        return description;
+    }
+
+    public String getAdditionalProposalInfo() {
+        return null;
+    }
+
+
+    public IContextInformation getContextInformation() {
+        return null;
+    }
+    
+    @Override
+    public boolean isAutoInsertable() {
+    	return true;
+    }
+
 }
