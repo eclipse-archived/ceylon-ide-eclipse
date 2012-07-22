@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.T
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IToolBarManager;
@@ -141,6 +142,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         IActionBars actionBars= site.getActionBars();
 
         IToolBarManager toolBarManager= actionBars.getToolBarManager();
+        toolBarManager.add(new CollapseAllAction(viewer));
 		toolBarManager.add(new LexicalSortingAction());
 		toolBarManager.add(new HideNonSharedAction());
 		
