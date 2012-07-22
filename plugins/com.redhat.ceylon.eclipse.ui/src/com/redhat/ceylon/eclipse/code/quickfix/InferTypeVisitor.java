@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -92,7 +93,10 @@ class InferTypeVisitor extends Visitor {
         Tree.Term bme = that.getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
             if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
-                intersect(that.getParameter().getType());
+                Parameter p = that.getParameter();
+                if (p!=null) {
+                	intersect(p.getType());
+                }
             }
         }
     }
@@ -102,7 +106,10 @@ class InferTypeVisitor extends Visitor {
         Tree.Term bme = that.getSpecifierExpression().getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
             if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
-                intersect(that.getParameter().getType());
+                Parameter p = that.getParameter();
+                if (p!=null) {
+                	intersect(p.getType());
+                }
             }
         }
     }

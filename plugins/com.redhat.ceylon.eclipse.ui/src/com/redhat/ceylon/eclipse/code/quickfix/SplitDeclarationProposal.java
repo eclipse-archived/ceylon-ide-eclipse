@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
 
 import java.util.Collection;
 
@@ -16,6 +18,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
@@ -47,12 +50,25 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
         Integer offset = decNode.getIdentifier().getStopIndex()+1;
         change.addEdit(new InsertEdit(offset, ";\n" + getIndent(decNode, doc) + dec.getName()));
         Type type = decNode.getType();
+		int il;
         if (type instanceof Tree.LocalModifier) {
             Integer typeOffset = type.getStartIndex();
-            String explicitType = SpecifyTypeProposal.inferType(cu, type);
+            ProducedType infType = inferType(cu, type);
+			String explicitType;
+			if (infType==null) {
+				explicitType = "Object";
+				il=0;
+			}
+			else {
+				explicitType = infType.getProducedTypeName();
+				il=importType(change, infType, cu);
+			}
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }
-        proposals.add(new SplitDeclarationProposal(dec, offset, file, change));
+        else {
+        	il=0;
+        }
+        proposals.add(new SplitDeclarationProposal(dec, offset+il, file, change));
     }
     
 }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -128,23 +130,24 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.ParameterList paramList) {
+            Tree.Declaration decNode, Tree.ParameterList paramList, ProducedType t) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
+        change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
-        change.setEdit(new InsertEdit(offset, def));
+        int il = importType(change, t, unit.getCompilationUnit());
+        change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, 0, offset, file, change));
+                image, 0, offset+il, file, change));
     }
 
     static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body) {
+            Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body, ProducedType t) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Add Attribute", file);
-        MultiTextEdit edit = new MultiTextEdit();
-        change.setEdit(edit);
+        change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
         IDocument doc = CreateProposal.getDocument(change);
         String indent;
@@ -162,11 +165,12 @@ class CreateProposal extends ChangeCorrectionProposal {
             offset2 = statement.getStopIndex()+1;
             indentAfter = "";
         }
-        edit.addChild(new InsertEdit(offset, pdef));
-        edit.addChild(new InsertEdit(offset2, indent+adef+indentAfter));
+        int il = importType(change, t, unit.getCompilationUnit());
+        change.addEdit(new InsertEdit(offset, pdef));
+        change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, 0, offset, file, change));
+                image, 0, offset+il, file, change));
     }
 
 }
