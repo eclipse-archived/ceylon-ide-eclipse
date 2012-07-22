@@ -85,4 +85,15 @@ public class CeylonOutlineNode {
         }
         return sb.toString();
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	return obj instanceof CeylonOutlineNode &&
+    			((CeylonOutlineNode) obj).astNode==astNode;
+    }
+    
+    @Override
+    public int hashCode() {
+    	return astNode.hashCode();
+    }
 }

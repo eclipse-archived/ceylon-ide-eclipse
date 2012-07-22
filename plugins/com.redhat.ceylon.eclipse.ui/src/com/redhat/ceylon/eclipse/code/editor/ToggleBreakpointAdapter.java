@@ -37,7 +37,6 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
         if (selection instanceof ITextSelection) {
             ITextSelection textSel= (ITextSelection) selection;
-
             IEditorPart editorPart= (IEditorPart) part.getAdapter(IEditorPart.class);
             IFileEditorInput fileInput= (IFileEditorInput) editorPart.getEditorInput();
             final IFile origSrcFile= fileInput.getFile();
@@ -46,7 +45,6 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
             IWorkspaceRunnable wr= new IWorkspaceRunnable() {
                 public void run(IProgressMonitor monitor) throws CoreException {
                     IMarker marker = findBreakpointMarker(origSrcFile, lineNumber);
-
                     if (marker != null) {
                         // The following will delete the associated marker
                         clearLineBreakpoint(origSrcFile, lineNumber);
@@ -67,7 +65,6 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     
     private IMarker findBreakpointMarker(IFile srcFile, int lineNumber) throws CoreException {
         IMarker[] markers = srcFile.findMarkers(IBreakpoint.LINE_BREAKPOINT_MARKER, true, IResource.DEPTH_INFINITE);
-
         for (int k = 0; k < markers.length; k++ ){
             if (((Integer) markers[k].getAttribute(IMarker.LINE_NUMBER)).intValue() == lineNumber){
                 return markers[k];
@@ -92,7 +89,6 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     }
 
     public void clearLineBreakpoint(IFile file, int lineNumber) throws CoreException {
-        String srcFileName= file.getName();
         try {
             IBreakpoint lineBkpt= findStratumBreakpoint(file, lineNumber);
 
@@ -106,10 +102,8 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     }
 
     public void disableLineBreakpoint(IFile file, int lineNumber) throws CoreException {
-        String srcFileName= file.getName();
         try {
             IBreakpoint lineBkpt= findStratumBreakpoint(file, lineNumber);
-
             if (lineBkpt != null) {
                 lineBkpt.setEnabled(false);
             }
@@ -120,10 +114,8 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
     }
 
     public void enableLineBreakpoint(IFile file, int lineNumber) throws CoreException {
-        String srcFileName= file.getName();
         try {
             IBreakpoint lineBkpt= findStratumBreakpoint(file, lineNumber);
-
             if (lineBkpt != null) {
                 lineBkpt.setEnabled(true);
             }
@@ -150,7 +142,6 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
         String markerType= "org.eclipse.jdt.debug.javaStratumLineBreakpointMarker";
         IBreakpointManager manager= DebugPlugin.getDefault().getBreakpointManager();
         IBreakpoint[] breakpoints= manager.getBreakpoints(modelId);
-
         for (int i = 0; i < breakpoints.length; i++) {
             if (!(breakpoints[i] instanceof IJavaLineBreakpoint)) {
                 continue;

@@ -199,7 +199,7 @@ public class CeylonEditor extends TextEditor {
     private FoldingActionGroup foldingActionGroup;
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
     private ToggleBreakpointAdapter toggleBreakpointTarget;
-    private CeylonOutlinePage outlinePage;
+    CeylonOutlinePage outlinePage;
     
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
@@ -257,6 +257,7 @@ public class CeylonEditor extends TextEditor {
 		    outlinePage = new CeylonOutlinePage(getParseController(),
 		            new CeylonOutlineBuilder());
 		    parserScheduler.addModelListener(outlinePage);
+		    getSourceViewer().getTextWidget().addCaretListener(outlinePage);
 		    //myOutlinePage.update(parseController);
 		 }
 		 return outlinePage;
