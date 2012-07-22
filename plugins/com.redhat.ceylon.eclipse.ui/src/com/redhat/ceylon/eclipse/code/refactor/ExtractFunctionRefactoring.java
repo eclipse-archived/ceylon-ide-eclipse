@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -358,11 +359,17 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     	         ending = "";
     		}
     		else {
-                type = explicitType || dec.isToplevel() ? 
-                        node.getUnit().denotableType(tt).getProducedTypeName() : "function";
+                ProducedType returnType = node.getUnit().denotableType(tt);
                 ending = "return ";
-    		}
-    		
+                if (explicitType || dec.isToplevel()) {
+                	type = returnType.getProducedTypeName();
+                	importType(tfc, returnType, rootNode);
+                }
+                else {
+                	type = "function";
+                }
+    		}    		
+            
             tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
     		        type + " " + newName + typeParams + "(" + params + ")" + 
                     constraints + 
@@ -377,7 +384,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         IDocument doc = tfc.getCurrentDocument(null);
         
         Tree.Body body = (Tree.Body) node;
-            
+        
         Integer start = statements.get(0).getStartIndex();
         int length = statements.get(statements.size()-1)
                 .getStopIndex()-start+1;
@@ -450,8 +457,21 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        String content = result==null ? "void" : node.getUnit().denotableType(result.getDeclarationModel()
-                .getType()).getProducedTypeName();
+        ProducedType returnType = result==null ? null : node.getUnit()
+        		.denotableType(result.getDeclarationModel().getType());
+        String content;
+        if (result!=null) {
+        	if (explicitType||dec.isToplevel()) {
+        		content = returnType.getProducedTypeName();
+        		importType(tfc, returnType, rootNode);
+        	}
+        	else {
+        		content = "function";
+        	}
+        }
+        else {
+        	content = "void";
+        }
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
         for (Statement s: statements) {
@@ -466,8 +486,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null) {
             String modifs;
             if (result.getDeclarationModel().isShared()) {
-                modifs = "shared " + node.getUnit().denotableType(result.getDeclarationModel()
-                        .getType()).getProducedTypeName() + " ";
+                modifs = "shared " + returnType.getProducedTypeName() + " ";
             }
             else {
                 modifs = "value ";

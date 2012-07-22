@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import org.eclipse.core.runtime.CoreException;
@@ -16,10 +17,12 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
+	
 	private String newName;
 	private boolean explicitType;
 	private boolean getter;
@@ -84,7 +87,9 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 				statNode = anns.getAnnotations().get(0);
 			}
 		}*/
-		String dec = (explicitType ? node.getUnit().denotableType(term.getTypeModel()).getProducedTypeName() : "value") + " " + 
+		ProducedType type = node.getUnit().denotableType(term.getTypeModel());
+		if (explicitType) importType(tfc, type, rootNode);
+		String dec = (explicitType ? type.getProducedTypeName() : "value") + " " + 
         				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
 				dec + "\n" + getIndent(statNode, doc)));
