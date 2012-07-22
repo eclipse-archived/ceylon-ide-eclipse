@@ -132,7 +132,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
-             icon="icons/newftrprj_wiz.gif"
+             icon="icons/jar_l_obj.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.code.wizard.NewModuleWizard">

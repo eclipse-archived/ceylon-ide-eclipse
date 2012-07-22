@@ -198,7 +198,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         reg.put(CEYLON_RENAME, image("correction_rename.png"));
         reg.put(CEYLON_MOVE, image("file_change.png"));
         reg.put(CEYLON_NEW_FILE, image("new_wiz.png"));
-        reg.put(CEYLON_NEW_MODULE, image("newftrprj_wiz.png"));
+        reg.put(CEYLON_NEW_MODULE, image("addlibrary_wiz.png"));
         reg.put(CEYLON_NEW_PACKAGE, image("newpack_wiz.png"));
         reg.put(CEYLON_EXPORT_CAR, image("jar_pack_wiz.png"));
         reg.put(CEYLON_REFS, image("search_ref_obj.png"));
