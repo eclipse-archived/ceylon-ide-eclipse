@@ -47,6 +47,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -184,13 +185,13 @@ public class CeylonQuickFixAssistant {
             if (node instanceof Tree.AttributeDeclaration) {
                 Tree.AttributeDeclaration dec = (Tree.AttributeDeclaration) node;
                 if (dec.getSpecifierOrInitializerExpression()!=null) {
-                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, proposals, 
-                            file, dec);
+                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, 
+                    		proposals, file, dec);
                     ConvertToGetterProposal.addConvertToGetterProposal(doc, proposals, 
                             file, dec);
                 }
-                AddParameterProposal.addParameterProposal(doc, cu, proposals, 
-                        file, dec, editor);
+                AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
+                		dec, editor);
             }
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
@@ -897,12 +898,12 @@ public class CeylonQuickFixAssistant {
                     String tn = t.getProducedTypeName();
                     String def = tn + " " + n + " = " + dv;
                     String desc = "parameter '" + n +"'";
-                    addCreateParameterProposals(proposals, project, def, desc, d);
+                    addCreateParameterProposals(proposals, project, def, desc, d, t);
                     String pdef = n + " = " + dv;
                     String adef = tn + " " + n + ";";
                     String padesc = "attribute '" + n +"'";
                     addCreateParameterAndAttributeProposals(proposals, project, 
-                            pdef, adef, padesc, d);
+                            pdef, adef, padesc, d, t);
                 }
             }
         }
@@ -931,8 +932,8 @@ public class CeylonQuickFixAssistant {
     }
     
     private void addCreateParameterProposals(Collection<ICompletionProposal> proposals,
-            IProject project, String def, String desc, Declaration typeDec) {
-        if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+            IProject project, String def, String desc, Declaration typeDec, ProducedType t) {
+        if (typeDec!=null && typeDec instanceof Functional) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
@@ -944,7 +945,7 @@ public class CeylonQuickFixAssistant {
                             def = ", " + def;
                         }
                         CreateProposal.addCreateParameterProposal(proposals, def, desc, 
-                                PARAMETER, typeDec, unit, decNode, paramList);
+                                PARAMETER, typeDec, unit, decNode, paramList, t);
                         break;
                     }
                 }
@@ -953,7 +954,7 @@ public class CeylonQuickFixAssistant {
     }
 
     private void addCreateParameterAndAttributeProposals(Collection<ICompletionProposal> proposals,
-            IProject project, String pdef, String adef, String desc, Declaration typeDec) {
+            IProject project, String pdef, String adef, String desc, Declaration typeDec, ProducedType t) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
@@ -968,7 +969,7 @@ public class CeylonQuickFixAssistant {
                         }
                         CreateProposal.addCreateParameterAndAttributeProposal(proposals, pdef, 
                                 adef, desc, ATTRIBUTE, typeDec, unit, decNode, 
-                                paramList, body);
+                                paramList, body, t);
                     }
                 }
             }
@@ -1238,7 +1239,7 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-	public static void importType(TextChange tfc, ProducedType type, 
+	public static int importType(TextChange tfc, ProducedType type, 
 			Tree.CompilationUnit rootNode) {
 		TypeDeclaration td = type.getDeclaration();
 		if (td instanceof ClassOrInterface && 
@@ -1250,11 +1251,14 @@ public class CeylonQuickFixAssistant {
 				}
 			}
 			if (!imported) {
-				tfc.addEdit(importEdit(rootNode, 
+				InsertEdit ie = importEdit(rootNode, 
 						((Package)td.getContainer()).getNameAsString(),
-						td.getName()));
+						td.getName());
+				tfc.addEdit(ie);
+				return ie.getText().length();
 			}
 		}
+		return 0;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
 import java.util.Collection;
 
@@ -9,6 +10,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -39,14 +41,25 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file) {
         final Tree.Type type = (Tree.Type) node;
         TextFileChange change =  new TextFileChange("Specify Type", file);
+        change.setEdit(new MultiTextEdit());
         Integer offset = node.getStartIndex();
-        String explicitType = inferType(cu, type);
-        change.setEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
+        ProducedType infType = inferType(cu, type);
+        String explicitType;
+        int il;
+        if (infType!=null) {
+        	explicitType = infType.getProducedTypeName();
+            il = importType(change, infType, cu);
+        }
+        else {
+            explicitType = "Object";
+            il = 0;
+        }
+        change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new SpecifyTypeProposal(offset, file, explicitType, change));
+        proposals.add(new SpecifyTypeProposal(offset+il, file, explicitType, change));
     }
 
-    static String inferType(Tree.CompilationUnit cu,
+    static ProducedType inferType(Tree.CompilationUnit cu,
             final Tree.Type type) {
         InferTypeVisitor itv = new InferTypeVisitor() {
             { unit = type.getUnit(); }
@@ -59,10 +72,7 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
             }            
         };
         itv.visit(cu);
-        ProducedType it = itv.inferredType;
-        String explicitType = it==null ? 
-        		"Object" : it.getProducedTypeName();
-        return explicitType;
+        return itv.inferredType;
     }
     
 }

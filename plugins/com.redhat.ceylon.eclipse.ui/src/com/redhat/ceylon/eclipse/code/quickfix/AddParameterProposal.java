@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
 
 import java.util.Collection;
 
@@ -17,6 +19,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
@@ -82,7 +85,15 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 Type type = decNode.getType();
                 if (type instanceof Tree.LocalModifier) {
                     Integer typeOffset = type.getStartIndex();
-                    String explicitType = SpecifyTypeProposal.inferType(cu, type);
+                    ProducedType infType = inferType(cu, type);
+					String explicitType;
+					if (infType==null) {
+						explicitType = "Object";
+					}
+					else {
+						explicitType = infType.getProducedTypeName();
+						importType(change, infType, cu);
+					}
                     change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
                 }
                 proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
