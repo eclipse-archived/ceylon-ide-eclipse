@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
@@ -38,7 +39,9 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -139,7 +142,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
         IToolBarManager toolBarManager= actionBars.getToolBarManager();
 		toolBarManager.add(new LexicalSortingAction());
-		//TODO: add a control for filtering out non-shared members!!
+		toolBarManager.add(new HideNonSharedAction());
 		
 		MenuManager mm = new MenuManager();
 		mm.add(new GroupMarker("find"));
@@ -216,6 +219,59 @@ public class CeylonOutlinePage extends ContentOutlinePage
                         .setValue("LexicalSortingAction.isChecked", on); //$NON-NLS-1$
             }
         }
+    }
+    
+    private class HideNonSharedAction extends Action {
+        
+        private ViewerFilter filter = new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                Node node = ((CeylonOutlineNode) element).getASTNode();
+                if (node instanceof Tree.Declaration) {
+                    Declaration declaration = ((Tree.Declaration) node).getDeclarationModel();
+                    if (declaration != null) {
+                        return declaration.isShared();
+                    }
+                }
+                return true;
+            }
+        };
+
+        public HideNonSharedAction() {
+            super();
+            setText("Hide non-shared");
+            setToolTipText("Hide non-shared members");
+            setDescription("Hide non-shared members");
+
+            ImageDescriptor desc= CeylonPlugin.getInstance().image("public_co.gif"); //$NON-NLS-1$
+            setHoverImageDescriptor(desc);
+            setImageDescriptor(desc); 
+
+            boolean checked= CeylonPlugin.getInstance().getPreferenceStore().getBoolean("HideNonSharedAction.isChecked"); //$NON-NLS-1$
+            valueChanged(checked, false);
+        }
+
+        public void run() {
+            valueChanged(isChecked(), true);
+        }
+
+        private void valueChanged(final boolean on, boolean store) {
+            final TreeViewer outlineViewer= getTreeViewer();
+            setChecked(on);
+            BusyIndicator.showWhile(outlineViewer.getControl().getDisplay(), new Runnable() {
+                public void run() {
+                    if (on)
+                        outlineViewer.addFilter(filter);
+                    else
+                        outlineViewer.removeFilter(filter);
+                }
+            });
+
+            if (store) {
+                CeylonPlugin.getInstance().getPreferenceStore().setValue("HideNonSharedAction.isChecked", on); //$NON-NLS-1$
+            }
+        }
+        
     }
     
 }
