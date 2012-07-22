@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
@@ -826,7 +827,8 @@ public class CeylonQuickFixAssistant {
             node = ((Tree.Expression) node).getTerm();
         }
         if (node instanceof Tree.Term) {
-            ProducedType type = node.getUnit().denotableType(((Tree.Term) node).getTypeModel());
+            ProducedType type = node.getUnit().denotableType(((Tree.Term) node)
+            		.getTypeModel());
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
@@ -837,13 +839,17 @@ public class CeylonQuickFixAssistant {
                             .getMember(td.getName(), null);
                 }
             }
-            addChangeTypeProposals(proposals, problem, project, type, td);
+            if (node instanceof Tree.BaseMemberExpression){
+            	addChangeTypeProposals(proposals, problem, project, td.getType(), 
+            			(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);
+            }
+            addChangeTypeProposals(proposals, problem, project, type, td, false);
         }
     }
     
     private void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
             ProblemLocation problem, IProject project, ProducedType type, 
-            TypedDeclaration typedDec) {
+            TypedDeclaration typedDec, boolean intersect) {
         if (typedDec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typedDec.getUnit().equals(unit.getUnit())) {
@@ -852,7 +858,9 @@ public class CeylonQuickFixAssistant {
                     Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
                     if (decNode!=null) {
                         Tree.Type typeNode = decNode.getType();
-                        ProducedType newType = unionType(typeNode.getTypeModel(), type, unit.getUnit());
+                        ProducedType newType = intersect ? 
+                        		intersectionType(typeNode.getTypeModel(), type, unit.getUnit()) :
+                        		unionType(typeNode.getTypeModel(), type, unit.getUnit());
                         ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
                                 newType, getFile(unit), unit.getCompilationUnit());
                     }
