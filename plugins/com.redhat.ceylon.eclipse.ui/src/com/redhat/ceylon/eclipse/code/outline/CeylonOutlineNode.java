@@ -19,8 +19,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
 public class CeylonOutlineNode {
 	
+    public static final int ROOT_CATEGORY = -3;
     public static final int DEFAULT_CATEGORY = 0;
-    public static final int ROOT_CATEGORY = -1;
+    public static final int PACKAGE_CATEGORY = -2;
+    public static final int IMPORT_LIST_CATEGORY = -1;
 
     private List<CeylonOutlineNode> fChildren= new ArrayList<CeylonOutlineNode>();
 

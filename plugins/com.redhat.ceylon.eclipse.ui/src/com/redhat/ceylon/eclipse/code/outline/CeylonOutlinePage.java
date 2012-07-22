@@ -167,7 +167,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
             	CeylonOutlineNode t2= (CeylonOutlineNode) e2;
                 int cat1= t1.getCategory();
                 int cat2= t2.getCategory();
-
                 if (cat1 == cat2) {
                     return labelProvider.getText(t1).compareTo(labelProvider.getText(t2));
                 }
@@ -178,10 +177,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         private ViewerComparator fPositionComparator= new ViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                int pos1= getStartOffset(e1);
-                int pos2= getStartOffset(e2);
-
-                return pos1 - pos2;
+                return getStartOffset(e1) - getStartOffset(e2);
             }
         };
 
