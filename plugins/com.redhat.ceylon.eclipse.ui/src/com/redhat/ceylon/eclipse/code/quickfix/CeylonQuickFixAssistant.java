@@ -843,6 +843,10 @@ public class CeylonQuickFixAssistant {
             	addChangeTypeProposals(proposals, problem, project, td.getType(), 
             			(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);
             }
+            if (node instanceof Tree.QualifiedMemberExpression){
+            	addChangeTypeProposals(proposals, problem, project, td.getType(), 
+            			(TypedDeclaration) ((Tree.QualifiedMemberExpression) node).getDeclaration(), true);
+            }
             addChangeTypeProposals(proposals, problem, project, type, td, false);
         }
     }
