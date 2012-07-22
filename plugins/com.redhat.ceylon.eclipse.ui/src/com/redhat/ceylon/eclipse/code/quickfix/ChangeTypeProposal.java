@@ -5,10 +5,10 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -40,14 +40,16 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
     
     static void addChangeTypeProposal(Tree.Type type, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, TypedDeclaration typedDec, 
-            ProducedType newType, IFile file) {
+            ProducedType newType, IFile file, Tree.CompilationUnit cu) {
         TextFileChange change =  new TextFileChange("Change Type", file);
+        change.setEdit(new MultiTextEdit());
         String typeName = newType.getProducedTypeName();
         int offset = type.getStartIndex();
         int length = type.getStopIndex()-offset+1;
-        change.setEdit(new ReplaceEdit(offset, length, typeName));
+        int il = CeylonQuickFixAssistant.importType(change, newType, cu);
+        change.addEdit(new ReplaceEdit(offset, length, typeName));
         proposals.add(new ChangeTypeProposal(problem, file, typedDec.getName(), 
-                typeName, offset, change));
+                typeName, offset+il, change));
     }
     
 }
