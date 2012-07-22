@@ -71,9 +71,10 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
             String desc, Image image, Declaration typeDec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.Body body) {
+            Tree.Declaration decNode, Tree.Body body, ProducedType t) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange("Create Member", file);
+        change.setEdit(new MultiTextEdit());
         IDocument doc = CreateProposal.getDocument(change);
         String indent;
         String indentAfter;
@@ -86,28 +87,32 @@ class CreateProposal extends ChangeCorrectionProposal {
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + CeylonQuickFixAssistant.getIndent(statement, doc);
-            offset = statement.getStopIndex()+1;
-            indentAfter = "";
+            indent = "";
+            offset = statement.getStartIndex();
+            indentAfter = "\n" + CeylonQuickFixAssistant.getIndent(statement, doc);
         }
-        change.setEdit(new InsertEdit(offset, indent+def+indentAfter));
+        int il = importType(change, t, unit.getCompilationUnit());
+        change.addEdit(new InsertEdit(offset, indent+def+indentAfter));
         proposals.add(new CreateProposal(def, 
                 "Create " + desc + " in '" + typeDec.getName() + "'", 
-                image, indent.length(), offset, file, change));
+                image, indent.length(), offset+il, file, change));
     }
 
     static void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
-            boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
+            boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement,
+            ProducedType t) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
+        change.setEdit(new MultiTextEdit());
         IDocument doc = CreateProposal.getDocument(change);
         String indent = CeylonQuickFixAssistant.getIndent(statement, doc);
         int offset = statement.getStartIndex();
         def = def.replace("$indent", indent);
-        change.setEdit(new InsertEdit(offset, def+"\n"+indent));
+        int il = importType(change, t, unit.getCompilationUnit());
+        change.addEdit(new InsertEdit(offset, def+"\n"+indent));
         proposals.add(new CreateProposal(def, 
                 (local ? "Create local " : "Create toplevel ") + desc, 
-                image, 0, offset, file, change));
+                image, 0, offset+il, file, change));
     }
 
     static void addCreateEnumProposal(Collection<ICompletionProposal> proposals, String def,
