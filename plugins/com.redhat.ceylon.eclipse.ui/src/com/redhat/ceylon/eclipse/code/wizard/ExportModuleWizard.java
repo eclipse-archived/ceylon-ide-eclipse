@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPath;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
@@ -95,13 +97,10 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				moduleNames.add(module.getNameAsString());
 			}*/
 			try {
-				//URL platformLoc = Platform.getInstanceLocation().getURL();
 				IPath projectLoc = project.getProject().getLocation().makeAbsolute();
-				projectLoc = projectLoc.uptoSegment(projectLoc.segmentCount()-1);
-				IPath outputDir = project.getOutputLocation();
+				projectLoc = projectLoc.removeLastSegments(1);
+				IPath outputDir = getCeylonModulesOutputPath(project.getProject());
 				File source = projectLoc.append(outputDir).toFile();
-				/*File source = new File(platformLoc.getFile(), 
-						javaProject.getOutputLocation().toFile().getPath());*/
 				File dest = new File(repositoryPath);
 				if (dest.exists()) {
 					copyFolder(source, dest);
