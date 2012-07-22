@@ -16,7 +16,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonNature extends ProjectNatureBase {
     
