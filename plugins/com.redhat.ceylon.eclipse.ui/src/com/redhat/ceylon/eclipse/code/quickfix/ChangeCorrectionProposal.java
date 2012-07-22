@@ -136,18 +136,11 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		}
 	}
 
-	/*
-	 * @see ICompletionProposal#getAdditionalProposalInfo()
-	 */
 	public String getAdditionalProposalInfo() {
 		Object info= getAdditionalProposalInfo(new NullProgressMonitor());
 		return info == null ? null : info.toString();
 	}
 
-	/*
-	 * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension5#getAdditionalProposalInfo(org.eclipse.core.runtime.IProgressMonitor)
-	 * @since 3.5
-	 */
 	public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
 		StringBuffer buf= new StringBuffer();
 		buf.append("<p>"); //$NON-NLS-1$
@@ -171,16 +164,10 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		return buf.toString();
 	}
 
-	/*
-	 * @see ICompletionProposal#getContextInformation()
-	 */
 	public IContextInformation getContextInformation() {
 		return null;
 	}
 
-	/*
-	 * @see ICompletionProposal#getDisplayString()
-	 */
 	public String getDisplayString() {
 		//String shortCutString= CorrectionCommandHandler.getShortCutString(getCommandId());
 		String shortCutString= getCommandId();
@@ -190,9 +177,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		return getName();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension6#getStyledDisplayString()
-	 */
 	public StyledString getStyledDisplayString() {
 		StyledString str= new StyledString(getName());
 
@@ -214,9 +198,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		return fName;
 	}
 
-	/*
-	 * @see ICompletionProposal#getImage()
-	 */
 	public Image getImage() {
 		return fImage;
 	}
@@ -274,9 +255,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		fName= name;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.ui.text.java.IJavaCompletionProposal#getRelevance()
-	 */
 	public int getRelevance() {
 		return fRelevance;
 	}
@@ -289,9 +267,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		fRelevance= relevance;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.internal.ui.text.correction.IShortcutProposal#getProposalId()
-	 */
 	public String getCommandId() {
 		return fCommandId;
 	}
