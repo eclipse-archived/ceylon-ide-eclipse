@@ -419,7 +419,7 @@ public class CeylonPreferencesPage extends PropertyPage {
  	}
 
 	private IFolder getOutputFolder(IProject project) {
-		return project.getFolder(outputPath.makeRelativeTo(project.getLocation()));
+		return project.getFolder(outputPath.removeFirstSegments(1));
 	}
     @Override
     protected Control createContents(Composite composite) {
