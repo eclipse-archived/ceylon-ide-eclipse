@@ -21,12 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -42,8 +41,6 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
@@ -164,22 +161,21 @@ public class CeylonOutlinePage extends ContentOutlinePage
 		});
 
         IPageSite site= getSite();
-        IActionBars actionBars= site.getActionBars();
-
-        IToolBarManager toolBarManager= actionBars.getToolBarManager();
+        IToolBarManager toolBarManager= site.getActionBars().getToolBarManager();
         toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new CollapseAllAction(viewer));
 		toolBarManager.add(new LexicalSortingAction());
 		toolBarManager.add(new HideNonSharedAction());
 		
 		MenuManager mm = new MenuManager();
-		mm.add(new GroupMarker("find"));
+		JavaPlugin.createStandardGroups(mm);
+		/*mm.add(new GroupMarker("find"));
 		mm.add(new Separator());
 		mm.add(new GroupMarker("refactor"));
-		mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+		mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));*/
 		
-		getSite().registerContextMenu(OUTLINE_POPUP_MENU_ID, 
-				mm, getSite().getSelectionProvider());
+		site.registerContextMenu(OUTLINE_POPUP_MENU_ID, mm, getTreeViewer());
+		site.setSelectionProvider(getTreeViewer());
 
 		viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
      }
