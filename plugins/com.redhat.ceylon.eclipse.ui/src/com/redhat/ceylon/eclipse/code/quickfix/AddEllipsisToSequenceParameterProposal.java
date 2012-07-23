@@ -41,7 +41,7 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
             return;
         }
         
-        TextFileChange change = new TextFileChange("Add ... to sequence parameter", file);
+        TextFileChange change = new TextFileChange("Add '...' to iterable argument of sequenced parameter", file);
         change.setEdit(new InsertEdit(term.getStopIndex() + 1, "..."));
         AddEllipsisToSequenceParameterProposal p = new AddEllipsisToSequenceParameterProposal(fiv.parameter, term.getStopIndex() + 4, file, change);
         if ( !proposals.contains(p)) {
@@ -54,7 +54,7 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
     private TypedDeclaration parameter;
     
     private AddEllipsisToSequenceParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
-        super("Add ... to sequence parameter", change, 10, CORRECTION);
+        super("Add '...' to iterable argument of sequenced parameter", change, 10, CORRECTION);
         this.file=file;
         this.offset=offset;
         this.parameter = parameter;
