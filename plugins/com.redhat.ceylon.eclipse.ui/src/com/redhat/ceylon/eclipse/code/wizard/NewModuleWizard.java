@@ -59,7 +59,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
     private IWorkbench workbench;
-    private String version;
+    private String version="1.0.0";
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -145,7 +145,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     ngd.horizontalSpan = 2;
                     ngd.grabExcessHorizontalSpace = true;
                     versionName.setLayoutData(ngd);
-                    versionName.setText("1.0.0");
+                    versionName.setText(version);
                     versionName.addModifyListener(new ModifyListener() {
                         @Override
                         public void modifyText(ModifyEvent e) {
