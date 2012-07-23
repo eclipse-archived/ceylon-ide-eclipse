@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerProblemsDecorator;
 import org.eclipse.jdt.ui.JavaElementLabels;
 import org.eclipse.jface.resource.ImageDescriptor;
