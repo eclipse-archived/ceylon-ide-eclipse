@@ -944,7 +944,7 @@
             <view id="org.eclipse.ui.views.ProgressView"
                   relative="org.eclipse.ui.console.ConsoleView"
                   relationship="stack"/>
-            <view id="org.eclipse.jdt.ui.PackageExplorer"
+            <view id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
                   relative="org.eclipse.ui.editorss"
                   closeable="false"
                   ratio="0.22"
@@ -966,7 +966,7 @@
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
-            <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
@@ -1354,5 +1354,174 @@
             name="Select Enclosing">
       </command>
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Ceylon"
+            id="com.redhat.ceylon.eclipse.ui.views"/>
+      <view
+            name="Ceylon Explorer"
+            icon="icons/package.gif"
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+   </extension>
 
+   <extension
+         point="org.eclipse.jdt.ui.javaElementFilters">
+<!-- Package Explorer -->
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideSystemFiles.label"
+            enabled="true"
+            description="%HideSystemFiles.description"
+            pattern=".*">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideInnerClassFiles.label"
+            enabled="true"
+            description="%HideInnerClassFiles.description"
+            class="org.eclipse.jdt.internal.ui.filters.InnerClassFilesFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.HideInnerClassFilesFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideEmptyPackages.label"
+            enabled="false"
+            description="%HideEmptyPackages.description"
+            class="org.eclipse.jdt.internal.ui.filters.EmptyPackageFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.EmptyPackageFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideEmptyInnerPackages.label"
+            enabled="true"
+            description="%HideEmptyInnerPackages.description"
+            class="org.eclipse.jdt.internal.ui.filters.EmptyInnerPackageFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.EmptyInnerPackageFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideNonJavaElements.label"
+            enabled="false"
+            description="%HideNonJavaElements.description"
+            class="org.eclipse.jdt.internal.ui.filters.NonJavaElementFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.NonJavaElementFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideEmptyLibraryContainers.label"
+            enabled="true"
+            description="%HideEmptyLibraryContainers.description"
+            class="org.eclipse.jdt.internal.ui.filters.EmptyLibraryContainerFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.EmptyLibraryContainerFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideReferencedLibraries.label"
+            enabled="false"
+            description="%HideReferencedLibraries.description"
+            class="org.eclipse.jdt.internal.ui.filters.LibraryFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.LibraryFilter">
+      </filter>      
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideContainedLibraries.label"
+            enabled="false"
+            description="%HideContainedLibraries.description"
+            class="org.eclipse.jdt.internal.ui.filters.ContainedLibraryFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.ContainedLibraryFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideJavaFiles.label"
+            enabled="false"
+            description="%HideJavaFiles.description"
+            class="org.eclipse.jdt.internal.ui.filters.JavaFileFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.CuAndClassFileFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HidePackageDeclaration.label"
+            enabled="true"
+            description="%HidePackageDeclaration.description"
+            class="org.eclipse.jdt.internal.ui.filters.PackageDeclarationFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.PackageDeclarationFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideImportDeclaration.label"
+            enabled="true"
+            description="%HideImportDeclaration.description"
+            class="org.eclipse.jdt.internal.ui.filters.ImportDeclarationFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.ImportDeclarationFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideSyntheticMembers.label"
+            enabled="true"
+            description="%HideSyntheticMembers.description"
+            class="org.eclipse.jdt.internal.ui.filters.SyntheticMembersFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.SyntheticMembersFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideNonJavaProjects.label"
+            enabled="false"
+            description="%HideNonJavaProjects.description"
+            class="org.eclipse.jdt.internal.ui.filters.NonJavaProjectsFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.NonJavaProjectsFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideNonSharedProjects.label"
+            enabled="false"
+            description="%HideNonSharedProjects.description"
+            class="org.eclipse.jdt.internal.ui.filters.NonSharedProjectFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.NonSharedProjectsFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideClosedProjects.label"
+            enabled="false"
+            description="%HideClosedProjects.description"
+            class="org.eclipse.jdt.internal.ui.filters.ClosedProjectFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.ClosedProjectsFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideFields.label"
+            enabled="false"
+            description="%HideFields.description"
+            class="org.eclipse.jdt.internal.ui.filters.FieldsFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.FieldsFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideStatics.label"
+            enabled="false"
+            description="%HideStatics.description"
+            class="org.eclipse.jdt.internal.ui.filters.StaticsFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.StaticsFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideNonPublic.label"
+            enabled="false"
+            description="%HideNonPublic.description"
+            class="org.eclipse.jdt.internal.ui.filters.NonPublicFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.NonPublicFilter">
+      </filter>
+      <filter
+            targetId="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            name="%HideLocalTypes.label"
+            enabled="false"
+            description="%HideLocalTypes.description"
+            class="org.eclipse.jdt.internal.ui.filters.LocalTypesFilter"
+            id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer.LocalTypesFilter">
+      </filter>
+   </extension>
+    
 </plugin>
