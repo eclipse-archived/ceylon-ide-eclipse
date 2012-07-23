@@ -823,7 +823,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
                                 			.replaceAll("\\*([^*]+)\\*", "<em>$1</em>")
                                 			.replaceAll("\n-([^\n]+)", "<li>$1</li>")
                                 			.replaceAll("\n    ([^\n]+)", "<br/><tt>$1</tt>")
-                                			.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>"))
+                                			.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>")
+                                			.replaceAll("\n\n", "<br/>"))
                                 			.append("</p>");
                                 }
                             }
