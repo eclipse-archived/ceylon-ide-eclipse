@@ -14,10 +14,14 @@
 	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="test/classes" path="test-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.3.1-ide.jar" sourcepath="/ceylon-compiler/src"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar" sourcepath="/ceylon-module-resolver"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar" sourcepath="/ceylon-spec/src"/>
 	<classpathentry kind="lib" path="lib/ceylon.language-0.3.1-ide.jar"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.e4.core.di_1.1.0.v20120521-2346.jar"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.e4.ui.model.workbench_0.10.1.v20120523-1955.jar"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.osgi.services_3.3.100.v20120522-1822.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

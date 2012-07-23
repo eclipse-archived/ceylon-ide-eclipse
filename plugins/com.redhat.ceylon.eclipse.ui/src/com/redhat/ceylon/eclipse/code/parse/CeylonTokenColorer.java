@@ -44,7 +44,20 @@ public class CeylonTokenColorer  {
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
     semiAttribute, braceAttribute, packageAttribute;
     
-    private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
+    public CeylonTokenColorer() {
+	    final ITheme currentTheme = getCurrentTheme();        
+	    initColors(currentTheme.getColorRegistry());
+	    currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
+	        @Override
+	        public void propertyChange(PropertyChangeEvent event) {
+	            if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
+	                initColors(currentTheme.getColorRegistry());
+	            }
+	        }
+	    });
+	}
+
+	private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
         return new TextAttribute(color(colorRegistry, key), null, style); 
     }
     
@@ -52,20 +65,7 @@ public class CeylonTokenColorer  {
         return colorRegistry.get(PLUGIN_ID + ".theme.color." + key);
     }
     
-    static {
-        final ITheme currentTheme = getCurrentTheme();        
-        initColors(currentTheme.getColorRegistry());
-        currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
-                    initColors(currentTheme.getColorRegistry());
-                }
-            }
-        });
-    }
-
-	public static ITheme getCurrentTheme() {
+    public static ITheme getCurrentTheme() {
 		return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
 	}
 	
