@@ -28,8 +28,8 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
         
         Tree.Term term = (Tree.Term) node;
         ProducedType type = term.getTypeModel();
-        Interface sequenceDeclaration = type.getDeclaration().getUnit().getSequenceDeclaration();
-        if( type.getSupertype(sequenceDeclaration) == null ) {
+        Interface id = type.getDeclaration().getUnit().getIterableDeclaration();
+        if( type.getSupertype(id) == null ) {
             return;
         }
         
