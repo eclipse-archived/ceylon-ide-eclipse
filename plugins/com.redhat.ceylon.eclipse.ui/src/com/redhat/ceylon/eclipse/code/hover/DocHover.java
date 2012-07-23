@@ -708,6 +708,13 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 				//extraBreak = true;
 			}
 		}
+		if (dec!=dec.getRefinedDeclaration()) {
+			Declaration rd = dec.getRefinedDeclaration();
+			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
+					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
+					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
+					"</tt>", 20, 2);
+		}
 		
 		if (dec instanceof ClassOrInterface) {
 			if (!dec.getMembers().isEmpty()) {
@@ -877,7 +884,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 														+ "." + dn;
 											}
 										}
-										addImageAndLabel(documentation, dec, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
+										addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
 												"<tt>see <a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
 									}
 								}
