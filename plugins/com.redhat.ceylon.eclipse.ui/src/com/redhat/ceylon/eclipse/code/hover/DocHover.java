@@ -92,11 +92,14 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -512,7 +515,17 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 		}
 		Object target = module.getPackage(bits[1]);
 		for (int i=2; i<bits.length; i++) {
-			target = ((Scope) target).getDirectMemberOrParameter(bits[i], null);
+			Scope scope;
+			if (target instanceof Scope) {
+				scope = (Scope) target;
+			}
+			else if (target instanceof TypedDeclaration) {
+				scope = ((TypedDeclaration) target).getType().getDeclaration();
+			}
+			else {
+				return null;
+			}
+			target = scope.getDirectMemberOrParameter(bits[i], null);
 		}
 		return target;
 	}
@@ -853,15 +866,22 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             for (Tree.PositionalArgument arg: args) {
                                 Term term = arg.getExpression().getTerm();
-								if (term instanceof BaseMemberOrTypeExpression) {
-									ProducedReference target = ((BaseMemberOrTypeExpression) term).getTarget();
-									if (target!=null) {
-										Declaration dec = target.getDeclaration();
+								if (term instanceof MemberOrTypeExpression) {
+									Declaration dec = ((MemberOrTypeExpression) term).getDeclaration();
+									if (dec!=null) {
+										String dn = dec.getName();
+										if (term instanceof QualifiedMemberOrTypeExpression) {
+											Primary p = ((QualifiedMemberOrTypeExpression) term).getPrimary();
+											if (p instanceof MemberOrTypeExpression) {
+												dn = ((MemberOrTypeExpression) p).getDeclaration().getName()
+														+ "." + dn;
+											}
+										}
 										addImageAndLabel(documentation, dec, fileUrl(getIcon(dec)).toExternalForm(), 16, 16, 
-												"<tt>see <a "+link(dec)+">"+dec.getName()+"</a></tt>", 20, 2);
+												"<tt>see <a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
 									}
 								}
-								if (term instanceof QualifiedMemberOrTypeExpression) {
+								/*if (term instanceof QualifiedMemberOrTypeExpression) {
 	                            	documentation.append("<p><tt>see ");
 									ProducedReference target = ((QualifiedMemberOrTypeExpression) term).getTarget();
 									if (target!=null) {
@@ -869,7 +889,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 										documentation.append(dec.getQualifiedNameString());
 									}
 									documentation.append("</tt></p>");
-								}
+								}*/
                             }
                             if (!args.isEmpty()) {
                             	documentation.append("<br/>");
