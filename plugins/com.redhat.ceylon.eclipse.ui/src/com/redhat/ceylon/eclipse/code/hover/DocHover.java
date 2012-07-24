@@ -674,7 +674,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			        HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 		}
 
-		if (dec.isShared()) {
+		if (dec.isShared() || dec.isToplevel()) {
 			addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 					16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
 			        getPackageLabel(dec) +"</a></tt>", 20, 2);
