@@ -78,23 +78,28 @@ public final class CeylonHierarchyContentProvider
             for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
                 for (Unit u: p.getUnits()) {
                     for (Declaration d: u.getDeclarations()) {
-                        if (d instanceof ClassOrInterface && 
-                        		this.declaration instanceof TypeDeclaration) {
-                            TypeDeclaration td = (TypeDeclaration) d;
-                            ClassOrInterface etd = td.getExtendedTypeDeclaration();
-                            if (etd!=null) {
-                                add(td, etd);
-                            }
-                            for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-                                add(td, std);
-                            }
-                        }
-                        if (d instanceof TypedDeclaration &&
-                        		this.declaration instanceof TypedDeclaration) {
-                            Declaration rd = getRefinedDeclaration(d);
-                            if (rd!=null) {
-                                add(d, rd);
-                            }
+                        if (d instanceof ClassOrInterface) {
+                        	if (this.declaration instanceof TypeDeclaration) {
+                        		TypeDeclaration td = (TypeDeclaration) d;
+                        		ClassOrInterface etd = td.getExtendedTypeDeclaration();
+                        		if (etd!=null) {
+                        			add(td, etd);
+                        		}
+                        		for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+                        			add(td, std);
+                        		}
+                        	}
+                        	else if (this.declaration instanceof TypedDeclaration) {
+                        		TypeDeclaration td = (TypeDeclaration) d;
+                        		//TODO: keep the directly refined declarations in the model
+                        		//      (get the typechecker to set this up)
+                        		Declaration mem = td.getDirectMember(this.declaration.getName(), null);
+                        		if (mem!=null) {
+                        			for (Declaration id: td.getInheritedMembers(this.declaration.getName())) {
+                        				add(mem, id);
+                        			}
+                        		}                        		
+                        	}
                         }
                     }
                 }
