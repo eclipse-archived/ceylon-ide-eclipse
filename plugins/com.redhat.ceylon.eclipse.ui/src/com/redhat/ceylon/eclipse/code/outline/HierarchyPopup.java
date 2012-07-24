@@ -107,7 +107,7 @@ public class HierarchyPopup extends Popup {
 			}
 			switch (contentProvider.mode) {
 			case HIERARCHY:
-				return "Superclasses generalizing and subtypes refining " + desc;
+				return "Refinement hierarchy of " + desc;
 			case SUPERTYPES:
 				return "Supertypes generalizing " + desc;
 			case SUBTYPES:
@@ -119,7 +119,7 @@ public class HierarchyPopup extends Popup {
 		else {
 			switch (contentProvider.mode) {
 			case HIERARCHY:
-				return "Superclasses and subtypes of " + desc;
+				return "Type hierarchy of " + desc;
 			case SUPERTYPES:
 				return "Supertypes of " + desc;
 			case SUBTYPES:
