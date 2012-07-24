@@ -2350,7 +2350,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 		IPath path = getCeylonModulesOutputPath(project);
 		return path==null ? 
 				project.getFolder("modules") : 
-			    project.getFolder(path.makeRelativeTo(project.getLocation()));
+			    project.getFolder(path.removeFirstSegments(1));
 	}
 
 	public static IPath getCeylonModulesOutputPath(IProject project) {
