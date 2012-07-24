@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_HIER;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SUP;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -128,7 +130,9 @@ public class HierarchyPopup extends Popup {
 	}
 	
 	private Image getIcon() {
-		return CeylonPlugin.getInstance().image(contentProvider!=null && contentProvider.reverse ? "super_co.gif" : "hierarchy_co.gif").createImage();
+		boolean rev = contentProvider!=null && contentProvider.reverse;
+		return CeylonPlugin.getInstance().getImageRegistry()
+				.get(rev ? CEYLON_SUP : CEYLON_HIER);
 	}
 	
 	@Override

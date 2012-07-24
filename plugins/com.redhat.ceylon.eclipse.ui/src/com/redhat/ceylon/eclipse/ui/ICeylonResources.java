@@ -45,6 +45,10 @@ public interface ICeylonResources {
     public static final String CEYLON_DECS = "ceylon_decs";
     public static final String CEYLON_REFS = "ceylon_refs";
     
+    public static final String CEYLON_HIER = "ceylon_hier";
+    public static final String CEYLON_SUP = "ceylon_sup";
+    public static final String CEYLON_SUB = "ceylon_sub";
+    
     public static final String CEYLON_ERR = "ceylon_err";
     public static final String CEYLON_WARN = "ceylon_warn";
     
