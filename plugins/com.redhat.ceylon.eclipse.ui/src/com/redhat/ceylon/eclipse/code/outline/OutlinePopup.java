@@ -141,7 +141,7 @@ public class OutlinePopup extends Popup {
 
     public OutlinePopup(CeylonEditor editor, Shell parent, 
     		int shellStyle, int treeStyle, String commandId) {
-        super(parent, shellStyle, treeStyle, commandId, true);
+        super(parent, shellStyle, treeStyle, commandId);
         setTitleText("Outline of '" + editor.getEditorInput().getName() + "'");
     }
 

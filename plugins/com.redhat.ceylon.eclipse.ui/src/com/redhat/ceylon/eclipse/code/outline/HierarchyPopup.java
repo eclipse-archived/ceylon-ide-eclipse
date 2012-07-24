@@ -5,13 +5,17 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -28,7 +32,7 @@ public class HierarchyPopup extends Popup {
 	private CeylonHierarchyContentProvider contentProvider;
     
     public HierarchyPopup(Shell parent, int shellStyle, int treeStyle, String commandId) {
-        super(parent, shellStyle, treeStyle, commandId, true);
+        super(parent, shellStyle, treeStyle, commandId);
     }
     
     //TODO: this is a copy/paste from AbstractFindAction
@@ -57,17 +61,45 @@ public class HierarchyPopup extends Popup {
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
-        final Object root = new Object();
         labelProvider = new CeylonHierarchyLabelProvider();
         contentProvider = new CeylonHierarchyContentProvider();
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new NamePatternFilter());
-        treeViewer.setInput(root);
         treeViewer.setAutoExpandLevel(ALL_LEVELS);
  		return treeViewer;
 	}
 
+	@Override
+	protected Text createFilterText(Composite parent) {
+		Text result = super.createFilterText(parent);
+		result.addKeyListener(new KeyListener() {
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
+					contentProvider.reverse=!contentProvider.reverse;
+					updateStatusFieldText();
+					stringMatcherUpdated();
+					e.doit=false;
+				}
+			}
+		});
+		return result;
+	}
+	
+	@Override
+	protected String getStatusFieldText() {
+		String key = KeyStroke.getInstance(SWT.MOD1, 'T').format();
+		if (contentProvider.reverse) {
+			return key + " to show subtypes";
+		}
+		else {
+			return key + " to show supertypes";
+		}
+	}
+	
 	@Override
 	protected String getId() {
 		return "org.eclipse.jdt.internal.ui.typehierarchy.QuickHierarchy";
@@ -96,6 +128,7 @@ public class HierarchyPopup extends Popup {
         			setTitleText("Hierarchy of '" + getDescriptionFor(declaration) + "'");
         			input = contentProvider.init(declaration, editor);
         			labelProvider.isMember = !(declaration instanceof TypeDeclaration);
+        	        getTreeViewer().setInput(contentProvider.root);
         		}
         		inputChanged(input, information);
         	}
