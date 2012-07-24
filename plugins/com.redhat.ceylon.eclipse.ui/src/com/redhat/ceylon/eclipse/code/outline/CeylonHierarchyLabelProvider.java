@@ -15,9 +15,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 final class CeylonHierarchyLabelProvider extends
 		StyledCellLabelProvider {
-	boolean isMember;
 	
-	public CeylonHierarchyLabelProvider() {}
+	private final CeylonHierarchyContentProvider contentProvider;
+	
+	public CeylonHierarchyLabelProvider(CeylonHierarchyContentProvider contentProvider) {
+		this.contentProvider = contentProvider;
+	}
 
 	@Override
 	public void removeListener(ILabelProviderListener listener) {}
@@ -51,7 +54,8 @@ final class CeylonHierarchyLabelProvider extends
 
 	Declaration getDisplayedDeclaration(Object element) {
 	    Declaration d = (Declaration) element;
-	    if (isMember && d.isClassOrInterfaceMember()) {
+	    if (contentProvider.isShowingRefinements() && 
+	    		d.isClassOrInterfaceMember()) {
 	        d = (ClassOrInterface) d.getContainer();
 	    }
 	    return d;

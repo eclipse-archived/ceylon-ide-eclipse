@@ -23,43 +23,63 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-final class CeylonHierarchyContentProvider 
+public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
 	
-	public final Object root = new Object();
+	private final CeylonEditor editor;
+	
+	public static final class RootNode {
+		Declaration declaration;
+		public RootNode(Declaration declaration) {
+			this.declaration = declaration;
+		}
+	}
 	
 	boolean reverse = false;
 	
-	private Declaration declaration;
+	Declaration declaration;
 	private Declaration voidDeclaration;
     final private Map<Declaration, Declaration> subtypesOfSupertypes = new HashMap<Declaration, Declaration>();
     final private Map<Declaration, Set<Declaration>> subtypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
     final private Map<Declaration, Set<Declaration>> supertypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
+    
+	CeylonHierarchyContentProvider(CeylonEditor editor) {
+		this.editor = editor;
+	}
 
-	Object init(Declaration declaration, CeylonEditor editor) {
+	private void init(final Declaration declaration) {
+		subtypesOfSupertypes.clear();
+		subtypesOfAllTypes.clear();
+		supertypesOfAllTypes.clear();
 		Modules modules = editor.getParseController().getTypeChecker()
                 .getContext().getModules();
         this.declaration = declaration;
-        while (declaration!=null) {
-            this.voidDeclaration = declaration;
-            Declaration sd;
+        this.voidDeclaration = declaration;
+        Declaration dec = declaration;
+        Declaration superDec;
+        do {
             if (declaration instanceof TypeDeclaration) {
-                sd = ((TypeDeclaration) declaration).getExtendedTypeDeclaration();
+                superDec = ((TypeDeclaration) dec).getExtendedTypeDeclaration();
             }
             else if (declaration instanceof TypedDeclaration){
-                sd = getRefinedDeclaration(declaration);
+				superDec = getRefinedDeclaration(dec);
             }
             else {
-                sd = null;
+                superDec = null;
             }
-            subtypesOfSupertypes.put(sd, declaration);
-            declaration = sd;
-        }
+            if (superDec!=null) {
+            	subtypesOfSupertypes.put(superDec, dec);
+            	dec = superDec;
+            }
+        } 
+        while (superDec!=null);
+    	this.voidDeclaration = dec;
         for (Module m: modules.getListOfModules()) {
             for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
                 for (Unit u: p.getUnits()) {
                     for (Declaration d: u.getDeclarations()) {
-                        if (d instanceof ClassOrInterface) {
+                        if (d instanceof ClassOrInterface && 
+                        		this.declaration instanceof TypeDeclaration) {
                             TypeDeclaration td = (TypeDeclaration) d;
                             ClassOrInterface etd = td.getExtendedTypeDeclaration();
                             if (etd!=null) {
@@ -69,17 +89,17 @@ final class CeylonHierarchyContentProvider
                                 add(td, std);
                             }
                         }
-                        else if (d instanceof TypedDeclaration) {
+                        if (d instanceof TypedDeclaration &&
+                        		this.declaration instanceof TypedDeclaration) {
                             Declaration rd = getRefinedDeclaration(d);
                             if (rd!=null) {
-                                add(rd, d);
+                                add(d, rd);
                             }
                         }
                     }
                 }
             }
         }
-        return root;
 	}
 
 	public void add(Declaration td, Declaration etd) {
@@ -100,8 +120,15 @@ final class CeylonHierarchyContentProvider
 	}
 
 	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		if (newInput!=null)
+			init(((RootNode) newInput).declaration);
+	}
 
+	boolean isShowingRefinements() {
+		return !(declaration instanceof TypeDeclaration);
+	}
+    
 	@Override
 	public void dispose() {}
 
@@ -124,7 +151,7 @@ final class CeylonHierarchyContentProvider
 	@Override
 	public Object[] getChildren(Object parentElement) {
 	    if (reverse) {
-		    if (parentElement==root) {
+		    if (parentElement instanceof RootNode) {
 		        return new Object[] { declaration };
 		    }
 	        Set<Declaration> sdl = supertypesOfAllTypes.get(parentElement);
@@ -136,7 +163,7 @@ final class CeylonHierarchyContentProvider
 	        }
 	    }
 	    else {
-		    if (parentElement==root) {
+		    if (parentElement instanceof RootNode) {
 		        return new Object[] { voidDeclaration };
 		    }
 	    	Declaration sd = subtypesOfSupertypes.get(parentElement);

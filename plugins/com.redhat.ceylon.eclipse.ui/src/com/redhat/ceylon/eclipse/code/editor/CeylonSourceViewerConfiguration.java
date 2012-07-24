@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
@@ -13,6 +15,7 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -29,18 +32,24 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
+import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
+import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
@@ -220,6 +229,15 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	}
     }
 
+    
+    //TODO: this is a copy/paste from AbstractFindAction
+    private static Node getSelectedNode(CeylonEditor editor) {
+        CeylonParseController cpc = editor.getParseController();
+        return cpc.getRootNode()==null ? null : 
+            findNode(cpc.getRootNode(), 
+                (ITextSelection) editor.getSelectionProvider().getSelection());
+    }
+
 	private class HierarchyInformationProvider 
 	        implements IInformationProvider, IInformationProviderExtension {
 		public IRegion getSubject(ITextViewer textViewer, int offset) {
@@ -230,7 +248,17 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			throw new UnsupportedOperationException();
 		}
 		public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-			return editor;
+    		Node selectedNode = getSelectedNode(editor);
+    		Declaration declaration = getReferencedDeclaration(selectedNode);
+    		if (declaration==null) {
+    			FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
+    			fcv.visit(editor.getParseController().getRootNode());
+    			Tree.StatementOrArgument node = fcv.getDeclaration();
+    			if (node instanceof Tree.Declaration) {
+    				declaration = ((Tree.Declaration) node).getDeclarationModel();
+    			}
+    		}
+			return new CeylonHierarchyContentProvider.RootNode(declaration);
 		}
 	}
 
@@ -250,7 +278,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	return new IInformationControlCreator() {
     		@Override
     		public IInformationControl createInformationControl(Shell parent) {
-    			return new HierarchyPopup(parent, 
+    			return new HierarchyPopup(editor, parent, 
     					SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
     		}
     	};

@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -79,6 +80,18 @@ public abstract class Popup extends PopupDialog
         implements IInformationControl, IInformationControlExtension, 
                    IInformationControlExtension2, DisposeListener {
 
+	private static GridLayoutFactory popupLayoutFactory;
+	protected static GridLayoutFactory getPopupLayout() {
+		if (popupLayoutFactory == null) {
+			popupLayoutFactory = GridLayoutFactory.fillDefaults()
+					.margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
+					.spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
+		}
+		return popupLayoutFactory;
+	}
+	
+	protected CeylonEditor editor;
+	
 	/**
 	 * The NamePatternFilter selects the elements which
 	 * match the given string patterns.
@@ -178,8 +191,10 @@ public abstract class Popup extends PopupDialog
 	 * @param invokingCommandId the id of the command that invoked this control or <code>null</code>
 	 * @param showStatusField <code>true</code> iff the control has a status field at the bottom
 	 */
-	public Popup(Shell parent, int shellStyle, int treeStyle, String invokingCommandId) {
+	public Popup(Shell parent, int shellStyle, int treeStyle, 
+			String invokingCommandId, CeylonEditor editor) {
 		super(parent, shellStyle, true, true, false, true, true, null, null);
+		this.editor = editor;
 		/*if (invokingCommandId != null) {
 			ICommandManager commandManager= PlatformUI.getWorkbench().getCommandSupport().getCommandManager();
 			fInvokingCommand= commandManager.getCommand(invokingCommandId);
@@ -300,18 +315,6 @@ public abstract class Popup extends PopupDialog
 
 		addDisposeListener(this);
 		return fTreeViewer.getControl();
-	}
-
-	/**
-	 * Creates a tree information control with the given shell as parent. The given
-	 * styles are applied to the shell and the tree widget.
-	 *
-	 * @param parent the parent shell
-	 * @param shellStyle the additional styles for the shell
-	 * @param treeStyle the additional styles for the tree widget
-	 */
-	public Popup(Shell parent, int shellStyle, int treeStyle) {
-		this(parent, shellStyle, treeStyle, null);
 	}
 
 	protected abstract TreeViewer createTreeViewer(Composite parent, int style);
