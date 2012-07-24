@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_HIER;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SUP;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -26,8 +25,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends Popup {
-
-    private CeylonHierarchyLabelProvider labelProvider;
+	
+	private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
 	private Label iconLabel;
 	
@@ -72,7 +71,7 @@ public class HierarchyPopup extends Popup {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
-					contentProvider.reverse=!contentProvider.reverse;
+					contentProvider.mode=contentProvider.mode.next();
 					updateStatusFieldText();
 					updateTitle();
 					updateIcon();
@@ -87,11 +86,15 @@ public class HierarchyPopup extends Popup {
 	@Override
 	protected String getStatusFieldText() {
 		String key = KeyStroke.getInstance(SWT.MOD1, 'T').format();
-		if (contentProvider.reverse) {
+		switch (contentProvider.mode) {
+		case SUBTYPES:
+			return key + " to show hierarchy";
+		case SUPERTYPES:
 			return key + " to show subtypes";
-		}
-		else {
+		case HIERARCHY:
 			return key + " to show supertypes";
+		default:
+			throw new RuntimeException();
 		}
 	}
 	
@@ -102,14 +105,28 @@ public class HierarchyPopup extends Popup {
 			if (dec.isClassOrInterfaceMember()) {
 				desc += " in " + ((ClassOrInterface) dec.getContainer()).getName();
 			}
-			return (contentProvider.reverse ?
-					"All supertypes that generalize " : 
-					"All subtypes that refine ") + desc;
+			switch (contentProvider.mode) {
+			case HIERARCHY:
+				return "Superclasses generalizing and subtypes refining " + desc;
+			case SUPERTYPES:
+				return "Supertypes generalizing " + desc;
+			case SUBTYPES:
+				return "Subtypes refining " + desc;
+			default:
+				throw new RuntimeException();
+			}
 		}
 		else {
-		    return (contentProvider.reverse ? 
-		    		"All supertypes of " : 
-		    		"Superclasses and all subtypes of ") + desc;
+			switch (contentProvider.mode) {
+			case HIERARCHY:
+				return "Superclasses and subtypes of " + desc;
+			case SUPERTYPES:
+				return "Supertypes of " + desc;
+			case SUBTYPES:
+				return "Subtypes of " + desc;
+			default:
+				throw new RuntimeException();
+			}
 		}
 	}
 	
@@ -130,9 +147,9 @@ public class HierarchyPopup extends Popup {
 	}
 	
 	private Image getIcon() {
-		boolean rev = contentProvider!=null && contentProvider.reverse;
-		return CeylonPlugin.getInstance().getImageRegistry()
-				.get(rev ? CEYLON_SUP : CEYLON_HIER);
+		String img = contentProvider==null ? 
+				CEYLON_HIER : contentProvider.mode.image();
+		return CeylonPlugin.getInstance().getImageRegistry().get(img);
 	}
 	
 	@Override

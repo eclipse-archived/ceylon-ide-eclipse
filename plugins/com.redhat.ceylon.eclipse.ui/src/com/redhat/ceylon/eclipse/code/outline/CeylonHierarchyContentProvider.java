@@ -35,7 +35,7 @@ public final class CeylonHierarchyContentProvider
 		}
 	}
 	
-	boolean reverse = false;
+	HierarachyMode mode = HierarachyMode.HIERARCHY;
 	
 	Declaration declaration;
 	private Declaration voidDeclaration;
@@ -150,10 +150,15 @@ public final class CeylonHierarchyContentProvider
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-	    if (reverse) {
-		    if (parentElement instanceof RootNode) {
-		        return new Object[] { declaration };
-		    }
+	    if (parentElement instanceof RootNode) {
+	    	if (mode==HierarachyMode.HIERARCHY) {
+		        return new Object[] { voidDeclaration };		    		
+	    	}
+	    	else {
+	    		return new Object[] { declaration };
+	    	}
+	    }
+	    if (mode==HierarachyMode.SUPERTYPES) {
 	        Set<Declaration> sdl = supertypesOfAllTypes.get(parentElement);
 	        if (sdl==null) {
 	            return new Object[0];
@@ -163,9 +168,6 @@ public final class CeylonHierarchyContentProvider
 	        }
 	    }
 	    else {
-		    if (parentElement instanceof RootNode) {
-		        return new Object[] { voidDeclaration };
-		    }
 	    	Declaration sd = subtypesOfSupertypes.get(parentElement);
 	    	if (sd!=null) {
 	    		return new Object[] { sd };
