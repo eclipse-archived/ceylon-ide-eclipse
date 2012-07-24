@@ -328,6 +328,9 @@ public class CeylonQuickFixAssistant {
         	addChangeTypeProposals(cu, node, problem, proposals, project);
         	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
+        case 2101:
+            AddEllipsisToSequenceParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
+            break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
         		AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
