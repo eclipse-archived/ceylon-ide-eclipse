@@ -11,8 +11,10 @@ import java.util.Set;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -21,78 +23,117 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-final class CeylonHierarchyContentProvider 
+public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
 	
-	private Object root;
-	private Declaration declaration;
+	private final CeylonEditor editor;
+	
+	public static final class RootNode {
+		Declaration declaration;
+		public RootNode(Declaration declaration) {
+			this.declaration = declaration;
+		}
+	}
+	
+	HierarachyMode mode = HierarachyMode.HIERARCHY;
+	
+	Declaration declaration;
+	private Declaration voidDeclaration;
     final private Map<Declaration, Declaration> subtypesOfSupertypes = new HashMap<Declaration, Declaration>();
     final private Map<Declaration, Set<Declaration>> subtypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
+    final private Map<Declaration, Set<Declaration>> supertypesOfAllTypes = new HashMap<Declaration, Set<Declaration>>();
+    
+	CeylonHierarchyContentProvider(CeylonEditor editor) {
+		this.editor = editor;
+	}
 
-	Object init(Declaration declaration, CeylonEditor editor) {
-		this.root = new Object();
+	private void init(final Declaration declaration) {
+		subtypesOfSupertypes.clear();
+		subtypesOfAllTypes.clear();
+		supertypesOfAllTypes.clear();
 		Modules modules = editor.getParseController().getTypeChecker()
                 .getContext().getModules();
-        while (declaration!=null) {
-            this.declaration = declaration;
-            Declaration sd;
+        this.declaration = declaration;
+        this.voidDeclaration = declaration;
+        Declaration dec = declaration;
+        Declaration superDec;
+        do {
             if (declaration instanceof TypeDeclaration) {
-                sd = ((TypeDeclaration) declaration).getExtendedTypeDeclaration();
+                superDec = ((TypeDeclaration) dec).getExtendedTypeDeclaration();
             }
             else if (declaration instanceof TypedDeclaration){
-                sd = getRefinedDeclaration(declaration);
+				superDec = getRefinedDeclaration(dec);
             }
             else {
-                sd = null;
+                superDec = null;
             }
-            subtypesOfSupertypes.put(sd, declaration);
-            declaration = sd;
-        }
+            if (superDec!=null) {
+            	subtypesOfSupertypes.put(superDec, dec);
+            	dec = superDec;
+            }
+        } 
+        while (superDec!=null);
+    	this.voidDeclaration = dec;
         for (Module m: modules.getListOfModules()) {
             for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
                 for (Unit u: p.getUnits()) {
                     for (Declaration d: u.getDeclarations()) {
                         if (d instanceof ClassOrInterface) {
-                            TypeDeclaration td = (TypeDeclaration) d;
-                            ClassOrInterface etd = td.getExtendedTypeDeclaration();
-                            if (etd!=null) {
-                                Set<Declaration> list = subtypesOfAllTypes.get(etd);
-                                if (list==null) {
-                                    list = new HashSet<Declaration>();
-                                    subtypesOfAllTypes.put(etd, list);
-                                }
-                                list.add(td);
-                            }
-                            for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-                                Set<Declaration> list = subtypesOfAllTypes.get(std);
-                                if (list==null) {
-                                    list = new HashSet<Declaration>();
-                                    subtypesOfAllTypes.put(std, list);
-                                }
-                                list.add(td);
-                            }
-                        }
-                        else if (d instanceof TypedDeclaration) {
-                            Declaration rd = getRefinedDeclaration(d);
-                            if (rd!=null) {
-                                Set<Declaration> list = subtypesOfAllTypes.get(rd);
-                                if (list==null) {
-                                    list = new HashSet<Declaration>();
-                                    subtypesOfAllTypes.put(rd, list);
-                                }
-                                list.add(d);
-                            }
+                        	if (this.declaration instanceof TypeDeclaration) {
+                        		TypeDeclaration td = (TypeDeclaration) d;
+                        		ClassOrInterface etd = td.getExtendedTypeDeclaration();
+                        		if (etd!=null) {
+                        			add(td, etd);
+                        		}
+                        		for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+                        			add(td, std);
+                        		}
+                        	}
+                        	else if (this.declaration instanceof TypedDeclaration) {
+                        		TypeDeclaration td = (TypeDeclaration) d;
+                        		//TODO: keep the directly refined declarations in the model
+                        		//      (get the typechecker to set this up)
+                        		Declaration mem = td.getDirectMember(this.declaration.getName(), null);
+                        		if (mem!=null) {
+                        			for (Declaration id: td.getInheritedMembers(this.declaration.getName())) {
+                        				add(mem, id);
+                        			}
+                        		}                        		
+                        	}
                         }
                     }
                 }
             }
         }
-        return root;
+	}
+
+	public void add(Declaration td, Declaration etd) {
+		Set<Declaration> list = subtypesOfAllTypes.get(etd);
+		if (list==null) {
+		    list = new HashSet<Declaration>();
+		    subtypesOfAllTypes.put(etd, list);
+		}
+		list.add(td);
+		if (!(td instanceof Interface)||!(etd instanceof Class)||td==declaration) {
+			Set<Declaration> list2 = supertypesOfAllTypes.get(td);
+			if (list2==null) {
+				list2 = new HashSet<Declaration>();
+				supertypesOfAllTypes.put(td, list2);
+			}
+			list2.add(etd);
+		}
 	}
 
 	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		if (newInput!=null)
+			init(((RootNode) newInput).declaration);
+	}
 
+	boolean isShowingRefinements() {
+		return !(declaration instanceof TypeDeclaration);
+	}
+    
 	@Override
 	public void dispose() {}
 
@@ -114,21 +155,37 @@ final class CeylonHierarchyContentProvider
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-	    if (parentElement==root) {
-	        return new Object[] { declaration };
+	    if (parentElement instanceof RootNode) {
+	    	if (mode==HierarachyMode.HIERARCHY) {
+		        return new Object[] { voidDeclaration };		    		
+	    	}
+	    	else {
+	    		return new Object[] { declaration };
+	    	}
 	    }
-	    Declaration sd = subtypesOfSupertypes.get(parentElement);
-	    if (sd!=null) {
-	        return new Object[] { sd };
-	    }
-	    else {
-	        Set<Declaration> sdl = subtypesOfAllTypes.get(parentElement);
+	    if (mode==HierarachyMode.SUPERTYPES) {
+	        Set<Declaration> sdl = supertypesOfAllTypes.get(parentElement);
 	        if (sdl==null) {
 	            return new Object[0];
 	        }
 	        else {
 	            return sdl.toArray();
 	        }
+	    }
+	    else {
+	    	Declaration sd = subtypesOfSupertypes.get(parentElement);
+	    	if (sd!=null) {
+	    		return new Object[] { sd };
+	    	}
+	    	else {
+	    		Set<Declaration> sdl = subtypesOfAllTypes.get(parentElement);
+	    		if (sdl==null) {
+	    			return new Object[0];
+	    		}
+	    		else {
+	    			return sdl.toArray();
+	    		}
+	    	}
 	    }
 	}
 }
