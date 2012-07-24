@@ -26,7 +26,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
@@ -141,8 +143,8 @@ public class OutlinePopup extends Popup {
 
     public OutlinePopup(CeylonEditor editor, Shell parent, 
     		int shellStyle, int treeStyle, String commandId) {
-        super(parent, shellStyle, treeStyle, commandId);
-        setTitleText("Outline of '" + editor.getEditorInput().getName() + "'");
+        super(parent, shellStyle, treeStyle, commandId, editor);
+        setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 
 	protected TreeViewer createTreeViewer(Composite parent, int style) {
@@ -170,6 +172,14 @@ public class OutlinePopup extends Popup {
         return "org.eclipse.jdt.internal.ui.text.QuickOutline"; //$NON-NLS-1$
     }
 
+	@Override
+	protected Control createTitleControl(Composite parent) {
+		getPopupLayout().copy().numColumns(3).applyTo(parent);
+		Label label = new Label(parent, SWT.NONE);
+		label.setImage(CeylonPlugin.getInstance().image("outline_co.gif").createImage());
+		return super.createTitleControl(parent);
+	}
+	
     public void setInput(Object information) {
         if (information == null || information instanceof String) {
             inputChanged(null, null);
