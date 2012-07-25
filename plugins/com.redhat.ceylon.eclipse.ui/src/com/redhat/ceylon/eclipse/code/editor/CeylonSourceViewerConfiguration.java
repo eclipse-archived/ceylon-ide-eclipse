@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
-import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
@@ -56,8 +55,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     protected final CeylonEditor editor;
     private final CompletionProcessor processor;
 
-    private InformationPresenter infoPresenter;
-
     public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, 
     		CeylonEditor editor) {
         super(prefStore);
@@ -65,10 +62,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         processor = new CompletionProcessor(editor);
     }
     
-    @Override
+    /*@Override
     public int getTabWidth(ISourceViewer sourceViewer) {
         return editor.getPrefStore().getInt(EDITOR_TAB_WIDTH);
-    }
+    }*/
 
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
@@ -82,20 +79,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant ca= new ContentAssistant() {
         	protected void install() {
-                /*setInformationControlCreator(new AbstractReusableInformationControlCreator() {
-					@Override
-					protected IInformationControl doCreateInformationControl(
-							Shell parent) {
-						return new BrowserInformationControl(parent, 
-								APPEARANCE_JAVADOC_FONT, (String)null) {
-							@Override
-							public Rectangle computeTrim() {
-								Rectangle trim= getShell().computeTrim(0, 0, 0, 0);
-								return trim;
-							}
-						};
-					}
-                });*/
                 setInformationControlCreator(new DocHover(editor)
                         .getHoverControlCreator("Click for focus"));
         		super.install();
@@ -104,7 +87,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
         ca.enableAutoInsert(true);
         ca.enableAutoActivation(true);
+        ca.setAutoActivationDelay(500);
         return ca;
+    }
+
+    @Override
+    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+        return new CeylonQuickFixController(editor);
     }
 
     public CeylonAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
@@ -116,15 +105,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        return new IAutoEditStrategy[] { getAutoEditStrategy() };
+        return new IAutoEditStrategy[] { new CeylonAutoEditStrategy() };
     }
         
-    public CeylonAutoEditStrategy getAutoEditStrategy() {
-        return new CeylonAutoEditStrategy();
-    }
-
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
-        return new DoubleClickStrategy(editor.getParseController()); 
+        return new DoubleClickStrategy(); 
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
@@ -151,8 +136,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         };
     }
 
-    public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
-        /*if (infoPresenter == null) {
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+        return new BestMatchHover(editor);
+    }
+
+    /*public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
+        if (infoPresenter == null) {
             infoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
             infoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
             infoPresenter.setAnchor(ANCHOR_GLOBAL);
@@ -161,17 +150,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
             //infoPresenter.setSizeConstraints(500, 100, true, false);
             //infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
-        }*/
+        }
         return infoPresenter;
     }
 
-    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new BestMatchHover(editor);
-    }
-
-    private static final CeylonOutlineBuilder builder = new CeylonOutlineBuilder();
-
-    /*private final class HoverInformationProvider implements IInformationProvider {
+    private final class HoverInformationProvider implements IInformationProvider {
 		private IAnnotationModel annotationModel= editor.getDocumentProvider()
 				.getAnnotationModel(editor.getEditorInput());
 
@@ -216,38 +199,50 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
 	private class OutlineInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
-		
+		@Override
     	public IRegion getSubject(ITextViewer textViewer, int offset) {
     		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
     	}
+		@Override
     	public String getInformation(ITextViewer textViewer, IRegion subject) {
     		// shouldn't be called, given IInformationProviderExtension???
     		throw new UnsupportedOperationException();
     	}
+		@Override
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return builder.buildTree(editor.getParseController().getRootNode());
+    		return new CeylonOutlineBuilder().buildTree(editor.getParseController().getRootNode());
     	}
     }
-
     
-    //TODO: this is a copy/paste from AbstractFindAction
-    private static Node getSelectedNode(CeylonEditor editor) {
-        CeylonParseController cpc = editor.getParseController();
-        return cpc.getRootNode()==null ? null : 
-            findNode(cpc.getRootNode(), 
-                (ITextSelection) editor.getSelectionProvider().getSelection());
+    public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
+        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
+			@Override
+			public IInformationControl createInformationControl(Shell parent) {
+				return new OutlinePopup(editor, parent, 
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, SHOW_OUTLINE);
+			}
+		});
+        presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        presenter.setAnchor(ANCHOR_GLOBAL);
+        presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
+        presenter.setSizeConstraints(50, 20, true, false);
+        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+        return presenter;
     }
-
-	private class HierarchyInformationProvider 
-	        implements IInformationProvider, IInformationProviderExtension {
-		public IRegion getSubject(ITextViewer textViewer, int offset) {
-			return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
-		}
-		public String getInformation(ITextViewer textViewer, IRegion subject) {
-			// shouldn't be called, given IInformationProviderExtension???
-			throw new UnsupportedOperationException();
-		}
-		public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+    
+    private class HierarchyInformationProvider 
+            implements IInformationProvider, IInformationProviderExtension {
+		@Override
+    	public IRegion getSubject(ITextViewer textViewer, int offset) {
+    		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+    	}
+		@Override
+    	public String getInformation(ITextViewer textViewer, IRegion subject) {
+    		// shouldn't be called, given IInformationProviderExtension???
+    		throw new UnsupportedOperationException();
+    	}
+		@Override
+    	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
     		Node selectedNode = getSelectedNode(editor);
     		Declaration declaration = getReferencedDeclaration(selectedNode);
     		if (declaration==null) {
@@ -258,45 +253,25 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     				declaration = ((Tree.Declaration) node).getDeclarationModel();
     			}
     		}
-			return new CeylonHierarchyContentProvider.RootNode(declaration);
-		}
-	}
-
-    private IInformationControlCreator getOutlinePresenterControlCreator(ISourceViewer sourceViewer, 
-    		final String commandId) {
-    	return new IInformationControlCreator() {
-    		@Override
-    		public IInformationControl createInformationControl(Shell parent) {
-    			return new OutlinePopup(editor, parent, 
-    					SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
-    		}
-    	};
+    		return new CeylonHierarchyContentProvider.RootNode(declaration);
+    	}
+    	//TODO: this is a copy/paste from AbstractFindAction
+    	private Node getSelectedNode(CeylonEditor editor) {
+    		CeylonParseController cpc = editor.getParseController();
+    		return cpc.getRootNode()==null ? null : 
+    			findNode(cpc.getRootNode(), 
+    					(ITextSelection) editor.getSelectionProvider().getSelection());
+    	}
     }
 
-    private IInformationControlCreator getHierarchyPresenterControlCreator(ISourceViewer sourceViewer, 
-    		final String commandId) {
-    	return new IInformationControlCreator() {
-    		@Override
-    		public IInformationControl createInformationControl(Shell parent) {
-    			return new HierarchyPopup(editor, parent, 
-    					SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, commandId);
-    		}
-    	};
-    }
-
-    public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
-        InformationPresenter presenter = new InformationPresenter(getOutlinePresenterControlCreator(sourceViewer, SHOW_OUTLINE));
-        presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-        presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(50, 20, true, false);
-        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
-        return presenter;
-    }
-    
     public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer, boolean b) {
-        InformationPresenter presenter = new InformationPresenter(getHierarchyPresenterControlCreator(sourceViewer, 
-        		"com.redhat.ceylon.eclipse.ui.action.hierarchy"));
+        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
+			@Override
+			public IInformationControl createInformationControl(Shell parent) {
+				return new HierarchyPopup(editor, parent, 
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, "com.redhat.ceylon.eclipse.ui.action.hierarchy");
+			}
+		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
@@ -305,8 +280,4 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return presenter;
     }
 
-    @Override
-    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-        return new CeylonQuickFixController(editor);
-    }
 }

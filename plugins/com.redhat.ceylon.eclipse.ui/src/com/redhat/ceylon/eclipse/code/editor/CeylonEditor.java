@@ -126,7 +126,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
-import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
@@ -218,6 +217,10 @@ public class CeylonEditor extends TextEditor {
         problemMarkerManager= new ProblemMarkerManager();
 	}
 
+	static String[][] getFences() {
+		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
+	}
+    
     /**
      * Sub-classes may override this method to extend the behavior provided by IMP's
      * standard StructuredSourceViewerConfiguration.
@@ -1357,32 +1360,24 @@ extends PreviousSubWordAction implements IUpdate {
         return viewer;
     }
 
-    private void setupMatchingBrackets() {
-        IPreferenceStore store = getPreferenceStore();
-        store.setDefault(MATCHING_BRACKETS, true);
-        Color color = currentTheme.getColorRegistry()
-                    .get(PLUGIN_ID + ".theme.matchingBracketsColor");
-        store.setDefault(MATCHING_BRACKETS_COLOR, 
-                color.getRed() +"," + color.getGreen() + "," + color.getBlue());
-    }
-    
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
-        setupMatchingBrackets();
-
-        CeylonLanguageSyntaxProperties syntaxProps= new CeylonLanguageSyntaxProperties();
-        getPreferenceStore().setValue(MATCHING_BRACKETS, true);
-        if (syntaxProps != null) {
-            String[][] fences= syntaxProps.getFences();
-            if (fences != null) {
-                StringBuilder sb= new StringBuilder();
-                for(int i= 0; i < fences.length; i++) {
-                    sb.append(fences[i][0]);
-                    sb.append(fences[i][1]);
-                }
-                bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
-                support.setCharacterPairMatcher(bracketMatcher);
-                support.setMatchingCharacterPainterPreferenceKeys(MATCHING_BRACKETS, MATCHING_BRACKETS_COLOR);
-            }
+        IPreferenceStore store = getPreferenceStore();
+		store.setDefault(MATCHING_BRACKETS, true);
+		Color color = currentTheme.getColorRegistry()
+		            .get(PLUGIN_ID + ".theme.matchingBracketsColor");
+		store.setDefault(MATCHING_BRACKETS_COLOR, 
+		        color.getRed() +"," + color.getGreen() + "," + color.getBlue());
+        store.setValue(MATCHING_BRACKETS, true);
+        String[][] fences= getFences();
+        if (fences != null) {
+        	StringBuilder sb= new StringBuilder();
+        	for (int i= 0; i < fences.length; i++) {
+        		sb.append(fences[i][0]);
+        		sb.append(fences[i][1]);
+        	}
+        	bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
+        	support.setCharacterPairMatcher(bracketMatcher);
+        	support.setMatchingCharacterPainterPreferenceKeys(MATCHING_BRACKETS, MATCHING_BRACKETS_COLOR);
         }
         super.configureSourceViewerDecorationSupport(support);
     }
@@ -1451,8 +1446,7 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     private boolean isBracket(char character) {
-    	CeylonLanguageSyntaxProperties syntaxProps= CeylonLanguageSyntaxProperties.INSTANCE;
-        String[][] fences= syntaxProps.getFences();
+        String[][] fences= getFences();
         for(int i= 0; i != fences.length; ++i) {
             if (fences[i][0].indexOf(character) >= 0)
                 return true;
