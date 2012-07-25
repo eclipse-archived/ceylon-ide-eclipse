@@ -86,7 +86,11 @@ public final class CeylonHierarchyContentProvider
 		    Declaration superDec;
 		    do {
 		        if (declaration instanceof TypeDeclaration) {
-		            superDec = ((TypeDeclaration) dec).getExtendedTypeDeclaration();
+		            TypeDeclaration td = (TypeDeclaration) dec;
+					superDec = td.getExtendedTypeDeclaration();
+		            if (!td.getSatisfiedTypeDeclarations().isEmpty()) {
+		            	getSubtypePathNode(superDec).setNonUnique(true);
+		            }
 		        }
 		        else if (declaration instanceof TypedDeclaration){
 					superDec = getRefinedDeclaration(dec);
