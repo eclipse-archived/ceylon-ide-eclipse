@@ -663,6 +663,13 @@
             </toolbar>
       </menuContribution>
       <menuContribution
+            locationURI="menu:edit?after=selectAll">
+            <command 
+                  id="selectEnclosing"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+                  label="Select Enclosing"/>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
                 label="Source"

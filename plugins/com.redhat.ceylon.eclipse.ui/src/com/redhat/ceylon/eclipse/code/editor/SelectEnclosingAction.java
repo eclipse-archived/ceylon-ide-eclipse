@@ -7,11 +7,15 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class SelectEnclosingAction extends Action {
     private CeylonEditor fEditor;
-    //private INavigationTargetFinder fNavTargetFinder;
 
     public SelectEnclosingAction() {
         this(null);
@@ -24,32 +28,73 @@ class SelectEnclosingAction extends Action {
     }
 
     public void setEditor(ITextEditor editor) {
-        //fNavTargetFinder= null;
         if (editor instanceof CeylonEditor) {
             fEditor= (CeylonEditor) editor;
-            //fNavTargetFinder= null; //TODO???
         } 
         else {
             fEditor= null;
         }
-        //setEnabled(fNavTargetFinder != null);
-        setEnabled(false);
+        setEnabled(fEditor!=null);
+    }
+    
+    private static class EnclosingVisitor extends Visitor {
+    	private Node node;
+    	private Node current;
+    	private Node result;
+    	private int startOffset; 
+    	private int endOffset;
+    	private EnclosingVisitor(Node node, 
+    			int startOffset, int endOffset) {
+    		this.node = node;
+    		this.startOffset = startOffset;
+    		this.endOffset = endOffset;
+    	}
+		private boolean expandsSelection(Node that) {
+			return that.getStartIndex()<startOffset ||
+					that.getStopIndex()>endOffset;
+		}
+    	@Override
+    	public void visitAny(Node that) {
+    		if (that==node) {
+    			result = current;
+    		}
+    		else {
+    			super.visitAny(that);
+    		}
+    	}
+    	@Override
+    	public void visit(Expression that) {
+    		Node oc = current;
+    		if (expandsSelection(that)) current = that;
+    		super.visit(that);
+    		current = oc;
+    	}
+    	@Override
+    	public void visit(StatementOrArgument that) {
+    		Node oc = current;
+    		if (expandsSelection(that)) current = that;
+    		super.visit(that);
+    		current = oc;
+    	}
     }
 
     @Override
     public void run() {
         IRegion selection= fEditor.getSelectedRegion();
         CeylonParseController pc= fEditor.getParseController();
-        Object curNode= findNode(pc.getRootNode(), selection.getOffset(), 
-        		selection.getOffset() + selection.getLength() - 1);
-        if (curNode == null || selection.getOffset() == 0) {
-            curNode= pc.getRootNode();
+        int startOffset = selection.getOffset();
+		int endOffset = startOffset + selection.getLength() - 1;
+		CompilationUnit rootNode = pc.getRootNode();
+		Node curNode= findNode(rootNode, startOffset, endOffset);
+        if (curNode!=null) {
+        	EnclosingVisitor ev = new EnclosingVisitor(curNode, 
+        			startOffset, endOffset);
+        	ev.visit(rootNode);
+        	Node result = ev.result;
+        	if (result!=null) {
+        		fEditor.selectAndReveal(result.getStartIndex(), 
+        				result.getStopIndex()-result.getStartIndex()+1);
+        	}
         }
-        /*Object enclosing= fNavTargetFinder.getEnclosingConstruct(curNode, pc.getRootNode());
-        if (enclosing != null) {
-            int enclOffset= getStartOffset(enclosing);
-            int enclEnd= getEndOffset(enclosing);
-            fEditor.selectAndReveal(enclOffset, enclEnd - enclOffset + 1);
-        }*/
     }
 }
