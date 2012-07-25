@@ -2,14 +2,18 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -48,63 +52,74 @@ public final class CeylonHierarchyContentProvider
 	}
 
 	private void init(final Declaration declaration) {
-		subtypesOfSupertypes.clear();
-		subtypesOfAllTypes.clear();
-		supertypesOfAllTypes.clear();
-		Modules modules = editor.getParseController().getTypeChecker()
-                .getContext().getModules();
-        this.declaration = declaration;
-        this.voidDeclaration = declaration;
-        Declaration dec = declaration;
-        Declaration superDec;
-        do {
-            if (declaration instanceof TypeDeclaration) {
-                superDec = ((TypeDeclaration) dec).getExtendedTypeDeclaration();
-            }
-            else if (declaration instanceof TypedDeclaration){
-				superDec = getRefinedDeclaration(dec);
-            }
-            else {
-                superDec = null;
-            }
-            if (superDec!=null) {
-            	subtypesOfSupertypes.put(superDec, dec);
-            	dec = superDec;
-            }
-        } 
-        while (superDec!=null);
-    	this.voidDeclaration = dec;
-        for (Module m: modules.getListOfModules()) {
-            for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
-                for (Unit u: p.getUnits()) {
-                    for (Declaration d: u.getDeclarations()) {
-                        if (d instanceof ClassOrInterface) {
-                        	if (this.declaration instanceof TypeDeclaration) {
-                        		TypeDeclaration td = (TypeDeclaration) d;
-                        		ClassOrInterface etd = td.getExtendedTypeDeclaration();
-                        		if (etd!=null) {
-                        			add(td, etd);
-                        		}
-                        		for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-                        			add(td, std);
-                        		}
-                        	}
-                        	else if (this.declaration instanceof TypedDeclaration) {
-                        		TypeDeclaration td = (TypeDeclaration) d;
-                        		//TODO: keep the directly refined declarations in the model
-                        		//      (get the typechecker to set this up)
-                        		Declaration mem = td.getDirectMember(this.declaration.getName(), null);
-                        		if (mem!=null) {
-                        			for (Declaration id: td.getInheritedMembers(this.declaration.getName())) {
-                        				add(mem, id);
-                        			}
-                        		}                        		
-                        	}
-                        }
-                    }
-                }
-            }
-        }
+		this.declaration = declaration;
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException,
+						InterruptedException {
+					subtypesOfSupertypes.clear();
+					subtypesOfAllTypes.clear();
+					supertypesOfAllTypes.clear();
+					Modules modules = editor.getParseController().getTypeChecker()
+			                .getContext().getModules();
+			        Declaration dec = declaration;
+			        Declaration superDec;
+			        do {
+			            if (declaration instanceof TypeDeclaration) {
+			                superDec = ((TypeDeclaration) dec).getExtendedTypeDeclaration();
+			            }
+			            else if (declaration instanceof TypedDeclaration){
+							superDec = getRefinedDeclaration(dec);
+			            }
+			            else {
+			                superDec = null;
+			            }
+			            if (superDec!=null) {
+			            	subtypesOfSupertypes.put(superDec, dec);
+			            	dec = superDec;
+			            }
+			        } 
+			        while (superDec!=null);
+			    	voidDeclaration = dec;
+			        for (Module m: modules.getListOfModules()) {
+			            for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
+			                for (Unit u: p.getUnits()) {
+			                    for (Declaration d: u.getDeclarations()) {
+			                        if (d instanceof ClassOrInterface) {
+			                        	if (declaration instanceof TypeDeclaration) {
+			                        		TypeDeclaration td = (TypeDeclaration) d;
+			                        		ClassOrInterface etd = td.getExtendedTypeDeclaration();
+			                        		if (etd!=null) {
+			                        			add(td, etd);
+			                        		}
+			                        		for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+			                        			add(td, std);
+			                        		}
+			                        	}
+			                        	else if (declaration instanceof TypedDeclaration) {
+			                        		TypeDeclaration td = (TypeDeclaration) d;
+			                        		//TODO: keep the directly refined declarations in the model
+			                        		//      (get the typechecker to set this up)
+			                        		Declaration mem = td.getDirectMember(declaration.getName(), null);
+			                        		if (mem!=null) {
+			                        			for (Declaration id: td.getInheritedMembers(declaration.getName())) {
+			                        				add(mem, id);
+			                        			}
+			                        		}                        		
+			                        	}
+			                        }
+			                    }
+			                }
+			            }
+			        }
+					
+				}
+			});
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void add(Declaration td, Declaration etd) {
