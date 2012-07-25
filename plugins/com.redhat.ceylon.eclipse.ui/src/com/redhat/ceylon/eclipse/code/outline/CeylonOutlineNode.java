@@ -24,7 +24,7 @@ public class CeylonOutlineNode {
     public static final int PACKAGE_CATEGORY = -2;
     public static final int IMPORT_LIST_CATEGORY = -1;
 
-    private List<CeylonOutlineNode> children= new ArrayList<CeylonOutlineNode>();
+    private final List<CeylonOutlineNode> children= new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode parent;
 

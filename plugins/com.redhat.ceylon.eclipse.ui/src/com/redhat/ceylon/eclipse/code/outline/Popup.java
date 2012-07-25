@@ -11,10 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -66,8 +62,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -102,7 +96,6 @@ public abstract class Popup extends PopupDialog
 
 		@Override
 		public boolean select(Viewer viewer, Object parentElement, Object element) {
-			//TODO: re-enable filtering
 			/*JavaElementPrefixPatternMatcher matcher= getMatcher();
 			if (matcher == null || !(viewer instanceof TreeViewer))
 				return true;
@@ -114,6 +107,7 @@ public abstract class Popup extends PopupDialog
 				return true;
 
 			return hasUnfilteredChild(treeViewer, element);*/
+			//TODO: refactor down to OutlinePopup
 			TreeViewer treeViewer= (TreeViewer) viewer;
 			if (element instanceof CeylonOutlineNode) {
 				Node node = ((CeylonOutlineNode)element).getTreeNode();
@@ -128,8 +122,9 @@ public abstract class Popup extends PopupDialog
 					return false;
 				}
 			}
-			else if (element instanceof Declaration) {
-				Declaration dec = (Declaration) element;
+			//TODO: refactor down to HierarchyPopup
+			else if (element instanceof CeylonHierarchyNode) {
+				Declaration dec = ((CeylonHierarchyNode) element).getDeclaration();
 				String name = dec.getName();
 				return name!=null && name.toLowerCase()
 						.startsWith(fFilterText.getText().toLowerCase()) ||
@@ -148,7 +143,7 @@ public abstract class Popup extends PopupDialog
 	}
 
 	/** The control's text widget */
-	private Text fFilterText;
+	protected Text fFilterText;
 	/** The control's tree widget */
 	private TreeViewer fTreeViewer;
 	/** The current string matcher */
@@ -447,24 +442,7 @@ public abstract class Popup extends PopupDialog
 		}
 	}
 	
-    protected void gotoSelectedElement() {
-    	CeylonParseController cpc = ((CeylonEditor) Util.getCurrentEditor()).getParseController();
-		if (cpc!=null) {
-	        Object object = getSelectedElement();
-			if (object instanceof CeylonOutlineNode) {
-	        	dispose();
-	        	gotoNode(((CeylonOutlineNode) object).getTreeNode(),
-	        			cpc.getProject(), cpc.getTypeChecker());
-	        }
-	        if (object instanceof Declaration) {
-	        	dispose();
-	        	Declaration dec = (Declaration) object;
-	        	//TODO: this is broken for Java declarations
-	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	        			cpc.getProject(), cpc.getTypeChecker());
-	        }
-    	}
-    }
+    protected abstract void gotoSelectedElement();
 
 	/**
 	 * Selects the first element in the tree which
@@ -596,18 +574,11 @@ public abstract class Popup extends PopupDialog
 	}
 
 	protected void inputChanged(Object newInput, Object newSelection) {
-		fFilterText.setText("");
-		/*fInitiallySelectedType= null;
-		if (newSelection instanceof IJavaElement) {
-			IJavaElement javaElement= ((IJavaElement)newSelection);
-			if (javaElement.getElementType() == IJavaElement.TYPE)
-				fInitiallySelectedType= (IType)javaElement;
-			else
-				fInitiallySelectedType= (IType)javaElement.getAncestor(IJavaElement.TYPE);
-		}*/
 		fTreeViewer.setInput(newInput);
-		if (newSelection != null)
+		if (newSelection!=null) {
 			fTreeViewer.setSelection(new StructuredSelection(newSelection));
+		}
+		fFilterText.setText("");
 	}
 
 	public void setVisible(boolean visible) {
