@@ -102,36 +102,39 @@ public class EditorAnnotationService implements TreeLifecycleListener {
                 return null;
             }
             else {
-            	//look for a member declared or inherited by 
-            	//the superclass
-                Declaration refined = etd.getMember(dec.getName(), null); //TODO: pass signature?
-                if (refined==null) {
-                    //then the declaration might refine a
-                    //member of a satisfied interface
-                	List<Declaration> allRefined = td.getInheritedMembers(dec.getName());
-                	if (allRefined.isEmpty()) {
-                		//the declaration does not refine
-                		//anything
-                		return null;
-                	}
-                	else if (allRefined.size()==1) {
-                		//the declaration refines exactly one
-                		//member of a satisfied interface 
-                		return allRefined.get(0);
-                	}
-                	else {
-                		//the declaration directly refines two 
-                		//different supertype members, so lets
-                		//just return the topmost refined
-                		//declaration, because at least we know
-                		//it is something unique!
-                		refined = dec.getRefinedDeclaration();
-                		if (refined!=null && refined.equals(dec)) {
-                			refined = null;
-                		}
-                	}
-                }
-                return refined;
+            	//then the declaration might refine a member 
+            	//of a superclass or satisfied interface
+            	List<Declaration> allRefined = td.getInheritedMembers(dec.getName());
+            	if (allRefined.isEmpty()) {
+            		//the declaration does not refine
+            		//anything
+            		return null;
+            	}
+            	else if (allRefined.size()==1) {
+            		//the declaration refines exactly one
+            		//member of a superclass or satisfied 
+            		//interface 
+            		return allRefined.get(0);
+            	}
+            	else {
+            		//the declaration directly refines two 
+            		//different supertype members
+            		//look for a member declared or inherited by 
+            		//the superclass
+            		Declaration refined = etd.getMember(dec.getName(), null); //TODO: pass signature?
+            		if (refined==null) {
+            			//nothing; they are all declared by 
+            			//satisfied interfaces :-(
+            			//lets just return the topmost refined
+            			//declaration, because at least we know
+            			//it is something unique!                        	
+            			refined = dec.getRefinedDeclaration();
+            			if (refined!=null && refined.equals(dec)) {
+            				refined = null;
+            			}
+            		}
+            		return refined;
+            	}
             }
         }
     }

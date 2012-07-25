@@ -31,6 +31,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends Popup {
 	
+	static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
+	
 	private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
 	private Label iconLabel;
@@ -90,14 +92,13 @@ public class HierarchyPopup extends Popup {
 	
 	@Override
 	protected String getStatusFieldText() {
-		String key = KeyStroke.getInstance(SWT.MOD1, 'T').format();
 		switch (contentProvider.mode) {
 		case SUBTYPES:
-			return key + " to show hierarchy";
+			return KEY + " to show hierarchy";
 		case SUPERTYPES:
-			return key + " to show subtypes";
+			return KEY + " to show subtypes";
 		case HIERARCHY:
-			return key + " to show supertypes";
+			return KEY + " to show supertypes";
 		default:
 			throw new RuntimeException();
 		}
@@ -182,9 +183,11 @@ public class HierarchyPopup extends Popup {
 	        	dispose();
 	        	CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
 	        	Declaration dec = hn.getDeclaration();
-	        	//TODO: this is broken for Java declarations
-	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	        			cpc.getProject(), cpc.getTypeChecker());
+	        	if (dec!=null) {
+	        		//TODO: this is broken for Java declarations
+	        		gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
+	        				cpc.getProject(), cpc.getTypeChecker());
+	        	}
 	        }
     	}
     }
