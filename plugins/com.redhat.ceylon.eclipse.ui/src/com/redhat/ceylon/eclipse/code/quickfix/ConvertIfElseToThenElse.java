@@ -20,14 +20,17 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BooleanCondition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfStatement;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.IsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
@@ -152,11 +155,18 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 		
 		if (condition instanceof Tree.ExistsCondition) {
 			Tree.ExistsCondition existsCond = (Tree.ExistsCondition) condition;
-			if (thenStr.equals(getTerm(doc, existsCond.getVariable().getIdentifier()))) {
-				Expression existsExpr = existsCond.getVariable().getSpecifierExpression().getExpression();
+			Variable variable = existsCond.getVariable();
+			if (thenStr.equals(getTerm(doc, variable.getIdentifier()))) {
+				Expression existsExpr = variable.getSpecifierExpression().getExpression();
 				test = getTerm(doc, existsExpr);
 				thenStr = null;
-			}
+			} else {
+				return null; //Disabling because type narrowing does not work with then.
+			}			
+		} else if (! (condition instanceof Tree.BooleanCondition)) {
+			return null; //Disabling because type narrowing does not work with then.
+		} else if (((BooleanCondition)condition).getExpression().getTerm() instanceof IsOp){
+			return null; //Disabling because type narrowing does not work with then.
 		}
 		
 		StringBuilder replace = new StringBuilder();
