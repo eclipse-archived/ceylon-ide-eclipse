@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_HIER;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
@@ -22,6 +25,8 @@ import org.eclipse.swt.widgets.Tree;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends Popup {
@@ -168,4 +173,20 @@ public class HierarchyPopup extends Popup {
         }
 	}
 	
+	@Override
+    protected void gotoSelectedElement() {
+    	CeylonParseController cpc = ((CeylonEditor) Util.getCurrentEditor()).getParseController();
+		if (cpc!=null) {
+	        Object object = getSelectedElement();
+	        if (object instanceof CeylonHierarchyNode) {
+	        	dispose();
+	        	CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
+	        	Declaration dec = hn.getDeclaration();
+	        	//TODO: this is broken for Java declarations
+	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
+	        			cpc.getProject(), cpc.getTypeChecker());
+	        }
+    	}
+    }
+
 }

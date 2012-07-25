@@ -12,6 +12,7 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.action.Action;
@@ -36,6 +37,7 @@ import org.eclipse.swt.widgets.Widget;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends Popup {
@@ -112,14 +114,14 @@ public class OutlinePopup extends Popup {
     }
 
     private class LexicalSortingAction extends Action {
-        private static final String STORE_LEXICAL_SORTING_CHECKED= "LexicalSortingAction.isChecked"; //$NON-NLS-1$
+        private static final String STORE_LEXICAL_SORTING_CHECKED= "LexicalSortingAction.isChecked";
         private TreeViewer fOutlineViewer;
 
         private LexicalSortingAction(TreeViewer outlineViewer) {
             super("Sort", IAction.AS_CHECK_BOX);
             setToolTipText("Sort by name");
             setDescription("Sort entries lexically by name");
-            CeylonPlugin.getInstance().image("alphab_sort_co.gif"); //$NON-NLS-1$
+            CeylonPlugin.getInstance().image("alphab_sort_co.gif");
             fOutlineViewer= outlineViewer;
             boolean checked= getDialogSettings().getBoolean(STORE_LEXICAL_SORTING_CHECKED);
             setChecked(checked);
@@ -147,6 +149,7 @@ public class OutlinePopup extends Popup {
         setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 
+    @Override
 	protected TreeViewer createTreeViewer(Composite parent, int style) {
         Tree tree= new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
         GridData gd= new GridData(GridData.FILL_BOTH);
@@ -168,8 +171,9 @@ public class OutlinePopup extends Popup {
         return treeViewer;
     }
     
+	@Override
     protected String getId() {
-        return "org.eclipse.jdt.internal.ui.text.QuickOutline"; //$NON-NLS-1$
+        return "org.eclipse.jdt.internal.ui.text.QuickOutline";
     }
 
 	@Override
@@ -189,13 +193,34 @@ public class OutlinePopup extends Popup {
         }
     }
 
+    @Override
     protected void fillViewMenu(IMenuManager viewMenu) {
         super.fillViewMenu(viewMenu);
-        //	viewMenu.add(fShowOnlyMainTypeAction); //$NON-NLS-1$
-        viewMenu.add(new Separator("Sorters")); //$NON-NLS-1$
+        //	viewMenu.add(fShowOnlyMainTypeAction);
+        viewMenu.add(new Separator("Sorters"));
         if (lexicalSortingAction != null)
             viewMenu.add(lexicalSortingAction);
         //	viewMenu.add(fSortByDefiningTypeAction);
+    }
+
+    @Override
+    protected void gotoSelectedElement() {
+    	CeylonParseController cpc = editor.getParseController();
+		if (cpc!=null) {
+	        Object object = getSelectedElement();
+			if (object instanceof CeylonOutlineNode) {
+	        	dispose();
+	        	gotoNode(((CeylonOutlineNode) object).getTreeNode(),
+	        			cpc.getProject(), cpc.getTypeChecker());
+	        }
+	        /*if (object instanceof Declaration) {
+	        	dispose();
+	        	Declaration dec = (Declaration) object;
+	        	//TODO: this is broken for Java declarations
+	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
+	        			cpc.getProject(), cpc.getTypeChecker());
+	        }*/
+    	}
     }
 
 }

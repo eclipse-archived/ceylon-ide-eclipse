@@ -53,7 +53,8 @@ final class CeylonHierarchyLabelProvider extends
 	}
 
 	Declaration getDisplayedDeclaration(Object element) {
-	    Declaration d = (Declaration) element;
+		CeylonHierarchyNode n = (CeylonHierarchyNode) element;
+	    Declaration d = n.getDeclaration();
 	    if (contentProvider.isShowingRefinements() && 
 	    		d.isClassOrInterfaceMember()) {
 	        d = (ClassOrInterface) d.getContainer();
