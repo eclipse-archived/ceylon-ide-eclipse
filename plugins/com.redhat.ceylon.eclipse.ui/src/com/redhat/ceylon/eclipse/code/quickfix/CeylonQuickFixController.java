@@ -140,17 +140,19 @@ public class CeylonQuickFixController extends QuickAssistAssistant
         ArrayList<ProblemLocation> problems = new ArrayList<ProblemLocation>();
         // collect problem locations and corrections from marker annotations
         for (Annotation curr: annotations) {
-            ProblemLocation problemLocation = null;
             if (curr instanceof CeylonAnnotation) {
-                problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
+            	ProblemLocation problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
                 if (problemLocation != null) {
                     problems.add(problemLocation);
                 }
             }
-            if (problemLocation == null && addQuickFixes
-                    && curr instanceof SimpleMarkerAnnotation) {
-                collectMarkerProposals((SimpleMarkerAnnotation) curr, proposals);
-            }
+        }
+        if (problems.isEmpty() && addQuickFixes) {
+        	 for (Annotation curr: annotations) {
+                 if (curr instanceof SimpleMarkerAnnotation) {
+                     collectMarkerProposals((SimpleMarkerAnnotation) curr, proposals);
+                 }        		 
+        	 }
         }
 
         ProblemLocation[] problemLocations =

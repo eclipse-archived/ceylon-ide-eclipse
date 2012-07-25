@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
-import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
@@ -358,10 +357,28 @@ public class CeylonQuickFixAssistant {
     private void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        Declaration d = getRefinedDeclaration(decNode.getDeclarationModel()); //TODO: this is wrong!
-        if (d==null) d = decNode.getDeclarationModel();
-        addAddAnnotationProposal(node, "default ", "Make Default", d, 
-                proposals, project);
+        Declaration d = decNode.getDeclarationModel();
+        if (d.isClassOrInterfaceMember()) {
+        	List<Declaration> rds = ((ClassOrInterface)d.getContainer()).getInheritedMembers(d.getName());
+        	Declaration rd=null;
+        	if (rds.isEmpty()) {
+        		rd=d; //TODO: is this really correct? What case does it handle?
+        	}
+        	else {
+        		for (Declaration r: rds) {
+        			if (!r.isDefault()) {
+        				//just take the first one :-/
+            			//TODO: this is very wrong! Instead, make them all default!
+        				rd = r;
+        				break;
+        			}
+        		}
+        	}
+        	if (rd!=null) {
+        		addAddAnnotationProposal(node, "default ", "Make Default", rd, 
+        				proposals, project);
+        	}
+        }
     }
 
     private void addMakeDefaultDecProposal(Collection<ICompletionProposal> proposals, 
