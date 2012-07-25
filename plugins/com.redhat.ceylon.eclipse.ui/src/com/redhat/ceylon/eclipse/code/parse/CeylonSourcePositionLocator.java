@@ -154,7 +154,7 @@ public class CeylonSourcePositionLocator {
     private static Node toNode(Object node) {
         if (node instanceof CeylonOutlineNode) {
         	CeylonOutlineNode treeNode = (CeylonOutlineNode) node;
-            return (Node) treeNode.getASTNode();
+            return (Node) treeNode.getTreeNode();
         }
         else if (node instanceof Node) {
             return getIdentifyingNode((Node) node);

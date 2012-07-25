@@ -116,7 +116,7 @@ public abstract class Popup extends PopupDialog
 			return hasUnfilteredChild(treeViewer, element);*/
 			TreeViewer treeViewer= (TreeViewer) viewer;
 			if (element instanceof CeylonOutlineNode) {
-				Node node = ((CeylonOutlineNode)element).getASTNode();
+				Node node = ((CeylonOutlineNode)element).getTreeNode();
 				if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
 					com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration dec = (com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node;
 					Identifier id = dec.getIdentifier();
@@ -453,7 +453,7 @@ public abstract class Popup extends PopupDialog
 	        Object object = getSelectedElement();
 			if (object instanceof CeylonOutlineNode) {
 	        	dispose();
-	        	gotoNode(((CeylonOutlineNode) object).getASTNode(),
+	        	gotoNode(((CeylonOutlineNode) object).getTreeNode(),
 	        			cpc.getProject(), cpc.getTypeChecker());
 	        }
 	        if (object instanceof Declaration) {

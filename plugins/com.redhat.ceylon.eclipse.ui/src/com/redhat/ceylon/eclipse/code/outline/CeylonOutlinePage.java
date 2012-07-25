@@ -129,7 +129,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (!suspend) {
         	ITreeSelection sel= (ITreeSelection) event.getSelection();
         	if (!sel.isEmpty()) {
-        		Node node = ((CeylonOutlineNode) sel.getFirstElement()).getASTNode();
+        		Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
         		int startOffset= getStartOffset(node);
         		int endOffset= getEndOffset(node);
         		int length= endOffset - startOffset + 1;
@@ -266,7 +266,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         private ViewerFilter filter = new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                Node node = ((CeylonOutlineNode) element).getASTNode();
+                Node node = ((CeylonOutlineNode) element).getTreeNode();
                 if (node instanceof Tree.Declaration) {
                     Declaration declaration = ((Tree.Declaration) node).getDeclarationModel();
                     if (declaration != null) {

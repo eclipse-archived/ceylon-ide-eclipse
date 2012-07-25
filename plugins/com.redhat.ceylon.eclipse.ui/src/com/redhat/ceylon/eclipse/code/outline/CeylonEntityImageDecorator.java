@@ -38,7 +38,7 @@ public class CeylonEntityImageDecorator {
     
     public int getDecorationAttributes(Object entity) {
         if (entity instanceof CeylonOutlineNode) {
-            return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getASTNode());
+            return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getTreeNode());
         }
         if (entity instanceof CeylonElement) {
             return getNodeDecorationAttributes(((CeylonElement) entity).getNode());

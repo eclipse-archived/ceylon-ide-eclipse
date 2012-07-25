@@ -69,7 +69,7 @@ public class OutlinePopup extends Popup {
         protected void internalExpandToLevel(Widget w, int level) {
             if (!fIsFiltering && w instanceof Item) {
                 Item i= (Item) w;
-                Node node = ((CeylonOutlineNode) i.getData()).getASTNode();
+                Node node = ((CeylonOutlineNode) i.getData()).getTreeNode();
                 /*if (node instanceof Declaration) {
                 	boolean shared = ((Declaration) node).getDeclarationModel().isShared();
 					setExpanded(i, shared);

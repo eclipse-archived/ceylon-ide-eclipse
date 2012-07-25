@@ -24,76 +24,62 @@ public class CeylonOutlineNode {
     public static final int PACKAGE_CATEGORY = -2;
     public static final int IMPORT_LIST_CATEGORY = -1;
 
-    private List<CeylonOutlineNode> fChildren= new ArrayList<CeylonOutlineNode>();
+    private List<CeylonOutlineNode> children= new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode parent;
 
-    private final Node astNode;
+    private final Node treeNode;
 
     private final int category;
 
-    public CeylonOutlineNode(Node astNode) {
-        this(astNode, DEFAULT_CATEGORY);
+    CeylonOutlineNode(Node treeNode) {
+        this(treeNode, DEFAULT_CATEGORY);
     }
 
-    public CeylonOutlineNode(Node astNode, int category) {
-        this.astNode= astNode;
+    CeylonOutlineNode(Node treeNode, int category) {
+        this.treeNode= treeNode;
         this.category= category;
     }
 
-    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent) {
-        this(astNode, parent, DEFAULT_CATEGORY);
+    CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent) {
+        this(treeNode, parent, DEFAULT_CATEGORY);
     }
 
-    public CeylonOutlineNode(Node astNode, CeylonOutlineNode parent, 
+    CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent, 
     		int category) {
-        this.astNode= astNode;
+        this.treeNode= treeNode;
         this.parent= parent;
         this.category= category;
     }
 
-    public void addChild(CeylonOutlineNode child) {   
-        fChildren.add(child);
+    void addChild(CeylonOutlineNode child) {   
+        children.add(child);
     }
 
     public List<CeylonOutlineNode> getChildren() {
-        return fChildren;
+        return children;
     }
 
     public CeylonOutlineNode getParent() {
         return parent;
     }
 
-    public Node getASTNode() {
-        return astNode;
+    public Node getTreeNode() {
+        return treeNode;
     }
 
     public int getCategory() {
         return category;
     }
 
-    public String toString() {
-        StringBuilder sb= new StringBuilder();
-
-        sb.append(astNode.toString());
-        if (!fChildren.isEmpty()) {
-            sb.append(" [");
-            for(CeylonOutlineNode child: fChildren) {
-                sb.append(child);
-            }
-            sb.append(" ]");
-        }
-        return sb.toString();
-    }
-    
     @Override
     public boolean equals(Object obj) {
     	return obj instanceof CeylonOutlineNode &&
-    			((CeylonOutlineNode) obj).astNode==astNode;
+    			((CeylonOutlineNode) obj).treeNode==treeNode;
     }
     
     @Override
     public int hashCode() {
-    	return astNode.hashCode();
+    	return treeNode.hashCode();
     }
 }

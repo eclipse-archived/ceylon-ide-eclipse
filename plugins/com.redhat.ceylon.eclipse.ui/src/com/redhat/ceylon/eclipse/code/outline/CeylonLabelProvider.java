@@ -193,7 +193,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static Image getImageFor(CeylonOutlineNode n) {
-        return getImageFor((Node) n.getASTNode());
+        return getImageFor((Node) n.getTreeNode());
     }
     
     private static Image getImageFor(Node n) {
@@ -304,7 +304,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     @Override
     public StyledString getStyledText(Object element) {
         if (element instanceof CeylonOutlineNode) {
-            return getStyledLabelFor((Node) ((CeylonOutlineNode) element).getASTNode());
+            return getStyledLabelFor((Node) ((CeylonOutlineNode) element).getTreeNode());
         }
         else if (element instanceof IFile) {
             return new StyledString(getLabelForFile((IFile) element));
