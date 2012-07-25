@@ -97,17 +97,6 @@ public class TestConvertIfElseToThenElse {
 		"	}", 
         "return test then x else (v1 := \"\");"); 
 	}
-	
-	@Test
-	public void testIfExistsReturnOtherObject() throws Exception {
-        testConversion("if (exists obj) {\n" + 
-		"		return x;\n" + 
-		"	}\n" + 
-		"	else {\n" + 
-		"		return default;\n" + 
-		"	}", 
-		"return exists obj then x else default;"); 
-	}
 
 	@Test
 	public void testDeclareThenElse() throws Exception {
@@ -452,6 +441,84 @@ public class TestConvertIfElseToThenElse {
 				"} else {\n" +
 				"	print(y);\n" +
 				"}");
+	}
+	
+	@Test
+	public void testExistsWithVariableAssignemt() throws  Exception {
+		//Wont't work because of compiler limitation
+		testNoConversion("if (exists f = process.first()) {\n" + 
+				"	return \"hello\";\n" + 
+				"} else {\n" + 
+				"	return \"hi\";\n" + 
+				"}");
+	}
+	
+	
+	@Test
+	public void testTypeNarrowingIsCondition() throws  Exception {
+		//Wont't work because of compiler limitation
+		 testNoConversion("if (obj is String) {\n" + 
+			"	return obj;\n" + 
+			"} else {\n" + 
+			"	return \"hi\";\n" + 
+			"}");
+			//, "return obj is String then obj else \"hi\";"); 
+	}
+
+	@Test
+	public void testTypeNarrowingEmptyCondition() throws  Exception {
+		//Wont't work because of compiler limitation
+		 testNoConversion("if (nonempty arr) {\n" + 
+			"	return arr.first;\n" + 
+			"} else {\n" + 
+			"	return \"\";\n" + 
+			"}");
+			//, "return nonempty arr then arr.first else \"\";"); 
+	}
+
+	@Test
+	public void testTypeNarrowingExistsCondition() throws  Exception {
+		//Wont't work because of compiler limitation
+		 testNoConversion("if (exists obj) {\n" + 
+			"	return obj.attr;\n" + 
+			"} else {\n" + 
+			"	return \"\";\n" + 
+			"}");
+			//, "return exists obj then obj.attr else \"\";"); 
+	}
+
+	@Test
+	public void testIfExistsReturnOtherObject() throws Exception {
+		//Has been disabled even if it would work because other variations that currently won't work 
+        testNoConversion("if (exists obj) {\n" + 
+		"		return x;\n" + 
+		"	}\n" + 
+		"	else {\n" + 
+		"		return default;\n" + 
+		"	}");
+		//, "return exists obj then x else default;"); 
+	}	
+	
+	@Test
+	public void testIsCondition() throws  Exception {
+		//Has been disabled even if it would work because other variations that currently won't work 
+		 testNoConversion("if (obj is String) {\n" + 
+			"	return \"hello\";\n" + 
+			"} else {\n" + 
+			"	return \"hi\";\n" + 
+			"}");
+			//, "return obj is String then \"hello\" else \"hi\";"); 
+	}
+	
+	@Test
+	public void testNonemptyCondition() throws  Exception {
+		//Has been disabled even if it would work because other variations that currently won't work 
+		 testNoConversion("if (nonempty list) {\n" + 
+			"	return \"hello\";\n" + 
+			"} else {\n" + 
+			"	return \"hi\";\n" + 
+			"}");
+			//, "return nonempty list then \"hello\" else \"hi\";"); 
 	}
 	
 	private void testNoConversion(String testStr) throws Exception {
