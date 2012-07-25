@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getFences;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultTextDoubleClickStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -7,37 +9,19 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-
-/**
- * IMP implementation of ITextDoubleClickStrategy, which appeals to the language-
- * specific implementation of ILanguageSyntaxProperties to get information, or if there
- * is none, falls back to the information provided by the somewhat generic
- * LanguageSyntaxPropertiesBase.
- * @author rfuhrer, ataylor
- */
 public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
-    private final CeylonParseController fParseController;
+	
     protected final IdentifierDetector fWordDetector;
-    protected final CeylonLanguageSyntaxProperties fSyntaxProps;
     protected final DefaultCharacterPairMatcher fPairMatcher;
 
-    public DoubleClickStrategy(CeylonParseController pc) {
-        fParseController = pc;
+    public DoubleClickStrategy() {
         fWordDetector = new IdentifierDetector();
-
         StringBuilder sb= new StringBuilder();
-
-        fSyntaxProps= CeylonLanguageSyntaxProperties.INSTANCE;
-        String[][] fences= fSyntaxProps.getFences();
-        if (fences != null) {
-        	for(int i= 0; i < fences.length; i++) {
-        		sb.append(fences[i][0]);
-        		sb.append(fences[i][1]);
-        	}
+        String[][] fences= getFences();
+        for(int i= 0; i < fences.length; i++) {
+        	sb.append(fences[i][0]);
+        	sb.append(fences[i][1]);
         }
-
         fPairMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
     }
    
@@ -82,15 +66,15 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
         }
 
         private boolean isIdentifierStart(char c) {
-            return fSyntaxProps.isIdentifierStart(c);
+            return Character.isJavaIdentifierStart(c) && c!='$';
         }
 
         private boolean isIdentifierPart(char c) {
-            return fSyntaxProps.isIdentifierPart(c);
+            return Character.isJavaIdentifierPart(c) && c!='$';
         }
 
         private boolean isWhitespace(char c) {
-            return fSyntaxProps.isWhitespace(c);
+            return c==' '||c=='\r'||c=='\n'||c=='\t'||c=='\f';
         }
 
         /**
@@ -136,6 +120,14 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
                         return true;
                     }
                     return false;
+				case UNKNOWN:
+					if (c == '.') {
+						fEnd= offset - 1;
+						fState= IDS;
+						fAnchorState= fState;
+						return true;
+					}
+					return false;
                 default:
                     return false;
             }
@@ -247,7 +239,7 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
                 }
 
                 offset= anchor; // use to not select the previous word when right behind it
-                //             offset= anchor - 1; // use to select the previous word when right behind it
+                //offset= anchor - 1; // use to select the previous word when right behind it
                 while (offset >= min) {
                     c= document.getChar(offset);
                     if (!backward(c, offset))
@@ -256,7 +248,8 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
                 }
 
                 return new Region(fStart, fEnd - fStart + 1);
-            } catch (BadLocationException x) {
+            } 
+            catch (BadLocationException x) {
                 return new Region(anchor, 0);
             }
         }
@@ -268,15 +261,7 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
     }
 
     protected IRegion findExtendedDoubleClickSelection(IDocument document, int offset) {
-        IRegion seed= new Region(offset, 1);
-        IRegion extendedRegion= fSyntaxProps.getDoubleClickRegion(offset, fParseController);
-
-        if (extendedRegion != null && !extendedRegion.equals(seed)) {
-            return extendedRegion;
-        }
-
         IRegion match= fPairMatcher.match(document, offset);
-
         if (match != null && match.getLength() >= 2)
             return new Region(match.getOffset() + 1, match.getLength() - 2);
         return findWord(document, offset);

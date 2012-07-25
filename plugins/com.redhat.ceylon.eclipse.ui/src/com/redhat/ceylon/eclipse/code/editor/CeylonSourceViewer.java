@@ -21,7 +21,6 @@ import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -31,9 +30,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-
-import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
-import com.redhat.ceylon.eclipse.code.parse.CeylonLanguageSyntaxProperties;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -123,7 +119,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         IDocument doc= this.getDocument();
         DocumentRewriteSession rewriteSession= null;
         Point p= this.getSelectedRange();
-        final String lineCommentPrefix= CeylonLanguageSyntaxProperties.INSTANCE.getSingleLineCommentPrefix();
+        final String lineCommentPrefix= "//";
 
     	if (doc instanceof IDocumentExtension4) {
     	    IDocumentExtension4 extension= (IDocumentExtension4) doc;

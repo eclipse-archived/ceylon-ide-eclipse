@@ -58,7 +58,6 @@ import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.IInformationControlExtension4;
 import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -74,7 +73,6 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchSite;
 import org.osgi.framework.Bundle;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -87,7 +85,6 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -97,7 +94,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
@@ -130,8 +126,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 	}
 	/**
 	 * Action to go back to the previous input in the hover control.
-	 *
-	 * @since 3.4
 	 */
 	private static final class BackAction extends Action {
 		private final BrowserInformationControl fInfoControl;
@@ -169,8 +163,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 	/**
 	 * Action to go forward to the next input in the hover control.
-	 *
-	 * @since 3.4
 	 */
 	private static final class ForwardAction extends Action {
 		private final BrowserInformationControl fInfoControl;
@@ -207,8 +199,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 	/**
 	 * Action that shows the current hover contents in the Javadoc view.
-	 *
-	 * @since 3.4
 	 */
 	/*private static final class ShowInDocViewAction extends Action {
 		private final BrowserInformationControl fInfoControl;
@@ -235,8 +225,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 	/**
 	 * Action that opens the current hover input element.
-	 *
-	 * @since 3.4
 	 */
 	private final class OpenDeclarationAction extends Action {
 		private final BrowserInformationControl fInfoControl;
@@ -265,23 +253,8 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 	/**
 	 * Presenter control creator.
-	 *
-	 * @since 3.3
 	 */
 	public final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
-
-		private IWorkbenchSite fSite;
-
-		/**
-		 * Creates a new PresenterControlCreator.
-		 * 
-		 * @param site the site or <code>null</code> if none
-		 * @since 3.6
-		 */
-		public PresenterControlCreator(IWorkbenchSite site) {
-			fSite= site;
-		}
-
 		@Override
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			if (isAvailable(parent)) {
@@ -348,41 +321,21 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 	/**
 	 * Hover control creator.
-	 *
-	 * @since 3.3
 	 */
 	public final class HoverControlCreator extends AbstractReusableInformationControlCreator {
 		private String statusLineMessage;
-		/**
-		 * The information presenter control creator.
-		 * @since 3.4
-		 */
 		private final IInformationControlCreator fInformationPresenterControlCreator;
 
-		/**
-		 * @param informationPresenterControlCreator control creator for enriched hover
-		 * @since 3.4
-		 */
 		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator,
 				String statusLineMessage) {
-			this(informationPresenterControlCreator);
-			this.statusLineMessage = statusLineMessage;
-		}
-
-		/**
-		 * @param informationPresenterControlCreator control creator for enriched hover
-		 * @param additionalInfoAffordance <code>true</code> to use the additional info affordance,
-		 *                                 <code>false</code> to use the hover affordance
-		 * @since 3.4
-		 */
-		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator) {
 			fInformationPresenterControlCreator= informationPresenterControlCreator;
+			this.statusLineMessage = statusLineMessage;
 		}
 
 		@Override
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			if (isAvailable(parent)) {
-				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
+				BrowserInformationControl control= new BrowserInformationControl(parent, 
 						APPEARANCE_JAVADOC_FONT, statusLineMessage,
 						CeylonTokenColorer.getCurrentThemeColor("docHover")) {
 					@Override
@@ -395,15 +348,15 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 						return new Point(Math.max(300,sh.x/4*3), sh.y+100);
 					}
 				};
-				addLinkListener(iControl);
-				return iControl;
+				addLinkListener(control);
+				return control;
 			} 
 			else {
 				return new DefaultInformationControl(parent, statusLineMessage);
 			}
 		}
 
-		@Override
+		/*@Override
 		public boolean canReuse(IInformationControl control) {
 			if (!super.canReuse(control))
 				return false;
@@ -413,31 +366,26 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 			}
 
 			return true;
-		}
+		}*/
 	}
 
 	/**
 	 * The style sheet (css).
-	 * @since 3.4
 	 */
 	private static String fgStyleSheet;
 
 	/**
 	 * The hover control creator.
-	 *
-	 * @since 3.2
 	 */
 	private IInformationControlCreator fHoverControlCreator;
 	/**
 	 * The presentation control creator.
-	 *
-	 * @since 3.2
 	 */
 	private IInformationControlCreator fPresenterControlCreator;
 
 	private  IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fPresenterControlCreator == null)
-			fPresenterControlCreator= new PresenterControlCreator(editor.getEditorSite());
+			fPresenterControlCreator= new PresenterControlCreator();
 		return fPresenterControlCreator;
 	}
 
@@ -935,7 +883,6 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
 			css= HTMLPrinter.convertTopLevelFont(css, fontData);
 		}
-
 		return css;
 	}
 
