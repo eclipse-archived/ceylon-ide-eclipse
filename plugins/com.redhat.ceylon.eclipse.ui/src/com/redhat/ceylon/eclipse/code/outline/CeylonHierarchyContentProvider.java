@@ -90,6 +90,20 @@ public final class CeylonHierarchyContentProvider
 		        }
 		        else if (declaration instanceof TypedDeclaration){
 					superDec = getRefinedDeclaration(dec);
+					if (superDec!=null) {
+						List<Declaration> directlyInheritedMembers = ((TypeDeclaration)dec.getContainer())
+								.getInheritedMembers(dec.getName());
+						if (!directlyInheritedMembers.contains(superDec)) {
+							CeylonHierarchyNode n = new CeylonHierarchyNode(null);
+							n.addChild(getSubtypePathNode(dec));
+							getSubtypePathNode(superDec).addChild(n);
+							dec = superDec;
+							continue;
+						}
+						else if (directlyInheritedMembers.size()>1) {
+							getSubtypePathNode(superDec).setNonUnique(true);
+						}
+					}
 		        }
 		        else {
 		            superDec = null;

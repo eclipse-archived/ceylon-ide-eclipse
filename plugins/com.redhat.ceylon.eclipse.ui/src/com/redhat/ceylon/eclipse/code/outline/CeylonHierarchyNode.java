@@ -7,11 +7,20 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 public class CeylonHierarchyNode {
 	private final Declaration declaration;
+	private boolean nonUnique;
 	//private final CeylonHierarchyNode parent;
 	private final List<CeylonHierarchyNode> children= new ArrayList<CeylonHierarchyNode>();
 
 	CeylonHierarchyNode(Declaration declaration) {
 		this.declaration = declaration;
+	}
+	
+	public boolean isNonUnique() {
+		return nonUnique;
+	}
+	
+	void setNonUnique(boolean nonUnique) {
+		this.nonUnique = nonUnique;
 	}
 	
 	/*CeylonHierarchyNode(Declaration declaration, CeylonHierarchyNode parent) {
@@ -37,7 +46,13 @@ public class CeylonHierarchyNode {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof CeylonHierarchyNode) {
+		if (this==obj) {
+			return true;
+		}
+		else if (declaration==null) {
+			return false;
+		}
+		else if (obj instanceof CeylonHierarchyNode) {
 			return declaration.equals(((CeylonHierarchyNode) obj).declaration);
 		}
 		else {
@@ -47,6 +62,7 @@ public class CeylonHierarchyNode {
 	
 	@Override
 	public int hashCode() {
-		return declaration.hashCode();
+		return declaration==null ? 
+				0 : declaration.hashCode();
 	}
 }

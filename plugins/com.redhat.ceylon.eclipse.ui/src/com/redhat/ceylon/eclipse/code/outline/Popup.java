@@ -125,7 +125,7 @@ public abstract class Popup extends PopupDialog
 			//TODO: refactor down to HierarchyPopup
 			else if (element instanceof CeylonHierarchyNode) {
 				Declaration dec = ((CeylonHierarchyNode) element).getDeclaration();
-				String name = dec.getName();
+				String name = dec==null ? null : dec.getName();
 				return name!=null && name.toLowerCase()
 						.startsWith(fFilterText.getText().toLowerCase()) ||
 						hasUnfilteredChild(treeViewer, element);
