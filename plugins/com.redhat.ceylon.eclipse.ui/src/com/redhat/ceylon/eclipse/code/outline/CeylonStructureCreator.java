@@ -60,11 +60,11 @@ public class CeylonStructureCreator extends StructureCreator {
          */
         public TreeCompareNode(DocumentRangeNode parent, CeylonOutlineNode treeNode, 
         		IDocument document) {
-            super(parent, CeylonStructureCreator.getTypeCode(treeNode.getASTNode()), 
-                    getID(treeNode.getASTNode()), document,
-                    getStartOffset(treeNode.getASTNode()), 
-                    getLength(treeNode.getASTNode()));
-            fASTNode= treeNode.getASTNode();
+            super(parent, CeylonStructureCreator.getTypeCode(treeNode.getTreeNode()), 
+                    getID(treeNode.getTreeNode()), document,
+                    getStartOffset(treeNode.getTreeNode()), 
+                    getLength(treeNode.getTreeNode()));
+            fASTNode= treeNode.getTreeNode();
         }
 
         @Override
@@ -91,7 +91,7 @@ public class CeylonStructureCreator extends StructureCreator {
     
     static int getTypeCode(Object o) {
         if (o instanceof CeylonOutlineNode) {
-            o = ((CeylonOutlineNode) o).getASTNode();
+            o = ((CeylonOutlineNode) o).getTreeNode();
         }
         if (o instanceof Tree.Declaration) {
             return ((Tree.Declaration) o).getDeclarationModel()
@@ -107,7 +107,7 @@ public class CeylonStructureCreator extends StructureCreator {
     
     static String getID(Object o) {
         if (o instanceof CeylonOutlineNode) {
-            o = ((CeylonOutlineNode) o).getASTNode();
+            o = ((CeylonOutlineNode) o).getTreeNode();
         }
         if (o instanceof Tree.Declaration) {
             return ((Tree.Declaration) o).getDeclarationModel().getQualifiedNameString();
