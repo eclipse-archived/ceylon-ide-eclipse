@@ -4,12 +4,14 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getDocument;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SOURCE;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IDocument;
@@ -22,6 +24,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -41,12 +45,32 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 final class CodePopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
+	
+	private final class GotoListener implements KeyListener {
+		@Override
+		public void keyReleased(KeyEvent e) {}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if (e.character == 'p' && (e.stateMask&SWT.MOD1)!=0) {
+				e.doit=false;
+				dispose();
+				gotoNode(referencedNode, 
+						editor.getParseController().getProject(), 
+						editor.getParseController().getTypeChecker());
+			}
+		}
+	}
+
+	static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'P').format();
+
 	ISourceViewer viewer;
 	CeylonEditor editor;
+	Tree.Declaration referencedNode;
 	
 	CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
 		super(parent, shellStyle, true, true, false, true,
-				true, null, null);
+				true, null, KEY + " to open editor");
 		this.editor = editor;
 		create();
 		
@@ -56,6 +80,7 @@ final class CodePopup extends PopupDialog
 
 		//setBackgroundColor(getEditorWidget(editor).getBackground());
 		setForegroundColor(getEditorWidget(editor).getForeground());
+		
 	}
 
 	public StyledText getEditorWidget(CeylonEditor editor) {
@@ -69,6 +94,7 @@ final class CodePopup extends PopupDialog
         viewer.setEditable(false);
         viewer.getTextWidget().setFont(editor.getCeylonSourceViewer().getTextWidget().getFont());
         viewer.getTextWidget().setBackground(getEditorWidget(editor).getBackground());
+        viewer.getTextWidget().addKeyListener(new GotoListener());
         return viewer.getTextWidget();
 	}
 	
@@ -87,6 +113,7 @@ final class CodePopup extends PopupDialog
 		getPopupLayout().copy().numColumns(3).applyTo(parent);
 		Label iconLabel = new Label(parent, SWT.NONE);
 		iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
+		getShell().addKeyListener(new GotoListener());
 		return super.createTitleControl(parent);
 	}
 	
@@ -192,8 +219,8 @@ final class CodePopup extends PopupDialog
 		IRegion r = editor.getSelectedRegion();
 		Node node = findNode(pc.getRootNode(), r.getOffset(), 
 				r.getOffset()+r.getLength());
-		Tree.Declaration refDec = getReferencedNode(node, pc);
-		IPath path = getNodePath(refDec, pc.getProject(), pc.getTypeChecker());
+		referencedNode = getReferencedNode(node, pc);
+		IPath path = getNodePath(referencedNode, pc.getProject(), pc.getTypeChecker());
 		IEditorInput ei = getEditorInput(path);
 		IDocumentProvider adp = editor.getArchiveDocumentProvider(ei);
 		IDocument doc;
@@ -211,8 +238,8 @@ final class CodePopup extends PopupDialog
 			}
 		}
 		viewer.setDocument(doc);
-		viewer.setVisibleRegion(refDec.getStartIndex(), 
-				refDec.getStopIndex()-refDec.getStartIndex()+1);
+		viewer.setVisibleRegion(referencedNode.getStartIndex(), 
+				referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
 		/*try {
 			int lines = doc.getLineOfOffset(refDec.getStopIndex())-
 			            doc.getLineOfOffset(refDec.getStartIndex())+1;
@@ -223,7 +250,7 @@ final class CodePopup extends PopupDialog
 			e.printStackTrace();
 		}*/
 		setTitleText("Declaration of " + 
-		        getDescriptionFor(refDec.getDeclarationModel()));
+		        getDescriptionFor(referencedNode.getDeclarationModel()));
 	}
 
 	@Override
