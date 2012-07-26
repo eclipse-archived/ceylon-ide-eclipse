@@ -128,7 +128,7 @@ public abstract class AbstractInformationControl implements IInformationControl,
 	 * @param statusFieldText the text to be used in the status field or <code>null</code> to hide the status field
 	 */
 	public AbstractInformationControl(Shell parentShell, String statusFieldText, Color color) {
-		this(parentShell, SWT.TOOL | SWT.ON_TOP, statusFieldText, null, color);
+		this(parentShell, SWT.TOOL | SWT.ON_TOP | SWT.RESIZE, statusFieldText, null, color);
 	}
 
 	/**
@@ -590,10 +590,8 @@ public abstract class AbstractInformationControl implements IInformationControl,
 	 */
 	public Rectangle computeTrim() {
 		Rectangle trim= fShell.computeTrim(0, 0, 0, 0);
-
 		if (fStatusComposite != null)
 			trim.height+= fStatusComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-
 		return trim;
 	}
 
@@ -623,7 +621,7 @@ public abstract class AbstractInformationControl implements IInformationControl,
 	 * @see org.eclipse.jface.text.IInformationControlExtension3#restoresSize()
 	 */
 	public boolean restoresSize() {
-		return false;
+		return true;
 	}
 
 	/*
@@ -681,7 +679,6 @@ public abstract class AbstractInformationControl implements IInformationControl,
 	public void addFocusListener(final FocusListener listener) {
 		if (fFocusListeners.isEmpty()) {
 			fShellListener= new Listener() {
-
 				public void handleEvent(Event event) {
 					Object[] listeners= fFocusListeners.getListeners();
 					for (int i= 0; i < listeners.length; i++) {
