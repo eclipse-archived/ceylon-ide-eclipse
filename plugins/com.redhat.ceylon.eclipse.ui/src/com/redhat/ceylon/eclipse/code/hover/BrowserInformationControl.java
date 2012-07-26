@@ -70,7 +70,8 @@ import org.eclipse.swt.widgets.Slider;
  * 
  * @since 3.2
  */
-public class BrowserInformationControl extends AbstractInformationControl implements IInformationControlExtension2, IDelayedInputChangeProvider {
+public class BrowserInformationControl extends AbstractInformationControl 
+        implements IInformationControlExtension2, IDelayedInputChangeProvider {
 
 
 	/**

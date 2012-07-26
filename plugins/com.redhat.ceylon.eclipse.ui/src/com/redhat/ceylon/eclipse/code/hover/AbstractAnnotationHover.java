@@ -79,7 +79,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
  *
  * @since 3.0
  */
-public abstract class AbstractAnnotationHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+public abstract class AbstractAnnotationHover 
+        implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 
 	/**
 	 * An annotation info contains information about an {@link Annotation}
@@ -210,7 +211,7 @@ public abstract class AbstractAnnotationHover implements ITextHover, ITextHoverE
 
 			Point constrainedSize= getShell().computeSize(constrains.x, SWT.DEFAULT, true);
 
-			int width= Math.min(preferedSize.x, constrainedSize.x);
+			int width= Math.max(preferedSize.x, constrainedSize.x);
 			int height= Math.max(preferedSize.y, constrainedSize.y);
 
 			return new Point(width, height);

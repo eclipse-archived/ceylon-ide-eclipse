@@ -20,7 +20,6 @@ import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.information.IInformationProviderExtension2;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
@@ -28,7 +27,9 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
  * Caution: this implementation is a layer breaker and contains some "shortcuts"
  */
 @SuppressWarnings({"deprecation"})
-public class BestMatchHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+public class BestMatchHover 
+        implements ITextHover, ITextHoverExtension, 
+                   ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
 
@@ -101,15 +102,14 @@ public class BestMatchHover implements ITextHover, ITextHoverExtension, ITextHov
 	public IInformationControlCreator getHoverControlCreator() {
 		if (fBestHover instanceof ITextHoverExtension)
 			return ((ITextHoverExtension)fBestHover).getHoverControlCreator();
-
 		return null;
 	}
 
-	public IInformationControlCreator getInformationPresenterControlCreator() {
+	/*public IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fBestHover instanceof IInformationProviderExtension2) // this is wrong, but left here for backwards compatibility
 			return ((IInformationProviderExtension2)fBestHover).getInformationPresenterControlCreator();
 
 		return null;
-	}
+	}*/
 }
 

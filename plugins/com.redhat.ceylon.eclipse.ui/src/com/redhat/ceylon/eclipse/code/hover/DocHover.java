@@ -113,7 +113,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
-public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+public class DocHover 
+        implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
 	
@@ -252,27 +253,27 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 
 
 	/**
-	 * Presenter control creator.
+	 * Presenter control creator that creates the "enriched" control.
 	 */
 	public final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
 		@Override
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			if (isAvailable(parent)) {
 				ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
-				BrowserInformationControl iControl= new BrowserInformationControl(parent, 
+				BrowserInformationControl control= new BrowserInformationControl(parent, 
 						APPEARANCE_JAVADOC_FONT, tbm, 
 						CeylonTokenColorer.getCurrentThemeColor("docHover"));
 
-				final BackAction backAction= new BackAction(iControl);
+				final BackAction backAction= new BackAction(control);
 				backAction.setEnabled(false);
 				tbm.add(backAction);
-				final ForwardAction forwardAction= new ForwardAction(iControl);
+				final ForwardAction forwardAction= new ForwardAction(control);
 				tbm.add(forwardAction);
 				forwardAction.setEnabled(false);
 
 				//final ShowInJavadocViewAction showInJavadocViewAction= new ShowInJavadocViewAction(iControl);
 				//tbm.add(showInJavadocViewAction);
-				final OpenDeclarationAction openDeclarationAction= new OpenDeclarationAction(iControl);
+				final OpenDeclarationAction openDeclarationAction= new OpenDeclarationAction(control);
 				tbm.add(openDeclarationAction);
 
 				final SimpleSelectionProvider selectionProvider= new SimpleSelectionProvider();
@@ -304,12 +305,12 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 						}
 					}
 				};
-				iControl.addInputChangeListener(inputChangeListener);
+				control.addInputChangeListener(inputChangeListener);
 
 				tbm.update(true);
 
-				addLinkListener(iControl);
-				return iControl;
+				addLinkListener(control);
+				return control;
 
 			} 
 			else {
@@ -345,7 +346,7 @@ public class DocHover implements ITextHover, ITextHoverExtension, ITextHoverExte
 					@Override
 					public Point computeSizeHint() {
 						Point sh = super.computeSizeHint();
-						return new Point(Math.max(300,sh.x/4*3), sh.y+100);
+						return new Point(sh.x, sh.y*4);
 					}
 				};
 				addLinkListener(control);
