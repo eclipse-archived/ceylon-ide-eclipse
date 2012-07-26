@@ -6,10 +6,12 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SOURCE;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -25,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -33,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CodePopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -66,6 +70,24 @@ final class CodePopup extends PopupDialog
         viewer.getTextWidget().setFont(editor.getCeylonSourceViewer().getTextWidget().getFont());
         viewer.getTextWidget().setBackground(getEditorWidget(editor).getBackground());
         return viewer.getTextWidget();
+	}
+	
+	private static GridLayoutFactory popupLayoutFactory;
+	protected static GridLayoutFactory getPopupLayout() {
+		if (popupLayoutFactory == null) {
+			popupLayoutFactory = GridLayoutFactory.fillDefaults()
+					.margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
+					.spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
+		}
+		return popupLayoutFactory;
+	}
+	
+	@Override
+	protected Control createTitleControl(Composite parent) {
+		getPopupLayout().copy().numColumns(3).applyTo(parent);
+		Label iconLabel = new Label(parent, SWT.NONE);
+		iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
+		return super.createTitleControl(parent);
 	}
 	
     /*@Override

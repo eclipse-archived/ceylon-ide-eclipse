@@ -13,6 +13,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
+import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OUTLINE;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.action.Action;
@@ -180,7 +181,7 @@ public class OutlinePopup extends TreeViewPopup {
 	protected Control createTitleControl(Composite parent) {
 		getPopupLayout().copy().numColumns(3).applyTo(parent);
 		Label label = new Label(parent, SWT.NONE);
-		label.setImage(CeylonPlugin.getInstance().image("outline_co.gif").createImage());
+		label.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_OUTLINE));
 		return super.createTitleControl(parent);
 	}
 	
