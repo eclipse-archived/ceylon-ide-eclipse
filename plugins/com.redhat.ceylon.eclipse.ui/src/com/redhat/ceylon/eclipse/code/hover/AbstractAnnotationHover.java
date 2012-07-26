@@ -209,9 +209,10 @@ public abstract class AbstractAnnotationHover
 			if (constrains == null)
 				return preferedSize;
 
-			Point constrainedSize= getShell().computeSize(constrains.x, SWT.DEFAULT, true);
+			int trimWidth= getShell().computeTrim(0, 0, 0, 0).width;
+			Point constrainedSize= getShell().computeSize(constrains.x - trimWidth, SWT.DEFAULT, true);
 
-			int width= Math.max(preferedSize.x, constrainedSize.x);
+			int width= Math.min(preferedSize.x, constrainedSize.x);
 			int height= Math.max(preferedSize.y, constrainedSize.y);
 
 			return new Point(width, height);
