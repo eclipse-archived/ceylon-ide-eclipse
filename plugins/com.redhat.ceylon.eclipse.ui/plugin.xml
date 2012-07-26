@@ -441,7 +441,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.code"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show popup code view"
-            name="Show Ceylon Hierarchy"/>
+            name="Show Ceylon Code"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -775,6 +775,10 @@
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
                   label="Show Hierarchy"/>
+            <command 
+                  id="showCode"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  label="Show Code"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
