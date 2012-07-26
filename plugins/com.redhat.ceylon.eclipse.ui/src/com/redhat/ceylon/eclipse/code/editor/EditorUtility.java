@@ -412,18 +412,17 @@ public class EditorUtility {
     
 	public static IDocument getDocument(Object input) {
 		IEditorInput ei = getEditorInput(input);
-
 		try {
-			if (ei != null) {
+			if (ei!=null) {
 				IDocumentProvider docProvider = DocumentProviderRegistry
 						.getDefault().getDocumentProvider(ei);
 				docProvider.connect(ei);
 				return docProvider.getDocument(ei);
 			}
-		} catch (CoreException e) {
+		}
+		catch (CoreException e) {
 			// fall through
 		}
-
 		return null;
 	}
 }

@@ -11,6 +11,8 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static org.eclipse.ui.IWorkbenchCommandConstants.WINDOW_SHOW_VIEW_MENU;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -21,6 +23,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension;
 import org.eclipse.jface.text.IInformationControlExtension2;
+import org.eclipse.jface.text.IInformationControlExtension3;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -52,7 +55,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ActionHandler;
 import org.eclipse.ui.commands.HandlerSubmission;
@@ -70,9 +72,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
-public abstract class Popup extends PopupDialog 
+public abstract class TreeViewPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension, 
-                   IInformationControlExtension2, DisposeListener {
+                   IInformationControlExtension2, IInformationControlExtension3,
+                   DisposeListener {
 
 	private static GridLayoutFactory popupLayoutFactory;
 	protected static GridLayoutFactory getPopupLayout() {
@@ -186,8 +189,8 @@ public abstract class Popup extends PopupDialog
 	 * @param invokingCommandId the id of the command that invoked this control or <code>null</code>
 	 * @param showStatusField <code>true</code> iff the control has a status field at the bottom
 	 */
-	public Popup(Shell parent, int shellStyle, int treeStyle, 
-			String invokingCommandId, CeylonEditor editor) {
+	public TreeViewPopup(Shell parent, int shellStyle, int treeStyle, 
+			/*String invokingCommandId,*/ CeylonEditor editor) {
 		super(parent, shellStyle, true, true, false, true, true, null, null);
 		this.editor = editor;
 		/*if (invokingCommandId != null) {
@@ -208,9 +211,9 @@ public abstract class Popup extends PopupDialog
 		// Create all controls early to preserve the life cycle of the original implementation.
 		create();
 		
-		Color popup = CeylonTokenColorer.getCurrentThemeColor("popup");
-		getShell().setBackground(popup);
-		setBackgroundColor(popup);
+		Color color = CeylonTokenColorer.getCurrentThemeColor("popup");
+		getShell().setBackground(color);
+		setBackgroundColor(color);
 
 		// Status field text can only be computed after widgets are created.
 		setInfoText(getStatusFieldText());
@@ -751,7 +754,7 @@ public abstract class Popup extends PopupDialog
 			}
 		};
 		fShowViewMenuAction.setEnabled(true);
-		fShowViewMenuAction.setActionDefinitionId(IWorkbenchCommandConstants.WINDOW_SHOW_VIEW_MENU);
+		fShowViewMenuAction.setActionDefinitionId(WINDOW_SHOW_VIEW_MENU);
 
 		return fViewMenuButtonComposite;
 	}
@@ -778,6 +781,26 @@ public abstract class Popup extends PopupDialog
 			fViewMenuButtonComposite.setTabList(new Control[] { fFilterText });
 			composite.setTabList(new Control[] { fViewMenuButtonComposite, fTreeViewer.getTree() });
 		}
+	}
+	
+	@Override
+	public boolean restoresLocation() {
+		return false;
+	}
+	
+	@Override
+	public boolean restoresSize() {
+		return true;
+	}
+	
+	@Override
+	public Rectangle getBounds() {
+		return getShell().getBounds();
+	}
+	
+	@Override
+	public Rectangle computeTrim() {
+		return getShell().computeTrim(0, 0, 0, 0);
 	}
 }
 

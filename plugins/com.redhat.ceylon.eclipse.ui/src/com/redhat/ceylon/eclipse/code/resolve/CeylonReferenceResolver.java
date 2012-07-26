@@ -50,9 +50,10 @@ public class CeylonReferenceResolver {
 //        }
 //    }
 
-    public static Tree.Declaration getReferencedNode(Object node, 
+    public static Tree.Declaration getReferencedNode(Node node, 
     		CeylonParseController controller) {
-        return getReferencedNode(getReferencedDeclaration(node), controller);
+        return getReferencedNode(getReferencedDeclarationOrPackage(node), 
+        		controller);
     }
 
     public static Tree.Declaration getReferencedNode(Declaration dec, 
@@ -60,7 +61,7 @@ public class CeylonReferenceResolver {
         return getReferencedNode(dec, getCompilationUnit(controller,dec));
     }
 
-    public static Declaration getReferencedDeclaration(Object node) {
+    private static Declaration getReferencedDeclarationOrPackage(Node node) {
         Declaration dec;
         if (node instanceof Tree.ImportPath) {
             Package p = ((Tree.ImportPath) node).getPackageModel();
@@ -91,7 +92,7 @@ public class CeylonReferenceResolver {
         return dec;
     }
 
-    private String getNodeDeclarationName(Node node) {
+    /*private String getNodeDeclarationName(Node node) {
         if (node instanceof Tree.MemberOrTypeExpression) {
             return ((Tree.MemberOrTypeExpression) node).getDeclaration().getName();
         } 
@@ -112,7 +113,7 @@ public class CeylonReferenceResolver {
         else {
             return null;
         }
-    }
+    }*/
 
     public static Declaration getReferencedDeclaration(Node node) {
         //NOTE: this must accept a null node, returning null!

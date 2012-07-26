@@ -40,7 +40,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class OutlinePopup extends Popup {
+public class OutlinePopup extends TreeViewPopup {
 	
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
@@ -144,8 +144,8 @@ public class OutlinePopup extends Popup {
     }
 
     public OutlinePopup(CeylonEditor editor, Shell parent, 
-    		int shellStyle, int treeStyle, String commandId) {
-        super(parent, shellStyle, treeStyle, commandId, editor);
+    		int shellStyle, int treeStyle) {
+        super(parent, shellStyle, treeStyle, editor);
         setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 

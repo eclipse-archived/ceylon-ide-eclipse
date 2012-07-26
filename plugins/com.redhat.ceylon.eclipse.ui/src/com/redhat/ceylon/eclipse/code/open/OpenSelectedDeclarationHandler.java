@@ -16,6 +16,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -34,7 +35,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         		return null;
         	}
         	else {
-        		Object sourceNode= findNode(ast, textSel.getOffset());
+        		Node sourceNode= findNode(ast, textSel.getOffset());
         		if (sourceNode == null) {
         			return null;
         		}

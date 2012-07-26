@@ -48,6 +48,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public static final int SHOW_HIERARCHY= 53;
 
     /**
+     * Text operation code for requesting the code for the current input.
+     */
+    public static final int SHOW_CODE= 56;
+
+    /**
      * Text operation code for toggling the commenting of a selected range of text, or the current line.
      */
     public static final int TOGGLE_COMMENT= 54;
@@ -66,6 +71,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private IInformationPresenter outlinePresenter;
     private IInformationPresenter structurePresenter;
     private IInformationPresenter hierarchyPresenter;
+    private IInformationPresenter codePresenter;
     private IAutoEditStrategy autoEditStrategy;
 
     public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
@@ -76,15 +82,17 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public boolean canDoOperation(int operation) {
         switch(operation) {
         case SHOW_OUTLINE:
-            return outlinePresenter != null;
+            return outlinePresenter!=null;
         case OPEN_STRUCTURE:
-            return structurePresenter != null;
+            return structurePresenter!=null;
         case SHOW_HIERARCHY:
-            return hierarchyPresenter != null;
+            return hierarchyPresenter!=null;
+        case SHOW_CODE:
+        	return codePresenter!=null;
         case TOGGLE_COMMENT:
             return true;
         case CORRECT_INDENTATION:
-            return autoEditStrategy != null;
+            return autoEditStrategy!=null;
         }
         return super.canDoOperation(operation);
     }
@@ -94,17 +102,21 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return;
         switch (operation) {
         case SHOW_OUTLINE:
-            if (outlinePresenter != null)
+            if (outlinePresenter!=null)
                 outlinePresenter.showInformation();
             return;
         case OPEN_STRUCTURE:
-            if (structurePresenter != null)
+            if (structurePresenter!=null)
                 structurePresenter.showInformation();
             return;
         case SHOW_HIERARCHY:
-            if (hierarchyPresenter != null)
+            if (hierarchyPresenter!=null)
                 hierarchyPresenter.showInformation();
             return;
+        case SHOW_CODE:
+        	if (codePresenter!=null)
+        		codePresenter.showInformation();
+        	return;
         case TOGGLE_COMMENT:
             doToggleComment();
             return;
@@ -302,16 +314,20 @@ public class CeylonSourceViewer extends ProjectionViewer {
             CeylonSourceViewerConfiguration svc= (CeylonSourceViewerConfiguration) configuration;
 
             outlinePresenter= svc.getOutlinePresenter(this);
-            if (outlinePresenter != null)
+            if (outlinePresenter!=null)
                 outlinePresenter.install(this);
 
             structurePresenter= svc.getOutlinePresenter(this);
-            if (structurePresenter != null)
+            if (structurePresenter!=null)
                 structurePresenter.install(this);
 
             hierarchyPresenter= svc.getHierarchyPresenter(this, true);
-            if (hierarchyPresenter != null)
+            if (hierarchyPresenter!=null)
                 hierarchyPresenter.install(this);
+            
+            codePresenter = svc.getCodePresenter(this);
+            if (codePresenter!=null)
+            	codePresenter.install(this);
 
             autoEditStrategy = new CeylonAutoEditStrategy();
             

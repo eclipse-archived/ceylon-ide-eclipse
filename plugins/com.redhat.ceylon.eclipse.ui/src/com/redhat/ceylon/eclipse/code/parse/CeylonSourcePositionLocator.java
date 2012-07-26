@@ -138,6 +138,7 @@ public class CeylonSourcePositionLocator {
     public static void gotoLocation(IPath path, int offset) {
     	gotoLocation(path, offset, 0);
     }
+    
     public static void gotoLocation(IPath path, int offset, int length) {
         if (path==null || path.isEmpty()) return;
         IEditorInput editorInput = getEditorInput(path);

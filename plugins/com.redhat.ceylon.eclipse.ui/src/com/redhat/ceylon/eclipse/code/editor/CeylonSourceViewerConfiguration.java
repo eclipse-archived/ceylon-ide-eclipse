@@ -1,12 +1,13 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IInformationControl;
@@ -49,6 +50,7 @@ import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
@@ -197,6 +199,25 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		}
 	}*/
 
+	private IDialogSettings getSettings() { return CeylonPlugin.getInstance().getDialogSettings(); }
+    
+    public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
+        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
+			@Override
+			public IInformationControl createInformationControl(Shell parent) {
+				CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
+				pop.viewer.configure(CeylonSourceViewerConfiguration.this);
+				return pop;
+			}
+		});
+        presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        presenter.setAnchor(ANCHOR_GLOBAL);
+        presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE); //TODO!!
+        presenter.setSizeConstraints(40, 10, true, false);
+		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"code_presenter_bounds"), true, true);
+        return presenter;
+    }
+    
 	private class OutlineInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
 		@Override
@@ -213,20 +234,20 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		return new CeylonOutlineBuilder().buildTree(editor.getParseController().getRootNode());
     	}
     }
-    
+	
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new OutlinePopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, SHOW_OUTLINE);
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
 			}
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(50, 20, true, false);
-        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+        presenter.setSizeConstraints(40, 10, true, false);
+		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"outline_presenter_bounds"), true, true);
         return presenter;
     }
     
@@ -269,14 +290,14 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new HierarchyPopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL, "com.redhat.ceylon.eclipse.ui.action.hierarchy");
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
 			}
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(80, 20, true, false);
-        //presenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true);
+        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"hierarchy_presenter_bounds"), true, true);
         return presenter;
     }
 
