@@ -56,6 +56,8 @@ final class CodePopup extends PopupDialog
 
 		@Override
 		public void keyPressed(KeyEvent e) {
+			if (e.character == 0x1B) // ESC
+				dispose();
 			if (e.character == 'p' && (e.stateMask&SWT.MOD1)!=0) {
 				e.doit=false;
 				dispose();
