@@ -206,6 +206,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         reg.put(CEYLON_HIER, image("hierarchy_co.gif"));
         reg.put(CEYLON_SUP, image("super_co.gif"));
         reg.put(CEYLON_SUB, image("sub_co.gif"));
+        reg.put(CEYLON_OUTLINE, image("outline_co.gif"));
+        reg.put(CEYLON_SOURCE, image("source.gif"));
         reg.put(ELE32, image("ceylon_icon_32px.png"));
 		reg.put(CEYLON_ERR, image("error_co.gif"));
 		reg.put(CEYLON_WARN, image("warning_co.gif"));
