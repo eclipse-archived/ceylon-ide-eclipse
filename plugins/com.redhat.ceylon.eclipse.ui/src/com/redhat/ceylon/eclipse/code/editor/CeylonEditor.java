@@ -146,6 +146,9 @@ public class CeylonEditor extends TextEditor {
 	private static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + 
 			".action.hierarchy";
 
+	private static final String SHOW_CEYLON_CODE = PLUGIN_ID + 
+			".action.code";
+
     private static final int REPARSE_SCHEDULE_DELAY= 200;
 
     /** 
@@ -330,6 +333,11 @@ public class CeylonEditor extends TextEditor {
     			CeylonSourceViewer.SHOW_HIERARCHY, true);
         action.setActionDefinitionId(SHOW_CEYLON_HIERARCHY);
         setAction(SHOW_CEYLON_HIERARCHY, action);
+
+    	action= new TextOperationAction(bundle, "ShowCode.", this, 
+    			CeylonSourceViewer.SHOW_CODE, true);
+        action.setActionDefinitionId(SHOW_CEYLON_CODE);
+        setAction(SHOW_CEYLON_CODE, action);
 
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
@@ -901,21 +909,26 @@ extends PreviousSubWordAction implements IUpdate {
 
     @Override
     public IDocumentProvider getDocumentProvider() {
-        if (SourceArchiveDocumentProvider.canHandle(getEditorInput())) {
+        IDocumentProvider adp = getArchiveDocumentProvider(getEditorInput());
+        if (adp==null) adp = super.getDocumentProvider();
+        return adp;
+    }
+
+	public IDocumentProvider getArchiveDocumentProvider(IEditorInput editorInput) {
+		if (SourceArchiveDocumentProvider.canHandle(editorInput)) {
             if (sourceArchiveDocumentProvider == null) {
                 sourceArchiveDocumentProvider= new SourceArchiveDocumentProvider();
             }
             return sourceArchiveDocumentProvider;
         }
-        IEditorInput editorInput= getEditorInput();
         if (ZipStorageEditorDocumentProvider.canHandle(editorInput)) {
             if (zipDocProvider == null) {
                 zipDocProvider= new ZipStorageEditorDocumentProvider();
             }
             return zipDocProvider;
         }
-    	return super.getDocumentProvider();
-    }
+        return null;
+	}
     
     public CeylonSourceViewer getCeylonSourceViewer() {
     	return (CeylonSourceViewer) super.getSourceViewer();

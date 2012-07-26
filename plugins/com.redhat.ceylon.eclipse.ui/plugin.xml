@@ -438,6 +438,11 @@
             description="Show popup hierarchy view"
             name="Show Ceylon Hierarchy"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.code"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show popup code view"
+            name="Show Ceylon Hierarchy"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find references to selected declaration"
@@ -580,6 +585,11 @@
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
+           sequence="M1+P"
+           commandId="com.redhat.ceylon.eclipse.ui.action.code"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
            sequence="M3+G"
            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -689,6 +699,10 @@
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
                   label="Show Hierarchy"/>
+            <command 
+                  id="showCode"
+                  commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  label="Show Code"/>
             <separator
                   name="sep3" 
                   visible="true"/>
@@ -1122,7 +1136,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.popup" 
         label="Outline/hierarchy popup background"
-        value="204,255,204">
+        value="224,248,224">
         <description>
             Background color for outline and hierarchy popup controls. (Takes effect after closing Ceylon editor.)
         </description>
@@ -1130,9 +1144,19 @@
 
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.code" 
+        label="Code popup background"
+        value="206,227,246">
+        <description>
+            Background color for code popup control. (Takes effect after closing Ceylon editor.)
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.docHover" 
         label="Documentation hover background"
-        value="204,204,255">
+        value="245,246,206">
         <description>
             Background color for documentation hover information control. (Takes effect after closing Ceylon editor.)
         </description>
@@ -1142,7 +1166,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.messageHover" 
         label="Message hover background"
-        value="255,204,204">
+        value="248,224,230">
         <description>
             Background color for message hover information control. (Takes effect after closing Ceylon editor.)
         </description>

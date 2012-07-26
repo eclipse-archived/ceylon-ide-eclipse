@@ -13,7 +13,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -25,11 +24,10 @@ import org.eclipse.swt.widgets.Tree;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class HierarchyPopup extends Popup {
+public class HierarchyPopup extends TreeViewPopup {
 	
 	static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
 	
@@ -38,11 +36,11 @@ public class HierarchyPopup extends Popup {
 	private Label iconLabel;
 	
     public HierarchyPopup(CeylonEditor editor, Shell parent, int shellStyle, 
-    		int treeStyle, String commandId) {
-        super(parent, shellStyle, treeStyle, commandId, editor);
+    		int treeStyle) {
+        super(parent, shellStyle, treeStyle, editor);
     }
     
-    @Override
+    /*@Override
     protected void adjustBounds() {
         Rectangle bounds = getShell().getBounds();
         int h = bounds.height;
@@ -51,7 +49,7 @@ public class HierarchyPopup extends Popup {
             bounds.y = bounds.y + (h-400)/3;
             getShell().setBounds(bounds);
         }
-    }
+    }*/
     
 	@Override
 	protected TreeViewer createTreeViewer(Composite parent, int style) {
@@ -176,7 +174,7 @@ public class HierarchyPopup extends Popup {
 	
 	@Override
     protected void gotoSelectedElement() {
-    	CeylonParseController cpc = ((CeylonEditor) Util.getCurrentEditor()).getParseController();
+    	CeylonParseController cpc = editor.getParseController();
 		if (cpc!=null) {
 	        Object object = getSelectedElement();
 	        if (object instanceof CeylonHierarchyNode) {
