@@ -115,9 +115,14 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-    	return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(editor), 
-    			new JavaHyperlinkDetector(editor) };
+    	CeylonParseController pc = getParseController();
+		return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(pc), 
+    			new JavaHyperlinkDetector(pc) };
     }
+
+	protected CeylonParseController getParseController() {
+		return editor.getParseController();
+	}
 
     /**
      * Used to present hover help (anything else?)
@@ -205,8 +210,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
-				CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
-				pop.viewer.configure(CeylonSourceViewerConfiguration.this);
+				final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
+				pop.viewer.configure(new CeylonSourceViewerConfiguration(editor.getPrefStore(), editor) {
+					@Override
+					protected CeylonParseController getParseController() {
+						return pop.getParseController();
+					}
+				});
 				return pop;
 			}
 		});

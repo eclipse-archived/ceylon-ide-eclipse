@@ -13,7 +13,6 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -21,21 +20,19 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * given region in the parse stream of a given parse controller.
  */
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
-	private CeylonEditor editor;
+	private CeylonParseController pc;
     
-    public CeylonHyperlinkDetector(CeylonEditor editor) {
-		this.editor = editor;
+    public CeylonHyperlinkDetector(CeylonParseController pc) {
+		this.pc = pc;
 	}
 
     private final class CeylonNodeLink implements IHyperlink {
         private final Node node;
         private final Node id;
-        private final CeylonParseController pc;
 
-        private CeylonNodeLink(Node node, Node id, CeylonParseController pc) {
+        private CeylonNodeLink(Node node, Node id) {
             this.node = node;
             this.id = id;
-            this.pc = pc;
         }
 
         @Override
@@ -64,7 +61,6 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 	@Override
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
 			boolean canShowMultipleHyperlinks) {
-        CeylonParseController pc = editor.getParseController();
         if (pc==null||pc.getRootNode()==null) {
             return null;
         }
@@ -81,7 +77,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                	return new IHyperlink[] { new CeylonNodeLink(dec, id, pc) };
+                	return new IHyperlink[] { new CeylonNodeLink(dec, id) };
                 }
             }
         }

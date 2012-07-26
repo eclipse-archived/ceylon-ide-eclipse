@@ -31,17 +31,15 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
-    private CeylonEditor editor;
+    private CeylonParseController pc;
     
-    public JavaHyperlinkDetector(CeylonEditor editor) {
-        this.editor = editor;
+    public JavaHyperlinkDetector(CeylonParseController pc) {
+        this.pc = pc;
     }
     
     private final class JavaElementLink implements IHyperlink {
@@ -86,7 +84,6 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer tv, IRegion region,
             boolean csmh) {
-        CeylonParseController pc = editor.getParseController();
         if (pc==null||pc.getRootNode()==null) {
             return null;
         }
@@ -103,7 +100,8 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                    IJavaProject jp = JavaCore.create(Util.getProject(editor));
+                    //IJavaProject jp = JavaCore.create(Util.getProject(editor));
+                    IJavaProject jp = JavaCore.create(pc.getProject());
                     if (jp==null) {
                         return null;
                     }

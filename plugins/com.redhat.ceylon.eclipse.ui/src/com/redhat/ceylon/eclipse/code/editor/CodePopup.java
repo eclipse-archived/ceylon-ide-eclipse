@@ -9,8 +9,11 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SOURCE;
 
+import java.util.Map;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -40,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CodePopup extends PopupDialog 
@@ -67,6 +71,7 @@ final class CodePopup extends PopupDialog
 	ISourceViewer viewer;
 	CeylonEditor editor;
 	Tree.Declaration referencedNode;
+	CeylonParseController pc = new CeylonParseController();
 	
 	CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
 		super(parent, shellStyle, true, true, false, true,
@@ -80,7 +85,6 @@ final class CodePopup extends PopupDialog
 
 		//setBackgroundColor(getEditorWidget(editor).getBackground());
 		setForegroundColor(getEditorWidget(editor).getForeground());
-		
 	}
 
 	public StyledText getEditorWidget(CeylonEditor editor) {
@@ -215,12 +219,12 @@ final class CodePopup extends PopupDialog
 
 	@Override
 	public void setInput(Object input) {
-		CeylonParseController pc = editor.getParseController();
+		CeylonParseController epc = editor.getParseController();
 		IRegion r = editor.getSelectedRegion();
-		Node node = findNode(pc.getRootNode(), r.getOffset(), 
+		Node node = findNode(epc.getRootNode(), r.getOffset(), 
 				r.getOffset()+r.getLength());
-		referencedNode = getReferencedNode(node, pc);
-		IPath path = getNodePath(referencedNode, pc.getProject(), pc.getTypeChecker());
+		referencedNode = getReferencedNode(node, epc);
+		IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
 		IEditorInput ei = getEditorInput(path);
 		IDocumentProvider adp = editor.getArchiveDocumentProvider(ei);
 		IDocument doc;
@@ -240,6 +244,24 @@ final class CodePopup extends PopupDialog
 		viewer.setDocument(doc);
 		viewer.setVisibleRegion(referencedNode.getStartIndex(), 
 				referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
+		pc.initialize(path, epc.getProject(), new MessageHandler() {
+			@Override
+			public void startMessageGroup(String groupName) {}
+			@Override
+			public void handleSimpleMessage(String msg, int startOffset, int endOffset,
+					int startCol, int endCol, int startLine, int endLine,
+					Map<String, Object> attributes) {}
+			@Override
+			public void handleSimpleMessage(String msg, int startOffset, int endOffset,
+					int startCol, int endCol, int startLine, int endLine) {}
+			@Override
+			public void endMessages() {}
+			@Override
+			public void endMessageGroup() {}
+			@Override
+			public void clearMessages() {}
+		});
+		pc.parse(doc, new NullProgressMonitor(), null);
 		/*try {
 			int lines = doc.getLineOfOffset(refDec.getStopIndex())-
 			            doc.getLineOfOffset(refDec.getStartIndex())+1;
@@ -271,5 +293,9 @@ final class CodePopup extends PopupDialog
 	@Override
 	public Rectangle computeTrim() {
 		return getShell().computeTrim(0, 0, 0, 0);
+	}
+
+	public CeylonParseController getParseController() {
+		return pc;
 	}
 }
