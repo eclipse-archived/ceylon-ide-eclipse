@@ -29,6 +29,23 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
 	
+	private final class ChangeViewListener implements KeyListener {
+		@Override
+		public void keyReleased(KeyEvent e) {}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
+				contentProvider.mode=contentProvider.mode.next();
+				updateStatusFieldText();
+				updateTitle();
+				updateIcon();
+				stringMatcherUpdated();
+				e.doit=false;
+			}
+		}
+	}
+
 	static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
 	
 	private CeylonHierarchyLabelProvider labelProvider;
@@ -64,27 +81,14 @@ public class HierarchyPopup extends TreeViewPopup {
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new NamePatternFilter());
         treeViewer.setAutoExpandLevel(ALL_LEVELS);
+        tree.addKeyListener(new ChangeViewListener());
  		return treeViewer;
 	}
 
 	@Override
 	protected Text createFilterText(Composite parent) {
 		Text result = super.createFilterText(parent);
-		result.addKeyListener(new KeyListener() {
-			@Override
-			public void keyReleased(KeyEvent e) {}
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
-					contentProvider.mode=contentProvider.mode.next();
-					updateStatusFieldText();
-					updateTitle();
-					updateIcon();
-					stringMatcherUpdated();
-					e.doit=false;
-				}
-			}
-		});
+		result.addKeyListener(new ChangeViewListener());
 		return result;
 	}
 	
