@@ -98,10 +98,11 @@ final class CodePopup extends PopupDialog
 		int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION;
         viewer= new CeylonSourceViewer(parent, null, null,false, styles);
         viewer.setEditable(false);
-        viewer.getTextWidget().setFont(editor.getCeylonSourceViewer().getTextWidget().getFont());
-        viewer.getTextWidget().setBackground(getEditorWidget(editor).getBackground());
-        viewer.getTextWidget().addKeyListener(new GotoListener());
-        return viewer.getTextWidget();
+        StyledText textWidget = viewer.getTextWidget();
+		textWidget.setFont(getEditorWidget(editor).getFont());
+        textWidget.setBackground(getEditorWidget(editor).getBackground());
+        textWidget.addKeyListener(new GotoListener());
+        return textWidget;
 	}
 	
 	private static GridLayoutFactory popupLayoutFactory;
