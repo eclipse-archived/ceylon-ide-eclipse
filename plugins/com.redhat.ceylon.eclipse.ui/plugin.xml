@@ -678,6 +678,10 @@
                   id="selectEnclosing"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
                   label="Select Enclosing"/>
+            <command 
+                  id="restorePrevious"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+                  label="Restore Previous Selection"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
@@ -1316,6 +1320,11 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
+            sequence="CTRL+SHIFT+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
             sequence="F3"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.openDeclaration"
@@ -1387,6 +1396,12 @@
             description="Select the innermost enclosing construct"
             id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
             name="Select Enclosing">
+      </command>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Restore the previous selection"
+            id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            name="Restore Previous Selection">
       </command>
    </extension>
    
