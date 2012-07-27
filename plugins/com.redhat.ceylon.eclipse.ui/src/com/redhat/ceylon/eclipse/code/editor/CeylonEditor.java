@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_NEXT_TARGET;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_PREVIOUS_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
@@ -328,6 +329,10 @@ public class CeylonEditor extends TextEditor {
         action= new SelectEnclosingAction(this);
         action.setActionDefinitionId(SELECT_ENCLOSING);
         setAction(SELECT_ENCLOSING, action);
+
+        action= new RestorePreviousSelectionAction(this);
+        action.setActionDefinitionId(RESTORE_PREVIOUS);
+        setAction(RESTORE_PREVIOUS, action);
 
     	action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
     			CeylonSourceViewer.SHOW_HIERARCHY, true);

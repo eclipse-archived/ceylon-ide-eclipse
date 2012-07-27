@@ -54,6 +54,11 @@ public interface EditorActionIds {
     public static final String SELECT_ENCLOSING= PLUGIN_ID + ".editor.selectEnclosing";
 
     /**
+     * Action definition ID of the Edit -> Restore Previous Selection action
+     */
+    public static final String RESTORE_PREVIOUS= PLUGIN_ID + ".editor.restorePrevious";
+
+    /**
      * Action definition ID of the Edit -> Shift Right action
      */
     public static final String SHIFT_RIGHT= PLUGIN_ID + ".editor.shiftRight"; 
