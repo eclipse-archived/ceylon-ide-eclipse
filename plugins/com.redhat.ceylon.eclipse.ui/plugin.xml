@@ -684,6 +684,13 @@
                   label="Restore Previous Selection"/>
       </menuContribution>
       <menuContribution
+            locationURI="menu:navigate?after=additions">
+            <command
+                  id="gotoMatchingFence"
+                  label="Go To Matching Bracket"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
                 label="Source"
@@ -1318,6 +1325,11 @@
             sequence="CTRL+SHIFT+ARROW_UP"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+M2+P"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="CTRL+SHIFT+ARROW_DOWN"

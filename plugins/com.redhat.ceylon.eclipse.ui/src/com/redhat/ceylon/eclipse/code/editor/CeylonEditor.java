@@ -782,9 +782,10 @@ extends PreviousSubWordAction implements IUpdate {
     public ProblemMarkerManager getProblemMarkerManager() {
         return problemMarkerManager;
     }
-
-    public void updatedTitleImage(Image image) {
-        setTitleImage(image);
+    
+    @Override
+    protected void setTitleImage(Image titleImage) {
+    	super.setTitleImage(titleImage);
     }
 
     /**
