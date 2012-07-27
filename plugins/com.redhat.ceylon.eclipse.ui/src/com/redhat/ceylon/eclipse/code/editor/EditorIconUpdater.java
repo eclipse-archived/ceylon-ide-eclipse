@@ -79,7 +79,7 @@ public class EditorIconUpdater implements IProblemChangedListener {
         if (shell!=null && !shell.isDisposed()) {
             shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
-                    fEditor.updatedTitleImage(newImage);
+                    fEditor.setTitleImage(newImage);
                 }
             });
         }
