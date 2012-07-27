@@ -69,6 +69,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.FontRegistry;
@@ -732,23 +733,27 @@ extends PreviousSubWordAction implements IUpdate {
 
         super.rulerContextMenuAboutToShow(menu);
 
-        IMenuManager foldingMenu= new MenuManager("Folding", "projection");
+        //IMenuManager foldingMenu= new MenuManager("Folding", "projection");
 
-        menu.appendToGroup(GROUP_RULERS, foldingMenu);
+        //menu.appendToGroup(GROUP_RULERS, foldingMenu);
 
+        menu.appendToGroup(GROUP_RULERS, new Separator());
+        
         IAction action;
 //      action= getAction("FoldingToggle");
 //      foldingMenu.add(action);
         action= getAction("FoldingExpandAll");
-        foldingMenu.add(action);
+        menu.appendToGroup(GROUP_RULERS, action);
+        //foldingMenu.add(action);
         action= getAction("FoldingCollapseAll");
-        foldingMenu.add(action);
-        action= getAction("FoldingRestore");
+        //foldingMenu.add(action);
+        menu.appendToGroup(GROUP_RULERS, action);
+        /*action= getAction("FoldingRestore");
         foldingMenu.add(action);
         action= getAction("FoldingCollapseMembers");
         foldingMenu.add(action);
         action= getAction("FoldingCollapseComments");
-        foldingMenu.add(action);
+        foldingMenu.add(action);*/
     }
 
     private void addDebugActions(IMenuManager menu) {
