@@ -1738,23 +1738,22 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public String getSelectionText() {
-        Point sel= getSelection();
+        IRegion sel= getSelection();
         IFileEditorInput fileEditorInput= (IFileEditorInput) getEditorInput();
         IDocument document= getDocumentProvider().getDocument(fileEditorInput);
-
         try {
-            return document.get(sel.x, sel.y);
-        } catch (BadLocationException e) {
+            return document.get(sel.getOffset(), sel.getLength());
+        } 
+        catch (BadLocationException e) {
             e.printStackTrace();
             return "";
         }
     }
 
-    public Point getSelection() {
+    public IRegion getSelection() {
         ISelection sel= this.getSelectionProvider().getSelection();
         ITextSelection textSel= (ITextSelection) sel;
-
-        return new Point(textSel.getOffset(), textSel.getLength());
+        return new Region(textSel.getOffset(), textSel.getLength());
     }
 
     public boolean canPerformFind() {
