@@ -54,6 +54,7 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -156,29 +157,15 @@ public class CeylonParseController {
             }
         }
 
-        VirtualFile file;
-        if (path == null) {
-            file = new SourceCodeVirtualFile(contents);
-        } 
-        else {
-            file = new SourceCodeVirtualFile(contents, path);
-        }
+        VirtualFile file = createSourceCodeVirtualFile(contents, path);
         
         if (isCanceling(monitor)) {
             return rootNode;
         }
         
-        ANTLRInputStream input;
-        try {
-            input = new ANTLRInputStream(file.getInputStream());
-        } 
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        CeylonLexer lexer = new CeylonLexer(input);
+        CeylonLexer lexer = new CeylonLexer(createInputStream(file));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
-        
         tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
         tokens.addAll(tokenStream.getTokens());
 
@@ -221,12 +208,7 @@ public class CeylonParseController {
         
         if (srcDir == null && project == null
                 && path!=null) { //path==null in structured compare editor
-        	String pathString = path.toString();
-        	int lastBangIdx = pathString.lastIndexOf('!');
-        	if (lastBangIdx > 0) {
-        		String srcArchivePath= pathString.substring(0, lastBangIdx);
-        		srcDir = new TemporaryFile(srcArchivePath+'!');
-        	}
+        	srcDir = inferSrcDir(path, srcDir);
         }
         
         if (project==null && 
@@ -250,7 +232,7 @@ public class CeylonParseController {
         
         if (typeChecker == null) {
         	try {
-        		createTypeChecker(project, showWarnings);
+        		typeChecker = createTypeChecker(project, showWarnings);
     		} 
     		catch (CoreException e) {
     		    return rootNode; 
@@ -272,6 +254,34 @@ public class CeylonParseController {
         
         return rootNode;
     }
+
+	private VirtualFile createSourceCodeVirtualFile(String contents, IPath path) {
+        if (path == null) {
+            return new SourceCodeVirtualFile(contents);
+        } 
+        else {
+            return new SourceCodeVirtualFile(contents, path);
+        }
+	}
+
+	private ANTLRInputStream createInputStream(VirtualFile file) {
+        try {
+            return new ANTLRInputStream(file.getInputStream());
+        } 
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+	}
+
+	private VirtualFile inferSrcDir(IPath path, VirtualFile srcDir) {
+		String pathString = path.toString();
+		int lastBangIdx = pathString.lastIndexOf('!');
+		if (lastBangIdx > 0) {
+			String srcArchivePath= pathString.substring(0, lastBangIdx);
+			srcDir = new TemporaryFile(srcArchivePath+'!');
+		}
+		return srcDir;
+	}
 
 	private void collectLexAndParseErrors(CeylonLexer lexer,
 			CeylonParser parser, Tree.CompilationUnit cu) {
@@ -319,7 +329,7 @@ public class CeylonParseController {
             if (srcDir==null) {
                 srcDir = new TemporaryFile();
                 //put it in the default module
-                pkg =  typeChecker.getContext().getModules()
+                pkg = typeChecker.getContext().getModules()
                 		.getDefaultModule().getPackages().get(0);
             }
             else {
@@ -345,13 +355,17 @@ public class CeylonParseController {
         return cu;
 	}
 
-	private void createTypeChecker(IProject project, boolean showWarnings) 
+	private static TypeChecker createTypeChecker(IProject project, boolean showWarnings) 
 	        throws CoreException {
 		TypeCheckerBuilder tcb = new TypeCheckerBuilder()
 		        .verbose(false).usageWarnings(showWarnings);
 		
 		List<String> repos = new LinkedList<String>();
-		if (project!=null) {
+		if (project==null) {
+			//TODO: infer the repo from the path!
+			repos.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+		}
+		else {
 			for (String repo: getUserRepositories(project)) {
 				repos.add(repo);
 			}
@@ -362,7 +376,7 @@ public class CeylonParseController {
 		
 		TypeChecker tc = tcb.getTypeChecker();
 		tc.process();
-		typeChecker = tc;
+		return tc;
 	}
 
 	private IProject findProject(IPath path) {
@@ -412,10 +426,12 @@ public class CeylonParseController {
 				JDTModelLoader modelLoader = getProjectModelLoader(getProject());
 				if (modelLoader != null) {
 					pkg = new LazyPackage(modelLoader);
-				} else {
+				}
+				else {
 					pkg = new Package();
 				}
-			} else {
+			}
+			else {
 				pkg = new Package();
 			}
 
