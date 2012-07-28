@@ -40,14 +40,16 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.corext.javadoc.JavaDocLocations;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -441,6 +443,38 @@ public class DocHover
 					Object target = getModel(control, location);
 					new FindAssignmentsAction(editor, (Declaration) target).run();
 				}
+				/*else if (location.startsWith("javadoc:")) {
+					final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
+					int beginIndex = input.getHtml().indexOf("javadoc:")+8;
+					final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
+					new Job("Fetching Javadoc") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							final IJavaElement elem = JavaCore.create(handle);
+							try {
+								final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+								if (javadoc!=null) {
+									PlatformUI.getWorkbench().getProgressService()
+									        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
+										@Override
+										public void run(IProgressMonitor monitor) 
+												throws InvocationTargetException, InterruptedException {
+											StringBuffer sb = new StringBuffer();
+											HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
+											appendJavadoc(elem, javadoc, sb);
+											HTMLPrinter.addPageEpilog(sb);
+											control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
+										}
+									}, null);
+								}
+							} 
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+							return Status.OK_STATUS;
+						}
+					}.schedule();
+				}*/
 			}
 			@Override
 			public void changed(LocationEvent event) {}
@@ -566,6 +600,21 @@ public class DocHover
 		}
 	}
 
+	private static void appendJavadoc(IJavaElement elem, StringBuffer sb) {
+		if (elem instanceof IMember) {
+			try {
+            	//TODO: Javadoc @ icon?
+				sb.append("<br/>").append(JavadocContentAccess2.getHTMLContent((IMember) elem, true));
+				String base = JavaDocLocations.getBaseURL((IMember) elem);
+				int endHeadIdx= sb.indexOf("</head>");
+				sb.insert(endHeadIdx, "\n<base href='" + base + "'>\n");
+			} 
+			catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
 		StringBuffer buffer= new StringBuffer();
 		
@@ -601,7 +650,7 @@ public class DocHover
 			buffer.append(".<br/>");
 		}
 		
-		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
 		return buffer.toString();
 		
@@ -613,6 +662,7 @@ public class DocHover
 	
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		StringBuffer buffer= new StringBuffer();
+		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		
 		Package pack = dec.getUnit().getPackage();
 		
@@ -727,7 +777,6 @@ public class DocHover
 							dec.getName() + "</tt>", 20, 2);
 		}
 		
-		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
 		return buffer.toString();
 	}
@@ -750,17 +799,11 @@ public class DocHover
 	}
 
     private static void appendJavadoc(Declaration model, IProject project,
-            StringBuffer documentation, Node node) {
+            StringBuffer buffer, Node node) {
         IJavaProject jp = JavaCore.create(project);
         if (jp!=null) {
             try {
-                IJavaElement je = getJavaElement(model, jp, node);
-                if (je!=null) {
-                    String javadoc = je.getAttachedJavadoc(new NullProgressMonitor());
-                    if (javadoc!=null) {
-                        documentation.append("<div>").append(javadoc).append("</div>");
-                    }
-                }
+            	appendJavadoc(getJavaElement(model, jp, node), buffer);
             }
             catch (JavaModelException jme) {
                 jme.printStackTrace();
