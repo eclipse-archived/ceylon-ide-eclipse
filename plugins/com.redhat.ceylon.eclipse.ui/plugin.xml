@@ -398,7 +398,7 @@
                icon="icons/mark_occurrences.gif"
                id="com.redhat.ceylon.eclipse.ui.action.markOccurrences"
                label="&amp;Toggle Mark Occurrences"
-               state="false"
+               state="true"
                style="toggle"
                toolbarPath="analysisGroup"
                tooltip="Highlight References to Ceylon Declaration"/>

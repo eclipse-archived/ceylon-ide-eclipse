@@ -21,9 +21,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -42,17 +41,16 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * changes, and computes a set of "occurrence" annotations in the editor, using the language-specific
  * "mark occurrences" service.
  */
-public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
+public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, CaretListener {
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
-	//TODO: change the id!!!!
     public static final String OCCURRENCE_ANNOTATION= PLUGIN_ID + ".occurrenceAnnotation";
 
     /**
      * True if "mark occurrences" is currently on/enabled
      */
-    private boolean fMarkingEnabled = false;
+    private boolean fMarkingEnabled = true;
 
     private CeylonEditor fActiveEditor;
 
@@ -81,41 +79,21 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 
     private Annotation[] fOccurrenceAnnotations;
 
-    private ISelectionChangedListener fSelectionListener;
-
-    private IPartListener fPartListener;
-
     /**
      * Listens to part-related events from the workbench to monitor when text editors are
      * activated/closed, and keep the necessary listeners pointed at the active editor.
      */
     private final class EditorPartListener implements IPartListener {
         public void partActivated(IWorkbenchPart part) {
-            if (part instanceof CeylonEditor && fMarkingEnabled) {
-                setUpActiveEditor((CeylonEditor) part);
-                if (fDocumentProvider == null)
-                    return;
-                IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
-                // Need to initialize the set of pre-existing annotations in order
-                // for them to be removed properly when new occurrences are marked
-                if (annotationModel != null) {
-                    @SuppressWarnings("unchecked")
-                    Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
-                    List<Annotation> annotationList = new ArrayList<Annotation>();
-
-                    while (annotationIterator.hasNext()) {
-                        // SMS 23 Jul 2008:  added test for annotation type
-                        Annotation ann = (Annotation) annotationIterator.next();
-                        if (ann.getType().indexOf(OCCURRENCE_ANNOTATION) > -1) {
-                            annotationList.add(ann);
-                        }
-                    }
-                    fOccurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
-                }
-            }
-            if (!fMarkingEnabled) {
-                unregisterListeners();
-                removeExistingOccurrenceAnnotations();
+            if (part instanceof CeylonEditor) {
+            	setUpActiveEditor((CeylonEditor) part);
+            	if (fDocumentProvider!=null) {
+            		retrieveOccurrenceAnnotations();
+            		if (!fMarkingEnabled) {
+            			unregisterListeners();
+            			removeExistingOccurrenceAnnotations();
+            		}
+            	}
             }
         }
 
@@ -136,76 +114,17 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
         public void partOpened(IWorkbenchPart part) { }
     }
 
-    /**
-     * Listens to selection changes and forces a recomputation of the annotations.
-     * The analysis is performed once each time the compilation unit in the active
-     * editor changes, and the results are reused each time the selection changes
-     * in order to produce the annotations corresponding to the selection.
-     */
-    private final class SelectionListener implements ISelectionChangedListener {
-        private ISelection previousSelection = null;
-
-        private SelectionListener() { }
-
-        public void selectionChanged(SelectionChangedEvent event) {
-            ISelection selection= event.getSelection();
-            if (selection instanceof ITextSelection) {
-                if (previousSelection != null && previousSelection.equals(selection)) {
-                    return;
-                }
-
-                previousSelection = selection;
-                ITextSelection textSel= (ITextSelection) selection;
-                int offset= textSel.getOffset();
-                int length= textSel.getLength();
-
-                if (length == 0)
-                    return;
-
-                recomputeAnnotationsForSelection(offset, length, fDocument);
-            }
-        }
+    public void caretMoved(CaretEvent event) {
+    	recomputeAnnotationsForSelection(event.caretOffset, 0, fDocument);
     }
-
-    /*
-     * Notes on the interaction of text folding and occurrence marking:
-     * 
-     * When you click on a text-folding widget, you can generate two events:  one signaling a
-     * change to the project model, the other signaling a change to the text selection (even
-     * though you have not directly clicked in text).  The selection-changed event is propagated
-     * to the listener posted by MarkOccurrencesAction, just as selection-changed events that
-     * actually correspond to changes of selections within the text.  Only selection-changed
-     * events originating within the text are of interest here.  More to the point, selection-
-     * changed events from the folding widgets should be ignored because they may cause the
-     * selection (and dependent markings) to be changed in unanticipated and undesirable ways.
-     * In general, we do not expect the text selection and dependent markings to change just
-     * because the text has been folded (or unfolded).
-     * 
-     * Unfortunately, while we can listen for updates to the projection annotation model,
-     * there appears to be no definite way to correlate changes in that model to changes in
-     * the annotation model that contains the selection annotations.  The projection annotation
-     * events seem to be generated after the corresponding selection-changed events, and they
-     * lack a text position or timestamp that would allow them to be correlated with the
-     * selection-changed events.
-     * 
-     * The one potentially useful characteristic of the selection-changed events that come
-     * from changes to the projection annotation model is that they seem to have a length of 0.
-     * On that basis, the selection listener implemented below filters out events of 0 length.
-     * This approach assumes that such events can be ignored.  In practice this does prevent
-     * changes to the projection annotation model from causing inappropriate updates to the
-     * text selection.  Some genuine selections of length 0 may be missed by this approach,
-     * but perhaps most text selections of interest will have length greater than 0.  If not,
-     * then we can revisit this issue.
-     */
-
-    public MarkOccurrencesAction() { }
 
     public void run(IAction action) {
         fMarkingEnabled = action.isChecked();
         if (fMarkingEnabled) {
             setUpActiveEditor((CeylonEditor) PlatformUI.getWorkbench()
             		.getActiveWorkbenchWindow().getActivePage().getActiveEditor());
-        } else {
+        } 
+        else {
             unregisterListeners();
             removeExistingOccurrenceAnnotations();
         }
@@ -216,23 +135,16 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
         // should only be called when there is an active editor that can
         // be presumed to have a document provider that has document
         IDocument document = getDocumentFromEditor();
-        if (document == null)
-            return;
-
-        fSelectionListener= new SelectionListener();
-        fActiveEditor.getSelectionProvider().addSelectionChangedListener(fSelectionListener);
+        if (document!=null) {
+            fActiveEditor.getCeylonSourceViewer().getTextWidget()
+                    .addCaretListener(this);
+        }
     }
 
     private void unregisterListeners() {
-        if (fActiveEditor == null)
-            return;
-        if (fSelectionListener != null) {
-            ISelectionProvider provider = fActiveEditor.getSelectionProvider();
-            if (provider != null)
-                fActiveEditor.getSelectionProvider().removeSelectionChangedListener(fSelectionListener);
-        }
-        if (fPartListener != null) {
-            fActiveEditor.getSite().getPage().removePartListener(fPartListener);
+        if (fActiveEditor!=null) {
+        	fActiveEditor.getCeylonSourceViewer().getTextWidget()
+                    .removeCaretListener(this);
         }
     }
 
@@ -276,7 +188,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 
     private Map<Annotation, Position> convertPositionsToAnnotationMap(Position[] positions, IDocument document) {
         Map<Annotation, Position> annotationMap= new HashMap<Annotation, Position>(positions.length);
-
         for(int i= 0; i < positions.length; i++) {
             Position position= positions[i];
             try { // Create & add annotation
@@ -291,12 +202,11 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
     }
 
     private void placeAnnotations(Map<Annotation,Position> annotationMap, IAnnotationModel annotationModel) {
-        Object lockObject= getLockObject(annotationModel);
-
-        synchronized (lockObject) {
+        synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
                 ((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, annotationMap);
-            } else {
+            } 
+            else {
                 removeExistingOccurrenceAnnotations();
                 Iterator<Map.Entry<Annotation,Position>> iter= annotationMap.entrySet().iterator();
                 while (iter.hasNext()) {
@@ -307,6 +217,25 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
             fOccurrenceAnnotations= (Annotation[]) annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
         }
     }
+
+	private void retrieveOccurrenceAnnotations() {
+		IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
+		// Need to initialize the set of pre-existing annotations in order
+		// for them to be removed properly when new occurrences are marked
+		if (annotationModel != null) {
+		    @SuppressWarnings("unchecked")
+		    Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+		    List<Annotation> annotationList = new ArrayList<Annotation>();
+		    while (annotationIterator.hasNext()) {
+		        // SMS 23 Jul 2008:  added test for annotation type
+		        Annotation ann = (Annotation) annotationIterator.next();
+		        if (ann.getType().indexOf(OCCURRENCE_ANNOTATION) > -1) {
+		            annotationList.add(ann);
+		        }
+		    }
+		    fOccurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
+		}
+	}
 
     void removeExistingOccurrenceAnnotations() {
         // RMF 6/27/2008 - If we've come up in an empty workspace, there won't be an active editor
@@ -361,7 +290,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 
     private IDocumentProvider getDocumentProvider() {
         fDocumentProvider= fActiveEditor.getDocumentProvider();
-        
         return fDocumentProvider;
     }
 
