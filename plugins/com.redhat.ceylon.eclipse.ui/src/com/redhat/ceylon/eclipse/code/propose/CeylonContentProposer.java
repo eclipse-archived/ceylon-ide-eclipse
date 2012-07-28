@@ -1116,12 +1116,12 @@ public class CeylonContentProposer {
     private static String name(Declaration d, String alias) {
         char c = alias.charAt(0);
         if (d instanceof TypedDeclaration &&
-                Character.isUpperCase(c)) {
+                (isUpperCase(c)||"object".equals(alias))) {
             return "\\i" + alias;
         }
         else if (d instanceof TypeDeclaration &&
                 !(d instanceof Class && d.isAnonymous()) &&
-                Character.isLowerCase(c)) {
+                isLowerCase(c)) {
             return "\\I" + alias;
         }
         else {

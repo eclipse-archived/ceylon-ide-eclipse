@@ -2,12 +2,16 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
@@ -21,6 +25,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -91,18 +96,19 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
         final TextChange change = new DocumentChange("Refine Formal Members", document);
-        //TODO: copy/pasted from CeylonQuickFixAssisitant
+        change.setEdit(new MultiTextEdit());
+        //TODO: copy/pasted from CeylonQuickFixAssistant
         Tree.Body body;
         int offset;
         if (node instanceof Tree.ClassDefinition) {
             body = ((Tree.ClassDefinition) node).getClassBody();
             offset = -1;
         }
-        if (node instanceof Tree.InterfaceDefinition) {
+        else if (node instanceof Tree.InterfaceDefinition) {
             body = ((Tree.InterfaceDefinition) node).getInterfaceBody();
             offset = -1;
         }
-        if (node instanceof Tree.ObjectDefinition) {
+        else if (node instanceof Tree.ObjectDefinition) {
             body = ((Tree.ObjectDefinition) node).getClassBody();
             offset = -1;
         }
@@ -115,6 +121,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             //TODO run a visitor to find the containing body!
             return;//TODO popup error dialog
         }
+        //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
         String indentAfter;
@@ -130,15 +137,17 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             if (offset<0) offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
+        Set<Declaration> already = new HashSet<Declaration>();
         for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-            	ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(node, d);
+            	ProducedReference pr = getRefinedProducedReference(node, d);
                 result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
+                importSignatureTypes(d, cu, change, already);
             }
         }
-        change.setEdit(new InsertEdit(offset, result.toString()));
+        change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {
             getWorkspace().run(new PerformChangeOperation(change), 

@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.ge
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.HashSet;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -88,7 +90,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 			}
 		}*/
 		ProducedType type = node.getUnit().denotableType(term.getTypeModel());
-		if (explicitType) importType(tfc, type, rootNode);
+		if (explicitType) importType(tfc, type, rootNode, new HashSet<Declaration>());
 		String dec = (explicitType ? type.getProducedTypeName() : "value") + " " + 
         				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
