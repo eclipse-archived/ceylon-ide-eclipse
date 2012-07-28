@@ -286,7 +286,7 @@
             annotationType="com.redhat.ceylon.eclipse.ui.todo"
             label="Ceylon Tasks"
             symbolicIcon="task"
-            presentationLayer="0"
+            presentationLayer="1"
             contributesToHeader="true"
             includeOnPreferencePage="true"
             
@@ -313,16 +313,17 @@
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
             label="Ceylon Occurrences"
-            icon="icons/searchm_obj.gif"
-            presentationLayer="4"
+            presentationLayer="0"
             contributesToHeader="false"
             includeOnPreferencePage="true"
-            
-            isGoToNextNavigationTarget="true"
+            icon="icons/occ_match.gif"
+                        
+            isGoToNextNavigationTarget="false"
             isGoToNextNavigationTargetKey="occurrenceAnnotationIsGotoNextKey"
-            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTarget="false"
             isGoToPreviousNavigationTargetKey="occurrenceAnnotationIsGotoPrevKey"
-            showInNextPrevDropdownToolbarAction="true"
+            showInNextPrevDropdownToolbarActionKey="occurrenceAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="false"
             
             colorPreferenceKey="occurrenceColorPreference"
             textPreferenceKey="occurrenceTextPreference"
@@ -331,12 +332,15 @@
             verticalRulerPreferenceKey="occurrenceVerticalRulerPreference"
             overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
             
-            colorPreferenceValue="224,240,224"
+            colorPreferenceValue="206,236,245"
             textPreferenceValue="true"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="true"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/>
+            <!-- colorPreferenceValue="169,226,243"
+                 colorPreferenceValue="224,240,224" 
+                 colorPreferenceValue="224,224,240" -->
             
    </extension>
    
@@ -749,6 +753,7 @@
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+                  icon="icons/url.gif"
                   label="Toggle Comment"/>
           </menu>
       </menuContribution>
@@ -771,6 +776,7 @@
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+                  icon="icons/url.gif"
                   label="Toggle Comment"/>
       </menuContribution>
       <menuContribution
