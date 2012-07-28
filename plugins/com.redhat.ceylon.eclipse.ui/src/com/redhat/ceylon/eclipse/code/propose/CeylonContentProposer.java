@@ -632,16 +632,10 @@ public class CeylonContentProposer {
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: if it is equals() or hash, fill in the implementation
-            result.add(new CompletionProposal(offset, prefix, 
-                    d.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
+            result.add(new RefinementCompletionProposal(offset, prefix,  
                     getRefinementDescriptionFor(d, pr), 
                     getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), 
-                    false) {
-            	@Override
-            	public String getAdditionalProposalInfo() {
-            		return getDocumentationFor(cpc, d);
-            	}
-            });
+                    false, cpc, d));
         }
     }
     

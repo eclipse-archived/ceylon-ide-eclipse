@@ -13,7 +13,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 final class DeclarationCompletionProposal extends CompletionProposal {
 	
 	private final CeylonParseController cpc;
-	private final Declaration d;
+	private final Declaration declaration;
 	private final boolean addimport;
 
 	DeclarationCompletionProposal(int offset, String prefix, 
@@ -30,7 +30,7 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 		super(offset, prefix, CeylonLabelProvider.getImage(d), 
 				desc, text, selectParams);
 		this.cpc = cpc;
-		this.d = d;
+		this.declaration = d;
 		this.addimport = addimport;
 	}
 
@@ -40,8 +40,8 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 		if (addimport) {
 			try {
 				importEdit(cpc.getRootNode(), 
-					d.getUnit().getPackage().getNameAsString(), 
-					d.getName())
+					declaration.getUnit().getPackage().getNameAsString(), 
+					declaration.getName())
 						.apply(document);
 			} 
 			catch (Exception e) {
@@ -51,15 +51,15 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 	}
 	
 	public String getAdditionalProposalInfo() {
-		return getDocumentationFor(cpc, d);	
+		return getDocumentationFor(cpc, declaration);	
 	}
 	
 	@Override
 	public Point getSelection(IDocument document) {
 		if (addimport) {
 			int importLength = importEdit(cpc.getRootNode(), 
-					d.getUnit().getPackage().getNameAsString(), 
-					d.getName()).getText().length();
+					declaration.getUnit().getPackage().getNameAsString(), 
+					declaration.getName()).getText().length();
 			Point selection = super.getSelection(document);
 			selection.x+=importLength;
 			return selection;
