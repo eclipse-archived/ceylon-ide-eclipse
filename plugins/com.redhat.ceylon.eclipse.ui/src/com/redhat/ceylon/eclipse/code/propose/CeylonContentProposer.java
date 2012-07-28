@@ -524,7 +524,9 @@ public class CeylonContentProposer {
                     }
                 }
                 if (isRefinementProposable(dec, ol)) {
-                    addRefinementProposal(offset, prefix, cpc, node, result, dec, doc);
+                	for (Declaration d: overloads(dec)) {
+                		addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
+                	}
                 }
             }
         }
