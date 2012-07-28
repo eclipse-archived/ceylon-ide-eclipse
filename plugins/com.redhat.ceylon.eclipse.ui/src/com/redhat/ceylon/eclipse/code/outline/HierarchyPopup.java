@@ -23,8 +23,10 @@ import org.eclipse.swt.widgets.Tree;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
@@ -54,7 +56,8 @@ public class HierarchyPopup extends TreeViewPopup {
 	
     public HierarchyPopup(CeylonEditor editor, Shell parent, int shellStyle, 
     		int treeStyle) {
-        super(parent, shellStyle, treeStyle, editor);
+        super(parent, shellStyle, treeStyle, editor,
+        		CeylonTokenColorer.getCurrentThemeColor("hierarchy"));
     }
     
     /*@Override
@@ -187,8 +190,10 @@ public class HierarchyPopup extends TreeViewPopup {
 	        	Declaration dec = hn.getDeclaration();
 	        	if (dec!=null) {
 	        		//TODO: this is broken for Java declarations
-	        		gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	        				cpc.getProject(), cpc.getTypeChecker());
+	        		Node refNode = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+	        		if (refNode!=null) {
+	        			gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+	        		}
 	        	}
 	        }
     	}

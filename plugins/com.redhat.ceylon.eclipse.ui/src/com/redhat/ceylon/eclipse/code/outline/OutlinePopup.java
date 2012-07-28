@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends TreeViewPopup {
@@ -146,7 +147,8 @@ public class OutlinePopup extends TreeViewPopup {
 
     public OutlinePopup(CeylonEditor editor, Shell parent, 
     		int shellStyle, int treeStyle) {
-        super(parent, shellStyle, treeStyle, editor);
+        super(parent, shellStyle, treeStyle, editor,
+        		CeylonTokenColorer.getCurrentThemeColor("outline"));
         setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 

@@ -64,7 +64,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -190,7 +189,7 @@ public abstract class TreeViewPopup extends PopupDialog
 	 * @param showStatusField <code>true</code> iff the control has a status field at the bottom
 	 */
 	public TreeViewPopup(Shell parent, int shellStyle, int treeStyle, 
-			/*String invokingCommandId,*/ CeylonEditor editor) {
+			/*String invokingCommandId,*/ CeylonEditor editor, Color color) {
 		super(parent, shellStyle, true, true, false, true, true, null, null);
 		this.editor = editor;
 		/*if (invokingCommandId != null) {
@@ -211,7 +210,6 @@ public abstract class TreeViewPopup extends PopupDialog
 		// Create all controls early to preserve the life cycle of the original implementation.
 		create();
 		
-		Color color = CeylonTokenColorer.getCurrentThemeColor("popup");
 		getShell().setBackground(color);
 		setBackgroundColor(color);
 
