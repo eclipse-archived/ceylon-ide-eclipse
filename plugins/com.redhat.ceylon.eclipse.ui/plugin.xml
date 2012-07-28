@@ -1172,9 +1172,19 @@
 
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.popup" 
-        label="Outline/hierarchy popup background"
-        value="224,248,224">
+        id="com.redhat.ceylon.eclipse.ui.theme.color.outline" 
+        label="Outline popup background"
+        value="206,246,236"> <!--224,248,224  206,206,246-->
+        <description>
+            Background color for outline and hierarchy popup controls. (Takes effect after closing Ceylon editor.)
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.hierarchy" 
+        label="Hierarchy popup background"
+        value="246,227,206"> <!--245,236,206-->
         <description>
             Background color for outline and hierarchy popup controls. (Takes effect after closing Ceylon editor.)
         </description>
