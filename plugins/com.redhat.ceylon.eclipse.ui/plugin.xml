@@ -703,6 +703,14 @@
                   visible="true"
                   name="sep2"/>
             <command 
+                  id="quickAssist"
+                  commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
+                  icon="icons/quickassist_obj.gif"
+                  label="Quick Assist"/>
+            <separator
+                  visible="true"
+                  name="sep25"/>
+            <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
