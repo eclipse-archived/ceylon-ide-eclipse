@@ -114,12 +114,12 @@ public class CeylonParseController {
         
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
-        if (monitor != null) {
+        if (monitor!=null) {
             isCanceling = monitor.isCanceled();
         }
         CeylonParserScheduler scheduler = getScheduler();
-        if (scheduler != null && scheduler.isCanceling()) {
-            if (monitor != null && !monitor.isCanceled()) {
+        if (scheduler!=null && scheduler.isCanceling()) {
+            if (monitor!=null && !monitor.isCanceled()) {
                 monitor.setCanceled(true);
             }
             isCanceling = true;
@@ -206,7 +206,7 @@ public class CeylonParseController {
             srcDir = getSourceFolder(project, resolvedPath);
         }
         
-        if (srcDir == null && project == null
+        if (srcDir==null && project==null
                 && path!=null) { //path==null in structured compare editor
         	srcDir = inferSrcDir(path, srcDir);
         }
@@ -216,7 +216,7 @@ public class CeylonParseController {
         	project = findProject(path);
         }
         
-        if (project != null) {
+        if (project!=null) {
             if (!isModelAvailable(project)) {
                 return rootNode; // TypeChecking has not been performed
             }
@@ -230,7 +230,7 @@ public class CeylonParseController {
 
         boolean showWarnings = showWarnings(project);
         
-        if (typeChecker == null) {
+        if (typeChecker==null) {
         	try {
         		typeChecker = createTypeChecker(project, showWarnings);
     		} 
@@ -276,7 +276,7 @@ public class CeylonParseController {
 	private VirtualFile inferSrcDir(IPath path, VirtualFile srcDir) {
 		String pathString = path.toString();
 		int lastBangIdx = pathString.lastIndexOf('!');
-		if (lastBangIdx > 0) {
+		if (lastBangIdx>0) {
 			String srcArchivePath= pathString.substring(0, lastBangIdx);
 			srcDir = new TemporaryFile(srcArchivePath+'!');
 		}
@@ -314,7 +314,7 @@ public class CeylonParseController {
 			Tree.CompilationUnit cu, VirtualFile srcDir, 
 			boolean showWarnings, PhasedUnit builtPhasedUnit) {
 		PhasedUnit phasedUnit;
-        if (isExternalPath(path) && builtPhasedUnit != null) {
+        if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
         	cu = builtPhasedUnit.getCompilationUnit();
             rootNode = cu;
@@ -454,11 +454,11 @@ public class CeylonParseController {
 						break;
 					}
 				}
-				if (pkg != null) {
+				if (pkg!=null) {
 					break;
 				}
 			}
-			if (pkg == null) {
+			if (pkg==null) {
 				// assume the default package
 				pkg = modules.getDefaultModule().getPackages().get(0);
 
