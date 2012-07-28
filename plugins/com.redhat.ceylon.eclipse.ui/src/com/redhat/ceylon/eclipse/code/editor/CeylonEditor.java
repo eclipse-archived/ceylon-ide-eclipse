@@ -146,13 +146,7 @@ public class CeylonEditor extends TextEditor {
 	
 	public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-	private static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + 
-			".action.hierarchy";
-
-	private static final String SHOW_CEYLON_CODE = PLUGIN_ID + 
-			".action.code";
-
-    private static final int REPARSE_SCHEDULE_DELAY= 200;
+	private static final int REPARSE_SCHEDULE_DELAY= 200;
 
     /** 
      * Parent annotation ID
@@ -338,13 +332,13 @@ public class CeylonEditor extends TextEditor {
 
     	action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
     			CeylonSourceViewer.SHOW_HIERARCHY, true);
-        action.setActionDefinitionId(SHOW_CEYLON_HIERARCHY);
-        setAction(SHOW_CEYLON_HIERARCHY, action);
+        action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_HIERARCHY);
+        setAction(EditorActionIds.SHOW_CEYLON_HIERARCHY, action);
 
     	action= new TextOperationAction(bundle, "ShowCode.", this, 
     			CeylonSourceViewer.SHOW_CODE, true);
-        action.setActionDefinitionId(SHOW_CEYLON_CODE);
-        setAction(SHOW_CEYLON_CODE, action);
+        action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
+        setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
 
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
@@ -354,9 +348,11 @@ public class CeylonEditor extends TextEditor {
         getAction(ITextEditorActionConstants.SHIFT_RIGHT)
             .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
         		.getDescriptor(ICeylonResources.SHIFT_RIGHT));
-        getAction(ITextEditorActionConstants.QUICK_ASSIST)
-            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+        
+        IAction qaa=getAction(ITextEditorActionConstants.QUICK_ASSIST);
+        qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
     		    .getDescriptor(ICeylonResources.QUICK_ASSIST));
+        qaa.setText("Quick Fix/Assist");
         
     }
     
