@@ -227,6 +227,7 @@ final class CodePopup extends PopupDialog
 		Node node = findNode(epc.getRootNode(), r.getOffset(), 
 				r.getOffset()+r.getLength());
 		referencedNode = getReferencedNode(node, epc);
+		if (referencedNode==null) return;
 		IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
 		IEditorInput ei = getEditorInput(path);
 		IDocumentProvider adp = editor.getArchiveDocumentProvider(ei);
