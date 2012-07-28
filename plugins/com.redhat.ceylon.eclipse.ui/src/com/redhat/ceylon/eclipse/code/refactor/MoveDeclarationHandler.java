@@ -16,6 +16,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -79,7 +80,12 @@ public class MoveDeclarationHandler extends AbstractHandler {
 
     public static boolean canMoveDeclaration(CeylonEditor editor) {
         Node node = getSelectedNode(editor);
-        return node instanceof Tree.Declaration &&
-                ((Tree.Declaration) node).getDeclarationModel().isToplevel();
+        if (node instanceof Tree.Declaration) {
+        	Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+        	return d!=null && d.isToplevel();
+        }
+        else {
+        	return false;
+        }
     }
 }
