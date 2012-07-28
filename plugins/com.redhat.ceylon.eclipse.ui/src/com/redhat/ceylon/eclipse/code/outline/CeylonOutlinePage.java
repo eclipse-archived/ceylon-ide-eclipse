@@ -321,6 +321,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     	if (suspend) return;
 		suspend = true;
     	CompilationUnit rootNode = parseController.getRootNode();
+    	if (rootNode==null) return;
     	OutlineNodeVisitor v = new OutlineNodeVisitor(event.caretOffset);
     	rootNode.visit(v);
     	if (!v.result.isEmpty()) {
