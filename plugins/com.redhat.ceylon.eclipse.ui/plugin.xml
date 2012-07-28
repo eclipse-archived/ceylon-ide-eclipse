@@ -705,14 +705,17 @@
             <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+                  icon="icons/outline_co.gif"
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  icon="icons/class_hi.gif"
                   label="Show Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  icon="icons/source.gif"
                   label="Show Code"/>
             <separator
                   name="sep3" 
@@ -781,14 +784,17 @@
             <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+                  icon="icons/outline_co.gif"
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  icon="icons/class_hi.gif"
                   label="Show Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  icon="icons/source.gif"
                   label="Show Code"/>
       </menuContribution>
       <menuContribution
@@ -1424,7 +1430,7 @@
             id="com.redhat.ceylon.eclipse.ui.views"/>
       <view
             name="Ceylon Explorer"
-            icon="icons/package.gif"
+            icon="icons/ceylon_icon_16px.png"
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart"
             id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>

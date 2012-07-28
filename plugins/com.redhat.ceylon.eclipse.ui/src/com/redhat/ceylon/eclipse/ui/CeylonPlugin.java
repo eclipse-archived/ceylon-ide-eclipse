@@ -211,6 +211,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
         reg.put(ELE32, image("ceylon_icon_32px.png"));
 		reg.put(CEYLON_ERR, image("error_co.gif"));
 		reg.put(CEYLON_WARN, image("warning_co.gif"));
+		reg.put(GOTO, image("goto_obj.gif"));
 		reg.put(CONFIG_ANN, image("configure_annotations.gif"));
 		reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
 
