@@ -243,9 +243,7 @@ public class DocHover
 	}
 	
 	private void gotoDeclaration(BrowserInformationControl control, Object model) {
-		control.notifyDelayedInputChange(null);
-		control.dispose(); //FIXME: should have protocol to hide, rather than dispose
-
+		close(control); //FIXME: should have protocol to hide, rather than dispose
 		CeylonParseController cpc = editor.getParseController();
 		Declaration dec = (Declaration)model;
 		Node refNode = getReferencedNode(dec, cpc);
@@ -255,6 +253,11 @@ public class DocHover
 		else {
 			gotoJavaNode(dec, cpc);
 		}
+	}
+
+	private void close(BrowserInformationControl control) {
+		control.notifyDelayedInputChange(null);
+		control.dispose();
 	}
 
 
@@ -429,18 +432,22 @@ public class DocHover
 				}
 				else if (location.startsWith("ref:")) {
 					Object target = getModel(control, location);
+					close(control);
 					new FindReferencesAction(editor, (Declaration) target).run();
 				}
 				else if (location.startsWith("sub:")) {
 					Object target = getModel(control, location);
+					close(control);
 					new FindSubtypesAction(editor, (Declaration) target).run();
 				}
 				else if (location.startsWith("act:")) {
 					Object target = getModel(control, location);
+					close(control);
 					new FindRefinementsAction(editor, (Declaration) target).run();
 				}
 				else if (location.startsWith("ass:")) {
 					Object target = getModel(control, location);
+					close(control);
 					new FindAssignmentsAction(editor, (Declaration) target).run();
 				}
 				/*else if (location.startsWith("javadoc:")) {
