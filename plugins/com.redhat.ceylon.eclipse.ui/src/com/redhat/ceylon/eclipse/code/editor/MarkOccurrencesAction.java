@@ -14,6 +14,7 @@ import java.util.Map;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ISynchronizable;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
@@ -115,7 +116,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
     }
 
     public void caretMoved(CaretEvent event) {
-    	recomputeAnnotationsForSelection(event.caretOffset, 0, fDocument);
+    	int offset = event.caretOffset;
+    	int length = 0;
+    	IRegion selection = fActiveEditor.getSelection();
+		if (selection.getLength()>0) {
+    		offset = selection.getOffset();
+    		length = selection.getLength();
+    	}
+    	recomputeAnnotationsForSelection(offset, length, fDocument);
     }
 
     public void run(IAction action) {
