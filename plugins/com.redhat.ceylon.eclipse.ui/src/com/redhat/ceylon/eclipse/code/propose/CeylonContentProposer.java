@@ -599,10 +599,10 @@ public class CeylonContentProposer {
         //TODO: type argument substitution using the ProducedReference of the primary node
         if (d instanceof Parameter) {
             Parameter p = (Parameter) d;
-            result.add(new DeclarationCompletionProposal(offset, prefix,
+            result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null),
                     getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)),
-                    false, cpc, d));
+                    cpc, d));
         }
     }
 
@@ -637,7 +637,7 @@ public class CeylonContentProposer {
             result.add(new RefinementCompletionProposal(offset, prefix,  
                     getRefinementDescriptionFor(d, pr), 
                     getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), 
-                    false, cpc, d));
+                    cpc, d));
         }
     }
     
@@ -1318,11 +1318,16 @@ public class CeylonContentProposer {
                         if (p instanceof FunctionalParameter) {
                             result.append("function ").append(p.getName());
                             appendParameters(p, pr.getTypedParameter(p), result);
-                            result.append(" { return ").append(p.getName()).append("; } ");
+                            result.append(" { return ")
+                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+                                .append(p.getName())
+                                .append("; } ");
                         }
                         else {
                             result.append(p.getName()).append(" = ")
-                            .append(p.getName()).append("; ");
+                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+                                .append(p.getName())
+                                .append("; ");
                         }
                     }
                 }
@@ -1416,11 +1421,12 @@ public class CeylonContentProposer {
     
     private static void appendNamedArgumentText(Parameter p, ProducedReference pr, 
             StringBuilder result) {
-        if (p instanceof ValueParameter) {
-            result.append("value");
+        if (p instanceof FunctionalParameter) {
+        	FunctionalParameter fp = (FunctionalParameter) p;
+            result.append(fp.isDeclaredVoid() ? "void" : "function");
         }
         else {
-            result.append("function");
+            result.append("value");
         }
         result.append(" ").append(p.getName());
     }
@@ -1491,7 +1497,7 @@ public class CeylonContentProposer {
     
     private static void appendImpl(Declaration d, String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
-            result.append( ((Method) d).isDeclaredVoid() ?
+            result.append( ((Functional) d).isDeclaredVoid() ?
                     " {}" : " {" + extraIndent(indent) + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {

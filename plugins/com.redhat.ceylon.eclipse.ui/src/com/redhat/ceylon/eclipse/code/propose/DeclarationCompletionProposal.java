@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -36,36 +36,24 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 
 	@Override
 	public void apply(IDocument document) {
-		super.apply(document);
 		if (addimport) {
 			try {
-				importEdit(cpc.getRootNode(), 
+				InsertEdit ie = importEdit(cpc.getRootNode(), 
 					declaration.getUnit().getPackage().getNameAsString(), 
-					declaration.getName())
-						.apply(document);
+					declaration.getName());
+				ie.apply(document);
+				offset+=ie.getText().length();
+						
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		super.apply(document);
 	}
 	
 	public String getAdditionalProposalInfo() {
 		return getDocumentationFor(cpc, declaration);	
 	}
 	
-	@Override
-	public Point getSelection(IDocument document) {
-		if (addimport) {
-			int importLength = importEdit(cpc.getRootNode(), 
-					declaration.getUnit().getPackage().getNameAsString(), 
-					declaration.getName()).getText().length();
-			Point selection = super.getSelection(document);
-			selection.x+=importLength;
-			return selection;
-		}
-		else {
-			return super.getSelection(document);
-		}
-	}
 }
