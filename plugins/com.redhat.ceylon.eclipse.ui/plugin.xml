@@ -192,12 +192,13 @@
             super="org.eclipse.ui.workbench.texteditor.info"/>
       <type
             markerSeverity="0"
-            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
-            super="org.eclipse.ui.workbench.texteditor.info"/>
-      <type name="com.redhat.ceylon.eclipse.ui.refinement"
-            markerSeverity="0"/>
-      <type name="com.redhat.ceylon.eclipse.ui.todo"
-            markerSeverity="0"/>
+            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
+      <type 
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.refinement"/>
+      <type 
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.todo"/>
    </extension>
    
    <extension
@@ -336,7 +337,7 @@
             textPreferenceValue="true"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="true"
-            verticalRulerPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
             overviewRulerPreferenceValue="true"/>
             <!-- colorPreferenceValue="169,226,243"
                  colorPreferenceValue="224,240,224" 
