@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -178,30 +177,22 @@ public class CeylonReferenceResolver {
                 String relativePath = getRelativePath(dec);
                 PhasedUnit pu = typeChecker==null ? null : 
                     typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(relativePath);
-                if (pu != null) {
+                if (pu!=null) {
                     return pu.getCompilationUnit();
                 }
                 
-                IProject currentProject = null;
-                for (IProject project : getProjects()) {
-                    TypeChecker alternateTypeChecker = getProjectTypeChecker(project);
-                    if (alternateTypeChecker == typeChecker) {
-                        currentProject = project;
-                        break;
-                    }
-                }
-                
-                if (currentProject != null) {
+                IProject currentProject = cpc.getProject();
+                if (currentProject!=null) {
                     try {
 						for (IProject project: currentProject.getReferencedProjects()) {
 						    JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
-						    if (requiredProjectLoader == null) {
+						    if (requiredProjectLoader==null) {
 						        continue;
 						    }
 						    Declaration originalDecl = requiredProjectLoader
 						    		.getDeclaration(dec.getQualifiedNameString(), 
 						    		        DeclarationType.TYPE);
-						    if (originalDecl != null) {
+						    if (originalDecl!=null) {
 						        String fileName = originalDecl.getUnit().getFilename();
 						        String packagePath = originalDecl.getUnit().getPackage()
 						        		.getQualifiedNameString().replace('.', '/');
@@ -226,15 +217,15 @@ public class CeylonReferenceResolver {
 					}
                 }
                 
-                if (pu == null && typeChecker != null) {
+                if (pu==null && typeChecker!=null) {
                     for (PhasedUnits dependencies : typeChecker.getPhasedUnitsOfDependencies()) {
                         pu = dependencies.getPhasedUnitFromRelativePath(relativePath);
-                        if (pu != null) {
+                        if (pu!=null) {
                             break;
                         }
                     }
                 }
-                if (pu != null) {
+                if (pu!=null) {
                     return pu.getCompilationUnit();
                 }
                 return null;
