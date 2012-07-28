@@ -14,9 +14,9 @@ class CompletionProposal implements ICompletionProposal, ICompletionProposalExte
     private final String text;
     private final Image image;
     private final boolean selectParams;
-    private final int offset;
     private final String prefix;
     private final String description;
+    protected int offset;
     
     CompletionProposal(int offset, String prefix, Image image,
             String desc, String text, boolean selectParams) {

@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -24,14 +23,13 @@ final class RefinementCompletionProposal extends CompletionProposal {
 	
 	private final CeylonParseController cpc;
 	private final Declaration declaration;
-	private int shift;
 
 	RefinementCompletionProposal(int offset, String prefix, 
-			String desc, String text, boolean selectParams,
+			String desc, String text,
 			CeylonParseController cpc, Declaration d) {
 		super(offset, prefix, d.isFormal() ? 
 					FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
-				desc, text, selectParams);
+				desc, text, false);
 		this.cpc = cpc;
 		this.declaration = d;
 	}
@@ -39,15 +37,14 @@ final class RefinementCompletionProposal extends CompletionProposal {
 	@Override
 	public void apply(IDocument document) {
 		int originalLength = document.getLength();
-		super.apply(document);
 		try {
-			DocumentChange imports = imports(document);
-			imports.perform(new NullProgressMonitor());
+			imports(document).perform(new NullProgressMonitor());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		shift = document.getLength() - originalLength;
+		offset += document.getLength() - originalLength;
+		super.apply(document);
 	}
 
 	private DocumentChange imports(IDocument document)
@@ -72,10 +69,4 @@ final class RefinementCompletionProposal extends CompletionProposal {
 		return getDocumentationFor(cpc, declaration);	
 	}
 	
-	@Override
-	public Point getSelection(IDocument document) {
-		Point selection = super.getSelection(document);
-		selection.x+=shift;
-		return selection;
-	}
 }
