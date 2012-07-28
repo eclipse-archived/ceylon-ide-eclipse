@@ -29,6 +29,7 @@ import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -64,6 +65,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
+import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -291,19 +293,19 @@ public class CeylonEditor extends TextEditor {
         setAction("Format", action);
         markAsStateDependentAction("Format", true);
         markAsSelectionDependentAction("Format", true);
-//      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
+        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
 
         action= new TextOperationAction(bundle, "ShowOutline.", this, 
         		CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */);
         action.setActionDefinitionId(SHOW_OUTLINE);
         setAction(SHOW_OUTLINE, action);
-//      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
+        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
 
         action= new TextOperationAction(bundle, "ToggleComment.", this, 
         		CeylonSourceViewer.TOGGLE_COMMENT);
         action.setActionDefinitionId(TOGGLE_COMMENT);
         setAction(TOGGLE_COMMENT, action);
-//      PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
+        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
 
         action= new TextOperationAction(bundle, "CorrectIndentation.", this, 
         		CeylonSourceViewer.CORRECT_INDENTATION);
@@ -798,131 +800,6 @@ extends PreviousSubWordAction implements IUpdate {
     @Override
     protected void setTitleImage(Image titleImage) {
     	super.setTitleImage(titleImage);
-    }
-
-    /**
-     * Jumps to the next enabled annotation according to the given direction.
-     * An annotation type is enabled if it is configured to be in the
-     * Next/Previous tool bar drop down menu and if it is checked.
-     *
-     * @param forward <code>true</code> if search direction is forward, <code>false</code> if backward
-     */
-    public Annotation gotoAnnotation(boolean forward) {
-        ITextSelection selection= (ITextSelection) getSelectionProvider().getSelection();
-        Position position= new Position(0, 0);
-        Annotation annotation= getNextAnnotation(selection.getOffset(), 
-        		selection.getLength(), forward, position);
-        setStatusLineErrorMessage(null);
-        setStatusLineMessage(null);
-        if (annotation != null) {
-        	updateAnnotationViews(annotation);
-        	selectAndReveal(position.getOffset(), position.getLength());
-        	setStatusLineMessage(annotation.getText());
-        }
-        return annotation;
-    }
-    
-    
-    /**
-     * Returns the annotation closest to the given range respecting the given
-     * direction. If an annotation is found, the annotations current position
-     * is copied into the provided annotation position.
-     *
-     * @param offset the region offset	
-     * @param length the region length
-     * @param forward <code>true</code> for forwards, <code>false</code> for backward
-     * @param annotationPosition the position of the found annotation
-     * @return the found annotation
-     */
-    private Annotation getNextAnnotation(final int offset, final int length, boolean forward, 
-    		Position annotationPosition) {
-    	
-        Annotation nextAnnotation= null;
-        Position nextAnnotationPosition= null;
-        Annotation containingAnnotation= null;
-        Position containingAnnotationPosition= null;
-        boolean currentAnnotation= false;
-
-        IDocument document= getDocumentProvider().getDocument(getEditorInput());
-        int endOfDocument= document.getLength();
-        int distance= Integer.MAX_VALUE;
-
-        IAnnotationModel model= getDocumentProvider().getAnnotationModel(getEditorInput());
-        for (Iterator iter= model.getAnnotationIterator(); iter.hasNext();) {
-            Annotation a= (Annotation) iter.next();
-            if (!(a instanceof MarkerAnnotation) && 
-            		!isParseAnnotation(a))
-                continue;
-
-            Position p= model.getPosition(a);
-            if (p == null)
-                continue;
-
-            if (forward && p.offset==offset || 
-            		!forward && p.offset+p.getLength()==offset+length) {// || p.includes(offset)) {
-                if (containingAnnotation == null
-                        || (forward && p.length>=containingAnnotationPosition.length || 
-                            !forward && p.length>=containingAnnotationPosition.length)) {
-                    containingAnnotation= a;
-                    containingAnnotationPosition= p;
-                    currentAnnotation= p.length==length;
-                }
-            } 
-            else {
-                int currentDistance= forward ? p.getOffset()-offset : 
-                	offset+length-p.getOffset()-p.length;
-
-                if (currentDistance<0)
-                    currentDistance= endOfDocument + currentDistance;
-
-                if (currentDistance<distance || 
-                		currentDistance==distance && 
-                		    p.length<nextAnnotationPosition.length) {
-                    distance= currentDistance;
-                    nextAnnotation= a;
-                    nextAnnotationPosition= p;
-                }
-            }
-        }
-        if (containingAnnotationPosition!=null && 
-        		(!currentAnnotation || nextAnnotation==null)) {
-            annotationPosition.setOffset(containingAnnotationPosition.getOffset());
-            annotationPosition.setLength(containingAnnotationPosition.getLength());
-            return containingAnnotation;
-        }
-        if (nextAnnotationPosition!=null) {
-            annotationPosition.setOffset(nextAnnotationPosition.getOffset());
-            annotationPosition.setLength(nextAnnotationPosition.getLength());
-        }
-
-        return nextAnnotation;
-    }
-
-    /**
-     * Updates the annotation views that show the given annotation.
-     *
-     * @param annotation the annotation
-     */
-    private void updateAnnotationViews(Annotation annotation) {
-        /*IMarker marker= null;
-        if (annotation instanceof MarkerAnnotation)
-            marker= ((MarkerAnnotation) annotation).getMarker();
-        else if (marker != null) {
-            try {
-                boolean isProblem= marker.isSubtypeOf(IMarker.PROBLEM);
-                IWorkbenchPage page= getSite().getPage();
-                IViewPart view= page.findView(isProblem ? IPageLayout.ID_PROBLEM_VIEW : IPageLayout.ID_TASK_LIST);
-                if (view != null) {
-                    Method method= view.getClass().getMethod("setSelection", new Class[] { IStructuredSelection.class, boolean.class });
-                    method.invoke(view, new Object[] { new StructuredSelection(marker), Boolean.TRUE });
-                }
-            } catch (CoreException x) {
-            } catch (NoSuchMethodException x) {
-            } catch (IllegalAccessException x) {
-            } catch (InvocationTargetException x) {
-            }
-            // ignore exceptions, don't update any of the lists, just set status line
-        }*/
     }
 
     @Override

@@ -190,15 +190,13 @@
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.parseAnnotation.info"
             super="org.eclipse.ui.workbench.texteditor.info"/>
-      <type
-            markerSeverity="0"
-            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
-      <type 
-            markerSeverity="0"
-            name="com.redhat.ceylon.eclipse.ui.refinement"/>
       <type 
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.todo"/>
+      <type
+            name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
+      <type 
+            name="com.redhat.ceylon.eclipse.ui.refinement"/>
    </extension>
    
    <extension
@@ -265,7 +263,7 @@
             label="Ceylon Refinement Indicators"
             annotationImageProvider="com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationImageProvider"
             icon="icons/over_co.gif"
-            presentationLayer="0"
+            presentationLayer="4"
             contributesToHeader="true"
             includeOnPreferencePage="true"
             
@@ -314,7 +312,7 @@
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
             label="Ceylon Occurrences"
-            presentationLayer="0"
+            presentationLayer="3"
             contributesToHeader="false"
             includeOnPreferencePage="true"
             icon="icons/occ_match.gif"
@@ -324,7 +322,7 @@
             isGoToPreviousNavigationTarget="false"
             isGoToPreviousNavigationTargetKey="occurrenceAnnotationIsGotoPrevKey"
             showInNextPrevDropdownToolbarActionKey="occurrenceAnnotationIsShownInDropdown"
-            showInNextPrevDropdownToolbarAction="false"
+            showInNextPrevDropdownToolbarAction="true"
             
             colorPreferenceKey="occurrenceColorPreference"
             textPreferenceKey="occurrenceTextPreference"
@@ -334,12 +332,12 @@
             overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
             
             colorPreferenceValue="206,236,245"
-            textPreferenceValue="true"
+            textPreferenceValue="false"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="true"
             verticalRulerPreferenceValue="false"
             overviewRulerPreferenceValue="true"/>
-            <!-- colorPreferenceValue="169,226,243"
+            <!-- colorPreferenceValue="206,236,245"
                  colorPreferenceValue="224,240,224" 
                  colorPreferenceValue="224,224,240" -->
             
