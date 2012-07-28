@@ -723,14 +723,17 @@
             <command
                   id="shiftRight"
                   commandId="org.eclipse.ui.edit.text.shiftRight"
+                  icon="icons/shift_r_edit.gif"
                   label="Shift Right"/>
             <command
                   id="shiftLeft"
                   commandId="org.eclipse.ui.edit.text.shiftLeft"
+                  icon="icons/shift_l_edit.gif"
                   label="Shift Left"/>
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+                  icon="icons/glyph2.gif"
                   label="Correct Indentation"/>
             <separator 
                   name="sep4" 
@@ -752,6 +755,7 @@
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+                  icon="icons/glyph2.gif"
                   label="Correct Indentation"/>
             <separator 
                   name="sep1" 
