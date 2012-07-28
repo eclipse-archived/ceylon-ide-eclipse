@@ -4,15 +4,16 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -48,7 +49,7 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         int il;
         if (infType!=null) {
         	explicitType = infType.getProducedTypeName();
-            il = importType(change, infType, cu);
+            il = importType(change, infType, cu, new HashSet<Declaration>());
         }
         else {
             explicitType = "Object";

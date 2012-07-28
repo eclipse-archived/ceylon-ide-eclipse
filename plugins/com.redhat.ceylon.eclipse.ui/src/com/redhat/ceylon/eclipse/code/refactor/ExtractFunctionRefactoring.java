@@ -363,7 +363,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 ending = "return ";
                 if (explicitType || dec.isToplevel()) {
                 	type = returnType.getProducedTypeName();
-                	importType(tfc, returnType, rootNode);
+                	importType(tfc, returnType, rootNode, new HashSet<Declaration>());
                 }
                 else {
                 	type = "function";
@@ -463,7 +463,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null) {
         	if (explicitType||dec.isToplevel()) {
         		content = returnType.getProducedTypeName();
-        		importType(tfc, returnType, rootNode);
+        		importType(tfc, returnType, rootNode, new HashSet<Declaration>());
         	}
         	else {
         		content = "function";

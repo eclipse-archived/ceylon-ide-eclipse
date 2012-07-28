@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.im
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
 
@@ -92,7 +93,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
 					}
 					else {
 						explicitType = infType.getProducedTypeName();
-						importType(change, infType, cu);
+						importType(change, infType, cu, new HashSet<Declaration>());
 					}
                     change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
                 }

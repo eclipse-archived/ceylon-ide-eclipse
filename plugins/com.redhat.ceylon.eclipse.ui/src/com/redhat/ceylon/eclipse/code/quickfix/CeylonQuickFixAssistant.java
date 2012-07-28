@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
@@ -54,6 +55,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -64,17 +66,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifiedArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -176,7 +167,7 @@ public class CeylonQuickFixAssistant {
                     !(node instanceof Tree.ObjectDefinition) &&
                     !(node instanceof Tree.Variable) &&
                     !(node instanceof Tree.Parameter)) {
-                Type type = ((Tree.TypedDeclaration) node).getType();
+                Tree.Type type = ((Tree.TypedDeclaration) node).getType();
                 if (type instanceof Tree.LocalModifier) {
                     SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
                 }
@@ -198,7 +189,7 @@ public class CeylonQuickFixAssistant {
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
 
-            Statement statement = findStatement(cu, node);
+            Tree.Statement statement = findStatement(cu, node);
             ConvertThenElseToIfElse.addConvertToIfElseProposal(doc, proposals, file, statement);
             ConvertIfElseToThenElse.addConvertToThenElseProposal(cu, doc, proposals, file, statement);
             InvertIfElse.addReverseIfElseProposal(doc, proposals, file, statement);
@@ -839,7 +830,7 @@ public class CeylonQuickFixAssistant {
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SpecifierExpression) {
-            Expression e = ((Tree.SpecifierExpression) node).getExpression();
+        	Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
             if (e!=null) {
                 node = e.getTerm();
             }
@@ -899,7 +890,7 @@ public class CeylonQuickFixAssistant {
             IProject project, TypeChecker tc, IFile file) {
         FindInvocationVisitor fav = new FindInvocationVisitor(node);
         fav.visit(cu);
-        Primary prim = fav.result.getPrimary();
+        Tree.Primary prim = fav.result.getPrimary();
         if (prim instanceof Tree.BaseMemberOrTypeExpression) {
             ProducedReference pr = ((Tree.BaseMemberOrTypeExpression) prim).getTarget();
             if (pr!=null) {
@@ -918,15 +909,15 @@ public class CeylonQuickFixAssistant {
                     }
                 }
                 else if (node instanceof Tree.SpecifiedArgument) {
-                    SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
-                    SpecifierExpression se = sa.getSpecifierExpression();
+                	Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
+                	Tree.SpecifierExpression se = sa.getSpecifierExpression();
                     if (se!=null && se.getExpression()!=null) {
                         t = se.getExpression().getTypeModel();
                     }
                     n = sa.getIdentifier().getText();
                 }
                 else if (node instanceof Tree.TypedArgument) {
-                    TypedArgument ta = (Tree.TypedArgument) node;
+                	Tree.TypedArgument ta = (Tree.TypedArgument) node;
                     t = ta.getType().getTypeModel();
                     n = ta.getIdentifier().getText();
                 }
@@ -1019,7 +1010,7 @@ public class CeylonQuickFixAssistant {
         if (ce instanceof CeylonEditor) {
             CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
             if (cpc!=null) {
-                CompilationUnit rn = cpc.getRootNode();
+            	Tree.CompilationUnit rn = cpc.getRootNode();
                 if (rn!=null) {
                     Unit u = rn.getUnit();
                     if (u.equals(unit.getUnit())) {
@@ -1049,7 +1040,7 @@ public class CeylonQuickFixAssistant {
             return ((Tree.AnyClass) decNode).getParameterList();
         }
         else if (decNode instanceof Tree.AnyMethod){
-            List<ParameterList> pls = ((Tree.AnyMethod) decNode).getParameterLists();
+            List<Tree.ParameterList> pls = ((Tree.AnyMethod) decNode).getParameterLists();
             return pls.isEmpty() ? null : pls.get(0);
         }
         return null;
@@ -1188,7 +1179,7 @@ public class CeylonQuickFixAssistant {
 		if (importNode != null) {
             int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
             String text;
-            ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+            Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
             if (imtl.getImportWildcard()!=null) {
                 text = declaration + ", ";
             }
@@ -1227,12 +1218,12 @@ public class CeylonQuickFixAssistant {
 
     private static int getBestImportMemberInsertPosition(Tree.Import importNode,
             String declaration) {
-        ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+    	Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
         if (imtl.getImportWildcard()!=null) {
             return imtl.getImportWildcard().getStartIndex();
         }
         else {
-            List<ImportMemberOrType> imts = imtl.getImportMemberOrTypes();
+            List<Tree.ImportMemberOrType> imts = imtl.getImportMemberOrTypes();
             if (imts.isEmpty()) {
                 return imtl.getStartIndex()+1;
             }
@@ -1279,44 +1270,66 @@ public class CeylonQuickFixAssistant {
         }
     }
 
+	public static void importSignatureTypes(Declaration declaration, 
+			Tree.CompilationUnit rootNode, TextChange tc, 
+			Set<Declaration> alreadyImported) {
+		if (declaration instanceof TypedDeclaration) {
+			ProducedType t = ((TypedDeclaration) declaration).getType();
+			importType(tc, t, rootNode, alreadyImported);
+		}
+		if (declaration instanceof Functional) {
+			for (ParameterList pl: ((Functional) declaration).getParameterLists()) {
+				for (Parameter p: pl.getParameters()) {
+					importType(tc, p.getType(), rootNode, alreadyImported);
+				}
+			}
+		}
+	}
+
 	public static int importType(TextChange tfc, ProducedType type, 
-			Tree.CompilationUnit rootNode) {
+			Tree.CompilationUnit rootNode, Set<Declaration> alreadyImported) {
 		if (type==null) return 0;
 		if (type.getDeclaration() instanceof UnionType) {
 			int result = 0;
 			for (ProducedType t: type.getDeclaration().getCaseTypes()) {
-				result+=importType(tfc, t, rootNode);
+				result+=importType(tfc, t, rootNode, alreadyImported);
 			}
 			return result;
 		}
 		else if (type.getDeclaration() instanceof IntersectionType) {
 			int result = 0;
 			for (ProducedType t: type.getDeclaration().getSatisfiedTypes()) {
-				result+=importType(tfc, t, rootNode);
+				result+=importType(tfc, t, rootNode, alreadyImported);
 			}
 			return result;
 		}
 		else {
 			TypeDeclaration td = type.getDeclaration();
+			int result=0;
 			if (td instanceof ClassOrInterface && 
 					td.isToplevel()) {
 				if (!td.getQualifiedNameString().startsWith("ceylon.language")) {
-					boolean imported = false;
-					for (Import i: rootNode.getUnit().getImports()) {
-						if (i.getDeclaration().equals(td)) {
-							imported = true;
+					if (alreadyImported.add(td)) {
+						boolean imported = false;
+						for (Import i: rootNode.getUnit().getImports()) {
+							if (i.getDeclaration().equals(td)) {
+								imported = true;
+							}
+						}
+						if (!imported) {
+							InsertEdit ie = importEdit(rootNode, 
+									((Package)td.getContainer()).getNameAsString(),
+									td.getName());
+							tfc.addEdit(ie);
+							result+=ie.getText().length();
 						}
 					}
-					if (!imported) {
-						InsertEdit ie = importEdit(rootNode, 
-								((Package)td.getContainer()).getNameAsString(),
-								td.getName());
-						tfc.addEdit(ie);
-						return ie.getText().length();
-					}
+				}
+				for (ProducedType arg: type.getTypeArgumentList()) {
+					result+=importType(tfc, arg, rootNode, alreadyImported);
 				}
 			}
-			return 0;
+			return result;
 		}
 	}
 

@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.im
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
 
@@ -61,7 +62,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
 			}
 			else {
 				explicitType = infType.getProducedTypeName();
-				il=importType(change, infType, cu);
+				il=importType(change, infType, cu, new HashSet<Declaration>());
 			}
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }
