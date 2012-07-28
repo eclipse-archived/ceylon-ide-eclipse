@@ -26,7 +26,7 @@ public class OpenSelectedDeclarationMenuItem extends CompoundContributionItem {
     protected IContributionItem[] getContributionItems() {
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
-                        "Open Selected Declaration",
+                        "Go To Selected Declaration",
                         new OpenSelectedDeclarationHandler().isEnabled(), 
                         GOTO_IMAGE)
             };

@@ -415,8 +415,8 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Open selected declaration"
-            name="Open Selected Declaration"/>
+            description="Go to selected declaration"
+            name="Go To Selected Declaration"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -433,12 +433,12 @@
             description="Open welcome page"
             name="Ceylon Welcome"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+            id="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show popup hierarchy view"
             name="Show Ceylon Hierarchy"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.code"
+            id="com.redhat.ceylon.eclipse.ui.editor.code"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show popup code view"
             name="Show Ceylon Code"/>
@@ -570,7 +570,7 @@
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
        <key
-           sequence="M3+D"
+           sequence="F3"
            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
@@ -581,12 +581,12 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M1+T"
-           commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+           commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
            sequence="M1+P"
-           commandId="com.redhat.ceylon.eclipse.ui.action.code"
+           commandId="com.redhat.ceylon.eclipse.ui.editor.code"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
        <key
@@ -706,7 +706,7 @@
                   id="quickAssist"
                   commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
                   icon="icons/quickassist_obj.gif"
-                  label="Quick Assist"/>
+                  label="Quick Fix/Assist"/>
             <separator
                   visible="true"
                   name="sep25"/>
@@ -717,12 +717,12 @@
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
                   label="Show Hierarchy"/>
             <command 
                   id="showCode"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="Show Code"/>
             <separator
@@ -800,12 +800,12 @@
                   label="Show Outline"/>
             <command 
                   id="showHierarchy"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.hierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
                   label="Show Hierarchy"/>
             <command 
                   id="showCode"
-                  commandId="com.redhat.ceylon.eclipse.ui.action.code"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="Show Code"/>
       </menuContribution>
@@ -1354,11 +1354,6 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="F3"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.openDeclaration"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -1371,14 +1366,12 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             name="Collapse Members"
             description="Collapses all members in the current source file"
-            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers">
-      </command>
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             name="Collapse Comments"
             description="Collapses all multi-line comments in the current source file"
-            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments">
-      </command>
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Comments/uncomments the current selection or the current source line"
@@ -1395,8 +1388,7 @@
             name="Go to Matching Fence"
             description="Moves the cursor to the matching fence character, if any"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            id="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence">
-      </command>
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
       <command
             name="Go to Previous Navigation Target"
             description="Go to Previous Navigation Target"
@@ -1407,32 +1399,23 @@
             description="Go to Next Navigation Target"
             categoryId="com.redhat.ceylon.eclipse.ui"
             id="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"/>
-      <command
-            name="Open Declaration"
-            description="Open an editor on the selected element"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            id="com.redhat.ceylon.eclipse.ui.editor.openDeclaration">
-      </command>
 
       <!-- -->
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Re-indent the selected text according to current formatting settings"
             id="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-            name="Correct Indentation">
-      </command>
+            name="Correct Indentation"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Select the innermost enclosing construct"
             id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-            name="Select Enclosing">
-      </command>
+            name="Select Enclosing"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Restore the previous selection"
             id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            name="Restore Previous Selection">
-      </command>
+            name="Restore Previous Selection"/>
    </extension>
    
    <extension

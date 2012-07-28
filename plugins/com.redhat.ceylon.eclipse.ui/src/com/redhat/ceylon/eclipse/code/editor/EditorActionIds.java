@@ -44,11 +44,6 @@ public interface EditorActionIds {
     public static final String GOTO_NEXT_TARGET= PLUGIN_ID + ".editor.gotoNextTarget"; 
 
     /**
-     * Action definition ID of the Edit -> Open Declaration action
-     */
-    public static final String OPEN_EDITOR= PLUGIN_ID + ".editor.openDeclaration"; 
-
-    /**
      * Action definition ID of the Edit -> Select Enclosing action
      */
     public static final String SELECT_ENCLOSING= PLUGIN_ID + ".editor.selectEnclosing";
@@ -57,16 +52,6 @@ public interface EditorActionIds {
      * Action definition ID of the Edit -> Restore Previous Selection action
      */
     public static final String RESTORE_PREVIOUS= PLUGIN_ID + ".editor.restorePrevious";
-
-    /**
-     * Action definition ID of the Edit -> Shift Right action
-     */
-    public static final String SHIFT_RIGHT= PLUGIN_ID + ".editor.shiftRight"; 
-
-    /**
-     * Action definition ID of the Edit -> Shift Left action
-     */
-    public static final String SHIFT_LEFT= PLUGIN_ID + ".editor.shiftLeft"; 
 
     /**
      * Action definition ID of the navigate -> Show Outline action
@@ -78,6 +63,11 @@ public interface EditorActionIds {
     /**
      * Action definition ID of the Edit -> Toggle Comment action
      */
-    public static final String TOGGLE_COMMENT= PLUGIN_ID + ".editor.toggleComment"; 
+    public static final String TOGGLE_COMMENT= PLUGIN_ID + ".editor.toggleComment";
+
+    public static final String SHOW_CEYLON_CODE = PLUGIN_ID + ".editor.code";
+
+    public static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".editor.hierarchy"; 
+
 }
 
