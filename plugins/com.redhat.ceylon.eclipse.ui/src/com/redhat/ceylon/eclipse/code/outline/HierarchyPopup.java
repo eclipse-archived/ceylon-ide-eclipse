@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_HIER;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
@@ -24,6 +25,7 @@ import org.eclipse.swt.widgets.Tree;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
@@ -190,9 +192,15 @@ public class HierarchyPopup extends TreeViewPopup {
 	        	Declaration dec = hn.getDeclaration();
 	        	if (dec!=null) {
 	        		//TODO: this is broken for Java declarations
-	        		Node refNode = getReferencedNode(dec, getCompilationUnit(cpc, dec));
-	        		if (refNode!=null) {
-	        			gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+	        		CompilationUnit cu = getCompilationUnit(cpc, dec);
+	        		if (cu!=null) {
+	        			Node refNode = getReferencedNode(dec, cu);
+	        			if (refNode!=null) {
+	        				gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+	        			}
+	        		}
+	        		else {
+	        			gotoJavaNode(dec, cpc);
 	        		}
 	        	}
 	        }

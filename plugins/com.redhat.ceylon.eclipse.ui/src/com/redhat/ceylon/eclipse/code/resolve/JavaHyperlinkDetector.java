@@ -126,7 +126,25 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         }
     }
 
-    private static IType findType(IJavaProject jp, String fullyQualifiedName) 
+    public static void gotoJavaNode(Declaration dec, CeylonParseController cpc) {
+		IJavaProject jp = JavaCore.create(cpc.getProject());
+		if (jp!=null) {
+		    try {
+		        IJavaElement element = getJavaElement(dec, jp, null);
+		        if (element!=null) {
+		            IEditorPart part = openInEditor(element, true);
+		            if (part!=null) {
+		                revealInEditor(part, element);
+		            }
+		        }
+		    }
+		    catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+	}
+
+	private static IType findType(IJavaProject jp, String fullyQualifiedName) 
     		throws JavaModelException {
         JDTModelLoader modelLoader = getProjectModelLoader(jp.getProject());
         if (modelLoader==null) {
