@@ -23,7 +23,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
-import static java.lang.Integer.toHexString;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -68,7 +68,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
@@ -100,7 +99,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
@@ -246,9 +244,15 @@ public class DocHover
 		control.notifyDelayedInputChange(null);
 		control.dispose(); //FIXME: should have protocol to hide, rather than dispose
 
-		CeylonParseController parseController = editor.getParseController();
-		gotoNode(getReferencedNode((Declaration)model, parseController), 
-				parseController.getProject(), parseController.getTypeChecker());
+		CeylonParseController cpc = editor.getParseController();
+		Declaration dec = (Declaration)model;
+		Node refNode = getReferencedNode(dec, cpc);
+		if (refNode!=null) {
+			gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+		}
+		else {
+			gotoJavaNode(dec, cpc);
+		}
 	}
 
 
@@ -694,13 +698,13 @@ public class DocHover
 			}
 		}
 		
-		if (dec.getUnit().getFilename().endsWith(".ceylon")) {
+		//if (dec.getUnit().getFilename().endsWith(".ceylon")) {
 			//if (extraBreak) 
 			buffer.append("<hr/>");
 			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
 					16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
 							dec.getUnit().getFilename() + "</tt>", 20, 2);
-		}
+		//}
 		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
 				16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
