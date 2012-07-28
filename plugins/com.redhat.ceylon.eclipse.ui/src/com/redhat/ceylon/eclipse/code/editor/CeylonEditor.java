@@ -68,7 +68,6 @@ import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -117,6 +116,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IEditorStatusLine;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -133,6 +133,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 
 /**
  * An Eclipse editor, which is not enhanced using API; rather, we publish extension
@@ -346,6 +347,16 @@ public class CeylonEditor extends TextEditor {
         setAction(SHOW_CEYLON_CODE, action);
 
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
+        
+        getAction(ITextEditorActionConstants.SHIFT_LEFT)
+            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+            		.getDescriptor(ICeylonResources.SHIFT_LEFT));
+        getAction(ITextEditorActionConstants.SHIFT_RIGHT)
+            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+        		.getDescriptor(ICeylonResources.SHIFT_RIGHT));
+        getAction(ITextEditorActionConstants.QUICK_ASSIST)
+            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+    		    .getDescriptor(ICeylonResources.QUICK_ASSIST));
         
     }
     
