@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
+import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
+import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
 import java.util.List;
 
@@ -14,7 +16,6 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -54,9 +55,9 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         @Override
         public void open() {
             try {
-                IEditorPart part = EditorUtility.openInEditor(elem, true);
-                if(part!=null) {
-                    EditorUtility.revealInEditor(part, elem);
+                IEditorPart part = openInEditor(elem, true);
+                if (part!=null) {
+                    revealInEditor(part, elem);
                 }
             } 
             catch (PartInitException e) {
@@ -112,8 +113,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                 return null;
                             }
                             else {
-                                final IJavaElement elem = element;
-                                return new IHyperlink[] { new JavaElementLink(elem, id) };
+                                return new IHyperlink[] { new JavaElementLink(element, id) };
                             }
                         }
                         catch (JavaModelException jme) {
