@@ -754,7 +754,7 @@ public class DocHover
                 if (je!=null) {
                     String javadoc = je.getAttachedJavadoc(new NullProgressMonitor());
                     if (javadoc!=null) {
-                        documentation.append(javadoc);
+                        documentation.append("<div>").append(javadoc).append("</div>");
                     }
                 }
             }
