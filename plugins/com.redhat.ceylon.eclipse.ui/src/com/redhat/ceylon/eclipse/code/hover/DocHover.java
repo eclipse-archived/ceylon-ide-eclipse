@@ -261,8 +261,8 @@ public class DocHover
 			if (isAvailable(parent)) {
 				ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
 				BrowserInformationControl control= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, tbm, 
-						CeylonTokenColorer.getCurrentThemeColor("docHover"));
+						APPEARANCE_JAVADOC_FONT, tbm, null
+						/*CeylonTokenColorer.getCurrentThemeColor("docHover")*/);
 
 				final BackAction backAction= new BackAction(control);
 				backAction.setEnabled(false);
@@ -337,8 +337,8 @@ public class DocHover
 		public IInformationControl doCreateInformationControl(Shell parent) {
 			if (isAvailable(parent)) {
 				BrowserInformationControl control= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, statusLineMessage,
-						CeylonTokenColorer.getCurrentThemeColor("docHover")) {
+						APPEARANCE_JAVADOC_FONT, statusLineMessage, null
+						/*CeylonTokenColorer.getCurrentThemeColor("docHover")*/) {
 					@Override
 					public IInformationControlCreator getInformationPresenterControlCreator() {
 						return fInformationPresenterControlCreator;
@@ -876,9 +876,9 @@ public class DocHover
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
 			fgStyleSheet= loadStyleSheet();
-		Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
-		String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-		String css= fgStyleSheet + "body { background-color: #" + color+ " }";
+		//Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
+		//String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
+		String css= fgStyleSheet;// + "body { background-color: #" + color+ " }";
 		if (css != null) {
 			FontData fontData= JFaceResources.getFontRegistry()
 					.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];

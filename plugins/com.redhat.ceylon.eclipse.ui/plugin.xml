@@ -1190,7 +1190,7 @@
         </description>
     </colorDefinition>
 
-    <colorDefinition
+    <!--colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.docHover" 
         label="Documentation hover background"
@@ -1208,7 +1208,7 @@
         <description>
             Background color for message hover information control. (Takes effect after closing Ceylon editor.)
         </description>
-    </colorDefinition>
+    </colorDefinition-->
 
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"

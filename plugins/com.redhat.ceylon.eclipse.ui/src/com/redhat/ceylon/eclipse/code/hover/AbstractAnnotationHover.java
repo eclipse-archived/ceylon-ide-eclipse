@@ -496,8 +496,8 @@ public abstract class AbstractAnnotationHover
 	 */
 	private static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT),
-					CeylonTokenColorer.getCurrentThemeColor("messageHover"));
+			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT), null
+					/*CeylonTokenColorer.getCurrentThemeColor("messageHover")*/);
 		}
 	}
 
@@ -515,8 +515,8 @@ public abstract class AbstractAnnotationHover
 		}
 
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, "F2 for focus",
-					CeylonTokenColorer.getCurrentThemeColor("messageHover")) {
+			return new AnnotationInformationControl(parent, "F2 for focus", null
+					/*CeylonTokenColorer.getCurrentThemeColor("messageHover")*/) {
 				public IInformationControlCreator getInformationPresenterControlCreator() {
 					return fPresenterControlCreator;
 				}

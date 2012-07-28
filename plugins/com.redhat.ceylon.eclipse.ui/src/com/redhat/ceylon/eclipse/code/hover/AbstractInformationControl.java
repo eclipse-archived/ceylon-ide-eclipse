@@ -189,7 +189,7 @@ public abstract class AbstractInformationControl implements IInformationControl,
 		fShell= new Shell(parentShell, shellStyle);
 		Display display= fShell.getDisplay();
 		Color foreground= display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
-		Color background= color;
+		Color background= display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 		setColor(fShell, foreground, background);
 
 		GridLayout layout= new GridLayout(1, false);
