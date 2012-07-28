@@ -250,7 +250,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new OutlinePopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 			}
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
@@ -300,7 +300,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				return new HierarchyPopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
+						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 			}
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
