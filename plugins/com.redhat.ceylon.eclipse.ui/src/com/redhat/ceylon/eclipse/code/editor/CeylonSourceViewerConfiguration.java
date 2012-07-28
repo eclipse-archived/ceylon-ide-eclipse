@@ -131,8 +131,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return new IInformationControlCreator() {
             public IInformationControl createInformationControl(Shell parent) {
                 return new BrowserInformationControl(parent, 
-                		APPEARANCE_JAVADOC_FONT, (String)null,
-                		CeylonTokenColorer.getCurrentThemeColor("docHover")) {
+                		APPEARANCE_JAVADOC_FONT, (String)null, null
+                		/*CeylonTokenColorer.getCurrentThemeColor("docHover")*/) {
 					@Override
 					public Point computeSizeHint() {
 						Point sh = super.computeSizeHint();
