@@ -127,10 +127,14 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     }
 
     public static void gotoJavaNode(Declaration dec, CeylonParseController cpc) {
+    	gotoJavaNode(dec, null, cpc);
+    }
+    
+    public static void gotoJavaNode(Declaration dec, Node node, CeylonParseController cpc) {
 		IJavaProject jp = JavaCore.create(cpc.getProject());
 		if (jp!=null) {
 		    try {
-		        IJavaElement element = getJavaElement(dec, jp, null);
+		        IJavaElement element = getJavaElement(dec, jp, node);
 		        if (element!=null) {
 		            IEditorPart part = openInEditor(element, true);
 		            if (part!=null) {

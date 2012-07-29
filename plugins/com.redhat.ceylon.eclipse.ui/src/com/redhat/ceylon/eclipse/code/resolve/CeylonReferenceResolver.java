@@ -60,7 +60,7 @@ public class CeylonReferenceResolver {
         return getReferencedNode(dec, getCompilationUnit(controller,dec));
     }
 
-    private static Declaration getReferencedDeclarationOrPackage(Node node) {
+    public static Declaration getReferencedDeclarationOrPackage(Node node) {
         Declaration dec;
         if (node instanceof Tree.ImportPath) {
             Package p = ((Tree.ImportPath) node).getPackageModel();
