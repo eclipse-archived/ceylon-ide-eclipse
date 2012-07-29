@@ -1,8 +1,13 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -14,19 +19,23 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
@@ -75,13 +84,35 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     public void createSubtype(CeylonEditor editor) {
         TypeDeclaration td = type.getDeclaration();
-        NewUnitWizard.open(subtypeDeclaration(type, false), 
+        CreateSubtype cs = subtypeDeclaration(type, false);
+		NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
                 Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
         		"Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
     }
 
-    public static String subtypeDeclaration(ProducedType type, boolean object) {
+	public static class CreateSubtype {
+		private String definition;
+		private String imports;
+		private Set<ProducedType> importedTypes;
+		CreateSubtype(String definition, String imports,
+				Set<ProducedType> importedTypes) {
+			this.definition = definition;
+			this.imports = imports;
+			this.importedTypes = importedTypes;
+		}
+		public String getDefinition() {
+			return definition;
+		}
+		public String getImports() {
+			return imports;
+		}
+		public Set<ProducedType> getImportedTypes() {
+			return importedTypes;
+		}
+	}
+	
+    public static CreateSubtype subtypeDeclaration(ProducedType type, boolean object) {
         TypeDeclaration td = type.getDeclaration();
         StringBuilder def = new StringBuilder();
         if (object) {
@@ -121,7 +152,9 @@ class CreateSubtypeProposal implements ICompletionProposal {
             	def.append("()");
             }
         }
+        Set<ProducedType> allTypes = new HashSet<ProducedType>();
         if (td instanceof IntersectionType) {
+        	allTypes.addAll(td.getSatisfiedTypes());
             for (ProducedType pt: td.getSatisfiedTypes()) {
                 if (pt.getDeclaration() instanceof Class) {
                     appendClass(pt, (Class) pt.getDeclaration(), def);
@@ -136,24 +169,93 @@ class CreateSubtypeProposal implements ICompletionProposal {
             }
         }
         else if (td instanceof Class) {
+        	allTypes.add(type);
         	appendClass(type, (Class) td, def);
         }
         else {
+        	allTypes.add(type);
         	appendInterface(type, td, def, true);
         }
         def.append(" {\n");
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations("", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-        		ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(type, d);
-        		def.append("    ").append(getRefinementTextFor(d, pr, ""))
-        		        .append("\n");
+        		if (d instanceof ClassOrInterface) {
+        			allTypes.add(((ClassOrInterface) d).getType());
+        		}
+        		else if (d instanceof TypedDeclaration) {
+        			allTypes.add(((TypedDeclaration) d).getType());
+        		}
+        		if (d instanceof Functional) {
+        			for (ParameterList pl: ((Functional) d).getParameterLists()) {
+        				for (Parameter p: pl.getParameters()) {
+        					allTypes.add(p.getType());
+        				}
+        			}
+        		}
+        		ProducedReference pr = getRefinedProducedReference(type, d);
+            	if (pr instanceof ProducedTypedReference) {
+            		def.append("    ")
+            			.append(getRefinementTextFor(d, pr, ""))
+            			.append("\n");
+            	}
         	}
         }
         def.append("}");
-        String result = def.toString();
-        return result;
+        Set<Declaration> importedDecs = new HashSet<Declaration>();
+        for (ProducedType pt: allTypes) {
+        	addTypeDeclarations(importedDecs, pt);
+        }
+        Set<Package> importedPackages = new TreeSet<Package>(new Comparator<Package>() {
+        	public int compare(Package p1, Package p2) {
+        		return p1.getNameAsString().compareTo(p2.getNameAsString());
+        	}
+		});
+        for (Declaration d: importedDecs) {
+        	if (d.isToplevel()) {
+        		importedPackages.add(d.getUnit().getPackage());
+        	}
+        }
+        StringBuilder imports = new StringBuilder();
+        for (Package p: importedPackages) {
+        	if (!p.getModule().isDefault() && 
+        			!p.getModule().getNameAsString()
+        			        .equals("ceylon.language")) {
+        		imports.append("import ")
+        		    .append(p.getNameAsString())
+        		    .append(" { ");
+        		for (Declaration d: importedDecs) {
+        			if (d.getUnit().getPackage().equals(p)) {
+        				imports.append(d.getName()).append(", ");
+        			}
+        		}
+    			imports.setLength(imports.length()-2);
+    			imports.append(" }\n");
+        	}
+        }
+        return new CreateSubtype(def.toString(), imports.toString(), allTypes);
     }
+
+	private static void addTypeDeclarations(Set<Declaration> importedDecs,
+			ProducedType pt) {
+		Declaration d = pt.getDeclaration();
+		if (d instanceof UnionType) {
+			for (ProducedType t: ((UnionType) d).getCaseTypes()) {
+				addTypeDeclarations(importedDecs, t);        			
+			}
+		}
+		else if (d instanceof IntersectionType) {
+			for (ProducedType t: ((IntersectionType) d).getSatisfiedTypes()) {
+				addTypeDeclarations(importedDecs, t);        			
+			}
+		}
+		else {
+			importedDecs.add(d);
+			for (ProducedType a: pt.getTypeArgumentList()) {
+				addTypeDeclarations(importedDecs, a.getType());
+			}
+		}
+	}
 
     public static void appendParameters(ProducedType type, Class c,
             StringBuilder def) {
