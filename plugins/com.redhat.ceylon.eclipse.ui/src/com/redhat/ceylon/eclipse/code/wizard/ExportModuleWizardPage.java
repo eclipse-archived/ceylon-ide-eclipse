@@ -82,6 +82,9 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         else if (!isValidRepo()) {
             setErrorMessage("Please select an existing repository");
         }
+        else if (modules.getSelection().length==0) {
+        	setErrorMessage("Please select a module to export");
+        }
         else {
             setErrorMessage(null);
         }
@@ -133,6 +136,16 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        
+        modules.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateMessage();
+				setPageComplete(isComplete());
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}
+		});
 	
 	}
 	
@@ -159,13 +172,13 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         selectProject.setLayoutData(spgd);
 
         Label modulesLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        modulesLabel.setText("Modules defined in project: ");
+        modulesLabel.setText("Modules to export: ");
         GridData mlgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL|GridData.VERTICAL_ALIGN_BEGINNING);
         mlgd.horizontalSpan = 1;
         modulesLabel.setLayoutData(mlgd);
 
         modules = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-        modules.setEnabled(false);
+        //modules.setEnabled(false);
         GridData mgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         mgd.horizontalSpan = 2;
         mgd.grabExcessHorizontalSpace = true;
@@ -249,12 +262,18 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 					}
 				}
 			}
+			modules.selectAll();
 		}
+	}
+	
+	public Table getModules() {
+		return modules;
 	}
 
 	private boolean isComplete() {
 		return project!=null &&
-		        isValidRepo();
+		        isValidRepo() &&
+		        modules.getSelection().length>0;
 	}
 	
 	private boolean isValidRepo() {
