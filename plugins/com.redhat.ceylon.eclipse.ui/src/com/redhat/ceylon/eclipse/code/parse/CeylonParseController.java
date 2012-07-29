@@ -379,7 +379,6 @@ public class CeylonParseController {
 	}
 
 	private IProject findProject(IPath path) {
-		IProject project = null;
 		
 		//search for the project by iterating all 
 		//projects in the workspace
@@ -387,8 +386,7 @@ public class CeylonParseController {
 		for (IProject p: ResourcesPlugin.getWorkspace()
 				.getRoot().getProjects()) {
 		    if (p.getLocation().isPrefixOf(path)) {
-		        project = p;
-		        break;
+		        return p;
 		    }
 		}
 		
@@ -398,24 +396,27 @@ public class CeylonParseController {
 		//TODO: this causes a bug where we see errors
 		//      in the source file if we find the
 		//      the wrong project here
-		for (IProject p: getProjects()) {
-			boolean found = false;
-			try {
-				for (String repo: getUserRepositories(p)) {
-					if (path.toString().startsWith(repo)) {
-						project = p;
-						found=true;
-						break;
+		String ps = path.toPortableString();
+		int i = ps.indexOf('!');
+		if (i>0) {
+			String relPath = ps.substring(i+1);
+			for (IProject p: getProjects()) {
+				try {
+					for (String repo: getUserRepositories(p)) {
+						if (path.toString().startsWith(repo) &&
+								getProjectTypeChecker(p)
+									.getPhasedUnitFromRelativePath(relPath)!=null) {
+							return p;
+						}
 					}
+				} 
+				catch (CoreException e) {
+					e.printStackTrace();
 				}
-			} 
-			catch (CoreException e) {
-				e.printStackTrace();
 			}
-
-			if (found) break;
 		}
-		return project;
+		
+		return null;
 	}
 
 	private Package getPackage(VirtualFile file, VirtualFile srcDir,
