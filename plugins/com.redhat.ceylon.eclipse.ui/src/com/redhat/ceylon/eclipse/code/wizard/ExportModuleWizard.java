@@ -1,26 +1,27 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPaths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
@@ -96,27 +97,39 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				Module module = phasedUnit.getUnit().getPackage().getModule();
 				moduleNames.add(module.getNameAsString());
 			}*/
-			try {
-				IPath projectLoc = project.getProject().getLocation().makeAbsolute();
-				projectLoc = projectLoc.removeLastSegments(1);
-				IPath outputDir = getCeylonModulesOutputPath(project.getProject());
-				File source = projectLoc.append(outputDir).toFile();
-				File dest = new File(repositoryPath);
-				if (dest.exists()) {
-					copyFolder(source, dest);
-					persistDefaultRepositoryPath(repositoryPath);
-				}
-				else {
-					MessageDialog.openError(getShell(), "Export Module Error", 
-							"No repository at location: " + repositoryPath);
-					return false;
-				}
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
+			
+			File outputDir = CeylonBuilder.getCeylonModulesOutputDirectory(project.getProject());
+			Path outputPath = Paths.get(outputDir.getAbsolutePath());
+			Path repoPath = Paths.get(repositoryPath);
+			if (!Files.exists(repoPath)) {
 				MessageDialog.openError(getShell(), "Export Module Error", 
-						"Error occurred exporting module: " + e.getMessage());
+						"No repository at location: " + repositoryPath);
+				return false;
 			}
+			for (TableItem item: page.getModules().getSelection()) {
+				String moduleNameVersion = item.getText();
+				String moduleGlob = moduleNameVersion.replace('/', '-') + ".*";
+				Path repoOutputPath = outputPath.resolve(moduleNameVersion);
+				Path repoModulePath = repoPath.resolve(moduleNameVersion);
+				try {
+					Files.createDirectories(repoModulePath);
+					DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, moduleGlob);
+					try {
+						for (Path p: ds) {
+							Files.copy(p, repoModulePath.resolve(p.getFileName()), REPLACE_EXISTING);
+						}
+					}
+					finally {
+						ds.close();
+					}
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					MessageDialog.openError(getShell(), "Export Module Error", 
+							"Error occurred exporting module: " + e.getMessage());
+				}
+			}
+			persistDefaultRepositoryPath(repositoryPath);
 		}
 		return true;
 	}
@@ -128,7 +141,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 		}
 	}
 	
-	public static void copyFolder(File src, File dest)
+	/*public static void copyFolder(File src, File dest)
 			throws IOException{
     	if (src.isDirectory()) {
     		if ( !dest.exists() ) dest.mkdir();
@@ -158,11 +171,11 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     	    }
 	    	System.out.println("Archive exported from " + src + " to " + dest);
     	}
-    }
+    }*/
 	
 	@Override
 	public boolean canFinish() {
-		return true;
+		return page.isPageComplete();
 	}
     
 }
