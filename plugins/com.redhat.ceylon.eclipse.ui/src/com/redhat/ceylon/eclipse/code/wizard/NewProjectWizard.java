@@ -187,7 +187,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         selectRepoFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String dir = new DirectoryDialog(getShell()).open();
+                String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
                 if (dir!=null) {
                     repositoryPaths.add(dir);
                     addRepoToTable(dir);
