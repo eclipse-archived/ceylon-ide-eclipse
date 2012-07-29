@@ -1792,9 +1792,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = new ArrayList<String>();
-        userRepos.add(getCeylonRepository(project).getAbsolutePath());
+        List<File> repos = getCeylonRepositories(project);
+        for (File repo: repos) {
+        	userRepos.add(repo.getAbsolutePath());
+        }
         
-        if (project != null) {
+        if (project!=null) {
             for (IProject requiredProject: project.getReferencedProjects()) {
                 if (requiredProject.isOpen() &&
                 		requiredProject.hasNature(NATURE_ID)) {
@@ -1813,8 +1816,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return userRepos;
     }
     
-    public static String getRepositoryPath(IProject project) {
-    	return (String) getBuilderArgs(project).get("repositoryPath");
+    public static String[] getRepositoryPaths(IProject project) {
+    	String paths = (String) getBuilderArgs(project).get("repositoryPath");
+    	if (paths==null) {
+    		return new String[0];
+    	}
+    	else {
+    		return paths.split(":");
+    	}
     }
 
 	private static Map getBuilderArgs(IProject project) {
@@ -1833,14 +1842,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     	return Collections.EMPTY_MAP;
 	}
 
-    public static File getCeylonRepository(IProject project) {
-		String repoPath = getRepositoryPath(project);
-        if (repoPath==null) {
-            return CeylonPlugin.getInstance().getCeylonRepository();
+    public static List<File> getCeylonRepositories(IProject project) {
+		String[] repoPaths = getRepositoryPaths(project);
+    	List<File> repos = new ArrayList<File>();
+        for (String repoPath: repoPaths) {
+        	repos.add(CeylonPlugin.getCeylonRepository(repoPath));
         }
-        else { 
-            return CeylonPlugin.getCeylonRepository(repoPath);
-        }
+        /*if (repos.isEmpty()) {
+        	repos.add(CeylonPlugin.getInstance().getCeylonRepository());
+        }*/
+    	return repos;
     }
 
     private static File toFile(IProject project, IPath path) {
