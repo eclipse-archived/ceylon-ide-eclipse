@@ -47,7 +47,8 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.compiler.java-0.3.1-ide.jar,
  lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar,
  lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar,
- lib/ceylon.language-0.3.1-ide.jar
+ lib/ceylon.language-0.3.1-ide.jar,
+ lib/txtmark-0.7-1fc6e2a548.jar
 Import-Package: org.eclipse.help
 
 
