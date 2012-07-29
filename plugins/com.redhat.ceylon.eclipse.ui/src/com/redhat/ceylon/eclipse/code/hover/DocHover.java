@@ -76,6 +76,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.osgi.framework.Bundle;
 
+import com.github.rjeschke.txtmark.Configuration;
+import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -835,20 +837,9 @@ public class DocHover
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             if (!args.isEmpty()) {
-                            	//TODO: properly process the markdown!!
                                 String text = args.get(0).getExpression().getTerm().getText();
                                 if (text!=null) {
-                                	String docLine = HTMLPrinter.convertToHTMLContent(text.substring(1, text.length()-1).toString());
-                                	documentation.append("<p>")
-                                	    .append(docLine
-                                			.replaceAll("`([^`]+)`", "<tt>$1</tt>")
-                                			.replaceAll("_([^_]+)_", "<em>$1</em>")
-                                			.replaceAll("\\*([^*]+)\\*", "<em>$1</em>")
-                                			.replaceAll("\n-([^\n]+)", "<li>$1</li>")
-                                			.replaceAll("\n    ([^\n]+)", "<br/><tt>$1</tt>")
-                                			.replaceAll("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", "<a href='$2'>$1</a>")
-                                			.replaceAll("\n\n", "<br/>"))
-                                			.append("</p>");
+                                    documentation.append(markdown(text));
                                 }
                             }
                         }
@@ -1026,5 +1017,20 @@ public class DocHover
 		buf.append("<![endif]-->\n"); 
 	}
 	
-}
+	private static String markdown(String text) {
+	    // TODO after compiler release use com.redhat.ceylon.ceylondoc.Util.wikiToHTML
+	    // TODO after txtmark release use txtmark.SpanEmitter for links inside doc annotation
+	    if( text == null || text.length() == 0 ) {
+	        return text;
+	    }
 
+	    String unquotedText = text.substring(1, text.length()-1);
+
+	    Configuration config = Configuration.builder()
+	            .forceExtentedProfile()
+	            .build();
+
+	    return Processor.process(unquotedText, config);
+	}
+
+}
