@@ -11,6 +11,10 @@ import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -20,6 +24,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -79,10 +84,12 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         }
     }
     
+    private Exception ex;
+    
 	@Override
 	public boolean performFinish() {
-		String repositoryPath = page.getRepositoryPath();
-		IJavaProject project = page.getProject();
+		final String repositoryPath = page.getRepositoryPath();
+		final IJavaProject project = page.getProject();
 		if (project==null) {
 			MessageDialog.openError(getShell(), "Export Module Error", 
 					"No Java project selected.");
@@ -97,37 +104,59 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				Module module = phasedUnit.getUnit().getPackage().getModule();
 				moduleNames.add(module.getNameAsString());
 			}*/
-			
-			File outputDir = CeylonBuilder.getCeylonModulesOutputDirectory(project.getProject());
-			Path outputPath = Paths.get(outputDir.getAbsolutePath());
-			Path repoPath = Paths.get(repositoryPath);
-			if (!Files.exists(repoPath)) {
-				MessageDialog.openError(getShell(), "Export Module Error", 
-						"No repository at location: " + repositoryPath);
-				return false;
+			ex = null;
+			TableItem[] selectedItems = page.getModules().getSelection();
+			final String[] selectedModules = new String[selectedItems.length];
+			for (int i=0; i<selectedItems.length; i++) {
+				selectedModules[i] = selectedItems[i].getText();
 			}
-			for (TableItem item: page.getModules().getSelection()) {
-				String moduleNameVersion = item.getText();
-				String moduleGlob = moduleNameVersion.replace('/', '-') + ".*";
-				Path repoOutputPath = outputPath.resolve(moduleNameVersion);
-				Path repoModulePath = repoPath.resolve(moduleNameVersion);
-				try {
-					Files.createDirectories(repoModulePath);
-					DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, moduleGlob);
-					try {
-						for (Path p: ds) {
-							Files.copy(p, repoModulePath.resolve(p.getFileName()), REPLACE_EXISTING);
+			try {
+				Job job = new Job("Exporting modules") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						File outputDir = CeylonBuilder.getCeylonModulesOutputDirectory(project.getProject());
+						Path outputPath = Paths.get(outputDir.getAbsolutePath());
+						Path repoPath = Paths.get(repositoryPath);
+						if (!Files.exists(repoPath)) {
+							MessageDialog.openError(getShell(), "Export Module Error", 
+									"No repository at location: " + repositoryPath);
+							return Status.CANCEL_STATUS;
 						}
+						for (String moduleNameVersion: selectedModules) {
+							String moduleGlob = moduleNameVersion.replace('/', '-') + ".*";
+							Path repoOutputPath = outputPath.resolve(moduleNameVersion);
+							Path repoModulePath = repoPath.resolve(moduleNameVersion);
+							try {
+								Files.createDirectories(repoModulePath);
+								DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, moduleGlob);
+								try {
+									for (Path p: ds) {
+										Files.copy(p, repoModulePath.resolve(p.getFileName()), REPLACE_EXISTING);
+									}
+								}
+								finally {
+									ds.close();
+								}
+							}
+							catch (Exception e) {
+								ex = e;
+								return Status.CANCEL_STATUS;
+							}
+						}
+						return Status.OK_STATUS;
 					}
-					finally {
-						ds.close();
-					}
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-					MessageDialog.openError(getShell(), "Export Module Error", 
-							"Error occurred exporting module: " + e.getMessage());
-				}
+				};
+				PlatformUI.getWorkbench().getProgressService().showInDialog(getShell(), job);
+				job.setUser(true);
+				job.schedule();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (ex!=null) {
+				ex.printStackTrace();
+				MessageDialog.openError(getShell(), "Export Module Error", 
+						"Error occurred exporting module: " + ex.getMessage());
 			}
 			persistDefaultRepositoryPath(repositoryPath);
 		}
