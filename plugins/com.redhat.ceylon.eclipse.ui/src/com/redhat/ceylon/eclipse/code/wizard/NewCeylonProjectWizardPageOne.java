@@ -276,7 +276,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 		 * @see org.eclipse.jdt.internal.ui.wizards.dialogfields.IStringButtonAdapter#changeControlPressed(org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField)
 		 */
 		public void changeControlPressed(DialogField field) {
-			final DirectoryDialog dialog= new DirectoryDialog(getShell());
+			final DirectoryDialog dialog= new DirectoryDialog(getShell(), SWT.SHEET);
 			dialog.setMessage(NewWizardMessages.NewJavaProjectWizardPageOne_directory_message);
 			String directoryName = fLocation.getText().trim();
 			if (directoryName.length() == 0) {

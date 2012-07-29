@@ -125,7 +125,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	String dir = new DirectoryDialog(getShell()).open();
+            	String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
             	if (dir!=null) {
             		repositoryPath = dir;
             		folder.setText(repositoryPath);
