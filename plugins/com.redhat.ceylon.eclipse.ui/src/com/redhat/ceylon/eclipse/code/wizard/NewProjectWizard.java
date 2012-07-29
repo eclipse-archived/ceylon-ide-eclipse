@@ -6,6 +6,10 @@ import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -24,10 +28,9 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.IPackagesViewPart;
 import org.eclipse.jdt.ui.actions.ShowInPackageViewAction;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -37,7 +40,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -55,8 +59,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     private IConfigurationElement fConfigElement;
 
-    private String repositoryPath;
-    private boolean useEmbeddedRepo=true;
+    private List<String> repositoryPaths = new ArrayList<String>();
     private boolean showCompilerWarnings=true;
     private boolean enableJdtClassesDir=false;
     
@@ -138,6 +141,10 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         
     }
 
+    private Table repoFolders;
+    
+    private static Image repo = CeylonPlugin.getInstance().image("runtime_obj.gif").createImage();
+    
 	private void addSelectRepoSection(Composite parent) {
 		//final Composite composite= new Composite(parent, SWT.NONE);
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
@@ -148,72 +155,77 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         layout.numColumns = 4;
         composite.setLayout(layout);        
         
-        Button useEmbedded = new Button(composite, SWT.CHECK);
-        useEmbedded.setText("Use embedded module repository (contains only language module)");
-        useEmbedded.setSelection(true);
-        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        igd.horizontalSpan = 4;
-        igd.grabExcessHorizontalSpace = true;
-        useEmbedded.setLayoutData(igd);
-
         Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        folderLabel.setText("External module repository: ");
+        folderLabel.setText("Module repositories on build path: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        flgd.horizontalSpan = 1;
+        flgd.horizontalSpan = 4;
         folderLabel.setLayoutData(flgd);
 
-        final Text folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        repoFolders = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        fgd.horizontalSpan = 2;
+        fgd.horizontalSpan = 3;
+        fgd.verticalSpan = 4;
+        fgd.heightHint = 50;
         fgd.grabExcessHorizontalSpace = true;
-        folder.setLayoutData(fgd);
-        folder.setEnabled(false);
-        folder.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                repositoryPath = folder.getText();
-                if (!isRepoValid()) {
-                    fFirstPage.setErrorMessage("Please select a module repository containing the language module");
-                }
-                else {
-                    fFirstPage.setErrorMessage(null);
-                }
-            }
-        });
+        fgd.widthHint = 200;
+        repoFolders.setLayoutData(fgd);
+        repoFolders.setEnabled(true);
         
-        repositoryPath = ExportModuleWizard.getDefaultRepositoryPath();
-        folder.setText(repositoryPath);
+        String defaultRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+        String externalRepo = System.getProperty("user.home") + "/.ceylon/repo";
+		addRepoToTable(defaultRepo);
+		addRepoToTable(externalRepo);
+        repositoryPaths.add(defaultRepo);
+		repositoryPaths.add(externalRepo);
         
-        final Button selectFolder = new Button(composite, SWT.PUSH);
-        selectFolder.setText("Browse...");
+        Button selectRepoFolder = new Button(composite, SWT.PUSH);
+        selectRepoFolder.setText("Add Repository...");
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
-        selectFolder.setLayoutData(sfgd);
-        selectFolder.setEnabled(false);
-        selectFolder.addSelectionListener(new SelectionListener() {
+        selectRepoFolder.setLayoutData(sfgd);
+        selectRepoFolder.setEnabled(true);
+        selectRepoFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String dir = new DirectoryDialog(getShell()).open();
                 if (dir!=null) {
-                    repositoryPath = dir;
-                    folder.setText(repositoryPath);
+                    repositoryPaths.add(dir);
+                    addRepoToTable(dir);
+                    if (!isRepoValid()) {
+                    	fFirstPage.setErrorMessage("Please select a module repository containing the language module");
+                    }
+                    else {
+                    	fFirstPage.setErrorMessage(null);
+                    }
                 }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-    
-        useEmbedded.addSelectionListener(new SelectionListener() {
+        Button deleteRepoFolder = new Button(composite, SWT.PUSH);
+        deleteRepoFolder.setText("Remove Repository");
+        GridData dfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        dfgd.horizontalSpan = 1;
+        deleteRepoFolder.setLayoutData(dfgd);
+        deleteRepoFolder.setEnabled(true);
+        deleteRepoFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                useEmbeddedRepo = !useEmbeddedRepo;
-                folder.setEnabled(!useEmbeddedRepo);
-                selectFolder.setEnabled(!useEmbeddedRepo);
-                if (useEmbeddedRepo) {
-                    fFirstPage.setErrorMessage(null);
+            	int[] selection = repoFolders.getSelectionIndices();
+				repoFolders.remove(selection);
+            	Iterator<String> iter = repositoryPaths.iterator();
+            	int i=0;
+            	while (iter.hasNext()) {
+            		iter.next();
+            		if (Arrays.binarySearch(selection, i++)>=0) {
+            			iter.remove();
+            		}
+            	}
+                if (!isRepoValid()) {
+                	fFirstPage.setErrorMessage("Please select a module repository containing the language module");
                 }
-                else if (!isRepoValid()) {
-                    fFirstPage.setErrorMessage("Please select a module repository containing the language module");
+                else {
+                	fFirstPage.setErrorMessage(null);
                 }
             }
             @Override
@@ -221,18 +233,19 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         });
 	}
     
+	private void addRepoToTable(String repositoryPath) {
+		TableItem item = new TableItem(repoFolders,SWT.NONE);
+		item.setText(repositoryPath);
+		item.setImage(repo);
+	}
+
     public boolean isRepoValid() {
-        if (useEmbeddedRepo) {
-            return true;
-        }
-        else if (repositoryPath==null) {
-            return false;
-        }
-        else {
-            String carPath = repositoryPath + "/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
-                    "/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
-            return new File(carPath).exists();
-        }        
+    	for (String repositoryPath: repositoryPaths) {
+    		String carPath = repositoryPath + "/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
+    				"/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
+    		if (new File(carPath).exists()) return true;
+    	}
+    	return false;
     }
     
     protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
@@ -271,9 +284,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             }
 
             IPath outputPath = fSecondPage.getCeylonOutputLocation();
-    		boolean embeddedRepo = useEmbeddedRepo || repositoryPath==null || repositoryPath.isEmpty();
-    		if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
-    		new CeylonNature(outputPath, embeddedRepo ? null : repositoryPath,
+    		//if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
+    		new CeylonNature(outputPath, repositoryPaths,
     				enableJdtClassesDir, !showCompilerWarnings)
                             .addToProject(getCreatedElement().getProject());
 

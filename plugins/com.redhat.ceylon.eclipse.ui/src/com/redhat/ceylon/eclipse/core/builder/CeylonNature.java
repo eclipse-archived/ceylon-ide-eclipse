@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
@@ -22,7 +23,7 @@ public class CeylonNature extends ProjectNatureBase {
     public static final String NATURE_ID = PLUGIN_ID + ".ceylonNature";
     
     private IPath outputPath;
-	String repositoryPath;
+    List<String> repositoryPaths;
 	boolean enableJdtClasses;
 	boolean hideWarnings;
 	boolean keepSettings;
@@ -31,10 +32,10 @@ public class CeylonNature extends ProjectNatureBase {
     	keepSettings=true;
     }
     
-    public CeylonNature(IPath outputPath, String repositoryPath,
+    public CeylonNature(IPath outputPath, List<String> repositoryPaths,
     		boolean enableJdtClasses, boolean hideWarnings) {
     	this.outputPath = outputPath;
-    	this.repositoryPath = repositoryPath;
+    	this.repositoryPaths = repositoryPaths;
     	this.enableJdtClasses = enableJdtClasses;
     	this.hideWarnings = hideWarnings;
     }
@@ -120,7 +121,11 @@ public class CeylonNature extends ProjectNatureBase {
     	Map args = super.getBuilderArguments();
     	if (!keepSettings) {
     		args.put("outputPath", outputPath.toString());
-    		if (repositoryPath!=null) {
+    		if (repositoryPaths!=null) {
+    			String repositoryPath = "";
+    			for (String path: repositoryPaths) {
+    				repositoryPath+=path + ":";
+    			}
     			args.put("repositoryPath", repositoryPath);
     		}
     		else {
