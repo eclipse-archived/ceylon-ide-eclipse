@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPaths;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_EXPORT_CAR;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
@@ -86,10 +88,11 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         flgd.horizontalSpan = 1;
         folderLabel.setLayoutData(flgd);
 
-        final Text folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        final Combo folder = new Combo(composite, SWT.SINGLE | SWT.BORDER);
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
+        fgd.widthHint = 300;
         folder.setLayoutData(fgd);
         folder.addModifyListener(new ModifyListener() {
             @Override
@@ -101,6 +104,9 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         });
         
         folder.setText(repositoryPath);
+        for (String path: getRepositoryPaths(project.getProject())) {
+        	folder.add(path);
+        }
         
         Button selectFolder = new Button(composite, SWT.PUSH);
         selectFolder.setText("Browse...");
