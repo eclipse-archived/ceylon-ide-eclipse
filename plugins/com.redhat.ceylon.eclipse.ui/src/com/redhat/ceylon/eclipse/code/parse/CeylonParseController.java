@@ -205,14 +205,8 @@ public class CeylonParseController {
         if (project!=null) {
             srcDir = getSourceFolder(project, resolvedPath);
         }
-        
-        if (srcDir==null && project==null
-                && path!=null) { //path==null in structured compare editor
+        else if (path!=null) { //path==null in structured compare editor
         	srcDir = inferSrcDir(path, srcDir);
-        }
-        
-        if (project==null && 
-        		path!=null) { //path==null in structured compare editor
         	project = findProject(path);
         }
         
@@ -355,14 +349,19 @@ public class CeylonParseController {
         return cu;
 	}
 
-	private static TypeChecker createTypeChecker(IProject project, boolean showWarnings) 
+	private static TypeChecker createTypeChecker(IProject project, 
+			boolean showWarnings) 
 	        throws CoreException {
 		TypeCheckerBuilder tcb = new TypeCheckerBuilder()
 		        .verbose(false).usageWarnings(showWarnings);
 		
 		List<String> repos = new LinkedList<String>();
 		if (project==null) {
-			//TODO: infer the repo from the path!
+			//I believe this case can only happen
+			//in the structure compare editor, so
+			//it does not really matter what repo
+			//we use as long as it has the language
+			//module
 			repos.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
 		}
 		else {
@@ -396,6 +395,9 @@ public class CeylonParseController {
 		//for files from external repos, search for
 		//the repo by iterating all repos referenced
 		//by all projects (yuck, this is fragile!!!)
+		//TODO: this causes a bug where we see errors
+		//      in the source file if we find the
+		//      the wrong project here
 		for (IProject p: getProjects()) {
 			boolean found = false;
 			try {
