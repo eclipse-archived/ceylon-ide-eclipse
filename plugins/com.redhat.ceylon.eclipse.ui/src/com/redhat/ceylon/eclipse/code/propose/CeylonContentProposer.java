@@ -1173,9 +1173,34 @@ public class CeylonContentProposer {
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, result);
+        appendConstraints(d, pr, indent, result);
         appendImpl(d, isInterface, indent, result);
         return result.toString();
     }
+
+	private static void appendConstraints(Declaration d, ProducedReference pr,
+			String indent, StringBuilder result) {
+		if (d instanceof Functional) {
+        	for (TypeParameter tp: ((Functional) d).getTypeParameters()) {
+        		List<ProducedType> sts = tp.getSatisfiedTypes();
+        		if (!sts.isEmpty()) {
+        			result.append(extraIndent(extraIndent(indent)))
+        			    .append("given ").append(tp.getName())
+        			    .append(" satisfies ");
+        			boolean first = true;
+        			for (ProducedType st: sts) {
+        				if (first) {
+        					first = false;
+        				}
+        				else {
+        					result.append("&");
+        				}
+        				result.append(st.substitute(pr.getTypeArguments()).getProducedTypeName());
+        			}
+        		}
+        	}
+        }
+	}
 
     private static String getInlineFunctionTextFor(Parameter p, ProducedReference pr, 
             String indent) {
