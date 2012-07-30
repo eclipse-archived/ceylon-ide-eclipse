@@ -923,6 +923,18 @@
          </configurationType>
       </shortcut>
    </extension>
+   
+   <extension point="org.eclipse.ui.console.consolePatternMatchListeners">
+       <consolePatternMatchListener
+             regex="at .+\(.+\.ceylon\:\d+\)"
+             id="com.redhat.ceylon.eclipse.ui.consolePatternMatchListener"
+             class="com.redhat.ceylon.eclipse.core.launch.CeylonPatternMatchListenerDelegate">
+         <enablement>
+         <test property="org.eclipse.ui.console.consoleTypeTest" 
+               value="org.eclipse.debug.ui.ProcessConsoleType"/>
+         </enablement>
+       </consolePatternMatchListener>
+   </extension>
 
    <extension point="org.eclipse.ui.propertyPages">
        <page 
