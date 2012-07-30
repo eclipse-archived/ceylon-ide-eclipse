@@ -14,10 +14,12 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +44,6 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -69,6 +70,8 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -182,7 +185,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
 
-    public static final String CEYLON_CONSOLE= "Ceylon";
+    public static final String CEYLON_CONSOLE= "Ceylon Build";
     private long startTime;
 
     public static ModelState getModelState(IProject project) {
@@ -366,21 +369,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
         
         try {
-            startTime = System.nanoTime();
-            MessageConsole console = findConsole();
+//            startTime = System.nanoTime();
+            findConsole().clearConsole();
+            /*MessageConsole console = findConsole();
             IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
             if (buildConfsBefore.length == 0) {
                 console.activate();
-            }
-            getConsoleStream().println("\n===================================");
-            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
-            getConsoleStream().println("-----------------------------------");
+            }*/
+//            getConsoleStream().println("\n===================================");
+//            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
+//            getConsoleStream().println("-----------------------------------");
             
             boolean binariesGenerationOK;
             final TypeChecker typeChecker;
             if (mustDoFullBuild.value) {
                 monitor.subTask("Full Ceylon build of project " + project.getName());
-                getConsoleStream().println(timedMessage("Full build of model"));
+//                getConsoleStream().println(timedMessage("Full build of model"));
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -436,20 +440,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
                 monitor.subTask("Generating binaries for project " + project.getName());
                 final List<IFile> allSources = getProjectSources(project);
-                getConsoleStream().println(timedMessage("Full generation of class files..."));
-                getConsoleStream().println("             ...compiling " + 
-                        allSources.size() + " source files...");
+//                getConsoleStream().println(timedMessage("Full generation of class files..."));
+//                getConsoleStream().println("             ...compiling " + 
+//                        allSources.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject, 
                 		allSources, typeChecker, 
                 		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
-                getConsoleStream().println(successMessage(binariesGenerationOK));
+//                getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
             }
             else
             {
                 monitor.subTask("Incremental Ceylon build of project " + project.getName());
-                getConsoleStream().println(timedMessage("Incremental build of model"));
+//                getConsoleStream().println(timedMessage("Incremental build of model"));
                 
                 List<IFile> filesToRemove = new ArrayList<IFile>();
                 Set<IFile> changedSources = new HashSet<IFile>(); 
@@ -511,13 +515,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
 
                 monitor.subTask("Generating binaries for project " + project.getName());
-                getConsoleStream().println(timedMessage("Incremental generation of class files..."));
-                getConsoleStream().println("             ...compiling " + 
-                        sourceToCompile.size() + " source files...");
+//                getConsoleStream().println(timedMessage("Incremental generation of class files..."));
+//                getConsoleStream().println("             ...compiling " + 
+//                        sourceToCompile.size() + " source files...");
                 binariesGenerationOK = generateBinaries(project, javaProject,
                 		sourceToCompile, typeChecker, 
                 		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
-                getConsoleStream().println(successMessage(binariesGenerationOK));
+//                getConsoleStream().println(successMessage(binariesGenerationOK));
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -525,7 +529,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 }
 
                 monitor.subTask("Updating referencing projects of project " + project.getName());
-                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
+//                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
             }
@@ -533,6 +537,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (!binariesGenerationOK) {
                 // Add a problem marker if binary generation went wrong for ceylon files
                 addBinaryGenerationProblemMarker(project);
+                findConsole().activate();
+                //TODO: show the Problems view??
             }
                         
             if (monitor.isCanceled()) {
@@ -540,7 +546,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             }
 
             monitor.subTask("Collecting dependencies of project " + project.getName());
-            getConsoleStream().println(timedMessage("Collecting dependencies"));
+//            getConsoleStream().println(timedMessage("Collecting dependencies"));
             collectDependencies(project, typeChecker, builtPhasedUnits);
             monitor.worked(1);
     
@@ -558,9 +564,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             return project.getReferencedProjects();
         }
         finally {
-            getConsoleStream().println("-----------------------------------");
-            getConsoleStream().println(timedMessage("End Ceylon build on project: " + project.getName()));
-            getConsoleStream().println("===================================");
+//            getConsoleStream().println("-----------------------------------");
+//            getConsoleStream().println(timedMessage("End Ceylon build on project: " + project.getName()));
+//            getConsoleStream().println("===================================");
         }
     }
 
@@ -1481,7 +1487,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
 
         if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
-            PrintWriter printWriter = new PrintWriter(getConsoleStream(), true);
+            PrintWriter printWriter = new PrintWriter(getConsoleErrorStream(), true);
             boolean success = true;
             if (compileWithJDTModelLoader()) {
                 sourceFiles.addAll(javaSourceFiles);
@@ -1897,6 +1903,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         return findConsole().newMessageStream();
     }
     
+    protected static MessageConsoleStream getConsoleErrorStream() {
+        final MessageConsoleStream stream = findConsole().newMessageStream();
+        //TODO: all this, just to get the color red? can that be right??
+        try {
+			getWorkbench().getProgressService().runInUI(getWorkbench().getWorkbenchWindows()[0], 
+					new IRunnableWithProgress() {
+				
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException,
+						InterruptedException {
+					stream.setColor(getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+				}
+			}, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return stream;
+    }
+    
     private String timedMessage(String message) {
         long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
         return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
@@ -1961,10 +1986,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         IProject project = getProject();
         
-        startTime = System.nanoTime();
-        getConsoleStream().println("\n===================================");
-        getConsoleStream().println(timedMessage("Starting Ceylon clean on project: " + project.getName()));
-        getConsoleStream().println("-----------------------------------");
+//        startTime = System.nanoTime();
+//        getConsoleStream().println("\n===================================");
+//        getConsoleStream().println(timedMessage("Starting Ceylon clean on project: " + project.getName()));
+//        getConsoleStream().println("-----------------------------------");
         
         cleanupModules(monitor, project);
         cleanupJdtClasses(monitor, project);
@@ -1973,9 +1998,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         clearProjectMarkers(project);
         clearMarkersOn(project);
 
-        getConsoleStream().println("-----------------------------------");
-        getConsoleStream().println(timedMessage("End Ceylon clean on project: " + project.getName()));
-        getConsoleStream().println("===================================");
+//        getConsoleStream().println("-----------------------------------");
+//        getConsoleStream().println(timedMessage("End Ceylon clean on project: " + project.getName()));
+//        getConsoleStream().println("===================================");
     }
 
 	private void cleanupJdtClasses(IProgressMonitor monitor, IProject project) {
