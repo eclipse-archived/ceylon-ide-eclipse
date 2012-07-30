@@ -15,12 +15,10 @@ import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +46,6 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -75,8 +72,6 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -2398,15 +2393,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	        }
         }
         final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
-        class MyLog extends Log {
-            public MyLog() {
+        class ConsoleLog extends Log {
+            ConsoleLog() {
                 super(dummyContext, new PrintWriter(getConsoleStream()));
             }
         }
-        Log log = new MyLog();
+        ConsoleLog log = new ConsoleLog();
         Options options = Options.instance(dummyContext);
-        for (File moduleJar : moduleJars) {
-            ShaSigner.sign(moduleJar, log, options);
+        for (File moduleJar: moduleJars) {
+			ShaSigner.sign(moduleJar, log, options);
         }
     }
 
