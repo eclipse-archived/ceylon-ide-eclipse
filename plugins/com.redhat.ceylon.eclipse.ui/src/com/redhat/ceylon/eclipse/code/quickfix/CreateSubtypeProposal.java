@@ -196,7 +196,7 @@ class CreateSubtypeProposal implements ICompletionProposal {
         		ProducedReference pr = getRefinedProducedReference(type, d);
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
-            			.append(getRefinementTextFor(d, pr, ""))
+            			.append(getRefinementTextFor(d, pr, false, ""))
             			.append("\n");
             	}
         	}

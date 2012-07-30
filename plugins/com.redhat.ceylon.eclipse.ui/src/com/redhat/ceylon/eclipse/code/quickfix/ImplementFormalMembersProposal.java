@@ -85,7 +85,9 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             	ProducedReference pr = getRefinedProducedReference(node, d);
-                result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
+                result.append(indent)
+                    .append(getRefinementTextFor(d, pr, false, indent))
+                    .append(indentAfter);
                 importSignatureTypes(d, cu, change, already);
             }
         }

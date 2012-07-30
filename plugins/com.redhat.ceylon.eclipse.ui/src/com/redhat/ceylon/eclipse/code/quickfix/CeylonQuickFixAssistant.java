@@ -73,7 +73,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
@@ -662,7 +661,6 @@ public class CeylonQuickFixAssistant {
             IProject project, TypeChecker tc, IFile file) {
         if (node instanceof Tree.MemberOrTypeExpression) {
             Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
-
             String brokenName = getIdentifyingNode(node).getText();
             if (brokenName.isEmpty()) return;
             boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
@@ -703,7 +701,7 @@ public class CeylonQuickFixAssistant {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                                 ProducedReference pr = getRefinedProducedReference(t, d);
-                                def+= "$indent    " + getRefinementTextFor(d, pr, "") + "\n";
+                                def+= "$indent    " + getRefinementTextFor(d, pr, false, "") + "\n";
                             }
                         }
                     }

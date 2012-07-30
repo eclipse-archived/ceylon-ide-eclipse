@@ -121,6 +121,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             //TODO run a visitor to find the containing body!
             return;//TODO popup error dialog
         }
+        boolean isInterface = body instanceof Tree.InterfaceBody;
         //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
@@ -143,7 +144,9 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             if (d.isFormal() && 
                     ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
             	ProducedReference pr = getRefinedProducedReference(node, d);
-                result.append(indent).append(getRefinementTextFor(d, pr, indent)).append(indentAfter);
+                result.append(indent)
+                    .append(getRefinementTextFor(d, pr, isInterface, indent))
+                    .append(indentAfter);
                 importSignatureTypes(d, cu, change, already);
             }
         }
