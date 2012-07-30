@@ -1948,7 +1948,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     protected static MessageConsoleStream getConsoleErrorStream() {
         final MessageConsoleStream stream = findConsole().newMessageStream();
         //TODO: all this, just to get the color red? can that be right??
-        try {
+        /*try {
 			getWorkbench().getProgressService().runInUI(getWorkbench().getWorkbenchWindows()[0], 
 					new IRunnableWithProgress() {
 				
@@ -1958,9 +1958,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 					stream.setColor(getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 				}
 			}, null);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}*/
 		return stream;
     }
     
