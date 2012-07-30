@@ -64,7 +64,8 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
                 Integer offset = s.getStartIndex();
                 String name = type.getDeclaration().getName()
                 		.replace("&", "").replace("<", "").replace(">", "");
-                CreateSubtype cs = subtypeDeclaration(type, false);
+                CreateSubtype cs = subtypeDeclaration(type, 
+                		cu.getUnit().getPackage(), false);
                 int shift=0;
             	HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {

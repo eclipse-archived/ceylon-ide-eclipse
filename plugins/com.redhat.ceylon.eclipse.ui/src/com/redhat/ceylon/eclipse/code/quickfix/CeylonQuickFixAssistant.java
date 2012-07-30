@@ -1311,12 +1311,17 @@ public class CeylonQuickFixAssistant {
 			int result=0;
 			if (td instanceof ClassOrInterface && 
 					td.isToplevel()) {
-				if (!td.getQualifiedNameString().startsWith("ceylon.language")) {
+				Package p = td.getUnit().getPackage();
+				if (!p.getNameAsString().isEmpty() && 
+						!p.equals(rootNode.getUnit().getPackage()) &&
+						!p.getModule().getNameAsString()
+						        .equals("ceylon.language")) {
 					if (alreadyImported.add(td)) {
 						boolean imported = false;
 						for (Import i: rootNode.getUnit().getImports()) {
 							if (i.getDeclaration().equals(td)) {
 								imported = true;
+								break;
 							}
 						}
 						if (!imported) {
