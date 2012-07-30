@@ -1025,6 +1025,8 @@
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
+            <perspectiveShortcut 
+                  id="org.eclipse.jdt.ui.JavaPerspective"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
@@ -1038,11 +1040,7 @@
             <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <viewShortcut id="org.eclipse.ui.views.ResourceNavigator"/>
       </perspectiveExtension>
-   </extension>
-   
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-        <perspectiveExtension 
+      <perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
@@ -1052,7 +1050,14 @@
                   id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
-        </perspectiveExtension>
+            <perspectiveShortcut 
+                  id="com.redhat.ceylon.eclipse.ui.perspective"/>
+      </perspectiveExtension>
+      <perspectiveExtension 
+              targetID="org.eclipse.debug.ui.DebugPerspective">
+            <perspectiveShortcut 
+                  id="com.redhat.ceylon.eclipse.ui.perspective"/>
+      </perspectiveExtension>
    </extension>
       
    <extension point="org.eclipse.ui.themes">
