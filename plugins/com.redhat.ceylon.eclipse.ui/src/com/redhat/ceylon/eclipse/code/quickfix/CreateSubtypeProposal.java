@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,7 +38,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
 class CreateSubtypeProposal implements ICompletionProposal {
@@ -320,7 +320,7 @@ class CreateSubtypeProposal implements ICompletionProposal {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         return getType(editor.getParseController().getRootNode(), 
-                AbstractHandler.getSelectedNode(editor));
+                getSelectedNode(editor));
     }
 
     public static ProducedType getType(Tree.CompilationUnit cu, Node node) {
