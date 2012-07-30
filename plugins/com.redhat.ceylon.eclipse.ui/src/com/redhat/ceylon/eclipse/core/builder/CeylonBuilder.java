@@ -44,6 +44,7 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -370,12 +371,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         try {
 //            startTime = System.nanoTime();
-            findConsole().clearConsole();
-            /*MessageConsole console = findConsole();
             IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
             if (buildConfsBefore.length == 0) {
-                console.activate();
-            }*/
+            	//don't clear the console unless 
+            	//we are the first project in 
+            	//the build invocation
+            	findConsole().clearConsole();
+            }
 //            getConsoleStream().println("\n===================================");
 //            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
 //            getConsoleStream().println("-----------------------------------");
