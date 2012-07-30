@@ -683,21 +683,33 @@ public class DocHover
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(getDescriptionFor(dec)) + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
-		if (dec.isClassOrInterfaceMember()) {
-			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
-			addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
-					"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
-			        HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
+		if (dec instanceof Parameter) {
+			Declaration pd = ((Parameter) dec).getDeclaration();
+			addImageAndLabel(buffer, pd, fileUrl(getIcon(pd)).toExternalForm(),
+					16, 16, "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
 		}
-
-		if (dec.isShared() || dec.isToplevel()) {
-			addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-					16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
-			        getPackageLabel(dec) +"</a></tt>", 20, 2);
-			addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
-					16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
+		else if (dec instanceof TypeParameter) {
+			Declaration pd = ((TypeParameter) dec).getDeclaration();
+			addImageAndLabel(buffer, pd, fileUrl(getIcon(pd)).toExternalForm(),
+					16, 16, "type parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
 		}
+		else {
+			if (dec.isClassOrInterfaceMember()) {
+				ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
+				addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
+						"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
+								HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
+			}
 
+			if (dec.isShared() || dec.isToplevel()) {
+				addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
+						16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
+								getPackageLabel(dec) +"</a></tt>", 20, 2);
+				addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
+						16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
+			}
+		}
+		
 		Tree.Declaration refnode = getReferencedNode(dec, cpc);
 		if (refnode!=null) {
 			appendDocAnnotationContent(refnode, buffer);
@@ -774,12 +786,6 @@ public class DocHover
 							"</a></tt>" + doc, 20, 2);
 				}
 			}
-		}
-		
-		if (dec instanceof Parameter) {
-			Declaration pd = ((Parameter) dec).getDeclaration();
-			addImageAndLabel(buffer, pd, fileUrl("methpro_obj.gif").toExternalForm(),
-					16, 16, "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
 		}
 		
 		if (dec instanceof ClassOrInterface) {
