@@ -1,5 +1,13 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+
+import org.eclipse.jface.text.ITextSelection;
+
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+
 public class Util {
     
     public static int getLevenshteinDistance(String x, String y) {
@@ -46,5 +54,13 @@ public class Util {
         // actually has the most recent cost counts
         return p[n];
     }
+
+	//TODO: copy/pasted from AbstractFindAction
+	public static Node getSelectedNode(CeylonEditor editor) {
+	    CeylonParseController cpc = editor.getParseController();
+	    return cpc==null || cpc.getRootNode()==null ? null : 
+	        findNode(cpc.getRootNode(), 
+	            (ITextSelection) editor.getSelectionProvider().getSelection());
+	}
     
 }

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package com.redhat.ceylon.eclipse.code.quickfix;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;

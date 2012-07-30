@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
@@ -36,7 +37,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
 
@@ -81,7 +81,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
     }
     public static boolean canRefine(CeylonEditor editor) {
-        Node node = AbstractHandler.getSelectedNode(editor);
+        Node node = getSelectedNode(editor);
         return node instanceof Tree.ClassBody ||
                 node instanceof Tree.InterfaceBody ||
                 node instanceof Tree.ClassDefinition ||
@@ -92,7 +92,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     public static void refineFormalMembers(CeylonEditor editor) throws ExecutionException {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return;
-        Node node = AbstractHandler.getSelectedNode(editor);
+        Node node = getSelectedNode(editor);
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
         final TextChange change = new DocumentChange("Refine Formal Members", document);

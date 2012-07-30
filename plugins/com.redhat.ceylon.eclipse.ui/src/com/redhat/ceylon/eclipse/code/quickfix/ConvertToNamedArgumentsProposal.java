@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.refactor.AbstractHandler.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
