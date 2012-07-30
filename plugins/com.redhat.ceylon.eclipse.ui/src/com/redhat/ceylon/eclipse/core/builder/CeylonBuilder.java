@@ -131,6 +131,7 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.sun.source.util.TaskEvent;
@@ -1916,7 +1917,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 myConsole= (MessageConsole) console;
         }
         if (myConsole == null) {
-            myConsole= new MessageConsole(consoleName, null);
+            myConsole= new MessageConsole(consoleName, 
+            		CeylonPlugin.getInstance().getImageRegistry()
+            		    .getDescriptor(ICeylonResources.BUILDER));
             consoleManager.addConsoles(new IConsole[] { myConsole });
         }
 //      consoleManager.showConsoleView(myConsole);

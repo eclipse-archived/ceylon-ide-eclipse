@@ -216,6 +216,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
 		reg.put(SHIFT_LEFT, image("shift_l_edit.gif"));
 		reg.put(SHIFT_RIGHT, image("shift_r_edit.gif"));
 		reg.put(QUICK_ASSIST, image("quickassist_obj.gif"));
+		reg.put(BUILDER, image("builder.gif"));
 		reg.put(CONFIG_ANN, image("configure_annotations.gif"));
 		reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
 

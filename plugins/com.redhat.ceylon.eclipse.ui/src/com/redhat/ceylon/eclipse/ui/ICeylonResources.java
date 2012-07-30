@@ -65,5 +65,7 @@ public interface ICeylonResources {
 	public static final String SHIFT_LEFT = "shift_l";
 	public static final String SHIFT_RIGHT = "shift_r";
 	public static final String QUICK_ASSIST = "quickfix";
+	
+	public static final String BUILDER = "builder";
     
 }
