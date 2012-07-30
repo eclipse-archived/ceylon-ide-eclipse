@@ -632,11 +632,12 @@ public class CeylonContentProposer {
         if ((d.isDefault() || d.isFormal()) &&
                 node.getScope() instanceof ClassOrInterface &&
                 ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+        	boolean isInterface = node.getScope() instanceof Interface;
             ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(new RefinementCompletionProposal(offset, prefix,  
                     getRefinementDescriptionFor(d, pr), 
-                    getRefinementTextFor(d, pr, "\n" + getIndent(node, doc)), 
+                    getRefinementTextFor(d, pr, isInterface, "\n" + getIndent(node, doc)), 
                     cpc, d));
         }
     }
@@ -1180,15 +1181,15 @@ public class CeylonContentProposer {
     }
     
     public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
-            String indent) {
+    		boolean isInterface, String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
-        if (isVariable(d)) {
+        if (isVariable(d) && !isInterface) {
             result.append("variable ");
         }
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, result);
-        appendImpl(d, indent, result);
+        appendImpl(d, isInterface, indent, result);
         return result.toString();
     }
 
@@ -1198,7 +1199,7 @@ public class CeylonContentProposer {
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p, result);
         appendParameters(p, pr, result);
-        appendImpl(p, indent, result);
+        appendImpl(p, false, indent, result);
         return result.toString();
     }
 
@@ -1495,15 +1496,24 @@ public class CeylonContentProposer {
     }
   }*/
     
-    private static void appendImpl(Declaration d, String indent, StringBuilder result) {
+    private static void appendImpl(Declaration d, boolean isInterface, 
+    		String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
             result.append( ((Functional) d).isDeclaredVoid() ?
                     " {}" : " {" + extraIndent(indent) + "return bottom;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
-            result.append(" ")
-                .append(isVariable(d) ? ":=" : "=")
-                .append(" bottom;");
+        	if (isInterface) {
+        		result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
+        		if (isVariable(d)) {
+        			result.append(indent + "assign " + d.getName() + " {}");
+        		}
+        	}
+        	else {
+        		result.append(" ")
+        			.append(isVariable(d) ? ":=" : "=")
+        			.append(" bottom;");
+        	}
         }
         else if (d instanceof ValueParameter) {
             result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
