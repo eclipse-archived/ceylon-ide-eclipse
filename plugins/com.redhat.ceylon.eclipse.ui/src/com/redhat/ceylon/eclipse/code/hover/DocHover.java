@@ -36,6 +36,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -93,6 +95,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -718,6 +721,34 @@ public class DocHover
 						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
 				        HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 				//extraBreak = true;
+			}
+		}
+		if (dec instanceof TypedDeclaration) {
+			ProducedType ret = ((TypedDeclaration) dec).getType();
+			if (ret!=null) {
+				List<ProducedType> list;
+				if (ret.getDeclaration() instanceof UnionType) {
+					list = ret.getDeclaration().getCaseTypes();
+				}
+				else {
+					list = Arrays.asList(ret);
+				}
+				StringBuffer buf = new StringBuffer("returns <tt>");
+				for (ProducedType pt: list) {
+					if (pt.getDeclaration() instanceof ClassOrInterface || 
+							pt.getDeclaration() instanceof TypeParameter) {
+						buf.append("<a " + link(pt.getDeclaration()) + ">" + 
+								HTMLPrinter.convertToHTMLContent(pt.getProducedTypeName()) +"</a>");
+					}
+					else {
+						buf.append(HTMLPrinter.convertToHTMLContent(pt.getProducedTypeName()));
+					}
+					buf.append("|");
+				}
+				buf.setLength(buf.length()-1);
+				buf.append("</tt>");
+				addImageAndLabel(buffer, ret.getDeclaration(), fileUrl("stepreturn_co.gif").toExternalForm(), 
+						16, 16, buf.toString(), 20, 2);
 			}
 		}
 		if (dec!=dec.getRefinedDeclaration()) {
