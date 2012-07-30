@@ -722,23 +722,52 @@ public class DocHover
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
+				buffer.append("<p>");
 				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "<tt>extends <a " + link(sup.getDeclaration()) + ">" + 
+						16, 16, "extends <tt><a " + link(sup.getDeclaration()) + ">" + 
 				        HTMLPrinter.convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
+				buffer.append("</p>");
 				//extraBreak = true;
 			}
 		}
 		if (dec instanceof TypeDeclaration) {
-			for (ProducedType td: ((TypeDeclaration) dec).getSatisfiedTypes()) {
-				addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "<tt>satisfies <a " + link(td.getDeclaration()) + ">" + 
-				        HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
-				//extraBreak = true;
+			List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
+			if (!sts.isEmpty()) {
+				buffer.append("<p>");
+				for (ProducedType td: sts) {
+					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
+							16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
+									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+					//extraBreak = true;
+				}
+				buffer.append("</p>");
+			}
+			List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
+			if (cts!=null) {
+				buffer.append("<p>");
+				for (ProducedType td: cts) {
+					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
+							16, 16, "has case <tt><a " + link(td.getDeclaration()) + ">" + 
+									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+					//extraBreak = true;
+				}
+				buffer.append("</p>");
 			}
 		}
+		if (dec!=dec.getRefinedDeclaration()) {
+			buffer.append("<p>");
+			Declaration rd = dec.getRefinedDeclaration();
+			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
+					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
+					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
+					"</tt>", 20, 2);
+			buffer.append("</p>");
+		}
+		
 		if (dec instanceof TypedDeclaration) {
 			ProducedType ret = ((TypedDeclaration) dec).getType();
 			if (ret!=null) {
+				buffer.append("<p>");
 				List<ProducedType> list;
 				if (ret.getDeclaration() instanceof UnionType) {
 					list = ret.getDeclaration().getCaseTypes();
@@ -762,28 +791,24 @@ public class DocHover
 				buf.append("</tt>");
 				addImageAndLabel(buffer, ret.getDeclaration(), fileUrl("stepreturn_co.gif").toExternalForm(), 
 						16, 16, buf.toString(), 20, 2);
+				buffer.append("</p>");
 			}
 		}
-		if (dec!=dec.getRefinedDeclaration()) {
-			Declaration rd = dec.getRefinedDeclaration();
-			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
-					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
-					"</tt>", 20, 2);
-		}
-		
-		//TODO: parameters!
 		if (dec instanceof Functional) {
 			for (ParameterList pl: ((Functional) dec).getParameterLists()) {
-				for (Parameter p: pl.getParameters()) {
-					StringBuffer doc = new StringBuffer();
-					appendDocAnnotationContent(getReferencedNode(p, cpc), doc);
-					if (doc.length()!=0) {
-						doc.insert(0, ":");
+				if (!pl.getParameters().isEmpty()) {
+					buffer.append("<p>");
+					for (Parameter p: pl.getParameters()) {
+						StringBuffer doc = new StringBuffer();
+						appendDocAnnotationContent(getReferencedNode(p, cpc), doc);
+						if (doc.length()!=0) {
+							doc.insert(0, ":");
+						}
+						addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
+								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + getDescriptionFor(p) + 
+								"</a></tt>" + doc, 20, 2);
 					}
-					addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
-							16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + getDescriptionFor(p) + 
-							"</a></tt>" + doc, 20, 2);
+					buffer.append("</p>");
 				}
 			}
 		}
@@ -952,9 +977,9 @@ public class DocHover
 									documentation.append("</tt></p>");
 								}*/
                             }
-                            if (!args.isEmpty()) {
+                            /*if (!args.isEmpty()) {
                             	documentation.append("<br/>");
-                            }
+                            }*/
                         }
                     }
                 }
