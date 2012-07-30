@@ -45,7 +45,8 @@ class CreateSubtypeProposal implements ICompletionProposal {
     private CeylonEditor editor;
     private ProducedType type;
     
-    public CreateSubtypeProposal(CeylonEditor editor, ProducedType type) {
+    public CreateSubtypeProposal(CeylonEditor editor, 
+    		ProducedType type) {
         this.editor = editor;
         this.type = type;
     }
@@ -84,7 +85,10 @@ class CreateSubtypeProposal implements ICompletionProposal {
 
     public void createSubtype(CeylonEditor editor) {
         TypeDeclaration td = type.getDeclaration();
-        CreateSubtype cs = subtypeDeclaration(type, false);
+        CreateSubtype cs = subtypeDeclaration(type, 
+        		editor.getParseController().getRootNode()
+        		        .getUnit().getPackage(), 
+        		false);
 		NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
                 Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
@@ -112,7 +116,8 @@ class CreateSubtypeProposal implements ICompletionProposal {
 		}
 	}
 	
-    public static CreateSubtype subtypeDeclaration(ProducedType type, boolean object) {
+    public static CreateSubtype subtypeDeclaration(ProducedType type, 
+    		Package pkg, boolean object) {
         TypeDeclaration td = type.getDeclaration();
         StringBuilder def = new StringBuilder();
         if (object) {
@@ -218,7 +223,7 @@ class CreateSubtypeProposal implements ICompletionProposal {
         }
         StringBuilder imports = new StringBuilder();
         for (Package p: importedPackages) {
-        	if (!p.getModule().isDefault() && 
+        	if (!p.getNameAsString().isEmpty() && !p.equals(pkg) &&
         			!p.getModule().getNameAsString()
         			        .equals("ceylon.language")) {
         		imports.append("import ")
