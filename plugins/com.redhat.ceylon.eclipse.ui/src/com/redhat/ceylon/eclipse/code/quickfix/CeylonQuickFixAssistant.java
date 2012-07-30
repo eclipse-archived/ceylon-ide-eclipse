@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
@@ -275,6 +276,9 @@ public class CeylonQuickFixAssistant {
         	break;
         case 802:
         	addFixAssignmentProposal(problem, proposals, project, file, node);
+        	break;
+        case 905:
+        	addMakeContainerAbstractProposal(proposals, project, node);
         	break;
         case 900:
         case 1100:
@@ -694,10 +698,11 @@ public class CeylonQuickFixAssistant {
                     }
                     def = "class " + brokenName + params + supertype + " {\n";
                     if (!isVoid) {
-                        for (DeclarationWithProximity dwp: t.getDeclaration().getMatchingMemberDeclarations("", 0).values()) {
+                        for (DeclarationWithProximity dwp: t.getDeclaration()
+                        		.getMatchingMemberDeclarations("", 0).values()) {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                                ProducedReference pr = CeylonContentProposer.getRefinedProducedReference(t, d);
+                                ProducedReference pr = getRefinedProducedReference(t, d);
                                 def+= "$indent    " + getRefinementTextFor(d, pr, "") + "\n";
                             }
                         }
