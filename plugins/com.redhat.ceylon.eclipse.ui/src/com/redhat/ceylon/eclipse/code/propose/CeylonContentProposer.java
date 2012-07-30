@@ -1033,11 +1033,9 @@ public class CeylonContentProposer {
                 return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
             }
             else {
-                Map<String, DeclarationWithProximity> result = getLanguageModuleProposals(node, prefix);
-                if (scope!=null) { //a null scope occurs when we have not finished parsing the file
-                    result.putAll(scope.getMatchingDeclarations(node.getUnit(), prefix, 0));
-                }
-                return result;
+                return scope==null ? //a null scope occurs when we have not finished parsing the file
+                		getUnparsedProposals(cu, prefix) :
+                		scope.getMatchingDeclarations(node.getUnit(), prefix, 0);
             }
         }
     }
@@ -1056,34 +1054,20 @@ public class CeylonContentProposer {
         }
     }
     
-    //TODO: move this method to the model (perhaps make a LanguageModulePackage subclass)
-    private static Map<String, DeclarationWithProximity> getLanguageModuleProposals(Node node, 
+    private static Map<String, DeclarationWithProximity> getUnparsedProposals(Node node, 
             String prefix) {
-        Map<String, DeclarationWithProximity> result = new TreeMap<String, DeclarationWithProximity>();
         if (node == null) {
-            return result;
+            return new TreeMap<String, DeclarationWithProximity>();
         }
         Unit unit = node.getUnit();
         if (unit == null) {
-            return result;
+            return new TreeMap<String, DeclarationWithProximity>();
         }
         Package pkg = unit.getPackage();
         if (pkg == null) {
-            return result;
+            return new TreeMap<String, DeclarationWithProximity>();
         }
-        
-        Module languageModule = pkg.getModule().getLanguageModule();
-        if (languageModule!=null && !(node.getScope() instanceof ImportList)) {
-            for (Package languageScope: languageModule.getPackages() ) {
-                for (Map.Entry<String, DeclarationWithProximity> entry: 
-                    languageScope.getMatchingDeclarations(null, prefix, 100).entrySet()) {
-                    if (entry.getValue().getDeclaration().isShared()) {
-                        result.put(entry.getKey(), entry.getValue());
-                    }                    
-                }
-            }
-        }
-        return result;
+        return pkg.getModule().getAvailableDeclarations(prefix, 0);
     }
     
     private static boolean forceExplicitTypeArgs(Declaration d, OccurrenceLocation ol) {
