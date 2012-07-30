@@ -70,6 +70,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
@@ -128,6 +129,9 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
                         Node node = CeylonSourcePositionLocator.findNode(cu, (ITextSelection) selection);
+                        FindStatementVisitor fsv = new FindStatementVisitor(node, true);
+                        fsv.visit(cu);
+                        node = fsv.getStatement();
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method.isToplevel() && 
