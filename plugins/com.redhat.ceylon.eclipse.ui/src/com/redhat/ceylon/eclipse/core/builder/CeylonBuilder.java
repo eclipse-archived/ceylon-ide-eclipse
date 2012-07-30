@@ -408,13 +408,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         
         try {
 //            startTime = System.nanoTime();
-            IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
+            /*IBuildConfiguration[] buildConfsBefore = getContext().getAllReferencedBuildConfigs();
             if (buildConfsBefore.length == 0) {
             	//don't clear the console unless 
             	//we are the first project in 
             	//the build invocation
             	findConsole().clearConsole();
-            }
+            }*/
 //            getConsoleStream().println("\n===================================");
 //            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
 //            getConsoleStream().println("-----------------------------------");
@@ -576,7 +576,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             if (!binariesGenerationOK) {
                 // Add a problem marker if binary generation went wrong for ceylon files
                 addBinaryGenerationProblemMarker(project);
-                findConsole().activate();
+                //findConsole().activate();
                 //TODO: show the Problems view??
             }
                         
