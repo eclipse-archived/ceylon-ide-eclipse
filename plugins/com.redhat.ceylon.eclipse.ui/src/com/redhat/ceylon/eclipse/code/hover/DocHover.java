@@ -36,7 +36,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -83,6 +82,7 @@ import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -90,6 +90,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -733,7 +734,7 @@ public class DocHover
 				else {
 					list = Arrays.asList(ret);
 				}
-				StringBuffer buf = new StringBuffer("returns <tt>");
+				StringBuffer buf = new StringBuffer("returns&nbsp;&nbsp;<tt>");
 				for (ProducedType pt: list) {
 					if (pt.getDeclaration() instanceof ClassOrInterface || 
 							pt.getDeclaration() instanceof TypeParameter) {
@@ -757,6 +758,28 @@ public class DocHover
 					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
 					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
 					"</tt>", 20, 2);
+		}
+		
+		//TODO: parameters!
+		if (dec instanceof Functional) {
+			for (ParameterList pl: ((Functional) dec).getParameterLists()) {
+				for (Parameter p: pl.getParameters()) {
+					StringBuffer doc = new StringBuffer();
+					appendDocAnnotationContent(getReferencedNode(p, cpc), doc);
+					if (doc.length()!=0) {
+						doc.insert(0, ":");
+					}
+					addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
+							16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + getDescriptionFor(p) + 
+							"</a></tt>" + doc, 20, 2);
+				}
+			}
+		}
+		
+		if (dec instanceof Parameter) {
+			Declaration pd = ((Parameter) dec).getDeclaration();
+			addImageAndLabel(buffer, pd, fileUrl("methpro_obj.gif").toExternalForm(),
+					16, 16, "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
 		}
 		
 		if (dec instanceof ClassOrInterface) {
