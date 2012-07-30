@@ -206,7 +206,7 @@ public class CeylonParseController {
             srcDir = getSourceFolder(project, resolvedPath);
         }
         else if (path!=null) { //path==null in structured compare editor
-        	srcDir = inferSrcDir(path, srcDir);
+        	srcDir = inferSrcDir(path);
         	project = findProject(path);
         }
         
@@ -267,14 +267,16 @@ public class CeylonParseController {
         }
 	}
 
-	private VirtualFile inferSrcDir(IPath path, VirtualFile srcDir) {
+	private VirtualFile inferSrcDir(IPath path) {
 		String pathString = path.toString();
 		int lastBangIdx = pathString.lastIndexOf('!');
 		if (lastBangIdx>0) {
 			String srcArchivePath= pathString.substring(0, lastBangIdx);
-			srcDir = new TemporaryFile(srcArchivePath+'!');
+			return new TemporaryFile(srcArchivePath+'!');
 		}
-		return srcDir;
+		else {
+			return null;
+		}
 	}
 
 	private void collectLexAndParseErrors(CeylonLexer lexer,
@@ -396,17 +398,23 @@ public class CeylonParseController {
 		//TODO: this causes a bug where we see errors
 		//      in the source file if we find the
 		//      the wrong project here
-		String ps = path.toPortableString();
-		int i = ps.indexOf('!');
+		String pp = path.toPortableString();
+		String osp = path.toOSString();
+		int i = pp.indexOf('!'); //this is a bit fragile
 		if (i>0) {
-			String relPath = ps.substring(i+1);
+			String relPath = pp.substring(i+2);
 			for (IProject p: getProjects()) {
 				try {
 					for (String repo: getUserRepositories(p)) {
-						if (path.toString().startsWith(repo) &&
-								getProjectTypeChecker(p)
-									.getPhasedUnitFromRelativePath(relPath)!=null) {
-							return p;
+						if (osp.startsWith(repo)) {
+							PhasedUnit pu = getProjectTypeChecker(p)
+									.getPhasedUnitFromRelativePath(relPath);
+							if (pu!=null) {
+								Module m = pu.getPackage().getModule();
+								if (pp.contains(m.getNameAsString()+ '-' + m.getVersion())) { //this is a bit fragile
+									return p;
+								}
+							}
 						}
 					}
 				} 
