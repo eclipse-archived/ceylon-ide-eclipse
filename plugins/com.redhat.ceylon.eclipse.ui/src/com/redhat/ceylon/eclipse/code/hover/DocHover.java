@@ -674,6 +674,7 @@ public class DocHover
 	}
 	
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
+		if (dec==null) return null;
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		
