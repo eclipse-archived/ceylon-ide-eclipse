@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResou
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
@@ -28,10 +29,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 
@@ -81,6 +85,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
+import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
@@ -173,7 +178,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
     /*public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";*/
 
-    public static enum ModelState {
+    private final class CompileErrorReporter implements
+			DiagnosticListener<JavaFileObject> {
+		@Override
+		public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+			JavaFileObject source = diagnostic.getSource();
+			if (source instanceof CeylonFileObject) {
+				IFile file = getWorkspace().getRoot()
+						.getFileForLocation(new Path(source.getName()));
+				try {
+					for (IMarker m: file.findMarkers(PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
+						if (((Integer)m.getAttribute(IMarker.SEVERITY)).intValue()==IMarker.SEVERITY_ERROR) {
+							return;
+						}
+					}
+					IMarker marker = file.createMarker(PROBLEM_MARKER_ID+".backend");
+					long line = diagnostic.getLineNumber();
+					if (line>=0) {
+						//Javac doesn't have line number 
+						//info for certain errors
+						marker.setAttribute(IMarker.LINE_NUMBER, (int)line);
+					}
+					marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
+					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				} 
+				catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public static enum ModelState {
         Missing,
         Parsing,
         Parsed,
@@ -622,12 +659,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
 	private void addBinaryGenerationProblemMarker(final IProject project)
 			throws CoreException {
-		IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
+		/*IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
 		marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files in project " + 
 		        project.getName() + ". Look at the Ceylon console for more information.");
 		marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 		marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-		marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+		marker.setAttribute(IMarker.LOCATION, "Bytecode generation");*/
 	}
 
 	private void cleanRemovedSources(List<IFile> filesToRemove,
@@ -1525,6 +1562,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 
         final com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
+        context.put(DiagnosticListener.class, new CompileErrorReporter());
         CeylonLog.preRegister(context);
         
         CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
@@ -1558,7 +1596,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         ZipFileIndexCache.getSharedInstance().clearCache();
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
-                fileManager, null, options, null, compilationUnits);
+                fileManager, new CompileErrorReporter(), options, null, 
+                compilationUnits);
         task.setTaskListener(new TaskListener() {
 			@Override
 			public void started(TaskEvent ta) {
@@ -1871,6 +1910,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         try {
             clearTaskMarkersOn(resource);
             resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
+            resource.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_INFINITE);
             //these are actually errors from the Ceylon compiler, but
             //we did not bother creating a separate annotation type!
             resource.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_INFINITE);
