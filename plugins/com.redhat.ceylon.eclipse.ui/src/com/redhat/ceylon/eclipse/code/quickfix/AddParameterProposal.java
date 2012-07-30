@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
 
@@ -37,7 +37,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     AddParameterProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Add to parameter list of '" + dec.getName() + "'", change, 10, CORRECTION);
+        super("Add to parameter list of '" + dec.getName() + "'", change, 10, ADD);
         this.offset=offset;
         this.file=file;
     }
@@ -67,7 +67,8 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 }
                 else {
                     def = AbstractRefactoring.toString(sie, 
-                            editor.getParseController().getTokens());
+                              editor.getParseController().getTokens())
+                                  .replace(":=", "=");
                     int start = sie.getStartIndex();
                     try {
                         if (doc.get(start-1,1).equals(" ")) {
@@ -84,6 +85,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 Integer offset = pl.getStopIndex();
                 change.addEdit(new InsertEdit(offset, param));
                 Type type = decNode.getType();
+                int shift=0;
                 if (type instanceof Tree.LocalModifier) {
                     Integer typeOffset = type.getStartIndex();
                     ProducedType infType = inferType(cu, type);
@@ -93,12 +95,12 @@ class AddParameterProposal extends ChangeCorrectionProposal {
 					}
 					else {
 						explicitType = infType.getProducedTypeName();
-						importType(change, infType, cu, new HashSet<Declaration>());
+						shift=importType(change, infType, cu, new HashSet<Declaration>());
 					}
                     change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
                 }
                 proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
-                        offset+param.length(), file, change));
+                        offset+param.length()+shift, file, change));
             }
         }
     }

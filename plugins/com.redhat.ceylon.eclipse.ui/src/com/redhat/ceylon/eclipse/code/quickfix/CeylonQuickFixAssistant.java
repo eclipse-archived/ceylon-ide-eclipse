@@ -2,12 +2,12 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PARAMETER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -977,7 +977,7 @@ public class CeylonQuickFixAssistant {
                             def = ", " + def;
                         }
                         CreateProposal.addCreateParameterProposal(proposals, def, desc, 
-                                PARAMETER, typeDec, unit, decNode, paramList, t);
+                        		ADD, typeDec, unit, decNode, paramList, t);
                         break;
                     }
                 }
@@ -1000,7 +1000,7 @@ public class CeylonQuickFixAssistant {
                             pdef = ", " + pdef;
                         }
                         CreateProposal.addCreateParameterAndAttributeProposal(proposals, pdef, 
-                                adef, desc, ATTRIBUTE, typeDec, unit, decNode, 
+                                adef, desc, ADD, typeDec, unit, decNode, 
                                 paramList, body, t);
                     }
                 }
