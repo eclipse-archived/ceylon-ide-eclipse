@@ -72,29 +72,39 @@ public class CleanImportsHandler extends AbstractHandler {
     			super.visit(that);
     			if (that.getDeclaration()==null) {
     				String name = that.getIdentifier().getText();
-    				Declaration prop = null;
-    				for (Package p: cu.getUnit().getPackage().getModule()
-    				        .getAllPackages()) {
-    					Declaration d = p.getMember(name, null); //TODO: pass sig
-    					if (d!=null && d.isToplevel() && 
-    							d.isShared() && !d.isAnonymous()) {
-    						if (prop==null) {
-    							prop=d;
-    						}
-    						else {
-    							//ambiguous
-    							//TODO: pop up a window!
-    							prop=null;
-    							break;
-    						}
-    					}
-    					if (prop!=null && !proposals.contains(prop)) {
-    						proposals.add(prop);
-    					}
-    				}
-    				
+    				addProposal(cu, proposals, name);
     			}
     		}
+    		public void visit(Tree.BaseType that) {
+    			super.visit(that);
+    			if (that.getDeclarationModel()==null) {
+    				String name = that.getIdentifier().getText();
+    				addProposal(cu, proposals, name);
+    			}
+    		}
+			private void addProposal(final Tree.CompilationUnit cu,
+					final List<Declaration> proposals, String name) {
+				Declaration prop = null;
+				for (Package p: cu.getUnit().getPackage().getModule()
+				        .getAllPackages()) {
+					Declaration d = p.getMember(name, null); //TODO: pass sig
+					if (d!=null && d.isToplevel() && 
+							d.isShared() && !d.isAnonymous()) {
+						if (prop==null) {
+							prop=d;
+						}
+						else {
+							//ambiguous
+							//TODO: pop up a window!
+							prop=null;
+							break;
+						}
+					}
+					if (prop!=null && !proposals.contains(prop)) {
+						proposals.add(prop);
+					}
+				}
+			}
     	}.visit(cu);
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         cu.visit(duiv);
