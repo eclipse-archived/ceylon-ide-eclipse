@@ -83,8 +83,8 @@ public class FindReferenceVisitor extends Visitor {
         Condition c = that.getCondition();
         Tree.Variable var = getConditionVariable(c);
         if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-            if (var.getDeclarationModel().getOriginalDeclaration()
-                    .equals(declaration)) {
+            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+			if (od!=null && od.equals(declaration)) {
                 c.visit(this);
                 Declaration d = declaration;
                 declaration = var.getDeclarationModel();
@@ -101,8 +101,8 @@ public class FindReferenceVisitor extends Visitor {
         Condition c = that.getCondition();
         Tree.Variable var = getConditionVariable(c);
         if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-            if (var.getDeclarationModel().getOriginalDeclaration()
-                    .equals(declaration)) {
+            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+			if (od!=null && od.equals(declaration)) {
                 c.visit(this);
                 Declaration d = declaration;
                 declaration = var.getDeclarationModel();

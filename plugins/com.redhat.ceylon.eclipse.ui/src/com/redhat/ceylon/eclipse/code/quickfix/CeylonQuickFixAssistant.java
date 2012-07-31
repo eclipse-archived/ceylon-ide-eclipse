@@ -877,11 +877,17 @@ public class CeylonQuickFixAssistant {
                     Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
                     if (decNode!=null) {
                         Tree.Type typeNode = decNode.getType();
-                        ProducedType newType = intersect ? 
-                        		intersectionType(typeNode.getTypeModel(), type, unit.getUnit()) :
-                        		unionType(typeNode.getTypeModel(), type, unit.getUnit());
-                        ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, proposals, typedDec, 
-                                newType, getFile(unit), unit.getCompilationUnit());
+                        if (typeNode!=null) {
+                        	ProducedType t=typeNode.getTypeModel();
+                        	if (t!=null) {
+                            	ProducedType newType = intersect ? 
+                            			intersectionType(t, type, unit.getUnit()) :
+                            				unionType(t, type, unit.getUnit());
+                    			ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, 
+                    					proposals, typedDec, newType, getFile(unit), 
+                    					unit.getCompilationUnit());
+                        	}
+                        }
                     }
                 }
             }
