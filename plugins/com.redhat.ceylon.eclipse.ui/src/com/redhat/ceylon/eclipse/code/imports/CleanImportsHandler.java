@@ -20,9 +20,12 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -59,16 +62,46 @@ public class CleanImportsHandler extends AbstractHandler {
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         til.visit(duiv);
         node.visit(duiv);
-        return imports(til, duiv);
+        return imports(til, duiv.getResult(), Collections.<Declaration>emptyList());
     }
     
-    public static String imports(Tree.CompilationUnit cu) {
+    public static String imports(final Tree.CompilationUnit cu) {
+		final List<Declaration> proposals = new ArrayList<Declaration>();
+    	new Visitor() {
+    		public void visit(Tree.BaseMemberOrTypeExpression that) {
+    			super.visit(that);
+    			if (that.getDeclaration()==null) {
+    				String name = that.getIdentifier().getText();
+    				Declaration prop = null;
+    				for (Package p: cu.getUnit().getPackage().getModule()
+    				        .getAllPackages()) {
+    					Declaration d = p.getMember(name, null); //TODO: pass sig
+    					if (d!=null && d.isToplevel() && 
+    							d.isShared() && !d.isAnonymous()) {
+    						if (prop==null) {
+    							prop=d;
+    						}
+    						else {
+    							//ambiguous
+    							//TODO: pop up a window!
+    							prop=null;
+    							break;
+    						}
+    					}
+    					if (prop!=null && !proposals.contains(prop)) {
+    						proposals.add(prop);
+    					}
+    				}
+    				
+    			}
+    		}
+    	}.visit(cu);
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor();
         cu.visit(duiv);
-        return imports(cu.getImportList(), duiv);
+        return imports(cu.getImportList(), duiv.getResult(), proposals);
     }
     
-    public static String imports(ImportList til, DetectUnusedImportsVisitor duiv) {
+    public static String imports(ImportList til, List<Declaration> unused, List<Declaration> proposed) {
         if (til!=null && til.getStartIndex()!=null && til.getStopIndex()!=null) {
             List<Tree.Import> importList = new ArrayList<Tree.Import>();
             importList.addAll(til.getImports());
@@ -93,7 +126,7 @@ public class CleanImportsHandler extends AbstractHandler {
                     if (i.getDeclarationModel()!=null && 
                             i.getIdentifier().getErrors().isEmpty() && 
                             i.getErrors().isEmpty()) {
-                        if (!duiv.getResult().contains(i.getDeclarationModel())) {
+                        if (!unused.contains(i.getDeclarationModel())) {
                             if (!hasWildcard || i.getAlias()!=null || 
                                     i.getImportMemberOrTypeList()!=null) {
                                 list.add(i);
@@ -106,7 +139,7 @@ public class CleanImportsHandler extends AbstractHandler {
                                     if (j.getDeclarationModel()!=null && 
                                             j.getIdentifier().getErrors().isEmpty() && 
                                             j.getErrors().isEmpty()) {
-                                        if (!duiv.getResult().contains(j.getDeclarationModel())) {
+                                        if (!unused.contains(j.getDeclarationModel())) {
                                             list.add(i);
                                             break;
                                         }
@@ -152,7 +185,7 @@ public class CleanImportsHandler extends AbstractHandler {
                                     if (j.getDeclarationModel()!=null && 
                                             j.getIdentifier().getErrors().isEmpty() &&
                                             j.getErrors().isEmpty()) {
-                                        if (!duiv.getResult().contains(j.getDeclarationModel())) {
+                                        if (!unused.contains(j.getDeclarationModel())) {
                                             found=true;
                                             if (!j.getImportModel().getAlias().equals(j.getDeclarationModel().getName())) {
                                                 builder.append(j.getImportModel().getAlias()).append("=");
@@ -167,6 +200,11 @@ public class CleanImportsHandler extends AbstractHandler {
                             }
                             builder.append(", ");
                         }
+                    }
+                    for (Declaration d: proposed) {
+                    	if (d.getUnit().getPackage().getNameAsString().equals(pn)) {
+                    		builder.append(d.getName()).append(", ");
+                    	}
                     }
                     if (hasWildcard) {
                         builder.append("...");
