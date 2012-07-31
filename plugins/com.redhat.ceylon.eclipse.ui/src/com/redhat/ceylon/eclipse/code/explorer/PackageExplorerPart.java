@@ -11,6 +11,8 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -152,7 +154,7 @@ public class PackageExplorerPart extends ViewPart
 	public static final int PROJECTS_AS_ROOTS= 1;
 	public static final int WORKING_SETS_AS_ROOTS= 2;
 
-	private final static String VIEW_ID= JavaUI.ID_PACKAGES;
+	private final static String VIEW_ID= PLUGIN_ID + ".view.PackageExplorer";
 
 	// Persistence tags.
 	private static final String TAG_LAYOUT= "layout"; //$NON-NLS-1$

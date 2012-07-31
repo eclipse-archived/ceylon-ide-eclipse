@@ -26,7 +26,6 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMInstall2;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.IPackagesViewPart;
-import org.eclipse.jdt.ui.actions.ShowInPackageViewAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,6 +48,7 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
+import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -258,7 +258,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 IPath path = cpe.getPath();
                 if (path.segment(0).equals(JRE_CONTAINER)) {
                     IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
-                    if (!((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
+                    if (vm==null || !((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
                         fFirstPage.setErrorMessage("Please select a Java 1.7 JRE");
                         return false;
                     }
@@ -296,7 +296,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 public void run() {
                     IWorkbenchPart activePart= getActivePart();
                     if (activePart instanceof IPackagesViewPart) {
-                        (new ShowInPackageViewAction(activePart.getSite())).run(getCreatedElement());
+                		PackageExplorerPart.openInActivePerspective()
+                		    .tryToReveal(getCreatedElement());
                     }
                 }
             });
