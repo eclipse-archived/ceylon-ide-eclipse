@@ -596,31 +596,31 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             monitor.done();
             
-            if (mustDoFullBuild.value) {
-            	Job job = new Job("Scanning available modules") {
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-								.getContext().getModules().getListOfModules();
-						monitor.beginTask("Scanning modules", modules.size());
-						for (Module m: modules) {
-							for (Package p: m.getAllPackages()) {
-								p.getMembers();
-							}
-							monitor.worked(1);
-							if (monitor.isCanceled()) {
-								return Status.CANCEL_STATUS;
-							}
-						}
-						monitor.done();
-						return Status.OK_STATUS;
-					}
-				};
-				job.setPriority(Job.BUILD);
-				job.setSystem(true);
-				job.setRule(project);
-				job.schedule();
-            }
+//            if (mustDoFullBuild.value) {
+//            	Job job = new Job("Scanning available modules") {
+//					@Override
+//					protected IStatus run(IProgressMonitor monitor) {
+//						Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
+//								.getContext().getModules().getListOfModules();
+//						monitor.beginTask("Scanning modules", modules.size());
+//						for (Module m: modules) {
+//							for (Package p: m.getAllPackages()) {
+//								p.getMembers();
+//							}
+//							monitor.worked(1);
+//							if (monitor.isCanceled()) {
+//								return Status.CANCEL_STATUS;
+//							}
+//						}
+//						monitor.done();
+//						return Status.OK_STATUS;
+//					}
+//				};
+//				job.setPriority(Job.BUILD);
+//				job.setSystem(true);
+//				job.setRule(project);
+//				job.schedule();
+//            }
             
             return project.getReferencedProjects();
         }
