@@ -801,7 +801,10 @@ public class DocHover
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
 						StringBuffer doc = new StringBuffer();
-						appendDocAnnotationContent(getReferencedNode(p, cpc), doc);
+						Tree.Declaration refNode = getReferencedNode(p, cpc);
+						if (refNode!=null) {
+							appendDocAnnotationContent(refNode, doc);
+						}
 						if (doc.length()!=0) {
 							doc.insert(0, ":");
 						}
