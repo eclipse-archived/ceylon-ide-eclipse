@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar" sourcepath="/ceylon-module-resolver"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar" sourcepath="/ceylon-spec/src"/>
 	<classpathentry kind="lib" path="lib/ceylon.language-0.3.1-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-0.3.1-ide.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

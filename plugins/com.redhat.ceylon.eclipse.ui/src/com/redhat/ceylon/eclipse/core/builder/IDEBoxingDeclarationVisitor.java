@@ -31,4 +31,14 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 	private boolean isCeylonCharacter(ProducedType type) {
 		return type.getDeclaration().getUnit().getCharacterDeclaration() == type.getDeclaration();
 	}
+
+	@Override
+	protected boolean isNothing(ProducedType type) {
+		return type.getDeclaration().getUnit().getNothingDeclaration() == type.getDeclaration();
+	}
+
+	@Override
+	protected boolean isObject(ProducedType type) {
+		return type.getDeclaration().getUnit().getObjectDeclaration() == type.getDeclaration();
+	}
 }

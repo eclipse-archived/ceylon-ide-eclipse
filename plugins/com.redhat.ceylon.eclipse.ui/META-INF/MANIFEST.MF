@@ -43,10 +43,12 @@ Bundle-ClassPath: ./,
  external:$ceylon.repo$/com/redhat/ceylon/compiler/java/$ceylon.compiler.version$/com.redhat.ceylon.compiler.java-$ceylon.compiler.version$.jar,
  external:$ceylon.repo$/com/redhat/ceylon/typechecker/$ceylon.typechecker.version$/com.redhat.ceylon.typechecker-$ceylon.typechecker.version$.jar,
  external:$ceylon.repo$/com/redhat/ceylon/module-resolver/$ceylon.module-resolver.version$/com.redhat.ceylon.module-resolver-$ceylon.module-resolver.version$.jar,
+ external:$ceylon.repo$/com/redhat/ceylon/common/$ceylon.common.version$/com.redhat.ceylon.common-$ceylon.common.version$.jar,
  external:$ceylon.repo$/ceylon/language/$ceylon.language.version$/ceylon.language-$ceylon.language.version$.car,
  lib/com.redhat.ceylon.compiler.java-0.3.1-ide.jar,
  lib/com.redhat.ceylon.typechecker-0.3.1-ide.jar,
  lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar,
+ lib/com.redhat.ceylon.common-0.3.1-ide.jar,
  lib/ceylon.language-0.3.1-ide.jar,
  lib/txtmark-0.7-1fc6e2a548.jar
 Import-Package: org.eclipse.help

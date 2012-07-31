@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;

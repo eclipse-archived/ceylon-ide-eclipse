@@ -167,4 +167,10 @@ public class JDTType implements TypeMirror {
         }
         return lowerBound;
     }
+
+	@Override
+	public boolean isRaw() {
+		// TODO FIX THIS!!!!!!!!!!
+		return false;
+	}
 }

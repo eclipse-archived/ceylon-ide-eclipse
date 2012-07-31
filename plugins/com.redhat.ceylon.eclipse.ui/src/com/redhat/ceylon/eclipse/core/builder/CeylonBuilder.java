@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
-import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
 import static com.redhat.ceylon.compiler.java.util.Util.quoteIfJavaKeyword;
 import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getPhasedUnit;
