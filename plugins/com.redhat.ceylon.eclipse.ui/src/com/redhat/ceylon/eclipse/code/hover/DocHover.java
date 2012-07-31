@@ -714,6 +714,7 @@ public class DocHover
 		Tree.Declaration refnode = getReferencedNode(dec, cpc);
 		if (refnode!=null) {
 			appendDocAnnotationContent(refnode, buffer);
+			appendThrowAnnotationContent(refnode, buffer);
 			appendSeeAnnotationContent(refnode, buffer);
 		}
 		
@@ -968,7 +969,7 @@ public class DocHover
 											}
 										}
 										addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-												"<tt>see <a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
+												"see <tt><a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
 									}
 								}
 								/*if (term instanceof QualifiedMemberOrTypeExpression) {
@@ -984,6 +985,51 @@ public class DocHover
                             /*if (!args.isEmpty()) {
                             	documentation.append("<br/>");
                             }*/
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void appendThrowAnnotationContent(Tree.Declaration decl,
+            StringBuffer documentation) {
+        Tree.AnnotationList annotationList = decl.getAnnotationList();
+        if (annotationList != null)
+        {
+            for (Tree.Annotation annotation : annotationList.getAnnotations())
+            {
+                Tree.Primary annotPrim = annotation.getPrimary();
+                if (annotPrim instanceof BaseMemberExpression)
+                {
+                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                    if ("throws".equals(name))
+                    {
+                        Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+                        if (argList!=null) {
+                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                            if (args.isEmpty()) continue;
+                            Tree.PositionalArgument typeArg = args.get(0);
+                            Tree.PositionalArgument textArg = args.size()>1 ? args.get(1) : null;
+                            Term typeArgTerm = typeArg.getExpression().getTerm();
+                            Term textArgTerm = textArg==null ? null : textArg.getExpression().getTerm();
+							String text = textArgTerm instanceof Tree.StringLiteral ?
+                            		textArgTerm.getText() : "";
+                            if (typeArgTerm instanceof MemberOrTypeExpression) {
+                            	Declaration dec = ((MemberOrTypeExpression) typeArgTerm).getDeclaration();
+                            	if (dec!=null) {
+                            		String dn = dec.getName();
+                            		if (typeArgTerm instanceof QualifiedMemberOrTypeExpression) {
+                            			Primary p = ((QualifiedMemberOrTypeExpression) typeArgTerm).getPrimary();
+                            			if (p instanceof MemberOrTypeExpression) {
+                            				dn = ((MemberOrTypeExpression) p).getDeclaration().getName()
+                            						+ "." + dn;
+                            			}
+                            		}
+                            		addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                            				"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text), 20, 2);
+                            	}
+                            }
                         }
                     }
                 }
