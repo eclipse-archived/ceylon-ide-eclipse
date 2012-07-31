@@ -1067,7 +1067,7 @@ public class CeylonContentProposer {
         if (pkg == null) {
             return new TreeMap<String, DeclarationWithProximity>();
         }
-        return pkg.getModule().getAvailableDeclarations(prefix, 0);
+        return pkg.getModule().getAvailableDeclarations(prefix);
     }
     
     private static boolean forceExplicitTypeArgs(Declaration d, OccurrenceLocation ol) {
