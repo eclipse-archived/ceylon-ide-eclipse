@@ -350,7 +350,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
 					!(that instanceof Tree.Variable && 
 							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
 				if (inBounds(that)) {
-					if (!hideNonshared||that.getDeclarationModel().isShared()) {
+					Declaration dm = that.getDeclarationModel();
+					if (!hideNonshared||dm!=null&&dm.isShared()) {
 						result.add(new CeylonOutlineNode(that));
 						super.visit(that);
 					}
