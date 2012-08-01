@@ -47,6 +47,18 @@
 2.  The directory `site/target/site` now contains an update site you can 
     install from. (You need to have IMP update site added too.)
 
+## Pushing a new release onto the development update site
+
+1.  Build with Tycho/Maven 3 (see previous section)
+    
+2.  Copy (through sftp) the content of the directory `site/target/site` onto the server :
+
+        www.ceylon-lang.org 
+    
+    to the following directory :
+    
+        /var/www/downloads.ceylonlang/ide/dev
+        
 ## License
 
 The content of this repository is released under the EPL v1.0
