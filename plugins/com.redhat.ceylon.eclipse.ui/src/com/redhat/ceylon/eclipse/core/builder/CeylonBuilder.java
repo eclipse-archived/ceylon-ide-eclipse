@@ -76,7 +76,6 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
@@ -102,7 +101,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -119,7 +117,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
@@ -165,11 +162,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static final String BUILDER_ID = PLUGIN_ID + ".ceylonBuilder";
 
     /**
-     * A marker ID that identifies problems detected by the builder
+     * A marker ID that identifies problems
      */
     public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
-    /*public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";*/
+    /**
+     * A marker ID that identifies tasks
+     */
+    public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";
+    
+    public static final String SOURCE = "Ceylon"; 
 
     private final class CompileErrorReporter implements
 			DiagnosticListener<JavaFileObject> {
@@ -1506,7 +1508,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
 
         if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
-            PrintWriter printWriter = new PrintWriter(getConsoleErrorStream(), true);
+            PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
             boolean success = true;
             if (compileWithJDTModelLoader()) {
                 sourceFiles.addAll(javaSourceFiles);
@@ -1888,13 +1890,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     
     private static void clearMarkersOn(IResource resource) {
         try {
-            clearTaskMarkersOn(resource);
+            resource.deleteMarkers(TASK_MARKER_ID, false, DEPTH_INFINITE);
             resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
             resource.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_INFINITE);
             //these are actually errors from the Ceylon compiler, but
             //we did not bother creating a separate annotation type!
             resource.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_INFINITE);
-        } catch (CoreException e) {
+        } 
+        catch (CoreException e) {
+        	e.printStackTrace();
         }
     }
 
@@ -1921,34 +1925,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         }
     }*/
 
-    protected static MessageConsoleStream getConsoleStream() {
-        return findConsole().newMessageStream();
-    }
-    
-    protected static MessageConsoleStream getConsoleErrorStream() {
-        final MessageConsoleStream stream = findConsole().newMessageStream();
-        //TODO: all this, just to get the color red? can that be right??
-        /*try {
-			getWorkbench().getProgressService().runInUI(getWorkbench().getWorkbenchWindows()[0], 
-					new IRunnableWithProgress() {
-				
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException,
-						InterruptedException {
-					stream.setColor(getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
-				}
-			}, null);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}*/
-		return stream;
-    }
-    
-    private String timedMessage(String message) {
-        long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
-        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
-    }
+//    protected static MessageConsoleStream getConsoleStream() {
+//        return findConsole().newMessageStream();
+//    }
+//    
+//    protected static MessageConsoleStream getConsoleErrorStream() {
+//        final MessageConsoleStream stream = findConsole().newMessageStream();
+//        //TODO: all this, just to get the color red? can that be right??
+//        /*try {
+//			getWorkbench().getProgressService().runInUI(getWorkbench().getWorkbenchWindows()[0], 
+//					new IRunnableWithProgress() {
+//				
+//				@Override
+//				public void run(IProgressMonitor monitor) throws InvocationTargetException,
+//						InterruptedException {
+//					stream.setColor(getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+//				}
+//			}, null);
+//		}
+//		catch (Exception e) {
+//			e.printStackTrace();
+//		}*/
+//		return stream;
+//    }
+//    
+//    private String timedMessage(String message) {
+//        long elapsedTimeMs = (System.nanoTime() - startTime) / 1000000;
+//        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
+//    }
 
     /**
      * Find or create the console with the given name
@@ -1987,24 +1991,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                     attributes.put(IMarker.LINE_NUMBER, token.getLine());
                     attributes.put(IMarker.CHAR_START, token.getStartIndex());
                     attributes.put(IMarker.CHAR_END, token.getStopIndex());
-                    attributes.put(IMarker.MESSAGE, token.getText().substring(2));                    
+                    attributes.put(IMarker.MESSAGE, token.getText().substring(2));   
+                    attributes.put(IMarker.SOURCE_ID, SOURCE);
                     try {
-                        file.createMarker(IMarker.TASK).setAttributes(attributes);
+                        file.createMarker(TASK_MARKER_ID).setAttributes(attributes);
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
-        }
-    }
-
-    private static void clearTaskMarkersOn(IResource resource) {
-        try {
-            resource.deleteMarkers(IMarker.TASK, false, DEPTH_INFINITE);
-        }
-        catch (CoreException e) {
-            e.printStackTrace();
         }
     }
 
@@ -2385,7 +2381,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
         final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
         class ConsoleLog extends Log {
             ConsoleLog() {
-                super(dummyContext, new PrintWriter(getConsoleStream()));
+                super(dummyContext, new PrintWriter(System.out)); //new PrintWriter(getConsoleStream()));
             }
         }
         ConsoleLog log = new ConsoleLog();

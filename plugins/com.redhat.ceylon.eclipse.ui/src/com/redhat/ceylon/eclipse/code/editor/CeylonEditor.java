@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
@@ -1624,7 +1625,7 @@ extends PreviousSubWordAction implements IUpdate {
             // since there will be many of these, including possibly many that
             // don't relate to problem markers.
             refreshMarkerAnnotations(PROBLEM_MARKER_ID);
-            refreshMarkerAnnotations(IMarker.TASK);
+            refreshMarkerAnnotations(TASK_MARKER_ID);
         }
     }
 
