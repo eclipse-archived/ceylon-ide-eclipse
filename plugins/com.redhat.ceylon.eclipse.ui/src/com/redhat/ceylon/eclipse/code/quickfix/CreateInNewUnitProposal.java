@@ -62,6 +62,7 @@ class CreateInNewUnitProposal implements ICompletionProposal {
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, final String def,
             final String desc, final Image image, final IFile file, final String unitName) {
+    	//TODO: this implementation does not handle imports at all!!
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
     }
 }
