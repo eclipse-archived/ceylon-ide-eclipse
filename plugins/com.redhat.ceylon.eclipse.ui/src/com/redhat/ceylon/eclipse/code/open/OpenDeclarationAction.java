@@ -18,7 +18,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class OpenDeclarationAction extends Action {
     private final IEditorPart editor;
@@ -32,7 +32,7 @@ public class OpenDeclarationAction extends Action {
         this.editor = editor;
         setActionDefinitionId(PLUGIN_ID + ".action.openDeclaration");
         setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-                .getDescriptor(ICeylonResources.CEYLON_OPEN_DECLARATION));
+                .getDescriptor(CeylonResources.CEYLON_OPEN_DECLARATION));
     }
     
     @Override

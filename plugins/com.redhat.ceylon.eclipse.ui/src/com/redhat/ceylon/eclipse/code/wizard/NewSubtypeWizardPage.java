@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.IWizardPage;

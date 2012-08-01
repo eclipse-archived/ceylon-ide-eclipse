@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CONFIG_ANN_DIS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 
 import java.util.Iterator;
 

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;

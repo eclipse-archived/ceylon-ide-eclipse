@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ERR;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_WARN;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ERR;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_WARN;
 
 import java.util.HashMap;
 

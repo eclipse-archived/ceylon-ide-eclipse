@@ -53,7 +53,7 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonPreferencesPage extends PropertyPage {
 
@@ -141,7 +141,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableBuilder.setText("Enable Ceylon Builder");
         enableBuilder.setEnabled(!builderEnabled && getSelectedProject().isOpen());
         enableBuilder.setImage(CeylonPlugin.getInstance()
-                .getImageRegistry().get(ICeylonResources.ELE32));
+                .getImageRegistry().get(CeylonResources.ELE32));
         //enableBuilder.setSize(40, 40);
 
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);

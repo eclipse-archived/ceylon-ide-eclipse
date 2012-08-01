@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-public enum HierarachyMode implements ICeylonResources { 
+public enum HierarachyMode implements CeylonResources { 
 	HIERARCHY, SUPERTYPES, SUBTYPES; 
 	HierarachyMode next() {
 		switch (this) {

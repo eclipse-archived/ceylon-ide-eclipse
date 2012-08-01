@@ -5,8 +5,8 @@ import static com.redhat.ceylon.eclipse.code.editor.Util.getProject;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DECS;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_REFS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;

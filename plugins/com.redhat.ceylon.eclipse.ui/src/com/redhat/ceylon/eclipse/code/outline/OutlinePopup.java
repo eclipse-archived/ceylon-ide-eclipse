@@ -13,7 +13,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_OUTLINE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.action.Action;

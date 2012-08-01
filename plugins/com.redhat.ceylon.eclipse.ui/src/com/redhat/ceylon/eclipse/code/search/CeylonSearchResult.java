@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SEARCH_RESULTS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SEARCH_RESULTS;
 
 import java.net.URI;
 import java.util.ArrayList;

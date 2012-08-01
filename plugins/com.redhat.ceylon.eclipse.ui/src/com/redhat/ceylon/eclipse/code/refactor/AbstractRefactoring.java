@@ -4,11 +4,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRe
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_CHANGE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_COMPOSITE_CHANGE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_DELETE_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_MOVE;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_RENAME;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
 
 import java.util.ArrayList;
 import java.util.Iterator;

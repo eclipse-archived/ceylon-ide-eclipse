@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.open;
 
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
