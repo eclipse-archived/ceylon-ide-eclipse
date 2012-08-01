@@ -124,7 +124,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         if (typeParamDecl != null) {
             FindContainerVisitor fcv = new FindContainerVisitor(typeParamDecl);
             fcv.visit(cu);
-            return fcv.getDeclaration();
+            return fcv.getStatementOrArgument();
         }
         return null;
     }

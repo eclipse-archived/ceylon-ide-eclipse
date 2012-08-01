@@ -10,7 +10,7 @@ public class FindContainerVisitor extends Visitor
 	Node node;
 	Tree.StatementOrArgument declaration;
 	Tree.StatementOrArgument currentDeclaration;
-	public Tree.StatementOrArgument getDeclaration() {
+	public Tree.StatementOrArgument getStatementOrArgument() {
 		return declaration;
 	}
 	public FindContainerVisitor(Node node) {

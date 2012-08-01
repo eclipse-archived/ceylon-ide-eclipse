@@ -40,7 +40,7 @@ abstract class TargetNavigationAction extends Action {
 
     @Override
     public void run() {
-        IRegion selection= fEditor.getSelectedRegion();
+        IRegion selection= fEditor.getSelection();
         CeylonParseController pc= fEditor.getParseController();
         Object curNode= findNode(pc.getRootNode(), selection.getOffset(), 
         		selection.getOffset() + selection.getLength() - 1);

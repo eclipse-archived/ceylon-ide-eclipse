@@ -80,7 +80,7 @@ class SelectEnclosingAction extends Action {
 
     @Override
     public void run() {
-        IRegion selection= fEditor.getSelectedRegion();
+        IRegion selection= fEditor.getSelection();
         CeylonParseController pc= fEditor.getParseController();
         int startOffset = selection.getOffset();
 		int endOffset = startOffset + selection.getLength() - 1;

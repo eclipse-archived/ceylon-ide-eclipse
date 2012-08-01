@@ -220,7 +220,7 @@ final class CodePopup extends PopupDialog
 	@Override
 	public void setInput(Object input) {
 		CeylonParseController epc = editor.getParseController();
-		IRegion r = editor.getSelectedRegion();
+		IRegion r = editor.getSelection();
 		Node node = findNode(epc.getRootNode(), r.getOffset(), 
 				r.getOffset()+r.getLength());
 		referencedNode = getReferencedNode(node, epc);
