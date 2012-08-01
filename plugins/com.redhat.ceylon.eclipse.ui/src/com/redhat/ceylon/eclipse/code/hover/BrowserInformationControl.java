@@ -495,7 +495,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 */
 	public Rectangle computeTrim() {
 		Rectangle trim= super.computeTrim();
-		if (isResizable()) {
+		if (isResizable() && fgScrollBarSize!=null) {
 			boolean RTL= (getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
 			if (RTL) {
 				trim.x-= fgScrollBarSize.x;

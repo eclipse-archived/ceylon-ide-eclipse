@@ -29,14 +29,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -47,8 +45,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
@@ -56,7 +54,6 @@ import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 public class CeylonParseController {
     
@@ -78,7 +75,7 @@ public class CeylonParseController {
 	 * The {@link MessageHandler} to which parser/compiler 
 	 * messages are directed.
 	 */
-	protected MessageHandler handler;
+	protected AnnotationCreator handler;
 
 	/**
 	 * The current AST (if any) produced by the most recent 
@@ -106,10 +103,10 @@ public class CeylonParseController {
      *                      messages/warnings
      */
     public void initialize(IPath filePath, IProject project, 
-    		MessageHandler handler) {
+    		AnnotationCreator handler) {
 		this.project= project;
 		this.filePath= filePath;
-		this.handler= (MessageHandler) handler;
+		this.handler= handler;
     }
         
     private boolean isCanceling(IProgressMonitor monitor) {
@@ -296,13 +293,7 @@ public class CeylonParseController {
 
 	private void collectErrors(Tree.CompilationUnit cu) {
         if (handler!=null) {
-            cu.visit(new ErrorVisitor(handler) {
-                @Override
-                public int getSeverity(Message error, boolean expected) {
-                    return expected || error instanceof UsageWarning ? 
-                    		IStatus.WARNING : IStatus.ERROR;
-                }
-            });      
+            cu.visit(handler);      
         }
 	}
 

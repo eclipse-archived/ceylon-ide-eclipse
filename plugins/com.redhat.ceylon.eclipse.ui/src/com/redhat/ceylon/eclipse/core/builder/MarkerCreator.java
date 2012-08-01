@@ -1,11 +1,15 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import java.util.Map;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
+import static org.eclipse.jdt.core.IJavaModelMarker.BUILDPATH_PROBLEM_MARKER;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 /**
  * This class provides a message handler that creates markers in
@@ -20,68 +24,55 @@ import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
  * token provided with each message, and attaches the marker to
  * the given file at the computed line.
  */
-public class MarkerCreator implements MessageHandler {
+public class MarkerCreator extends ErrorVisitor {
 	
     protected IFile file;
-    protected String problemType;
+	public static final String ERROR_CODE_KEY= "errorCode";
 
     public MarkerCreator(IFile file) {
-        this(file, IMarker.PROBLEM);
-    }
-
-    public MarkerCreator(IFile file, String problemType) {
         this.file = file;
-        this.problemType = problemType;
     }
 
-    public void clearMessages() {
-        // TODO Clear markers on this file?
-    }
-
-    void createMarker(String msg, int startOffset, int endOffset,
-                      int startCol, int endCol,
-                      int startLine, int endLine, 
-                      Map<String,Object> attributes)
-    {
-        String[] attributeNames= new String[] {
-                IMarker.LINE_NUMBER, IMarker.CHAR_START, IMarker.CHAR_END, 
-                IMarker.MESSAGE, IMarker.PRIORITY, IMarker.SEVERITY
-        };
-        Object[] values= new Object[] {
-                startLine, startOffset, endOffset, msg, IMarker.PRIORITY_HIGH, 
-                IMarker.SEVERITY_ERROR
-        };
-        try {
-            IMarker m= file.createMarker(problemType);
-            m.setAttributes(attributeNames, values);
-            if (attributes != null) {
-                for(String key: attributes.keySet()) {
-                    m.setAttribute(key, attributes.get(key));
-                }
-            }
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void handleSimpleMessage(String msg, int startOffset, int endOffset,
-			int startCol, int endCol, int startLine, int endLine,
-			Map<String, Object> attributes) {
-    	createMarker(msg, startOffset, endOffset, startCol, endCol, 
-    			startLine, endLine, attributes);
+    @Override
+    public void handleMessage(int startOffset, int endOffset,
+			int startCol, int startLine, Message message) {
+    	
+    	String[] attributeNames= new String[] {
+		        IMarker.LINE_NUMBER, 
+		        IMarker.CHAR_START, IMarker.CHAR_END, 
+		        IMarker.MESSAGE, 
+		        IMarker.PRIORITY, 
+		        IMarker.SEVERITY,
+		        ERROR_CODE_KEY
+			};
+		Object[] values= new Object[] {
+		        startLine, 
+		        startOffset, endOffset+1, 
+		        message.getMessage(), 
+		        IMarker.PRIORITY_HIGH, 
+		        getSeverity(message, warnForErrors),
+		        message.getCode()
+			};
+		try {
+		    file.createMarker(isCompilerError(message.getMessage())?
+		    		BUILDPATH_PROBLEM_MARKER:PROBLEM_MARKER_ID)
+		        .setAttributes(attributeNames, values);
+		} 
+		catch (Exception e) {
+		    e.printStackTrace();
+		}
 	}
 
-	public void handleSimpleMessage(String msg, int startOffset, int endOffset,
-            int startCol, int endCol,
-            int startLine, int endLine) {	
-		createMarker(msg, startOffset, endOffset, startCol, endCol, 
-				startLine, endLine, null);
+	private static boolean isCompilerError(String msg) {
+        //TODO: we need a MUCH better way to distinguish 
+        //      compiler errors from typechecker errors
+		return msg.startsWith("cannot find module") || 
+				msg.startsWith("unable to read source artifact for");
+	}
+	
+    public int getSeverity(Message error, boolean expected) {
+        return expected || error instanceof UsageWarning ? 
+        		IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
     }
-
-    public void endMessageGroup() { }
-
-    public void startMessageGroup(String groupName) { }
-
-    public void endMessages() { }
+    
 }

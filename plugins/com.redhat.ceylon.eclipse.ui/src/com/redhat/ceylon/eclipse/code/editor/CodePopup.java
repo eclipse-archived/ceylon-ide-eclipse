@@ -9,8 +9,6 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SOURCE;
 
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -43,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CodePopup extends PopupDialog 
@@ -248,23 +245,7 @@ final class CodePopup extends PopupDialog
 		viewer.setDocument(doc);
 		viewer.setVisibleRegion(referencedNode.getStartIndex(), 
 				referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
-		pc.initialize(path, epc.getProject(), new MessageHandler() {
-			@Override
-			public void startMessageGroup(String groupName) {}
-			@Override
-			public void handleSimpleMessage(String msg, int startOffset, int endOffset,
-					int startCol, int endCol, int startLine, int endLine,
-					Map<String, Object> attributes) {}
-			@Override
-			public void handleSimpleMessage(String msg, int startOffset, int endOffset,
-					int startCol, int endCol, int startLine, int endLine) {}
-			@Override
-			public void endMessages() {}
-			@Override
-			public void endMessageGroup() {}
-			@Override
-			public void clearMessages() {}
-		});
+		pc.initialize(path, epc.getProject(), null);
 		pc.parse(doc, new NullProgressMonitor(), null);
 		/*try {
 			int lines = doc.getLineOfOffset(refDec.getStopIndex())-

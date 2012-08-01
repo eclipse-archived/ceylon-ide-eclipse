@@ -15,6 +15,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CeylonParserScheduler extends Job {
@@ -24,13 +25,13 @@ public class CeylonParserScheduler extends Job {
     private CeylonParseController fParseController;
     private IDocumentProvider fDocumentProvider;
     private IEditorPart fEditorPart;
-    private MessageHandler fMsgHandler;
+    private AnnotationCreator fMsgHandler;
     
     private final List<TreeLifecycleListener> fAstListeners = new ArrayList<TreeLifecycleListener>();
 
     public CeylonParserScheduler(CeylonParseController parseController,
             IEditorPart editorPart, IDocumentProvider docProvider,
-            final MessageHandler msgHandler) {
+            AnnotationCreator msgHandler) {
     	super("ParserScheduler for " + editorPart.getEditorInput().getName());
         setSystem(true); //do not show this job in the Progress view
         setPriority(SHORT);
@@ -115,7 +116,7 @@ public class CeylonParserScheduler extends Job {
                 	// parsed
                     fParseController.parse(document, wrappedMonitor, new Stager());
                     if (!wrappedMonitor.isCanceled()) {
-                        fMsgHandler.endMessages();
+                        fMsgHandler.updateAnnotations();
                     }
                 }
             } 

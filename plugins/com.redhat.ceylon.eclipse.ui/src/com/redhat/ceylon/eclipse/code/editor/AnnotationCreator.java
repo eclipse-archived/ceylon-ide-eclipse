@@ -11,7 +11,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
-import java.util.Collections;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,7 +29,9 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 /**
  * An implementation of the IMessageHandler interface that creates editor annotations
@@ -33,80 +39,57 @@ import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
  * which uses the class MarkerCreator to create markers).
  * @author rmfuhrer
  */
-public class AnnotationCreator implements MessageHandler {
+public class AnnotationCreator extends ErrorVisitor {
+	
     private static class PositionedMessage {
         public final String message;
-        /**
-         * Textual position expressed as an offset and length
-         */
         public final Position pos;
-        /**
-         * Additional attributes, if any, like severity and error code
-         */
-        public final Map<String, Object> attributes;
-
-        public PositionedMessage(String msg, Position pos, Map<String, 
-        		Object> attributes) {
+        public final int code;
+        public final int severity;
+        
+        private PositionedMessage(String msg, Position pos, 
+        		int severity, int code) {
             this.message= msg;
             this.pos= pos;
-            this.attributes= attributes;
+            this.code = code;
+            this.severity = severity;
         }
 
-        public PositionedMessage(String msg, Position pos) {
-            this(msg, pos, null);
-        }
-        
         @Override
         public String toString() {
         	return pos.toString() + " - "+ message;
         }
     }
 
-    private final CeylonEditor fEditor;
-    private final List<PositionedMessage> fMessages= new LinkedList<PositionedMessage>();
-    private final List<Annotation> fAnnotations= new LinkedList<Annotation>();
+    private final CeylonEditor editor;
+    private final List<PositionedMessage> messages= new LinkedList<PositionedMessage>();
+    private final List<Annotation> annotations= new LinkedList<Annotation>();
 
     public AnnotationCreator(CeylonEditor textEditor) {
-        fEditor= textEditor;
+        editor= textEditor;
     }
 
-    public void clearMessages() {
-        removeAnnotations();
-        fMessages.clear();
+    @Override
+    public void handleMessage(int startOffset, int endOffset,
+            int startCol, int startLine, Message error) {
+        messages.add(new PositionedMessage(error.getMessage(), 
+        		new Position(startOffset, endOffset-startOffset+1), 
+        		getSeverity(error, warnForErrors), 
+        		error.getCode()));
     }
 
-    public void startMessageGroup(String groupName) { }
-    public void endMessageGroup() { }
-
-
-    public void handleSimpleMessage(String msg, int startOffset, int endOffset,
-            int startCol, int endCol, int startLine, int endLine) {
-        Position pos= new Position(startOffset, endOffset - startOffset + 1);
-
-        fMessages.add(new PositionedMessage(msg, pos));
-    }
-
-    public void handleSimpleMessage(String message, int startOffset, int endOffset,
-            int startCol, int endCol, int startLine, int endLine,
-            Map<String, Object> attributes) {
-        Position pos= new Position(startOffset, endOffset - startOffset + 1);
-
-        fMessages.add(new PositionedMessage(message, pos, attributes));
-    }
-
-    public void endMessages() {
-        IDocumentProvider docProvider= fEditor.getDocumentProvider();
-
-        if (docProvider != null) {
-            IAnnotationModel model= docProvider.getAnnotationModel(fEditor.getEditorInput());
+    public void updateAnnotations() {
+        IDocumentProvider docProvider= editor.getDocumentProvider();
+        if (docProvider!=null) {
+            IAnnotationModel model= docProvider.getAnnotationModel(editor.getEditorInput());
             if (model instanceof IAnnotationModelExtension) {
                 IAnnotationModelExtension modelExt= (IAnnotationModelExtension) model;
-                Annotation[] oldAnnotations= fAnnotations.toArray(new Annotation[fAnnotations.size()]);
-                Map<Annotation,Position> newAnnotations= new HashMap<Annotation,Position>(fMessages.size());
-                for (PositionedMessage pm: fMessages) {
-                    Annotation anno= createAnnotation(pm);
-                    newAnnotations.put(anno, pm.pos);
-                    fAnnotations.add(anno);
+                Annotation[] oldAnnotations= annotations.toArray(new Annotation[annotations.size()]);
+                Map<Annotation,Position> newAnnotations= new HashMap<Annotation,Position>(messages.size());
+                for (PositionedMessage pm: messages) {
+                    Annotation a= createAnnotation(pm);
+                    newAnnotations.put(a, pm.pos);
+                    annotations.add(a);
                 }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
@@ -117,40 +100,40 @@ public class AnnotationCreator implements MessageHandler {
                         model.removeAnnotation(a);
                     }
                 }
-                for(PositionedMessage pm: fMessages) {
-                    Annotation annotation= createAnnotation(pm);
-                    model.addAnnotation(annotation, pm.pos);
-                    fAnnotations.add(annotation);
+                for (PositionedMessage pm: messages) {
+                    Annotation a= createAnnotation(pm);
+                    model.addAnnotation(a, pm.pos);
+                    annotations.add(a);
                 }
             }
         }
-        fMessages.clear();
+        messages.clear();
     }
 
-    private Annotation createAnnotation(PositionedMessage pm) {
-        return new CeylonAnnotation(getAnnotationType(pm), false, 
-        		pm.message, fEditor, pm.attributes);
+	private Annotation createAnnotation(PositionedMessage pm) {
+        return new CeylonAnnotation(getAnnotationType(pm), 
+        		pm.message, editor, pm.code, pm.severity);
     }
 
     private String getAnnotationType(PositionedMessage pm) {
-    	if (pm.attributes==null) {
-    		return CeylonEditor.PARSE_ANNOTATION_TYPE;
+    	switch (pm.severity) {
+    	case IStatus.ERROR:
+    		return PARSE_ANNOTATION_TYPE_ERROR;
+    	case IStatus.WARNING:
+    		return PARSE_ANNOTATION_TYPE_WARNING;
+    	case IStatus.INFO:
+    		return PARSE_ANNOTATION_TYPE_INFO;
+    	default:
+    		return PARSE_ANNOTATION_TYPE;            	
     	}
-        if (pm.attributes.containsKey(SEVERITY_KEY)) {
-            int severity= (Integer) pm.attributes.get(SEVERITY_KEY);
-            switch (severity) {
-                case IStatus.ERROR:
-                    return CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
-                case IStatus.WARNING:
-                    return CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
-                case IStatus.INFO:
-                    return CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
-            }
-        }
-        return CeylonEditor.PARSE_ANNOTATION_TYPE;
     }
 
-    private void removeAnnotations() {
+    private int getSeverity(Message error, boolean expected) {
+        return expected || error instanceof UsageWarning ? 
+        		IStatus.WARNING : IStatus.ERROR;
+    }
+    
+    /*private void removeAnnotations() {
         final IDocumentProvider docProvider= fEditor.getDocumentProvider();
 
         if (docProvider == null) {
@@ -158,7 +141,6 @@ public class AnnotationCreator implements MessageHandler {
         }
 
         IAnnotationModel model= docProvider.getAnnotationModel(fEditor.getEditorInput());
-
         if (model == null)
             return;
 
@@ -177,6 +159,6 @@ public class AnnotationCreator implements MessageHandler {
             }
         }
         fAnnotations.clear();
-    }
+    }*/
 }
 
