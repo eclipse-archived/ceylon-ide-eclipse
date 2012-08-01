@@ -148,7 +148,7 @@ public class CeylonEditor extends TextEditor {
 	
 	public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-	private static final int REPARSE_SCHEDULE_DELAY= 200;
+	private static final int REPARSE_SCHEDULE_DELAY= 100;
 
     /** 
      * Parent annotation ID

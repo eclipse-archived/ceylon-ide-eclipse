@@ -44,7 +44,6 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
@@ -89,7 +88,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
         ca.enableAutoInsert(true);
         ca.enableAutoActivation(true);
-        ca.setAutoActivationDelay(500);
+        ca.setAutoActivationDelay(100);
         return ca;
     }
 
