@@ -2,7 +2,7 @@
 
 ## Installing from http://ceylon-lang.org/eclipse/updatesite/
 
-1.  Start with a clean install of Eclipse Indigo.
+1.  Start with a clean install of Eclipse Indigo (or Juno, especially if you're on a Mac).
     
     <http://www.eclipse.org/downloads/>
     
@@ -18,25 +18,20 @@
 
 ## Installing/Building with (pure) Eclipse
 
-1.  Start with a clean install of Eclipse Indigo.
+1.  Start with a clean install of Eclipse Indigo (or Juno, especially if you're on a Mac).
     
     <http://www.eclipse.org/downloads/>
     
-2.  Use `Help > Install New Software...` to install all components of 
-    IMP from the update site at:
-    
-    <http://download.eclipse.org/technology/imp/updates/0.2/>
-    
-3.  Use `File > Import... > Existing Projects into Workspace` 
+2.  Use `File > Import... > Existing Projects into Workspace` 
     to import the project from this root directory: 
     
         ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
     
-4.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
+3.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-5.  Go to `Help > Welcome to Ceylon` to get started.
+4.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Building with Tycho/Maven 3
 
@@ -45,7 +40,7 @@
         mvn clean install
     
 2.  The directory `site/target/site` now contains an update site you can 
-    install from. (You need to have IMP update site added too.)
+    install from.
 
 ## Pushing a new release onto the development update site
 
