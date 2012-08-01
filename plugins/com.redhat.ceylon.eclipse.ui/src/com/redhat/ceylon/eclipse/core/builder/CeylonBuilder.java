@@ -72,10 +72,6 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.MessageConsole;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
@@ -131,7 +127,6 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
@@ -907,10 +902,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
                 sourceModified.value;
     }
 
-    private static String successMessage(boolean binariesGenerationOK) {
-        return "             " + (binariesGenerationOK ? 
-                "...binary generation succeeded" : "...binary generation FAILED");
-    }
+//    private static String successMessage(boolean binariesGenerationOK) {
+//        return "             " + (binariesGenerationOK ? 
+//                "...binary generation succeeded" : "...binary generation FAILED");
+//    }
 
     private Set<String> getDependentsOf(IFile srcFile,
             TypeChecker currentFileTypeChecker,
@@ -1954,29 +1949,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 //        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
 //    }
 
-    /**
-     * Find or create the console with the given name
-     * @param consoleName
-     */
-    protected static MessageConsole findConsole() {
-        String consoleName = CEYLON_CONSOLE;
-        MessageConsole myConsole= null;
-        final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
-        IConsole[] consoles= consoleManager.getConsoles();
-        for(int i= 0; i < consoles.length; i++) {
-            IConsole console= consoles[i];
-            if (console.getName().equals(consoleName))
-                myConsole= (MessageConsole) console;
-        }
-        if (myConsole == null) {
-            myConsole= new MessageConsole(consoleName, 
-            		CeylonPlugin.getInstance().getImageRegistry()
-            		    .getDescriptor(CeylonResources.BUILDER));
-            consoleManager.addConsoles(new IConsole[] { myConsole });
-        }
-//      consoleManager.showConsoleView(myConsole);
-        return myConsole;
-    }
+//    /**
+//     * Find or create the console with the given name
+//     * @param consoleName
+//     */
+//    protected static MessageConsole findConsole() {
+//        String consoleName = CEYLON_CONSOLE;
+//        MessageConsole myConsole= null;
+//        final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
+//        IConsole[] consoles= consoleManager.getConsoles();
+//        for(int i= 0; i < consoles.length; i++) {
+//            IConsole console= consoles[i];
+//            if (console.getName().equals(consoleName))
+//                myConsole= (MessageConsole) console;
+//        }
+//        if (myConsole == null) {
+//            myConsole= new MessageConsole(consoleName, 
+//            		CeylonPlugin.getInstance().getImageRegistry()
+//            		    .getDescriptor(CeylonResources.BUILDER));
+//            consoleManager.addConsoles(new IConsole[] { myConsole });
+//        }
+////      consoleManager.showConsoleView(myConsole);
+//        return myConsole;
+//    }
 
     private static void addTaskMarkers(IFile file, List<CommonToken> tokens) {
         //clearTaskMarkersOn(file);
