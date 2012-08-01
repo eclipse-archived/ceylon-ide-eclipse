@@ -749,19 +749,24 @@
                   commandId="org.eclipse.ui.edit.text.shiftLeft"
                   icon="icons/shift_l_edit.gif"
                   label="Shift Left"/>
+            <separator 
+                  name="sep4" 
+                  visible="true"/>
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/glyph2.gif"
                   label="Correct Indentation"/>
-            <separator 
-                  name="sep4" 
-                  visible="true"/>
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
                   label="Toggle Comment"/>
+            <command 
+                  id="terminateStatement"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+                  icon="icons/correction_cast.gif"
+                  label="Terminate Statement"/>
           </menu>
       </menuContribution>
       <menuContribution
@@ -772,19 +777,24 @@
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=ShiftLeft">
+            <separator 
+                  name="sep1" 
+                  visible="true"/>
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/glyph2.gif"
                   label="Correct Indentation"/>
-            <separator 
-                  name="sep1" 
-                  visible="true"/>
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
                   label="Toggle Comment"/>
+            <command 
+                  id="terminateStatement"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+                  icon="icons/correction_cast.gif"
+                  label="Terminate Statement"/>
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
@@ -1395,14 +1405,19 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            sequence="CTRL+SHIFT+ARROW_UP"
+            sequence="M3+Z"
             contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M1+M2+P"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="CTRL+SHIFT+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="CTRL+SHIFT+ARROW_DOWN"
@@ -1437,8 +1452,6 @@
             description="Format the source code"
             id="com.redhat.ceylon.eclipse.ui.editor.formatSource"
             name="Format"/>
-
-      <!-- navigate -->
       <command
             name="Go to Matching Fence"
             description="Moves the cursor to the matching fence character, if any"
@@ -1454,13 +1467,16 @@
             description="Go to Next Navigation Target"
             categoryId="com.redhat.ceylon.eclipse.ui"
             id="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"/>
-
-      <!-- -->
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Re-indent the selected text according to current formatting settings"
             id="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
             name="Correct Indentation"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Terminate the current statement by adding punctuation at the end of the current line"
+            id="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+            name="Termiante Statement"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Select the innermost enclosing construct"

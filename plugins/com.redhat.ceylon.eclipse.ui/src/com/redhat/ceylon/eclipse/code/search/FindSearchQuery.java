@@ -70,7 +70,7 @@ abstract class FindSearchQuery implements ISearchQuery {
 				}
 				else {
 					node = getIdentifyingNode(node);
-					result.addMatch(new CeylonSearchMatch(fcv.getDeclaration(), 
+					result.addMatch(new CeylonSearchMatch(fcv.getStatementOrArgument(), 
 							pu.getUnitFile(), 
 							node.getStartIndex(), 
 							node.getStopIndex()-node.getStartIndex()+1,

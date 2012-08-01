@@ -278,7 +278,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		if (declaration==null) {
     			FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
     			fcv.visit(editor.getParseController().getRootNode());
-    			Tree.StatementOrArgument node = fcv.getDeclaration();
+    			Tree.StatementOrArgument node = fcv.getStatementOrArgument();
     			if (node instanceof Tree.Declaration) {
     				declaration = ((Tree.Declaration) node).getDeclarationModel();
     			}

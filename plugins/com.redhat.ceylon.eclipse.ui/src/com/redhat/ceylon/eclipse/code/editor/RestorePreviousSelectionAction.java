@@ -39,7 +39,7 @@ class RestorePreviousSelectionAction extends Action {
 				@Override
 				public void selectionChanged(SelectionChangedEvent event) {
 					if (!restoring) {
-						IRegion r = fEditor.getSelectedRegion();
+						IRegion r = fEditor.getSelection();
 						if (r.getLength()==0) {
 							previous.clear();
 						}

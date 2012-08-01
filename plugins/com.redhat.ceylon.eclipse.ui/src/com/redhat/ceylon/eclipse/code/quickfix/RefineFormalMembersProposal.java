@@ -115,7 +115,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         else if (node instanceof Tree.ClassBody || 
                 node instanceof Tree.InterfaceBody) {
             body = (Tree.Body) node;
-            offset = editor.getSelectedRegion().getOffset();
+            offset = editor.getSelection().getOffset();
         }
         else {
             //TODO run a visitor to find the containing body!

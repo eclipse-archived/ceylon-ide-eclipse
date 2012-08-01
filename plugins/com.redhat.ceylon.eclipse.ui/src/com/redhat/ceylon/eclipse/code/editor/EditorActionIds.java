@@ -16,7 +16,7 @@ public interface EditorActionIds {
     /**
      * Action definition ID of the Edit -> Terminate Statement action
      */
-    public static final String TERMINATE_STATEMENT= PLUGIN_ID + ".editor.terminateLine";
+    public static final String TERMINATE_STATEMENT= PLUGIN_ID + ".editor.terminateStatement";
 
     /**
      * Action definition id of the collapse members action
