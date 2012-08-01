@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,9 +7,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class DetectUnusedImportsVisitor extends Visitor {
+class DetectUnusedImportsVisitor extends Visitor {
     
-    private List<Declaration> result = new ArrayList<Declaration>();
+    private final List<Declaration> result;
+    
+    DetectUnusedImportsVisitor(List<Declaration> result) {
+    	this.result = result;
+    }
     
     @Override
     public void visit(Tree.Import that) {
@@ -50,10 +53,6 @@ public class DetectUnusedImportsVisitor extends Visitor {
                 it.remove();
             }
         }
-    }    
-    
-    public List<Declaration> getResult() {
-        return result;
-    }
+    } 
     
 }
