@@ -132,7 +132,6 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
@@ -1098,7 +1097,7 @@ extends PreviousSubWordAction implements IUpdate {
             }
 
             if (isEditable()) {
-                addModelListener(new AnnotationCreatorListener());
+                addModelListener(new MarkerAnnotationUpdater());
             }
 
             watchDocument();
@@ -1560,8 +1559,10 @@ extends PreviousSubWordAction implements IUpdate {
 
     public static boolean isParseAnnotation(Annotation a) {
         String type= a.getType();
-        return type.equals(PARSE_ANNOTATION_TYPE) || type.equals(PARSE_ANNOTATION_TYPE_ERROR) ||
-               type.equals(PARSE_ANNOTATION_TYPE_WARNING) || type.equals(PARSE_ANNOTATION_TYPE_INFO);
+        return type.equals(PARSE_ANNOTATION_TYPE) || 
+               type.equals(PARSE_ANNOTATION_TYPE_ERROR) ||
+               type.equals(PARSE_ANNOTATION_TYPE_WARNING) || 
+               type.equals(PARSE_ANNOTATION_TYPE_INFO);
     }
 
     protected void doSetInput(IEditorInput input) throws CoreException {
@@ -1572,7 +1573,8 @@ extends PreviousSubWordAction implements IUpdate {
     	} 
     	catch (CoreException e) {
     	    if (e.getCause() instanceof IOException) {
-    	        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0, "Unable to read source text", e.getStatus().getException()));
+    	        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 
+    	        		0, "Unable to read source text", e.getStatus().getException()));
     	    }
     	}
     	setInsertMode(SMART_INSERT);
@@ -1605,14 +1607,12 @@ extends PreviousSubWordAction implements IUpdate {
         parserScheduler.removeModelListener(listener);
     }
 
-    private MessageHandler annotationCreator= new AnnotationCreator(this);
+    private AnnotationCreator annotationCreator = new AnnotationCreator(this);
     private EditorIconUpdater editorIconUpdater;
     private IProblemChangedListener annotationUpdater;
 
-    private class AnnotationCreatorListener implements TreeLifecycleListener {
+    private class MarkerAnnotationUpdater implements TreeLifecycleListener {
         public Stage getStage() {
-        	//TODO: post the lex/parse errors earlier,
-        	//      before type checking is complete?
             return TYPE_ANALYSIS;
         }
         public void update(CeylonParseController parseController, IProgressMonitor monitor) {
@@ -1624,6 +1624,7 @@ extends PreviousSubWordAction implements IUpdate {
             // since there will be many of these, including possibly many that
             // don't relate to problem markers.
             refreshMarkerAnnotations(PROBLEM_MARKER_ID);
+            refreshMarkerAnnotations(IMarker.TASK);
         }
     }
 

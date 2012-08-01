@@ -61,7 +61,8 @@ public class EditorAnnotationService implements TreeLifecycleListener {
         for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation a = iter.next();
-            if (a instanceof RefinementAnnotation) {
+            if (a instanceof RefinementAnnotation ||
+            		a.getType().equals(TODO_ANNOTATION_TYPE)) {
                 model.removeAnnotation(a);
             }
         }

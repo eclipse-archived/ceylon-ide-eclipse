@@ -1,15 +1,9 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
-import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.SEVERITY_KEY;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -23,26 +17,19 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public abstract class ErrorVisitor extends Visitor {
 	
-    private final MessageHandler handler;
-    private boolean warnForErrors = false;
+    protected boolean warnForErrors = false;
     
-    public ErrorVisitor(MessageHandler handler) {
-        this.handler = handler;
-    }
-
     @Override
     public void visitAny(Node node) {
         super.visitAny(node);
         for (Message error: node.getErrors()) {
         	if (!include(error)) continue;
         	
-            String errorMessage = error.getMessage();
             int startOffset = 0;
             int endOffset = 0;
             int startCol = 0;
             int startLine = 0;
 
-            Map<String, Object> attributes = new HashMap<String, Object>();
             if (error instanceof RecognitionError) {
                 RecognitionError recognitionError = (RecognitionError) error;
                 CommonToken token = (CommonToken) recognitionError
@@ -77,16 +64,15 @@ public abstract class ErrorVisitor extends Visitor {
                     startLine = token.getLine();
                 }
             }
-            attributes.put("CeylonMessageClass", error.getClass().getSimpleName());
-            attributes.put(SEVERITY_KEY, getSeverity(error, warnForErrors));
-            attributes.put(ERROR_CODE_KEY, error.getCode());
 
-            handler.handleSimpleMessage(errorMessage, startOffset, adjust(endOffset),
-                    startCol, startCol, startLine, startLine, attributes);
+            handleMessage(startOffset, endOffset, startCol, startLine, error);
         }
     }
     
-    protected boolean include(Message msg) {
+    protected abstract void handleMessage(int startOffset, int endOffset, 
+    		int startCol, int startLine, Message error);
+
+	protected boolean include(Message msg) {
     	return true;
     }
     
@@ -107,5 +93,4 @@ public abstract class ErrorVisitor extends Visitor {
         warnForErrors = owe;
     }
 
-    public abstract int getSeverity(Message error, boolean expected);
 }

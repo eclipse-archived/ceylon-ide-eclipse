@@ -1,52 +1,35 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.ERROR_CODE_KEY;
-import static com.redhat.ceylon.eclipse.code.parse.MessageHandler.SEVERITY_KEY;
-
-import java.util.Map;
-
 import org.eclipse.core.runtime.AssertionFailedException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
 import org.eclipse.jface.text.source.Annotation;
 
-public class CeylonAnnotation extends Annotation implements IQuickFixableAnnotation {
-	private static int counter = 0;
+public class CeylonAnnotation extends Annotation 
+        implements IQuickFixableAnnotation {
 	
-	private Map<String, Object> attributes;
+    private static int counter = 0;
+	
 	private CeylonEditor editor;
 	private Boolean fixable;
 	private final int count;
+	private final int code;
+	private final int severity;
 
-	public CeylonAnnotation(String type, boolean isPersistent, String text, 
-			CeylonEditor editor, Map<String, Object> attributes) {
-		super(type, isPersistent, text);
+	public CeylonAnnotation(String type, String text, 
+			CeylonEditor editor, int code, int severity) {
+		super(type, false, text);
 		this.editor = editor;
-		this.attributes = attributes;
-		count = counter++;
-	}
-
-	public CeylonAnnotation(boolean isPersistent) {
-		super(isPersistent);
+		this.code = code;
+		this.severity = severity;
 		count = counter++;
 	}
 
 	public int getId() {
-		if (attributes.containsKey(ERROR_CODE_KEY)) {
-			return (Integer) attributes.get(ERROR_CODE_KEY);
-		}
-		return -1;
-	}
-
-	public Object getAttribute(String key) {
-		return attributes.get(key);
+		return code;
 	}
 
 	public int getSeverity() {
-		if (attributes.containsKey(SEVERITY_KEY)) {
-			return (Integer) attributes.get(SEVERITY_KEY);
-		}
-		return IStatus.ERROR;
+		return severity;
 	}
 
 	public CeylonEditor getEditor() {

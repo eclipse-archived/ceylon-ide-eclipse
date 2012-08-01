@@ -123,7 +123,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
@@ -137,7 +136,6 @@ import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ICeylonResources;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
@@ -1449,39 +1447,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     		protected IStatus run(IProgressMonitor monitor) {
     	        for (PhasedUnit phasedUnit: units) {
     	            IFile file = getFile(phasedUnit);
-    	            phasedUnit.getCompilationUnit()
-    	                .visit(new ErrorVisitor(new MarkerCreator(file, PROBLEM_MARKER_ID)) {
-    	                    @Override
-    	                    public int getSeverity(Message error, boolean expected) {
-    	                        return expected || error instanceof UsageWarning ? 
-    	                        		IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
-    	                    }
-    	                    @Override
-    	                    //workaround for bug in IMP's MarkerCreator
-    	                    protected int adjust(int stopIndex) {
-    	                        return stopIndex+1;
-    	                    }
-    	                    @Override
-    	                    protected boolean include(Message msg) {
-    	                    	return !isCompilerError(msg);
-    	                    }
-    	                });
-    	            phasedUnit.getCompilationUnit()
-    		            .visit(new ErrorVisitor(new MarkerCreator(file, IJavaModelMarker.BUILDPATH_PROBLEM_MARKER)) {
-    		                @Override
-    		                public int getSeverity(Message error, boolean expected) {
-    		                    return IMarker.SEVERITY_ERROR;
-    		                }
-    		                @Override
-    		                //workaround for bug in IMP's MarkerCreator
-    		                protected int adjust(int stopIndex) {
-    		                    return stopIndex+1;
-    		                }
-    		                @Override
-    		                protected boolean include(Message msg) {
-    		                	return isCompilerError(msg);
-    		                }
-    		            });
+    	            phasedUnit.getCompilationUnit().visit(new MarkerCreator(file));
     	            addTaskMarkers(file, phasedUnit.getTokens());
     	        }
     			return Status.OK_STATUS;
@@ -1489,14 +1455,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     	}.schedule();
     }
 
-	private static boolean isCompilerError(Message msg) {
-        //TODO: we need a MUCH better way to distinguish 
-        //      compiler errors from typechecker errors
-		String ms = msg.getMessage();
-		return ms.startsWith("cannot find module") || 
-				ms.startsWith("unable to read source artifact for");
-	}
-	
     private boolean generateBinaries(IProject project, IJavaProject javaProject,
     		Collection<IFile> filesToCompile, TypeChecker typeChecker, 
     		IProgressMonitor monitor) throws CoreException {
@@ -2017,20 +1975,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     }
 
     private static void addTaskMarkers(IFile file, List<CommonToken> tokens) {
-        //clearTaskMarkersOnFile(file);
+        //clearTaskMarkersOn(file);
         for (CommonToken token: tokens) {
             if (token.getType()==CeylonLexer.LINE_COMMENT) {
                 int priority = priority(token);
                 if (priority>=0) {
                     Map<String, Object> attributes = new HashMap<String, Object>();
-                    attributes.put(MessageHandler.SEVERITY_KEY, IMarker.SEVERITY_INFO);
+                    attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
                     attributes.put(IMarker.PRIORITY, priority);
                     attributes.put(IMarker.USER_EDITABLE, false);
-                    new MarkerCreator(file, IMarker.TASK)
-                        .handleSimpleMessage(token.getText().substring(2), 
-                            token.getStartIndex(), token.getStopIndex(), 
-                            token.getCharPositionInLine(), token.getCharPositionInLine(), 
-                            token.getLine(), token.getLine(), attributes);
+                    attributes.put(IMarker.LINE_NUMBER, token.getLine());
+                    attributes.put(IMarker.CHAR_START, token.getStartIndex());
+                    attributes.put(IMarker.CHAR_END, token.getStopIndex());
+                    attributes.put(IMarker.MESSAGE, token.getText().substring(2));                    
+                    try {
+                        file.createMarker(IMarker.TASK).setAttributes(attributes);
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

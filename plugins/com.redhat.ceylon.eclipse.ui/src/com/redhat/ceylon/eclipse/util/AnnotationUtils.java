@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static java.lang.Integer.toHexString;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -33,9 +30,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.parse.MessageHandler;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
+import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
     // Following is just used for debugging to discover new annotation types to filter out
@@ -95,7 +91,7 @@ public class AnnotationUtils {
 		} 
 		else if (annotation instanceof MarkerAnnotation) {
 			errorCode = ((MarkerAnnotation) annotation).getMarker()
-					.getAttribute(MessageHandler.ERROR_CODE_KEY, -1);
+					.getAttribute(MarkerCreator.ERROR_CODE_KEY, -1);
 		}
 		
 		// Fall back to comparing the text associated with this annotation
@@ -240,14 +236,12 @@ public class AnnotationUtils {
 		String text = null;
 	    if (message instanceof CeylonAnnotation) {
 	    	text = HTMLPrinter.convertToHTMLContent(message.getText());
-	    	Integer sev = (Integer) ((CeylonAnnotation) message).getAttribute(MessageHandler.SEVERITY_KEY);
-	    	if (sev!=null) {
-	    		if (sev==IStatus.ERROR) {
-	    			icon = DocHover.fileUrl("error_obj.gif");
-	    		}
-	    		else if (sev==IStatus.WARNING) {
-	    			icon = DocHover.fileUrl("warning_obj.gif");
-	    		}
+	    	int sev = ((CeylonAnnotation) message).getSeverity();
+	    	if (sev==IStatus.ERROR) {
+	    		icon = DocHover.fileUrl("error_obj.gif");
+	    	}
+	    	else if (sev==IStatus.WARNING) {
+	    		icon = DocHover.fileUrl("warning_obj.gif");
 	    	}
 	    }
 	    else if (message instanceof RefinementAnnotation) {
