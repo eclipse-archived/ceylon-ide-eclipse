@@ -65,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 
 /**
@@ -164,8 +165,10 @@ public class JDTModuleManager extends LazyModuleManager {
      */
     @Override
     protected boolean isModuleLoadedFromSource(String moduleName){
-        if (sourceModules.contains(moduleName)) {
-            return true;
+        if (! CeylonBuilder.compileWithJDTModelLoader(javaProject.getProject())) {
+            if (sourceModules.contains(moduleName)) {
+                return true;
+            }
         }
         if (isModuleLoadedFromCompiledSource(moduleName)) {
             return true;

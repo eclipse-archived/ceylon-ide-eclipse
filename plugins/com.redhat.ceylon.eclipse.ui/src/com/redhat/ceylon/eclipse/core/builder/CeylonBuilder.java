@@ -1161,6 +1161,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		TypeChecker typeChecker, IProgressMonitor mon) 
     				throws CoreException {
 
+        JDTModelLoader loader = getModelLoader(typeChecker);
+        loader.reset();
+
         List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
 
         List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
@@ -1179,34 +1182,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         monitor.subTask("- typechecking source archives for project " 
                 + project.getName());
-
-        JDTModelLoader loader = getModelLoader(typeChecker);
-        loader.reset();
-        
-        for (PhasedUnits dependencyPhasedUnits: phasedUnitsOfDependencies) {
-            loader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
+            
+        if (!compileWithJDTModelLoader(project)) {
+            for (PhasedUnits dependencyPhasedUnits: phasedUnitsOfDependencies) {
+                loader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
+            }
+            
+            for (PhasedUnit pu: dependencies) {
+            	monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
+                pu.scanDeclarations();
+                monitor.worked(1);
+            }
+            for (PhasedUnit pu: dependencies) {
+            	monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
+                pu.scanTypeDeclarations();
+                monitor.worked(2);
+            }
+    
+            for (PhasedUnit pu: dependencies) {
+                pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+            }
         }
         
-        for (PhasedUnit pu: dependencies) {
-        	monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
-            pu.scanDeclarations();
-            monitor.worked(1);
-        }
-        for (PhasedUnit pu: dependencies) {
-        	monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
-            pu.scanTypeDeclarations();
-            monitor.worked(2);
-        }
-        
-        if (compileWithJDTModelLoader()) {
-            loader.completeFromClasses();
-            monitor.worked(2);
-        }
-        
-        for (PhasedUnit pu: dependencies) {
-            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-        }
-
         loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
         loader.loadPackage("ceylon.language", true);
         loader.loadPackage("ceylon.language.descriptor", true);
@@ -1272,8 +1269,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
-    private boolean compileWithJDTModelLoader() {
-        return compileWithJDTModelLoader;
+    public static boolean compileWithJDTModelLoader(IProject project) {
+        return isExplodeModulesEnabled(project);
     }
 
     public static TypeChecker parseCeylonModel(IProject project,
@@ -1479,7 +1476,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
             PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
             boolean success = true;
-            if (compileWithJDTModelLoader()) {
+            if (compileWithJDTModelLoader(project)) {
                 sourceFiles.addAll(javaSourceFiles);
             } 
             if(!sourceFiles.isEmpty()){
@@ -1524,7 +1521,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Iterable<? extends JavaFileObject> compilationUnits =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
         
-        if (compileWithJDTModelLoader()) {
+        if (compileWithJDTModelLoader(project)) {
             setupJDTModelLoader(project, typeChecker, context);
         }
         
@@ -1619,8 +1616,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
 		context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
 		context.put(TypeFactory.class, modelLoader.getTypeFactory());
-		context.put(LanguageCompiler.phasedUnitsManagerKey, 
-				new JdtPhasedUnitsManager(modelLoader, project, typeChecker));
+		context.put(LanguageCompiler.phasedUnitsManagerKey, new JdtPhasedUnitsManager(modelLoader, project, typeChecker));
 		
 		modelLoader.setSourceFileObjectManager(new JdtSourceFileObjectManager(context, modelLoader));
 		
