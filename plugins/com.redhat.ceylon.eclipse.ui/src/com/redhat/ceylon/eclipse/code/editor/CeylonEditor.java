@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
@@ -64,7 +63,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
@@ -101,8 +99,6 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -111,7 +107,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -132,9 +127,8 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import ceylon.language.StringBuilder;
+
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -143,7 +137,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
  * An Eclipse editor, which is not enhanced using API; rather, we publish extension
@@ -350,27 +343,7 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
         
-        action= new Action(null) {
-        	@Override
-        	public void run() {
-        		TextChange change = new DocumentChange("Terminate Statement", 
-        				getSourceViewer().getDocument());
-        		CompilationUnit rootNode = getParseController().getRootNode();
-				Node node = findNode(rootNode, 
-        				(ITextSelection) getSelectionProvider().getSelection());
-        		FindStatementVisitor fcv = new FindStatementVisitor(node, false);
-        		fcv.visit(rootNode);
-        		Tree.Statement s = fcv.getStatement();
-        		InsertEdit edit = new InsertEdit(s.getStopIndex()+1, ";");
-        		change.setEdit(edit);
-        		try {
-					change.perform(new NullProgressMonitor());
-				} 
-        		catch (CoreException e) {
-					e.printStackTrace();
-				}
-        	}
-        };
+        action= new TerminateStatementAction(this);
         action.setActionDefinitionId(EditorActionIds.TERMINATE_STATEMENT);
         setAction(EditorActionIds.TERMINATE_STATEMENT, action);
 
