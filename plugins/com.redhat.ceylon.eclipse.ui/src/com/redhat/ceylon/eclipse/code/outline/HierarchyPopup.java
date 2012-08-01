@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_HIER;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;

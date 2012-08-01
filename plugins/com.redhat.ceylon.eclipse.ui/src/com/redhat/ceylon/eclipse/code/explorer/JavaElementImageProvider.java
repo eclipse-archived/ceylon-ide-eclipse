@@ -12,7 +12,7 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *     Matt Chapman, mpchapman@gmail.com - 89977 Make JDT .java agnostic
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_ARCHIVE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ARCHIVE;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -51,7 +51,7 @@ import org.eclipse.jdt.internal.ui.JavaWorkbenchAdapter;
 import org.eclipse.jdt.internal.ui.viewsupport.ImageDescriptorRegistry;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * Default strategy of the Java plugin for the construction of Java element icons.

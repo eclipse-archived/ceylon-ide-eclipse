@@ -44,7 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
@@ -59,7 +59,7 @@ import com.redhat.ceylon.eclipse.ui.ICeylonResources;
  */
 public class CeylonLabelProvider extends StyledCellLabelProvider 
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
-                   ILabelProvider, ICeylonResources {
+                   ILabelProvider, CeylonResources {
     
     private static CeylonLabelDecorator DECORATOR = new CeylonLabelDecorator();
     

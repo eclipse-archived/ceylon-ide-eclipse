@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_SOURCE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;

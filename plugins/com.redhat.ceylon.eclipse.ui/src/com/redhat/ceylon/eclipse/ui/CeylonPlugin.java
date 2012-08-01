@@ -31,7 +31,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
-public class CeylonPlugin extends AbstractUIPlugin implements ICeylonResources {
+public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";

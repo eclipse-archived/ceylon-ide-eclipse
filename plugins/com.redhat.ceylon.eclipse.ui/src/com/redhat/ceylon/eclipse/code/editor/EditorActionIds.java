@@ -11,37 +11,42 @@ public interface EditorActionIds {
     /**
      * Action definition ID of the Edit -> Correct Indentation action
      */
-    public static final String CORRECT_INDENTATION= PLUGIN_ID + ".editor.correctIndentation"; 
+    public static final String CORRECT_INDENTATION= PLUGIN_ID + ".editor.correctIndentation";
+    
+    /**
+     * Action definition ID of the Edit -> Terminate Statement action
+     */
+    public static final String TERMINATE_STATEMENT= PLUGIN_ID + ".editor.terminateLine";
 
     /**
      * Action definition id of the collapse members action
      */
-    public static final String FOLDING_COLLAPSE_MEMBERS= PLUGIN_ID + ".editor.folding.collapseMembers"; 
+    public static final String FOLDING_COLLAPSE_MEMBERS= PLUGIN_ID + ".editor.folding.collapseMembers";
 
     /**
      * Action definition id of the collapse comments action
      */
-    public static final String FOLDING_COLLAPSE_COMMENTS= PLUGIN_ID + ".editor.folding.collapseComments"; 
+    public static final String FOLDING_COLLAPSE_COMMENTS= PLUGIN_ID + ".editor.folding.collapseComments";
 
     /**
      * Source menu: id of standard Format global action
      */
-    public static final String FORMAT= PLUGIN_ID + ".editor.formatSource"; 
+    public static final String FORMAT= PLUGIN_ID + ".editor.formatSource";
 
     /**
      * Action definition ID of the edit -> Go to Matching Fence action
      */
-    public static final String GOTO_MATCHING_FENCE= PLUGIN_ID + ".editor.gotoMatchingFence"; 
+    public static final String GOTO_MATCHING_FENCE= PLUGIN_ID + ".editor.gotoMatchingFence";
 
     /**
      * Action definition ID of the edit -> Go to Previous Navigation Target action
      */
-    public static final String GOTO_PREVIOUS_TARGET= PLUGIN_ID + ".editor.gotoPreviousTarget"; 
+    public static final String GOTO_PREVIOUS_TARGET= PLUGIN_ID + ".editor.gotoPreviousTarget";
 
     /**
      * Action definition ID of the edit -> Go to Next Navigation Target action
      */
-    public static final String GOTO_NEXT_TARGET= PLUGIN_ID + ".editor.gotoNextTarget"; 
+    public static final String GOTO_NEXT_TARGET= PLUGIN_ID + ".editor.gotoNextTarget";
 
     /**
      * Action definition ID of the Edit -> Select Enclosing action
@@ -58,7 +63,7 @@ public interface EditorActionIds {
      * 
      * @since 0.1
      */
-    public static final String SHOW_OUTLINE= PLUGIN_ID + ".editor.showOutline"; 
+    public static final String SHOW_OUTLINE= PLUGIN_ID + ".editor.showOutline";
     
     /**
      * Action definition ID of the Edit -> Toggle Comment action
@@ -67,7 +72,7 @@ public interface EditorActionIds {
 
     public static final String SHOW_CEYLON_CODE = PLUGIN_ID + ".editor.code";
 
-    public static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".editor.hierarchy"; 
+    public static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".editor.hierarchy";
 
 }
 

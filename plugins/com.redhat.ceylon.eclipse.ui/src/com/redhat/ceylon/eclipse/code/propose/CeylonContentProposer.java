@@ -83,14 +83,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonContentProposer {
     
     public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(ICeylonResources.CEYLON_DEFAULT_REFINEMENT);
+            .getImageRegistry().get(CeylonResources.CEYLON_DEFAULT_REFINEMENT);
     public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(ICeylonResources.CEYLON_FORMAL_REFINEMENT);
+            .getImageRegistry().get(CeylonResources.CEYLON_FORMAL_REFINEMENT);
     
     
     /**

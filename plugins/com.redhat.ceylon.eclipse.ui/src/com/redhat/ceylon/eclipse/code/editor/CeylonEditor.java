@@ -135,7 +135,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.ICeylonResources;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * An Eclipse editor, which is not enhanced using API; rather, we publish extension
@@ -341,19 +341,28 @@ public class CeylonEditor extends TextEditor {
     			CeylonSourceViewer.SHOW_CODE, true);
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
+        
+        action= new Action(null) {
+        	@Override
+        	public void run() {
+        		super.run();
+        	}
+        };
+        action.setActionDefinitionId(EditorActionIds.TERMINATE_STATEMENT);
+        setAction(EditorActionIds.TERMINATE_STATEMENT, action);
 
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
         getAction(ITextEditorActionConstants.SHIFT_LEFT)
             .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-            		.getDescriptor(ICeylonResources.SHIFT_LEFT));
+            		.getDescriptor(CeylonResources.SHIFT_LEFT));
         getAction(ITextEditorActionConstants.SHIFT_RIGHT)
             .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-        		.getDescriptor(ICeylonResources.SHIFT_RIGHT));
+        		.getDescriptor(CeylonResources.SHIFT_RIGHT));
         
         IAction qaa=getAction(ITextEditorActionConstants.QUICK_ASSIST);
         qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-    		    .getDescriptor(ICeylonResources.QUICK_ASSIST));
+    		    .getDescriptor(CeylonResources.QUICK_ASSIST));
         qaa.setText("Quick Fix/Assist");
         
     }

@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.ICeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
 
 import java.lang.reflect.InvocationTargetException;
 
