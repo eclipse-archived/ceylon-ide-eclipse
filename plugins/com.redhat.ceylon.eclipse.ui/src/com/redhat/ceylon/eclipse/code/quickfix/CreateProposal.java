@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importTypes;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 
 import java.util.Collection;
@@ -70,9 +71,10 @@ class CreateProposal extends ChangeCorrectionProposal {
         return doc;
     }
 
-    static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, Declaration typeDec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.Body body, ProducedType t) {
+    static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
+    		String def, String desc, Image image, Declaration typeDec, PhasedUnit unit,
+            Tree.Declaration decNode, Tree.Body body, ProducedType returnType, 
+            List<ProducedType> paramTypes) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
@@ -92,7 +94,10 @@ class CreateProposal extends ChangeCorrectionProposal {
             offset = statement.getStartIndex();
             indentAfter = "\n" + getIndent(statement, doc);
         }
-        int il = importType(change, t, unit.getCompilationUnit(), new HashSet<Declaration>());
+        HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
+		int il = importType(change, returnType, unit.getCompilationUnit(), 
+        		alreadyImported);
+		il+=importTypes(change, paramTypes, unit.getCompilationUnit(), alreadyImported);
         change.addEdit(new InsertEdit(offset, indent+def+indentAfter));
         proposals.add(new CreateProposal(def, 
                 "Create " + desc + " in '" + typeDec.getName() + "'", 
@@ -101,7 +106,7 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
             boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement,
-            ProducedType t) {
+            ProducedType returnType, List<ProducedType> paramTypes) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
@@ -109,7 +114,10 @@ class CreateProposal extends ChangeCorrectionProposal {
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         def = def.replace("$indent", indent);
-        int il = importType(change, t, unit.getCompilationUnit(), new HashSet<Declaration>());
+        HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
+		int il = importType(change, returnType, unit.getCompilationUnit(), 
+        		alreadyImported);
+		il+=importTypes(change, paramTypes, unit.getCompilationUnit(), alreadyImported);
         change.addEdit(new InsertEdit(offset, def+"\n"+indent));
         proposals.add(new CreateProposal(def, 
                 (local ? "Create local " : "Create toplevel ") + desc, 
@@ -136,12 +144,14 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.ParameterList paramList, ProducedType t) {
+            Tree.Declaration decNode, Tree.ParameterList paramList, 
+            ProducedType returnType) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
-        int il = importType(change, t, unit.getCompilationUnit(), new HashSet<Declaration>());
+        int il = importType(change, returnType, unit.getCompilationUnit(), 
+        		new HashSet<Declaration>());
         change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
@@ -150,7 +160,8 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body, ProducedType t) {
+            Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body, 
+            ProducedType returnType) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Attribute", file);
         change.setEdit(new MultiTextEdit());
@@ -171,7 +182,8 @@ class CreateProposal extends ChangeCorrectionProposal {
             offset2 = statement.getStopIndex()+1;
             indentAfter = "";
         }
-        int il = importType(change, t, unit.getCompilationUnit(), new HashSet<Declaration>());
+        int il = importType(change, returnType, unit.getCompilationUnit(), 
+        		new HashSet<Declaration>());
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateProposal(pdef, 

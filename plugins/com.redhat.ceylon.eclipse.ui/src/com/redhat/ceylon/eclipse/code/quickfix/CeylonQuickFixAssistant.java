@@ -669,15 +669,20 @@ public class CeylonQuickFixAssistant {
             Image image;
             FindArgumentsVisitor fav = new FindArgumentsVisitor(smte);
             cu.visit(fav);
-            ProducedType t = fav.expectedType;
-            final boolean isVoid = t==null;
-            ProducedType dt = isVoid ? null : node.getUnit().denotableType(t);
-            String stn = isVoid ? null : dt.getProducedTypeName();
+            ProducedType et = fav.expectedType;
+            List<ProducedType> paramTypes = null;
+            final boolean isVoid = et==null;
+            ProducedType returnType = isVoid ? null : node.getUnit().denotableType(et);
+            String stn = isVoid ? null : returnType.getProducedTypeName();
             if (fav.positionalArgs!=null || fav.namedArgs!=null) {
                 StringBuilder params = new StringBuilder();
                 params.append("(");
-                if (fav.positionalArgs!=null) appendPositionalArgs(fav, params);
-                if (fav.namedArgs!=null) appendNamedArgs(fav, params);
+                if (fav.positionalArgs!=null) {
+                	paramTypes = appendPositionalArgs(fav, params);
+                }
+                if (fav.namedArgs!=null) {
+                	paramTypes = appendNamedArgs(fav, params);
+                }
                 if (params.length()>1) {
                     params.setLength(params.length()-2);
                 }
@@ -686,7 +691,7 @@ public class CeylonQuickFixAssistant {
                     String supertype = "";
                     if (!isVoid) {
                         if (!stn.equals("unknown")) {
-                            if (t.getDeclaration() instanceof Class) {
+                            if (et.getDeclaration() instanceof Class) {
                                 supertype = " extends " + stn + "()"; //TODO: arguments!
                             }
                             else {
@@ -696,11 +701,11 @@ public class CeylonQuickFixAssistant {
                     }
                     def = "class " + brokenName + params + supertype + " {\n";
                     if (!isVoid) {
-                        for (DeclarationWithProximity dwp: t.getDeclaration()
+                        for (DeclarationWithProximity dwp: et.getDeclaration()
                         		.getMatchingMemberDeclarations("", 0).values()) {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                                ProducedReference pr = getRefinedProducedReference(t, d);
+                                ProducedReference pr = getRefinedProducedReference(et, d);
                                 def+= "$indent    " + getRefinementTextFor(d, pr, false, "") + "\n";
                             }
                         }
@@ -731,15 +736,17 @@ public class CeylonQuickFixAssistant {
 
             if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
                     addCreateMemberProposals(proposals, project, "shared " + def, desc, image, 
-                            (Tree.QualifiedMemberOrTypeExpression) smte, dt);
+                            (Tree.QualifiedMemberOrTypeExpression) smte, returnType, paramTypes);
             }
             else {
-                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, dt);
+                addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, 
+                		returnType, paramTypes);
                 ClassOrInterface container = findClassContainer(cu, smte);
                 if(container!=null && 
                 		container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
                     do {
-                        addCreateMemberProposals(proposals, project, def, desc, image, container, dt);
+                        addCreateMemberProposals(proposals, project, def, desc, image, container, 
+                        		returnType, paramTypes);
                         if(container.getContainer() instanceof Declaration)
                             container = findClassContainer((Declaration) container.getContainer());
                         else 
@@ -747,9 +754,10 @@ public class CeylonQuickFixAssistant {
                     }
                     while(container != null);
                 }
-                addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte, dt);
-                CreateInNewUnitProposal.addCreateToplevelProposal(proposals, def.replace("$indent", ""), 
-                        desc, image, file, brokenName);
+                addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte, 
+                		returnType, paramTypes);
+                CreateInNewUnitProposal.addCreateToplevelProposal(proposals, 
+                		def.replace("$indent", ""), desc, image, file, brokenName);
             }
             
         }
@@ -761,9 +769,9 @@ public class CeylonQuickFixAssistant {
             String cdef = "class " + brokenName + "() {}";
             String cdesc = "class '" + brokenName + "()'";
             //addCreateLocalProposals(proposals, project, idef, idesc, INTERFACE, cu, bt);
-            addCreateLocalProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null);
-            addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt, null);
-            addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null);
+            addCreateLocalProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
+            addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt, null, null);
+            addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
                     INTERFACE, file, brokenName);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
@@ -802,15 +810,17 @@ public class CeylonQuickFixAssistant {
 
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.QualifiedMemberOrTypeExpression qmte, ProducedType t) {
+            Tree.QualifiedMemberOrTypeExpression qmte, ProducedType returnType, 
+            List<ProducedType> paramTypes) {
         Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
                 .getTypeModel().getDeclaration();
-        addCreateMemberProposals(proposals, project, def, desc, image, typeDec, t);
+        addCreateMemberProposals(proposals, project, def, desc, image, typeDec, 
+        		returnType, paramTypes);
     }
     
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, Declaration typeDec,
-            ProducedType t) {
+            ProducedType returnType, List<ProducedType> paramTypes) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
@@ -821,7 +831,8 @@ public class CeylonQuickFixAssistant {
                     Tree.Body body = getBody(decNode);
                     if (body!=null) {
                         CreateProposal.addCreateMemberProposal(proposals, def, desc, 
-                                image, typeDec, unit, decNode, body, t);
+                                image, typeDec, unit, decNode, body, returnType,
+                                paramTypes);
                         break;
                     }
                 }
@@ -1068,7 +1079,8 @@ public class CeylonQuickFixAssistant {
 
     private void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Node node, ProducedType t) {
+            Tree.CompilationUnit cu, Node node, ProducedType returnType, 
+            List<ProducedType> paramTypes) {
         FindStatementVisitor fsv = new FindStatementVisitor(node, false);
         cu.visit(fsv);
         //if (!fsv.isToplevel()) {
@@ -1076,7 +1088,7 @@ public class CeylonQuickFixAssistant {
             for (PhasedUnit unit: getUnits(project)) {
                 if (unit.getUnit().equals(cu.getUnit())) {
                     CreateProposal.addCreateProposal(proposals, def, true, desc, image, 
-                    		unit, statement, t);
+                    		unit, statement, returnType, paramTypes);
                     break;
                 }
             }
@@ -1085,35 +1097,45 @@ public class CeylonQuickFixAssistant {
 
     private void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image, 
-            Tree.CompilationUnit cu, Node node, ProducedType t) {
+            Tree.CompilationUnit cu, Node node, ProducedType returnType, 
+            List<ProducedType> paramTypes) {
         FindStatementVisitor fsv = new FindStatementVisitor(node, true);
         cu.visit(fsv);
         Tree.Statement statement = fsv.getStatement();
         for (PhasedUnit unit: getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, 
-                		unit, statement, t);
+                		unit, statement, returnType, paramTypes);
                 break;
             }
         }
     }
 
-    private void appendNamedArgs(FindArgumentsVisitor fav, StringBuilder params) {
+    private List<ProducedType> appendNamedArgs(FindArgumentsVisitor fav, StringBuilder params) {
+    	List<ProducedType> types = new ArrayList<ProducedType>();
         for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
             if (a instanceof Tree.SpecifiedArgument) {
                 Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
-                params.append( a.getUnit().denotableType(na.getSpecifierExpression().getExpression().getTypeModel())
+                ProducedType t = a.getUnit()
+                		.denotableType(na.getSpecifierExpression()
+                				.getExpression().getTypeModel());
+				params.append( t
                             .getProducedTypeName() )
                     .append(" ")
                     .append(na.getIdentifier().getText());
                 params.append(", ");
+                types.add(t);
             }
         }
+        return types;
     }
 
-    private void appendPositionalArgs(FindArgumentsVisitor fav, StringBuilder params) {
+    private List<ProducedType> appendPositionalArgs(FindArgumentsVisitor fav, StringBuilder params) {
+    	List<ProducedType> types = new ArrayList<ProducedType>();
         for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
-            params.append( pa.getUnit().denotableType(pa.getExpression().getTypeModel()).getProducedTypeName() )
+            ProducedType t = pa.getUnit()
+            		.denotableType(pa.getExpression().getTypeModel());
+			params.append( t.getProducedTypeName() )
                 .append(" ");
             if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
                 params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())
@@ -1125,7 +1147,9 @@ public class CeylonQuickFixAssistant {
                 params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
             }
             params.append(", ");
+            types.add(t);
         }
+        return types;
     }
 
     private void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
@@ -1294,7 +1318,15 @@ public class CeylonQuickFixAssistant {
 			}
 		}
 	}
-
+	public static int importTypes(TextChange tfc, Collection<ProducedType> types,
+			Tree.CompilationUnit rootNode, Set<Declaration> alreadyImported) {
+		if (types==null) return 0;
+		int i=0;
+		for (ProducedType type: types) {
+			i+=importType(tfc, type, rootNode, alreadyImported);
+		}
+		return i;
+	}
 	public static int importType(TextChange tfc, ProducedType type, 
 			Tree.CompilationUnit rootNode, Set<Declaration> alreadyImported) {
 		if (type==null) return 0;
