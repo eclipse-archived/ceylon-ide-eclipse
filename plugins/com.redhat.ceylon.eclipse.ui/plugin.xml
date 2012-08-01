@@ -77,13 +77,13 @@
       <persistent value="true"/>
    </extension>
    
-   <!--extension
+   <extension
          id="ceylonTask"
          name="Ceylon Task"
          point="org.eclipse.core.resources.markers">
       <super type="org.eclipse.core.resources.taskmarker"/>
       <persistent value="true"/>
-   </extension-->
+   </extension>
    
    <extension 
          point="org.eclipse.ui.ide.markerResolution">

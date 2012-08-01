@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
 import static org.eclipse.jdt.core.IJavaModelMarker.BUILDPATH_PROBLEM_MARKER;
 
 import org.eclipse.core.resources.IFile;
@@ -43,7 +42,8 @@ public class MarkerCreator extends ErrorVisitor {
 		        IMarker.MESSAGE, 
 		        IMarker.PRIORITY, 
 		        IMarker.SEVERITY,
-		        ERROR_CODE_KEY
+		        ERROR_CODE_KEY,
+		        IMarker.SOURCE_ID
 			};
 		Object[] values= new Object[] {
 		        startLine, 
@@ -51,7 +51,8 @@ public class MarkerCreator extends ErrorVisitor {
 		        message.getMessage(), 
 		        IMarker.PRIORITY_HIGH, 
 		        getSeverity(message, warnForErrors),
-		        message.getCode()
+		        message.getCode(),
+		        CeylonBuilder.SOURCE
 			};
 		try {
 		    file.createMarker(isCompilerError(message.getMessage())?
