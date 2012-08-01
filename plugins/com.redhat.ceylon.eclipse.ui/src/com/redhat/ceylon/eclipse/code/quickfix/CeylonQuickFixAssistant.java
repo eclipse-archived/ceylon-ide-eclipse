@@ -757,7 +757,8 @@ public class CeylonQuickFixAssistant {
                 addCreateToplevelProposals(proposals, project, def, desc, image, cu, smte, 
                 		returnType, paramTypes);
                 CreateInNewUnitProposal.addCreateToplevelProposal(proposals, 
-                		def.replace("$indent", ""), desc, image, file, brokenName);
+                		def.replace("$indent", ""), desc, image, file, brokenName,
+                		returnType, paramTypes);
             }
             
         }
@@ -773,9 +774,9 @@ public class CeylonQuickFixAssistant {
             addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt, null, null);
             addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
-                    INTERFACE, file, brokenName);
+                    INTERFACE, file, brokenName, null, null);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
-                    CLASS, file, brokenName);
+                    CLASS, file, brokenName, null, null);
         }
     }
 

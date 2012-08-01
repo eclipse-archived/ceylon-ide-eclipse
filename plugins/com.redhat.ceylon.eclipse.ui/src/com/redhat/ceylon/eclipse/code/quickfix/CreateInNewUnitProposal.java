@@ -1,6 +1,10 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
@@ -9,6 +13,8 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
 class CreateInNewUnitProposal implements ICompletionProposal {
@@ -60,9 +66,19 @@ class CreateInNewUnitProposal implements ICompletionProposal {
     	        "Create a new Ceylon compilation unit with the missing declaration.");
     }
 
-    static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, final String def,
-            final String desc, final Image image, final IFile file, final String unitName) {
-    	//TODO: this implementation does not handle imports at all!!
+    static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
+    		String def, String desc, Image image, IFile file, String unitName, 
+            ProducedType returnType, List<ProducedType> paramTypes) {
+    	//TODO: this implementation does not handle 
+    	//      unions/intersections/type args/etc
+    	List<Declaration> imports = new ArrayList<Declaration>();
+    	if (returnType!=null) imports.add(returnType.getDeclaration());
+    	if (paramTypes!=null) {
+    		for (ProducedType pt: paramTypes) {
+    			imports.add(pt.getDeclaration());
+    		}
+    	}
+    	def = imports(imports) + "\n\n" + def;
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
     }
 }
