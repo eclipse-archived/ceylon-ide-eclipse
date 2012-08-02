@@ -1,21 +1,25 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 final class ImportProposalsVisitor extends Visitor {
 	private final CompilationUnit cu;
 	private final List<Declaration> proposals;
+	private final CleanImportsHandler handler;
 
 	ImportProposalsVisitor(CompilationUnit cu,
-			List<Declaration> proposals) {
+			List<Declaration> proposals,
+			CleanImportsHandler handler) {
 		this.cu = cu;
 		this.proposals = proposals;
+		this.handler = handler;
 	}
 
 	public void visit(Tree.BaseMemberOrTypeExpression that) {
@@ -36,25 +40,30 @@ final class ImportProposalsVisitor extends Visitor {
 
 	private void addProposal(final Tree.CompilationUnit cu,
 			final List<Declaration> proposals, String name) {
-		Declaration prop = null;
+		for (Declaration p: proposals) {
+			if (p.getName().equals(name)) return;
+		}
+		List<Declaration> possibles = new ArrayList<Declaration>();
 		for (Package p: cu.getUnit().getPackage().getModule()
 		        .getAllPackages()) {
 			Declaration d = p.getMember(name, null); //TODO: pass sig
 			if (d!=null && d.isToplevel() && 
 					d.isShared() && !d.isAnonymous()) {
-				if (prop==null) {
-					prop=d;
-				}
-				else {
-					//ambiguous
-					//TODO: pop up a window!
-					prop=null;
-					break;
-				}
+				possibles.add(d);
 			}
-			if (prop!=null && !proposals.contains(prop)) {
-				proposals.add(prop);
-			}
+		}
+		Declaration prop;
+		if (possibles.isEmpty()) {
+			prop = null;
+		}
+		else if (possibles.size()==1) {
+			prop = possibles.get(0);
+		}
+		else {
+			prop = handler.select(possibles);
+		}
+		if (prop!=null) {
+			proposals.add(prop);
 		}
 	}
 }

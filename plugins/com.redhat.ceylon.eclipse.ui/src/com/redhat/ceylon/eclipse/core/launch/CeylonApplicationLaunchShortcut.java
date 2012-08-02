@@ -315,7 +315,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         };
         
         if (sd.open() == Window.OK) {
-            return (Declaration)sd.getResult()[0];
+            return (Declaration)sd.getFirstResult();
         }
         return null;
     }
