@@ -595,7 +595,7 @@
    <extension
          point="org.eclipse.ui.bindings">
        <key
-           sequence="M1+M2+C"
+           sequence="M1+M2+O"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
