@@ -319,10 +319,13 @@ public class CeylonQuickFixAssistant {
         	break;
         case 2100:
         	addChangeTypeProposals(cu, node, problem, proposals, project);
-        	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
+        	AddConstraintSatisfiesProposalOnExpressionIsNotAssignable.addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
         case 2101:
             AddEllipsisToSequenceParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
+            break;
+        case 2102:
+            AddConstraintSatisfiesProposalOnTypeArgumentIsNotAssignable.addConstraintSatisfiesProposals(cu, node, proposals, project);
             break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
