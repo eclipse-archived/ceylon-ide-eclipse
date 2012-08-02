@@ -253,7 +253,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         return new ItemsFilter() {
             @Override
             public boolean matchItem(Object item) {
-                return matchesRawNamePattern(item);
+                return matches(getElementName(item));
             }
             @Override
             public boolean isConsistentItem(Object item) {
@@ -267,7 +267,6 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         return new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
-                //TODO: also sort by project
                 DeclarationWithProject dwp1 = (DeclarationWithProject) o1;
                 DeclarationWithProject dwp2 = (DeclarationWithProject) o2;
                 int dc = dwp1.getDeclaration().getName()
