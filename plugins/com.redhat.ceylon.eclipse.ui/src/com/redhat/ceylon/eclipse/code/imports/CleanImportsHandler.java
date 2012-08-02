@@ -14,6 +14,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -54,14 +55,16 @@ public class CleanImportsHandler extends AbstractHandler {
                 	length = il.getStopIndex()-il.getStartIndex()+1;
                 	extra="";
                 }
-                tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
-                tfc.initializeValidationData(null);
-                try {
-                    getWorkspace().run(new PerformChangeOperation(tfc), 
-                            new NullProgressMonitor());
-                }
-                catch (CoreException ce) {
-                    throw new ExecutionException("Error cleaning imports", ce);
+                if (!imports.trim().isEmpty()) {
+                	tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
+                	tfc.initializeValidationData(null);
+                	try {
+                		getWorkspace().run(new PerformChangeOperation(tfc), 
+                				new NullProgressMonitor());
+                	}
+                	catch (CoreException ce) {
+                		throw new ExecutionException("Error cleaning imports", ce);
+                	}
                 }
             }
         }
@@ -76,10 +79,10 @@ public class CleanImportsHandler extends AbstractHandler {
         return reorganizeImports(til, unused, Collections.<Declaration>emptyList());
     }
     
-    private static String imports(final Tree.CompilationUnit cu) {
+    private String imports(final Tree.CompilationUnit cu) {
 		final List<Declaration> proposals = new ArrayList<Declaration>();
 		final List<Declaration> unused = new ArrayList<Declaration>();
-    	new ImportProposalsVisitor(cu, proposals).visit(cu);
+    	new ImportProposalsVisitor(cu, proposals, this).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
         return reorganizeImports(cu.getImportList(), unused, proposals);
     }
@@ -263,4 +266,15 @@ public class CleanImportsHandler extends AbstractHandler {
         }
         return false;
     }
+    
+	public Declaration select(List<Declaration> proposals) {
+		CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+		ImportSelectionDialog fid = new ImportSelectionDialog(editor.getSite().getShell(),
+				proposals);
+		if (fid.open() == Window.OK) {
+			return (Declaration) fid.getFirstResult();
+		}
+		return null;
+	}
+
 }
