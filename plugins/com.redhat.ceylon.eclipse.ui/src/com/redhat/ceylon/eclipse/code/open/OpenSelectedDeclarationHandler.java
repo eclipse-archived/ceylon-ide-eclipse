@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJ
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -55,11 +56,12 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
 			if (dec!=null) {
 			    CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
 				Node refNode = getReferencedNode(dec, cpc);
-			    if (refNode!=null) {
-			    	gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+			    IProject project = cpc.getProject();
+				if (refNode!=null) {
+			    	gotoNode(refNode, project, cpc.getTypeChecker());
 			    }
 			    else {
-			    	gotoJavaNode(dec, node, cpc);
+			    	gotoJavaNode(dec, node, project);
 			    }
 			}
         }

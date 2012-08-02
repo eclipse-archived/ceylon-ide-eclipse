@@ -9,6 +9,7 @@ import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEdito
 
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -127,11 +128,15 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     }
 
     public static void gotoJavaNode(Declaration dec, CeylonParseController cpc) {
-    	gotoJavaNode(dec, null, cpc);
+    	gotoJavaNode(dec, cpc.getProject());
     }
     
-    public static void gotoJavaNode(Declaration dec, Node node, CeylonParseController cpc) {
-		IJavaProject jp = JavaCore.create(cpc.getProject());
+    public static void gotoJavaNode(Declaration dec, IProject project) {
+    	gotoJavaNode(dec, null, project);
+    }
+    
+    public static void gotoJavaNode(Declaration dec, Node node, IProject project) {
+		IJavaProject jp = JavaCore.create(project);
 		if (jp!=null) {
 		    try {
 		        IJavaElement element = getJavaElement(dec, jp, node);

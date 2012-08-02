@@ -25,7 +25,18 @@
                 contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"/>
       </editor>
    </extension>
-      
+   
+   <!-- this works but I don't trust it b/c it is actually 
+        ambiguous ... there is another DocumentProvider for
+        IURIEditorInputs -->
+   <!--extension point="org.eclipse.ui.editors.documentProviders"> 
+      <provider
+         class="com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider" 
+         inputTypes="org.eclipse.ui.IURIEditorInput" 
+         id="com.redhat.ceylon.eclipse.ui.documentProvider.src"> 
+      </provider> 
+   </extension--> 
+
    <extension
          id="ceylonNature"
          name="Ceylon Nature"
@@ -434,6 +445,11 @@
             description="Open toplevel declaration"
             name="Open Ceylon Declaration"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.openType"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Open type declaration"
+            name="Open Ceylon or Java Type"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open search screen"
@@ -519,6 +535,9 @@
             class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
+            class="com.redhat.ceylon.eclipse.code.open.OpenTypeHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openType"/>
+      <handler
             class="com.redhat.ceylon.eclipse.code.search.OpenCeylonSearchPageAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
       <handler
@@ -578,6 +597,11 @@
        <key
            sequence="M1+M2+C"
            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
+       <key
+           sequence="M1+M2+T"
+           commandId="com.redhat.ceylon.eclipse.ui.action.openType"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
        <key
@@ -664,6 +688,11 @@
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
+            <command
+                  label="Open Type..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.openType"
+                  icon="icons/opentype.gif"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openType"/>
             <dynamic id="openSelectedDeclaration"
                       class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem"/>
             <separator
