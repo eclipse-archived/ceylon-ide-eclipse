@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getDocument;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
@@ -214,9 +213,14 @@ final class CodePopup extends PopupDialog
 	}
 
 	public final void dispose() {
+		docProvider.disconnect(ei);
+		ei = null;
 		close();
 	}
 
+	IDocumentProvider docProvider = new SourceArchiveDocumentProvider();
+	IEditorInput ei;
+	
 	@Override
 	public void setInput(Object input) {
 		CeylonParseController epc = editor.getParseController();
@@ -226,21 +230,15 @@ final class CodePopup extends PopupDialog
 		referencedNode = getReferencedNode(node, epc);
 		if (referencedNode==null) return;
 		IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
-		IEditorInput ei = getEditorInput(path);
-		IDocumentProvider adp = editor.getArchiveDocumentProvider(ei);
+		ei = getEditorInput(path);
 		IDocument doc;
-		if (adp==null) {
-			doc = getDocument(path); 
-		}
-		else {
-			try {
-				adp.connect(ei);
-				doc = adp.getDocument(ei);
-			} 
-			catch (CoreException e) {
-				e.printStackTrace();
-				return;
-			}
+		try {
+			docProvider.connect(ei);
+			doc = docProvider.getDocument(ei);
+		} 
+		catch (CoreException e) {
+			e.printStackTrace();
+			return;
 		}
 		viewer.setDocument(doc);
 		viewer.setVisibleRegion(referencedNode.getStartIndex(), 
