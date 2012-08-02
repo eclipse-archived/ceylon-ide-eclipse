@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
+import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
@@ -188,7 +189,6 @@ public class CeylonEditor extends TextEditor {
     protected final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
 
     private CeylonParserScheduler parserScheduler;
-    private IDocumentProvider zipDocProvider;
     private ProblemMarkerManager problemMarkerManager;
     private ICharacterPairMatcher bracketMatcher;
     //private SubActionBars fActionBars;
@@ -807,28 +807,22 @@ extends PreviousSubWordAction implements IUpdate {
     	super.setTitleImage(titleImage);
     }
 
-    @Override
     public IDocumentProvider getDocumentProvider() {
-        IDocumentProvider adp = getArchiveDocumentProvider(getEditorInput());
-        if (adp==null) adp = super.getDocumentProvider();
-        return adp;
+    	if (isSrcArchive(getEditorInput())) {
+    		//Note: I would prefer to register the
+    		//document provider in plugin.xml but
+    		//I don't know how to uniquely identity
+    		//that a IURIEditorInput is a source
+    		//archive there
+    		if (sourceArchiveDocumentProvider==null) {
+    			sourceArchiveDocumentProvider = new SourceArchiveDocumentProvider();
+    		}
+    		return sourceArchiveDocumentProvider;
+    	}
+    	else {
+    		return super.getDocumentProvider();
+    	}
     }
-
-	public IDocumentProvider getArchiveDocumentProvider(IEditorInput editorInput) {
-		if (SourceArchiveDocumentProvider.canHandle(editorInput)) {
-            if (sourceArchiveDocumentProvider == null) {
-                sourceArchiveDocumentProvider= new SourceArchiveDocumentProvider();
-            }
-            return sourceArchiveDocumentProvider;
-        }
-        if (ZipStorageEditorDocumentProvider.canHandle(editorInput)) {
-            if (zipDocProvider == null) {
-                zipDocProvider= new ZipStorageEditorDocumentProvider();
-            }
-            return zipDocProvider;
-        }
-        return null;
-	}
     
     public CeylonSourceViewer getCeylonSourceViewer() {
     	return (CeylonSourceViewer) super.getSourceViewer();
