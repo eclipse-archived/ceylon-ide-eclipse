@@ -218,7 +218,7 @@ public class CeylonContentProposer {
                      token.getStartIndex());
             }
             else {
-                return new PositionedPrefix(offset, false);
+                return new PositionedPrefix(offset, isMemberOperator(token));
             }
         } 
         else {
@@ -491,47 +491,48 @@ public class CeylonContentProposer {
             if ((node instanceof Tree.SimpleType || 
                     node instanceof Tree.BaseTypeExpression ||
                     node instanceof Tree.QualifiedTypeExpression) 
-                    && prefix.isEmpty() && !isMemberOperator(token)) {
+                    && prefix.isEmpty() && !memberOp) {
                 addMemberNameProposal(offset, node, result);
             }
-            
-            OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            if (//isKeywordProposable(ol) && 
-                    !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-                addKeywordProposals(offset, prefix, result);
-                //addTemplateProposal(offset, prefix, result);
-            }
-            for (DeclarationWithProximity dwp: set) {
-                Declaration dec = dwp.getDeclaration();
-                if (isParameterOfNamedArgInvocation(node, dwp)) {
-                    if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
-                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                        addInlineFunctionProposal(offset, prefix, cpc, 
-                                node, result, dec, doc);
-                    }
-                }
-                if (isProposable(dwp, ol, node.getScope())) {
-                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                    if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
-                        addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                        addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                        addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
-                    }
-                }
-                if (isInvocationProposable(dwp, ol)) {
-                    for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
-                                getQualifiedProducedReference(node, d) :
-                                getRefinedProducedReference(node, d);
-                        addInvocationProposals(offset, prefix, cpc, result, 
-                                new DeclarationWithProximity(d, dwp), pr, ol);
-                    }
-                }
-                if (isRefinementProposable(dec, ol)) {
-                	for (Declaration d: overloads(dec)) {
-                		addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
-                	}
-                }
+            else {
+            	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+            	if (//isKeywordProposable(ol) && 
+            			!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+            		addKeywordProposals(offset, prefix, result);
+            		//addTemplateProposal(offset, prefix, result);
+            	}
+            	for (DeclarationWithProximity dwp: set) {
+            		Declaration dec = dwp.getDeclaration();
+            		if (isParameterOfNamedArgInvocation(node, dwp)) {
+            			if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
+            				addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
+            				addInlineFunctionProposal(offset, prefix, cpc, 
+            						node, result, dec, doc);
+            			}
+            		}
+            		if (isProposable(dwp, ol, node.getScope())) {
+            			addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
+            			if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
+            				addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
+            				addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
+            				addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
+            			}
+            		}
+            		if (isInvocationProposable(dwp, ol)) {
+            			for (Declaration d: overloads(dec)) {
+            				ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+            						getQualifiedProducedReference(node, d) :
+            							getRefinedProducedReference(node, d);
+            						addInvocationProposals(offset, prefix, cpc, result, 
+            								new DeclarationWithProximity(d, dwp), pr, ol);
+            			}
+            		}
+            		if (isRefinementProposable(dec, ol) && !memberOp) {
+            			for (Declaration d: overloads(dec)) {
+            				addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
+            			}
+            		}
+            	}
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
@@ -1014,15 +1015,6 @@ public class CeylonContentProposer {
     
     private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             boolean memberOp, Tree.CompilationUnit cu) {
-        if (memberOp && node instanceof Tree.Term) {
-            ProducedType type = ((Tree.Term)node).getTypeModel();
-            if (type!=null) {
-                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
-            }
-            else {
-                return Collections.emptyMap();
-            }
-        }
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
@@ -1032,6 +1024,15 @@ public class CeylonContentProposer {
                 return Collections.emptyMap();
             }
         } 
+        else if (memberOp && node instanceof Tree.Term) {
+            ProducedType type = ((Tree.Term)node).getTypeModel();
+            if (type!=null) {
+                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
+            }
+            else {
+                return Collections.emptyMap();
+            }
+        }
         else {
             Scope scope = node.getScope();
             if (scope instanceof ImportList) {
