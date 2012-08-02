@@ -16,6 +16,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CeylonParserScheduler extends Job {
@@ -97,6 +98,10 @@ public class CeylonParserScheduler extends Job {
                 // Editor was closed, or no parse controller
                 return Status.OK_STATUS;
             }
+            
+            if (((CeylonEditor) fEditorPart).isBackgroundParsingPaused()) {
+            	return Status.OK_STATUS;
+            }
 
             IEditorInput editorInput= fEditorPart.getEditorInput();
             try {
@@ -141,6 +146,7 @@ public class CeylonParserScheduler extends Job {
 
     private void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         // Suppress the notification if there's no AST (e.g. due to a parse error)
+    	if (((CeylonEditor)fEditorPart).isBackgroundParsingPaused()) return;
         if (fParseController!=null) {
             for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(fAstListeners)) {
             	if (monitor.isCanceled()) break;

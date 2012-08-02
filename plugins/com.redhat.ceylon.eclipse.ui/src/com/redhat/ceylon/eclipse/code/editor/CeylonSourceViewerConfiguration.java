@@ -18,7 +18,10 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -63,11 +66,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         processor = new CompletionProcessor(editor);
     }
     
-    /*@Override
-    public int getTabWidth(ISourceViewer sourceViewer) {
-        return editor.getPrefStore().getInt(EDITOR_TAB_WIDTH);
-    }*/
-
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         // BUG Perhaps we shouldn't use a PresentationReconciler; its JavaDoc says it runs in the UI thread!
         PresentationReconciler reconciler= new PresentationReconciler();
@@ -85,10 +83,24 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         		super.install();
         	}
         };
+        ca.addCompletionListener(new ICompletionListener() {
+			@Override
+			public void selectionChanged(ICompletionProposal proposal,
+					boolean smartToggle) {}
+			@Override
+			public void assistSessionStarted(ContentAssistEvent event) {
+				editor.pauseBackgroundParsing();
+			}			
+			@Override
+			public void assistSessionEnded(ContentAssistEvent event) {
+				editor.unpauseBackgroundParsing();
+				editor.scheduleParsing();
+			}
+		});
 		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
         ca.enableAutoInsert(true);
         ca.enableAutoActivation(true);
-        ca.setAutoActivationDelay(100);
+        ca.setAutoActivationDelay(500);
         ca.enableColoredLabels(true);
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return ca;

@@ -201,8 +201,10 @@ public class CeylonEditor extends TextEditor {
     private FoldingActionGroup foldingActionGroup;
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
     private ToggleBreakpointAdapter toggleBreakpointTarget;
-    CeylonOutlinePage outlinePage;
-    
+    private CeylonOutlinePage outlinePage;
+    private boolean backgroundParsingPaused;
+    private CeylonParseController parseController;
+        
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
     //public static final String IMP_CODING_ACTION_SET = RuntimePlugin.IMP_RUNTIME + ".codingActionSet";
@@ -223,7 +225,19 @@ public class CeylonEditor extends TextEditor {
 	static String[][] getFences() {
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}
+	
+	public void pauseBackgroundParsing() {
+		backgroundParsingPaused = true;
+	}
     
+	public void unpauseBackgroundParsing() {
+		backgroundParsingPaused = false;
+	}
+	
+	public boolean isBackgroundParsingPaused() {
+		return backgroundParsingPaused;
+	}
+	
     /**
      * Sub-classes may override this method to extend the behavior provided by IMP's
      * standard StructuredSourceViewerConfiguration.
@@ -868,14 +882,12 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public void scheduleParsing() {
-    	if (parserScheduler!=null) {
+    	if (parserScheduler!=null && !backgroundParsingPaused) {
     		parserScheduler.cancel();
-    		parserScheduler.schedule(0);
+    		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
     	}
     }
 
-    CeylonParseController parseController;
-    
     private void initializeParseController() {
         IEditorInput editorInput= getEditorInput();
         IFile file = getFile(editorInput);
@@ -890,7 +902,7 @@ extends PreviousSubWordAction implements IUpdate {
                 .addDocumentListener(documentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
-            	if (parserScheduler!=null) {
+            	if (parserScheduler!=null && !backgroundParsingPaused) {
             		parserScheduler.cancel();
             		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
             	}
@@ -1080,7 +1092,7 @@ extends PreviousSubWordAction implements IUpdate {
 			parserScheduler= new CeylonParserScheduler(parseController, this, 
 					getDocumentProvider(), annotationCreator);
             
-            addModelListener(new EditorAnnotationService(this));
+            addModelListener(new AdditionalAnnotationCreator(this));
 
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
