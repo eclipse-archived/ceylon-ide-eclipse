@@ -4,14 +4,18 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.f
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -35,6 +39,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -42,7 +47,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * changes, and computes a set of "occurrence" annotations in the editor, using the language-specific
  * "mark occurrences" service.
  */
-public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, CaretListener {
+public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, 
+		CaretListener, TreeLifecycleListener {
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
@@ -53,7 +59,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
      */
     private boolean fMarkingEnabled = true;
 
-    private CeylonEditor fActiveEditor;
+    private CeylonEditor activeEditor;
 
     /**
      * The IParseController for the currently-active editor, if any. Could be null
@@ -99,9 +105,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
         }
 
         public void partClosed(IWorkbenchPart part) {
-            if (part == fActiveEditor) {
+            if (part == activeEditor) {
                 unregisterListeners();
-                fActiveEditor= null;
+                activeEditor= null;
                 fDocumentProvider= null;
                 fDocument= null;
                 fParseController= null;
@@ -118,7 +124,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
     public void caretMoved(CaretEvent event) {
     	int offset = event.caretOffset;
     	int length = 0;
-    	IRegion selection = fActiveEditor.getSelection();
+    	IRegion selection = activeEditor.getSelection();
 		if (selection.getLength()>0) {
     		offset = selection.getOffset();
     		length = selection.getLength();
@@ -144,15 +150,17 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
         // be presumed to have a document provider that has document
         IDocument document = getDocumentFromEditor();
         if (document!=null) {
-            fActiveEditor.getCeylonSourceViewer().getTextWidget()
+            activeEditor.getCeylonSourceViewer().getTextWidget()
                     .addCaretListener(this);
         }
+        activeEditor.addModelListener(this);
     }
 
     private void unregisterListeners() {
-        if (fActiveEditor!=null) {
-        	fActiveEditor.getCeylonSourceViewer().getTextWidget()
+        if (activeEditor!=null) {
+        	activeEditor.getCeylonSourceViewer().getTextWidget()
                     .removeCaretListener(this);
+        	activeEditor.removeModelListener(this);
         }
     }
 
@@ -247,7 +255,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
 
     void removeExistingOccurrenceAnnotations() {
         // RMF 6/27/2008 - If we've come up in an empty workspace, there won't be an active editor
-        if (fActiveEditor == null)
+        if (activeEditor == null)
             return;
         // RMF 6/27/2008 - Apparently partActivated() gets called before the editor is initialized
         // (on MacOS?), and then we can't properly initialize this MarkOccurrencesAction instance.
@@ -293,11 +301,11 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
     }
 
     private IEditorInput getEditorInput() {
-        return fActiveEditor.getEditorInput();
+        return activeEditor.getEditorInput();
     }
 
     private IDocumentProvider getDocumentProvider() {
-        fDocumentProvider= fActiveEditor.getDocumentProvider();
+        fDocumentProvider= activeEditor.getDocumentProvider();
         return fDocumentProvider;
     }
 
@@ -305,9 +313,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
         unregisterListeners();
         if (textEditor == null)
             return;
-        fActiveEditor = textEditor;
+        activeEditor = textEditor;
         fDocument= getDocumentFromEditor();
-        fParseController = fActiveEditor.getParseController();
+        fParseController = activeEditor.getParseController();
 
         if (fParseController == null) {
             return;
@@ -316,7 +324,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
         fOccurrenceMarker = new CeylonOccurrenceMarker();
         registerListeners();
 
-        ISelection selection = fActiveEditor.getSelectionProvider().getSelection();
+        ISelection selection = activeEditor.getSelectionProvider().getSelection();
         if (selection instanceof ITextSelection) {
             ITextSelection textSelection = (ITextSelection) selection;
             recomputeAnnotationsForSelection(textSelection.getOffset(), textSelection.getLength(), fDocument);
@@ -339,4 +347,31 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, Ca
     public void init(IWorkbenchWindow window) {
         window.getActivePage().addPartListener(new EditorPartListener());
     }
+    
+    @Override
+    public void update(CeylonParseController parseController,
+    		IProgressMonitor monitor) {
+    	try {
+			getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
+					new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException,
+						InterruptedException {
+			    	IRegion selection = activeEditor.getSelection();
+			    	int offset = selection.getOffset();
+			    	int length = selection.getLength();
+			    	recomputeAnnotationsForSelection(offset, length, fDocument);
+				}
+			}, null);
+		} 
+    	catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+
+	@Override
+	public Stage getStage() {
+		return Stage.TYPE_ANALYSIS;
+	}
+
 }
