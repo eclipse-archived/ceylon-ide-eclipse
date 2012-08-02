@@ -258,7 +258,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 return new ItemsFilter() {
                     @Override
                     public boolean matchItem(Object item) {
-                        return matchesRawNamePattern(item);
+                        return matches(getElementName(item));
                     }
                     @Override
                     public boolean isConsistentItem(Object item) {
