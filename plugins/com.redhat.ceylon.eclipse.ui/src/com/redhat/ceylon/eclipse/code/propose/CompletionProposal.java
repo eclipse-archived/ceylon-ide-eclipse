@@ -1,15 +1,26 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
+
+import java.util.StringTokenizer;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-class CompletionProposal implements ICompletionProposal, ICompletionProposalExtension4 {
+
+class CompletionProposal implements ICompletionProposal, 
+		ICompletionProposalExtension4, ICompletionProposalExtension6 {
     
     private final String text;
     private final Image image;
@@ -104,5 +115,34 @@ class CompletionProposal implements ICompletionProposal, ICompletionProposalExte
     public boolean isAutoInsertable() {
     	return true;
     }
+
+	@Override
+	public StyledString getStyledDisplayString() {
+		StyledString result = new StyledString();
+		String string = getDisplayString();
+		if (this instanceof RefinementCompletionProposal) {
+			result.append(string.substring(0,13), CeylonLabelProvider.ANN_STYLER);
+			string=string.substring(13);
+		}
+		StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
+		while (tokens.hasMoreTokens()) {
+			String token = tokens.nextToken();
+			if (isUpperCase(token.charAt(0))) {
+				result.append(token, CeylonLabelProvider.TYPE_ID_STYLER);
+			}
+			else if (isLowerCase(token.charAt(0))) {
+				if (CeylonTokenColorer.keywords.contains(token)) {
+					result.append(token, CeylonLabelProvider.KW_STYLER);
+				}
+				else {
+					result.append(token, CeylonLabelProvider.ID_STYLER);
+				}
+			}
+			else {
+				result.append(token);
+			}
+		}
+		return result;
+	}
 
 }

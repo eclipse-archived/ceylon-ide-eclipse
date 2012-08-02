@@ -89,6 +89,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         ca.enableAutoInsert(true);
         ca.enableAutoActivation(true);
         ca.setAutoActivationDelay(100);
+        ca.enableColoredLabels(true);
+        //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return ca;
     }
 
