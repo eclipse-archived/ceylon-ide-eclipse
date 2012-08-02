@@ -75,8 +75,8 @@ public class AddConstraintSatisfiesProposalOnTypeArgumentIsNotAssignable extends
     private static Tree.ClassOrInterface determineTypeParamContainer(Tree.CompilationUnit cu, Node typeParamNode) {
         FindContainerVisitor fcv = new FindContainerVisitor(typeParamNode);
         fcv.visit(cu);
-        if (fcv.getDeclaration() instanceof Tree.ClassOrInterface) {
-            return (Tree.ClassOrInterface) fcv.getDeclaration();
+        if (fcv.getStatementOrArgument() instanceof Tree.ClassOrInterface) {
+            return (Tree.ClassOrInterface) fcv.getStatementOrArgument();
         }
         return null;        
     }
