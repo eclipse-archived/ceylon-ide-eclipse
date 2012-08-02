@@ -1405,7 +1405,7 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            sequence="M3+Z"
+            sequence="M1+2"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
@@ -1474,9 +1474,9 @@
             name="Correct Indentation"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Terminate the current statement by adding punctuation at the end of the current line"
+            description="Terminate the statement at the current line and close brackets"
             id="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
-            name="Termiante Statement"/>
+            name="Terminate Statement"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Select the innermost enclosing construct"
