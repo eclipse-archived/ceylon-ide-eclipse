@@ -85,7 +85,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     private CeylonOccurrenceMarker fOccurrenceMarker;
 
     private Annotation[] fOccurrenceAnnotations;
-
+    
     /**
      * Listens to part-related events from the workbench to monitor when text editors are
      * activated/closed, and keep the necessary listeners pointed at the active editor.
@@ -122,6 +122,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     public void caretMoved(CaretEvent event) {
+    	if (activeEditor.isBackgroundParsingPaused()) return;
     	int offset = event.caretOffset;
     	int length = 0;
     	IRegion selection = activeEditor.getSelection();
@@ -347,26 +348,27 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     public void init(IWorkbenchWindow window) {
         window.getActivePage().addPartListener(new EditorPartListener());
     }
-    
+        
     @Override
     public void update(CeylonParseController parseController,
     		IProgressMonitor monitor) {
+    	if (activeEditor.isBackgroundParsingPaused()) return;
     	try {
-			getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
-					new IRunnableWithProgress() {
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException,
-						InterruptedException {
-			    	IRegion selection = activeEditor.getSelection();
-			    	int offset = selection.getOffset();
-			    	int length = selection.getLength();
-			    	recomputeAnnotationsForSelection(offset, length, fDocument);
-				}
-			}, null);
-		} 
+    		getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
+    				new IRunnableWithProgress() {
+    			@Override
+    			public void run(IProgressMonitor monitor) throws InvocationTargetException,
+    			InterruptedException {
+    				IRegion selection = activeEditor.getSelection();
+    				int offset = selection.getOffset();
+    				int length = selection.getLength();
+    				recomputeAnnotationsForSelection(offset, length, fDocument);
+    			}
+    		}, null);
+    	} 
     	catch (Exception e) {
-			e.printStackTrace();
-		}
+    		e.printStackTrace();
+    	}
     }
 
 	@Override

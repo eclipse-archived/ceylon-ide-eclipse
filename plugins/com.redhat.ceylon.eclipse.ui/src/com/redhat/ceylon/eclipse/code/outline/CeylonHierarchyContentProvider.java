@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;

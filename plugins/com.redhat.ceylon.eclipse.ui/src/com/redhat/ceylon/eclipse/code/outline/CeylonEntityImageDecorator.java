@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorAnnotationService.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_LEFT;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_RIGHT;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.TOP_RIGHT;

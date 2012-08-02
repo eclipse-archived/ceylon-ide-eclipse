@@ -35,13 +35,13 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
  * the vertical ruler.
  *
  */
-public class EditorAnnotationService implements TreeLifecycleListener {
+public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
     private CeylonEditor editor;
     
-    public EditorAnnotationService(CeylonEditor editor) {
+    public AdditionalAnnotationCreator(CeylonEditor editor) {
     	this.editor = editor;
         ((IPostSelectionProvider) editor.getSelectionProvider())
             .addPostSelectionChangedListener(new SelectionListener());

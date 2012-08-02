@@ -108,6 +108,10 @@ public class CeylonParseController {
 		this.filePath= filePath;
 		this.handler= handler;
     }
+    
+    public AnnotationCreator getHandler() {
+		return handler;
+	}
         
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
