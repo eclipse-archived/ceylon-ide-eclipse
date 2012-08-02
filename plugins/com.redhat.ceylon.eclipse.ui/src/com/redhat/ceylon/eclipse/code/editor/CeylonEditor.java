@@ -139,9 +139,9 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
- * An Eclipse editor, which is not enhanced using API; rather, we publish extension
- * points for outline, content assist, hover help, etc.
+ * An editor for Ceylon source code.
  * 
+ * @author Gavin King
  * @author Chris Laffra
  * @author Robert M. Fuhrer
  */
