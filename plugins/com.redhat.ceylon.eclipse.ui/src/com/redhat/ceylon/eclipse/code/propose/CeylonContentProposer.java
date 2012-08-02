@@ -42,6 +42,7 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -81,6 +82,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -117,6 +121,8 @@ public class CeylonContentProposer {
         }
         
         CeylonParseController cpc = (CeylonParseController) controller;
+        cpc.parse(((CeylonEditor)Util.getCurrentEditor()).getCeylonSourceViewer().getDocument(), 
+        		new NullProgressMonitor(), null);
         List<CommonToken> tokens = cpc.getTokens(); 
         if (tokens==null) {
             return null;
@@ -867,12 +873,13 @@ public class CeylonContentProposer {
             if (!prefix.isEmpty() && keyword.startsWith(prefix) 
                     /*&& !keyword.equals(prefix)*/) {
                 result.add(new CompletionProposal(offset, prefix, null, 
-                		keyword, keyword, true) /*{
+                		keyword, keyword, true) {
                 	@Override
-                	public String getAdditionalProposalInfo() {
-                		return keyword;
+                	public StyledString getStyledDisplayString() {
+                		return new StyledString(keyword, 
+                				CeylonLabelProvider.KW_STYLER);
                 	}
-                }*/);
+                });
             }
         }
     }
@@ -1135,7 +1142,7 @@ public class CeylonContentProposer {
         StringBuilder result = new StringBuilder(name(d));
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted);
+        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted, false);
         return result.toString();
     }
     
@@ -1152,7 +1159,7 @@ public class CeylonContentProposer {
         if (forceExplicitTypeArgs(d.getDeclaration(), ol))
             appendTypeParameters(d.getDeclaration(), result);
         appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
-        return result/*.append(" - invoke with positional arguments")*/.toString();
+        return result.toString();
     }
     
     private static String getNamedInvocationDescriptionFor(DeclarationWithProximity d, 
@@ -1160,8 +1167,8 @@ public class CeylonContentProposer {
         StringBuilder result = new StringBuilder(d.getName());
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted);
-        return result/*.append(" - invoke with named arguments")*/.toString();
+        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted, true);
+        return result.toString();
     }
     
     public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
@@ -1315,7 +1322,8 @@ public class CeylonContentProposer {
     }
     
     private static void appendNamedArgs(Declaration d, ProducedReference pr, 
-            StringBuilder result, boolean includeDefaulted) {
+            StringBuilder result, boolean includeDefaulted, 
+            boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, includeDefaulted);
             if (params.isEmpty()) {
@@ -1328,10 +1336,15 @@ public class CeylonContentProposer {
                         if (p instanceof FunctionalParameter) {
                             result.append("function ").append(p.getName());
                             appendParameters(p, pr.getTypedParameter(p), result);
-                            result.append(" { return ")
-                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-                                .append(p.getName())
-                                .append("; } ");
+                            if (descriptionOnly) {
+                            	result.append("; ");
+                            }
+                            else {
+                            	result.append(" { return ")
+	                            	//.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+	                            	.append(p.getName())
+	                            	.append("; } ");
+                            }
                         }
                         else {
                             result.append(p.getName()).append(" = ")
