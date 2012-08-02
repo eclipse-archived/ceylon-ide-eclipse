@@ -28,7 +28,7 @@ import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 
-public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
+public class AddConstraintSatisfiesProposalOnExpressionIsNotAssignable extends ChangeCorrectionProposal {
     
     public static void addConstraintSatisfiesProposals(CompilationUnit cu, Node node, Collection<ICompletionProposal> proposals, IProject project) {
         Term term = determineTreeTerm(node);
@@ -87,7 +87,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
             IFile file = CeylonBuilder.getFile(unit);
             TextFileChange change = new TextFileChange("Add generic type constraints", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
-            AddConstraintSatisfiesProposal p = new AddConstraintSatisfiesProposal(typeParam, missingSatisfiedType, changeIndex, file, change);
+            AddConstraintSatisfiesProposalOnExpressionIsNotAssignable p = new AddConstraintSatisfiesProposalOnExpressionIsNotAssignable(typeParam, missingSatisfiedType, changeIndex, file, change);
             if ( !proposals.contains(p)) {
                 proposals.add(p);
             }                               
@@ -143,7 +143,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     private TypeParameter typeParam;
     private ProducedType missingSatisfiedType;
     
-    private AddConstraintSatisfiesProposal(TypeParameter typeParam, ProducedType missingSatisfiedType, int offset, IFile file, TextFileChange change) {
+    private AddConstraintSatisfiesProposalOnExpressionIsNotAssignable(TypeParameter typeParam, ProducedType missingSatisfiedType, int offset, IFile file, TextFileChange change) {
         super("Add generic type constraints '" + typeParam.getName() + " satisfies " + missingSatisfiedType.getProducedTypeName() + "'", 
                 change, 10, CORRECTION);
         this.file=file;
@@ -160,8 +160,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof AddConstraintSatisfiesProposal) {
-            AddConstraintSatisfiesProposal that = (AddConstraintSatisfiesProposal) obj;
+        if (obj instanceof AddConstraintSatisfiesProposalOnExpressionIsNotAssignable) {
+            AddConstraintSatisfiesProposalOnExpressionIsNotAssignable that = (AddConstraintSatisfiesProposalOnExpressionIsNotAssignable) obj;
             return that.typeParam.equals(typeParam) && that.missingSatisfiedType.equals(missingSatisfiedType);
         }
         return false;
