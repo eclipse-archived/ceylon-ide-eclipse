@@ -32,7 +32,10 @@ public class DeclarationWithProject {
     public boolean equals(Object obj) {
         if (obj instanceof DeclarationWithProject) {
             DeclarationWithProject that = (DeclarationWithProject) obj;
-            return that.project.equals(project) && that.dec.equals(dec) /*&& 
+            return (that.project==project || 
+            			that.project!=null && project!=null && 
+            			that.project.equals(project)) && 
+            		that.dec.equals(dec) /*&& 
                     that.path.equals(path)*/;
         }
         else {

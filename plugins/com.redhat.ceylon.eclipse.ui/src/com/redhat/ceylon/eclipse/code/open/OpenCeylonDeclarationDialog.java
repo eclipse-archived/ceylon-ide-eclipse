@@ -3,6 +3,10 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
@@ -40,7 +44,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -177,22 +180,24 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String path = element.getString("path");
             //search for a source file in the project
             //TODO: we can probably remove this loop
-            for (PhasedUnit unit: CeylonBuilder.getUnits( new String[] {projectName} )) {
-                if (unit.getUnit().getFilename().equals(unitFileName)
-                        && unit.getPackage().getQualifiedNameString().equals(packageName)) {
-                    for (Declaration dec: unit.getDeclarations()) {
-                        if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                            return new DeclarationWithProject(dec, 
-                                    CeylonBuilder.getFile(unit).getProject(), path);
-                        }
-                    }
-                }
+            if (projectName!=null) {
+            	for (PhasedUnit unit: getUnits( new String[] {projectName} )) {
+            		if (unit.getUnit().getFilename().equals(unitFileName)
+            				&& unit.getPackage().getQualifiedNameString().equals(packageName)) {
+            			for (Declaration dec: unit.getDeclarations()) {
+            				if (dec.getQualifiedNameString().equals(qualifiedName)) {
+            					return new DeclarationWithProject(dec, 
+            							getFile(unit).getProject(), path);
+            				}
+            			}
+            		}
+            	}
             }
             //if we don't find it, search all dependent modules
             //this will find declarations in src archives
-            for (IProject p: CeylonBuilder.getProjects()) {
+            for (IProject p: getProjects()) {
                 if (p.getName().equals(projectName)) {
-                    Modules modules = CeylonBuilder.getProjectTypeChecker(p).getContext().getModules();
+                    Modules modules = getProjectTypeChecker(p).getContext().getModules();
                     for (Module module: modules.getListOfModules()) {
                         for (Package pkg: module.getAllPackages()) { 
                             if (pkg.getQualifiedNameString().equals(packageName)) {
@@ -215,7 +220,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             element.putString("unitFileName", dec.getUnit().getFilename());
             element.putString("packageName", dec.getUnit().getPackage().getQualifiedNameString());
             IProject project = dwp.getProject();
-            element.putString("projectName", project.getName());
+            element.putString("projectName", project==null ? null : project.getName());
             element.putString("path", dwp.getPath());
         }
      }
@@ -227,10 +232,6 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         setListLabelProvider(new LabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
         setListSelectionLabelDecorator(new SelectionLabelDecorator());
-    }
-    
-    public OpenCeylonDeclarationDialog(Shell shell, boolean multi) {
-        super(shell, multi);
     }
     
     @Override
@@ -271,8 +272,22 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 DeclarationWithProject dwp2 = (DeclarationWithProject) o2;
                 int dc = dwp1.getDeclaration().getName()
                         .compareTo(dwp2.getDeclaration().getName());
-                return dc!=0 ? dc : dwp1.getProject().getName()
-                        .compareTo(dwp2.getProject().getName());
+                if (dc!=0) {
+                	return dc;
+                }
+                else if (dwp1.getProject()==dwp2.getProject()) {
+                	return 0;
+                }
+                else if (dwp1.getProject()==null) {
+                	return 1;
+                }
+                else if (dwp2.getProject()==null) {
+                	return -1;
+                }
+                else {
+                	return dwp1.getProject().getName()
+                			.compareTo(dwp2.getProject().getName());
+                }
             }
         };
     }
@@ -299,11 +314,14 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         for (IProject project: CeylonBuilder.getProjects()) {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
             for (Module m: tc.getContext().getModules().getListOfModules()) {
-                if (!m.isJava()) {
+                if (!m.isJava() || includeJava() ) {
                     for (Package p: m.getPackages()) {
                         for (Declaration dec: p.getMembers()) {
                             if (isPresentable(dec)) {
-                                DeclarationWithProject dwp = new DeclarationWithProject(dec, project, null); //TODO: figure out the full path
+                                boolean isUnversionedModule = m.getVersion()==null;
+								DeclarationWithProject dwp = new DeclarationWithProject(dec, 
+                                		isUnversionedModule ? null : project, 
+                                				null); //TODO: figure out the full path
                                 //TODO: eliminate duplicates based on the
                                 //      location of the module archive
                                 if (!set.contains(dwp)) {
@@ -316,6 +334,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
         }
+    }
+    
+    boolean includeJava() {
+    	return false;
     }
 
     private static String getLocation(DeclarationWithProject dwp) {
@@ -333,9 +355,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         else {
             Module module = dwp.getDeclaration().getUnit()
                     .getPackage().getModule();
-            return " in module " + module.getNameAsString() +
-                  (module.getVersion()==null ? "" : ":" + module.getVersion()) +
-                  " imported by project " + project.getName();
+            StringBuilder sb = new StringBuilder();
+            sb.append(" in module ").append(module.getNameAsString());
+            if (module.getVersion()!=null) sb.append(":").append(module.getVersion());
+            if (project!=null) sb.append(" imported by project ").append(project.getName());
+            return sb.toString();
         }
     }
     
@@ -350,10 +374,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         usedNames.put(dec.getName(), i+1);
     }
     
-    private boolean isPresentable(Declaration d) {
+    boolean isPresentable(Declaration d) {
         String name = d.getName();
-        return name!=null && (!(d instanceof TypeDeclaration) ||
-                Character.isUpperCase(name.charAt(0)));
+        return name!=null && !d.isAnonymous();
     }
     
     @Override
