@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATIO
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -100,7 +101,7 @@ public class AnnotationCreator extends ErrorVisitor {
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
                 for (Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
                     Annotation a= (Annotation) i.next();
-                    if (CeylonEditor.isParseAnnotation(a)) {
+                    if (isParseAnnotation(a)) {
                         model.removeAnnotation(a);
                     }
                 }
