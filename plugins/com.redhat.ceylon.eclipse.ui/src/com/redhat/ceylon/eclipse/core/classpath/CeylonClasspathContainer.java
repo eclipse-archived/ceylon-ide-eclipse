@@ -18,12 +18,11 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
@@ -38,7 +37,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -69,6 +67,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -146,7 +145,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     public static void runInitialize(final IPath containerPath, final IJavaProject project) {
     	Job job = new Job("Initializing Ceylon dependencies for project " + 
     			project.getElementName()) {
-    		@Override protected IStatus run(IProgressMonitor monitor) {			
+    		@Override 
+    		protected IStatus run(IProgressMonitor monitor) {			
     			try {
     				
         			IClasspathContainer c = getClasspathContainer(containerPath, project);
@@ -169,6 +169,17 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 						}                    
     				}
 
+    				final IProject p = project.getProject();
+    				Job job = new BuildProjectAndDependenciesJob("Initial build of project " + 
+    						p.getName(), p) {
+    					protected boolean reallyRun() {
+    						return !CeylonBuilder.isModelAvailable(p);
+    					}
+    				};
+    				job.setRule(p.getWorkspace().getRoot());
+    				job.setPriority(Job.BUILD);
+    				job.schedule(3000);
+    				
     				container.resolveClasspath(monitor, true);
     				
     				return Status.OK_STATUS;
@@ -182,6 +193,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     		}    		
     	};
     	job.setUser(false);
+    	job.setPriority(Job.BUILD);
     	job.setRule(getWorkspace().getRoot());
     	job.schedule();
     }
@@ -189,7 +201,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     public void runReconfigure() {
     	Job job = new Job("Resolving Ceylon dependencies for project " + 
                 getJavaProject().getElementName()) {
-    	    @Override protected IStatus run(IProgressMonitor monitor) {
+    	    @Override 
+    	    protected IStatus run(IProgressMonitor monitor) {
     	    	final IProject project = javaProject.getProject();
     			IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
 	    		try {
@@ -210,30 +223,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            
     	    		resolveClasspath(monitor, false);
     	    		
-    	            Job job = new Job("Rebuild dependencies of project " + project.getName()) {
-    	            	@Override
-    	            	protected IStatus run(IProgressMonitor monitor) {
-    	            		try {
-    	            			List<IBuildConfiguration> configs = new ArrayList<IBuildConfiguration>();
-    	            			configs.add(project.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
-    	            			for (IProject p: project.getReferencingProjects()) {
-    	            				if (p.isOpen()) {
-    	            					configs.add(p.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
-//    	            					project.getWorkspace().build(FULL_BUILD, monitor);
-//    	            					break;
-    	            				} 
-    	            			}
-            					project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
-            										FULL_BUILD, false, monitor);    	            			
-    	            		}
-    	            		catch (CoreException e) {
-    	            			e.printStackTrace();
-    	            		}
-    	            		return Status.OK_STATUS;
-    	            	}
-    	            };
+    	            Job job = new BuildProjectAndDependenciesJob("Rebuild of project " + 
+    	            		project.getName(), project);
     	            job.setRule(project.getWorkspace().getRoot());
-    	            job.schedule();
+    	            job.schedule(3000);
+    	            job.setPriority(Job.BUILD);
     				return Status.OK_STATUS;
     				
     	    	} 
@@ -244,7 +238,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	    	}
     	    }    		
     	};
-    	//job.setUser(true);
+    	job.setUser(false);
+    	job.setPriority(Job.BUILD);
     	job.setRule(getWorkspace().getRoot());
         job.schedule();
     }

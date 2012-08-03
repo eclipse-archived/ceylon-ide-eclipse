@@ -40,7 +40,7 @@ public class CeylonClasspathInitializer extends ClasspathContainerInitializer {
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
         if (isCeylonClasspathContainer(containerPath)) {
         	runInitialize(containerPath, project);
-        }
+        }        
     }
 
     public boolean canUpdateClasspathContainer(IPath containerPath, IJavaProject project) {
