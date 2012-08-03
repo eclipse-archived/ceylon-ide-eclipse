@@ -106,10 +106,18 @@ public class AddConstraintSatisfiesProposalOnTypeArgumentIsNotAssignable extends
     }
     
     private static List<ProducedType> determineMissingSatisfiedTypes(TypeParameter typeParam, List<TypeParameter> stTypeParams) {
+        ProducedType typeParamType = typeParam.getType();
+        Map<TypeParameter, ProducedType> substitutions = new HashMap<>();
+        for (TypeParameter stTypeParam : stTypeParams) {
+            substitutions.put(stTypeParam, typeParamType);
+        }
+        
         List<ProducedType> missingSatisfiedTypes = new ArrayList<ProducedType>();
         
         for(TypeParameter stTypeParam : stTypeParams) {
             for(ProducedType stTypeParamSatisfiedType : stTypeParam.getSatisfiedTypes()) {
+                stTypeParamSatisfiedType = stTypeParamSatisfiedType.substitute(substitutions);
+                
                 boolean isMissing = true;
                 
                 for (ProducedType typeParamSatisfiedType : typeParam.getSatisfiedTypes()) {
@@ -138,19 +146,12 @@ public class AddConstraintSatisfiesProposalOnTypeArgumentIsNotAssignable extends
     }
 
     private static String createMissingSatisfiedTypesText(TypeParameter typeParam, List<TypeParameter> stTypeParams, List<ProducedType> missingSatisfiedTypes) {
-        Map<TypeParameter, ProducedType> substitutions = new HashMap<>();
-        ProducedType typeParamType = typeParam.getType();
-        for (TypeParameter stTypeParam : stTypeParams) {
-            substitutions.put(stTypeParam, typeParamType);
-        }
-        
         StringBuffer missingSatisfiedTypesText = new StringBuffer();
         for( ProducedType missingSatisfiedType : missingSatisfiedTypes ) {
             if( missingSatisfiedTypesText.length() != 0 ) {
                 missingSatisfiedTypesText.append(" & ");
             }
-            ProducedType substitutedMissingSatisfiedType = missingSatisfiedType.substitute(substitutions);
-            missingSatisfiedTypesText.append(substitutedMissingSatisfiedType.getProducedTypeName());   
+            missingSatisfiedTypesText.append(missingSatisfiedType.getProducedTypeName());   
         }
         return missingSatisfiedTypesText.toString();
     }
