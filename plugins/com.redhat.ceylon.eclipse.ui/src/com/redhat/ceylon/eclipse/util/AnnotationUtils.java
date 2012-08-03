@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
@@ -183,8 +187,18 @@ public class AnnotationUtils {
 			Annotation annotation = (Annotation) iterator.next();
 			Position position = model.getPosition(annotation);
 			
-			if (annotation instanceof MarkerAnnotation)
-				continue;
+			if (annotation instanceof MarkerAnnotation) {
+				try {
+					if (!((MarkerAnnotation) annotation).getMarker().getType()
+							.equals(PROBLEM_MARKER_ID + ".backend")) {
+						continue;
+					}
+				} 
+				catch (CoreException e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
 			if (position == null)
 				continue;
 			if (!posPred.matchPosition(position))
@@ -225,9 +239,7 @@ public class AnnotationUtils {
      * @see IVerticalRulerHover#getHoverInfo(ISourceViewer, int)
      */
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-        List<Annotation> annotations = getAnnotationsForLine(sourceViewer, lineNumber);
-
-        return formatAnnotationList(annotations);
+        return formatAnnotationList(getAnnotationsForLine(sourceViewer, lineNumber));
     }
 
 	public static void addMessageImageAndLabel(Annotation message,
@@ -236,13 +248,7 @@ public class AnnotationUtils {
 		String text = null;
 	    if (message instanceof CeylonAnnotation) {
 	    	text = HTMLPrinter.convertToHTMLContent(message.getText());
-	    	int sev = ((CeylonAnnotation) message).getSeverity();
-	    	if (sev==IStatus.ERROR) {
-	    		icon = DocHover.fileUrl("error_obj.gif");
-	    	}
-	    	else if (sev==IStatus.WARNING) {
-	    		icon = DocHover.fileUrl("warning_obj.gif");
-	    	}
+	    	icon = getProblemIcon(((CeylonAnnotation) message).getSeverity());
 	    }
 	    else if (message instanceof RefinementAnnotation) {
 	    	Declaration dec = ((RefinementAnnotation) message).getDeclaration();
@@ -251,9 +257,34 @@ public class AnnotationUtils {
 					+ "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + ((TypeDeclaration) dec.getContainer()).getName() + 
 					"</b></tt>";
 	    }
+	    else if (message instanceof MarkerAnnotation) {
+	    	try {
+		    	Integer sev = (Integer)((MarkerAnnotation) message).getMarker().getAttribute(IMarker.SEVERITY);
+		    	if (sev==null) sev = IStatus.INFO;
+		    	else if (sev.intValue()==IMarker.SEVERITY_ERROR) sev = IStatus.ERROR;
+		    	else if (sev.intValue()==IMarker.SEVERITY_WARNING) sev = IStatus.WARNING;
+				icon = getProblemIcon(sev);
+				text = "[Backend error] " + ((MarkerAnnotation) message).getMarker().getAttribute(IMarker.MESSAGE);
+			} 
+	    	catch (CoreException e) {
+				e.printStackTrace();
+			}
+	    }
 	    if (icon!=null) {
 	    	DocHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
 	    }
+	}
+
+	public static URL getProblemIcon(int severity) {
+		if (severity==IStatus.ERROR) {
+			return DocHover.fileUrl("error_obj.gif");
+		}
+		else if (severity==IStatus.WARNING) {
+			return DocHover.fileUrl("warning_obj.gif");
+		}
+		else {
+			return null;
+		}
 	}
 
 	/**
@@ -276,7 +307,7 @@ public class AnnotationUtils {
 	    DocHover.addImageAndLabel(buffer, null, DocHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
 	    		16, 16, "Multiple messages at this line:", 20, 2);
 	    buffer.append("<hr/>");
-	    for(Annotation message: messages) {
+	    for (Annotation message: messages) {
 	    	addMessageImageAndLabel(message, buffer);
 	    }
 	    HTMLPrinter.addPageEpilog(buffer);
