@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IFile;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -15,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class RenameProposal extends ChangeCorrectionProposal {
+class RenameProposal extends ChangeCorrectionProposal implements ICompletionProposalExtension {
     
     final int offset;
     final int length;
@@ -45,5 +46,25 @@ class RenameProposal extends ChangeCorrectionProposal {
           proposals.add(new RenameProposal(problem, file, dwp.getName(), 
                   dwp.getDeclaration(), dist, change));
     }
+
+	@Override
+	public void apply(IDocument document, char trigger, int offset) {
+		apply(document);
+	}
+
+	@Override
+	public boolean isValidFor(IDocument document, int offset) {
+		return true;
+	}
+
+	@Override
+	public char[] getTriggerCharacters() {
+		return "r".toCharArray();
+	}
+
+	@Override
+	public int getContextInformationPosition() {
+		return -1;
+	}
     
 }

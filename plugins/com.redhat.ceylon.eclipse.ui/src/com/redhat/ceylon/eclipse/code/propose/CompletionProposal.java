@@ -19,7 +19,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 
-class CompletionProposal implements ICompletionProposal, 
+public class CompletionProposal implements ICompletionProposal, 
 		ICompletionProposalExtension4, ICompletionProposalExtension6 {
     
     private final String text;
@@ -124,6 +124,11 @@ class CompletionProposal implements ICompletionProposal,
 			result.append(string.substring(0,13), CeylonLabelProvider.ANN_STYLER);
 			string=string.substring(13);
 		}
+		style(result, string);
+		return result;
+	}
+
+	public static void style(StyledString result, String string) {
 		StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
 		while (tokens.hasMoreTokens()) {
 			String token = tokens.nextToken();
@@ -142,7 +147,6 @@ class CompletionProposal implements ICompletionProposal,
 				result.append(token);
 			}
 		}
-		return result;
 	}
 
 }

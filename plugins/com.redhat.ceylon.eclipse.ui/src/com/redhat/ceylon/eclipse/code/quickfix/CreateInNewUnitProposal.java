@@ -9,7 +9,9 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -17,7 +19,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
-class CreateInNewUnitProposal implements ICompletionProposal {
+class CreateInNewUnitProposal implements ICompletionProposal,
+		ICompletionProposalExtension6 {
     
     private final String desc;
     private final IFile file;
@@ -81,4 +84,9 @@ class CreateInNewUnitProposal implements ICompletionProposal {
     	def = imports(imports) + "\n\n" + def;
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
     }
+
+	@Override
+	public StyledString getStyledDisplayString() {
+		return ChangeCorrectionProposal.style(getDisplayString());
+	}
 }

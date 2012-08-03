@@ -4,7 +4,9 @@ import java.util.Collection;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -12,7 +14,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
 
-class RenameRefactoringProposal implements ICompletionProposal {
+class RenameRefactoringProposal implements ICompletionProposal,
+		ICompletionProposalExtension6 {
 
     private RenameRefactoringAction action;
     
@@ -60,5 +63,10 @@ class RenameRefactoringProposal implements ICompletionProposal {
             proposals.add(prop);
         }
     }
+
+	@Override
+	public StyledString getStyledDisplayString() {
+		return ChangeCorrectionProposal.style(getDisplayString());
+	}
 
 }

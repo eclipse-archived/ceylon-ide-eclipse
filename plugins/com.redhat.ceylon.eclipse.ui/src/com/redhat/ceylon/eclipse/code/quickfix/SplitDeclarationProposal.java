@@ -46,6 +46,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.AttributeDeclaration decNode) {
         Value dec = decNode.getDeclarationModel();
+        if (dec==null) return;
         TextChange change = new DocumentChange("Split Declaration", doc);
         change.setEdit(new MultiTextEdit());
         Integer offset = decNode.getIdentifier().getStopIndex()+1;

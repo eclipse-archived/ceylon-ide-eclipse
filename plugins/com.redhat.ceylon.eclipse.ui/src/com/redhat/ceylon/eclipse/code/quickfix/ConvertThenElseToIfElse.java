@@ -91,6 +91,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				if (attrDecl.getType() instanceof ValueModifier) {
 					ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
 					ProducedType typeModel = valueModifier.getTypeModel();
+					if (typeModel==null) return;
 					type = typeModel.getProducedTypeName();
 					
 				} else {
