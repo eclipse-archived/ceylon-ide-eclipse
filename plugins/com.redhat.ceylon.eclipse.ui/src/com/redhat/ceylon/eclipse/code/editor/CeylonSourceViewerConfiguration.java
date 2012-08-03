@@ -97,6 +97,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			for (Package p: packages) {
 				p.getMembers();
 				monitor.worked(90000/packages.size());
+				if (monitor.isCanceled()) return;
 			}
 
 			monitor.done();
