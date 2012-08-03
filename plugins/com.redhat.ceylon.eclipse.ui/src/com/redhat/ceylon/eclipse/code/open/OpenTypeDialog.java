@@ -33,6 +33,4 @@ public class OpenTypeDialog extends OpenCeylonDeclarationDialog {
         		"openTypeDialog");
     }
     
-
-
 }
