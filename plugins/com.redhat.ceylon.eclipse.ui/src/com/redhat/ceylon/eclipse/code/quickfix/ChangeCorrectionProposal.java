@@ -171,8 +171,7 @@ public class ChangeCorrectionProposal implements ICompletionProposal,
 	}
 
 	public StyledString getStyledDisplayString() {
-		String name = getName();
-		return style(name);
+		return style(getName());
 	}
 
 	public static StyledString style(String name) {
