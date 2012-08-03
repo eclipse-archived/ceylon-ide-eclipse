@@ -58,21 +58,20 @@ import com.redhat.ceylon.eclipse.util.EclipseLogger;
 public class CeylonParseController {
     
     /**
-     * The project containing the source being parsed by this 
-     * IParseController. May be null if the source isn't actually 
-     * part of an Eclipse project (e.g., a random bit of source
-     * text living outside the workspace).
+     * The project containing the source being parsed. May be 
+     * null if the source isn't actually part of an Eclipse 
+     * project (e.g., a random bit of source text living 
+     * outside the workspace).
      */
 	protected IProject project;
 
 	/**
-	 * The path to the file containing the source being parsed 
-	 * by this {@link IParseController}.
+	 * The path to the file containing the source being parsed.
 	 */
 	protected IPath filePath;
 
 	/**
-	 * The {@link MessageHandler} to which parser/compiler 
+	 * The {@link AnnotationCreator} to which parser/compiler 
 	 * messages are directed.
 	 */
 	protected AnnotationCreator handler;
@@ -88,12 +87,21 @@ public class CeylonParseController {
 
 	/**
 	 * The most-recently parsed source document. May be null 
-	 * if this parse controller has never parsed an IDocument 
-	 * before.
+	 * if this parse controller has never parsed anything.
 	 */
 	protected IDocument document;
 
+	/**
+	 * The most-recently parsed token stream. May be null if 
+	 * this parse controller has never parsed anything.
+	 */
     private List<CommonToken> tokens;
+    
+    /**
+     * The type checker associated with the most recent parse. 
+     * May be null if this parse controller has never parsed 
+     * anything.
+     */
     private TypeChecker typeChecker;
     
     /**
@@ -136,7 +144,7 @@ public class CeylonParseController {
         return null;
     }
     
-    public Tree.CompilationUnit parse(String contents, 
+    public void parse(String contents, 
     		IProgressMonitor monitor, Stager stager) {
         
     	IPath path = this.filePath;
@@ -145,7 +153,7 @@ public class CeylonParseController {
         if (path!=null) {
         	String ext = path.getFileExtension();
 			if (ext==null || !ext.equals("ceylon")) {
-        		return rootNode;
+        		return;
         	}
             if (!path.isAbsolute() && project!=null) {
                 resolvedPath = project.getFullPath().append(filePath);
@@ -161,7 +169,7 @@ public class CeylonParseController {
         VirtualFile file = createSourceCodeVirtualFile(contents, path);
         
         if (isCanceling(monitor)) {
-            return rootNode;
+            return;
         }
         
         CeylonLexer lexer = new CeylonLexer(createInputStream(file));
@@ -175,7 +183,7 @@ public class CeylonParseController {
         }
         
         if (isCanceling(monitor)) {
-            return rootNode;
+            return;
         }
         
         CeylonParser parser = new CeylonParser(tokenStream);
@@ -199,7 +207,7 @@ public class CeylonParseController {
         }
         
         if (isCanceling(monitor)) {
-            return rootNode;
+            return;
         }
         
         VirtualFile srcDir = null;        
@@ -213,14 +221,14 @@ public class CeylonParseController {
         
         if (project!=null) {
             if (!isModelAvailable(project)) {
-                return rootNode; // TypeChecking has not been performed
+                return; // TypeChecking has not been performed
             }
             typeChecker = getProjectTypeChecker(project);
             //modelLoader = getProjectModelLoader(project);
         }
         
         if (isCanceling(monitor)) {
-            return rootNode;
+            return;
         }
 
         boolean showWarnings = showWarnings(project);
@@ -230,12 +238,12 @@ public class CeylonParseController {
         		typeChecker = createTypeChecker(project, showWarnings);
     		} 
     		catch (CoreException e) {
-    		    return rootNode; 
+    		    return; 
     		}
         }
         
         if (isCanceling(monitor)) {
-            return rootNode;
+            return;
         }
 
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
@@ -247,7 +255,7 @@ public class CeylonParseController {
         	stager.afterStage(TYPE_ANALYSIS, monitor);
         }
         
-        return rootNode;
+        return;
     }
 
 	private VirtualFile createSourceCodeVirtualFile(String contents, IPath path) {
@@ -406,7 +414,8 @@ public class CeylonParseController {
 									.getPhasedUnitFromRelativePath(relPath);
 							if (pu!=null) {
 								Module m = pu.getPackage().getModule();
-								if (pp.contains(m.getNameAsString()+ '-' + m.getVersion())) { //this is a bit fragile
+								if (pp.contains(m.getNameAsString() + '-' + 
+										m.getVersion())) { //this is a bit fragile
 									return p;
 								}
 							}
@@ -517,10 +526,10 @@ public class CeylonParseController {
         return rootNode;
     }
     
-	public Tree.CompilationUnit parse(IDocument doc, 
-			IProgressMonitor monitor, Stager stager) {
+	public void parse(IDocument doc, IProgressMonitor monitor, 
+			Stager stager) {
 	    document= doc;
-	    return parse(document.get(), monitor, stager);
+	    parse(document.get(), monitor, stager);
 	}
 
 	public IProject getProject() {

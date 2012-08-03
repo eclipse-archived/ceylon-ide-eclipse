@@ -1090,7 +1090,7 @@ extends PreviousSubWordAction implements IUpdate {
             problemMarkerManager.addListener(editorIconUpdater);
 
 			parserScheduler= new CeylonParserScheduler(parseController, this, 
-					getDocumentProvider(), annotationCreator);
+					annotationCreator);
             
             addModelListener(new AdditionalAnnotationCreator(this));
 
@@ -1438,25 +1438,22 @@ extends PreviousSubWordAction implements IUpdate {
 		// annotation model (but leave the marker on the underlying resource,
 		// which presumably hasn't been changed, despite changes to the document)
 		for (int i = 0; i < markerAnnotations.size(); i++) {
-			IMarker marker = markerAnnotations.get(i).getMarker();
+			MarkerAnnotation markerAnnotation = markerAnnotations.get(i);
+			IMarker marker = markerAnnotation.getMarker();
 			try {
-				String markerType = marker.getType();
-				if (!markerType.endsWith(problemMarkerType))
-					continue;
+				if (marker.getType().equals(problemMarkerType)) {
+					if (markerParseAnnotations.get(marker)==null) {
+						model.removeAnnotation(markerAnnotation);
+					}	
+				}
 			} 
 			catch (CoreException e) {
 				// If we get a core exception here, probably something is wrong with the
 				// marker, and we probably don't want to keep any annotation that may be
 				// associated with it (I don't think)
-				model.removeAnnotation(markerAnnotations.get(i));
+				model.removeAnnotation(markerAnnotation);
 				continue;
 			}
-			if (markerParseAnnotations.get(marker) != null) {
-				continue;
-			} 
-			else {
-				model.removeAnnotation(markerAnnotations.get(i));
-			}	
 		}
     }
     
@@ -1506,7 +1503,6 @@ extends PreviousSubWordAction implements IUpdate {
     			} 
     			else if (ann instanceof Annotation) {
     				Annotation annotation = (Annotation) ann;
-
     				if (isParseAnnotation(annotation)) {
     					currentParseAnnotations.add(annotation);
     				}
@@ -1564,11 +1560,7 @@ extends PreviousSubWordAction implements IUpdate {
     }
 
     public static boolean isParseAnnotation(Annotation a) {
-        String type= a.getType();
-        return type.equals(PARSE_ANNOTATION_TYPE) || 
-               type.equals(PARSE_ANNOTATION_TYPE_ERROR) ||
-               type.equals(PARSE_ANNOTATION_TYPE_WARNING) || 
-               type.equals(PARSE_ANNOTATION_TYPE_INFO);
+        return a.getType().startsWith(PARSE_ANNOTATION_TYPE);
     }
 
     protected void doSetInput(IEditorInput input) throws CoreException {
