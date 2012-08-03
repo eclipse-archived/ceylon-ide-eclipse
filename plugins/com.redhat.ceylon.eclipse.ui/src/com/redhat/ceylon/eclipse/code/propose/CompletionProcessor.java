@@ -11,6 +11,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public class CompletionProcessor implements IContentAssistProcessor {
 	
 	private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
+	private ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
 
     private CeylonContentProposer contentProposer;
     
@@ -24,8 +25,13 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-    	return contentProposer.getContentProposals(editor.getParseController(), 
-				offset, viewer);
+    	try {
+    		return contentProposer.getContentProposals(editor.getParseController(), 
+    				offset, viewer);
+    	}
+    	catch (Exception e) {
+    		return NO_COMPLETIONS;
+    	}
     }
 
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
