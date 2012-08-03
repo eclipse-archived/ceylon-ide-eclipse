@@ -162,12 +162,23 @@ public class CeylonContentProposer {
         RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
         rtv.visit(rn);
         
+        //monitor.worked(5);
+        
         //finally, construct and sort proposals
-        return constructCompletions(offset, result.prefix, 
-                    sortProposals(result.prefix, rtv.getType(), 
-                            getProposals(node, result.prefix, result.isMemberOp, rn)),
-                    cpc, node, adjustedToken, result.isMemberOp,
-                    viewer.getDocument());
+        Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
+        
+        //monitor.worked(30);
+        
+		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, rtv.getType(), proposals);
+		
+		//monitor.worked(5);
+		
+		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, sortedProposals,
+                    cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument());
+		
+		//monitor.worked(10);
+		
+		return completions;
         
     }
 
