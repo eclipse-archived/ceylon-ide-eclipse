@@ -10,8 +10,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class CompletionProcessor implements IContentAssistProcessor {
 	
-    private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
-    private ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
+	private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
 
     private CeylonContentProposer contentProposer;
     
@@ -25,15 +24,8 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-        try {
-        	return contentProposer.getContentProposals(editor.getParseController(), offset, viewer);
-            // TODO Once we move to 3.2, delegate to the HippieProposalProcessor
-            // return hippieProcessor.computeCompletionProposals(viewer, offset);
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return NO_COMPLETIONS;
+    	return contentProposer.getContentProposals(editor.getParseController(), 
+				offset, viewer);
     }
 
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {

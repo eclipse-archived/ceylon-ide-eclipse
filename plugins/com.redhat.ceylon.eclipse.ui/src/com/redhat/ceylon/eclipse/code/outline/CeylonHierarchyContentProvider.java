@@ -1,13 +1,13 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -80,6 +80,25 @@ public final class CeylonHierarchyContentProvider
 		public void run(IProgressMonitor monitor) throws InvocationTargetException,
 				InterruptedException {
 			
+			monitor.beginTask("Building type hierarchy", 100000);
+			
+			Modules modules = editor.getParseController().getTypeChecker()
+		            .getContext().getModules();
+
+			boolean isFromUnversionedModule = declaration.getUnit().getPackage()
+					.getModule().getVersion()==null;
+
+			Set<Module> allModules = modules.getListOfModules();
+			monitor.worked(10000);
+			
+			Set<Package> packages = new HashSet<Package>();
+			for (Module m: allModules) {
+				if (m.getVersion()!=null || isFromUnversionedModule) {
+					packages.addAll(m.getPackages());
+					monitor.worked(30000/allModules.size());
+				}
+			}
+
 			subtypesOfAllTypes.put(declaration, getSubtypePathNode(declaration));
 			
 		    Declaration dec = declaration;
@@ -123,40 +142,46 @@ public final class CeylonHierarchyContentProvider
 			subtypesRoot = getSubtypeHierarchyNode(declaration);
 			supertypesRoot = getSupertypeHierarchyNode(declaration);
 			
-			Modules modules = editor.getParseController().getTypeChecker()
-		            .getContext().getModules();
-		    for (Module m: modules.getListOfModules()) {
-		        for (Package p: new ArrayList<Package>(m.getPackages())) { //workaround CME
+		    for (Module m: allModules) {
+		    	if (m.getVersion()!=null || isFromUnversionedModule) {
+		        for (Package p: packages) { //workaround CME
 		            for (Unit u: p.getUnits()) {
-		                for (Declaration d: u.getDeclarations()) {
-		                    if (d instanceof ClassOrInterface) {
-		                    	if (declaration instanceof TypeDeclaration) {
-		                    		TypeDeclaration td = (TypeDeclaration) d;
-		                    		ClassOrInterface etd = td.getExtendedTypeDeclaration();
-		                    		if (etd!=null) {
-		                    			add(td, etd);
-		                    		}
-		                    		for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-		                    			add(td, std);
-		                    		}
-		                    	}
-		                    	else if (declaration instanceof TypedDeclaration) {
-		                    		TypeDeclaration td = (TypeDeclaration) d;
-		                    		//TODO: keep the directly refined declarations in the model
-		                    		//      (get the typechecker to set this up)
-		                    		Declaration mem = td.getDirectMember(declaration.getName(), null);
-		                    		if (mem!=null) {
-		                    			for (Declaration id: td.getInheritedMembers(declaration.getName())) {
-		                    				add(mem, id);
-		                    			}
-		                    		}                        		
-		                    	}
-		                    }
-		                }
+		            	try {
+		            		for (Declaration d: u.getDeclarations()) {
+		            			if (d instanceof ClassOrInterface) {
+		            				if (declaration instanceof TypeDeclaration) {
+		            					TypeDeclaration td = (TypeDeclaration) d;
+		            					ClassOrInterface etd = td.getExtendedTypeDeclaration();
+		            					if (etd!=null) {
+		            						add(td, etd);
+		            					}
+		            					for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+		            						add(td, std);
+		            					}
+		            				}
+		            				else if (declaration instanceof TypedDeclaration) {
+		            					TypeDeclaration td = (TypeDeclaration) d;
+		            					//TODO: keep the directly refined declarations in the model
+		            					//      (get the typechecker to set this up)
+		            					Declaration mem = td.getDirectMember(declaration.getName(), null);
+		            					if (mem!=null) {
+		            						for (Declaration id: td.getInheritedMembers(declaration.getName())) {
+		            							add(mem, id);
+		            						}
+		            					}                        		
+		            				}
+		            			}
+		            		}
+		            	}
+		            	catch (Exception e) {
+		            		e.printStackTrace();
+		            	}
 		            }
+			        monitor.worked(60000/packages.size());
 		        }
+		    	}
 		    }
-			
+		    monitor.done();
 		}
 	}
 
@@ -183,8 +208,8 @@ public final class CeylonHierarchyContentProvider
 		if (newInput!=null) {
 			declaration = ((RootNode) newInput).declaration;
 			try {
-				getWorkbench().getProgressService()
-				    .busyCursorWhile(new CeylonHierarchyBuilder(declaration));
+				editor.getSite().getWorkbenchWindow().run(true, true, 
+						new CeylonHierarchyBuilder(declaration));
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
