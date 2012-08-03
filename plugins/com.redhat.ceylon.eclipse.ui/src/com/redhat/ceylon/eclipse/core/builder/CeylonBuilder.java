@@ -188,6 +188,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 						//Javac doesn't have line number 
 						//info for certain errors
 						marker.setAttribute(IMarker.LINE_NUMBER, (int)line);
+						marker.setAttribute(IMarker.CHAR_START, (int)diagnostic.getStartPosition());
+						marker.setAttribute(IMarker.CHAR_END, (int)diagnostic.getEndPosition());
 					}
 					marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
 					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
