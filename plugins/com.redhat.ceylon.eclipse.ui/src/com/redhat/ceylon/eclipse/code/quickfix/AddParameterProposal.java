@@ -52,6 +52,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.AttributeDeclaration decNode, CeylonEditor editor) {
         Value dec = decNode.getDeclarationModel();
+        if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new DocumentChange("Add Parameter", doc);
             change.setEdit(new MultiTextEdit());

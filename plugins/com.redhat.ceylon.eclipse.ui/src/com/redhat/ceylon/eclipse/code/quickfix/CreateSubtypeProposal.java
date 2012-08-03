@@ -12,7 +12,9 @@ import java.util.TreeSet;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -40,7 +42,8 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
-class CreateSubtypeProposal implements ICompletionProposal {
+class CreateSubtypeProposal implements ICompletionProposal, 
+		ICompletionProposalExtension6 {
 
     private CeylonEditor editor;
     private ProducedType type;
@@ -357,5 +360,10 @@ class CreateSubtypeProposal implements ICompletionProposal {
     		proposals.add(new CreateSubtypeProposal(editor, type));
     	}
     }
+
+	@Override
+	public StyledString getStyledDisplayString() {
+		return ChangeCorrectionProposal.style(getDisplayString());
+	}
 
 }

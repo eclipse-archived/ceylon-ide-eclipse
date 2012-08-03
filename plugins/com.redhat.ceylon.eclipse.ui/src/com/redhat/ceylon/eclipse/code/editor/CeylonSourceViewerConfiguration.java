@@ -141,7 +141,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-        return new CeylonQuickFixController(editor);
+        CeylonQuickFixController quickAssist = new CeylonQuickFixController(editor);
+        quickAssist.enableColoredLabels(true);
+		return quickAssist;
     }
 
     public CeylonAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {

@@ -150,17 +150,19 @@ public class CeylonQuickFixAssistant {
                     file, cu, proposals, node);
             if (node instanceof Tree.Declaration) {
                 Declaration d = ((Tree.Declaration) node).getDeclarationModel();
-                if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
-                        !d.isShared() && 
-                        !(d instanceof Parameter)) {
-                    addMakeSharedDecProposal(proposals, project, node);
-                }
-                if (d.isClassOrInterfaceMember() && 
-                        d.isShared() &&
-                        !d.isDefault() && !d.isFormal() &&
-                        !(d instanceof Interface) && 
-                        !(d instanceof Parameter)) {
-                    addMakeDefaultDecProposal(proposals, project, node);
+                if (d!=null) {
+                	if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
+                			!d.isShared() && 
+                			!(d instanceof Parameter)) {
+                		addMakeSharedDecProposal(proposals, project, node);
+                	}
+                	if (d.isClassOrInterfaceMember() && 
+                			d.isShared() &&
+                			!d.isDefault() && !d.isFormal() &&
+                			!(d instanceof Interface) && 
+                			!(d instanceof Parameter)) {
+                		addMakeDefaultDecProposal(proposals, project, node);
+                	}
                 }
             }
             if (node instanceof Tree.TypedDeclaration && 

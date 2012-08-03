@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import java.text.MessageFormat;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,7 +14,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.IUndoManager;
@@ -26,6 +25,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
+import com.redhat.ceylon.eclipse.code.propose.CompletionProposal;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -36,14 +36,13 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 3.2
  */
-public class ChangeCorrectionProposal implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension6 {
+public class ChangeCorrectionProposal implements ICompletionProposal, 
+		ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
 	private Change fChange;
 	private String fName;
 	private int fRelevance;
 	private Image fImage;
-	private String fCommandId;
-	//protected IDocument fDocument;
 
 	/**
 	 * Constructs a change correction proposal.
@@ -63,7 +62,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 		fChange= change;
 		fRelevance= relevance;
 		fImage= image;
-		fCommandId= null;
 	}
 
 	/*
@@ -169,24 +167,27 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 	}
 
 	public String getDisplayString() {
-		//String shortCutString= CorrectionCommandHandler.getShortCutString(getCommandId());
-		String shortCutString= getCommandId();
-		if (shortCutString != null) {
-			return MessageFormat.format("{0} ({1})", new Object[] { getName(), shortCutString });
-		}
 		return getName();
 	}
 
 	public StyledString getStyledDisplayString() {
-		StyledString str= new StyledString(getName());
+		String name = getName();
+		return style(name);
+	}
 
-		//String shortCutString= CorrectionCommandHandler.getShortCutString(getCommandId());
-		String shortCutString= getCommandId();
-		if (shortCutString != null) {
-			String decorated= MessageFormat.format("{0} ({1})", new Object[] { getName(), shortCutString });
-			return StyledCellLabelProvider.styleDecoratedString(decorated, StyledString.QUALIFIER_STYLER, str);
+	public static StyledString style(String name) {
+		StyledString result = new StyledString();
+		StringTokenizer tokens = new StringTokenizer(name, "'", false);
+		result.append(tokens.nextToken());
+		while (tokens.hasMoreTokens()) {
+			result.append('\'');
+			CompletionProposal.style(result, tokens.nextToken());
+			result.append('\'');
+			if (tokens.hasMoreTokens()) {
+				result.append(tokens.nextToken());
+			}
 		}
-		return str;
+		return result;
 	}
 
 	/**
@@ -266,21 +267,6 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
 	public void setRelevance(int relevance) {
 		fRelevance= relevance;
 	}
-
-	public String getCommandId() {
-		return fCommandId;
-	}
-
-	/**
-	 * Set the proposal id to allow assigning a shortcut to the correction proposal.
-	 *
-	 * @param commandId The proposal id for this proposal or <code>null</code> if no command
-	 * should be assigned to this proposal.
-	 */
-	public void setCommandId(String commandId) {
-		fCommandId= commandId;
-	}
-
 
 
 }
