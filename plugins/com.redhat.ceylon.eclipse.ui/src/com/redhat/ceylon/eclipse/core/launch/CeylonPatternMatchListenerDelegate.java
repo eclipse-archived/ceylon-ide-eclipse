@@ -62,6 +62,9 @@ public class CeylonPatternMatchListenerDelegate implements
 		            IPath path = new Path(file);
 		            IWorkspaceRoot root = getWorkspace().getRoot();
 		            IFile file = null;
+		            //TODO: 1. only look in Ceylon projects
+		            //      2. start bottom up looking for
+		            //         more-specific packages first
 		            for (IProject p: root.getProjects()) {
 		            	try {
 							for (IPackageFragmentRoot pfr: JavaCore.create(p)
