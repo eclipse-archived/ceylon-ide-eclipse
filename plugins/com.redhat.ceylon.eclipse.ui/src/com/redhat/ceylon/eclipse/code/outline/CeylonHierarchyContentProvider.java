@@ -96,6 +96,7 @@ public final class CeylonHierarchyContentProvider
 				if (m.getVersion()!=null || isFromUnversionedModule) {
 					packages.addAll(m.getPackages());
 					monitor.worked(30000/allModules.size());
+					if (monitor.isCanceled()) return;
 				}
 			}
 
@@ -142,6 +143,8 @@ public final class CeylonHierarchyContentProvider
 			subtypesRoot = getSubtypeHierarchyNode(declaration);
 			supertypesRoot = getSupertypeHierarchyNode(declaration);
 			
+			if (monitor.isCanceled()) return;
+			
 		    for (Module m: allModules) {
 		    	if (m.getVersion()!=null || isFromUnversionedModule) {
 		        for (Package p: packages) { //workaround CME
@@ -178,6 +181,7 @@ public final class CeylonHierarchyContentProvider
 		            	}
 		            }
 			        monitor.worked(60000/packages.size());
+					if (monitor.isCanceled()) return;
 		        }
 		    	}
 		    }
