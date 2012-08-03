@@ -16,6 +16,9 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATIO
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
+import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
+import static org.eclipse.core.resources.IMarker.SEVERITY_INFO;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,14 +26,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -122,22 +123,17 @@ public class AnnotationCreator extends ErrorVisitor {
 
     private String getAnnotationType(PositionedMessage pm) {
     	switch (pm.severity) {
-    	case IStatus.ERROR:
+    	case SEVERITY_ERROR:
     		return PARSE_ANNOTATION_TYPE_ERROR;
-    	case IStatus.WARNING:
+    	case SEVERITY_WARNING:
     		return PARSE_ANNOTATION_TYPE_WARNING;
-    	case IStatus.INFO:
+    	case SEVERITY_INFO:
     		return PARSE_ANNOTATION_TYPE_INFO;
     	default:
     		return PARSE_ANNOTATION_TYPE;            	
     	}
     }
 
-    private int getSeverity(Message error, boolean expected) {
-        return expected || error instanceof UsageWarning ? 
-        		IStatus.WARNING : IStatus.ERROR;
-    }
-    
     /*private void removeAnnotations() {
         final IDocumentProvider docProvider= fEditor.getDocumentProvider();
 

@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,7 +15,6 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -104,7 +105,8 @@ public class AnnotationUtils {
 			    annotationsAtPosition.add(annotation.getText());
 				return false;
 			}			
-		} else if (!annotationsAtPosition.contains(errorCode)) {
+		} 
+		else if (!annotationsAtPosition.contains(errorCode)) {
 		    annotationsAtPosition.add(errorCode);
 			return false;	
 		}
@@ -150,8 +152,8 @@ public class AnnotationUtils {
                 // IDocument API provides.
                 int posLine= document.getLineOfOffset(position.getOffset());
                 return line == posLine;
-            } catch (BadLocationException x) {
-            }
+            } 
+            catch (BadLocationException x) {}
         }
         return false;
     }
@@ -189,8 +191,8 @@ public class AnnotationUtils {
 			
 			if (annotation instanceof MarkerAnnotation) {
 				try {
-					if (!((MarkerAnnotation) annotation).getMarker().getType()
-							.equals(PROBLEM_MARKER_ID + ".backend")) {
+					if (((MarkerAnnotation) annotation).getMarker().getType()
+							.equals(PROBLEM_MARKER_ID)) {
 						continue;
 					}
 				} 
@@ -259,12 +261,11 @@ public class AnnotationUtils {
 	    }
 	    else if (message instanceof MarkerAnnotation) {
 	    	try {
-		    	Integer sev = (Integer)((MarkerAnnotation) message).getMarker().getAttribute(IMarker.SEVERITY);
-		    	if (sev==null) sev = IStatus.INFO;
-		    	else if (sev.intValue()==IMarker.SEVERITY_ERROR) sev = IStatus.ERROR;
-		    	else if (sev.intValue()==IMarker.SEVERITY_WARNING) sev = IStatus.WARNING;
+		    	Integer sev = (Integer)((MarkerAnnotation) message).getMarker()
+		    			.getAttribute(IMarker.SEVERITY);
 				icon = getProblemIcon(sev);
-				text = "[Backend error] " + ((MarkerAnnotation) message).getMarker().getAttribute(IMarker.MESSAGE);
+				text = "[Backend error] " + ((MarkerAnnotation) message).getMarker()
+						.getAttribute(IMarker.MESSAGE);
 			} 
 	    	catch (CoreException e) {
 				e.printStackTrace();
@@ -275,11 +276,14 @@ public class AnnotationUtils {
 	    }
 	}
 
-	public static URL getProblemIcon(int severity) {
-		if (severity==IStatus.ERROR) {
+	public static URL getProblemIcon(Integer severity) {
+		if (severity==null) {
+			return null;
+		}
+		if (severity.intValue()==SEVERITY_ERROR) {
 			return DocHover.fileUrl("error_obj.gif");
 		}
-		else if (severity==IStatus.WARNING) {
+		else if (severity.intValue()==SEVERITY_WARNING) {
 			return DocHover.fileUrl("warning_obj.gif");
 		}
 		else {

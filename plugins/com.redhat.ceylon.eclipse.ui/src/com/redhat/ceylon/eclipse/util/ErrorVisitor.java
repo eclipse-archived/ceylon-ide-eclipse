@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
@@ -18,6 +21,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public abstract class ErrorVisitor extends Visitor {
 	
     protected boolean warnForErrors = false;
+    
+    protected int getSeverity(Message error, boolean expected) {
+        return expected || error instanceof UsageWarning ? 
+        		SEVERITY_WARNING : SEVERITY_ERROR;
+    }
     
     @Override
     public void visitAny(Node node) {
