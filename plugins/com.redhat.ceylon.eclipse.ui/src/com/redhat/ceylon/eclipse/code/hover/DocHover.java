@@ -703,9 +703,16 @@ public class DocHover
 			}
 
 			if (dec.isShared() || dec.isToplevel()) {
+				String label;
+				if (pack.getNameAsString().isEmpty()) {
+					label = "in default package";
+				}
+				else {
+					label = "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
+							getPackageLabel(dec) +"</a></tt>";
+				}
 				addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-						16, 16, "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
-								getPackageLabel(dec) +"</a></tt>", 20, 2);
+						16, 16, label, 20, 2);
 				addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
 						16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
 			}
