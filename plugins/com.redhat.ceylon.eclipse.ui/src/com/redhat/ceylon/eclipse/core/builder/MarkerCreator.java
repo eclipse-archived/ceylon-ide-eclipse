@@ -6,7 +6,6 @@ import static org.eclipse.jdt.core.IJavaModelMarker.BUILDPATH_PROBLEM_MARKER;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -71,9 +70,4 @@ public class MarkerCreator extends ErrorVisitor {
 				msg.startsWith("unable to read source artifact for");
 	}
 	
-    public int getSeverity(Message error, boolean expected) {
-        return expected || error instanceof UsageWarning ? 
-        		IMarker.SEVERITY_WARNING : IMarker.SEVERITY_ERROR;
-    }
-    
 }
