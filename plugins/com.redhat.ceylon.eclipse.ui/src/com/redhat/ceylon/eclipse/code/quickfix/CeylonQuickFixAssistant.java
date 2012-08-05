@@ -59,6 +59,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -66,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -320,14 +322,12 @@ public class CeylonQuickFixAssistant {
         			project, tc, file);
         	break;
         case 2100:
+        case 2102:
         	addChangeTypeProposals(cu, node, problem, proposals, project);
         	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
         case 2101:
             AddEllipsisToSequenceParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
-            break;
-        case 2102:
-            AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
             break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
@@ -849,6 +849,41 @@ public class CeylonQuickFixAssistant {
     private void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project) {
+        if (node instanceof Tree.SimpleType) {
+            TypeDeclaration decl = ((Tree.SimpleType)node).getDeclarationModel();
+            if( decl instanceof TypeParameter ) {
+                FindStatementVisitor fsv = new FindStatementVisitor(node, false);
+                fsv.visit(cu);
+                if( fsv.getStatement() instanceof Tree.AttributeDeclaration ) {
+                    Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) fsv.getStatement();
+                    Tree.SimpleType st = (SimpleType) ad.getType();
+
+                    TypeParameter stTypeParam = null;
+                    if( st.getTypeArgumentList() != null ) {
+                        List<Tree.Type> stTypeArguments = st.getTypeArgumentList().getTypes();
+                        for (int i = 0; i < stTypeArguments.size(); i++) {
+                            Tree.SimpleType stTypeArgument = (Tree.SimpleType)stTypeArguments.get(i);
+                            if (decl.getName().equals(
+                                    stTypeArgument.getDeclarationModel().getName())) {
+                                TypeDeclaration stDecl = st.getDeclarationModel();
+                                if( stDecl != null ) {
+                                    if( stDecl.getTypeParameters() != null && stDecl.getTypeParameters().size() > i ) {
+                                        stTypeParam = stDecl.getTypeParameters().get(i);
+                                        break;
+                                    }
+                                }                            
+                            }
+                        }                    
+                    }
+
+                    if (stTypeParam != null && !stTypeParam.getSatisfiedTypes().isEmpty()) {
+                        IntersectionType it = new IntersectionType(cu.getUnit());
+                        it.setSatisfiedTypes(stTypeParam.getSatisfiedTypes());
+                        addChangeTypeProposals(proposals, problem, project, node, it.canonicalize().getType(), decl, true);
+                    }
+                }
+            }
+        }
         if (node instanceof Tree.SpecifierExpression) {
         	Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
             if (e!=null) {
@@ -872,39 +907,49 @@ public class CeylonQuickFixAssistant {
                 }
             }
             if (node instanceof Tree.BaseMemberExpression){
-            	addChangeTypeProposals(proposals, problem, project, td.getType(), 
+            	addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
             			(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);
             }
             if (node instanceof Tree.QualifiedMemberExpression){
-            	addChangeTypeProposals(proposals, problem, project, td.getType(), 
+            	addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
             			(TypedDeclaration) ((Tree.QualifiedMemberExpression) node).getDeclaration(), true);
             }
-            addChangeTypeProposals(proposals, problem, project, type, td, false);
+            addChangeTypeProposals(proposals, problem, project, node, type, td, false);
         }
     }
     
     private void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
-            ProblemLocation problem, IProject project, ProducedType type, 
-            TypedDeclaration typedDec, boolean intersect) {
-        if (typedDec!=null) {
+            ProblemLocation problem, IProject project, Node node, ProducedType type, 
+            Declaration dec, boolean intersect) {
+        if (dec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
-                if (typedDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        Tree.Type typeNode = decNode.getType();
-                        if (typeNode!=null) {
-                        	ProducedType t=typeNode.getTypeModel();
-                        	if (t!=null) {
-                            	ProducedType newType = intersect ? 
-                            			intersectionType(t, type, unit.getUnit()) :
-                            				unionType(t, type, unit.getUnit());
-                    			ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, 
-                    					proposals, typedDec, newType, getFile(unit), 
-                    					unit.getCompilationUnit());
-                        	}
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    ProducedType t = null;
+                    Node typeNode = null;
+                    
+                    if( dec instanceof TypeParameter) {
+                        t = ((TypeParameter) dec).getType();
+                        typeNode = node;
+                    }
+                    
+                    if( dec instanceof TypedDeclaration ) {
+                        TypedDeclaration typedDec = (TypedDeclaration)dec;
+                        FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
+                        getRootNode(unit).visit(fdv);
+                        Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
+                        if (decNode!=null) {
+                            typeNode = decNode.getType();
+                            if (typeNode!=null) {
+                                t=((Tree.Type)typeNode).getTypeModel();
+                            }
                         }
+                    }
+                    
+                    if (t != null && typeNode != null) {
+                        ProducedType newType = intersect ? 
+                                intersectionType(t, type, unit.getUnit()) : unionType(t, type, unit.getUnit());
+                        ChangeTypeProposal.addChangeTypeProposal(typeNode, problem, 
+                                proposals, dec, newType, getFile(unit), unit.getCompilationUnit());
                     }
                 }
             }
