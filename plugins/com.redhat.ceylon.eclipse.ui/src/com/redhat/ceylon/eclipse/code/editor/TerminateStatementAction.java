@@ -187,6 +187,20 @@ final class TerminateStatementAction extends Action {
 				super.visit(that);
 				terminate(that, CeylonLexer.RBRACE, " }");
 			}
+			@Override
+			public void visit(Tree.Condition that) {
+				super.visit(that);
+				initiate(that, CeylonLexer.LPAREN, "(");
+				//does not really work right:
+				terminate(that, CeylonLexer.RPAREN, ")");
+			}
+			@Override
+			public void visit(Tree.ForIterator that) {
+				super.visit(that);
+				initiate(that, CeylonLexer.LPAREN, "(");
+				//does not really work right:
+				terminate(that, CeylonLexer.RPAREN, ")");
+			}
 			@Override 
 			public void visit(Tree.ImportMemberOrTypeList that) {
 				super.visit(that);
@@ -208,6 +222,18 @@ final class TerminateStatementAction extends Action {
 					that instanceof Tree.InterfaceDeclaration ||
 					that instanceof Tree.SpecifiedArgument) {
 					terminate(that, CeylonLexer.SEMICOLON, ";");
+				}
+			}
+			private void initiate(Node that, int tokenType, String ch) {
+				if (that.getStartIndex()>=startOfCodeInLine &&
+					that.getStartIndex()<=endOfCodeInLine) {
+					Token et = that.getMainToken();
+					if (et==null || et.getType()!=tokenType || 
+							et.getText().startsWith("<missing ")) {
+						if (!change.getEdit().hasChildren()) {
+							change.addEdit(new InsertEdit(that.getStartIndex(), ch));
+						}
+					}
 				}
 			}
 			private void terminate(Node that, int tokenType, String ch) {
