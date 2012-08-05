@@ -15,7 +15,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -41,17 +41,17 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addChangeTypeProposal(Tree.Type type, ProblemLocation problem, 
-            Collection<ICompletionProposal> proposals, TypedDeclaration typedDec, 
+    static void addChangeTypeProposal(Node node, ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, Declaration dec, 
             ProducedType newType, IFile file, Tree.CompilationUnit cu) {
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
         String typeName = newType.getProducedTypeName();
-        int offset = type.getStartIndex();
-        int length = type.getStopIndex()-offset+1;
+        int offset = node.getStartIndex();
+        int length = node.getStopIndex()-offset+1;
         int il = importType(change, newType, cu, new HashSet<Declaration>());
         change.addEdit(new ReplaceEdit(offset, length, typeName));
-        proposals.add(new ChangeTypeProposal(problem, file, typedDec.getName(), 
+        proposals.add(new ChangeTypeProposal(problem, file, dec.getName(), 
                 typeName, offset+il, change));
     }
     
