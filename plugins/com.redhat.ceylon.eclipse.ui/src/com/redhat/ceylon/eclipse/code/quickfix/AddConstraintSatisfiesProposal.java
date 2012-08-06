@@ -165,7 +165,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     }
 
     private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, Node node, TypeParameter typeParam) {
-        List<ProducedType> missingSatisfiedTypes = new ArrayList<>();
+        List<ProducedType> missingSatisfiedTypes = new ArrayList<ProducedType>();
     
         if( node instanceof Tree.Term ) {
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
@@ -181,7 +181,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
             List<TypeParameter> stTypeParams = determineSatisfiedTypesTypeParams(cu, node, typeParam);
             if (!stTypeParams.isEmpty()) {
                 ProducedType typeParamType = typeParam.getType();
-                Map<TypeParameter, ProducedType> substitutions = new HashMap<>();
+                Map<TypeParameter, ProducedType> substitutions = new HashMap<TypeParameter, ProducedType>();
                 for (TypeParameter stTypeParam : stTypeParams) {
                     substitutions.put(stTypeParam, typeParamType);
                 }
