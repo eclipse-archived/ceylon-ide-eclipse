@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -123,8 +124,13 @@ public class CeylonNature extends ProjectNatureBase {
     		args.put("outputPath", outputPath.toString());
     		if (repositoryPaths!=null) {
     			String repositoryPath = "";
+    			boolean once = true;
     			for (String path: repositoryPaths) {
-    				repositoryPath+=path + ":";
+    				if(once)
+    					once = false;
+    				else
+    					repositoryPath += File.pathSeparator;
+    				repositoryPath += path;
     			}
     			args.put("repositoryPath", repositoryPath);
     		}
