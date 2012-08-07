@@ -1846,7 +1846,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     public static String[] getRepositoryPaths(IProject project) {
     	String paths = (String) getBuilderArgs(project).get("repositoryPath");
     	if (paths==null) {
-    		return new String[0];
+    		return getDefaultUserRepositories();
     	}
     	else {
     		return paths.split(":");
@@ -2426,5 +2426,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             ? "CeylonBuilder for unknown project" //$NON-NLS-1$
             : "CeylonBuilder for " + getProject().getName(); //$NON-NLS-1$
     }
+
+	public static String[] getDefaultUserRepositories() {
+		return new String[]{
+				CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath(),
+				System.getProperty("user.home") + "/.ceylon/repo"
+		};
+	}
 
 }
