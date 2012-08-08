@@ -15,7 +15,7 @@
 
 	<properties>
 	  <platform-version-name>indigo</platform-version-name>
-	  <tychoVersion>0.12.0</tychoVersion>
+	  <tychoVersion>0.15.0</tychoVersion>
 	  <scmBranch>trunk</scmBranch>
 	  <BUILD_ALIAS>M3</BUILD_ALIAS>
 	  <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
