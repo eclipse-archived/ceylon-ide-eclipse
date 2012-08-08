@@ -2,9 +2,14 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -27,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -41,6 +47,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class InlineRefactoring extends AbstractRefactoring {
+	
 	private final Declaration declaration;
 	private boolean delete = true;
 
@@ -59,7 +66,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	            !declaration.isDefault() &&
 	            !declaration.isFormal() &&
 	            (declaration.isToplevel() || !declaration.isShared()); //TODO temporary restriction!
-	            //TODO: && !declatation is a control structure variable 
+	            //TODO: && !declaration is a control structure variable 
 	            //TODO: && !declaration is a value with lazy init
 	}
 	
@@ -80,6 +87,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
+		final RefactoringStatus result = new RefactoringStatus();
         Tree.Declaration declarationNode=null;
         CompilationUnit declarationUnit=null;
         if (searchInEditor()) {
@@ -103,9 +111,35 @@ public class InlineRefactoring extends AbstractRefactoring {
                 ((Tree.AttributeDeclaration) declarationNode).getSpecifierOrInitializerExpression()==null ||
             declarationNode instanceof Tree.MethodDeclaration &&
                 ((Tree.MethodDeclaration) declarationNode).getSpecifierExpression()==null) {
-            return RefactoringStatus.createFatalErrorStatus("Cannot inline forward declaration " + declaration.getName());
+            return createFatalErrorStatus("Cannot inline forward declaration: " + 
+                declaration.getName());
         }
-		return new RefactoringStatus();
+        if (declarationNode instanceof Tree.MethodDefinition &&
+        		((Tree.MethodDefinition) declarationNode).getBlock().getStatements().size()!=1 ||
+        	declarationNode instanceof Tree.AttributeGetterDefinition &&
+        		((Tree.AttributeGetterDefinition) declarationNode).getBlock().getStatements().size()!=1) {
+        	return createFatalErrorStatus("Cannot inline declaration with multiple statements: " + 
+                    declaration.getName());
+        }
+		if (declarationNode instanceof Tree.AnyAttribute &&
+				((Tree.AnyAttribute) declarationNode).getDeclarationModel().isVariable()) {
+			result.merge(createWarningStatus("Inlined value is variable"));
+		}
+        declarationNode.visit(new Visitor() {
+        	@Override
+        	public void visit(Tree.BaseMemberOrTypeExpression that) {
+        		super.visit(that);
+        		if (that.getDeclaration()==null) {
+        			result.merge(createWarningStatus("Definition contains unresolved reference"));
+        		}
+        		else if (declaration.isShared() &&
+        				!that.getDeclaration().isShared()) {
+        			result.merge(createWarningStatus("Definition contains reference to unshared declaration: " +
+        					that.getDeclaration().getName()));
+        		}
+        	}
+		});
+		return result;
 	}
 
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
@@ -120,12 +154,14 @@ public class InlineRefactoring extends AbstractRefactoring {
         CompilationUnit declarationUnit=null;
         Tree.Term term = null;
         List<CommonToken> declarationTokens = null;
-        if (declaration!=null) {
+        CompilationUnit editorRootNode = editor.getParseController().getRootNode();
+		List<CommonToken> editorTokens = editor.getParseController().getTokens();
+		if (declaration!=null) {
             if (searchInEditor()) {
-                CompilationUnit cu = editor.getParseController().getRootNode();
+                CompilationUnit cu = editorRootNode;
                 if (cu.getUnit().equals(declaration.getUnit())) {
                     declarationUnit = cu;
-                    declarationTokens = editor.getParseController().getTokens();
+                    declarationTokens = editorTokens;
                 }
             }
             if (declarationUnit==null) {
@@ -148,9 +184,10 @@ public class InlineRefactoring extends AbstractRefactoring {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     TextFileChange tfc = newTextFileChange(pu);
-                    inlineInFile(tfc, cc, declarationNode, declarationUnit, 
-                            term, declarationTokens, 
-                            pu.getCompilationUnit(), pu.getTokens());
+                    CompilationUnit cu = pu.getCompilationUnit();
+					inlineInFile(tfc, cc, declarationNode, 
+							declarationUnit, term, declarationTokens, cu, 
+							pu.getTokens());
                 }
     		}
         }
@@ -158,11 +195,51 @@ public class InlineRefactoring extends AbstractRefactoring {
             DocumentChange dc = newDocumentChange();
             inlineInFile(dc, cc, declarationNode, declarationUnit, 
                     term, declarationTokens,
-                    editor.getParseController().getRootNode(), 
-                    editor.getParseController().getTokens());
+                    editorRootNode, editorTokens);
         }
         return cc;
         
+	}
+	
+	private boolean addImports(final TextChange change, 
+			final Tree.Declaration declarationNode, 
+			final Tree.CompilationUnit cu) {
+		
+		final Package decPack = declarationNode.getUnit().getPackage();
+		final Package filePack = cu.getUnit().getPackage();
+		
+		final class AddImportsVisitor extends Visitor {
+			private final Set<Declaration> already;
+			private final CompilationUnit cu;
+			private final TextChange change;
+			boolean importedFromDeclarationPackage;
+
+			private AddImportsVisitor(Set<Declaration> already, CompilationUnit cu,
+					TextChange change) {
+				this.already = already;
+				this.cu = cu;
+				this.change = change;
+			}
+
+			@Override
+			public void visit(Tree.BaseMemberOrTypeExpression that) {
+				super.visit(that);
+				if (that.getDeclaration()!=null) {
+					int result = importDeclaration(change, that.getDeclaration(), 
+							cu, declarationNode.getDeclarationModel(), already);
+					Package refPack = that.getDeclaration().getUnit().getPackage();
+					importedFromDeclarationPackage = importedFromDeclarationPackage ||
+							result!=0 &&
+							refPack.equals(decPack) && 
+							!decPack.equals(filePack); //unnecessary
+				}
+			}
+		}
+
+		final Set<Declaration> already = new HashSet<Declaration>();
+		AddImportsVisitor aiv = new AddImportsVisitor(already, cu, change);
+		declarationNode.visit(aiv);
+		return aiv.importedFromDeclarationPackage;
 	}
 
     private void inlineInFile(TextChange tfc, CompositeChange cc, 
@@ -172,38 +249,55 @@ public class InlineRefactoring extends AbstractRefactoring {
         tfc.setEdit(new MultiTextEdit());
         inlineReferences(declarationNode, declarationUnit, term, declarationTokens, 
                 cu, tokens, tfc);
+        boolean inlined = tfc.getEdit().hasChildren();
         deleteDeclaration(declarationNode, declarationUnit, cu, tokens, tfc);
-        deleteImports(tfc, declarationNode, cu, tokens);
+        boolean importsAddedToDeclarationPackage = false;
+		if (inlined) {
+			importsAddedToDeclarationPackage = addImports(tfc, declarationNode, cu);
+		}
+        deleteImports(tfc, declarationNode, cu, tokens, importsAddedToDeclarationPackage);
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
     }
 
 	private void deleteImports(TextChange tfc, Tree.Declaration declarationNode, 
-			CompilationUnit cu, List<CommonToken> tokens) {
+			CompilationUnit cu, List<CommonToken> tokens, 
+			boolean importsAddedToDeclarationPackage) {
 		for (Tree.Import i: cu.getImportList().getImports()) {
-        	for (ImportMemberOrType imt: i.getImportMemberOrTypeList().getImportMemberOrTypes()) {
+        	List<ImportMemberOrType> list = i.getImportMemberOrTypeList()
+        			.getImportMemberOrTypes();
+			for (ImportMemberOrType imt: list) {
         		Declaration d = imt.getDeclarationModel();
 				if (d!=null && d.equals(declarationNode.getDeclarationModel())) {
-        			tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
-        					imt.getStopIndex()-imt.getStartIndex()+1));
-    				int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
-    				CommonToken prev = tokens.get(ti-1);
-    				if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
-    					prev = tokens.get(ti-2);
-    				}
-    				CommonToken next = tokens.get(ti+1);
-    				if (next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
-    					next = tokens.get(ti+2);
-    				}
-    				if (prev.getType()==CeylonLexer.COMMA) {
-    					tfc.addEdit(new DeleteEdit(prev.getStartIndex(), 
-    							imt.getStartIndex()-prev.getStartIndex()));
-    				}
-    				else if (next.getType()==CeylonLexer.COMMA) {
-    					tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
-    							next.getStopIndex()-imt.getStopIndex()));
-    				}
+					if (list.size()==1 && !importsAddedToDeclarationPackage) {
+						//delete the whole import statement
+						tfc.addEdit(new DeleteEdit(i.getStartIndex(), 
+								i.getStopIndex()-i.getStartIndex()+1));
+					}
+					else {
+						//delete just the item in the import statement...
+						tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
+								imt.getStopIndex()-imt.getStartIndex()+1));
+						//...along with a comma before or after
+						int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
+						CommonToken prev = tokens.get(ti-1);
+						if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+							prev = tokens.get(ti-2);
+						}
+						CommonToken next = tokens.get(ti+1);
+						if (next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+							next = tokens.get(ti+2);
+						}
+						if (prev.getType()==CeylonLexer.COMMA) {
+							tfc.addEdit(new DeleteEdit(prev.getStartIndex(), 
+									imt.getStartIndex()-prev.getStartIndex()));
+						}
+						else if (next.getType()==CeylonLexer.COMMA) {
+							tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
+									next.getStopIndex()-imt.getStopIndex()));
+						}
+					}
         		}
         	}
         }
@@ -242,6 +336,8 @@ public class InlineRefactoring extends AbstractRefactoring {
         			throw new RuntimeException("method has multiple statements");
         		}
         		if (meth.getType() instanceof Tree.VoidModifier) {
+        			//TODO: in the case of a void method, tolerate 
+        			//      multiple statements 
         			Tree.ExpressionStatement e = (Tree.ExpressionStatement) meth.getBlock()
         					.getStatements().get(0);
         			return e.getExpression().getTerm();
