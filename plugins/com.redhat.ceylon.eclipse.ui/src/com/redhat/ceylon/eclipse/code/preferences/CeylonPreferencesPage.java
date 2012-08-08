@@ -51,6 +51,7 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -105,14 +106,10 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableExplodeModules.setSelection(false);
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
-        String defaultRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
-        String externalRepo = System.getProperty("user.home") + "/.ceylon/repo";
+        repositoryPaths = Arrays.asList(CeylonBuilder.getDefaultUserRepositories());
         repoFolders.removeAll();
-		addRepoToTable(defaultRepo);
-		addRepoToTable(externalRepo);
-        repositoryPaths.clear();
-        repositoryPaths.add(defaultRepo);
-		repositoryPaths.add(externalRepo);
+        for(String repo : repositoryPaths)
+        	addRepoToTable(repo);
         outputPath=getDefaultOutputPath(getSelectedProject());
         outputFolder.setText(outputPath.toString());
         super.performDefaults();
