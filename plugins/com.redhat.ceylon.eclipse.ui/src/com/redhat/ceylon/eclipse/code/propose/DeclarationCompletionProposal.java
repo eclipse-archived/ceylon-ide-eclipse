@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 
+import java.util.Collections;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.InsertEdit;
 
@@ -39,10 +41,12 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 		if (addimport) {
 			try {
 				InsertEdit ie = importEdit(cpc.getRootNode(), 
-					declaration.getUnit().getPackage().getNameAsString(), 
-					declaration.getName());
-				ie.apply(document);
-				offset+=ie.getText().length();
+					declaration, null, 
+					Collections.<Declaration>emptySet());
+				if (ie!=null) {
+					ie.apply(document);
+					offset+=ie.getText().length();
+				}
 						
 			} 
 			catch (Exception e) {

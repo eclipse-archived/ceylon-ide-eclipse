@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -1179,9 +1180,8 @@ public class CeylonQuickFixAssistant {
                 node instanceof Tree.SimpleType) {
             String brokenName = getIdentifyingNode(node).getText();
             for (Declaration decl: findImportCandidates(cu, brokenName)) {
-                proposals.add(createImportProposal(cu, file, 
-                        decl.getContainer().getQualifiedNameString(), 
-                        decl.getName()));
+                ICompletionProposal ip = createImportProposal(cu, file, decl);
+                if (ip!=null) proposals.add(ip);
             }
         }
     }
@@ -1204,35 +1204,44 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, IFile file,
-            String packageName, String declaration) {
+    private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
+    		IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
-        change.setEdit(importEdit(cu, packageName, declaration));
-        return new ChangeCorrectionProposal("Add import of '" + declaration + "'" + 
-                " in package " + packageName, change, 50, CeylonLabelProvider.IMPORT);
+        InsertEdit ie = importEdit(cu, declaration, null, 
+        		Collections.<Declaration>emptySet());
+        if (ie==null) return null;
+		change.setEdit(ie);
+        return new ChangeCorrectionProposal("Add import of '" + declaration.getName() + "'" + 
+                " in package " + declaration.getUnit().getPackage().getNameAsString(), 
+                change, 50, CeylonLabelProvider.IMPORT);
     }
 
-	public static InsertEdit importEdit(Tree.CompilationUnit cu, String packageName, 
-			String declaration) {
-        Tree.Import importNode = findImportNode(cu, packageName);
+	public static InsertEdit importEdit(Tree.CompilationUnit cu,
+			Declaration declaration, Declaration declarationBeingDeleted,
+			Set<Declaration> alreadyImported) {
+        Package p = declaration.getUnit().getPackage();
+		Tree.Import importNode = findImportNode(cu, p.getNameAsString());
 		if (importNode != null) {
-            int insertPosition = getBestImportMemberInsertPosition(importNode, declaration);
-            String text;
+            int insertPosition = getBestImportMemberInsertPosition(importNode, 
+            		declaration.getName());
             Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
             if (imtl.getImportWildcard()!=null) {
-                text = declaration + ", ";
-            }
-            else if (imtl.getImportMemberOrTypes().isEmpty()) {
-                text = declaration;
+        		//text = declaration + ", ";
+            	return null;
             }
             else {
-                text = ", " + declaration;
+                String text = declaration.getName();
+            	if (packageHasImports(p, imtl, declarationBeingDeleted, 
+            			alreadyImported, declaration)) {
+            		text = ", " + text;
+            	}
+            	return new InsertEdit(insertPosition, text);
             }
-            return new InsertEdit(insertPosition, text);
         } 
         else {
             int insertPosition = getBestImportInsertPosition(cu);
-            String text = "import " + packageName + " { " + declaration + " }";
+            String text = "import " + p.getNameAsString() + 
+            		" { " + declaration.getName() + " }";
             if (insertPosition==0) {
                 text = text + "\n";
             }
@@ -1241,6 +1250,25 @@ public class CeylonQuickFixAssistant {
             }
             return new InsertEdit(insertPosition, text);
         }
+	}
+
+	private static boolean packageHasImports(Package p,
+			Tree.ImportMemberOrTypeList imtl,
+			Declaration declarationBeingDeleted,
+			Set<Declaration> alreadyImported,
+			Declaration declaration) {
+		for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
+			if (!imt.getDeclarationModel().equals(declarationBeingDeleted)) {
+				return true;
+			}
+		}
+		for (Declaration d: alreadyImported) {
+			if (!d.equals(declaration) &&
+					d.getUnit().getPackage().equals(p)) {
+				return true;
+			}
+		}
+		return false;
 	}
     
     private static int getBestImportInsertPosition(Tree.CompilationUnit cu) {
@@ -1324,6 +1352,7 @@ public class CeylonQuickFixAssistant {
 			}
 		}
 	}
+	
 	public static int importTypes(TextChange tfc, Collection<ProducedType> types,
 			Tree.CompilationUnit rootNode, Set<Declaration> alreadyImported) {
 		if (types==null) return 0;
@@ -1333,6 +1362,7 @@ public class CeylonQuickFixAssistant {
 		}
 		return i;
 	}
+	
 	public static int importType(TextChange tfc, ProducedType type, 
 			Tree.CompilationUnit rootNode, Set<Declaration> alreadyImported) {
 		if (type==null) return 0;
@@ -1355,34 +1385,42 @@ public class CeylonQuickFixAssistant {
 			int result=0;
 			if (td instanceof ClassOrInterface && 
 					td.isToplevel()) {
-				Package p = td.getUnit().getPackage();
-				if (!p.getNameAsString().isEmpty() && 
-						!p.equals(rootNode.getUnit().getPackage()) &&
-						!p.getModule().getNameAsString()
-						        .equals("ceylon.language")) {
-					if (alreadyImported.add(td)) {
-						boolean imported = false;
-						for (Import i: rootNode.getUnit().getImports()) {
-							if (i.getDeclaration().equals(td)) {
-								imported = true;
-								break;
-							}
-						}
-						if (!imported) {
-							InsertEdit ie = importEdit(rootNode, 
-									((Package)td.getContainer()).getNameAsString(),
-									td.getName());
-							tfc.addEdit(ie);
-							result+=ie.getText().length();
-						}
-					}
-				}
+				result += importDeclaration(tfc, td, rootNode,
+						null, alreadyImported);
 				for (ProducedType arg: type.getTypeArgumentList()) {
 					result+=importType(tfc, arg, rootNode, alreadyImported);
 				}
 			}
 			return result;
 		}
+	}
+
+	public static int importDeclaration(TextChange tfc,
+			Declaration td, Tree.CompilationUnit rootNode,
+			Declaration declarationBeingDeleted,
+			Set<Declaration> alreadyImported) {
+		Package p = td.getUnit().getPackage();
+		if (!p.getNameAsString().isEmpty() && 
+				!p.equals(rootNode.getUnit().getPackage()) &&
+				!p.getModule().getNameAsString()
+				        .equals("ceylon.language")) {
+			if (alreadyImported.add(td)) {
+				boolean imported = false;
+				for (Import i: rootNode.getUnit().getImports()) {
+					if (i.getDeclaration().equals(td)) {
+						imported = true;
+						break;
+					}
+				}
+				if (!imported) {
+					InsertEdit ie = importEdit(rootNode, td, 
+							declarationBeingDeleted, alreadyImported);
+					if (ie!=null) tfc.addEdit(ie);
+					return ie.getText().length();
+				}
+			}
+		}
+		return 0;
 	}
 
 }
