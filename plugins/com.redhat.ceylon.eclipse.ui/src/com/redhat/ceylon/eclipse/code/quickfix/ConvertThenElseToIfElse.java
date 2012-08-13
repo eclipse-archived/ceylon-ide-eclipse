@@ -49,124 +49,127 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     static void addConvertToIfElseProposal(IDocument doc,
     			Collection<ICompletionProposal> proposals, IFile file,
     			Statement statement) {
-    	try {
-    		String action;
-    		String declaration = null;
-    		Node operation;
-    		if (statement instanceof Tree.Return) {
-    			Tree.Return returnOp = (Return) statement;
-    			action = "return ";
-    			if (returnOp.getExpression() == null || returnOp.getExpression().getTerm() == null) {
-    				return;
-    			}
-    			operation = returnOp.getExpression().getTerm();
-    			
-    		} else if (statement instanceof Tree.ExpressionStatement) {
-    			Tree.ExpressionStatement expressionStmt = (Tree.ExpressionStatement) statement;
-    			if (expressionStmt.getExpression() == null) {
-    				return;
-    			}
-    			Tree.Expression expression = expressionStmt.getExpression();
-    			if (expression.getChildren().isEmpty()) {
-    				return;
-    			}
-    			if (! (expression.getChildren().get(0) instanceof Tree.AssignOp)) {
-    				return;
-    			}
-				Tree.AssignOp assignOp = (Tree.AssignOp) expression.getChildren().get(0);
-    			action = getTerm(doc, assignOp.getLeftTerm()) + " := ";
-    			operation = assignOp.getRightTerm();
-    		} else if (statement instanceof Tree.SpecifierStatement) {
-    			Tree.SpecifierStatement specifierStmt = (Tree.SpecifierStatement) statement;
-    			action = getTerm(doc, specifierStmt.getBaseMemberExpression()) + " = ";
-    			operation = specifierStmt.getSpecifierExpression().getExpression();
-    		} else if (statement instanceof CustomTree.AttributeDeclaration) {
-    			CustomTree.AttributeDeclaration attrDecl = (CustomTree.AttributeDeclaration) statement;
-    			String identifier = getTerm(doc, attrDecl.getIdentifier());
-				String annotations = "";
-				if (!attrDecl.getAnnotationList().getAnnotations().isEmpty()) {
-					annotations = getTerm(doc, attrDecl.getAnnotationList()) + " ";
-				}
-				String type;
-				if (attrDecl.getType() instanceof ValueModifier) {
-					ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
-					ProducedType typeModel = valueModifier.getTypeModel();
-					if (typeModel==null) return;
-					type = typeModel.getProducedTypeName();
-					
-				} else {
-					type = getTerm(doc, attrDecl.getType());
-				}
-				
-				declaration = annotations + type + " " + identifier + ";";
-    			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
-    			if (sie==null) return;
-				action = identifier + " " + getToken(sie) + " ";
-    			operation = sie.getExpression().getTerm();
-    		} else {
-    			return;
-    		}
-    		
-    		String test;
-    		String elseTerm;
-    		String thenTerm;
-    		
-    		while (operation instanceof Expression) {
-    			//If Operation is enclosed in parenthesis we need to get down through them: return (test then x else y);
-    			operation = ((Expression) operation).getTerm();
-     		}
-			
-    		if (operation instanceof Tree.DefaultOp) {
-    			Tree.DefaultOp defaultOp = (Tree.DefaultOp) operation;
-    			if (defaultOp.getLeftTerm() instanceof Tree.ThenOp) {
-    				Tree.ThenOp thenOp = (ThenOp) defaultOp.getLeftTerm();
-    				thenTerm = getTerm(doc, thenOp.getRightTerm());
-    				test = getTerm(doc, thenOp.getLeftTerm());
-    			} else {
-    				Term leftTerm = defaultOp.getLeftTerm();
-					String leftTermStr = getTerm(doc, leftTerm);
-					if (leftTerm instanceof BaseMemberExpression) {
-    					thenTerm = leftTermStr;
-    					test = "exists " + leftTermStr;			
-    				} else  {
-    					String id = AbstractRefactoring.guessName(leftTerm);
-    					test = "exists " + id + " = " + leftTermStr;
-    					thenTerm = id;
-    				}	
-    			}
-    			elseTerm = getTerm(doc, defaultOp.getRightTerm());
-    		} else if (operation instanceof Tree.ThenOp) {
-    			Tree.ThenOp thenOp = (ThenOp) operation;
-    			thenTerm = getTerm(doc, thenOp.getRightTerm());
-   			 	test = getTerm(doc, thenOp.getLeftTerm());
-   			 	elseTerm = "null";
-    		} else {
-    			return;
-    		}
-
-			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
-			String indent = CeylonAutoEditStrategy.getDefaultIndent();
-			
-			test = removeEnclosingParentesis(test);
-			
-			StringBuilder replace = new StringBuilder();
-			if (declaration != null) {
-				replace.append(declaration).append("\n").append(baseIndent);
-			}
-			replace.append("if (").append(test).append(") {\n")
-					.append(baseIndent).append(indent).append(action).append(thenTerm).append(";\n")
-					.append(baseIndent).append("}\n")
-					.append(baseIndent).append("else {\n")
-					.append(baseIndent).append(indent).append(action).append(elseTerm).append(";\n")
-					.append(baseIndent).append("}");
-
-			TextChange change = new DocumentChange("Convert To if-else", doc);
-			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
-			proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), file, change));
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+    	TextChange change = createTextChange(doc, statement);
+    	if (change != null) {
+    		proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), file, change));
+    	}
     }
+
+	static TextChange createTextChange(IDocument doc, Statement statement) {
+		String action;
+		String declaration = null;
+		Node operation;
+		if (statement instanceof Tree.Return) {
+			Tree.Return returnOp = (Return) statement;
+			action = "return ";
+			if (returnOp.getExpression() == null || returnOp.getExpression().getTerm() == null) {
+				return null;
+			}
+			operation = returnOp.getExpression().getTerm();
+			
+		} else if (statement instanceof Tree.ExpressionStatement) {
+			Tree.ExpressionStatement expressionStmt = (Tree.ExpressionStatement) statement;
+			if (expressionStmt.getExpression() == null) {
+				return null;
+			}
+			Tree.Expression expression = expressionStmt.getExpression();
+			if (expression.getChildren().isEmpty()) {
+				return null;
+			}
+			if (! (expression.getChildren().get(0) instanceof Tree.AssignOp)) {
+				return null;
+			}
+			Tree.AssignOp assignOp = (Tree.AssignOp) expression.getChildren().get(0);
+			action = getTerm(doc, assignOp.getLeftTerm()) + " := ";
+			operation = assignOp.getRightTerm();
+		} else if (statement instanceof Tree.SpecifierStatement) {
+			Tree.SpecifierStatement specifierStmt = (Tree.SpecifierStatement) statement;
+			action = getTerm(doc, specifierStmt.getBaseMemberExpression()) + " = ";
+			operation = specifierStmt.getSpecifierExpression().getExpression();
+		} else if (statement instanceof CustomTree.AttributeDeclaration) {
+			CustomTree.AttributeDeclaration attrDecl = (CustomTree.AttributeDeclaration) statement;
+			String identifier = getTerm(doc, attrDecl.getIdentifier());
+			String annotations = "";
+			if (!attrDecl.getAnnotationList().getAnnotations().isEmpty()) {
+				annotations = getTerm(doc, attrDecl.getAnnotationList()) + " ";
+			}
+			String type;
+			if (attrDecl.getType() instanceof ValueModifier) {
+				ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
+				ProducedType typeModel = valueModifier.getTypeModel();
+					if (typeModel==null) {
+						return null;
+					}
+				type = typeModel.getProducedTypeName();
+			} else {
+				type = getTerm(doc, attrDecl.getType());
+			}
+			declaration = annotations + type + " " + identifier + ";";
+			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
+			if (sie==null) return null;
+			action = identifier + " " + getToken(sie) + " ";
+			operation = sie.getExpression().getTerm();
+		} else {
+			return null;
+		}
+		
+		String test;
+		String elseTerm;
+		String thenTerm;
+		
+		while (operation instanceof Expression) {
+			//If Operation is enclosed in parenthesis we need to get down through them: return (test then x else y);
+			operation = ((Expression) operation).getTerm();
+		}
+		
+		if (operation instanceof Tree.DefaultOp) {
+			Tree.DefaultOp defaultOp = (Tree.DefaultOp) operation;
+			if (defaultOp.getLeftTerm() instanceof Tree.ThenOp) {
+				Tree.ThenOp thenOp = (ThenOp) defaultOp.getLeftTerm();
+				thenTerm = removeEnclosingParentesis(getTerm(doc, thenOp.getRightTerm()));
+				test = getTerm(doc, thenOp.getLeftTerm());
+			} else {
+				Term leftTerm = defaultOp.getLeftTerm();
+				String leftTermStr = getTerm(doc, leftTerm);
+				if (leftTerm instanceof BaseMemberExpression) {
+					thenTerm = leftTermStr;
+					test = "exists " + leftTermStr;			
+				} else  {
+					String id = AbstractRefactoring.guessName(leftTerm);
+					test = "exists " + id + " = " + leftTermStr;
+					thenTerm = id;
+				}	
+			}
+			elseTerm = removeEnclosingParentesis(getTerm(doc, defaultOp.getRightTerm()));
+		} else if (operation instanceof Tree.ThenOp) {
+			Tree.ThenOp thenOp = (ThenOp) operation;
+			thenTerm = removeEnclosingParentesis(getTerm(doc, thenOp.getRightTerm()));
+		 	test = getTerm(doc, thenOp.getLeftTerm());
+		 	elseTerm = "null";
+		} else {
+			return null;
+		}
+
+		String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
+		String indent = CeylonAutoEditStrategy.getDefaultIndent();
+		
+		test = removeEnclosingParentesis(test);
+		
+		StringBuilder replace = new StringBuilder();
+		if (declaration != null) {
+			replace.append(declaration).append("\n").append(baseIndent);
+		}
+		replace.append("if (").append(test).append(") {\n")
+				.append(baseIndent).append(indent).append(action).append(thenTerm).append(";\n")
+				.append(baseIndent).append("}\n")
+				.append(baseIndent).append("else {\n")
+				.append(baseIndent).append(indent).append(action).append(elseTerm).append(";\n")
+				.append(baseIndent).append("}");
+
+		TextChange change = new DocumentChange("Convert To if-else", doc);
+		change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
+		return change;
+	}
     
 	private static String getToken(
 			SpecifierOrInitializerExpression token) {
@@ -184,7 +187,11 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     	return s;
     }
     
-    private static String getTerm(IDocument doc, Node node) throws BadLocationException {
-    	return doc.get(node.getStartIndex(), node.getStopIndex() - node.getStartIndex() + 1);
+    private static String getTerm(IDocument doc, Node node) {
+    	try {
+			return doc.get(node.getStartIndex(), node.getStopIndex() - node.getStartIndex() + 1);
+		} catch (BadLocationException e) {
+			throw new RuntimeException(e);
+		}
     }
 }

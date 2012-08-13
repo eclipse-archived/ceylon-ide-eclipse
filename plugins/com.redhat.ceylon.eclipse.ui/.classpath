@@ -15,6 +15,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.3.1-ide.jar" sourcepath="/ceylon-compiler/src"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.3.1-ide.jar" sourcepath="/ceylon-module-resolver"/>

@@ -53,67 +53,75 @@ class InvertIfElse extends ChangeCorrectionProposal {
     			Collection<ICompletionProposal> proposals, IFile file,
     			Statement statement) {
     	try {
-    		if (! (statement instanceof Tree.IfStatement)) {
-    			return;
-			}
-    		IfStatement ifStmt = (IfStatement) statement;
-    		if (ifStmt.getElseClause() == null) {
-    			return;
+    		TextChange change = createTextChange(doc, statement);
+    		if (change != null) {
+    			proposals.add(new InvertIfElse(statement.getStartIndex(), file, change));
     		}
-    		IfClause ifClause = ifStmt.getIfClause();
-    		Block ifBlock = ifClause.getBlock();
-    		Block elseBlock = ifStmt.getElseClause().getBlock();
-    		Condition ifCondition = ifClause.getCondition();
-    		
-    		String test = null;
-    		String term = getTerm(doc, ifCondition);
-    		if (term.equals("(true)")) {
-    			test = "false";
-    		} else if (term.equals("(false)")) {
-    			test = "true";
-    		} else if (ifCondition instanceof BooleanCondition) {
-    			BooleanCondition boolCond = (BooleanCondition) ifCondition;
-    			Term bt = boolCond.getExpression().getTerm();
-    			if (bt instanceof NotOp) {
-    				test = removeEnclosingParenthesis(getTerm(doc, ((NotOp) bt).getTerm()));
-    			} else if (bt instanceof EqualityOp) {
-    				test = getInvertedEqualityTest(doc, (EqualityOp)bt);
-    			} else if (bt instanceof ComparisonOp) {
-    				test = getInvertedComparisonTest(doc, (ComparisonOp)bt);
-    			} else if (! (bt instanceof Tree.OperatorExpression) || bt instanceof Tree.UnaryOperatorExpression) {
-    				term = removeEnclosingParenthesis(term);
-    			}
-    		} else {
-   				term = removeEnclosingParenthesis(term);
-    		}
-    		if (test == null) {
-    			 test = "!" + term;
-    		}
-			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
-			String indent = CeylonAutoEditStrategy.getDefaultIndent();
-
-			String elseStr = getTerm(doc, elseBlock);
-			elseStr = addEnclosingBraces(elseStr, baseIndent, indent);
-    		test = removeEnclosingParenthesis(test);
-
-			StringBuilder replace = new StringBuilder();
-			replace.append("if (").append(test).append(") ")
-					.append(elseStr);
-					if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-						replace.append("\n").append(baseIndent);
-					} else {
-						replace.append(" ");
-					}
-					replace.append("else ")
-					.append(getTerm(doc, ifBlock));
-
-			TextChange change = new DocumentChange("Invert if-else", doc);
-			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
-			proposals.add(new InvertIfElse(statement.getStartIndex(), file, change));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
+
+	static TextChange createTextChange(IDocument doc, Statement statement)
+			throws BadLocationException {
+		if (! (statement instanceof Tree.IfStatement)) {
+			return null;
+		}
+		IfStatement ifStmt = (IfStatement) statement;
+		if (ifStmt.getElseClause() == null) {
+			return null;
+		}
+		IfClause ifClause = ifStmt.getIfClause();
+		Block ifBlock = ifClause.getBlock();
+		Block elseBlock = ifStmt.getElseClause().getBlock();
+		Condition ifCondition = ifClause.getCondition();
+		
+		String test = null;
+		String term = getTerm(doc, ifCondition);
+		if (term.equals("(true)")) {
+			test = "false";
+		} else if (term.equals("(false)")) {
+			test = "true";
+		} else if (ifCondition instanceof BooleanCondition) {
+			BooleanCondition boolCond = (BooleanCondition) ifCondition;
+			Term bt = boolCond.getExpression().getTerm();
+			if (bt instanceof NotOp) {
+				test = removeEnclosingParenthesis(getTerm(doc, ((NotOp) bt).getTerm()));
+			} else if (bt instanceof EqualityOp) {
+				test = getInvertedEqualityTest(doc, (EqualityOp)bt);
+			} else if (bt instanceof ComparisonOp) {
+				test = getInvertedComparisonTest(doc, (ComparisonOp)bt);
+			} else if (! (bt instanceof Tree.OperatorExpression) || bt instanceof Tree.UnaryOperatorExpression) {
+				term = removeEnclosingParenthesis(term);
+			}
+		} else {
+			term = removeEnclosingParenthesis(term);
+		}
+		if (test == null) {
+			 test = "!" + term;
+		}
+		String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
+		String indent = CeylonAutoEditStrategy.getDefaultIndent();
+
+		String elseStr = getTerm(doc, elseBlock);
+		elseStr = addEnclosingBraces(elseStr, baseIndent, indent);
+		test = removeEnclosingParenthesis(test);
+
+		StringBuilder replace = new StringBuilder();
+		replace.append("if (").append(test).append(") ")
+				.append(elseStr);
+				if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
+					replace.append("\n").append(baseIndent);
+				} else {
+					replace.append(" ");
+				}
+				replace.append("else ")
+				.append(getTerm(doc, ifBlock));
+
+		TextChange change = new DocumentChange("Invert if-else", doc);
+		change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
+		return change;
+	}
 
 	private static String getInvertedEqualityTest(IDocument doc, EqualityOp eqyalityOp)
 			throws BadLocationException {
