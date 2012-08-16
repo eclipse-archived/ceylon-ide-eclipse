@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 import com.redhat.ceylon.compiler.java.codegen.BoxingDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 
@@ -12,23 +13,37 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 	}
 
 	private boolean isCeylonBoolean(ProducedType type) {
-		return type.isSubtypeOf(type.getDeclaration().getUnit().getBooleanDeclaration().getType())
+		return type.isSubtypeOf(unit(type).getBooleanDeclaration().getType())
 				&& !(type.getDeclaration() instanceof BottomType);
 	}
 
 	private boolean isCeylonString(ProducedType type) {
-		return type.getDeclaration().getUnit().getStringDeclaration() == type.getDeclaration();
+		return unit(type).getStringDeclaration() == type.getDeclaration();
+	}
+
+	private Unit unit(ProducedType type) {
+		return type.getDeclaration().getUnit();
 	}
 
 	private boolean isCeylonInteger(ProducedType type) {
-		return type.getDeclaration().getUnit().getIntegerDeclaration() == type.getDeclaration();
+		return unit(type).getIntegerDeclaration() == type.getDeclaration();
 	}
 
 	private boolean isCeylonFloat(ProducedType type) {
-		return type.getDeclaration().getUnit().getFloatDeclaration() == type.getDeclaration();
+		return unit(type).getFloatDeclaration() == type.getDeclaration();
 	}
 
 	private boolean isCeylonCharacter(ProducedType type) {
-		return type.getDeclaration().getUnit().getCharacterDeclaration() == type.getDeclaration();
+		return unit(type).getCharacterDeclaration() == type.getDeclaration();
+	}
+
+	@Override
+	protected boolean isNothing(ProducedType type) {
+		return unit(type).getNothingDeclaration() == type.getDeclaration();
+	}
+
+	@Override
+	protected boolean isObject(ProducedType type) {
+		return unit(type).getObjectDeclaration() == type.getDeclaration();
 	}
 }

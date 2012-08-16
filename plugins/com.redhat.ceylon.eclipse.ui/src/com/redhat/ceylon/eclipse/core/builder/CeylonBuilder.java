@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.builder;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
-import static com.redhat.ceylon.compiler.java.util.Util.makeRepositoryManager;
 import static com.redhat.ceylon.compiler.java.util.Util.quoteIfJavaKeyword;
 import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getPhasedUnit;
@@ -73,7 +72,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
+import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
@@ -87,7 +89,6 @@ import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.PhasedUnitsManager;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
-import com.redhat.ceylon.compiler.java.util.ShaSigner;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
@@ -1335,7 +1336,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             });
 
         List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(makeRepositoryManager(repos, 
+        typeCheckerBuilder.setRepositoryManager(CeylonUtils.makeRepositoryManager(repos, 
         		getCeylonModulesOutputDirectory(project).getAbsolutePath(), 
         		new EclipseLogger()));
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
@@ -2376,15 +2377,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 	        }
         }
         final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
-        class ConsoleLog extends Log {
+        class ConsoleLog implements Logger {
+        	PrintWriter writer;
             ConsoleLog() {
-                super(dummyContext, new PrintWriter(System.out)); //new PrintWriter(getConsoleStream()));
+                writer = new PrintWriter(System.out); //new PrintWriter(getConsoleStream()));
             }
+
+			@Override
+			public void error(String str) {
+				writer.append("Error: " + str + "\n");
+			}
+
+			@Override
+			public void warning(String str) {
+				writer.append("Warning: " + str + "\n");
+			}
+
+			@Override
+			public void info(String str) {
+			}
+
+			@Override
+			public void debug(String str) {
+			}
         }
         ConsoleLog log = new ConsoleLog();
-        Options options = Options.instance(dummyContext);
         for (File moduleJar: moduleJars) {
-			ShaSigner.sign(moduleJar, log, options);
+			ShaSigner.sign(moduleJar, log, false);
         }
     }
 
