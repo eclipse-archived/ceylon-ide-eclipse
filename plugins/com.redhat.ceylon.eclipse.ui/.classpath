@@ -7,6 +7,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-0.4-ide.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
 			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
