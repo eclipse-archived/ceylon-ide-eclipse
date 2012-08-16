@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.InsertEdit;
@@ -40,10 +41,9 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 	public void apply(IDocument document) {
 		if (addimport) {
 			try {
-				InsertEdit ie = importEdit(cpc.getRootNode(), 
-					declaration, null, 
-					Collections.<Declaration>emptySet());
-				if (ie!=null) {
+				List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
+					Collections.singleton(declaration), null);
+				for (InsertEdit ie: ies) {
 					ie.apply(document);
 					offset+=ie.getText().length();
 				}

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
 import java.util.Collection;
@@ -49,7 +50,9 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         int il;
         if (infType!=null) {
         	explicitType = infType.getProducedTypeName();
-            il = importType(change, infType, cu, new HashSet<Declaration>());
+            HashSet<Declaration> decs = new HashSet<Declaration>();
+			importType(decs, infType, cu);
+			il = applyImports(change, decs, cu);
         }
         else {
             explicitType = "Object";

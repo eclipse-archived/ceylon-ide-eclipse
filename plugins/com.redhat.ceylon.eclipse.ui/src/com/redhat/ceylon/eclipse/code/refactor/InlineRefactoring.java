@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
@@ -210,26 +211,20 @@ public class InlineRefactoring extends AbstractRefactoring {
 		
 		final class AddImportsVisitor extends Visitor {
 			private final Set<Declaration> already;
-			private final CompilationUnit cu;
-			private final TextChange change;
 			boolean importedFromDeclarationPackage;
 
-			private AddImportsVisitor(Set<Declaration> already, CompilationUnit cu,
-					TextChange change) {
+			private AddImportsVisitor(Set<Declaration> already) {
 				this.already = already;
-				this.cu = cu;
-				this.change = change;
 			}
 
 			@Override
 			public void visit(Tree.BaseMemberOrTypeExpression that) {
 				super.visit(that);
 				if (that.getDeclaration()!=null) {
-					int result = importDeclaration(change, that.getDeclaration(), 
-							cu, declarationNode.getDeclarationModel(), already);
+					importDeclaration(already, that.getDeclaration(), cu);
 					Package refPack = that.getDeclaration().getUnit().getPackage();
 					importedFromDeclarationPackage = importedFromDeclarationPackage ||
-							result!=0 &&
+							//result!=0 &&
 							refPack.equals(decPack) && 
 							!decPack.equals(filePack); //unnecessary
 				}
@@ -237,8 +232,9 @@ public class InlineRefactoring extends AbstractRefactoring {
 		}
 
 		final Set<Declaration> already = new HashSet<Declaration>();
-		AddImportsVisitor aiv = new AddImportsVisitor(already, cu, change);
+		AddImportsVisitor aiv = new AddImportsVisitor(already);
 		declarationNode.visit(aiv);
+		applyImports(change, already, declarationNode.getDeclarationModel(), cu);
 		return aiv.importedFromDeclarationPackage;
 	}
 

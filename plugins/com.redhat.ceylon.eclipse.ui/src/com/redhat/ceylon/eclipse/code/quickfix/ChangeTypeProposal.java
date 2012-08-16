@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
 import java.util.Collection;
@@ -49,7 +50,9 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
         String typeName = newType.getProducedTypeName();
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
-        int il = importType(change, newType, cu, new HashSet<Declaration>());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+		importType(decs, newType, cu);
+		int il=applyImports(change, decs, cu);
         change.addEdit(new ReplaceEdit(offset, length, typeName));
         proposals.add(new ChangeTypeProposal(problem, file, dec.getName(), 
                 typeName, offset+il, change));

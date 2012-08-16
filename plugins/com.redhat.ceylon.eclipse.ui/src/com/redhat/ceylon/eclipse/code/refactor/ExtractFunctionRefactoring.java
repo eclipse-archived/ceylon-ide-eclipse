@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -363,7 +364,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 ending = "return ";
                 if (explicitType || dec.isToplevel()) {
                 	type = returnType.getProducedTypeName();
-                	importType(tfc, returnType, rootNode, new HashSet<Declaration>());
+                	HashSet<Declaration> decs = new HashSet<Declaration>();
+					importType(decs, returnType, rootNode);
+					applyImports(tfc, decs, rootNode);
                 }
                 else {
                 	type = "function";
@@ -422,7 +425,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         
         String params = "";
         String args = "";
-        Set<Declaration> done = new HashSet<Declaration>();
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+		Set<Declaration> done = decs;
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: localRefs) {
             if (done.add(bme.getDeclaration())) {
@@ -463,7 +467,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null) {
         	if (explicitType||dec.isToplevel()) {
         		content = returnType.getProducedTypeName();
-        		importType(tfc, returnType, rootNode, new HashSet<Declaration>());
+        		importType(decs, returnType, rootNode);
+        		applyImports(tfc, decs, rootNode);
         	}
         	else {
         		content = "function";
