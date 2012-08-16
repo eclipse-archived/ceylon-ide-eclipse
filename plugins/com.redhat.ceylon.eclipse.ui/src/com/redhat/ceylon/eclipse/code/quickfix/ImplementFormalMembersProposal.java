@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMA
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
 
@@ -88,9 +89,10 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, false, indent))
                     .append(indentAfter);
-                importSignatureTypes(d, cu, change, already);
+                importSignatureTypes(d, cu, already);
             }
         }
+        applyImports(change, already, cu);
         change.addEdit(new InsertEdit(offset, result.toString()));
         proposals.add(new ImplementFormalMembersProposal(offset, file, change));
     }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeProposal.subtypeDeclaration;
@@ -67,16 +68,16 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                 		.replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 
                 		cu.getUnit().getPackage(), true);
-                int shift=0;
             	HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {
-                	shift+=importType(change, pt, cu, already);
+                	importType(already, pt, cu);
                 }
+                int il = applyImports(change, already, cu);
 				String dec = cs.getDefinition().replace("$className", "my" + name) + "\n";
                 dec = dec.replaceAll("\n", "\n" + getIndent(node, doc));
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateObjectProposal(type, 
-                        offset+7+shift, name.length()+2, file, change));
+                        offset+7+il, name.length()+2, file, change));
             }
         }
     }

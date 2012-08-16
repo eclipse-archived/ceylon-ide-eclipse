@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importTypes;
@@ -23,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
 class CreateProposal extends ChangeCorrectionProposal {
@@ -71,7 +73,7 @@ class CreateProposal extends ChangeCorrectionProposal {
         return doc;
     }
 
-    static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
+	static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
     		String def, String desc, Image image, Declaration typeDec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.Body body, ProducedType returnType, 
             List<ProducedType> paramTypes) {
@@ -95,10 +97,11 @@ class CreateProposal extends ChangeCorrectionProposal {
             indentAfter = "\n" + getIndent(statement, doc);
         }
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-		int il = importType(change, returnType, unit.getCompilationUnit(), 
-        		alreadyImported);
-		il+=importTypes(change, paramTypes, unit.getCompilationUnit(), alreadyImported);
-        change.addEdit(new InsertEdit(offset, indent+def+indentAfter));
+		CompilationUnit cu = unit.getCompilationUnit();
+		importType(alreadyImported, returnType, cu);
+		importTypes(alreadyImported, paramTypes, cu);
+		int il = applyImports(change, alreadyImported, cu);
+		change.addEdit(new InsertEdit(offset, indent+def+indentAfter));
         proposals.add(new CreateProposal(def, 
                 "Create " + desc + " in '" + typeDec.getName() + "'", 
                 image, indent.length(), offset+il, file, change));
@@ -115,9 +118,10 @@ class CreateProposal extends ChangeCorrectionProposal {
         int offset = statement.getStartIndex();
         def = def.replace("$indent", indent);
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-		int il = importType(change, returnType, unit.getCompilationUnit(), 
-        		alreadyImported);
-		il+=importTypes(change, paramTypes, unit.getCompilationUnit(), alreadyImported);
+		CompilationUnit cu = unit.getCompilationUnit();
+		importType(alreadyImported, returnType, cu);
+		importTypes(alreadyImported, paramTypes, cu);
+		int il = applyImports(change, alreadyImported, cu);
         change.addEdit(new InsertEdit(offset, def+"\n"+indent));
         proposals.add(new CreateProposal(def, 
                 (local ? "Create local " : "Create toplevel ") + desc, 
@@ -150,8 +154,10 @@ class CreateProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
-        int il = importType(change, returnType, unit.getCompilationUnit(), 
-        		new HashSet<Declaration>());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+		CompilationUnit cu = unit.getCompilationUnit();
+		importType(decs, returnType, cu);
+		int il = applyImports(change, decs, cu);
         change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
@@ -182,8 +188,10 @@ class CreateProposal extends ChangeCorrectionProposal {
             offset2 = statement.getStopIndex()+1;
             indentAfter = "";
         }
-        int il = importType(change, returnType, unit.getCompilationUnit(), 
-        		new HashSet<Declaration>());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+		Tree.CompilationUnit cu = unit.getCompilationUnit();
+		importType(decs, returnType, cu);
+		int il = applyImports(change, decs, cu);
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateProposal(pdef, 

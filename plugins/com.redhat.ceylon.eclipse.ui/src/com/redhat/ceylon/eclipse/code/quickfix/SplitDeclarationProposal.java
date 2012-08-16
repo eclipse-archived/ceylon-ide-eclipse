@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
@@ -9,7 +10,6 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -63,7 +63,9 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
 			}
 			else {
 				explicitType = infType.getProducedTypeName();
-				il=importType(change, infType, cu, new HashSet<Declaration>());
+				HashSet<Declaration> decs = new HashSet<Declaration>();
+				importType(decs, infType, cu);
+				il=applyImports(change, decs, cu);
 			}
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }

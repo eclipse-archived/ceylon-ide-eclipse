@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -90,7 +91,11 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 			}
 		}*/
 		ProducedType type = node.getUnit().denotableType(term.getTypeModel());
-		if (explicitType) importType(tfc, type, rootNode, new HashSet<Declaration>());
+		if (explicitType) {
+			HashSet<Declaration> decs = new HashSet<Declaration>();
+			importType(decs, type, rootNode);
+			applyImports(tfc, decs, rootNode);
+		}
 		String dec = (explicitType ? type.getProducedTypeName() : "value") + " " + 
         				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statNode.getStartIndex(),

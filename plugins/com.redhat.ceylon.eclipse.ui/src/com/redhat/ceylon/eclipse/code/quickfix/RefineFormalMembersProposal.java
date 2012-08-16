@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
@@ -147,9 +148,10 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, isInterface, indent))
                     .append(indentAfter);
-                importSignatureTypes(d, cu, change, already);
+                importSignatureTypes(d, cu, already);
             }
         }
+        applyImports(change, already, cu);
         change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {

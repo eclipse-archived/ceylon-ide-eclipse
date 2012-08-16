@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
 
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 final class RefinementCompletionProposal extends CompletionProposal {
@@ -48,7 +50,10 @@ final class RefinementCompletionProposal extends CompletionProposal {
 			throws BadLocationException {
 		DocumentChange tc = new DocumentChange("imports", document);
 		tc.setEdit(new MultiTextEdit());
-		importSignatureTypes(declaration, cpc.getRootNode(), tc, new HashSet<Declaration>());
+		HashSet<Declaration> decs = new HashSet<Declaration>();
+		CompilationUnit cu = cpc.getRootNode();
+		importSignatureTypes(declaration, cu, decs);
+		applyImports(tc, decs, cu);
 		return tc;
 	}
 
