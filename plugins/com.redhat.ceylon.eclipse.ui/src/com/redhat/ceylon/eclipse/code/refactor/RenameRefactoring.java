@@ -62,7 +62,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	}
 	
 	@Override
-	boolean isEnabled() {
+	public boolean isEnabled() {
 	    return declaration!=null &&
 	            !(declaration.getUnit() instanceof ExternalUnit) &&
 	            belongsToProject(declaration.getUnit(), project);
