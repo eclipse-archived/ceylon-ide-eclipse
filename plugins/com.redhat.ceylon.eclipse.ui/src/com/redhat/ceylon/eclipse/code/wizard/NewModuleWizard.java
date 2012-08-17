@@ -35,20 +35,19 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                             "`.\"\nvoid run() {\n    \n}", getShell());
             op.run(monitor);
             result = op.getResult();
+
             new FileCreationOp(page.getSourceDir(), 
                     page.getPackageFragment(), "module", 
                     page.isIncludePreamble(), 
-                    "Module module {\n    name='" + 
-                            page.getPackageFragment().getElementName() + 
-                            "';\n    version='" + version + "';\n}", getShell())
+                    "module " + page.getPackageFragment().getElementName() + " '" + version + "' {} \n", 
+                    getShell())
                 .run(monitor);
+
             new FileCreationOp(page.getSourceDir(), 
                     page.getPackageFragment(), "package", 
                     page.isIncludePreamble(), 
-                    "Package package {\n    name='" + 
-                             page.getPackageFragment().getElementName() + 
-                             "';\n    shared=" + page.isShared() + ";\n}", 
-                             getShell())
+                    (page.isShared() ? "shared " : "") + "package " + page.getPackageFragment().getElementName() + ";\n",
+                    getShell())
                 .run(monitor);
         }
         public IFile getResult() {

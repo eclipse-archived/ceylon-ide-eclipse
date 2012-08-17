@@ -40,10 +40,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                 page.getPackageFragment(), "package", 
                 page.isIncludePreamble(), 
-                "Package package {\n    name='" + 
-                         page.getPackageFragment().getElementName() + 
-                         "';\n    shared=" + page.isShared() + ";\n}",
-                         getShell());
+                (page.isShared() ? "shared " : "") + "package " + page.getPackageFragment().getElementName() + ";\n",
+                getShell());
         try {
             getContainer().run(true, true, op);
         } 
