@@ -203,6 +203,7 @@ public class CeylonQuickFixAssistant {
             InvertIfElse.addReverseIfElseProposal(doc, proposals, file, statement);
             
             ConvertGetterToMethodProposal.addConvertGetterToMethodProposal(proposals, editor, node);
+            ConvertMethodToGetterProposal.addConvertMethodToGetterProposal(proposals, editor, node);
         }
 
         CreateSubtypeProposal.add(proposals, editor);

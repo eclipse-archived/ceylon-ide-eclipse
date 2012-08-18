@@ -104,4 +104,11 @@ class FindInvocationVisitor extends Visitor {
         super.visit(that);
         current=oc;
     }
+    @Override
+    public void visit(Tree.BaseMemberExpression that) {
+        if (that == node) {
+            result = current;
+        }
+        super.visit(that);
+    }
 }
