@@ -11,6 +11,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
@@ -49,6 +50,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -402,18 +404,28 @@ public class CeylonContentProposer {
     private static void addPackageCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
             List<ICompletionProposal> result) {
-        StringBuilder fullPath = new StringBuilder();
+        String fullPath = fullPath(offset, prefix, path);
+        addPackageCompletions(offset, prefix, node, result, fullPath.length(), fullPath+prefix, cpc);
+    }
+
+    private static void addModuleCompletions(CeylonParseController cpc, 
+            int offset, String prefix, Tree.ImportPath path, Node node, 
+            List<ICompletionProposal> result) {
+        String fullPath = fullPath(offset, prefix, path);
+        addModuleCompletions(offset, prefix, node, result, fullPath.length(), fullPath+prefix, cpc);
+    }
+
+	private static String fullPath(int offset, String prefix,
+			Tree.ImportPath path) {
+		StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
             for (int i=0; i<path.getIdentifiers().size(); i++) {
                 fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
             }
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }
-        int len = fullPath.length();
-        fullPath.append(prefix);
-        String pfp = fullPath.toString();
-        addPackageCompletions(offset, prefix, node, result, len, pfp, cpc);
-    }
+		return fullPath.toString();
+	}
 
     private static void addPackageCompletions(int offset, String prefix,
             Node node, List<ICompletionProposal> result, int len, String pfp,
@@ -445,7 +457,6 @@ public class CeylonContentProposer {
                             }
                         }
                         if (!already) {
-                        	//TOOD: render HTML describing the package!
                             result.add(new CompletionProposal(offset, prefix, PACKAGE, 
                                     pkg, pkg.substring(len), false) {
                             	@Override
@@ -460,6 +471,28 @@ public class CeylonContentProposer {
         }
     }
     
+    private static void addModuleCompletions(int offset, String prefix,
+    		Node node, List<ICompletionProposal> result, int len, String pfp,
+    		final CeylonParseController cpc) {
+    	TypeChecker tc = cpc.getTypeChecker();
+    	if (tc!=null) {
+    		for (Module m: tc.getContext().getModules().getListOfModules()) {
+    			String mod = m.getNameAsString();
+    			if (!mod.isEmpty() && mod.startsWith(pfp) &&
+    					!mod.equals("default")) {
+    				result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+    						mod, mod.substring(len), false) {
+    					//TOOD: render HTML describing the module!
+    					/*@Override
+						public String getAdditionalProposalInfo() {
+							return getDocumentationFor(cpc, p);
+						}*/
+    				});
+    			}
+    		}
+    	}
+    }
+
     private static boolean isIdentifierOrKeyword(Token token) {
         int type = token.getType();
         return type==LIDENTIFIER || 
@@ -469,15 +502,33 @@ public class CeylonContentProposer {
                 keywords.contains(token.getText());
     }
     
-    private static ICompletionProposal[] constructCompletions(int offset, String prefix, 
-            Set<DeclarationWithProximity> set, CeylonParseController cpc, Node node, 
+    private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
+            Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
             CommonToken token, boolean memberOp, IDocument doc) {
-        List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+        final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
+        else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
+            addModuleCompletions(cpc, offset, prefix, null, node, result);
+        }
         else if (node instanceof Tree.ImportPath) {
-            addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+        	new Visitor() {
+        		@Override
+        		public void visit(Tree.Import that) {
+        			super.visit(that);
+        			if (that.getImportPath()==node) {
+        	            addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+        			}
+        		}
+        		@Override
+        		public void visit(Tree.ImportModule that) {
+        			super.visit(that);
+        			if (that.getImportPath()==node) {
+        	            addModuleCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+        			}
+        		}
+			}.visit(cpc.getRootNode());
         }
         else if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: set) {
