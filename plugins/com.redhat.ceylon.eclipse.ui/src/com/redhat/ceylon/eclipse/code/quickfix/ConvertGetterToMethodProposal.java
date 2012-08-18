@@ -40,6 +40,7 @@ public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
     private static void addConvertGetterToMethodProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, Getter getter) {
         try {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
+                @Override
                 public String getName() {
                     return "Convert getter to method";
                 };

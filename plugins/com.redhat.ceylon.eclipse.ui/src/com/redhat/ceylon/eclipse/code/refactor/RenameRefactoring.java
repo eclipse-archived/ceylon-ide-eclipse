@@ -130,12 +130,12 @@ public class RenameRefactoring extends AbstractRefactoring {
         	FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
         	root.visit(frv);
         	for (Node node: frv.getNodes()) {
-                renameNode(tfc, node);
+                renameNode(tfc, node, root);
         	}
         	FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
         	root.visit(fdv);
         	for (Tree.Declaration node: fdv.getDeclarationNodes()) {
-        	    renameNode(tfc, node);
+        	    renameNode(tfc, node, root);
         	}
         }
         if (tfc.getEdit().hasChildren()) {
@@ -143,7 +143,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
 
-	private void renameNode(TextChange tfc, Node node) {
+	protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
 	    Node identifyingNode = getIdentifyingNode(node);
 		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
 		        identifyingNode.getText().length(), newName));
