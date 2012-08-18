@@ -967,8 +967,8 @@ public class CeylonQuickFixAssistant {
         FindInvocationVisitor fav = new FindInvocationVisitor(node);
         fav.visit(cu);
         Tree.Primary prim = fav.result.getPrimary();
-        if (prim instanceof Tree.BaseMemberOrTypeExpression) {
-            ProducedReference pr = ((Tree.BaseMemberOrTypeExpression) prim).getTarget();
+        if (prim instanceof Tree.MemberOrTypeExpression) {
+            ProducedReference pr = ((Tree.MemberOrTypeExpression) prim).getTarget();
             if (pr!=null) {
                 Declaration d = pr.getDeclaration();
                 ProducedType t=null;
