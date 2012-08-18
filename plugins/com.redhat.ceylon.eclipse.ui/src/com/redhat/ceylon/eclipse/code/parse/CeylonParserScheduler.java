@@ -15,6 +15,7 @@ import org.eclipse.ui.IEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CeylonParserScheduler extends Job {
@@ -94,7 +95,8 @@ public class CeylonParserScheduler extends Job {
             }
             
             try {
-                IDocument document= editor.getCeylonSourceViewer().getDocument();
+                CeylonSourceViewer csv = editor.getCeylonSourceViewer();
+				IDocument document = csv==null ? null : csv.getDocument();
                 // If we're editing a workspace resource, check   
                 // to make sure that it still exists
                 if (document==null || !sourceStillExists()) {
