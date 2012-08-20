@@ -68,6 +68,7 @@ public class CeylonReferenceResolver {
                 return null;
             }
             else {
+            	//TODO: the following is now totally broken!
                 dec = p.getDirectMember("package", null);
                 if (dec==null) {
                     dec = p.getDirectMember("module", null);
