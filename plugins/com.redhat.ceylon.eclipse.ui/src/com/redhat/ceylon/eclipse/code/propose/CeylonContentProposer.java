@@ -479,7 +479,7 @@ public class CeylonContentProposer {
     		for (Module m: tc.getContext().getModules().getListOfModules()) {
     			String mod = m.getNameAsString();
     			if (!mod.isEmpty() && mod.startsWith(pfp) &&
-    					!mod.equals("default")) {
+    					!mod.equals(Module.DEFAULT_MODULE_NAME)) {
     				result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
     						mod, mod.substring(len), false) {
     					//TOOD: render HTML describing the module!

@@ -345,7 +345,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		Set<Module> modulesToAdd = context.getModules().getListOfModules();
 		//modulesToAdd.add(projectModules.getLanguageModule());        
 		for (Module module: modulesToAdd) {
-			if (module.getNameAsString().equals("default") ||
+			if (module.getNameAsString().equals(Module.DEFAULT_MODULE_NAME) ||
 					module.getNameAsString().equals("java") ||
 					isProjectModule(javaProject, module)) {
 				continue;
