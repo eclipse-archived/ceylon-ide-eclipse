@@ -30,6 +30,22 @@ class FindScopeVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.PackageDescriptor that) {
+        if (inBounds(that)) {
+            node = that;
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ModuleDescriptor that) {
+        if (inBounds(that)) {
+            node = that;
+        }
+        super.visit(that);
+    }
+    
+    @Override
     public void visit(Tree.ImportModule that) {
         if (inBounds(that)) {
             node = that;

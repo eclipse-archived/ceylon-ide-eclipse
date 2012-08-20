@@ -64,6 +64,24 @@ public class ErrorCollectionVisitor extends Visitor implements NaturalVisitor {
     }
     
     @Override
+    public void visit(Tree.ImportModule that) {
+        if (that==declaration) {
+            withinDeclaration=true;
+            super.visit(that);
+            withinDeclaration=false;
+        }
+        else if (includingChildren) {
+            super.visit(that);
+        }
+        else {
+            boolean outer = withinDeclaration;
+            withinDeclaration = false;
+            super.visit(that);
+            withinDeclaration = outer;
+        }
+    }
+    
+    @Override
     public void visitAny(Node that) {
         if (withinDeclaration) {
             errors.addAll(that.getErrors());
