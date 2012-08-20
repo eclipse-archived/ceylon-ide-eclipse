@@ -33,7 +33,11 @@ public class CeylonOutlineBuilder {
 			Package pkg = unit.getPackage();
 			pn.setPackageName(pkg.getQualifiedNameString());
 		}
-		createSubItem(pn, PACKAGE_CATEGORY);
+		String filename = rootNode.getUnit().getFilename();
+		if (!filename.equals("module.ceylon") &&
+				!filename.equals("package.ceylon")) {
+			createSubItem(pn, PACKAGE_CATEGORY);
+		}
 		//createSubItem(rootNode);
 		/*pushSubItem(rootNode.getImportList());
 		for (Tree.Import i: rootNode.getImportList().getImports()) {
@@ -59,6 +63,12 @@ public class CeylonOutlineBuilder {
 				super.visitAny(that);
 				popSubItem();
 			}
+            else if (that instanceof Tree.PackageDescriptor ||
+            		that instanceof Tree.ModuleDescriptor) {
+                pushSubItem(that);
+                super.visitAny(that);
+                popSubItem();
+            }
 			else if (that instanceof Tree.ImportList) {
 			    if (!((Tree.ImportList) that).getImports().isEmpty()) {
                     pushSubItem(that, IMPORT_LIST_CATEGORY);
@@ -67,6 +77,11 @@ public class CeylonOutlineBuilder {
 			    }
 			}
             else if (that instanceof Tree.Import) {
+                pushSubItem(that);
+                super.visitAny(that);
+                popSubItem();
+            }
+            else if (that instanceof Tree.ImportModule) {
                 pushSubItem(that);
                 super.visitAny(that);
                 popSubItem();
