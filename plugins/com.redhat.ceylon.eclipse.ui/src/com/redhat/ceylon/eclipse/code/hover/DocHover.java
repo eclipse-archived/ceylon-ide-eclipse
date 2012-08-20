@@ -79,6 +79,7 @@ import org.osgi.framework.Bundle;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -510,8 +511,14 @@ public class DocHover
 			Package pack = (Package) model;
 			module = pack.getModule();
 		}
+		else if (model instanceof Module){
+			module = (Module) model;
+		}
 		else {
 			return null;
+		}
+		if (bits[1].startsWith("/")) {
+			return module.getPackage(bits[1].substring(1)).getModule();
 		}
 		Object target = module.getPackage(bits[1]);
 		for (int i=2; i<bits.length; i++) {
@@ -603,8 +610,13 @@ public class DocHover
 			return new DocBrowserInformationControlInput(previousInput, dec, 
 					getDocumentationFor(editor.getParseController(), dec, node), 20);
 		}
-		if (model instanceof Package) {
+		else if (model instanceof Package) {
 			Package dec = (Package) model;
+			return new DocBrowserInformationControlInput(previousInput, dec, 
+					getDocumentationFor(editor.getParseController(), dec), 20);
+		}
+		else if (model instanceof Module) {
+			Module dec = (Module) model;
 			return new DocBrowserInformationControlInput(previousInput, dec, 
 					getDocumentationFor(editor.getParseController(), dec), 20);
 		}
@@ -635,9 +647,20 @@ public class DocHover
 				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
-				16, 16, "in module&nbsp;&nbsp;<tt>" + getLabel(pack.getModule()) +"</tt>", 20, 2);
+				16, 16, "in module&nbsp;&nbsp;<tt><a " + link(pack.getModule()) + ">" + 
+					getLabel(pack.getModule()) +"</a></tt>", 20, 2);
 
-		//TODO: add package doc string
+		PhasedUnit pu = cpc.getTypeChecker()
+				.getPhasedUnitFromRelativePath(pack.getNameAsString().replace('.', '/') + "/package.ceylon");
+		if (pu!=null) {
+			Tree.PackageDescriptor refnode = pu.getCompilationUnit().getPackageDescriptor();
+			if (refnode!=null) {
+				appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
+				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+			}
+		}
+		
 		
 		boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
@@ -657,6 +680,51 @@ public class DocHover
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
 				buffer.append("<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>");
+			}
+		}
+		if (!first) {
+			buffer.append(".<br/>");
+		}
+		
+		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+		HTMLPrinter.addPageEpilog(buffer);
+		return buffer.toString();
+		
+	}
+
+	public static String getDocumentationFor(CeylonParseController cpc, Module mod) {
+		StringBuffer buffer= new StringBuffer();
+		
+		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
+				16, 16, "<b><tt>" + getLabel(mod) +"</tt></b>", 20, 4);
+		buffer.append("<hr/>");
+
+		PhasedUnit pu = cpc.getTypeChecker()
+				.getPhasedUnitFromRelativePath(mod.getNameAsString().replace('.', '/') + "/module.ceylon");
+		if (pu!=null) {
+			Tree.ModuleDescriptor refnode = pu.getCompilationUnit().getModuleDescriptor();
+			if (refnode!=null) {
+				appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
+				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+			}
+		}
+				
+		boolean first = true;
+		for (Package pack: mod.getPackages()) {
+			if (pack.isShared()) {
+				if (first) {
+					buffer.append("<hr/>Contains:&nbsp;&nbsp;");
+					first = false;
+				}
+				else {
+					buffer.append(", ");
+				}
+
+				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+					16, 16, "<tt><a " + link(dec) + ">" + 
+			        dec.getName() + "</a></tt>", 20, 2);*/
+				buffer.append("<tt><a " + link(pack) + ">" + pack.getNameAsString() + "</a></tt>");
 			}
 		}
 		if (!first) {
@@ -714,15 +782,16 @@ public class DocHover
 				addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 						16, 16, label, 20, 2);
 				addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
-						16, 16, "in module&nbsp;&nbsp;<tt>" + getModuleLabel(dec) +"</tt>", 20, 2);
+						16, 16, "in module&nbsp;&nbsp;<tt><a " + link(pack.getModule()) + ">" + 
+							getModuleLabel(dec) +"</a></tt>", 20, 2);
 			}
 		}
 		
 		Tree.Declaration refnode = getReferencedNode(dec, cpc);
 		if (refnode!=null) {
-			appendDocAnnotationContent(refnode, buffer);
-			appendThrowAnnotationContent(refnode, buffer);
-			appendSeeAnnotationContent(refnode, buffer);
+			appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
+			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+			appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
 		}
 		
 		appendJavadoc(dec, cpc.getProject(), buffer, node);
@@ -811,7 +880,7 @@ public class DocHover
 						StringBuffer doc = new StringBuffer();
 						Tree.Declaration refNode = getReferencedNode(p, cpc);
 						if (refNode!=null) {
-							appendDocAnnotationContent(refNode, doc);
+							appendDocAnnotationContent(refNode.getAnnotationList(), doc);
 						}
 						if (doc.length()!=0) {
 							doc.insert(0, ":");
@@ -893,7 +962,10 @@ public class DocHover
 	
 	private static String declink(Object model) {
 		if (model instanceof Package) {
-			return ((Package)model).getQualifiedNameString();
+			return ((Package)model).getNameAsString();
+		}
+		if (model instanceof Module) {
+			return "/" + ((Module)model).getNameAsString();
 		}
 		else if (model instanceof Declaration) {
 			return declink(((Declaration) model).getContainer())
@@ -917,19 +989,14 @@ public class DocHover
         }
     }
 
-    private static void appendDocAnnotationContent(Tree.Declaration decl,
+    private static void appendDocAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation) {
-        Tree.AnnotationList annotationList = decl.getAnnotationList();
-        if (annotationList != null)
-        {
-            for (Tree.Annotation annotation : annotationList.getAnnotations())
-            {
+        if (annotationList!=null) {
+            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression)
-                {
+                if (annotPrim instanceof BaseMemberExpression) {
                     String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
-                    if ("doc".equals(name))
-                    {
+                    if ("doc".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
@@ -946,19 +1013,14 @@ public class DocHover
         }
     }
     
-    private static void appendSeeAnnotationContent(Tree.Declaration decl,
+    private static void appendSeeAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation) {
-        Tree.AnnotationList annotationList = decl.getAnnotationList();
-        if (annotationList != null)
-        {
-            for (Tree.Annotation annotation : annotationList.getAnnotations())
-            {
+        if (annotationList!=null) {
+            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression)
-                {
+                if (annotPrim instanceof BaseMemberExpression) {
                     String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
-                    if ("see".equals(name))
-                    {
+                    if ("see".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
@@ -999,19 +1061,14 @@ public class DocHover
         }
     }
     
-    private static void appendThrowAnnotationContent(Tree.Declaration decl,
+    private static void appendThrowAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation) {
-        Tree.AnnotationList annotationList = decl.getAnnotationList();
-        if (annotationList != null)
-        {
-            for (Tree.Annotation annotation : annotationList.getAnnotations())
-            {
+        if (annotationList!=null) {
+            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression)
-                {
+                if (annotPrim instanceof BaseMemberExpression) {
                     String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
-                    if ("throws".equals(name))
-                    {
+                    if ("throws".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();

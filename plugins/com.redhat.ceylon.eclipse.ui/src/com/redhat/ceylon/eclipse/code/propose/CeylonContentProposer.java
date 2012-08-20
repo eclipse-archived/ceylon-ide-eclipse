@@ -476,17 +476,16 @@ public class CeylonContentProposer {
     		final CeylonParseController cpc) {
     	TypeChecker tc = cpc.getTypeChecker();
     	if (tc!=null) {
-    		for (Module m: tc.getContext().getModules().getListOfModules()) {
+    		for (final Module m: tc.getContext().getModules().getListOfModules()) {
     			String mod = m.getNameAsString();
     			if (!mod.isEmpty() && mod.startsWith(pfp) &&
     					!mod.equals(Module.DEFAULT_MODULE_NAME)) {
     				result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
     						mod, mod.substring(len), false) {
-    					//TOOD: render HTML describing the module!
-    					/*@Override
+    					@Override
 						public String getAdditionalProposalInfo() {
-							return getDocumentationFor(cpc, p);
-						}*/
+							return getDocumentationFor(cpc, m);
+						}
     				});
     			}
     		}
