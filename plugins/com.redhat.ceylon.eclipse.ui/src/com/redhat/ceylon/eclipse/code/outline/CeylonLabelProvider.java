@@ -41,6 +41,9 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -201,13 +204,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (n instanceof PackageNode) {
             return PACKAGE;
         }
+        else if (n instanceof PackageDescriptor) {
+            return PACKAGE;
+        }
+        else if (n instanceof ModuleDescriptor) {
+            return ARCHIVE;
+        }
         else if (n instanceof Tree.CompilationUnit) {
             return FILE_IMAGE;
         }
         else if (n instanceof Tree.ImportList) {
             return IMPORT_LIST;
         }
-        else if (n instanceof Tree.Import) {
+        else if (n instanceof Tree.Import || 
+        		n instanceof Tree.ImportModule) {
             return IMPORT;
         }
         else if (n instanceof Tree.Declaration) {
@@ -419,14 +429,35 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
             return new StyledString(ai.getUnit().getFilename());
         }
+        else if (n instanceof Tree.ModuleDescriptor) {
+            Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) n;
+            ImportPath p = i.getImportPath();
+			if (isNonempty(p)) {
+                return new StyledString(toPath(p), QUALIFIER_STYLER);
+            }
+        }
+        else if (n instanceof Tree.PackageDescriptor) {
+            Tree.PackageDescriptor i = (Tree.PackageDescriptor) n;
+            ImportPath p = i.getImportPath();
+			if (isNonempty(p)) {
+                return new StyledString(toPath(p), QUALIFIER_STYLER);
+            }
+        }
         else if (n instanceof Tree.ImportList) {
             return new StyledString("imports");
         }
         else if (n instanceof Tree.Import) {
-            Tree.Import ai = (Tree.Import) n;
-            if (ai.getImportPath()!=null &&
-                    !ai.getImportPath().getIdentifiers().isEmpty()) {
-                return new StyledString(toPath(ai), QUALIFIER_STYLER);
+            Tree.Import i = (Tree.Import) n;
+            ImportPath p = i.getImportPath();
+			if (isNonempty(p)) {
+                return new StyledString(toPath(p), QUALIFIER_STYLER);
+            }
+        }
+        else if (n instanceof Tree.ImportModule) {
+            Tree.ImportModule i = (Tree.ImportModule) n;
+            ImportPath p = i.getImportPath();
+			if (isNonempty(p)) {
+                return new StyledString(toPath(p), QUALIFIER_STYLER);
             }
         }
         else if (n instanceof PackageNode) {
@@ -442,13 +473,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return new StyledString("<something>");
     }
 
-    private static String toPath(Tree.Import ai) {
+	private static boolean isNonempty(ImportPath p) {
+		return p!=null && !p.getIdentifiers().isEmpty();
+	}
+
+    private static String toPath(Tree.ImportPath p) {
         String path="";
-        for (Tree.Identifier id: ai.getImportPath().getIdentifiers()) {
+        for (Tree.Identifier id: p.getIdentifiers()) {
             path+="." + id.getText();
         }
-        path = path.substring(1);
-        return path;
+        return path.substring(1);
     }
     
     public static String getLabelFor(Node n) {
