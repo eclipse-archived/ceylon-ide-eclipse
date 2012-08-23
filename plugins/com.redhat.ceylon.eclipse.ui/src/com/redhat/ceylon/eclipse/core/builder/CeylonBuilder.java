@@ -1635,8 +1635,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
 				javaProject);
         try {
 			for (IProject p: project.getReferencedProjects()) {
-				addProjectClasspathElements(classpathElements, workspaceLocation,
-						JavaCore.create(p));
+				if(p.isAccessible()){
+					addProjectClasspathElements(classpathElements, workspaceLocation,
+							JavaCore.create(p));
+				}
 			}
 		} 
         catch (CoreException ce) {

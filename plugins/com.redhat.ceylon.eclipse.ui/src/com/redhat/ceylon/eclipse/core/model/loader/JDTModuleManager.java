@@ -181,7 +181,7 @@ public class JDTModuleManager extends LazyModuleManager {
         try {
             IProject project = javaProject.getProject();
             for (IProject p: project.getReferencedProjects()) {
-                if (moduleFileInProject(moduleName, JavaCore.create(p))) {
+                if (p.isAccessible() && moduleFileInProject(moduleName, JavaCore.create(p))) {
                     return true;
                 }
             }
