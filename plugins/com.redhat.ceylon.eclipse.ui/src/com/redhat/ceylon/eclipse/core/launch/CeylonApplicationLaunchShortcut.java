@@ -457,10 +457,11 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager()
                     .getLaunchConfigurations(configType);
             candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
+            String mainClass = getJavaClassName(declaration);
             for (int i = 0; i < configs.length; i++) {
                 ILaunchConfiguration config = configs[i];
                 if (config.getAttribute(ATTR_MAIN_TYPE_NAME, "")
-                        .equals(declaration.getQualifiedNameString())) { 
+                        .equals(mainClass)) { 
                     if (config.getAttribute(ATTR_PROJECT_NAME, "")
                             .equals(file.getProject().getName())) {
                         candidateConfigs.add(config);
@@ -529,7 +530,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             configurationName += packageName.isEmpty() ? "default package" : packageName;
             
             wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
-            wc.setAttribute(ATTR_MAIN_TYPE_NAME, declarationToRun.getQualifiedNameString());
+            wc.setAttribute(ATTR_MAIN_TYPE_NAME, getJavaClassName(declarationToRun));
             wc.setAttribute(ATTR_PROJECT_NAME, file.getProject().getName());
             wc.setMappedResources(new IResource[] {file});
             config = wc.doSave();
@@ -539,4 +540,11 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         } 
         return config;
     }
+
+	private String getJavaClassName(Declaration declaration) {
+		String name = declaration.getQualifiedNameString();
+		if(declaration instanceof Method)
+			name += "_";
+		return name;
+	}
 }
