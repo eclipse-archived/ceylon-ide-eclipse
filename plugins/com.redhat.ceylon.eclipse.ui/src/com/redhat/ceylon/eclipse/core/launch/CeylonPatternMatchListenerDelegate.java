@@ -67,6 +67,8 @@ public class CeylonPatternMatchListenerDelegate implements
 		            //         more-specific packages first
 		            for (IProject p: root.getProjects()) {
 		            	try {
+		            		if(!p.isAccessible())
+		            			continue;
 							for (IPackageFragmentRoot pfr: JavaCore.create(p)
 									.getAllPackageFragmentRoots()) {
 								//if (pfr.getKind()==IPackageFragmentRoot.K_SOURCE))

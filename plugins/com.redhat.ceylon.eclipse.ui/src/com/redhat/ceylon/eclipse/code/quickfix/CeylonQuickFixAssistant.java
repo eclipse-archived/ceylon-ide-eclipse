@@ -347,8 +347,11 @@ public class CeylonQuickFixAssistant {
         				file, cu, proposals, node);
         	}
         	break;
+        case 5001:
+        case 5002:
+            ChangeInitialCaseOfIdentifierInDeclaration.addProposal(node, proposals, file);
+            break;
         }
-
     }
 
     private void addMakeActualProposal(Collection<ICompletionProposal> proposals, 
