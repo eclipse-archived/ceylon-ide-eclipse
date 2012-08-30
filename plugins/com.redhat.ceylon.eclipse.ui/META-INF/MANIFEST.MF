@@ -50,7 +50,7 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.module-resolver-0.4-ide.jar,
  lib/com.redhat.ceylon.common-0.4-ide.jar,
  lib/ceylon.language-0.4-ide.jar,
- lib/txtmark-0.7-8bc64aa0f1.jar
+ lib/txtmark-0.7.jar
 Import-Package: org.eclipse.help
 
 
