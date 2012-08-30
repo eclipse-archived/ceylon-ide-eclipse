@@ -79,10 +79,12 @@ import org.osgi.framework.Bundle;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Element;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -120,6 +122,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
+@SuppressWarnings("restriction")
 public class DocHover 
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
@@ -156,7 +159,7 @@ public class DocHover
 			}
 		}
 
-		public void update() {
+        public void update() {
 			BrowserInformationControlInput current= fInfoControl.getInput();
 			if (current != null && current.getPrevious() != null) {
 				BrowserInput previous= current.getPrevious();
@@ -655,8 +658,8 @@ public class DocHover
 		if (pu!=null) {
 			Tree.PackageDescriptor refnode = pu.getCompilationUnit().getPackageDescriptor();
 			if (refnode!=null) {
-				appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
-				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+				appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
+				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
 				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
 			}
 		}
@@ -704,8 +707,9 @@ public class DocHover
 		if (pu!=null) {
 			Tree.ModuleDescriptor refnode = pu.getCompilationUnit().getModuleDescriptor();
 			if (refnode!=null) {
-				appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
-				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+			    Scope linkScope = mod.getPackage(mod.getNameAsString());
+				appendDocAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
+				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
 				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
 			}
 		}
@@ -789,8 +793,8 @@ public class DocHover
 		
 		Tree.Declaration refnode = getReferencedNode(dec, cpc);
 		if (refnode!=null) {
-			appendDocAnnotationContent(refnode.getAnnotationList(), buffer);
-			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer);
+			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
+			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
 		}
 		
@@ -880,7 +884,7 @@ public class DocHover
 						StringBuffer doc = new StringBuffer();
 						Tree.Declaration refNode = getReferencedNode(p, cpc);
 						if (refNode!=null) {
-							appendDocAnnotationContent(refNode.getAnnotationList(), doc);
+							appendDocAnnotationContent(refNode.getAnnotationList(), doc, resolveScope(dec));
 						}
 						if (doc.length()!=0) {
 							doc.insert(0, ":");
@@ -990,7 +994,7 @@ public class DocHover
     }
 
     private static void appendDocAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation) {
+            StringBuffer documentation, Scope linkScope) {
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1003,7 +1007,7 @@ public class DocHover
                             if (!args.isEmpty()) {
                                 String text = args.get(0).getExpression().getTerm().getText();
                                 if (text!=null) {
-                                    documentation.append(markdown(text));
+                                    documentation.append(markdown(text, linkScope));
                                 }
                             }
                         }
@@ -1062,7 +1066,7 @@ public class DocHover
     }
     
     private static void appendThrowAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation) {
+            StringBuffer documentation, Scope linkScope) {
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1091,7 +1095,7 @@ public class DocHover
                             			}
                             		}
                             		addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                            				"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text), 20, 2);
+                            				"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text, linkScope), 20, 2);
                             	}
                             }
                         }
@@ -1216,9 +1220,7 @@ public class DocHover
 		buf.append("<![endif]-->\n"); 
 	}
 	
-	private static String markdown(String text) {
-	    // TODO after compiler release use com.redhat.ceylon.ceylondoc.Util.wikiToHTML
-	    // TODO after txtmark release use txtmark.SpanEmitter for links inside doc annotation
+	private static String markdown(String text, final Scope linkScope) {
 	    if( text == null || text.length() == 0 ) {
 	        return text;
 	    }
@@ -1227,9 +1229,113 @@ public class DocHover
 
 	    Configuration config = Configuration.builder()
 	            .forceExtentedProfile()
+	            .setSpecialLinkEmitter(new SpanEmitter() {
+                    @Override
+                    public void emitSpan(StringBuilder out, String content) {
+                        String linkName;
+                        String linkTarget; 
+                        
+                        int indexOf = content.indexOf("|");
+                        if( indexOf == -1 ) {
+                            linkName = content;
+                            linkTarget = content;
+                        } else {
+                            linkName = content.substring(0, indexOf);
+                            linkTarget = content.substring(indexOf+1, content.length()); 
+                        }
+                        
+                        String href = resolveLink(linkTarget, linkScope);
+                        if (href != null) {
+                            out.append("<a ").append(href).append(">");
+                        }
+                        out.append(linkName);
+                        if (href != null) {
+                            out.append("</a>");
+                        }
+                    }
+                })
 	            .build();
 
 	    return Processor.process(unquotedText, config);
 	}
+	
+    private static String resolveLink(String linkTarget, Scope linkScope) {
+        String declName;
+        Scope scope = null;
+        
+        int pkgSeparatorIndex = linkTarget.indexOf("@");
+        if( pkgSeparatorIndex == -1 ) {
+            declName = linkTarget;
+            scope = linkScope;
+        } else {
+            String pkgName = linkTarget.substring(0, pkgSeparatorIndex);
+            declName = linkTarget.substring(pkgSeparatorIndex+1, linkTarget.length());
+            Module module = resolveModule(linkScope);
+            if( module != null ) {
+                scope = module.getPackage(pkgName);
+            }
+        }
+        
+        String[] declNames = declName.split("\\.");
+        Declaration decl = null;
+        boolean isNested = false;
+        for (String currentDeclName : declNames) {
+            decl = resolveDeclaration(scope, currentDeclName, isNested);
+            if (decl != null) {
+                scope = resolveScope(decl);
+                isNested = true;
+            } else {
+                break;
+            }
+        }
+    
+        if (decl != null) {
+            String href = link(decl);
+            return href;
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private static Declaration resolveDeclaration(Scope scope, String declName, boolean isNested) {
+        Declaration decl = null;
+
+        if (scope != null) {
+            decl = scope.getMember(declName, null);
+
+            if (decl == null && !isNested && scope instanceof Element) {
+                decl = ((Element) scope).getUnit().getLanguageModuleDeclaration(declName);
+            }
+            if (decl == null && !isNested && scope instanceof Element) {
+                decl = ((Element) scope).getUnit().getImportedDeclaration(declName, null);
+            }
+            if (decl == null && !isNested) {
+                decl = resolveDeclaration(scope.getContainer(), declName, isNested);
+            }
+        }
+
+        return decl;
+    }
+
+    private static Scope resolveScope(Declaration decl) {
+        if (decl == null) {
+            return null;
+        } else if (decl instanceof Scope) {
+            return (Scope) decl;
+        } else {
+            return decl.getContainer();
+        }
+    }
+
+    private static Module resolveModule(Scope scope) {
+        if (scope == null) {
+            return null;
+        } else if (scope instanceof Package) {
+            return ((Package) scope).getModule();
+        } else {
+            return resolveModule(scope.getContainer());
+        }
+    }    
 
 }
