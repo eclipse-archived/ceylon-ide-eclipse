@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
@@ -15,7 +20,6 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 
@@ -121,7 +125,7 @@ public class CompletionProposal implements ICompletionProposal,
 		StyledString result = new StyledString();
 		String string = getDisplayString();
 		if (this instanceof RefinementCompletionProposal) {
-			result.append(string.substring(0,13), CeylonLabelProvider.ANN_STYLER);
+			result.append(string.substring(0,13), ANN_STYLER);
 			string=string.substring(13);
 		}
 		style(result, string);
@@ -133,15 +137,18 @@ public class CompletionProposal implements ICompletionProposal,
 		while (tokens.hasMoreTokens()) {
 			String token = tokens.nextToken();
 			if (isUpperCase(token.charAt(0))) {
-				result.append(token, CeylonLabelProvider.TYPE_ID_STYLER);
+				result.append(token, TYPE_ID_STYLER);
 			}
 			else if (isLowerCase(token.charAt(0))) {
 				if (CeylonTokenColorer.keywords.contains(token)) {
-					result.append(token, CeylonLabelProvider.KW_STYLER);
+					result.append(token, KW_STYLER);
 				}
 				else {
-					result.append(token, CeylonLabelProvider.ID_STYLER);
+					result.append(token, ID_STYLER);
 				}
+			}
+			else if (token.charAt(0)=='\'') {
+				result.append(token, VERSION_STYLER);
 			}
 			else {
 				result.append(token);

@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.color;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
@@ -124,6 +125,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, KEYWORDS);
+        }
+    };
+    
+    public static final Styler VERSION_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(colorRegistry, STRINGS);
         }
     };
     

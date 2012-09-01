@@ -37,7 +37,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -50,6 +53,9 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
+import com.redhat.ceylon.cmr.api.ModuleQuery;
+import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
+import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -474,19 +480,33 @@ public class CeylonContentProposer {
     private static void addModuleCompletions(int offset, String prefix,
     		Node node, List<ICompletionProposal> result, int len, String pfp,
     		final CeylonParseController cpc) {
-    	TypeChecker tc = cpc.getTypeChecker();
+    	final TypeChecker tc = cpc.getTypeChecker();
     	if (tc!=null) {
-    		for (final Module m: tc.getContext().getModules().getListOfModules()) {
-    			String mod = m.getNameAsString();
-    			if (!mod.isEmpty() && mod.startsWith(pfp) &&
-    					!mod.equals(Module.DEFAULT_MODULE_NAME)) {
-    				result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-    						mod, mod.substring(len), false) {
-    					@Override
-						public String getAdditionalProposalInfo() {
-							return getDocumentationFor(cpc, m);
-						}
-    				});
+    		SortedSet<String> results = tc.getContext().getRepositoryManager()
+    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.SRC))
+    				.getResults();
+			for (final String name: results) {
+    			if (//!name.isEmpty() && name.startsWith(pfp) &&
+    					!name.equals(Module.DEFAULT_MODULE_NAME)) {
+    				SortedMap<String, ModuleVersionDetails> versions = tc.getContext().getRepositoryManager()
+    						.completeVersions(new ModuleVersionQuery(name, null, ModuleQuery.Type.SRC))
+    						.getVersions();
+    				if (versions.isEmpty()) {
+						result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+								name + ".", name.substring(len) + ".", false));
+    				}
+    				else {
+    					for (final Entry<String, ModuleVersionDetails> version: versions.entrySet()) {
+    						String versioned = name + " '" + version.getKey() + "'";
+							result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+    								versioned, versioned.substring(len), false) {
+    							@Override
+    							public String getAdditionalProposalInfo() {
+    								return version.getValue().getDoc();
+    							}
+    						});
+    					}
+    				}
     			}
     		}
     	}
