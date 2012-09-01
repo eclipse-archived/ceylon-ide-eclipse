@@ -1249,6 +1249,11 @@ public class CeylonContentProposer {
         appendDeclarationText(d, pr, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, result);
+        if (d instanceof Class) {
+        	result.append(extraIndent(extraIndent(indent)))
+        		.append(" extends super.").append(d.getName());
+        	appendPositionalArgs(d, pr, result, true);
+        }
         appendConstraints(d, pr, indent, result);
         appendImpl(d, isInterface, indent, result);
         return result.toString();
@@ -1610,6 +1615,7 @@ public class CeylonContentProposer {
             result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
         }
         else {
+            //TODO: in the case of a class, formal member refinements!
             result.append(" {}");
         }
     }
