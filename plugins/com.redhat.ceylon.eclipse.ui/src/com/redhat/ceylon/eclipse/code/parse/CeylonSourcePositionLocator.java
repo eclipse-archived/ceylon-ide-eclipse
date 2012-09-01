@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 
 import java.util.Collections;
@@ -33,7 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
@@ -107,6 +107,12 @@ public class CeylonSourcePositionLocator {
     public static Node getIdentifyingNode(Node node) {
 	    if (node instanceof Tree.Declaration) {
 	        return ((Tree.Declaration) node).getIdentifier();
+	    }
+	    else if (node instanceof Tree.ModuleDescriptor) {
+	        return ((Tree.ModuleDescriptor) node).getImportPath();
+	    }
+	    else if (node instanceof Tree.PackageDescriptor) {
+	        return ((Tree.PackageDescriptor) node).getImportPath();
 	    }
 	    else if (node instanceof Tree.NamedArgument) {
 	        return ((Tree.NamedArgument) node).getIdentifier();
@@ -238,7 +244,7 @@ public class CeylonSourcePositionLocator {
     			e.printStackTrace();
     		}
     	}
-    	else for (IProject p: CeylonBuilder.getProjects()) {
+    	else for (IProject p: getProjects()) {
     		//if we weren't given a project,
     		//iterate over all of them (note
     		//that this case happens in the 

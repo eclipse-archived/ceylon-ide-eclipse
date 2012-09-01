@@ -11,14 +11,16 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 
 public class CeylonReferenceResolver {
 
@@ -49,34 +51,31 @@ public class CeylonReferenceResolver {
 //        }
 //    }
 
-    public static Tree.Declaration getReferencedNode(Node node, 
+    public static Node getReferencedNode(Node node, 
     		CeylonParseController controller) {
-        return getReferencedNode(getReferencedDeclarationOrPackage(node), 
+        return getReferencedNode(getReferencedModel(node), 
         		controller);
     }
 
-    public static Tree.Declaration getReferencedNode(Declaration dec, 
+    public static Node getReferencedNode(Referenceable dec, 
     		CeylonParseController controller) {
         return getReferencedNode(dec, getCompilationUnit(controller,dec));
     }
 
-    public static Declaration getReferencedDeclarationOrPackage(Node node) {
-        Declaration dec;
+    public static Referenceable getReferencedModel(Node node) {
         if (node instanceof Tree.ImportPath) {
             Package p = ((Tree.ImportPath) node).getPackageModel();
-            if (p==null) {
-                return null;
+            Module m = ((Tree.ImportPath) node).getModuleModel();
+            if (p!=null) {
+                return p;
             }
-            else {
-            	//TODO: the following is now totally broken!
-                dec = p.getDirectMember("package", null);
-                if (dec==null) {
-                    dec = p.getDirectMember("module", null);
-                }
+            else if (m!=null) {
+            	return m;
             }
+            return null;
         }
         else {
-            dec = getReferencedDeclaration((Node) node);
+        	Declaration dec = getReferencedDeclaration((Node) node);
             if (dec instanceof Parameter) {
                 Declaration pd = ((Parameter) dec).getDeclaration();
                 if (pd instanceof Setter) {
@@ -88,8 +87,8 @@ public class CeylonReferenceResolver {
                     if (att!=null) dec = att;
                 }
             }
+            return dec;
         }
-        return dec;
     }
 
     /*private String getNodeDeclarationName(Node node) {
@@ -137,13 +136,13 @@ public class CeylonReferenceResolver {
         }
     }
 
-    public static Tree.Declaration getReferencedNode(Declaration dec,
+    public static Node getReferencedNode(Referenceable dec,
             Tree.CompilationUnit compilationUnit) {
         if (compilationUnit==null || dec==null) {
             return null;
         }
         else {
-            FindDeclarationVisitor visitor = new FindDeclarationVisitor(dec);
+            FindReferencedNodeVisitor visitor = new FindReferencedNodeVisitor(dec);
             compilationUnit.visit(visitor);
             //System.out.println("referenced node: " + visitor.getDeclarationNode());
             return visitor.getDeclarationNode();
@@ -158,32 +157,40 @@ public class CeylonReferenceResolver {
 
     public static PhasedUnit getPhasedUnit(IProject project, 
             Declaration dec) {
-        return getProjectTypeChecker(project)
-                        .getPhasedUnitFromRelativePath(getRelativePath(dec));
+        String path = getRelativePath(dec);
+        if (path==null) {
+        	return null;
+        }
+        else {
+            return getProjectTypeChecker(project)
+                    .getPhasedUnitFromRelativePath(path);
+        }
     }
 
     public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
-            Declaration dec) {
-        if (cpc==null || dec==null) {
+            Referenceable r) {
+        if (cpc==null || r==null) {
             return null;
         }
         else {
+        	//Declaration dec = (Declaration) r;
             Tree.CompilationUnit root = cpc.getRootNode();            
-            if (root!=null && root.getUnit() != null && 
-                    root.getUnit().equals(dec.getUnit())) {
+            if (root!=null && root.getUnit()!=null && 
+                    root.getUnit().equals(r.getUnit())) {
                 return root;
             }
             else {
                 TypeChecker typeChecker = cpc.getTypeChecker();
-                String relativePath = getRelativePath(dec);
-                PhasedUnit pu = typeChecker==null ? null : 
-                    typeChecker.getPhasedUnits().getPhasedUnitFromRelativePath(relativePath);
+                String relativePath = getRelativePath(r);
+                PhasedUnit pu = typeChecker==null || relativePath==null ? null : 
+                        typeChecker.getPhasedUnits()
+                                .getPhasedUnitFromRelativePath(relativePath);
                 if (pu!=null) {
                     return pu.getCompilationUnit();
                 }
                 
                 IProject currentProject = cpc.getProject();
-                if (currentProject!=null) {
+                if (currentProject!=null && r instanceof Declaration) {
                     try {
 						for (IProject project: currentProject.getReferencedProjects()) {
 						    JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
@@ -191,8 +198,8 @@ public class CeylonReferenceResolver {
 						        continue;
 						    }
 						    Declaration originalDecl = requiredProjectLoader
-						    		.getDeclaration(dec.getQualifiedNameString(), 
-						    		        DeclarationType.TYPE);
+						    		.getDeclaration(((Declaration)r).getQualifiedNameString(), 
+						    		        DeclarationType.TYPE); //TODO: make this work for modules/packages!
 						    if (originalDecl!=null) {
 						        String fileName = originalDecl.getUnit().getFilename();
 						        String packagePath = originalDecl.getUnit().getPackage()
@@ -218,8 +225,8 @@ public class CeylonReferenceResolver {
 					}
                 }
                 
-                if (pu==null && typeChecker!=null) {
-                    for (PhasedUnits dependencies : typeChecker.getPhasedUnitsOfDependencies()) {
+                if (pu==null && typeChecker!=null && relativePath!=null) {
+                    for (PhasedUnits dependencies: typeChecker.getPhasedUnitsOfDependencies()) {
                         pu = dependencies.getPhasedUnitFromRelativePath(relativePath);
                         if (pu!=null) {
                             break;
@@ -234,10 +241,16 @@ public class CeylonReferenceResolver {
         }
     }
 
-    private static String getRelativePath(Declaration dec) {
-        return dec.getUnit().getPackage()
-                .getQualifiedNameString().replace('.', '/')
-                + "/" + dec.getUnit().getFilename();
+    private static String getRelativePath(Referenceable r) {
+    	Unit unit = r.getUnit();
+		if (unit==null) {
+			return null;
+		}
+		else {
+			return unit.getPackage()
+					.getQualifiedNameString().replace('.', '/')
+					+ "/" + unit.getFilename();
+		}
     }
 
 }

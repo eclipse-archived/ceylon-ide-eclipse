@@ -64,14 +64,14 @@ public class OpenTypeAction extends Action {
         		IProject ep = ce.getParseController().getProject();
         		if (ep!=null && ep.equals(project)) {
         			CeylonParseController cpc = ce.getParseController();
-        			Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+        			Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, getCompilationUnit(cpc, dec));
         			if (node!=null) {
         				gotoNode(node, project, cpc.getTypeChecker());
         				return;
         			}
         		}
         	}
-        	Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
+        	Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, getCompilationUnit(project, dec));
         	if (node!=null) {
         		gotoNode(node, project, getProjectTypeChecker(project));
         	}

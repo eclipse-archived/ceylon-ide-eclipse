@@ -542,7 +542,7 @@ public class DocHover
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		DocBrowserInformationControlInput info= (DocBrowserInformationControlInput) getHoverInfo2(textViewer, hoverRegion);
-		return info != null ? info.getHtml() : null;
+		return info!=null ? info.getHtml() : null;
 	}
 
 	@Override
@@ -554,7 +554,15 @@ public class DocHover
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
 		if (node instanceof Tree.ImportPath) {
-			return getHoverInfo(((Tree.ImportPath) node).getPackageModel(), null, node);
+			Package p = ((Tree.ImportPath) node).getPackageModel();
+			Module m = ((Tree.ImportPath) node).getModuleModel();
+			if (p!=null) {
+				return getHoverInfo(p, null, node);
+			}
+			if (m!=null) {
+				return getHoverInfo(m, null, node);
+			}
+			return null;
 		}
 		else {
 			return getHoverInfo(getReferencedDeclaration(node), null, node);
@@ -791,7 +799,7 @@ public class DocHover
 			}
 		}
 		
-		Tree.Declaration refnode = getReferencedNode(dec, cpc);
+		Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
 		if (refnode!=null) {
 			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
@@ -882,7 +890,7 @@ public class DocHover
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
 						StringBuffer doc = new StringBuffer();
-						Tree.Declaration refNode = getReferencedNode(p, cpc);
+						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p, cpc);
 						if (refNode!=null) {
 							appendDocAnnotationContent(refNode.getAnnotationList(), doc, resolveScope(dec));
 						}

@@ -13,7 +13,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -60,14 +60,14 @@ public class OpenDeclarationAction extends Action {
             IProject ep = ce.getParseController().getProject();
             if (ep!=null && ep.equals(project)) {
                 CeylonParseController cpc = ce.getParseController();
-                Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
+                Node node = getReferencedNode(dec, getCompilationUnit(cpc, dec));
                 if (node!=null) {
                     gotoNode(node, project, cpc.getTypeChecker());
                     return;
                 }
             }
         }
-        Tree.Declaration node = getReferencedNode(dec, getCompilationUnit(project, dec));
+        Node node = getReferencedNode(dec, getCompilationUnit(project, dec));
         if (node!=null) {
             gotoNode(node, project, getProjectTypeChecker(project));
         }
