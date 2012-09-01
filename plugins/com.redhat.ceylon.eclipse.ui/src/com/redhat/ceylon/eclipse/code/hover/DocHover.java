@@ -95,6 +95,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -554,13 +555,9 @@ public class DocHover
 		Node node = findNode(editor.getParseController().getRootNode(), 
 				hoverRegion.getOffset());
 		if (node instanceof Tree.ImportPath) {
-			Package p = ((Tree.ImportPath) node).getPackageModel();
-			Module m = ((Tree.ImportPath) node).getModuleModel();
-			if (p!=null) {
-				return getHoverInfo(p, null, node);
-			}
-			if (m!=null) {
-				return getHoverInfo(m, null, node);
+			Referenceable r = ((Tree.ImportPath) node).getModel();
+			if (r!=null) {
+				return getHoverInfo(r, null, node);
 			}
 			return null;
 		}
