@@ -143,7 +143,7 @@ import com.sun.tools.javac.util.Names;
  * TODO This default implementation was generated from a template, it needs to
  * be completed manually.
  */
-public class CeylonBuilder extends IncrementalProjectBuilder{
+public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static final String CEYLON_CLASSES_FOLDER_NAME = ".exploded";
 
@@ -215,7 +215,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
-    private long startTime;
+    //private long startTime;
 
     public static ModelState getModelState(IProject project) {
         ModelState modelState = modelStates.get(project);
@@ -592,31 +592,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder{
             
             monitor.done();
             
-//            if (mustDoFullBuild.value) {
-//            	Job job = new Job("Scanning available modules") {
-//					@Override
-//					protected IStatus run(IProgressMonitor monitor) {
-//						Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-//								.getContext().getModules().getListOfModules();
-//						monitor.beginTask("Scanning modules", modules.size());
-//						for (Module m: modules) {
-//							for (Package p: m.getAllPackages()) {
-//								p.getMembers();
-//							}
-//							monitor.worked(1);
-//							if (monitor.isCanceled()) {
-//								return Status.CANCEL_STATUS;
-//							}
-//						}
-//						monitor.done();
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				job.setPriority(Job.BUILD);
-//				job.setSystem(true);
-//				job.setRule(project);
-//				job.schedule();
-//            }
+            if (mustDoFullBuild.value) {
+            	Job job = new Job("Warming up completion processor for " + project.getName()) {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Warming up completion processor", 100000);
+						Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
+								.getContext().getModules().getListOfModules();
+						monitor.worked(10000);
+						for (Module m: modules) {
+							List<Package> packages = m.getAllPackages();
+							for (Package p: packages) {
+								p.getMembers();
+							}
+							monitor.worked(90000/packages.size()/modules.size());
+							if (monitor.isCanceled()) {
+								return Status.CANCEL_STATUS;
+							}
+						}
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.BUILD);
+				//job.setSystem(true);
+				job.setRule(project);
+				job.schedule();
+            }
             
             return project.getReferencedProjects();
         }

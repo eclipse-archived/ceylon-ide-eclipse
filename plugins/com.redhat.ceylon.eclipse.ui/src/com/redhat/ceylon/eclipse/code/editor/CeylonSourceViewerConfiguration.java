@@ -7,12 +7,7 @@ import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IInformationControl;
@@ -41,7 +36,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
@@ -81,7 +75,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return reconciler;
     }
 
-    private final class Warmup implements IRunnableWithProgress {
+    /*private final class Warmup implements IRunnableWithProgress {
 		@Override
 		public void run(IProgressMonitor monitor) throws InvocationTargetException,
 				InterruptedException {
@@ -102,9 +96,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
 			monitor.done();
 		}
-	}
+	}*/
+    
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-    	
         ContentAssistant ca= new ContentAssistant() {
         	protected void install() {
                 setInformationControlCreator(new DocHover(editor)
@@ -119,10 +113,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			@Override
 			public void assistSessionStarted(ContentAssistEvent event) {
 				editor.pauseBackgroundParsing();
-				try {
+				/*try {
 					editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
 				} 
-				catch (Exception e) {}
+				catch (Exception e) {}*/
 
 			}			
 			@Override
