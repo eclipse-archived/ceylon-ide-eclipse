@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -28,7 +26,7 @@ public class FindReferencedNodeVisitor extends Visitor {
     @Override
     public void visit(Tree.ModuleDescriptor that) {
     	super.visit(that);
-    	Module m = that.getImportPath().getModuleModel();
+    	Referenceable m = that.getImportPath().getModel();
     	if (m!=null && m.equals(declaration)) {
     		declarationNode = that;
     	}
@@ -37,7 +35,7 @@ public class FindReferencedNodeVisitor extends Visitor {
     @Override
     public void visit(Tree.PackageDescriptor that) {
     	super.visit(that);
-    	Package p = that.getImportPath().getPackageModel();
+    	Referenceable p = that.getImportPath().getModel();
     	if (p!=null && p.equals(declaration)) {
     		declarationNode = that;
     	}

@@ -11,8 +11,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
@@ -64,15 +62,7 @@ public class CeylonReferenceResolver {
 
     public static Referenceable getReferencedModel(Node node) {
         if (node instanceof Tree.ImportPath) {
-            Package p = ((Tree.ImportPath) node).getPackageModel();
-            Module m = ((Tree.ImportPath) node).getModuleModel();
-            if (p!=null) {
-                return p;
-            }
-            else if (m!=null) {
-            	return m;
-            }
-            return null;
+            return ((Tree.ImportPath) node).getModel();
         }
         else {
         	Declaration dec = getReferencedDeclaration((Node) node);
