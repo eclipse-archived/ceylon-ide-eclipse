@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclarationOrPackage;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedModel;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 
@@ -17,6 +17,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -44,7 +45,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
         return super.isEnabled() && editor instanceof CeylonEditor &&
-        		getReferencedDeclarationOrPackage(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
+        		getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
     }
     
     @Override
@@ -52,16 +53,16 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             Node node = getSelectedNode(getSelection((ITextEditor) editor));
-			Declaration dec = getReferencedDeclarationOrPackage(node);
-			if (dec!=null) {
+			Referenceable r = getReferencedModel(node);
+			if (r!=null) {
 			    CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-				Node refNode = getReferencedNode(dec, cpc);
+				Node refNode = getReferencedNode(r, cpc);
 			    IProject project = cpc.getProject();
 				if (refNode!=null) {
 			    	gotoNode(refNode, project, cpc.getTypeChecker());
 			    }
-			    else {
-			    	gotoJavaNode(dec, node, project);
+			    else if (r instanceof Declaration) {
+			    	gotoJavaNode(((Declaration)r), node, project);
 			    }
 			}
         }

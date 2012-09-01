@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -68,7 +69,7 @@ final class CodePopup extends PopupDialog
 
 	ISourceViewer viewer;
 	CeylonEditor editor;
-	Tree.Declaration referencedNode;
+	Node referencedNode;
 	CeylonParseController pc = new CeylonParseController();
 	
 	CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
@@ -254,8 +255,10 @@ final class CodePopup extends PopupDialog
 		catch (BadLocationException e) {
 			e.printStackTrace();
 		}*/
-		setTitleText("Declaration of " + 
-		        getDescriptionFor(referencedNode.getDeclarationModel()));
+		if (referencedNode instanceof Tree.Declaration) {
+			Declaration model = ((Tree.Declaration) referencedNode).getDeclarationModel();
+			setTitleText("Declaration of " + getDescriptionFor(model));
+		}
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -72,12 +71,12 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 return null;
             }
             else {
-                Tree.Declaration dec = getReferencedNode(node, pc);
-                if (dec==null) {
+                Node r = getReferencedNode(node, pc);
+                if (r==null) {
                     return null;
                 }
                 else {
-                	return new IHyperlink[] { new CeylonNodeLink(dec, id) };
+                	return new IHyperlink[] { new CeylonNodeLink(r, id) };
                 }
             }
         }
