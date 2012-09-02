@@ -52,7 +52,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 				repoPath = paths==null || paths.length==0 ? null : paths[paths.length-1];
             }
 			if (repoPath==null) repoPath = getDefaultRepositoryPath();
-            page = new ExportModuleWizardPage(repoPath, project);
+            page = new ExportModuleWizardPage(repoPath, project, selectedElement);
             //page.init(selection);
         }
         addPage(page);

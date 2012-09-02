@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 import java.io.File;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
@@ -39,13 +40,16 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     //private IStructuredSelection selection;
     private String repositoryPath;
     private IJavaProject project;
+    private IJavaElement selection;
     
-    ExportModuleWizardPage(String defaultRepositoryPath, IJavaProject project) {
+    ExportModuleWizardPage(String defaultRepositoryPath, 
+    		IJavaProject project, IJavaElement selection) {
         super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
         repositoryPath = defaultRepositoryPath;
         this.project = project;
+        this.selection = selection;
     }
 
     /*public void init(IStructuredSelection selection) {
@@ -113,8 +117,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         });
         
         folder.setText(repositoryPath);
-        for (String path: getRepositoryPaths(project.getProject())) {
-        	folder.add(path);
+        if (project!=null) {
+        	for (String path: getRepositoryPaths(project.getProject())) {
+        		folder.add(path);
+        	}
         }
         
         Button selectFolder = new Button(composite, SWT.PUSH);
@@ -187,6 +193,18 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         if (project!=null) {
 			projectField.setText(project.getElementName());
         	updateModuleList();
+        }
+        if (selection!=null) {
+        	String selectionName = selection.getElementName();
+        	TableItem[] items = modules.getItems();
+			for (int i=0; i<items.length; i++) {
+        		String itemText = items[i].getText();
+        		int j = itemText.indexOf('/');
+				if (itemText.substring(0,j).equals(selectionName)) {
+					modules.deselectAll();
+        			modules.select(i);
+        		}
+        	}
         }
         
         new Label(composite, SWT.NONE);
