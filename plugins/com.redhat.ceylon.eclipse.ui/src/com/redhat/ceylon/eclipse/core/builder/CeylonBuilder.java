@@ -1852,12 +1852,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static String[] getRepositoryPaths(IProject project) {
-    	String paths = (String) getBuilderArgs(project).get("repositoryPath");
+    	Map args = getBuilderArgs(project);
+		String paths = (String) args.get("repositoryPaths");
     	if (paths==null) {
-    		return getDefaultUserRepositories();
+        	paths = (String) args.get("repositoryPath");
+        	if (paths==null) {
+        		return getDefaultUserRepositories();
+        	}
+        	else {
+        		return paths.split(":");
+        	}
     	}
     	else {
-    		return paths.split(":");
+    		return paths.split(",");
     	}
     }
 
