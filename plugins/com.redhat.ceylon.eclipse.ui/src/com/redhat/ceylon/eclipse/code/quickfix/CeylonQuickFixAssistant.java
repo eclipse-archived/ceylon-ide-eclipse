@@ -315,6 +315,7 @@ public class CeylonQuickFixAssistant {
         	addRemoveAnnotationDecProposal(proposals, "default", project, node);
         	break;
         case 1400:
+        case 1401:
         	addMakeFormalProposal(proposals, project, node);
         	break;
         case 1500:
