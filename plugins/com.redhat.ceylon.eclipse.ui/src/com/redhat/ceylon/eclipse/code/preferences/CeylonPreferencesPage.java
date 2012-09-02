@@ -206,7 +206,6 @@ public class CeylonPreferencesPage extends PropertyPage {
 
     }
 
-    private Button selectRepoFolder;
     private Table repoFolders;
     
     private static Image repo = CeylonPlugin.getInstance().image("runtime_obj.gif").createImage();
@@ -234,7 +233,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 3;
         fgd.verticalSpan = 4;
-        fgd.heightHint = 50;
+        fgd.heightHint = 70;
         fgd.grabExcessHorizontalSpace = true;
         fgd.widthHint = 200;
         repoFolders.setLayoutData(fgd);
@@ -244,7 +243,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         	addRepoToTable(repositoryPath);
         }
         
-        selectRepoFolder = new Button(composite, SWT.PUSH);
+        Button selectRepoFolder = new Button(composite, SWT.PUSH);
         selectRepoFolder.setText("Add Repository...");
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
@@ -268,6 +267,32 @@ public class CeylonPreferencesPage extends PropertyPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
+        Button selectRemoteRepoFolder = new Button(composite, SWT.PUSH);
+        selectRemoteRepoFolder.setText("Add Ceylon Herd");
+        GridData srfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        srfgd.horizontalSpan = 1;
+        selectRemoteRepoFolder.setLayoutData(srfgd);
+        selectRemoteRepoFolder.setEnabled(builderEnabled);
+        selectRemoteRepoFolder.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String url = "http://modules.ceylon-lang.org/test";
+                //if (url!=null) {
+                    repositoryPaths.add(url);
+                    addRepoToTable(url);
+                    if (!isRepoValid()) {
+                        setErrorMessage("Please select a module repository containing the language module");
+                    }
+                    else {
+                        setErrorMessage(null);
+                    }
+                //}
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+
         Button deleteRepoFolder = new Button(composite, SWT.PUSH);
         deleteRepoFolder.setText("Remove Repository");
         GridData dfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
