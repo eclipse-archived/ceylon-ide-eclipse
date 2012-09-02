@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -136,7 +137,8 @@ public class FindReferenceVisitor extends Visitor {
 		
 	@Override
 	public void visit(Tree.SimpleType that) {
-		if (isReference(that.getTypeModel().getDeclaration(), 
+		ProducedType type = that.getTypeModel();
+		if (type!=null && isReference(type.getDeclaration(), 
 		        id(that.getIdentifier()))) {
 			nodes.add(that);
 		}
