@@ -593,31 +593,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.done();
             
             if (mustDoFullBuild.value) {
-            	Job job = new Job("Warming up completion processor for " + project.getName()) {
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						monitor.beginTask("Warming up completion processor", 100000);
-						Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-								.getContext().getModules().getListOfModules();
-						monitor.worked(10000);
-						for (Module m: modules) {
-							List<Package> packages = m.getAllPackages();
-							for (Package p: packages) {
-								p.getMembers();
-							}
-							monitor.worked(90000/packages.size()/modules.size());
-							if (monitor.isCanceled()) {
-								return Status.CANCEL_STATUS;
-							}
-						}
-						monitor.done();
-						return Status.OK_STATUS;
-					}
-				};
-				job.setPriority(Job.BUILD);
-				//job.setSystem(true);
-				job.setRule(project);
-				job.schedule();
+            	warmupCompletionProcessor(project, typeChecker);
             }
             
             return project.getReferencedProjects();
@@ -628,6 +604,35 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //            getConsoleStream().println("===================================");
         }
     }
+
+	private void warmupCompletionProcessor(final IProject project,
+			final TypeChecker typeChecker) {
+		Job job = new Job("Warming up completion processor for " + project.getName()) {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Warming up completion processor", 100000);
+				Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
+						.getContext().getModules().getListOfModules();
+				monitor.worked(10000);
+				for (Module m: modules) {
+					List<Package> packages = m.getAllPackages();
+					for (Package p: packages) {
+						p.getMembers();
+					}
+					monitor.worked(90000/packages.size()/modules.size());
+					if (monitor.isCanceled()) {
+						return Status.CANCEL_STATUS;
+					}
+				}
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+		};
+		job.setPriority(Job.BUILD);
+		//job.setSystem(true);
+		job.setRule(project.getWorkspace().getRoot());
+		job.schedule();
+	}
 
 	private void sheduleIncrementalRebuild(Map args, final IProject project, 
 			IProgressMonitor monitor) {
