@@ -559,8 +559,8 @@ public class CeylonContentProposer {
         }
         else {
             if ((node instanceof Tree.SimpleType || 
-                    node instanceof Tree.BaseTypeExpression ||
-                    node instanceof Tree.QualifiedTypeExpression) 
+                 node instanceof Tree.BaseTypeExpression ||
+                 node instanceof Tree.QualifiedTypeExpression) 
                     && prefix.isEmpty() && !memberOp) {
                 addMemberNameProposal(offset, node, result);
             }
