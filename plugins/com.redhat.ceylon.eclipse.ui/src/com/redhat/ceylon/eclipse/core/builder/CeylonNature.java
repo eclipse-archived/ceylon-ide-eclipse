@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -122,18 +123,16 @@ public class CeylonNature extends ProjectNatureBase {
     	if (!keepSettings) {
     		args.put("outputPath", outputPath.toString());
     		if (repositoryPaths!=null) {
-    			String repositoryPath = "";
-    			boolean once = true;
-    			for (String path: repositoryPaths) {
-    				if (once) {
-    					once = false;
-    				}
-    				else {
-    					repositoryPath += ",";
-    				}
-    				repositoryPath += path;
-    			}
-    			args.put("repositoryPaths", repositoryPath);
+    	    	for (Map.Entry e: (Set<Map.Entry>) args.entrySet()) {
+    	    		String key = e.getKey().toString();
+    				if (key.startsWith("repositoryPath")) {
+    					args.remove(key);
+    	    		}
+    	    	}
+    	    	for (int i=0; i<repositoryPaths.size(); i++) {
+    	    		args.put("repositoryPath" + i, 
+    	    				repositoryPaths.get(i));
+    	    	}
     		}
     		else {
     			args.remove("repositoryPaths");
