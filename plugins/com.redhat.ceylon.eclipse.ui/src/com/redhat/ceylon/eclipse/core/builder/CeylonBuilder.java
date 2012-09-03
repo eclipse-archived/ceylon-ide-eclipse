@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.core.builder;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
-import static com.redhat.ceylon.compiler.java.util.Util.quoteIfJavaKeyword;
-import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getPhasedUnit;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
@@ -12,12 +10,12 @@ import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResou
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,13 +24,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
@@ -77,9 +73,6 @@ import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
-import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
-import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
-import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
@@ -88,11 +81,9 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
-import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.PhasedUnitsManager;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
-import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -102,27 +93,22 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader.SourceFileObjectManager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -134,7 +120,6 @@ import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
 import com.sun.tools.javac.file.ZipFileIndexCache;
-import com.sun.tools.javac.util.Names;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -168,37 +153,31 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static final String SOURCE = "Ceylon"; 
 
-    private final class CompileErrorReporter implements
-			DiagnosticListener<JavaFileObject> {
+    private final class BuildFileManager extends CeyloncFileManager {
+		private final IProject project;
+		final boolean explodeModules;
+
+		private BuildFileManager(com.sun.tools.javac.util.Context context,
+				boolean register, Charset charset, IProject project) {
+			super(context, register, charset);
+			this.project = project;
+			explodeModules = isExplodeModulesEnabled(project);
+		}
+
 		@Override
-		public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-			JavaFileObject source = diagnostic.getSource();
-			if (source instanceof CeylonFileObject) {
-				IFile file = getWorkspace().getRoot()
-						.getFileForLocation(new Path(source.getName()));
-				try {
-					for (IMarker m: file.findMarkers(PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
-						if (((Integer)m.getAttribute(IMarker.SEVERITY)).intValue()==IMarker.SEVERITY_ERROR) {
-							return;
-						}
-					}
-					IMarker marker = file.createMarker(PROBLEM_MARKER_ID+".backend");
-					long line = diagnostic.getLineNumber();
-					if (line>=0) {
-						//Javac doesn't have line number 
-						//info for certain errors
-						marker.setAttribute(IMarker.LINE_NUMBER, (int)line);
-						marker.setAttribute(IMarker.CHAR_START, (int)diagnostic.getStartPosition());
-						marker.setAttribute(IMarker.CHAR_END, (int)diagnostic.getEndPosition());
-					}
-					marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
-					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				} 
-				catch (CoreException e) {
-					e.printStackTrace();
-				}
-			}
+		protected JavaFileObject getFileForOutput(Location location,
+		        final RelativeFile fileName, FileObject sibling)
+		        throws IOException {
+		    JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
+		    if (explodeModules && 
+		    		javaFileObject instanceof JarEntryFileObject) {
+		    	final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
+		    	final File classFile = fileName.getFile(ceylonOutputDirectory);
+		    	classFile.getParentFile().mkdirs();
+		    	return new ExplodingJavaFileObject(classFile, fileName,
+		    			javaFileObject);
+		    }
+		    return javaFileObject;
 		}
 	}
 
@@ -211,7 +190,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Compiled
     };
     
-    private final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
+    final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
 
@@ -608,27 +587,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
 	private void warmupCompletionProcessor(final IProject project,
 			final TypeChecker typeChecker) {
-		Job job = new Job("Warming up completion processor for " + project.getName()) {
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				monitor.beginTask("Warming up completion processor", 100000);
-				Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-						.getContext().getModules().getListOfModules();
-				monitor.worked(10000);
-				for (Module m: modules) {
-					List<Package> packages = m.getAllPackages();
-					for (Package p: packages) {
-						p.getMembers();
-					}
-					monitor.worked(90000/packages.size()/modules.size());
-					if (monitor.isCanceled()) {
-						return Status.CANCEL_STATUS;
-					}
-				}
-				monitor.done();
-				return Status.OK_STATUS;
-			}
-		};
+		Job job = new WarmupJob(project.getName(), typeChecker);
 		job.setPriority(Job.BUILD);
 		//job.setSystem(true);
 		job.setRule(project.getWorkspace().getRoot());
@@ -1332,20 +1291,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         final IJavaProject javaProject = JavaCore.create(project);
-        TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
-            .verbose(false)
-            .moduleManagerFactory(new ModuleManagerFactory(){
-                @Override
-                public ModuleManager createModuleManager(Context context) {
-                    return new JDTModuleManager(context, javaProject);
-                }
-            });
-
-        List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(CeylonUtils.makeRepositoryManager(repos, 
-        		getCeylonModulesOutputDirectory(project).getAbsolutePath(), 
-        		new EclipseLogger()));
-        TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
+        TypeChecker typeChecker = buildTypeChecker(project, javaProject);
         PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
         JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
@@ -1420,6 +1366,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker;
 
     }
+
+	private static TypeChecker buildTypeChecker(IProject project,
+			final IJavaProject javaProject) throws CoreException {
+		TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
+            .verbose(false)
+            .moduleManagerFactory(new ModuleManagerFactory(){
+                @Override
+                public ModuleManager createModuleManager(Context context) {
+                    return new JDTModuleManager(context, javaProject);
+                }
+            });
+
+        List<String> repos = getUserRepositories(project);
+        typeCheckerBuilder.setRepositoryManager(CeylonUtils.makeRepositoryManager(repos, 
+        		getCeylonModulesOutputDirectory(project).getAbsolutePath(), 
+        		new EclipseLogger()));
+        TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
+		return typeChecker;
+	}
 
 	private static List<IFile> scanSources(IProject project, IJavaProject javaProject, 
 			final TypeChecker typeChecker, final PhasedUnits phasedUnits, 
@@ -1523,8 +1488,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             return success;
         }
-        else
+        else {
             return true;
+        }
     }
 
     private boolean compile(final IProject project, IJavaProject javaProject, 
@@ -1551,24 +1517,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         context.put(DiagnosticListener.class, new CompileErrorReporter());
         CeylonLog.preRegister(context);
         
-        CeyloncFileManager fileManager = new CeyloncFileManager(context, true, null) {
-            final boolean explodeModules = isExplodeModulesEnabled(project);        
-            @Override
-            protected JavaFileObject getFileForOutput(Location location,
-                    final RelativeFile fileName, FileObject sibling)
-                    throws IOException {
-                JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
-                if (explodeModules && 
-                		javaFileObject instanceof JarEntryFileObject) {
-                	final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
-                	final File classFile = fileName.getFile(ceylonOutputDirectory);
-                	classFile.getParentFile().mkdirs();
-                	return new ExplodingJavaFileObject(classFile, fileName,
-                			javaFileObject);
-                }
-                return javaFileObject;
-            }
-        };
+        BuildFileManager fileManager = new BuildFileManager(context, true, null, project);
         
         computeCompilerClasspath(project, javaProject, options);
         
@@ -1670,102 +1619,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
 		context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
 		context.put(TypeFactory.class, modelLoader.getTypeFactory());
-		context.put(LanguageCompiler.phasedUnitsManagerKey, new PhasedUnitsManager() {
-		    @Override
-		    public ModuleManager getModuleManager() {
-		        return typeChecker.getPhasedUnits().getModuleManager();
-		    }
-
-		    @Override
-		    public void resolveDependencies() {
-		    }
-
-		    @Override
-		    public PhasedUnit getExternalSourcePhasedUnit(
-		            VirtualFile srcDir, VirtualFile file) {
-		        return typeChecker.getPhasedUnits()
-		        		.getPhasedUnitFromRelativePath(computeRelativePath(file, srcDir));
-		    }
-
-		    @Override
-		    public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
-		            List<PhasedUnit> sourceUnits) {
-		        if (getModelState(project).equals(ModelState.Compiled)) {
-		            return sourceUnits;
-		        }
-		        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
-		        for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
-		            for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-		                dependencies.add(phasedUnit);
-		            }
-		        }
-		        
-		        for (PhasedUnit dependency : dependencies) {
-		            dependency.analyseTypes();
-		        }
-		        for (PhasedUnit dependency : dependencies) {
-		            dependency.analyseFlow();
-		        }
-		        List<PhasedUnit> allPhasedUnits = new ArrayList<PhasedUnit>();
-		        allPhasedUnits.addAll(dependencies);
-		        allPhasedUnits.addAll(sourceUnits);
-		        
-		        ClassMirror objectMirror = modelLoader.lookupClassMirror("ceylon.language.Object");
-		        if (objectMirror instanceof SourceClass) {
-		            Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
-		            if (objectClass != null) {
-		                Declaration hashMethod = objectClass.getDirectMember("hash", 
-		                		Collections.<ProducedType>emptyList());
-		                if (hashMethod instanceof TypedDeclaration) {
-		                    ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
-		                }
-		            }
-		            
-		        }
-		        return allPhasedUnits;
-		    }
-		    @Override
-		    public void extraPhasesApplied() {
-		        modelStates.put(project, ModelState.Compiled);
-		    }
-		    
-		});
+		context.put(LanguageCompiler.phasedUnitsManagerKey, 
+				new JdtPhasedUnitsManager(modelLoader, project, typeChecker));
 		
-		modelLoader.setSourceFileObjectManager(new SourceFileObjectManager() {
-			@Override
-			public void setupSourceFileObjects(List<?> treeHolders) {
-				for(Object treeHolder: treeHolders){
-					if (treeHolder instanceof CeylonCompilationUnit) {
-						final CeylonCompilationUnit tree = (CeylonCompilationUnit) treeHolder;
-						CompilationUnit ceylonTree = tree.ceylonTree;
-						final String pkgName = tree.getPackageName() != null ? 
-								tree.getPackageName().toString() : "";
-						ceylonTree.visit(new SourceDeclarationVisitor() {
-							@Override
-							public void loadFromSource(Tree.Declaration decl) {
-								String name = quoteIfJavaKeyword(decl.getIdentifier().getText());
-								String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-								try{
-									CeylonClassReader.instance(context)
-									        .enterClass(Names.instance(context).fromString(fqn), 
-											        tree.getSourceFile());
-								}
-								catch (AssertionError error){
-									// this happens when we have already registered a source 
-									// file for this decl, so let's print out a helpful message
-									// see https://github.com/ceylon/ceylon-compiler/issues/250
-									ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
-									CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
-											fqn + " is declared twice: once in " + tree.getSourceFile() + 
-											" and again in: " + fileName(previousClass));
-								}
-							}
-						});
-					}
-				}
-			}
-		});
-
+		modelLoader.setSourceFileObjectManager(new JdtSourceFileObjectManager(context, modelLoader));
+		
 		context.put(TypeFactory.class, modelLoader.getTypeFactory());
 		context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
 		    @Override
@@ -1773,7 +1631,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		            com.sun.tools.javac.util.Context context) {
 		        return modelLoader;
 		    }
-		    
 		});
 	}
 
