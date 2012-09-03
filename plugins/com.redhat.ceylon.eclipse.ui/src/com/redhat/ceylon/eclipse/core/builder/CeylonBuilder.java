@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
@@ -1853,19 +1854,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static String[] getRepositoryPaths(IProject project) {
     	Map args = getBuilderArgs(project);
-		String paths = (String) args.get("repositoryPaths");
-    	if (paths==null) {
-        	paths = (String) args.get("repositoryPath");
-        	if (paths==null) {
-        		return getDefaultUserRepositories();
-        	}
-        	else {
-        		return paths.split(":");
-        	}
+    	List<String> result = new ArrayList<String>();
+    	for (String key: new TreeSet<String>((Set<String>) args.keySet())) {
+			if (key.startsWith("repositoryPath") && 
+					!key.equals("repositoryPath")) {
+				result.add(args.get(key).toString());
+    		}
     	}
-    	else {
-    		return paths.split(",");
+    	if (!result.isEmpty()) {
+    		return result.toArray(new String[0]);
     	}
+    	//for legacy projects only!
+    	String paths = (String) args.get("repositoryPath");
+    	if (paths!=null) {
+    		return paths.split(":");
+    	}
+    	return getDefaultUserRepositories();
     }
 
 	private static Map getBuilderArgs(IProject project) {
@@ -2463,7 +2467,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	public static String[] getDefaultUserRepositories() {
 		return new String[]{
 				CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath(),
-				System.getProperty("user.home") + "/.ceylon/repo"
+				System.getProperty("user.home") + "/.ceylon/repo",
+				"http://modules.ceylon-lang.org/test"
 		};
 	}
 
