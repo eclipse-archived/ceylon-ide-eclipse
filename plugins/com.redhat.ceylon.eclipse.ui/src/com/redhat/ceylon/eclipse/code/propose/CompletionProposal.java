@@ -125,8 +125,10 @@ public class CompletionProposal implements ICompletionProposal,
 		StyledString result = new StyledString();
 		String string = getDisplayString();
 		if (this instanceof RefinementCompletionProposal) {
-			result.append(string.substring(0,13), ANN_STYLER);
-			string=string.substring(13);
+			if (string.startsWith("shared actual")) {
+				result.append(string.substring(0,13), ANN_STYLER);
+				string=string.substring(13);
+			}
 		}
 		style(result, string);
 		return result;
