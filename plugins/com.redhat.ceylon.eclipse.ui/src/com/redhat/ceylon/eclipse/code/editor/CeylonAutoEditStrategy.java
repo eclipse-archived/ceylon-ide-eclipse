@@ -67,7 +67,27 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
         }
         
+        closeOpeningQuote(doc, cmd);
+        
     }
+
+	public void closeOpeningQuote(IDocument doc, DocumentCommand cmd) {
+		try {
+			if (doc.getChar(cmd.offset-1)=='\\') {
+				return;
+			}
+		} 
+		catch (BadLocationException e) {}
+		if (cmd.text.equals("\"") || 
+        	cmd.text.equals("'") || 
+        	cmd.text.equals("`")) {
+        	if (count(doc.get(), cmd.text.charAt(0))%2==0) {
+        		cmd.text+=cmd.text;
+        		cmd.shiftsCaret=false;
+        		cmd.caretOffset = cmd.offset+1;
+        	}
+        }
+	}
 
 	private String getPrefix(IDocument doc, DocumentCommand cmd) {
 		try {
@@ -245,6 +265,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
     
     int count(String string, char ch) {
+    	//TODO: don't count quoted characters!
     	int result = 0;
     	for (int i=0; i<string.length(); i++) {
     		if (string.charAt(i)==ch) result++;
