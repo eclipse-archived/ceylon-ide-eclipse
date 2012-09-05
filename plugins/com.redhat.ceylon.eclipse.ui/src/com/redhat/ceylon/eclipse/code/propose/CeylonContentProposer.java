@@ -483,13 +483,13 @@ public class CeylonContentProposer {
     	final TypeChecker tc = cpc.getTypeChecker();
     	if (tc!=null) {
     		SortedSet<String> results = tc.getContext().getRepositoryManager()
-    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.SRC))
+    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM))
     				.getResults();
 			for (final String name: results) {
     			if (//!name.isEmpty() && name.startsWith(pfp) &&
     					!name.equals(Module.DEFAULT_MODULE_NAME)) {
     				SortedMap<String, ModuleVersionDetails> versions = tc.getContext().getRepositoryManager()
-    						.completeVersions(new ModuleVersionQuery(name, null, ModuleQuery.Type.SRC))
+    						.completeVersions(new ModuleVersionQuery(name, null, ModuleQuery.Type.JVM))
     						.getVersions();
     				if (versions.isEmpty()) {
 						result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
