@@ -71,7 +71,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	@Override
 	public void start(BundleContext context) throws Exception {
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
-        ceylonRepository = getCeylonRepository(ceylonRepositoryProperty);
+        ceylonRepository = getCeylonPluginRepository(ceylonRepositoryProperty);
 	    super.start(context);
         this.bundleContext = context;
         addResourceFilterPreference();
@@ -122,7 +122,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      * @return
      * 
      */
-    public static File getCeylonRepository(String ceylonRepositoryProperty) {
+    public static File getCeylonPluginRepository(String ceylonRepositoryProperty) {
         File ceylonRepository=null;
         if (! "".equals(ceylonRepositoryProperty)) {
             File ceylonRepositoryPath = new File(ceylonRepositoryProperty);
