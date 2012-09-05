@@ -1684,11 +1684,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static List<String> getUserRepositories(IProject project) throws CoreException {
-        List<String> userRepos = new ArrayList<String>();
-        List<File> repos = getCeylonRepositories(project);
-        for (File repo: repos) {
-        	userRepos.add(repo.getAbsolutePath());
-        }
+        List<String> userRepos = getCeylonRepositories(project);
         
         if (project!=null) {
             for (IProject requiredProject: project.getReferencedProjects()) {
@@ -1745,11 +1741,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     	return Collections.EMPTY_MAP;
 	}
 
-    public static List<File> getCeylonRepositories(IProject project) {
+    public static List<String> getCeylonRepositories(IProject project) {
 		String[] repoPaths = getRepositoryPaths(project);
-    	List<File> repos = new ArrayList<File>();
+    	List<String> repos = new ArrayList<String>(repoPaths.length);
         for (String repoPath: repoPaths) {
-        	repos.add(CeylonPlugin.getCeylonRepository(repoPath));
+        	repos.add(repoPath);
         }
         /*if (repos.isEmpty()) {
         	repos.add(CeylonPlugin.getInstance().getCeylonRepository());
