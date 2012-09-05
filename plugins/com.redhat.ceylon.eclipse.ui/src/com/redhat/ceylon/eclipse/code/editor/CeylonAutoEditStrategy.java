@@ -73,6 +73,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
 	public void closeOpeningQuote(IDocument doc, DocumentCommand cmd) {
 		try {
+			//TODO: improve this, check the surrounding token type!
 			if (doc.getChar(cmd.offset-1)=='\\') {
 				return;
 			}
