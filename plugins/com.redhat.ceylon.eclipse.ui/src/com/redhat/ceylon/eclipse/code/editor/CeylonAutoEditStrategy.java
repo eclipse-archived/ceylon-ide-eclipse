@@ -236,11 +236,20 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
             
             StringBuilder buf = new StringBuilder(c.text);
+            boolean closeBrace = count(d.get(), '{')>count(d.get(), '}');
             appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    false, buf); //false, because otherwise it indents after annotations, which I guess we don't want
+                    false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
             c.text = buf.toString();
         }
+    }
+    
+    int count(String string, char ch) {
+    	int result = 0;
+    	for (int i=0; i<string.length(); i++) {
+    		if (string.charAt(i)==ch) result++;
+    	}
+    	return result;
     }
     
     private void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
@@ -278,7 +287,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
                 StringBuilder buf = new StringBuilder();
                 appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
-                        lastNonWhitespaceChar, correctContinuation, buf);
+                        lastNonWhitespaceChar, correctContinuation, false, buf, c);
                 if (c.text.equals("{")) {
                     buf.append("{");
                 }
@@ -292,13 +301,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private void appendIndent(IDocument d, int startOfPrev, int endOfPrev,
             char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
-            boolean correctContinuation, StringBuilder buf) throws BadLocationException {
+            boolean correctContinuation, boolean closeBraces, StringBuilder buf, DocumentCommand c)
+            		throws BadLocationException {
         boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
                 lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
         appendIndent(d, isContinuation, isOpening, isClosing, correctContinuation, 
-                startOfPrev, endOfPrev, buf);
+                startOfPrev, endOfPrev, closeBraces, buf, c);
     }
 
     protected void reduceIndent(DocumentCommand c) {
@@ -358,12 +368,21 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     private void appendIndent(IDocument d, boolean isContinuation, boolean isBeginning,
             boolean isEnding,  boolean correctContinuation, int start, int end,
-            StringBuilder buf) throws BadLocationException {
+            boolean closeBraces, StringBuilder buf, DocumentCommand c) 
+            		throws BadLocationException {
         String indent = getIndent(d, start, end, isContinuation&&!correctContinuation);
         buf.append(indent);
         if (isBeginning) {
             //increment the indent level
             incrementIndent(buf, indent);
+            if (closeBraces) {
+            	c.shiftsCaret=false;
+            	c.caretOffset=c.offset+buf.length();
+            	String newlineChar = d.getLineDelimiter(d.getLineOfOffset(end));
+				buf.append(newlineChar)
+            		.append(indent)
+            		.append('}');
+            }
         }
         else if (isContinuation&&correctContinuation) {
             incrementIndent(buf, indent);
