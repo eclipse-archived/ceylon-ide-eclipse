@@ -85,6 +85,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			}
 		} catch (BadLocationException e) {}
 
+		if(isQuotedOrCommented(cmd.offset)) {
+			return;
+		}
+
 		String[][] types = {
 				{ "'", "'" },
 				{ "\"", "\"" },
