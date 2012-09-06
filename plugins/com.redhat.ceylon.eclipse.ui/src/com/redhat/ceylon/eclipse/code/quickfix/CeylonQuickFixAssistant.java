@@ -204,6 +204,8 @@ public class CeylonQuickFixAssistant {
             
             ConvertGetterToMethodProposal.addConvertGetterToMethodProposal(proposals, editor, node);
             ConvertMethodToGetterProposal.addConvertMethodToGetterProposal(proposals, editor, node);
+            
+            AddDocAnnotationProposal.addDocAnnotationProposal(proposals, node, cu, file, doc);
         }
 
         CreateSubtypeProposal.add(proposals, editor);
