@@ -67,11 +67,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
         }
         
-        closeOpeningQuote(doc, cmd);
+        closeOpening(doc, cmd);
         
     }
 
-	public void closeOpeningQuote(IDocument doc, DocumentCommand cmd) {
+    public void closeOpening(IDocument doc, DocumentCommand cmd) {
 		try {
 			//TODO: improve this, check the surrounding token type!
 			if (doc.getChar(cmd.offset-1)=='\\') {
@@ -79,15 +79,24 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			}
 		} 
 		catch (BadLocationException e) {}
-		if (cmd.text.equals("\"") || 
-        	cmd.text.equals("'") || 
-        	cmd.text.equals("`")) {
-        	if (count(doc.get(), cmd.text.charAt(0))%2==0) {
-        		cmd.text+=cmd.text;
-        		cmd.shiftsCaret=false;
-        		cmd.caretOffset = cmd.offset+1;
-        	}
+        String closing = null;
+        if(cmd.text.equals("(")) {
+           closing = ")";
+        } else if(cmd.text.equals("<")) {
+           closing = ">";
         }
+        else if (cmd.text.equals("\"") ||
+                 cmd.text.equals("'") ||
+                 cmd.text.equals("`")) {
+           if (count(doc.get(), cmd.text.charAt(0))%2==0) {
+              closing = cmd.text;
+           }
+        }
+        if (closing != null) {
+           cmd.text+=closing;
+           cmd.shiftsCaret=false;
+           cmd.caretOffset = cmd.offset+1;
+       }
 	}
 
 	private String getPrefix(IDocument doc, DocumentCommand cmd) {
