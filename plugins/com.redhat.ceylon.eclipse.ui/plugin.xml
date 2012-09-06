@@ -134,7 +134,7 @@
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"
              icon="icons/template_obj.gif"
-             name="Ceylon Unit"
+             name="Ceylon Source File"
              category="com.redhat.ceylon.eclipse.ui.category"
              class="com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard">
            <description>Create a Ceylon compilation unit that will contain Ceylon source</description>

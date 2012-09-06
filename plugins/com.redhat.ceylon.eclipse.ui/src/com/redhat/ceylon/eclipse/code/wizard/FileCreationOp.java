@@ -51,7 +51,7 @@ class FileCreationOp implements IRunnableWithProgress {
         try {
             if (!result.exists()) {
                 CreateFileOperation op = new CreateFileOperation(result, null, 
-                        getHeader(project), "Create Ceylon Unit");
+                        getHeader(project), "Create Ceylon Source File");
                 try {
                     PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
                     .execute(op, monitor, getUIInfoAdapter(shell));
