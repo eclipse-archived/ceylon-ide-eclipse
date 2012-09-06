@@ -400,7 +400,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             if (closeBraces) {
             	c.shiftsCaret=false;
             	c.caretOffset=c.offset+buf.length();
-            	String newlineChar = d.getLineDelimiter(d.getLineOfOffset(end));
+            	String newlineChar;
+            	if (end<d.getLength()) {
+            		newlineChar = d.get(end, 1);
+            	}
+            	else if (start>0) {
+            		newlineChar = d.get(start-1, 1);
+            	}
+            	else {
+            		newlineChar = System.lineSeparator(); //TODO: is this right?
+            	}
 				buf.append(newlineChar)
             		.append(indent)
             		.append('}');
