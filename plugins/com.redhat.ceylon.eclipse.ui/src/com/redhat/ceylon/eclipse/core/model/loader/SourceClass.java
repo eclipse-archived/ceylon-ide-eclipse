@@ -60,7 +60,7 @@ public class SourceClass implements ClassMirror {
     public boolean isInnerClass() {
         return getModelDeclaration().isClassOrInterfaceMember();
     }
-
+    
     @Override
     public boolean isAnonymous() {
         return false; // TODO : is it really right ?
@@ -127,6 +127,12 @@ public class SourceClass implements ClassMirror {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getDirectInnerClasses() !!!!!!!!!!!!!!!!!!!!!!!");
         throw new IllegalAccessError("Don't use a Source Class Mirror !");
 //        return Collections.emptyList();
+    }
+
+    @Override
+    public ClassMirror getEnclosingClass() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getEnclosingClass() !!!!!!!!!!!!!!!!!!!!!!!");
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
     }
 
     @Override
