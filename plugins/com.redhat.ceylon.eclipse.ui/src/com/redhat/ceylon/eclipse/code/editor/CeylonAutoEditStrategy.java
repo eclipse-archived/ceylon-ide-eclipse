@@ -84,10 +84,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
            closing = ")";
         } else if(cmd.text.equals("<")) {
            closing = ">";
-        }
-        else if (cmd.text.equals("\"") ||
-                 cmd.text.equals("'") ||
-                 cmd.text.equals("`")) {
+        } else if(cmd.text.equals("[")) {
+           closing = "]";
+        } else if (cmd.text.equals("\"") ||
+                   cmd.text.equals("'") ||
+                   cmd.text.equals("`")) {
            if (count(doc.get(), cmd.text.charAt(0))%2==0) {
               closing = cmd.text;
            }
