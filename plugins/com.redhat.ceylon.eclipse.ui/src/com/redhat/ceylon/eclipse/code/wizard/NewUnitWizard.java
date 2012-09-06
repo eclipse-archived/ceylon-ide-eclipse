@@ -29,8 +29,8 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private NewSubtypeWizardPage pageOne;
     private String defaultUnitName="";
     private String contents="";
-    private String title = "New Ceylon Unit";
-    private String description = "Create a new Ceylon compilation unit that will contain Ceylon source.";
+    private String title = "New Ceylon Source File";
+    private String description = "Create a new Ceylon source file.";
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {

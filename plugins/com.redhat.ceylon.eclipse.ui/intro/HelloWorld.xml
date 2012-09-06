@@ -37,9 +37,9 @@
 
 	<item title="Create a Ceylon compilation unit" dialog="true">
 		<description>
-			Next, we&apos;ll need a Ceylon compilation unit, which we'll create
-			using the New Ceylon Unit wizard. Select
-			<b>File > New > Ceylon Unit</b> or click below.
+			Next, we&apos;ll need a Ceylon source file, which we'll create
+			using the New Ceylon Source File wizard. Select
+			<b>File > New > Ceylon Source File</b> or click below.
 			<br/>
 			<br/>
 			Call the unit "hello", or whatever you like, select the option
