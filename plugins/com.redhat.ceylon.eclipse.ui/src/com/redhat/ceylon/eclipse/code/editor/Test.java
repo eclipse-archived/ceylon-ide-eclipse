@@ -8,6 +8,8 @@ import org.eclipse.swt.graphics.Point;
 
 class Test extends CeylonAutoEditStrategy {
     
+	Test() { super(null); }
+	
     public static void main(String[] args) {
         Test instance = new Test();
         

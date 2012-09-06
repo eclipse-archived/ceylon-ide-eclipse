@@ -150,7 +150,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        return new IAutoEditStrategy[] { new CeylonAutoEditStrategy() };
+        return new IAutoEditStrategy[] { new CeylonAutoEditStrategy(editor) };
     }
         
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
