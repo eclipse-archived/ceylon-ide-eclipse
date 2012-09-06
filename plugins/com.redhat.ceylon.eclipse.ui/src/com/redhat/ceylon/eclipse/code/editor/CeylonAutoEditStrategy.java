@@ -17,11 +17,17 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
-import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
+	
+	CeylonEditor editor;
+	
+	public CeylonAutoEditStrategy(CeylonEditor editor) {
+		this.editor = editor;
+	}
     
     public void customizeDocumentCommand(IDocument doc, DocumentCommand cmd) {
     	
@@ -197,22 +203,34 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
     
     private boolean isStringOrCommentContinuation(int offset) {
-        IEditorPart editor = Util.getCurrentEditor();
-        if (editor instanceof CeylonEditor) {
-            CeylonParseController pc = ((CeylonEditor) editor).getParseController();
-            if (pc.getTokens()==null) return false;
-            int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
-            if (tokenIndex>=0) {
-  	            CommonToken token = pc.getTokens().get(tokenIndex);
-                int type = token.getType();
-                return token!=null && (type==STRING_LITERAL || 
-                        type==ASTRING_LITERAL ||
-                        type==MULTI_COMMENT) &&
-                        token.getStartIndex()<offset;
-            }
-        }
-        return false;
+        int type = tokenType(offset);
+        return type==STRING_LITERAL || 
+        		type==ASTRING_LITERAL ||
+        		type==MULTI_COMMENT;
     }
+
+    private boolean isQuotedOrCommented(int offset) {
+        int type = tokenType(offset);
+        return type==STRING_LITERAL || 
+                type==ASTRING_LITERAL ||
+                type==CeylonLexer.CHAR_LITERAL ||
+                type==CeylonLexer.LINE_COMMENT ||
+                type==MULTI_COMMENT;
+    }
+
+	public int tokenType(int offset) {
+        CeylonParseController pc = editor.getParseController();
+        if (pc.getTokens()!=null) {
+        	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
+        	if (tokenIndex>=0) {
+        		CommonToken token = pc.getTokens().get(tokenIndex);
+        		if (token.getStartIndex()<offset) {
+        			return token.getType();
+        		}
+        	}
+        }
+		return -1;
+	}
 
     /*private boolean isLineComment(int offset) {
         IEditorPart editor = Util.getCurrentEditor();
@@ -231,19 +249,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }*/
 
     private int getStringIndent(int offset) {
-        IEditorPart editor = Util.getCurrentEditor();
-        if (editor instanceof CeylonEditor) {
-            CeylonParseController pc = ((CeylonEditor) editor).getParseController();
-            if (pc.getTokens()==null) return -1;
-            int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
-            if (tokenIndex>=0) {
-                CommonToken token = pc.getTokens().get(tokenIndex);
-                if (token!=null && token.getType()==STRING_LITERAL &&
-                        token.getStartIndex()<offset) {
-                    return token.getCharPositionInLine()+1;
-                }
-            }
-        }
+    	CeylonParseController pc = editor.getParseController();
+    	if (pc.getTokens()==null) return -1;
+    	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
+    	if (tokenIndex>=0) {
+    		CommonToken token = pc.getTokens().get(tokenIndex);
+    		if (token!=null && token.getType()==STRING_LITERAL &&
+    				token.getStartIndex()<offset) {
+    			return token.getCharPositionInLine()+1;
+    		}
+    	}
         return -1;
     }
 

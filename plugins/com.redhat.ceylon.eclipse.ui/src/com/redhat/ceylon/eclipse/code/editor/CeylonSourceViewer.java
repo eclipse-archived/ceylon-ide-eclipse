@@ -329,7 +329,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             if (codePresenter!=null)
             	codePresenter.install(this);
 
-            autoEditStrategy = new CeylonAutoEditStrategy();
+            autoEditStrategy = new CeylonAutoEditStrategy(svc.editor);
             
             fQuickAssistAssistant = svc.getQuickAssistAssistant(this);
             if (fQuickAssistAssistant != null)
