@@ -33,14 +33,13 @@ import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -54,8 +53,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -482,32 +480,26 @@ public class CeylonContentProposer {
     		final CeylonParseController cpc) {
     	final TypeChecker tc = cpc.getTypeChecker();
     	if (tc!=null) {
-    		SortedSet<String> results = tc.getContext().getRepositoryManager()
+    		Collection<ModuleDetails> results = tc.getContext().getRepositoryManager()
     				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM))
     				.getResults();
-			for (final String name: results) {
-    			if (//!name.isEmpty() && name.startsWith(pfp) &&
-    					!name.equals(Module.DEFAULT_MODULE_NAME)) {
-    				SortedMap<String, ModuleVersionDetails> versions = tc.getContext().getRepositoryManager()
-    						.completeVersions(new ModuleVersionQuery(name, null, ModuleQuery.Type.JVM))
-    						.getVersions();
-    				if (versions.isEmpty()) {
-						result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-								name + ".", name.substring(len) + ".", false));
-    				}
-    				else {
-    					for (final Entry<String, ModuleVersionDetails> version: versions.entrySet()) {
-    						String versioned = name + " '" + version.getKey() + "'";
-							result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-    								versioned, versioned.substring(len), false) {
-    							@Override
-    							public String getAdditionalProposalInfo() {
-    								return version.getValue().getDoc();
-    							}
-    						});
-    					}
-    				}
-    			}
+    		for (final ModuleDetails module : results) {
+    		    if (!module.getName().equals(Module.DEFAULT_MODULE_NAME)) {
+    		        // let's put them from newer to older
+    		        List<String> reversedVersions = new LinkedList<String>();
+    		        for(String version : module.getVersions())
+    		            reversedVersions.add(0, version);
+    		        for (String version : reversedVersions) {
+    		            String versioned = module.getName() + " '" + version + "'";
+    		            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+    		                                              versioned, versioned.substring(len), false) {
+    		                @Override
+    		                public String getAdditionalProposalInfo() {
+    		                    return module.getDoc();
+    		                }
+    		            });
+    		        }
+    		    }
     		}
     	}
     }
