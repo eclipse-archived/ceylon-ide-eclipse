@@ -204,7 +204,8 @@ public class JDTClass implements ClassMirror {
     @Override
     public ClassMirror getEnclosingClass() {
     	//TODO: is this correct?
-    	return new JDTClass(klass.enclosingType(), lookupEnvironment);
+    	ReferenceBinding enclosingType = klass.enclosingType();
+		return enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
     }
 
     @Override
