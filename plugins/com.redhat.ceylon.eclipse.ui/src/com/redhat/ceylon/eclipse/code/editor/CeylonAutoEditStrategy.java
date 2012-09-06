@@ -68,36 +68,81 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
         
         closeOpening(doc, cmd);
-        
     }
 
-    public void closeOpening(IDocument doc, DocumentCommand cmd) {
+	public void closeOpening(IDocument doc, DocumentCommand cmd) {
 		try {
-			//TODO: improve this, check the surrounding token type!
-			if (doc.getChar(cmd.offset-1)=='\\') {
+			// TODO: improve this, check the surrounding token type!
+			if (doc.getChar(cmd.offset - 1) == '\\') {
 				return;
 			}
-		} 
-		catch (BadLocationException e) {}
-        String closing = null;
-        if(cmd.text.equals("(")) {
-           closing = ")";
-        } else if(cmd.text.equals("<")) {
-           closing = ">";
-        } else if(cmd.text.equals("[")) {
-           closing = "]";
-        } else if (cmd.text.equals("\"") ||
-                   cmd.text.equals("'") ||
-                   cmd.text.equals("`")) {
-           if (count(doc.get(), cmd.text.charAt(0))%2==0) {
-              closing = cmd.text;
-           }
-        }
-        if (closing != null) {
-           cmd.text+=closing;
-           cmd.shiftsCaret=false;
-           cmd.caretOffset = cmd.offset+1;
-       }
+		} catch (BadLocationException e) {}
+
+		String[][] types = {
+				{ "'", "'" },
+				{ "\"", "\"" },
+				{ "`", "`" },
+				{ "<", ">" },
+				{ "(", ")" },
+				{ "[", "]" }};
+
+		String current = cmd.text;
+		String opening = null;
+		String closing = null;
+
+		for (String[] type : types) {
+			if (type[0].equals(current) || type[1].equals(current)) {
+				opening = type[0];
+				closing = type[1];
+				break;
+			}
+		}
+		// no pair found, return
+		if (opening == null && closing == null) {
+			return;
+		}
+
+		boolean skip = false;
+		if (current.equals(closing)) {
+			try {
+				// skip one a head if next char is the closing bracket
+				if (String.valueOf(doc.getChar(cmd.offset)).equals(closing)) {
+					skip = true;
+				}
+			} catch (BadLocationException e) {}
+
+			if (skip) {
+				cmd.text = "";
+				cmd.shiftsCaret = false;
+				cmd.caretOffset = cmd.offset + 1;
+			}
+		}
+		if (!skip && current.equals(opening)) {
+			boolean closeOpening = true;
+			if (opening.equals("<")) {
+				// only close angle brackets if it's after a UIdentifier
+				// if(a< -> don't close
+				// if(Some< -> close
+				// A< -> close
+				int currOfset = cmd.offset - 1;
+				char currChar;
+				try {
+					while (Character.isAlphabetic(currChar = doc.getChar(currOfset))) {
+						currOfset--;
+					}
+					currChar = doc.getChar(currOfset + 1);
+					if (!Character.isUpperCase(currChar)) {
+						closeOpening = false;
+					}
+				} catch (BadLocationException e) {
+				}
+			}
+			if (closeOpening) {
+				cmd.text += closing;
+				cmd.shiftsCaret = false;
+				cmd.caretOffset = cmd.offset + 1;
+			}
+		}
 	}
 
 	private String getPrefix(IDocument doc, DocumentCommand cmd) {
