@@ -200,6 +200,12 @@ public class JDTClass implements ClassMirror {
     public boolean isInnerClass() {
         return klass.isMemberType();
     }
+    
+    @Override
+    public ClassMirror getEnclosingClass() {
+    	//TODO: is this correct?
+    	return new JDTClass(klass.enclosingType(), lookupEnvironment);
+    }
 
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
