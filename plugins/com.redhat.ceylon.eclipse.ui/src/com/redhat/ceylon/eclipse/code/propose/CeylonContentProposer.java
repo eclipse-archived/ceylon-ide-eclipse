@@ -483,7 +483,7 @@ public class CeylonContentProposer {
     		Collection<ModuleDetails> results = tc.getContext().getRepositoryManager()
     				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM))
     				.getResults();
-    		for (final ModuleDetails module : results) {
+    		for (final ModuleDetails module: results) {
     		    if (!module.getName().equals(Module.DEFAULT_MODULE_NAME)) {
     		        // let's put them from newer to older
     		        List<String> reversedVersions = new LinkedList<String>();
@@ -495,7 +495,7 @@ public class CeylonContentProposer {
     		                                              versioned, versioned.substring(len), false) {
     		                @Override
     		                public String getAdditionalProposalInfo() {
-    		                    return module.getDoc();
+    		                    return getDocumentationFor(module);
     		                }
     		            });
     		        }

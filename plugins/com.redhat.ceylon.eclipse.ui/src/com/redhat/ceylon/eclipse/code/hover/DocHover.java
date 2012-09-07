@@ -78,8 +78,10 @@ import org.eclipse.ui.ISharedImages;
 import org.osgi.framework.Bundle;
 
 import com.github.rjeschke.txtmark.Configuration;
+import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
 import com.github.rjeschke.txtmark.SpanEmitter;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -700,6 +702,21 @@ public class DocHover
 		
 	}
 
+	public static String getDocumentationFor(ModuleDetails mod) {
+		StringBuffer buffer= new StringBuffer();
+		
+		addImageAndLabel(buffer, mod, fileUrl("jar_l_obj.gif").toExternalForm(), 
+				16, 16, "<b><tt>" + mod.getName() +"</tt></b>", 20, 4);
+		buffer.append("<hr/>");
+
+		buffer.append(markdown('"'+mod.getDoc()+'"', null));
+				
+		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+		HTMLPrinter.addPageEpilog(buffer);
+		return buffer.toString();
+		
+	}
+
 	public static String getDocumentationFor(CeylonParseController cpc, Module mod) {
 		StringBuffer buffer= new StringBuffer();
 		
@@ -1232,36 +1249,36 @@ public class DocHover
 
 	    String unquotedText = text.substring(1, text.length()-1);
 
-	    Configuration config = Configuration.builder()
-	            .forceExtentedProfile()
-	            .setSpecialLinkEmitter(new SpanEmitter() {
-                    @Override
-                    public void emitSpan(StringBuilder out, String content) {
-                        String linkName;
-                        String linkTarget; 
-                        
-                        int indexOf = content.indexOf("|");
-                        if( indexOf == -1 ) {
-                            linkName = content;
-                            linkTarget = content;
-                        } else {
-                            linkName = content.substring(0, indexOf);
-                            linkTarget = content.substring(indexOf+1, content.length()); 
-                        }
-                        
-                        String href = resolveLink(linkTarget, linkScope);
-                        if (href != null) {
-                            out.append("<a ").append(href).append(">");
-                        }
-                        out.append(linkName);
-                        if (href != null) {
-                            out.append("</a>");
-                        }
+	    Builder builder = Configuration.builder()
+	            .forceExtentedProfile();
+	    if (linkScope!=null) {
+	    	builder.setSpecialLinkEmitter(new SpanEmitter() {
+                @Override
+                public void emitSpan(StringBuilder out, String content) {
+                    String linkName;
+                    String linkTarget; 
+                    
+                    int indexOf = content.indexOf("|");
+                    if( indexOf == -1 ) {
+                        linkName = content;
+                        linkTarget = content;
+                    } else {
+                        linkName = content.substring(0, indexOf);
+                        linkTarget = content.substring(indexOf+1, content.length()); 
                     }
-                })
-	            .build();
-
-	    return Processor.process(unquotedText, config);
+                    
+                    String href = resolveLink(linkTarget, linkScope);
+                    if (href != null) {
+                        out.append("<a ").append(href).append(">");
+                    }
+                    out.append(linkName);
+                    if (href != null) {
+                        out.append("</a>");
+                    }
+                }
+            });
+	    }
+	    return Processor.process(unquotedText, builder.build());
 	}
 	
     private static String resolveLink(String linkTarget, Scope linkScope) {
