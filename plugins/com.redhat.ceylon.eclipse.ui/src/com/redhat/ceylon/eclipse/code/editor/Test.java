@@ -88,23 +88,23 @@ class Test extends CeylonAutoEditStrategy {
         
         doc = new Document("Integer x {");
         instance.doNewline(doc);
-        assertResult(doc, "Integer x {\n\t");
+        assertResult(doc, "Integer x {\n\t\n}");
 
         doc = new Document("Integer x { ");
         instance.doNewline(doc);
-        assertResult(doc, "Integer x { \n\t");
+        assertResult(doc, "Integer x { \n\t\n}");
 
         doc = new Document("\tInteger x {");
         instance.doNewline(doc);
-        assertResult(doc, "\tInteger x {\n\t\t");
+        assertResult(doc, "\tInteger x {\n\t\t\n\t}");
 
         doc = new Document("\tInteger x { //foo");
         instance.doNewline(doc);
-        assertResult(doc, "\tInteger x { //foo\n\t\t");
+        assertResult(doc, "\tInteger x { //foo\n\t\t\n\t}");
 
         doc = new Document("\t\tInteger x { //foo");
         instance.doNewline(doc);
-        assertResult(doc, "\t\tInteger x { //foo\n\t\t\t");
+        assertResult(doc, "\t\tInteger x { //foo\n\t\t\t\n\t\t}");
 
         doc = new Document("//hello");
         instance.doNewline(doc);
@@ -217,11 +217,17 @@ class Test extends CeylonAutoEditStrategy {
         doc = new Document("void x() {\n\tprint(\"hello\");\n\t//bye\n\t");
         instance.doClosingBrace(doc);
         assertResult(doc, "void x() {\n\tprint(\"hello\");\n\t//bye\n}");
-}
-
+    }
+    
+    static int count=0;
+    
     private static void assertResult(Document doc, String result) {
+    	count++;
         if (!doc.get().equals(result)) {
+        	System.out.println("assertion failed: " + count);
             System.out.println(doc.get());
+            System.out.println("expected:");
+            System.out.println(result);
         }
     }
     
