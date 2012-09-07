@@ -85,7 +85,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			}
 		} catch (BadLocationException e) {}
 
-		if(isQuotedOrCommented(cmd.offset)) {
+		if (isQuotedOrCommented(cmd.offset)) {
 			return;
 		}
 
@@ -224,6 +224,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
 
 	public int tokenType(int offset) {
+		if (editor==null) return -1;
         CeylonParseController pc = editor.getParseController();
         if (pc.getTokens()!=null) {
         	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
@@ -254,13 +255,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }*/
 
     private int getStringIndent(int offset) {
+    	if (editor==null) return -1;
     	CeylonParseController pc = editor.getParseController();
     	if (pc.getTokens()==null) return -1;
     	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
     	if (tokenIndex>=0) {
     		CommonToken token = pc.getTokens().get(tokenIndex);
-    		if (token!=null && token.getType()==STRING_LITERAL &&
-    				token.getStartIndex()<offset) {
+    		if (token!=null && 
+    			(token.getType()==STRING_LITERAL || 
+    				token.getType()==ASTRING_LITERAL) &&
+    			token.getStartIndex()<offset) {
     			return token.getCharPositionInLine()+1;
     		}
     	}
@@ -374,14 +378,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev
                 		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
                 
-                //let's attempt to account for line ending comments in determining if it is a
-                //continuation, but only by looking at the previous line
-                //TODO: make this handle line ending comments further back
-                char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
-                if (lastNonWhitespaceCharAccountingForComments!='\n') {
-                    lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
-                }
-
                 StringBuilder buf = new StringBuilder();
                 appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
                         lastNonWhitespaceChar, correctContinuation, false, buf, c);
@@ -578,7 +574,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             throws BadLocationException {
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
-            if (!isWhitespace(ch.charAt(0))) {
+            if (!isWhitespace(ch.charAt(0)) && 
+            	!isQuotedOrCommented(offset)) {
                 return ch.charAt(0);
             }
         }
@@ -590,7 +587,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         //TODO: handle end-of-line comments
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
-            if (!isWhitespace(ch.charAt(0)) ||
+            if (!isWhitespace(ch.charAt(0)) && 
+            	!isQuotedOrCommented(offset) ||
                     isLineEnding(d, ch)) {
                 return ch.charAt(0);
             }
@@ -602,7 +600,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             throws BadLocationException {
         for (;offset<d.getLength(); offset++) {
             String ch = d.get(offset,1);
-            if (!isWhitespace(ch.charAt(0)) ||
+            if (!isWhitespace(ch.charAt(0)) && 
+                !isQuotedOrCommented(offset) ||
                     isLineEnding(d, ch)) {
                 return ch.charAt(0);
             }
@@ -614,7 +613,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             throws BadLocationException {
         for (;offset<end; offset++) {
             String ch = d.get(offset,1);
-            if (!isWhitespace(ch.charAt(0))) {
+            if (!isWhitespace(ch.charAt(0)) && 
+                !isQuotedOrCommented(offset)) {
                 return ch.charAt(0);
             }
         }
