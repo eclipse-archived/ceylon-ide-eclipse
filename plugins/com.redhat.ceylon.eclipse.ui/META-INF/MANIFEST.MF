@@ -52,5 +52,6 @@ Bundle-ClassPath: ./,
  lib/ceylon.language-0.4-ide.jar,
  lib/txtmark-0.8-f17d7e2193.jar
 Import-Package: org.eclipse.help
+Export-Package: com.redhat.ceylon.eclipse.core.model.loader
 
 

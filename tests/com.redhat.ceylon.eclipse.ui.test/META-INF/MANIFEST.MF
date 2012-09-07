@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %BundleName
+Bundle-SymbolicName: com.redhat.ceylon.eclipse.ui.test;singleton:=true
+Bundle-Activator: com.redhat.ceylon.eclipse.ui.test.CeylonUITestActivator
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.core.runtime,
+ org.junit;bundle-version="4.8.1",
+ com.redhat.ceylon.eclipse.ui;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Vendor: %BundleVendor
+Bundle-Localization: plugin
+Export-Package: com.redhat.ceylon.eclipse.ui.test
+Import-Package: org.eclipse.core.filesystem,
+ org.eclipse.ui,
+ org.eclipse.ui.ide
