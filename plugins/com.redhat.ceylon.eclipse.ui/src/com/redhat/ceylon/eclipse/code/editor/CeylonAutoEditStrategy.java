@@ -399,7 +399,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
                 lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
-        boolean isClosing = startOfCurrentLineChar=='}' && lastNonWhitespaceChar!='{';
+        boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
         appendIndent(d, isContinuation, isOpening, isClosing, correctContinuation, 
                 startOfPrev, endOfPrev, closeBraces, buf, c);
     }
