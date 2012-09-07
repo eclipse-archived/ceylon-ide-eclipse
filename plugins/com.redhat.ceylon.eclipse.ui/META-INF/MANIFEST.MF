@@ -52,6 +52,27 @@ Bundle-ClassPath: ./,
  lib/ceylon.language-0.4-ide.jar,
  lib/txtmark-0.8-f17d7e2193.jar
 Import-Package: org.eclipse.help
-Export-Package: com.redhat.ceylon.eclipse.core.model.loader
-
+Export-Package: com.redhat.ceylon.eclipse.code.editor;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.explorer;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.hover;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.imports;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.open;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.outline;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.parse;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.preferences;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.propose;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.quickfix;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.refactor;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.resolve;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.search;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.code.wizard;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.builder;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.classpath;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.launch;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.model;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.model.loader;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.core.vfs;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.ui;x-friends:="com.redhat.ceylon.eclipse.ui.test",
+ com.redhat.ceylon.eclipse.util;x-friends:="com.redhat.ceylon.eclipse.ui.test"
+Eclipse-BundleShape: dir
 
