@@ -5,11 +5,13 @@ import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -40,8 +42,15 @@ public abstract class ErrorVisitor extends Visitor {
 
             if (error instanceof RecognitionError) {
                 RecognitionError recognitionError = (RecognitionError) error;
-                CommonToken token = (CommonToken) recognitionError
-                        .getRecognitionException().token;
+                RecognitionException re = recognitionError
+                        .getRecognitionException();
+                if (error instanceof LexError) {
+                    startLine = re.line;
+                    startCol = re.charPositionInLine;
+                	startOffset = re.index;
+                	endOffset = startOffset;
+                }
+				CommonToken token = (CommonToken) re.token;
                 if (token!=null) {
                     startOffset = token.getStartIndex();
                     endOffset = token.getStopIndex();
