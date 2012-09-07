@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static java.lang.Math.max;
+
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ final class WarmupJob extends Job {
 			for (Package p: packages) {
 				p.getMembers();
 			}
-			monitor.worked(90000/packages.size()/modules.size());
+			monitor.worked(90000/max(packages.size(),1)/max(modules.size(),1));
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
