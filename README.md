@@ -37,8 +37,11 @@
 
 1.  From this directory, type
     
-        mvn clean install
-    
+        mvn clean install -fae
+
+    To skip tests you can do:
+        mvn clean install -Dmaven.test.skip 
+   
 2.  The directory `site/target/site` now contains an update site you can 
     install from.
 

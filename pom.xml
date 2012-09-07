@@ -162,7 +162,6 @@
 	  <useUIThread>true</useUIThread>
 	  <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
 	  <argLine>${platformSystemProperties}</argLine>
-	  <!--<argLine>${tycho.testArgLine} ${memoryOptions1} ${memoryOptions2} ${applejdkProperties} ${platformSystemProperties} ${systemProperties} -Dusage_reporting_enabled=false -Dorg.jboss.tools.tests.skipPrivateRequirements=${skipPrivateRequirements}</argLine>-->
 	  <!-- https://docs.sonatype.org/display/TYCHO/How+to+run+SWTBot+tests+with+Tycho -->
 	  <!-- set useUIThread=true for regular ui tests -->
 	  <!-- set useUIThread=false for swtbot tests -->
@@ -173,6 +172,11 @@
 	    <dependency>
 	      <type>p2-installable-unit</type>
 	      <artifactId>org.eclipse.platform.ide</artifactId>
+	      <version>0.0.0</version>
+	    </dependency>
+	    <dependency>
+	      <type>p2-installable-unit</type>
+	      <artifactId>org.eclipse.jdt.feature.group</artifactId>
 	      <version>0.0.0</version>
 	    </dependency>
 	    <!-- http://www.jmock.org/maven.html -->
