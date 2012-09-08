@@ -24,7 +24,7 @@ public class FindReferenceVisitor extends Visitor {
         }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
-	        while (od!=null) {
+	        while (od!=null && od!=declaration) {
 	            declaration = od;
 	            od = ((TypedDeclaration) od).getOriginalDeclaration();
 	        }
