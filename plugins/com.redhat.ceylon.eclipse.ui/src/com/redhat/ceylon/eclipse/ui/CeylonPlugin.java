@@ -124,7 +124,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      */
     public static File getCeylonPluginRepository(String ceylonRepositoryProperty) {
         File ceylonRepository=null;
-        if (! "".equals(ceylonRepositoryProperty)) {
+        if (!"".equals(ceylonRepositoryProperty)) {
             File ceylonRepositoryPath = new File(ceylonRepositoryProperty);
             if (ceylonRepositoryPath.exists()) {
                 ceylonRepository = ceylonRepositoryPath;

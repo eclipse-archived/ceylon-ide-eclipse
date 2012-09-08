@@ -1745,13 +1745,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		String[] repoPaths = getRepositoryPaths(project);
     	List<String> repos = new ArrayList<String>(repoPaths.length);
         for (String repoPath: repoPaths) {
-        	repos.add(repoPath);
+        	repos.add(interpolateVariablesInRepositoryPath(repoPath));
         }
         /*if (repos.isEmpty()) {
         	repos.add(CeylonPlugin.getInstance().getCeylonRepository());
         }*/
     	return repos;
     }
+
+	public static String interpolateVariablesInRepositoryPath(String repoPath) {
+		String userHomePath = System.getProperty("user.home");
+		String pluginRepoPath = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+		return repoPath.replace("${user.home}", userHomePath)
+		        .replace("${ceylon.repo}", pluginRepoPath);
+	}
 
     private static File toFile(IProject project, IPath path) {
 		return project.getFolder(path).getRawLocation().toFile();
@@ -2319,8 +2326,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
 	public static String[] getDefaultUserRepositories() {
 		return new String[]{
-				CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath(),
-				System.getProperty("user.home") + "/.ceylon/repo",
+				"${ceylon.repo}",
+				"${user.home}/.ceylon/repo",
 				"http://modules.ceylon-lang.org/test"
 		};
 	}
