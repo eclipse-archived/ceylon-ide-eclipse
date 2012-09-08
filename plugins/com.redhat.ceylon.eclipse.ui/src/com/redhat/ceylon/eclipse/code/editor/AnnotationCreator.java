@@ -86,10 +86,14 @@ public class AnnotationCreator extends ErrorVisitor {
         		error.getCode(), error instanceof RecognitionError,
         		error.getLine()));
     }
+    
+    public void clearMessages() {
+    	messages.clear();
+    }
 
     public void updateAnnotations() {
     	if (editor.isBackgroundParsingPaused()) {
-    		messages.clear();
+    		clearMessages();
     		return;
     	}
         IDocumentProvider docProvider= editor.getDocumentProvider();
