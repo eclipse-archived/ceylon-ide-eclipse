@@ -9,9 +9,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -33,6 +33,16 @@ public class CeylonParserScheduler extends Job {
     	super("Parsing and typechecking " + editor.getEditorInput().getName());
         setSystem(true); //do not show this job in the Progress view
         setPriority(SHORT);
+        setRule(new ISchedulingRule() {			
+			@Override
+			public boolean isConflicting(ISchedulingRule rule) {
+				return rule==this;
+			}
+			@Override
+			public boolean contains(ISchedulingRule rule) {
+				return rule==this;
+			}
+		});
         
         // Note: The parse controller is now initialized before  
         // it gets handed to us here, since some other services  
@@ -110,7 +120,10 @@ public class CeylonParserScheduler extends Job {
                 // need it; just make sure the document gets 
                 // parsed
                 parseController.parse(document, wrappedMonitor, new Stager());
-                if (!wrappedMonitor.isCanceled()) {
+                if (wrappedMonitor.isCanceled()) {
+                	annotationCreator.clearMessages();
+                }
+                else {
                 	annotationCreator.updateAnnotations();
                 }
             } 
