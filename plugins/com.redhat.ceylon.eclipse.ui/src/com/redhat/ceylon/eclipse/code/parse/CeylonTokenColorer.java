@@ -34,7 +34,7 @@ public class CeylonTokenColorer  {
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
     
-    public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", 
+    public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", "assert",
             "class", "interface", "object", "given", "value", "assign", "void", "function", "of", 
             "extends", "satisfies", "adapts", "abstracts", "in", "out", "return", "break", "continue", 
             "throw", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", 
