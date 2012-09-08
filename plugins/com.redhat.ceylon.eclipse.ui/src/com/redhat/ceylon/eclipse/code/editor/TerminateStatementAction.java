@@ -167,6 +167,10 @@ final class TerminateStatementAction extends Action {
 				super.visit(that);
 				terminate(that, CeylonLexer.RPAREN, ")");
 			}
+			public void visit(Tree.IndexExpression that) {
+				super.visit(that);
+				terminate(that, CeylonLexer.RBRACKET, "]");
+			}
 			@Override
 			public void visit(Tree.TypeParameterList that) {
 				super.visit(that);
