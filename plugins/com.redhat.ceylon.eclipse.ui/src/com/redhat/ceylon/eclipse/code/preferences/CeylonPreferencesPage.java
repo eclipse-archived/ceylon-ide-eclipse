@@ -2,7 +2,9 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getDefaultUserRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPaths;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.interpolateVariablesInRepositoryPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
@@ -51,7 +53,6 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -70,7 +71,8 @@ public class CeylonPreferencesPage extends PropertyPage {
     //TODO: fix copy/paste!
     public boolean isRepoValid() {
     	for (String repositoryPath: repositoryPaths) {
-    		String carPath = repositoryPath + "/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
+    		String carPath = interpolateVariablesInRepositoryPath(repositoryPath) + 
+    				"/ceylon/language/" + LANGUAGE_MODULE_VERSION + 
     				"/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
     		if (new File(carPath).exists()) {
     			return true;
@@ -106,7 +108,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableExplodeModules.setSelection(false);
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
-        repositoryPaths = Arrays.asList(CeylonBuilder.getDefaultUserRepositories());
+        repositoryPaths = Arrays.asList(getDefaultUserRepositories());
         repoFolders.removeAll();
         for(String repo : repositoryPaths)
         	addRepoToTable(repo);
@@ -446,6 +448,7 @@ public class CeylonPreferencesPage extends PropertyPage {
 	private IFolder getOutputFolder(IProject project) {
 		return project.getFolder(outputPath.removeFirstSegments(1));
 	}
+	
     @Override
     protected Control createContents(Composite composite) {
         
