@@ -15,26 +15,18 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnyAttribute;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnyMethod;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QuotedLiteral;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.util.FindDocumentableNodeVisitor;
 
 public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
     
     public static void addDocAnnotationProposal(Collection<ICompletionProposal> proposals, Node node, CompilationUnit cu, IFile file, IDocument doc) {
-        node = determineNode(node, cu);
+        node = determineDocumentableNode(node, cu);
         if (node == null) {
             return;
         }
@@ -60,25 +52,10 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static Node determineNode(Node node, CompilationUnit cu) {
-        if( node instanceof Type || 
-                node instanceof MemberOrTypeExpression || 
-                node instanceof ImportPath ||
-                node instanceof QuotedLiteral) {
-            FindContainerVisitor fcv = new FindContainerVisitor(node);
-            fcv.visit(cu);
-            node = fcv.getStatementOrArgument();
-        }
-        if( node instanceof ClassOrInterface ||
-                node instanceof AnyAttribute ||
-                node instanceof AnyMethod ||
-                node instanceof ObjectDefinition ||
-                node instanceof Parameter ||
-                node instanceof ModuleDescriptor ||
-                node instanceof PackageDescriptor ) {
-            return node;
-        }
-        return null;
+    private static Node determineDocumentableNode(Node node, CompilationUnit cu) {
+        FindDocumentableNodeVisitor fcv = new FindDocumentableNodeVisitor(node);
+        fcv.visit(cu);
+        return fcv.getDocumentableNode();
     }
     
     private static boolean isAlreadyPresent(Node node) {
