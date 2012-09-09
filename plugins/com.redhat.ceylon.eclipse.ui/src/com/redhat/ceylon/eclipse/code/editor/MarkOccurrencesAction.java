@@ -352,13 +352,13 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     @Override
     public void update(CeylonParseController parseController,
     		IProgressMonitor monitor) {
-    	if (activeEditor.isBackgroundParsingPaused()) return;
+    	if (activeEditor==null || activeEditor.isBackgroundParsingPaused()) return;
     	try {
     		getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
     				new IRunnableWithProgress() {
     			@Override
-    			public void run(IProgressMonitor monitor) throws InvocationTargetException,
-    			InterruptedException {
+    			public void run(IProgressMonitor monitor) 
+    					throws InvocationTargetException, InterruptedException {
     				IRegion selection = activeEditor.getSelection();
     				int offset = selection.getOffset();
     				int length = selection.getLength();
