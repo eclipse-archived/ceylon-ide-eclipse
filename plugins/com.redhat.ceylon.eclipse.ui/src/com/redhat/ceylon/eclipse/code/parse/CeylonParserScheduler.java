@@ -88,7 +88,10 @@ public class CeylonParserScheduler extends Job {
                 }
                 return Status.CANCEL_STATUS;
             }
-            
+            if (editor.isBackgroundParsingPaused()) {
+            	return Status.OK_STATUS;
+            }
+
             IProgressMonitor wrappedMonitor = new ProgressMonitorWrapper(monitor) {
                 @Override
                 public boolean isCanceled() {
@@ -99,10 +102,6 @@ public class CeylonParserScheduler extends Job {
                     return isCanceled || super.isCanceled();
                 }
             };
-            
-            if (editor.isBackgroundParsingPaused()) {
-            	return Status.OK_STATUS;
-            }
             
             try {
                 CeylonSourceViewer csv = editor.getCeylonSourceViewer();
@@ -120,7 +119,8 @@ public class CeylonParserScheduler extends Job {
                 // need it; just make sure the document gets 
                 // parsed
                 parseController.parse(document, wrappedMonitor, new Stager());
-                if (wrappedMonitor.isCanceled()) {
+                if (wrappedMonitor.isCanceled() || 
+                		editor.isBackgroundParsingPaused()) {
                 	annotationCreator.clearMessages();
                 }
                 else {
@@ -131,7 +131,8 @@ public class CeylonParserScheduler extends Job {
                 e.printStackTrace();
             }
             return wrappedMonitor.isCanceled() ? //&& sourceStillExists()
-            		Status.OK_STATUS : Status.CANCEL_STATUS;
+            		Status.OK_STATUS : 
+            		Status.CANCEL_STATUS;
         }
         finally {
             canceling = false;
@@ -147,15 +148,12 @@ public class CeylonParserScheduler extends Job {
     }
 
     private void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
-        // Suppress the notification if there's no AST (e.g. due to a parse error)
-    	if (editor.isBackgroundParsingPaused()) return;
         if (parseController!=null) {
             for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(listeners)) {
-            	if (monitor.isCanceled()) break;
-                // TODO: How to tell how far we got with the source analysis? 
-            	//       CeylonParseController should tell us!
-                // Pretend to get through the highest level of analysis so 
-            	// all services execute (for now)
+            	if (editor.isBackgroundParsingPaused() || 
+            			monitor.isCanceled()) {
+            		break;
+            	}
                 if (listener.getStage()==stage) {
                     listener.update(parseController, monitor);
                 }

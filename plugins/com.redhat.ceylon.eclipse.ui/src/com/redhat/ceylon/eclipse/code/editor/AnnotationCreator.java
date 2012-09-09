@@ -92,10 +92,6 @@ public class AnnotationCreator extends ErrorVisitor {
     }
 
     public void updateAnnotations() {
-    	if (editor.isBackgroundParsingPaused()) {
-    		clearMessages();
-    		return;
-    	}
         IDocumentProvider docProvider= editor.getDocumentProvider();
         if (docProvider!=null) {
             IAnnotationModel model= docProvider.getAnnotationModel(editor.getEditorInput());
