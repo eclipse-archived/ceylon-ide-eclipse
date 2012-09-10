@@ -15,8 +15,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Assertion;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
@@ -46,7 +49,7 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Add doc annotation", file);
         change.setEdit(new InsertEdit(node.getStartIndex(), docBuilder.toString()));
 
-        AddDocAnnotationProposal proposal = new AddDocAnnotationProposal(change, file, node.getStartIndex() + 5);
+        AddDocAnnotationProposal proposal = new AddDocAnnotationProposal(change, file, node.getStartIndex() + 5, determineDocumentableNodeName(node));
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
@@ -58,6 +61,40 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
         return fcv.getDocumentableNode();
     }
     
+    private static String determineDocumentableNodeName(Node node) {
+        String name = "";
+        
+        if (node instanceof Tree.Declaration) {
+            Identifier identifier = ((Tree.Declaration) node).getIdentifier();
+            if (identifier != null) {
+                name = identifier.getText();
+            }
+        } else if (node instanceof ModuleDescriptor) {
+            ImportPath importPath = ((ModuleDescriptor) node).getImportPath();
+            name = determineDocumentableNodeName(importPath);
+        } else if (node instanceof PackageDescriptor) {
+            ImportPath importPath = ((PackageDescriptor) node).getImportPath();
+            name = determineDocumentableNodeName(importPath);
+        } else if (node instanceof Assertion) {
+            name = "assert";
+        }
+
+        return name;
+    }
+    
+    private static String determineDocumentableNodeName(ImportPath importPath) {
+        StringBuilder name = new StringBuilder();
+        if (importPath != null) {
+            for (Identifier identifier : importPath.getIdentifiers()) {
+                if (name.length() > 0) {
+                    name.append(".");
+                }
+                name.append(identifier.getText());
+            }
+        }
+        return name.toString();
+    }
+    
     private static boolean isAlreadyPresent(Node node) {
         AnnotationList annotationList = null;
 
@@ -67,6 +104,8 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
             annotationList = ((ModuleDescriptor) node).getAnnotationList();
         } else if (node instanceof PackageDescriptor) {
             annotationList = ((PackageDescriptor) node).getAnnotationList();
+        } else if (node instanceof Assertion) {
+            annotationList = ((Assertion) node).getAnnotationList();
         }
         
         if (annotationList != null) {
@@ -82,13 +121,12 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
         
         return false;
     }
-    
 
     private IFile file;
     private int offset;
 
-    private AddDocAnnotationProposal(Change change, IFile file, int offset) {
-        super("Add 'doc' annotation", change, 10, CORRECTION);
+    private AddDocAnnotationProposal(Change change, IFile file, int offset, String nodeName) {
+        super("Add 'doc' annotation to '" + nodeName + "'", change, 10, CORRECTION);
         this.file = file;
         this.offset = offset;
     }
