@@ -11,19 +11,31 @@ public class FindDocumentableNodeVisitor extends Visitor implements NaturalVisit
     private Tree.StatementOrArgument documentableNode;
     private Tree.StatementOrArgument currentDocumentableNode;
 
-    public Tree.StatementOrArgument getDocumentableNode() {
-        return documentableNode;
-    }
-
     public FindDocumentableNodeVisitor(Node term) {
         this.term = term;
     }
 
+    public Tree.StatementOrArgument getDocumentableNode() {
+        return documentableNode;
+    }
+
     @Override
     public void visit(Tree.StatementOrArgument that) {
-        if (isDocumentable(that)) {
+        boolean isDocumentable = isDocumentable(that);
+        Tree.StatementOrArgument originalDocumentableNode = null;
+        if (isDocumentable) {
+            originalDocumentableNode = currentDocumentableNode;
             currentDocumentableNode = that;
         }
+        super.visit(that);
+        if (isDocumentable) {
+            currentDocumentableNode = originalDocumentableNode;
+        }
+    }
+    
+    @Override
+    public void visit(Tree.Body that) {
+        currentDocumentableNode = null;
         super.visit(that);
     }
 
