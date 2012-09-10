@@ -24,7 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.util.FindDocumentableNodeVisitor;
+import com.redhat.ceylon.eclipse.util.FindDocumentableVisitor;
 
 public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
     
@@ -56,7 +56,7 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
     }
 
     private static Node determineDocumentableNode(Node node, CompilationUnit cu) {
-        FindDocumentableNodeVisitor fcv = new FindDocumentableNodeVisitor(node);
+        FindDocumentableVisitor fcv = new FindDocumentableVisitor(node);
         fcv.visit(cu);
         return fcv.getDocumentableNode();
     }

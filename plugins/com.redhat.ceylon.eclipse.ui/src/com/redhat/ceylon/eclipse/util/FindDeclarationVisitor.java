@@ -1,47 +1,46 @@
 package com.redhat.ceylon.eclipse.util;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindDeclarationVisitor extends Visitor {
-	
-	private final Declaration declaration;
-	private Tree.Declaration declarationNode;
-	
-	public FindDeclarationVisitor(Declaration declaration) {
-		this.declaration = declaration;
-	}
-	
-	public Tree.Declaration getDeclarationNode() {
-		return declarationNode;
-	}
-	
-    private boolean isDeclaration(Declaration dec) {
-        return dec!=null && dec.equals(declaration);
+public class FindDeclarationVisitor extends Visitor implements NaturalVisitor {
+
+    private final Node term;
+    private Tree.Declaration documentableNode;
+    private Tree.Declaration currentDocumentableNode;
+
+    public FindDeclarationVisitor(Node term) {
+        this.term = term;
+    }
+
+    public Tree.Declaration getDeclarationNode() {
+        return documentableNode;
+    }
+
+    @Override
+    public void visit(Tree.Declaration that) {
+        Tree.Declaration originalDocumentableNode = currentDocumentableNode;
+        currentDocumentableNode = that;
+        super.visit(that);
+        currentDocumentableNode = originalDocumentableNode;
     }
     
-	@Override
-	public void visit(Tree.Declaration that) {
-		if (isDeclaration(that.getDeclarationModel())) {
-			declarationNode = that;
-		}
-		super.visit(that);
-	}
-	
     @Override
-    public void visit(Tree.ObjectDefinition that) {
-        if (isDeclaration(that.getDeclarationModel().getTypeDeclaration())) {
-            declarationNode = that;
-        }
+    public void visit(Tree.Body that) {
+        currentDocumentableNode = null;
         super.visit(that);
     }
-    
-	public void visitAny(Node node) {
-		if (declarationNode==null) {
-			super.visitAny(node);
-		}
-	}
-	
+
+    @Override
+    public void visitAny(Node node) {
+        if (node == term) {
+            documentableNode = currentDocumentableNode;
+        }
+        if (documentableNode == null) {
+            super.visitAny(node);
+        }
+    }
+
 }

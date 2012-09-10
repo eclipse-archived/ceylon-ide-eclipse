@@ -31,7 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 /**
  * Add generic type constraints proposal for following code:
@@ -153,7 +153,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     }
 
     private static Node determineTypeParamCont(CompilationUnit cu, TypeParameter typeParam) {
-        FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeParam);
+        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeParam);
         fdv.visit(cu);
         Tree.Declaration typeParamDecl = fdv.getDeclarationNode();
         if (typeParamDecl != null) {

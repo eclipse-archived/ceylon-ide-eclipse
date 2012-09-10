@@ -10,7 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class CeylonOccurrenceMarker {
@@ -37,7 +37,7 @@ public class CeylonOccurrenceMarker {
                 FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
                 root.visit(frv);
                 occurrences.addAll(frv.getNodes());
-                FindDeclarationVisitor fdv = new FindDeclarationVisitor(frv.getDeclaration());
+                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
                 root.visit(fdv);
                 Tree.Declaration decNode = fdv.getDeclarationNode();
                 if (decNode!=null) {

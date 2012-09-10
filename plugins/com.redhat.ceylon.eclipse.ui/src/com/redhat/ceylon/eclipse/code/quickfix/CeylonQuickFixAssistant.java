@@ -80,6 +80,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -154,28 +155,30 @@ public class CeylonQuickFixAssistant {
                     context.getOffset() + context.getLength());
             AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
                     file, cu, proposals, node);
-            if (node instanceof Tree.Declaration) {
-                Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+            
+            Tree.Declaration decNode = findDeclaration(cu, node);
+            if (decNode!=null) {
+                Declaration d = decNode.getDeclarationModel();
                 if (d!=null) {
                 	if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
                 			!d.isShared() && 
                 			!(d instanceof Parameter)) {
-                		addMakeSharedDecProposal(proposals, project, node);
+                		addMakeSharedDecProposal(proposals, project, decNode);
                 	}
                 	if (d.isClassOrInterfaceMember() && 
                 			d.isShared() &&
                 			!d.isDefault() && !d.isFormal() &&
                 			!(d instanceof Interface) && 
                 			!(d instanceof Parameter)) {
-                		addMakeDefaultDecProposal(proposals, project, node);
+                		addMakeDefaultDecProposal(proposals, project, decNode);
                 	}
                 }
             }
-            if (node instanceof Tree.TypedDeclaration && 
-                    !(node instanceof Tree.ObjectDefinition) &&
-                    !(node instanceof Tree.Variable) &&
-                    !(node instanceof Tree.Parameter)) {
-                Tree.Type type = ((Tree.TypedDeclaration) node).getType();
+            if (decNode instanceof Tree.TypedDeclaration && 
+                    !(decNode instanceof Tree.ObjectDefinition) &&
+                    !(decNode instanceof Tree.Variable) &&
+                    !(decNode instanceof Tree.Parameter)) {
+                Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
                 if (type instanceof Tree.LocalModifier) {
                     SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
                 }
@@ -183,17 +186,18 @@ public class CeylonQuickFixAssistant {
             if (node instanceof Tree.LocalModifier) {
                 SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
             }
-            if (node instanceof Tree.AttributeDeclaration) {
-                Tree.AttributeDeclaration dec = (Tree.AttributeDeclaration) node;
-                if (dec.getSpecifierOrInitializerExpression()!=null) {
+            if (decNode instanceof Tree.AttributeDeclaration) {
+                Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+                if (attDecNode.getSpecifierOrInitializerExpression()!=null) {
                     SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, 
-                    		proposals, file, dec);
+                    		proposals, file, attDecNode);
                     ConvertToGetterProposal.addConvertToGetterProposal(doc, proposals, 
-                            file, dec);
+                            file, attDecNode);
                 }
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
-                		dec, editor);
+                		attDecNode, editor);
             }
+            
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
 
@@ -214,6 +218,12 @@ public class CeylonQuickFixAssistant {
         
         RefineFormalMembersProposal.add(proposals, editor);
     }
+
+	public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
+		FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
+		fcv.visit(cu);
+		return fcv.getDeclarationNode();
+	}
     
     public void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
             IFile file, Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals) {
@@ -551,10 +561,7 @@ public class CeylonQuickFixAssistant {
         if (idn==null) return;
 		String brokenName = idn.getText();
         if (brokenName.isEmpty()) return;
-        //Tree.BaseType bt = (Tree.BaseType) node;
-        FindContainerVisitor fdv = new FindContainerVisitor(node);
-        fdv.visit(cu);
-        Tree.Declaration dec = fdv.getDeclaration();
+        Tree.Declaration dec = findDeclaration(cu, node);
         if (dec instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition cd = (Tree.ClassDefinition) dec;
             if (cd.getCaseTypes()!=null) {
@@ -760,7 +767,7 @@ public class CeylonQuickFixAssistant {
                 addCreateLocalProposals(proposals, project, def, desc, image, cu, smte, 
                 		returnType, paramTypes);
                 ClassOrInterface container = findClassContainer(cu, smte);
-                if(container!=null && 
+                if (container!=null && 
                 		container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
                     do {
                         addCreateMemberProposals(proposals, project, def, desc, image, container, 
@@ -798,11 +805,11 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node n){
-        FindContainerVisitor visitor = new FindContainerVisitor(n);
-        visitor.visit(cu);
-        Tree.Declaration declaration = visitor.getDeclaration();
-        if(declaration == null || declaration == n)
+    private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node node){
+		FindContainerVisitor fcv = new FindContainerVisitor(node);
+		fcv.visit(cu);
+    	Tree.Declaration declaration = fcv.getDeclaration();
+        if(declaration == null || declaration == node)
             return null;
         if(declaration instanceof Tree.ClassOrInterface)
             return (ClassOrInterface) declaration.getDeclarationModel();
@@ -844,7 +851,7 @@ public class CeylonQuickFixAssistant {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.Body body = getBody(decNode);
@@ -947,7 +954,7 @@ public class CeylonQuickFixAssistant {
                     
                     if( dec instanceof TypedDeclaration ) {
                         TypedDeclaration typedDec = (TypedDeclaration)dec;
-                        FindDeclarationVisitor fdv = new FindDeclarationVisitor(typedDec);
+                        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typedDec);
                         getRootNode(unit).visit(fdv);
                         Tree.TypedDeclaration decNode = (Tree.TypedDeclaration) fdv.getDeclarationNode();
                         if (decNode!=null) {
@@ -1049,7 +1056,7 @@ public class CeylonQuickFixAssistant {
         if (typeDec!=null && typeDec instanceof Functional) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
@@ -1071,7 +1078,7 @@ public class CeylonQuickFixAssistant {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
@@ -1354,7 +1361,7 @@ public class CeylonQuickFixAssistant {
         if (dec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
@@ -1373,7 +1380,7 @@ public class CeylonQuickFixAssistant {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
-                    FindDeclarationVisitor fdv = new FindDeclarationVisitor(dec);
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
