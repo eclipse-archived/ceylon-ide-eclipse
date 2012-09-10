@@ -291,13 +291,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public void loadPackage(String packageName, boolean loadDeclarations) {
+    public boolean loadPackage(String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
         if(loadDeclarations && !loadedPackages.add(packageName)){
-            return;
+            return true;
         }
-        if(!loadDeclarations)
-            return;
         Module module = lookupModule(packageName);
         
         if (module instanceof JDTModule) {
@@ -319,23 +317,28 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
                     
                     packageFragment = root.getPackageFragment(packageName);
-                    if(packageFragment.exists() && loadDeclarations) {
-                        try {
-                            for (IClassFile classFile : packageFragment.getClassFiles()) {
-                                IType type = classFile.getType();
-                                if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
-                                    convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
-                                }
-                            }
-                            for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
-                                for (IType type : compilationUnit.getTypes()) {
+                    if(packageFragment.exists()){
+                        if(!loadDeclarations) {
+                            // we found the package
+                            return true;
+                        }else{
+                            try {
+                                for (IClassFile classFile : packageFragment.getClassFiles()) {
+                                    IType type = classFile.getType();
                                     if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
+                                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
+                                    for (IType type : compilationUnit.getTypes()) {
+                                        if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                            convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                        }
+                                    }
+                                }
+                            } catch (JavaModelException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JavaModelException e) {
-                            e.printStackTrace();
                         }
                     }
                 } catch (JavaModelException e) {
@@ -343,6 +346,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
             }
         }
+        return false;
     }
 
     private Module lookupModule(String packageName) {
