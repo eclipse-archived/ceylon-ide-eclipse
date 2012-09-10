@@ -72,7 +72,7 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Add throws annotation", file);
         change.setEdit(new InsertEdit(index, throwsBuilder.toString()));
 
-        AddThrowsAnnotationProposal proposal = new AddThrowsAnnotationProposal(change, exceptionType, file, offset);
+        AddThrowsAnnotationProposal proposal = new AddThrowsAnnotationProposal(change, exceptionType, file, offset, throwContainer.getIdentifier() != null ? throwContainer.getIdentifier().getText() : "");
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
@@ -158,8 +158,8 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
     private IFile file;
     private int offset;
 
-    private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset) {
-        super("Add 'throws("+exceptionType.getProducedTypeName()+")' annotation", change, 10, CORRECTION);
+    private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset, String declName) {
+        super("Add 'throws("+exceptionType.getProducedTypeName()+")' annotation to '" + declName + "'", change, 10, CORRECTION);
         this.file = file;
         this.offset = offset;
     }
