@@ -5,13 +5,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindDocumentableNodeVisitor extends Visitor implements NaturalVisitor {
+public class FindDocumentableVisitor extends Visitor implements NaturalVisitor {
 
     private final Node term;
     private Tree.StatementOrArgument documentableNode;
     private Tree.StatementOrArgument currentDocumentableNode;
 
-    public FindDocumentableNodeVisitor(Node term) {
+    public FindDocumentableVisitor(Node term) {
         this.term = term;
     }
 

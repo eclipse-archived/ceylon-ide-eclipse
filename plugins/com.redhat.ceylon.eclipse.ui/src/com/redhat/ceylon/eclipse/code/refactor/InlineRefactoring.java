@@ -44,7 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class InlineRefactoring extends AbstractRefactoring {
@@ -105,7 +105,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(declaration);
         declarationUnit.visit(fdv);
         declarationNode = fdv.getDeclarationNode();
         if (declarationNode instanceof Tree.AttributeDeclaration &&
@@ -174,7 +174,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     }
                 }
             }
-            FindDeclarationVisitor fdv = new FindDeclarationVisitor(declaration);
+            FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(declaration);
             declarationUnit.visit(fdv);
             declarationNode = fdv.getDeclarationNode();
             term = getInlinedTerm(declarationNode);
