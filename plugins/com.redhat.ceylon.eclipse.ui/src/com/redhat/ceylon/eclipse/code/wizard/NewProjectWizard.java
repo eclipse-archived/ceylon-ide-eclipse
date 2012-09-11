@@ -189,40 +189,24 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             public void widgetSelected(SelectionEvent e) {
                 String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
                 if (dir!=null) {
-                    repositoryPaths.add(dir);
-                    addRepoToTable(dir);
-                    if (!isRepoValid()) {
-                    	fFirstPage.setErrorMessage("Please select a module repository containing the language module");
-                    }
-                    else {
-                    	fFirstPage.setErrorMessage(null);
-                    }
+                    addRepo(dir);
                 }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Button selectRemoteRepoFolder = new Button(composite, SWT.PUSH);
-        selectRemoteRepoFolder.setText("Add Ceylon Herd");
+        Button selectHerdRepo = new Button(composite, SWT.PUSH);
+        selectHerdRepo.setText("Add Ceylon Herd");
         GridData srfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         srfgd.horizontalSpan = 1;
-        selectRemoteRepoFolder.setLayoutData(srfgd);
-        selectRemoteRepoFolder.setEnabled(true);
-        selectRemoteRepoFolder.addSelectionListener(new SelectionListener() {
+        selectHerdRepo.setLayoutData(srfgd);
+        selectHerdRepo.setEnabled(true);
+        selectHerdRepo.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
             	String url = "http://modules.ceylon-lang.org/test";
-                //if (url!=null) {
-                    repositoryPaths.add(url);
-                    addRepoToTable(url);
-                    if (!isRepoValid()) {
-                    	fFirstPage.setErrorMessage("Please select a module repository containing the language module");
-                    }
-                    else {
-                    	fFirstPage.setErrorMessage(null);
-                    }
-                //}
+            	addRepo(url);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -259,7 +243,18 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         });
 	}
     
-	private void addRepoToTable(String repositoryPath) {
+	protected void addRepo(String url) {
+        repositoryPaths.add(url);
+        addRepoToTable(url);
+        if (!isRepoValid()) {
+            fFirstPage.setErrorMessage("Please select a module repository containing the language module");
+        }
+        else {
+            fFirstPage.setErrorMessage(null);
+        }
+    }
+
+    private void addRepoToTable(String repositoryPath) {
 		TableItem item = new TableItem(repoFolders,SWT.NONE);
 		item.setText(repositoryPath);
 		item.setImage(repo);
