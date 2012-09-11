@@ -255,16 +255,8 @@ public class CeylonPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
-                if (dir!=null) {
-                    repositoryPaths.add(dir);
-                    addRepoToTable(dir);
-                    if (!isRepoValid()) {
-                        setErrorMessage("Please select a module repository containing the language module");
-                    }
-                    else {
-                        setErrorMessage(null);
-                    }
-                }
+                if(dir != null)
+                    addRepo(dir);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -280,16 +272,7 @@ public class CeylonPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String url = "http://modules.ceylon-lang.org/test";
-                //if (url!=null) {
-                    repositoryPaths.add(url);
-                    addRepoToTable(url);
-                    if (!isRepoValid()) {
-                        setErrorMessage("Please select a module repository containing the language module");
-                    }
-                    else {
-                        setErrorMessage(null);
-                    }
-                //}
+                addRepo(url);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -326,7 +309,17 @@ public class CeylonPreferencesPage extends PropertyPage {
         });
 	}
 
-	private void addRepoToTable(String repositoryPath) {
+    protected void addRepo(String dir) {
+        repositoryPaths.add(dir);
+        addRepoToTable(dir);
+        if (!isRepoValid()) {
+            setErrorMessage("Please select a module repository containing the language module");
+        } else {
+            setErrorMessage(null);
+        }
+    }
+
+    private void addRepoToTable(String repositoryPath) {
 		TableItem item = new TableItem(repoFolders,SWT.NONE);
 		item.setText(repositoryPath);
 		item.setImage(repo);
