@@ -270,13 +270,13 @@ public class CeylonPreferencesPage extends PropertyPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Button selectRemoteRepoFolder = new Button(composite, SWT.PUSH);
-        selectRemoteRepoFolder.setText("Add Ceylon Herd");
+        Button selectHerdRepo = new Button(composite, SWT.PUSH);
+        selectHerdRepo.setText("Add Ceylon Herd");
         GridData srfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         srfgd.horizontalSpan = 1;
-        selectRemoteRepoFolder.setLayoutData(srfgd);
-        selectRemoteRepoFolder.setEnabled(builderEnabled);
-        selectRemoteRepoFolder.addSelectionListener(new SelectionListener() {
+        selectHerdRepo.setLayoutData(srfgd);
+        selectHerdRepo.setEnabled(builderEnabled);
+        selectHerdRepo.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String url = "http://modules.ceylon-lang.org/test";
