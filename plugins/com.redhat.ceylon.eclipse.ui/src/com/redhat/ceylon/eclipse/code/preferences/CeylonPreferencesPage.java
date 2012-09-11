@@ -239,7 +239,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 3;
         fgd.verticalSpan = 4;
-        fgd.heightHint = 70;
+        fgd.heightHint = 100;
         fgd.grabExcessHorizontalSpace = true;
         fgd.widthHint = 200;
         repoFolders.setLayoutData(fgd);
