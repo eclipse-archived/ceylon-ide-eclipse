@@ -267,7 +267,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         });
 
         Button selectRemoteRepo = new Button(composite, SWT.PUSH);
-        selectRemoteRepo.setText("Add Remote Repository");
+        selectRemoteRepo.setText("Add Remote Repository...");
         GridData srrgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         srrgd.horizontalSpan = 1;
         selectRemoteRepo.setLayoutData(srrgd);
