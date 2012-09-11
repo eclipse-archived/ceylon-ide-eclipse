@@ -10,6 +10,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -26,6 +28,8 @@ import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.FolderSelectionDialog;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -257,6 +261,38 @@ public class CeylonPreferencesPage extends PropertyPage {
                 String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
                 if(dir != null)
                     addRepo(dir);
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+
+        Button selectRemoteRepo = new Button(composite, SWT.PUSH);
+        selectRemoteRepo.setText("Add Remote Repository");
+        GridData srrgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        srrgd.horizontalSpan = 1;
+        selectRemoteRepo.setLayoutData(srrgd);
+        selectRemoteRepo.setEnabled(builderEnabled);
+        selectRemoteRepo.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                InputDialog input = new InputDialog(getShell(), "Add Remote Repository", "Enter a remote repository URI", "http://", 
+                        new IInputValidator(){
+                    @Override
+                    public String isValid(String val) {
+                        try {
+                            new URI(val);
+                            // FIXME: we might want to validate it more than that: for example to check that it's http/https
+                            return null;
+                        } catch (URISyntaxException e) {
+                            return "Invalid URI: " + e.getReason();
+                        }
+                    }
+                    
+                });
+                int ret = input.open();
+                if(ret == InputDialog.OK){
+                    addRepo(input.getValue());
+                }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
