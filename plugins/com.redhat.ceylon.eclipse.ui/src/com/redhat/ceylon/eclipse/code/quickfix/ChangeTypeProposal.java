@@ -45,6 +45,9 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, Declaration dec, 
             ProducedType newType, IFile file, Tree.CompilationUnit cu) {
+        // better safe than throwing
+        if(node.getStartIndex() == null || node.getStopIndex() == null)
+            return;
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
         String typeName = newType.getProducedTypeName();
