@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -350,13 +351,27 @@ class CreateSubtypeProposal implements ICompletionProposal,
             return rtv.getType();
         }
     }
+    
+    public static boolean proposeSubtype(ProducedType type) {
+    	TypeDeclaration dec = type.getDeclaration();
+    	if (dec==null) {
+    		return false;
+    	}
+    	else {
+    		Unit unit = dec.getUnit();
+    		return (dec instanceof ClassOrInterface ||
+    					dec instanceof IntersectionType) &&
+    				dec.isExtendable() &&
+    				dec!=unit.getVoidDeclaration() &&
+    				dec!=unit.getObjectDeclaration() &&
+    				dec!=unit.getIdentifiableObjectDeclaration() &&
+    				dec!=unit.getIdentifiableDeclaration();
+    	}
+    }
 
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
     	ProducedType type = getType(editor);
-    	if (type!=null && 
-    			(type.getDeclaration() instanceof ClassOrInterface ||
-    					type.getDeclaration() instanceof IntersectionType) &&
-    					type.getDeclaration().isExtendable()) {
+    	if (type!=null && proposeSubtype(type)) {
     		proposals.add(new CreateSubtypeProposal(editor, type));
     	}
     }
