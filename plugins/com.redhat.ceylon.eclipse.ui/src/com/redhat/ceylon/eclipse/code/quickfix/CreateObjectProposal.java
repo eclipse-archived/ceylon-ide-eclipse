@@ -17,9 +17,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -57,10 +55,7 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
         Statement s = fsv.getStatement();
         if (s!=null) {
             ProducedType type = CreateSubtypeProposal.getType(cu, node);
-            if (type!=null && 
-                    (type.getDeclaration() instanceof ClassOrInterface &&
-                            type.getDeclaration().isExtendable() ||
-                     type.getDeclaration() instanceof IntersectionType)) {
+            if (type!=null && CreateSubtypeProposal.proposeSubtype(type)) {
                 TextChange change = new DocumentChange("Create Object", doc);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = s.getStartIndex();
