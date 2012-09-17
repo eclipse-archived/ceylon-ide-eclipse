@@ -1251,41 +1251,7 @@ public class DocHover
 	    String unquotedText = text.substring(1, text.length()-1);
 
 	    Builder builder = Configuration.builder().forceExtentedProfile();
-	    builder.setCodeBlockEmitter(new BlockEmitter() {
-	        @Override
-	        public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-                if (lines.isEmpty())
-                    return;
-
-                if (meta == null || meta.length() == 0) {
-                    out.append("<pre>");
-                } else {
-                    out.append("<pre class=\"brush: ").append(meta).append("\">");
-                }
-
-	            for (final String s : lines) {
-	                for (int i = 0; i < s.length(); i++) {
-	                    final char c = s.charAt(i);
-	                    switch (c) {
-	                    case '&':
-	                        out.append("&amp;");
-	                        break;
-	                    case '<':
-	                        out.append("&lt;");
-	                        break;
-	                    case '>':
-	                        out.append("&gt;");
-	                        break;
-	                    default:
-	                        out.append(c);
-	                        break;
-	                    }
-	                }
-	                out.append('\n');
-	            }
-	            out.append("</pre>\n");
-	        }
-	    });
+	    builder.setCodeBlockEmitter(new CeylonBlockEmitter());
 	    if (linkScope!=null) {
 	    	builder.setSpecialLinkEmitter(new SpanEmitter() {
                 @Override
@@ -1393,6 +1359,44 @@ public class DocHover
         } else {
             return resolveModule(scope.getContainer());
         }
-    }    
+    }
+    
+    public static class CeylonBlockEmitter implements BlockEmitter {
+        
+        @Override
+        public void emitBlock(StringBuilder out, List<String> lines, String meta) {
+            if (lines.isEmpty())
+                return;
+
+            if (meta == null || meta.length() == 0) {
+                out.append("<pre>");
+            } else {
+                out.append("<pre class=\"brush: ").append(meta).append("\">");
+            }
+
+            for (final String s : lines) {
+                for (int i = 0; i < s.length(); i++) {
+                    final char c = s.charAt(i);
+                    switch (c) {
+                    case '&':
+                        out.append("&amp;");
+                        break;
+                    case '<':
+                        out.append("&lt;");
+                        break;
+                    case '>':
+                        out.append("&gt;");
+                        break;
+                    default:
+                        out.append(c);
+                        break;
+                    }
+                }
+                out.append('\n');
+            }
+            out.append("</pre>\n");
+        }
+        
+    }
 
 }

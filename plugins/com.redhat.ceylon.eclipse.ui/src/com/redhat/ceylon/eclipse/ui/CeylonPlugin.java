@@ -219,7 +219,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 		reg.put(BUILDER, image("builder.gif"));
 		reg.put(CONFIG_ANN, image("configure_annotations.gif"));
 		reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
-
+		reg.put(MODULE_VERSION, image("module_version.gif"));
+		reg.put(EXPAND_ALL, image("expandall.gif"));
+	    reg.put(PAGING, image("paging.gif"));
+	    reg.put(SHOW_DOC, image("show_doc.gif"));
 	}
 	
     private void registerProjectOpenCloseListener() {
@@ -247,7 +250,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      * @return the adapted object
      */
 
-    public static Object adapt(Object object, Class type) {
+    public static Object adapt(Object object, Class<?> type) {
         if (type.isInstance(object)) {
             return object;
         } else if (object instanceof IAdaptable) {

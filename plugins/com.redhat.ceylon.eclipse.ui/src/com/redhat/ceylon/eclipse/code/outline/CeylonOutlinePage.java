@@ -54,6 +54,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
@@ -186,7 +187,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             super("Expand All");
             setToolTipText("Expand All");
             
-            ImageDescriptor desc= CeylonPlugin.getInstance().image("expandall.gif"); //$NON-NLS-1$
+            ImageDescriptor desc = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.EXPAND_ALL);
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc);
         }
