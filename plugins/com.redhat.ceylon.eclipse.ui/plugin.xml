@@ -1529,6 +1529,13 @@
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart"
             id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart"
+            icon="icons/ceylon_icon_16px.png"
+            id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
+            name="Ceylon Module Search">
+      </view>
    </extension>
 
    <extension
