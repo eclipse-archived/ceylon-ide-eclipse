@@ -62,7 +62,7 @@ public class JDTMethod implements MethodMirror {
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(method.getAnnotations());
+            annotations = JDTUtils.getAnnotations(method.getAnnotations(), lookupEnvironment);
         }
         return annotations.get(type);
     }
@@ -110,7 +110,7 @@ public class JDTMethod implements MethodMirror {
             }
             parameters = new ArrayList<VariableMirror>(javaParameters.length);
             for(int i=0;i<javaParameters.length;i++)
-                parameters.add(new JDTVariable(javaParameters[i], annotations[i], this));
+                parameters.add(new JDTVariable(javaParameters[i], annotations[i], this, lookupEnvironment));
         }
         return parameters;
     }
@@ -128,7 +128,7 @@ public class JDTMethod implements MethodMirror {
     @Override
     public TypeMirror getReturnType() {
         if (returnType == null) {
-            returnType = new JDTType(method.returnType);
+            returnType = new JDTType(method.returnType, lookupEnvironment);
         }
         return returnType;
     }
@@ -139,7 +139,7 @@ public class JDTMethod implements MethodMirror {
             TypeVariableBinding[] jdtTypeParameters = method.typeVariables();
             typeParameters = new ArrayList<TypeParameterMirror>(jdtTypeParameters.length);
             for(TypeVariableBinding jdtTypeParameter : jdtTypeParameters)
-                typeParameters.add(new JDTTypeParameter(jdtTypeParameter));
+                typeParameters.add(new JDTTypeParameter(jdtTypeParameter, lookupEnvironment));
         }
         return typeParameters;
     }

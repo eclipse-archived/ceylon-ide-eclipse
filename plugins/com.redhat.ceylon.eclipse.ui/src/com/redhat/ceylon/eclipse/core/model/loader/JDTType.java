@@ -29,6 +29,7 @@ import javax.lang.model.type.TypeKind;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -37,7 +38,10 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
+import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
+import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 public class JDTType implements TypeMirror {
 
@@ -50,10 +54,14 @@ public class JDTType implements TypeMirror {
     private boolean lowerBoundSet = false;
     private TypeMirror upperBound;
     private TypeMirror lowerBound;
+    private boolean declaredClassSet;
+    private LookupEnvironment lookupEnvironment;
+    private JDTClass declaredClass;
     
 
-    public JDTType(TypeBinding type) {
+    public JDTType(TypeBinding type, LookupEnvironment lookupEnvironment) {
         this.type = type;
+        this.lookupEnvironment = lookupEnvironment;
     }
 
     @Override
@@ -78,7 +86,7 @@ public class JDTType implements TypeMirror {
                 }
                 typeArguments = new ArrayList<TypeMirror>(javaTypeArguments.length);
                 for(TypeBinding typeArgument : javaTypeArguments)
-                    typeArguments.add(typeArgument != type ? new JDTType(typeArgument) : this);
+                    typeArguments.add(typeArgument != type ? new JDTType(typeArgument, lookupEnvironment) : this);
             }
             else  {
                 return Collections.emptyList();
@@ -124,7 +132,7 @@ public class JDTType implements TypeMirror {
     public TypeMirror getComponentType() {
         if (componentType == null) {
             TypeBinding jdtComponentType = ((ArrayBinding)type).leafComponentType;
-            componentType = new JDTType(jdtComponentType);
+            componentType = new JDTType(jdtComponentType, lookupEnvironment);
         }
         return componentType;
     }
@@ -142,7 +150,7 @@ public class JDTType implements TypeMirror {
                 if (wildcardBinding.boundKind == Wildcard.EXTENDS) {
                     TypeBinding upperBoundBinding = wildcardBinding.bound;
                     if (upperBoundBinding != null) {
-                        upperBound = new JDTType(upperBoundBinding);
+                        upperBound = new JDTType(upperBoundBinding, lookupEnvironment);
                     }
                 }
             }
@@ -159,7 +167,7 @@ public class JDTType implements TypeMirror {
                 if (wildcardBinding.boundKind == Wildcard.SUPER) {
                     TypeBinding lowerBoundBinding = wildcardBinding.bound;
                     if (lowerBoundBinding != null) {
-                        lowerBound = new JDTType(lowerBoundBinding);
+                        lowerBound = new JDTType(lowerBoundBinding, lookupEnvironment);
                     }
                 }
             }

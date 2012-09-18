@@ -36,10 +36,10 @@ import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 
 public class JDTUtils {
 
-    public static Map<String, AnnotationMirror> getAnnotations(AnnotationBinding[] annotations) {
+    public static Map<String, AnnotationMirror> getAnnotations(AnnotationBinding[] annotations, LookupEnvironment lookupEnvironment) {
         HashMap<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
         for(AnnotationBinding annotation : annotations){
-            result.put(getFullyQualifiedName(annotation.getAnnotationType()), new JDTAnnotation(annotation));
+            result.put(getFullyQualifiedName(annotation.getAnnotationType()), new JDTAnnotation(annotation, lookupEnvironment));
         }
         return result;
     }
