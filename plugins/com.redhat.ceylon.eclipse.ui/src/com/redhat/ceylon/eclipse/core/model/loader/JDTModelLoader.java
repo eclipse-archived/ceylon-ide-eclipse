@@ -139,23 +139,27 @@ public class JDTModelLoader extends AbstractModelLoader {
         this.typeFactory = new TypeFactory(moduleManager.getContext()) {
             @Override
             public Package getPackage() {
-                if(super.getPackage() == null){
-                    super.setPackage(modules.getLanguageModule().getDirectPackage("ceylon.language"));
+                synchronized (JDTModelLoader.this) {
+                    if(super.getPackage() == null){
+                        super.setPackage(modules.getLanguageModule().getDirectPackage("ceylon.language"));
+                    }
+                    return super.getPackage();
                 }
-                return super.getPackage();
             }
             /**
              * Search for a declaration in the language module. 
              */
             public Declaration getLanguageModuleDeclaration(String name) {
-                if (languageModuledeclarations.containsKey(name)) {
-                    return languageModuledeclarations.get(name);
+                synchronized (JDTModelLoader.this) {
+                    if (languageModuledeclarations.containsKey(name)) {
+                        return languageModuledeclarations.get(name);
+                    }
+
+                    languageModuledeclarations.put(name, null);
+                    Declaration decl = super.getLanguageModuleDeclaration(name);
+                    languageModuledeclarations.put(name, decl);
+                    return decl;
                 }
-                
-                languageModuledeclarations.put(name, null);
-                Declaration decl = super.getLanguageModuleDeclaration(name);
-                languageModuledeclarations.put(name, decl);
-                return decl;
             }
         };
         this.typeParser = new TypeParser(this, typeFactory);
@@ -249,7 +253,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     // TODO : remove when the bug in the AbstractModelLoader is corrected
     @Override
-    public LazyPackage findOrCreatePackage(Module module, String pkgName) {
+    public synchronized LazyPackage findOrCreatePackage(Module module, String pkgName) {
         LazyPackage pkg = super.findOrCreatePackage(module, pkgName);
         if ("".equals(pkgName)) {
             pkg.setName(Collections.<String>emptyList());
@@ -291,7 +295,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public boolean loadPackage(String packageName, boolean loadDeclarations) {
+    public synchronized boolean loadPackage(String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
         if(loadDeclarations && !loadedPackages.add(packageName)){
             return true;
@@ -357,7 +361,8 @@ public class JDTModelLoader extends AbstractModelLoader {
         return modules.getDefaultModule();
     }
 
-    public Module lookupModuleInternal(String packageName) {
+    @Override
+    protected Module lookupModuleInternal(String packageName) {
         for(Module module : modules.getListOfModules()){
             if(module instanceof LazyModule){
                 if(((LazyModule)module).containsPackage(packageName))
@@ -390,7 +395,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         return buildClassMirror(name);
     }
 
-    public synchronized ClassMirror buildClassMirror(String name) {
+    private ClassMirror buildClassMirror(String name) {
         try {
             IType type = javaProject.findType(name);
             if (type == null) {
@@ -450,7 +455,7 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     
     @Override
-    public Declaration convertToDeclaration(String typeName,
+    public synchronized Declaration convertToDeclaration(String typeName,
             DeclarationType declarationType) {
         if (sourceDeclarations.containsKey(typeName)) {
             return sourceDeclarations.get(typeName).getModelDeclaration();
@@ -471,7 +476,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    public Module findOrCreateModule(String pkgName) {
+    public synchronized Module findOrCreateModule(String pkgName) {
         java.util.List<String> moduleName;
         boolean isJava = false;
         boolean defaultModule = false;
@@ -550,7 +555,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public void removeDeclarations(List<Declaration> declarations) {
+    public synchronized void removeDeclarations(List<Declaration> declarations) {
         List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
         allDeclarations.addAll(declarations);
 
@@ -578,11 +583,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     private final Map<String, CeylonDeclaration> sourceDeclarations = new TreeMap<String, CeylonDeclaration>();
     
-    public Set<String> getSourceDeclarations() {
+    public synchronized Set<String> getSourceDeclarations() {
         Set<String> declarations  = new HashSet<String>();
-        synchronized (sourceDeclarations) {
-            declarations.addAll(sourceDeclarations.keySet());
-        }
+        declarations.addAll(sourceDeclarations.keySet());
         return declarations;
     }
     
@@ -591,18 +594,19 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private SourceFileObjectManager additionalSourceFileObjectsManager = null;
-    public void setSourceFileObjectManager(SourceFileObjectManager manager) {
+    
+    public synchronized void setSourceFileObjectManager(SourceFileObjectManager manager) {
         additionalSourceFileObjectsManager = manager;
     }
     
-    public void setupSourceFileObjects(List<?> treeHolders) {
+    public synchronized void setupSourceFileObjects(List<?> treeHolders) {
         addSourcePhasedUnits(treeHolders, true);
         if (additionalSourceFileObjectsManager != null) {
             additionalSourceFileObjectsManager.setupSourceFileObjects(treeHolders);
         }
     }
 
-    public void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
+    public synchronized void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
         for (Object treeHolder : treeHolders) {
             if (treeHolder instanceof PhasedUnit) {
                 final PhasedUnit unit = (PhasedUnit) treeHolder;
@@ -614,9 +618,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                             String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
                             String fqn = getQualifiedName(pkgName, name);
                             if (! sourceDeclarations.containsKey(fqn)) {
-                                synchronized (sourceDeclarations) {
-                                    sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
-                                }
+                                sourceDeclarations.put(fqn, new CeylonDeclaration(unit, decl, isSourceToCompile));
                             }
                         }
                     }
@@ -629,7 +631,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         addSourcePhasedUnits(sourceArchivePhasedUnits, false);
     }
     
-    public void clearCachesOnPackage(String packageName) {
+    public synchronized void clearCachesOnPackage(String packageName) {
         List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
         for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
             if (element.getValue() == null) {
@@ -686,7 +688,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         return (TypeFactory) typeFactory;
     }
     
-    public void reset() {
+    public synchronized void reset() {
         internalCreate();
         declarationsByName.clear();
         unitsByPackage.clear();
@@ -695,7 +697,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         classMirrorCache.clear();
     }
     
-    public void completeFromClasses() {
+    public synchronized void completeFromClasses() {
         for (Entry<String, CeylonDeclaration> entry : sourceDeclarations.entrySet()) {
             CeylonDeclaration declaration = entry.getValue();
             if (mustCompleteFromClasses(declaration)) {

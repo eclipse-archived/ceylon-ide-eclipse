@@ -83,16 +83,18 @@ public class JDTModule extends LazyModule {
 
     @Override
     public List<Package> getAllPackages() {
-        // force-load every package from the module if we can
-        loadAllPackages();
-        // now force-load other modules
-        for (ModuleImport mi: getImports()) {
-            if(mi.getModule() instanceof JDTModule){
-                ((JDTModule)mi.getModule()).loadAllPackages();
+        synchronized (getModelLoader()) {
+            // force-load every package from the module if we can
+            loadAllPackages();
+            // now force-load other modules
+            for (ModuleImport mi: getImports()) {
+                if(mi.getModule() instanceof JDTModule){
+                    ((JDTModule)mi.getModule()).loadAllPackages();
+                }
             }
+            // now delegate
+            return super.getAllPackages();
         }
-        // now delegate
-        return super.getAllPackages();
     }
 
     private void loadAllPackages() {
