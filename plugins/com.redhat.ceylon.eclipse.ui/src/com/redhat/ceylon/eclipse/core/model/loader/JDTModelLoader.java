@@ -328,12 +328,18 @@ public class JDTModelLoader extends AbstractModelLoader {
                         }else{
                             try {
                                 for (IClassFile classFile : packageFragment.getClassFiles()) {
+                                    // skip removed class files
+                                    if(!classFile.exists())
+                                        continue;
                                     IType type = classFile.getType();
                                     if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
                                 for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
+                                    // skip removed CUs
+                                    if(!compilationUnit.exists())
+                                        continue;
                                     for (IType type : compilationUnit.getTypes()) {
                                         if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                             convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
