@@ -180,4 +180,15 @@ public class JDTType implements TypeMirror {
 	public boolean isRaw() {
 		return type.isRawType();
 	}
+
+    @Override
+    public ClassMirror getDeclaredClass() {
+        if(!declaredClassSet){
+            if(type instanceof ReferenceBinding){
+                declaredClass = new JDTClass((ReferenceBinding) type, lookupEnvironment);
+            }
+            declaredClassSet = true;
+        }
+        return declaredClass;
+    }
 }
