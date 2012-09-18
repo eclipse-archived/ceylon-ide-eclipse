@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
@@ -35,9 +36,11 @@ public class JDTTypeParameter implements TypeParameterMirror {
     private TypeVariableBinding type;
     private String name;
     private List<TypeMirror> bounds;
+    private LookupEnvironment lookupEnvironment;
 
-    public JDTTypeParameter(TypeVariableBinding parameter) {
+    public JDTTypeParameter(TypeVariableBinding parameter, LookupEnvironment lookupEnvironment) {
         this.type = parameter;
+        this.lookupEnvironment = lookupEnvironment;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class JDTTypeParameter implements TypeParameterMirror {
             javaBounds.addAll(Arrays.asList(type.otherUpperBounds()));
             bounds = new ArrayList<TypeMirror>(javaBounds.size());
             for(TypeBinding bound : javaBounds)
-                bounds.add(new JDTType(bound));
+                bounds.add(new JDTType(bound, lookupEnvironment));
         }
         return bounds;
     }

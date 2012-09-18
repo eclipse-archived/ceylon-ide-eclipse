@@ -29,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ElementValuePair;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
@@ -37,9 +38,11 @@ public class JDTAnnotation implements AnnotationMirror {
 
     private AnnotationBinding annotation;
     private Map<String, Object> values;
+    private LookupEnvironment lookupEnvironment;
 
-    public JDTAnnotation(AnnotationBinding annotation) {
+    public JDTAnnotation(AnnotationBinding annotation, LookupEnvironment lookupEnvironment) {
         this.annotation = annotation;
+        this.lookupEnvironment = lookupEnvironment;
     }
 
     @Override
@@ -65,10 +68,10 @@ public class JDTAnnotation implements AnnotationMirror {
             return values;
         }
         if(value instanceof AnnotationBinding){
-            return new JDTAnnotation((AnnotationBinding) value);
+            return new JDTAnnotation((AnnotationBinding) value, lookupEnvironment);
         }
         if(value instanceof TypeBinding){
-            return new JDTType((TypeBinding) value);
+            return new JDTType((TypeBinding) value, lookupEnvironment);
         }
         if(value instanceof FieldBinding){
             return new String(((FieldBinding) value).name);

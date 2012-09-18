@@ -66,7 +66,7 @@ public class JDTClass implements ClassMirror {
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(klass.getAnnotations());
+            annotations = JDTUtils.getAnnotations(klass.getAnnotations(), lookupEnvironment);
         }
         return annotations.get(type);
     }
@@ -136,7 +136,7 @@ public class JDTClass implements ClassMirror {
                 if (superClassBinding != null) {
                     superClassBinding = JDTUtils.inferTypeParametersFromSuperClass(klass,
                             superClassBinding, lookupEnvironment);
-                    superclass = new JDTType(superClassBinding);
+                    superclass = new JDTType(superClassBinding, lookupEnvironment);
                 }
             }
             superClassSet = true;
@@ -150,7 +150,7 @@ public class JDTClass implements ClassMirror {
             ReferenceBinding[] superInterfaces = klass.superInterfaces();
             interfaces = new ArrayList<TypeMirror>(superInterfaces.length);
             for(ReferenceBinding superInterface : superInterfaces)
-                interfaces.add(new JDTType(superInterface));
+                interfaces.add(new JDTType(superInterface, lookupEnvironment));
         }
         return interfaces;
     }
@@ -161,7 +161,7 @@ public class JDTClass implements ClassMirror {
             TypeVariableBinding[] typeParameters = klass.typeVariables();
             typeParams = new ArrayList<TypeParameterMirror>(typeParameters.length);
             for(TypeVariableBinding parameter : typeParameters)
-                typeParams.add(new JDTTypeParameter(parameter));
+                typeParams.add(new JDTTypeParameter(parameter, lookupEnvironment));
         }
         return typeParams;
     }
@@ -191,7 +191,7 @@ public class JDTClass implements ClassMirror {
             FieldBinding[] directFields = klass.fields();
             fields = new ArrayList<FieldMirror>(directFields.length);
             for(FieldBinding field : directFields)
-                fields.add(new JDTField(field));
+                fields.add(new JDTField(field, lookupEnvironment));
         }
         return fields;
     }

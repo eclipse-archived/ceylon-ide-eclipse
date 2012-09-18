@@ -22,6 +22,7 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.FieldMirror;
@@ -33,15 +34,17 @@ public class JDTField implements FieldMirror {
     private JDTType type;
     private Map<String, AnnotationMirror> annotations;
     String name;
+    private LookupEnvironment lookupEnvironment;
 
-    public JDTField(FieldBinding field) {
+    public JDTField(FieldBinding field, LookupEnvironment lookupEnvironment) {
         this.field = field;
+        this.lookupEnvironment = lookupEnvironment;
     }
 
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(field.getAnnotations());
+            annotations = JDTUtils.getAnnotations(field.getAnnotations(), lookupEnvironment);
         }
         return annotations.get(type);
     }
@@ -72,7 +75,7 @@ public class JDTField implements FieldMirror {
     @Override
     public TypeMirror getType() {
         if(type == null) {
-            type = new JDTType(field.type);
+            type = new JDTType(field.type, lookupEnvironment);
         }
         return type;
     }

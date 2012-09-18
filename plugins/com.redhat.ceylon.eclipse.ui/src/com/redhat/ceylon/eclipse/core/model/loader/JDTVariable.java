@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.java.metadata.Name;
@@ -42,18 +43,20 @@ public class JDTVariable implements VariableMirror {
     private TypeMirror type;
     private MethodMirror methodMirror;
     private String name;
+    private LookupEnvironment lookupEnvironment;
 
-    public JDTVariable(TypeBinding typeBinding, AnnotationBinding[] annotationBindings, MethodMirror methodMirror) {
+    public JDTVariable(TypeBinding typeBinding, AnnotationBinding[] annotationBindings, MethodMirror methodMirror, LookupEnvironment lookupEnvironment) {
         this.typeBinding = typeBinding;
         this.annotationBindings = annotationBindings;
         this.methodMirror = methodMirror;
+        this.lookupEnvironment = lookupEnvironment;
         setName();
     }
 
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(annotationBindings);
+            annotations = JDTUtils.getAnnotations(annotationBindings, lookupEnvironment);
         }
         return annotations.get(type);
     }
@@ -61,7 +64,7 @@ public class JDTVariable implements VariableMirror {
     @Override
     public TypeMirror getType() {
         if (type == null) {
-            type = new JDTType(typeBinding);
+            type = new JDTType(typeBinding, lookupEnvironment);
         }
         return type; 
     }
