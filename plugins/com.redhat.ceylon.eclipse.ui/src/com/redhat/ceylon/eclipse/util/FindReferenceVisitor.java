@@ -45,7 +45,7 @@ public class FindReferenceVisitor extends Visitor {
 	            && ((ValueParameter) ref).isHidden()) {
 	        ref = ref.getContainer().getMember(ref.getName(), null);
 	    }
-	    return ref!=null && declaration.refines(ref);
+	    return ref!=null && declaration!=null && declaration.refines(ref);
 	}
 	
     protected boolean isReference(Declaration ref, String id) {

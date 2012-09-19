@@ -122,15 +122,16 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     public void caretMoved(CaretEvent event) {
-    	if (activeEditor.isBackgroundParsingPaused()) return;
-    	int offset = event.caretOffset;
-    	int length = 0;
-    	IRegion selection = activeEditor.getSelection();
-		if (selection.getLength()>0) {
-    		offset = selection.getOffset();
-    		length = selection.getLength();
+    	if (!activeEditor.isBackgroundParsingPaused()) {
+    		int offset = event.caretOffset;
+    		int length = 0;
+    		IRegion selection = activeEditor.getSelection();
+    		if (selection.getLength()>0) {
+    			offset = selection.getOffset();
+    			length = selection.getLength();
+    		}
+    		recomputeAnnotationsForSelection(offset, length, fDocument);
     	}
-    	recomputeAnnotationsForSelection(offset, length, fDocument);
     }
 
     public void run(IAction action) {
@@ -167,15 +168,13 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     private IDocument getDocumentFromEditor() {
         IDocumentProvider provider = getDocumentProvider();
-        if (provider != null)
-            return provider.getDocument(getEditorInput());
-        else
-            return null;
+        return provider==null ? 
+        		null : provider.getDocument(getEditorInput());
     }
 
     private void recomputeAnnotationsForSelection(int offset, int length, IDocument document) {
-        IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
-        Tree.CompilationUnit root= getCompilationUnit();
+        IAnnotationModel annotationModel = fDocumentProvider.getAnnotationModel(getEditorInput());
+        Tree.CompilationUnit root = getCompilationUnit();
         if (root == null) {
             // Get this when "selecting" an error message that is shown in the editor view
             // but is not part of the source file; just returning should leave previous
@@ -205,8 +204,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     private Map<Annotation, Position> convertPositionsToAnnotationMap(Position[] positions, IDocument document) {
         Map<Annotation, Position> annotationMap= new HashMap<Annotation, Position>(positions.length);
-        for(int i= 0; i < positions.length; i++) {
-            Position position= positions[i];
+        for(int i=0; i<positions.length; i++) {
+            Position position = positions[i];
             try { // Create & add annotation
                 String message= document.get(position.offset, position.length);
                 annotationMap.put(new Annotation(OCCURRENCE_ANNOTATION, false, message), position);
@@ -221,7 +220,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     private void placeAnnotations(Map<Annotation,Position> annotationMap, IAnnotationModel annotationModel) {
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, annotationMap);
+            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
@@ -270,20 +269,22 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, null);
-            } else {
-                for(int i= 0, length= fOccurrenceAnnotations.length; i < length; i++)
-                    annotationModel.removeAnnotation(fOccurrenceAnnotations[i]);
+            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, null);
+            } 
+            else {
+                for (int i= 0, length= fOccurrenceAnnotations.length; i < length; i++) {
+                	annotationModel.removeAnnotation(fOccurrenceAnnotations[i]);
+                }
             }
             fOccurrenceAnnotations= null;
         }
     }
 
     private Position[] convertRefNodesToPositions(List<Object> refs) {
-        Position[] positions= new Position[refs.size()];
+        Position[] positions = new Position[refs.size()];
         int i= 0;
         for(Iterator<Object> iter= refs.iterator(); iter.hasNext(); i++) {
-            Object node= iter.next();
+            Object node = iter.next();
             positions[i]= new Position(getStartOffset(node), getLength(node)+1);
         }
         return positions;
@@ -306,7 +307,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     private IDocumentProvider getDocumentProvider() {
-        fDocumentProvider= activeEditor.getDocumentProvider();
+        fDocumentProvider = activeEditor.getDocumentProvider();
         return fDocumentProvider;
     }
 
@@ -315,7 +316,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (textEditor == null)
             return;
         activeEditor = textEditor;
-        fDocument= getDocumentFromEditor();
+        fDocument = getDocumentFromEditor();
         fParseController = activeEditor.getParseController();
 
         if (fParseController == null) {
@@ -336,38 +337,43 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (annotationModel instanceof ISynchronizable)
             return ((ISynchronizable) annotationModel).getLockObject();
         else
-            return annotationModel;
+        	return annotationModel;
     }
 
     public void selectionChanged(IAction action, ISelection selection) { }
 
     public void dispose() {
-        unregisterListeners();
+    	unregisterListeners();
     }
 
     public void init(IWorkbenchWindow window) {
-        window.getActivePage().addPartListener(new EditorPartListener());
+    	window.getActivePage().addPartListener(new EditorPartListener());
     }
-        
+
     @Override
     public void update(CeylonParseController parseController,
     		IProgressMonitor monitor) {
-    	if (activeEditor==null || activeEditor.isBackgroundParsingPaused()) return;
-    	try {
-    		getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
-    				new IRunnableWithProgress() {
-    			@Override
-    			public void run(IProgressMonitor monitor) 
-    					throws InvocationTargetException, InterruptedException {
-    				IRegion selection = activeEditor.getSelection();
-    				int offset = selection.getOffset();
-    				int length = selection.getLength();
-    				recomputeAnnotationsForSelection(offset, length, fDocument);
+    	if (activeEditor==null) {
+    		synchronized (activeEditor) {
+    			if (!activeEditor.isBackgroundParsingPaused()) {
+    				try {
+    					getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
+    							new IRunnableWithProgress() {
+    						@Override
+    						public void run(IProgressMonitor monitor) 
+    								throws InvocationTargetException, InterruptedException {
+    							IRegion selection = activeEditor.getSelection();
+    							int offset = selection.getOffset();
+    							int length = selection.getLength();
+    							recomputeAnnotationsForSelection(offset, length, fDocument);
+    						}
+    					}, null);
+    				} 
+    				catch (Exception e) {
+    					e.printStackTrace();
+    				}
     			}
-    		}, null);
-    	} 
-    	catch (Exception e) {
-    		e.printStackTrace();
+    		}
     	}
     }
 
