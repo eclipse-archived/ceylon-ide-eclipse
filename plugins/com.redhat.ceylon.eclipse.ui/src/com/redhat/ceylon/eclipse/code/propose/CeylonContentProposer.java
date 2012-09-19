@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,7 @@ public class CeylonContentProposer {
      *             parse controller at the given position
      */
     public ICompletionProposal[] getContentProposals(CeylonParseController controller,
-            final int offset, ITextViewer viewer) {
+            final int offset, ITextViewer viewer, boolean filter) {
         
         if (controller==null || viewer==null) {
             return null;
@@ -170,9 +171,19 @@ public class CeylonContentProposer {
         
         //finally, construct and sort proposals
         Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
+        if (filter) {
+        	Iterator<Map.Entry<String, DeclarationWithProximity>> iter = proposals.entrySet().iterator();
+        	while (iter.hasNext()) {
+        		ProducedType type = type(iter.next().getValue().getDeclaration());
+				if (rtv.getType()!=null && (type==null ||
+        				!type.isSubtypeOf(rtv.getType()))) {
+        			iter.remove();
+        		}
+        	}
+        }
 		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, rtv.getType(), proposals);
 		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, sortedProposals,
-                    cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument());
+                    cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
 		return completions;
         
     }
@@ -515,7 +526,7 @@ public class CeylonContentProposer {
     
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
             Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
-            CommonToken token, boolean memberOp, IDocument doc) {
+            CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
@@ -559,6 +570,7 @@ public class CeylonContentProposer {
             else {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             	if (//isKeywordProposable(ol) && 
+            			!filter &&
             			!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
             		addKeywordProposals(offset, prefix, result);
             		//addTemplateProposal(offset, prefix, result);
@@ -574,7 +586,7 @@ public class CeylonContentProposer {
             		}
             		if (isProposable(dwp, ol, node.getScope())) {
             			addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
-            			if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp) {
+            			if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp && !filter) {
             				addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
             				addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
             				addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
@@ -589,7 +601,7 @@ public class CeylonContentProposer {
             								new DeclarationWithProximity(d, dwp), pr, ol);
             			}
             		}
-            		if (isRefinementProposable(dec, ol) && !memberOp) {
+            		if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
             			for (Declaration d: overloads(dec)) {
             				addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
             			}
