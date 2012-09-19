@@ -36,7 +36,7 @@ public class ModuleSearchManager {
             @Override
             protected void onRun() {
                 lastQuery = query.trim();
-                lastResult = repositoryManager.searchModules(new ModuleQuery(lastQuery, Type.JVM));
+                lastResult = repositoryManager.searchModules(newModuleQuery(lastQuery));
                 modules = convertResult(lastResult.getResults());
             }
             @Override
@@ -50,7 +50,7 @@ public class ModuleSearchManager {
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
-                ModuleQuery moduleQuery = new ModuleQuery(lastQuery, Type.JVM);
+                ModuleQuery moduleQuery = newModuleQuery(lastQuery);
                 moduleQuery.setPagingInfo(lastResult.getNextPagingInfo());
                 lastResult = repositoryManager.searchModules(moduleQuery);
                 modules.addAll(convertResult(lastResult.getResults()));
@@ -62,6 +62,12 @@ public class ModuleSearchManager {
         }.schedule();
     }
     
+    protected ModuleQuery newModuleQuery(String search) {
+        ModuleQuery query = new ModuleQuery(search, Type.JVM);
+        query.setCount(20l);
+        return query;
+    }
+
     public void fetchDocumentation(final String moduleName, final String moduleVersion) {
         final ModuleVersionNode versionNode = getVersionNode(moduleName, moduleVersion);
         if (versionNode == null) {
