@@ -44,21 +44,31 @@ public class RequiredTypeVisitor extends Visitor
         ProducedReference onat = namedArgTarget;
         PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
-            int pos = pal.getPositionalArguments().size();
-            for (int i=0; i<pos; i++) {
-                Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
-                if (node.getStartIndex()>=pa.getStartIndex() && 
-                        node.getStopIndex()<=pa.getStopIndex()) {
-                    pos = i;
-                    break;
-                }
+        	int pos;
+            if (node==pal) {
+            	//TODO: this is wrong!!
+            	//      we need to look at the offset and
+            	//      determine if we are at the start
+            	//      or end of the parameter list!
+            	pos = pal.getPositionalArguments().size();
+            }
+            else {
+            	pos = pal.getPositionalArguments().size();
+            	for (int i=0; i<pos; i++) {
+            		Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+            		if (node.getStartIndex()>=pa.getStartIndex() && 
+            				node.getStopIndex()<=pa.getStopIndex()) {
+            			pos = i;
+            			break;
+            		}
+            	}
             }
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
                 if (params!=null && params.size()>pos) {
                     Parameter param = params.get(pos);
-                    requiredType = pr.getTypedParameter(param).getType();
+                    requiredType = pr.getTypedParameter(param).getFullType();
                     if (param.isSequenced()) {
                         requiredType = that.getUnit().getElementType(requiredType);
                     }
@@ -73,7 +83,7 @@ public class RequiredTypeVisitor extends Visitor
                 if (params!=null && !params.isEmpty()) {
                     Parameter param = params.get(params.size()-1);
                     if (param.isSequenced()) {
-                        requiredType = namedArgTarget.getTypedParameter(param).getType();
+                        requiredType = namedArgTarget.getTypedParameter(param).getFullType();
                         requiredType = that.getUnit().getElementType(requiredType);
                     }
                 }
