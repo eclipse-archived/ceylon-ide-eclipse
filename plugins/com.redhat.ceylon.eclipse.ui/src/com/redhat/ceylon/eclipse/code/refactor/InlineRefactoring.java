@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SequencedArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
@@ -260,41 +261,44 @@ public class InlineRefactoring extends AbstractRefactoring {
 	private void deleteImports(TextChange tfc, Tree.Declaration declarationNode, 
 			CompilationUnit cu, List<CommonToken> tokens, 
 			boolean importsAddedToDeclarationPackage) {
-		for (Tree.Import i: cu.getImportList().getImports()) {
-        	List<ImportMemberOrType> list = i.getImportMemberOrTypeList()
-        			.getImportMemberOrTypes();
-			for (ImportMemberOrType imt: list) {
-        		Declaration d = imt.getDeclarationModel();
-				if (d!=null && d.equals(declarationNode.getDeclarationModel())) {
-					if (list.size()==1 && !importsAddedToDeclarationPackage) {
-						//delete the whole import statement
-						tfc.addEdit(new DeleteEdit(i.getStartIndex(), 
-								i.getStopIndex()-i.getStartIndex()+1));
+		ImportList il = cu.getImportList();
+		if (il!=null) {
+			for (Tree.Import i: il.getImports()) {
+				List<ImportMemberOrType> list = i.getImportMemberOrTypeList()
+						.getImportMemberOrTypes();
+				for (ImportMemberOrType imt: list) {
+					Declaration d = imt.getDeclarationModel();
+					if (d!=null && d.equals(declarationNode.getDeclarationModel())) {
+						if (list.size()==1 && !importsAddedToDeclarationPackage) {
+							//delete the whole import statement
+							tfc.addEdit(new DeleteEdit(i.getStartIndex(), 
+									i.getStopIndex()-i.getStartIndex()+1));
+						}
+						else {
+							//delete just the item in the import statement...
+							tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
+									imt.getStopIndex()-imt.getStartIndex()+1));
+							//...along with a comma before or after
+							int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
+							CommonToken prev = tokens.get(ti-1);
+							if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+								prev = tokens.get(ti-2);
+							}
+							CommonToken next = tokens.get(ti+1);
+							if (next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+								next = tokens.get(ti+2);
+							}
+							if (prev.getType()==CeylonLexer.COMMA) {
+								tfc.addEdit(new DeleteEdit(prev.getStartIndex(), 
+										imt.getStartIndex()-prev.getStartIndex()));
+							}
+							else if (next.getType()==CeylonLexer.COMMA) {
+								tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
+										next.getStopIndex()-imt.getStopIndex()));
+							}
+						}
 					}
-					else {
-						//delete just the item in the import statement...
-						tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
-								imt.getStopIndex()-imt.getStartIndex()+1));
-						//...along with a comma before or after
-						int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
-						CommonToken prev = tokens.get(ti-1);
-						if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
-							prev = tokens.get(ti-2);
-						}
-						CommonToken next = tokens.get(ti+1);
-						if (next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
-							next = tokens.get(ti+2);
-						}
-						if (prev.getType()==CeylonLexer.COMMA) {
-							tfc.addEdit(new DeleteEdit(prev.getStartIndex(), 
-									imt.getStartIndex()-prev.getStartIndex()));
-						}
-						else if (next.getType()==CeylonLexer.COMMA) {
-							tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
-									next.getStopIndex()-imt.getStopIndex()));
-						}
-					}
-        		}
+				}
         	}
         }
 	}
