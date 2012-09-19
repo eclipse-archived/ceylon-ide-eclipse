@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
@@ -71,7 +72,6 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
@@ -1379,7 +1379,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             });
 
         List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(CeylonUtils.makeRepositoryManager(repos, 
+        typeCheckerBuilder.setRepositoryManager(makeRepositoryManager(null, repos, 
         		getCeylonModulesOutputDirectory(project).getAbsolutePath(), 
         		new EclipseLogger()));
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();

@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,7 +16,6 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class ModuleSearchManager {
@@ -27,7 +28,7 @@ public class ModuleSearchManager {
     
     public ModuleSearchManager(ModuleSearchViewPart moduleSearchViewPart) {
         this.moduleSearchViewPart = moduleSearchViewPart;
-        this.repositoryManager = CeylonUtils.makeRepositoryManager(null, null, new EclipseLogger()); // TODO which repo manager ???
+        this.repositoryManager = makeRepositoryManager(null, null, null, new EclipseLogger()); // TODO which repo manager ???
     }
     
     public void searchModules(final String query) {
