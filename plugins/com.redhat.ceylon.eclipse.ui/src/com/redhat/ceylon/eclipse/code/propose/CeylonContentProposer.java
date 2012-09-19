@@ -168,11 +168,12 @@ public class CeylonContentProposer {
         //      the containing InvocationExpression
         RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
         rtv.visit(rn);
+		ProducedType requiredType = rtv.getType();
         
         //finally, construct and sort proposals
         Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
-        filterProposals(filter, rn, rtv, proposals);
-		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, rtv.getType(), proposals);
+        filterProposals(filter, rn, requiredType, proposals);
+		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, requiredType, proposals);
 		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, sortedProposals,
                     cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
 		return completions;
@@ -180,14 +181,15 @@ public class CeylonContentProposer {
     }
 
 	private void filterProposals(boolean filter, Tree.CompilationUnit rn,
-			RequiredTypeVisitor rtv,
-			Map<String, DeclarationWithProximity> proposals) {
+			ProducedType requiredType, Map<String, DeclarationWithProximity> proposals) {
 		if (filter) {
         	Iterator<Map.Entry<String, DeclarationWithProximity>> iter = proposals.entrySet().iterator();
         	while (iter.hasNext()) {
-        		ProducedType type = type(iter.next().getValue().getDeclaration());
-				if (rtv.getType()!=null && (type==null ||
-        				!type.isSubtypeOf(rtv.getType()) || 
+        		Declaration d = iter.next().getValue().getDeclaration();
+				ProducedType type = type(d);
+        		ProducedType fullType = fullType(d);
+				if (requiredType!=null && (type==null ||
+        				(!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
         				type.isSubtypeOf(rn.getUnit().getNothingDeclaration().getType()))) {
         			iter.remove();
         		}
@@ -1088,6 +1090,11 @@ public class CeylonContentProposer {
         else {
             return null;//impossible
         }
+    }
+    
+    static ProducedType fullType(Declaration d) {
+    	//TODO: substitute type args from surrounding scope
+        return d.getProducedReference(null, Collections.<ProducedType>emptyList()).getFullType();
     }
     
     public static Map<String, DeclarationWithProximity> getProposals(Node node, Tree.CompilationUnit cu) {
