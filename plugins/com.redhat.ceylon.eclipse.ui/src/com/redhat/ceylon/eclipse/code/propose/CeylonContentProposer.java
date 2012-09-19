@@ -171,22 +171,29 @@ public class CeylonContentProposer {
         
         //finally, construct and sort proposals
         Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
-        if (filter) {
-        	Iterator<Map.Entry<String, DeclarationWithProximity>> iter = proposals.entrySet().iterator();
-        	while (iter.hasNext()) {
-        		ProducedType type = type(iter.next().getValue().getDeclaration());
-				if (rtv.getType()!=null && (type==null ||
-        				!type.isSubtypeOf(rtv.getType()))) {
-        			iter.remove();
-        		}
-        	}
-        }
+        filterProposals(filter, rn, rtv, proposals);
 		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, rtv.getType(), proposals);
 		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, sortedProposals,
                     cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
 		return completions;
         
     }
+
+	private void filterProposals(boolean filter, Tree.CompilationUnit rn,
+			RequiredTypeVisitor rtv,
+			Map<String, DeclarationWithProximity> proposals) {
+		if (filter) {
+        	Iterator<Map.Entry<String, DeclarationWithProximity>> iter = proposals.entrySet().iterator();
+        	while (iter.hasNext()) {
+        		ProducedType type = type(iter.next().getValue().getDeclaration());
+				if (rtv.getType()!=null && (type==null ||
+        				!type.isSubtypeOf(rtv.getType()) || 
+        				type.isSubtypeOf(rn.getUnit().getNothingDeclaration().getType()))) {
+        			iter.remove();
+        		}
+        	}
+        }
+	}
 
     private static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
         if (node.getToken()==null) return null;
