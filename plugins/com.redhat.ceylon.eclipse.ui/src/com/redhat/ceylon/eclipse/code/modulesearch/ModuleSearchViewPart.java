@@ -318,6 +318,7 @@ public class ModuleSearchViewPart extends ViewPart {
                 moduleSearchManager.fetchNextModules();
             }
         });
+        updateInfoLabel();
     }
 
     private void initSashForm() {
@@ -452,8 +453,13 @@ public class ModuleSearchViewPart extends ViewPart {
             }
     
             if (moduleSearchManager.canFetchNext()) {
-                info.append(", click here for <a>fetch next</a> modules or use specific query.");
+                info.append(", click here for <a>fetch next</a> modules or use specific query");
             }
+        } else {
+            info.append("Search modules in repositories by name");
+        }
+        if (info.length() != 0 && info.charAt(info.length() - 1) != '.') {
+            info.append(".");
         }
         searchInfo.setText(info.toString());
         searchInfo.pack();
