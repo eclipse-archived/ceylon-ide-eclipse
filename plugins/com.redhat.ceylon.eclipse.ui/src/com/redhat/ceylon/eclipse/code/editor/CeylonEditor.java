@@ -226,15 +226,15 @@ public class CeylonEditor extends TextEditor {
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}
 	
-	public void pauseBackgroundParsing() {
+	public synchronized void pauseBackgroundParsing() {
 		backgroundParsingPaused = true;
 	}
     
-	public void unpauseBackgroundParsing() {
+	public synchronized void unpauseBackgroundParsing() {
 		backgroundParsingPaused = false;
 	}
 	
-	public boolean isBackgroundParsingPaused() {
+	public synchronized boolean isBackgroundParsingPaused() {
 		return backgroundParsingPaused;
 	}
 	
@@ -881,7 +881,7 @@ extends PreviousSubWordAction implements IUpdate {
         }, IResourceChangeEvent.POST_BUILD);
     }
 
-    public void scheduleParsing() {
+    public synchronized void scheduleParsing() {
     	if (parserScheduler!=null && !backgroundParsingPaused) {
     		parserScheduler.cancel();
     		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
@@ -902,10 +902,12 @@ extends PreviousSubWordAction implements IUpdate {
                 .addDocumentListener(documentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
-            	if (parserScheduler!=null && !backgroundParsingPaused) {
-            		parserScheduler.cancel();
-            		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
-            	}
+            	synchronized (CeylonEditor.this) {
+            		if (parserScheduler!=null && !backgroundParsingPaused) {
+            			parserScheduler.cancel();
+            			parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+            		}
+				}
             }
         });
     }

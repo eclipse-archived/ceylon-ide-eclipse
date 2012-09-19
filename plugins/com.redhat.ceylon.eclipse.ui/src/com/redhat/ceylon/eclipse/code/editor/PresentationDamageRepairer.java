@@ -175,7 +175,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 	
     private void changeTokenPresentation(TextPresentation presentation, 
     		TextAttribute attribute, int startOffset, int endOffset) {
-    	        
+    	
 		StyleRange styleRange= new StyleRange(startOffset, 
         		endOffset-startOffset+1,
                 attribute==null ? null : attribute.getForeground(),
