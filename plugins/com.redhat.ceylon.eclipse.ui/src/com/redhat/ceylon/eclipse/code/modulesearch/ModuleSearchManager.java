@@ -124,7 +124,7 @@ public class ModuleSearchManager {
 
     public boolean canFetchNext() {
         if (modules != null && !modules.isEmpty() && lastResult != null) {
-            return lastResult.getNextPagingInfo() != null; // TODO waiting on ceylon-module-resolver#43 ?
+            return lastResult.getHasMoreResults();
         }
         return false;
     }
@@ -143,11 +143,9 @@ public class ModuleSearchManager {
     private List<ModuleNode> convertResult(Collection<ModuleDetails> details) {
         List<ModuleNode> moduleNodes = new ArrayList<ModuleNode>(details.size());
         for (ModuleDetails detail : details) {
-            Iterator<String> versionIterator = ((NavigableSet<String>) detail.getVersions()).descendingIterator(); // TODO waiting on ceylon-module-resolver#44
             List<ModuleVersionNode> versionNodes = new ArrayList<ModuleVersionNode>(detail.getVersions().size());
             ModuleNode moduleNode = new ModuleNode(detail.getName(), versionNodes);
-            while (versionIterator.hasNext()) {
-                String version = versionIterator.next();
+            for(String version : detail.getVersions().descendingSet()){
                 ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, version);
                 if (version.equals(detail.getLastVersion())) {
                     versionNode.setFilled(true);
