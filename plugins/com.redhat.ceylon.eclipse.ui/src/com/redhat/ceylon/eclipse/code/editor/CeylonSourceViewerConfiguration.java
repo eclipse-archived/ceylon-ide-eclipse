@@ -7,6 +7,8 @@ import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
+import org.eclipse.jface.bindings.keys.KeySequence;
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
@@ -99,7 +101,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	}*/
     
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        ContentAssistant ca= new ContentAssistant() {
+        ContentAssistant ca = new ContentAssistant() {
         	protected void install() {
                 setInformationControlCreator(new DocHover(editor)
                         .getHoverControlCreator("Click for focus"));
@@ -113,6 +115,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			@Override
 			public void assistSessionStarted(ContentAssistEvent event) {
 				editor.pauseBackgroundParsing();
+				processor.sessionStarted();
 				/*try {
 					editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
 				} 
@@ -130,6 +133,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         ca.enableAutoActivation(true);
         ca.setAutoActivationDelay(500);
         ca.enableColoredLabels(true);
+        ca.setRepeatedInvocationMode(true);
+        KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
+		ca.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
+        ca.setStatusMessage(key.format() + " to toggle filter by type");
+        ca.setStatusLineVisible(true);
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return ca;
     }

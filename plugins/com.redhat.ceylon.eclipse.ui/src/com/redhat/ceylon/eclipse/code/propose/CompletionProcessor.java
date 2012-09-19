@@ -16,6 +16,14 @@ public class CompletionProcessor implements IContentAssistProcessor {
     private CeylonContentProposer contentProposer;
     
     private CeylonEditor editor;
+    
+    private boolean filter;
+    private int lastOffset=-1;
+    
+    public void sessionStarted() {
+    	filter = false;
+    	lastOffset=-1;
+    }
 
     // private HippieProposalProcessor hippieProcessor= new HippieProposalProcessor();
 
@@ -25,11 +33,16 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+		if (offset==lastOffset) {
+			filter = !filter;
+		}
+		lastOffset = offset;
     	try {
     		return contentProposer.getContentProposals(editor.getParseController(), 
-    				offset, viewer);
+    				offset, viewer, filter);
     	}
     	catch (Exception e) {
+    		e.printStackTrace();
     		return NO_COMPLETIONS;
     	}
     }
