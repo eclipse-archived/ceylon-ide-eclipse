@@ -509,13 +509,13 @@ public class CeylonContentProposer {
     		        List<String> reversedVersions = new LinkedList<String>();
     		        for(String version : module.getVersions())
     		            reversedVersions.add(0, version);
-    		        for (String version : reversedVersions) {
+    		        for (final String version : reversedVersions) {
     		            String versioned = module.getName() + " '" + version + "'";
     		            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
     		                                              versioned, versioned.substring(len), false) {
     		                @Override
     		                public String getAdditionalProposalInfo() {
-    		                    return getDocumentationFor(module);
+    		                    return getDocumentationFor(module, version);
     		                }
     		            });
     		        }
