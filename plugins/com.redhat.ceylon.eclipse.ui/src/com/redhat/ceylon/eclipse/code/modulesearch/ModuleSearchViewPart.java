@@ -34,6 +34,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -347,8 +349,8 @@ public class ModuleSearchViewPart extends ViewPart {
     private TreeViewer moduleTreeViewer;
     private Browser docBrowser;
     private String docStyleSheet = DocHover.getStyleSheet();
-    private RGB docForegroundColor = new RGB(0, 0, 0);
-    private RGB docBackgroundColor = new RGB(250, 250, 250);
+    private RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
+    private RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
     
     @Override
@@ -387,11 +389,14 @@ public class ModuleSearchViewPart extends ViewPart {
         searchButton = new Button(parent, SWT.PUSH);
         searchButton.setText("&Search");
         searchButton.setAlignment(SWT.CENTER);
-        searchButton.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
+        searchButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
                 updateBeforeSearch(true);
                 moduleSearchManager.searchModules(searchCombo.getText());
-            }
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}
         });
     }
 
@@ -586,7 +591,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private void updateBeforeSearch(boolean newModel) {
         searchInfo.setText("Searching modules in repositories ...");
         searchInfo.pack();
-        searchCombo.setEnabled(false);
+        //searchCombo.setEnabled(false);
         searchButton.setEnabled(false);
         if( newModel ) {
             moduleTreeViewer.setInput(null);
