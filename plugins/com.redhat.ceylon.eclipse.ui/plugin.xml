@@ -1048,6 +1048,8 @@
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="com.redhat.ceylon.eclipse.ui.perspective">
+            <view id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
+                  relationship="fast"/>
             <view id="org.eclipse.ui.views.ProblemView"
                   relative="org.eclipse.ui.editorss"
                   ratio="0.73"
@@ -1534,7 +1536,7 @@
             class="com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart"
             icon="icons/ceylon_icon_16px.png"
             id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
-            name="Ceylon Module Search">
+            name="Ceylon Repository Explorer">
       </view>
    </extension>
 
