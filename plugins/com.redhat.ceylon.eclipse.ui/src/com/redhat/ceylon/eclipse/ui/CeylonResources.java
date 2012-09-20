@@ -71,5 +71,6 @@ public interface CeylonResources {
 	public static final String EXPAND_ALL = "expandall";
 	public static final String PAGING = "paging";
 	public static final String SHOW_DOC = "show_doc";
+	public static final String REPOSITORIES = "repositories";
     
 }
