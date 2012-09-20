@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
+import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
+import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -613,11 +617,14 @@ public class ModuleSearchViewPart extends ViewPart {
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
         
         if (versionNode != null) {
-            docBuilder.append("<h1>");
-            docBuilder.append(versionNode.getModule().getName() );
-            docBuilder.append(" '");
-            docBuilder.append(versionNode.getVersion());
-            docBuilder.append("'</h1>");
+        	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
+    				16, 16, "<b><tt>" + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "'" +"</tt></b>", 20, 4);
+        	docBuilder.append("<hr/>");
+//            docBuilder.append("<h1>");
+//            docBuilder.append(versionNode.getModule().getName() );
+//            docBuilder.append(" '");
+//            docBuilder.append(versionNode.getVersion());
+//            docBuilder.append("'</h1>");
             
             if (versionNode.isFilled()) {
                 
