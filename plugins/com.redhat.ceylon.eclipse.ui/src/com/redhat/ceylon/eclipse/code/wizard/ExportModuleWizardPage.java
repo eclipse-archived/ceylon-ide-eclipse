@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRepositoryPaths;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 
 import java.io.File;
@@ -84,7 +84,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             setErrorMessage("Please select a project");
         }
         else if (!isValidRepo()) {
-            setErrorMessage("Please select an existing repository");
+            setErrorMessage("Please select an existing local repository");
         }
         else if (modules.getSelection().length==0) {
         	setErrorMessage("Please select a module to export");
@@ -118,7 +118,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         
         folder.setText(repositoryPath);
         if (project!=null) {
-        	for (String path: getRepositoryPaths(project.getProject())) {
+        	for (String path: getCeylonRepositories(project.getProject())) {
         		folder.add(path);
         	}
         }
