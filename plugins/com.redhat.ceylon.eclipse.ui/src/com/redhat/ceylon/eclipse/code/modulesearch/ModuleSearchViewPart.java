@@ -8,15 +8,21 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -33,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Link;
@@ -44,6 +51,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.hover.DocHover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -242,7 +250,83 @@ public class ModuleSearchViewPart extends ViewPart {
             CeylonPlugin.getInstance().getPreferenceStore().setValue(IS_CHECKED, isChecked());
         }
 
-    }    
+    }
+    
+    private class ShowRepositoriesAction extends Action {
+        
+        public ShowRepositoriesAction() {
+            super("Show Repositories");
+            setToolTipText("Show Repositories");
+
+            ImageDescriptor showRepositoriesImage = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.REPOSITORIES);
+            setImageDescriptor(showRepositoriesImage);
+            setHoverImageDescriptor(showRepositoriesImage);
+        }
+
+        @Override
+        public void run() {
+            ShowRepositoriesDialog showRepositoriesDialog = new ShowRepositoriesDialog();
+            showRepositoriesDialog.open();
+        }
+
+    }
+    
+    private class ShowRepositoriesDialog extends TitleAreaDialog {
+
+        public ShowRepositoriesDialog() {
+            super(parent.getShell());
+        }
+        
+        @Override
+        public void create() {
+            setHelpAvailable(false);
+            super.create();
+            setTitle("Ceylon repositories");
+            setMessage("Modules are searched in following repositories.\nConfiguration file is located in user home directory (~/.ceylon/config).");
+        }
+        
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            parent.setLayout(new GridLayout(1, false));
+
+            TableViewer tableViewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+
+            TableViewerColumn colName = new TableViewerColumn(tableViewer, SWT.NONE);
+            colName.getColumn().setWidth(200);
+            colName.getColumn().setText("Name");
+            colName.setLabelProvider(new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return ((Repository)element).getName();
+                }
+            });
+
+            TableViewerColumn colUrl = new TableViewerColumn(tableViewer, SWT.NONE);
+            colUrl.getColumn().setWidth(200);
+            colUrl.getColumn().setText("URL");
+            colUrl.setLabelProvider(new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return ((Repository)element).getUrl();
+                }
+            });            
+
+            tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+            tableViewer.setInput(moduleSearchManager.getGlobalLookupRepositories());
+            tableViewer.getTable().setHeaderVisible(true);
+            tableViewer.getTable().setLinesVisible(true);
+
+            GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(tableViewer.getTable());
+
+            return parent;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        }
+
+    }
 
     private ModuleSearchManager moduleSearchManager = new ModuleSearchManager(this);
     
@@ -253,6 +337,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private FetchNextAction fetchNextAction;
     private CopyImportModuleAction copyImportModuleAction;
     private ShowDocAction showDocAction;
+    private ShowRepositoriesAction showRepositoriesAction;
     
     private Composite parent;
     private Combo searchCombo;
@@ -380,6 +465,7 @@ public class ModuleSearchViewPart extends ViewPart {
         fetchNextAction = new FetchNextAction();
         copyImportModuleAction = new CopyImportModuleAction();
         showDocAction = new ShowDocAction();
+        showRepositoriesAction = new ShowRepositoriesAction();
 
         IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(fetchNextAction);
@@ -391,6 +477,7 @@ public class ModuleSearchViewPart extends ViewPart {
         toolBarManager.add(collapseAllAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(showDocAction);
+        toolBarManager.add(showRepositoriesAction);
 
         MenuManager menuManager = new MenuManager();
         menuManager.add(copyImportModuleAction);

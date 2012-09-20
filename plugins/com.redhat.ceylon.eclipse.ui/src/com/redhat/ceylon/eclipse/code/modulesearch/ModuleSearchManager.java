@@ -4,9 +4,7 @@ import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NavigableSet;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleQuery.Type;
@@ -16,6 +14,8 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.config.Repositories;
+import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class ModuleSearchManager {
@@ -25,10 +25,12 @@ public class ModuleSearchManager {
     private ModuleSearchResult lastResult;
     private ModuleSearchViewPart moduleSearchViewPart;
     private RepositoryManager repositoryManager;
+    private Repository[] globalLookupRepositories;
     
     public ModuleSearchManager(ModuleSearchViewPart moduleSearchViewPart) {
         this.moduleSearchViewPart = moduleSearchViewPart;
-        this.repositoryManager = makeRepositoryManager(null, null, null, new EclipseLogger()); // TODO which repo manager ???
+        this.globalLookupRepositories = Repositories.get().getGlobalLookupRepositories();
+        this.repositoryManager = makeRepositoryManager(null, null, null, new EclipseLogger());
     }
     
     public void searchModules(final String query) {
@@ -62,7 +64,7 @@ public class ModuleSearchManager {
         }.schedule();
     }
     
-    protected ModuleQuery newModuleQuery(String search) {
+    private ModuleQuery newModuleQuery(String search) {
         ModuleQuery query = new ModuleQuery(search, Type.JVM);
         query.setCount(20l);
         return query;
@@ -94,7 +96,11 @@ public class ModuleSearchManager {
                 moduleSearchViewPart.updateDoc();
             }
         }.schedule();        
-    }    
+    }
+    
+    public Repository[] getGlobalLookupRepositories() {
+        return globalLookupRepositories;
+    }
     
     public String getLastQuery() {
         return lastQuery;
