@@ -284,7 +284,7 @@ public class ModuleSearchViewPart extends ViewPart {
             setHelpAvailable(false);
             super.create();
             setTitle("Ceylon repositories");
-            setMessage("Modules are searched in following repositories.\nConfiguration file is located in user home directory (~/.ceylon/config).");
+            setMessage("The following repositories will be searched.\nThe configuration file is located in the user home directory (~/.ceylon/config).");
         }
         
         @Override
@@ -538,17 +538,17 @@ public class ModuleSearchViewPart extends ViewPart {
                 }
             }
     
-            if( !moduleSearchManager.getLastQuery().isEmpty() ) {
+            /*if( !moduleSearchManager.getLastQuery().isEmpty() ) {
                 info.append(" for query '");
                 info.append(moduleSearchManager.getLastQuery());
                 info.append("'");
-            }
+            }*/
     
             if (moduleSearchManager.canFetchNext()) {
-                info.append(", click here for <a>fetch next</a> modules or use specific query");
+                info.append(", click here to <a>see more</a> results");
             }
         } else {
-            info.append("Search modules in repositories by name");
+            info.append("Click 'Search' to find modules by module name");
         }
         if (info.length() != 0 && info.charAt(info.length() - 1) != '.') {
             info.append(".");
@@ -589,7 +589,7 @@ public class ModuleSearchViewPart extends ViewPart {
     }
     
     private void updateBeforeSearch(boolean newModel) {
-        searchInfo.setText("Searching modules in repositories ...");
+        searchInfo.setText("Searching module repositories...");
         searchInfo.pack();
         //searchCombo.setEnabled(false);
         searchButton.setEnabled(false);
@@ -613,17 +613,17 @@ public class ModuleSearchViewPart extends ViewPart {
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
         
         if (versionNode != null) {
-            docBuilder.append("<h1>Module: ");
+            docBuilder.append("<h1>");
             docBuilder.append(versionNode.getModule().getName() );
-            docBuilder.append(" (");
+            docBuilder.append(" '");
             docBuilder.append(versionNode.getVersion());
-            docBuilder.append(")</h1>");
+            docBuilder.append("'</h1>");
             
             if (versionNode.isFilled()) {
                 
                 if( versionNode.getDoc() == null || versionNode.getDoc().isEmpty() ) {
                     docBuilder.append("<p>");
-                    docBuilder.append("<i>module does not contain documentation</i>");
+                    docBuilder.append("<i>Module does not have documentation.</i>");
                 } else {
                     docBuilder.append(markdown(versionNode.getDoc()));
                 }
@@ -642,8 +642,7 @@ public class ModuleSearchViewPart extends ViewPart {
                 
             } else {
                 docBuilder.append("<p>");
-                docBuilder.append("<i>module does not have fetched documentation");
-                docBuilder.append(", click here for <a href='module:" + versionNode.getModule().getName() + ":" + versionNode.getVersion() + "'>loading</a></i>");
+                docBuilder.append("<i>Click here to <a href='module:" + versionNode.getModule().getName() + ":" + versionNode.getVersion() + "'>fetch documentation</a></i> for this module version.");
             }
         }
         
