@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -618,7 +617,7 @@ public class ModuleSearchViewPart extends ViewPart {
         
         if (versionNode != null) {
         	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-    				16, 16, "<b><tt>" + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "'" +"</tt></b>", 20, 4);
+    				16, 16, "<b><tt>module " + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "'" +"</tt></b>", 20, 4);
         	docBuilder.append("<hr/>");
 //            docBuilder.append("<h1>");
 //            docBuilder.append(versionNode.getModule().getName() );
