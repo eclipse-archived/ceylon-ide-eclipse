@@ -124,12 +124,16 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 							return Status.CANCEL_STATUS;
 						}
 						for (String moduleNameVersion: selectedModules) {
-							String moduleGlob = moduleNameVersion.replace('/', '-') + ".*";
-							Path repoOutputPath = outputPath.resolve(moduleNameVersion);
-							Path repoModulePath = repoPath.resolve(moduleNameVersion);
+							int i = moduleNameVersion.indexOf('/');
+							String name = moduleNameVersion.substring(0, i);
+							String version = moduleNameVersion.substring(i+1);
+							String glob = name + '-' + version + ".*";
+							String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
+							Path repoOutputPath = outputPath.resolve(dir);
+							Path repoModulePath = repoPath.resolve(dir);
 							try {
 								Files.createDirectories(repoModulePath);
-								DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, moduleGlob);
+								DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, glob);
 								try {
 									for (Path p: ds) {
 										Files.copy(p, repoModulePath.resolve(p.getFileName()), REPLACE_EXISTING);
