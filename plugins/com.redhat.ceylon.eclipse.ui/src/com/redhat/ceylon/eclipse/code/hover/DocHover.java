@@ -655,7 +655,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-				16, 16, "<b><tt>" + getLabel(pack) +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>package " + getLabel(pack) +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
 				16, 16, "in module&nbsp;&nbsp;<tt><a " + link(pack.getModule()) + ">" + 
@@ -707,7 +707,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, mod, fileUrl("jar_l_obj.gif").toExternalForm(), 
-				16, 16, "<b><tt>" + mod.getName() + " '" + version + "'" +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>module " + mod.getName() + " '" + version + "'" +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
 		buffer.append(markdown('"'+mod.getDoc()+'"', null));
@@ -722,7 +722,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-				16, 16, "<b><tt>" + getLabel(mod) + " '" + mod.getVersion() + "'" +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>module " + getLabel(mod) + " '" + mod.getVersion() + "'" +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
 		PhasedUnit pu = cpc.getTypeChecker()
