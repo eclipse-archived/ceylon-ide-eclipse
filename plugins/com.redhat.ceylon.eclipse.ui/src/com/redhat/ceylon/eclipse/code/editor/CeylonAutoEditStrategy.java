@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LIT
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.QUOTED_LITERAL;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.core.runtime.Platform.getPreferencesService;
@@ -77,6 +78,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         closeOpening(doc, cmd);
     }
 
+	private static String[][] FENCES = {
+			{ "'", "'" },
+			{ "\"", "\"" },
+			{ "`", "`" },
+			{ "<", ">" },
+			{ "(", ")" },
+			{ "[", "]" }};
+
 	public void closeOpening(IDocument doc, DocumentCommand cmd) {
 		try {
 			// TODO: improve this, check the surrounding token type!
@@ -89,19 +98,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			return;
 		}
 
-		String[][] types = {
-				{ "'", "'" },
-				{ "\"", "\"" },
-				{ "`", "`" },
-				{ "<", ">" },
-				{ "(", ")" },
-				{ "[", "]" }};
-
 		String current = cmd.text;
 		String opening = null;
 		String closing = null;
 
-		for (String[] type : types) {
+		for (String[] type : FENCES) {
 			if (type[0].equals(current) || type[1].equals(current)) {
 				opening = type[0];
 				closing = type[1];
@@ -112,11 +113,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 		if (opening == null && closing == null) {
 			return;
 		}
-
+		
 		boolean skip = false;
 		if (current.equals(closing)) {
 			try {
-				// skip one a head if next char is the closing bracket
+				// skip one ahead if next char is the closing bracket
 				if (String.valueOf(doc.getChar(cmd.offset)).equals(closing)) {
 					skip = true;
 				}
@@ -129,31 +130,44 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			}
 		}
 		if (!skip && current.equals(opening)) {
-			boolean closeOpening = true;
-			if (opening.equals("<")) {
-				// only close angle brackets if it's after a UIdentifier
-				// if(a< -> don't close
-				// if(Some< -> close
-				// A< -> close
-				int currOfset = cmd.offset - 1;
-				char currChar;
-				try {
-					while (Character.isAlphabetic(currChar = doc.getChar(currOfset))) {
-						currOfset--;
-					}
-					currChar = doc.getChar(currOfset + 1);
-					if (!Character.isUpperCase(currChar)) {
-						closeOpening = false;
-					}
-				} catch (BadLocationException e) {
-				}
-			}
-			if (closeOpening) {
+			if (closeOpeningFence(doc, cmd, opening, closing)) {
 				cmd.text += closing;
 				cmd.shiftsCaret = false;
 				cmd.caretOffset = cmd.offset + 1;
 			}
 		}
+	}
+
+	private boolean closeOpeningFence(IDocument doc, DocumentCommand cmd,
+			String opening, String closing) {
+		boolean closeOpening;
+		if (opening.equals(closing)) { 
+			closeOpening = count(doc.get(), opening.charAt(0))%2==0;
+		}
+		else { 
+			closeOpening = count(doc.get(), opening.charAt(0)) >= 
+					count(doc.get(), closing.charAt(0));
+		}
+
+		if (opening.equals("<")) {
+			// only close angle brackets if it's after a UIdentifier
+			// if(a< -> don't close
+			// if(Some< -> close
+			// A< -> close
+			int currOfset = cmd.offset - 1;
+			char currChar;
+			try {
+				while (Character.isAlphabetic(currChar = doc.getChar(currOfset))) {
+					currOfset--;
+				}
+				currChar = doc.getChar(currOfset + 1);
+				if (!Character.isUpperCase(currChar)) {
+					closeOpening = false;
+				}
+			} catch (BadLocationException e) {
+			}
+		}
+		return closeOpening;
 	}
 
 	private String getPrefix(IDocument doc, DocumentCommand cmd) {
@@ -210,6 +224,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isStringOrCommentContinuation(int offset) {
         int type = tokenType(offset);
         return type==STRING_LITERAL || 
+        		type==QUOTED_LITERAL ||
         		type==ASTRING_LITERAL ||
         		type==MULTI_COMMENT;
     }
@@ -217,6 +232,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isQuotedOrCommented(int offset) {
         int type = tokenType(offset);
         return type==STRING_LITERAL || 
+        		type==QUOTED_LITERAL ||
                 type==ASTRING_LITERAL ||
                 type==CHAR_LITERAL ||
                 type==LINE_COMMENT ||
@@ -263,6 +279,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     		CommonToken token = pc.getTokens().get(tokenIndex);
     		if (token!=null && 
     			(token.getType()==STRING_LITERAL || 
+    			    token.getType()==QUOTED_LITERAL ||
     				token.getType()==ASTRING_LITERAL) &&
     			token.getStartIndex()<offset) {
     			return token.getCharPositionInLine()+1;
