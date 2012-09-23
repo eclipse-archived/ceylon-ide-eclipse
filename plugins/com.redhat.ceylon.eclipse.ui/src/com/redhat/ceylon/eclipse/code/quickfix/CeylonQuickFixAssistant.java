@@ -372,7 +372,7 @@ public class CeylonQuickFixAssistant {
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
-        addAddAnnotationProposal(node, shared ? "actual " : "shared actual ", 
+        addAddAnnotationProposal(node, shared ? "actual" : "shared actual", 
                 shared ? "Make Actual" : "Make Shared Actual",
                 decNode.getDeclarationModel(), proposals, project);
     }
@@ -398,7 +398,7 @@ public class CeylonQuickFixAssistant {
         		}
         	}
         	if (rd!=null) {
-        		addAddAnnotationProposal(node, "default ", "Make Default", rd, 
+        		addAddAnnotationProposal(node, "default", "Make Default", rd, 
         				proposals, project);
         	}
         }
@@ -408,7 +408,7 @@ public class CeylonQuickFixAssistant {
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         Declaration d = decNode.getDeclarationModel();
-        addAddAnnotationProposal(node, "default ", "Make Default", d, 
+        addAddAnnotationProposal(node, "default", "Make Default", d, 
                 proposals, project);
     }
 
@@ -416,7 +416,7 @@ public class CeylonQuickFixAssistant {
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
-        addAddAnnotationProposal(node, shared ? "formal " : "shared formal ", 
+        addAddAnnotationProposal(node, shared ? "formal" : "shared formal",
                 shared ? "Make Formal" : "Make Shared Formal",
                 decNode.getDeclarationModel(), proposals, project);
     }
@@ -430,7 +430,7 @@ public class CeylonQuickFixAssistant {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract ", "Make Abstract", dec, 
+        addAddAnnotationProposal(node, "abstract", "Make Abstract", dec, 
                 proposals, project);
     }
 
@@ -443,7 +443,7 @@ public class CeylonQuickFixAssistant {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract ", "Make Abstract", dec, 
+        addAddAnnotationProposal(node, "abstract", "Make Abstract", dec, 
                 proposals, project);
     }
 
@@ -463,7 +463,7 @@ public class CeylonQuickFixAssistant {
             return;
         }
         Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-        addAddAnnotationProposal(node, "variable ", "Make Variable", 
+        addAddAnnotationProposal(node, "variable", "Make Variable", 
                 dec, proposals, project);
     }
     
@@ -482,7 +482,7 @@ public class CeylonQuickFixAssistant {
         }
         GetInitializedVisitor v = new GetInitializedVisitor();
         v.visit(cu);
-        addAddAnnotationProposal(node, "variable ", "Make Variable", v.dec, 
+        addAddAnnotationProposal(node, "variable", "Make Variable", v.dec, 
                 proposals, project);
     }
     
@@ -520,7 +520,7 @@ public class CeylonQuickFixAssistant {
             dec = imt.getDeclarationModel();
         }
         if (dec!=null) {
-            addAddAnnotationProposal(node, "shared ", "Make Shared", dec, 
+            addAddAnnotationProposal(node, "shared", "Make Shared", dec, 
                     proposals, project);
         }
     }
@@ -528,7 +528,7 @@ public class CeylonQuickFixAssistant {
     private void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "shared ", "Make Shared",  
+        addAddAnnotationProposal(node, "shared", "Make Shared",  
                 decNode.getDeclarationModel(), proposals, project);
     }
     

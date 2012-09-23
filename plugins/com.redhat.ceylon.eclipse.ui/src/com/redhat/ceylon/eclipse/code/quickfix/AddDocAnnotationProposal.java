@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.createInsertAnnotationEdit;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.getAnnotationIdentifier;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.getAnnotationList;
 
 import java.util.Collection;
 
@@ -16,13 +19,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Assertion;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.util.FindDocumentableVisitor;
 
@@ -38,18 +39,11 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
             return;
         }
         
-        StringBuilder docBuilder = new StringBuilder("doc \"\"");
-        if (node instanceof Parameter) {
-            docBuilder.append(" ");
-        } else {
-            docBuilder.append(System.getProperty("line.separator"));
-            docBuilder.append(CeylonQuickFixAssistant.getIndent(node, doc));
-        }
+        InsertEdit docAnnotationInsertEdit = createInsertAnnotationEdit("doc \"\"", node, doc);
+        TextFileChange docAnnotationChange = new TextFileChange("Add doc annotation", file);
+        docAnnotationChange.setEdit(docAnnotationInsertEdit);
 
-        TextFileChange change = new TextFileChange("Add doc annotation", file);
-        change.setEdit(new InsertEdit(node.getStartIndex(), docBuilder.toString()));
-
-        AddDocAnnotationProposal proposal = new AddDocAnnotationProposal(change, file, node.getStartIndex() + 5, determineDocumentableNodeName(node));
+        AddDocAnnotationProposal proposal = new AddDocAnnotationProposal(docAnnotationChange, file, docAnnotationInsertEdit.getOffset() + 5, determineDocumentableNodeName(node));
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
@@ -96,29 +90,15 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
     }
     
     private static boolean isAlreadyPresent(Node node) {
-        AnnotationList annotationList = null;
-
-        if (node instanceof Tree.Declaration) {
-            annotationList = ((Tree.Declaration) node).getAnnotationList();
-        } else if (node instanceof ModuleDescriptor) {
-            annotationList = ((ModuleDescriptor) node).getAnnotationList();
-        } else if (node instanceof PackageDescriptor) {
-            annotationList = ((PackageDescriptor) node).getAnnotationList();
-        } else if (node instanceof Assertion) {
-            annotationList = ((Assertion) node).getAnnotationList();
-        }
-        
+        AnnotationList annotationList = getAnnotationList(node);
         if (annotationList != null) {
             for (Annotation annotation : annotationList.getAnnotations()) {
-                if (annotation.getPrimary() instanceof BaseMemberExpression) {
-                    String annotationName = ((BaseMemberExpression) annotation.getPrimary()).getIdentifier().getText();
-                    if ("doc".equals(annotationName)) {
-                        return true;
-                    }
+                String annotationIdentifier = getAnnotationIdentifier(annotation);
+                if ("doc".equals(annotationIdentifier)) {
+                    return true;
                 }
             }
         }
-        
         return false;
     }
 
