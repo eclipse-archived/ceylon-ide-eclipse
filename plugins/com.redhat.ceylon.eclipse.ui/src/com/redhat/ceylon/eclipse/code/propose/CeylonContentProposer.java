@@ -598,9 +598,9 @@ public class CeylonContentProposer {
             			}
             		}
             		CommonToken nextToken = getNextToken(cpc, token);
-            		boolean inv = isInvocation(nextToken);
-					if (inv) {
-            			if (isInvocationProposable(dwp, ol)) {
+            		boolean noParamsFollow = noParametersFollow(nextToken);
+        			if (isInvocationProposable(dwp, ol)) {
+        				if (noParamsFollow || ol==EXTENDS) {
             				for (Declaration d: overloads(dec)) {
             					ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
             							getQualifiedProducedReference(node, d) :
@@ -611,7 +611,8 @@ public class CeylonContentProposer {
             			}
             		}
 					if (isProposable(dwp, ol, node.getScope())) {
-						if (inv || dwp.getDeclaration() instanceof Functional) {
+						if (noParamsFollow || ol==SATISFIES || 
+								dwp.getDeclaration() instanceof Functional) {
 							addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
 						}
             			if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp && !filter) {
@@ -631,7 +632,7 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-	private static boolean isInvocation(CommonToken nextToken) {
+	private static boolean noParametersFollow(CommonToken nextToken) {
 		return nextToken!=null &&
 				nextToken.getType()!=CeylonLexer.LPAREN && 
 				nextToken.getType()!=CeylonLexer.LBRACE;
