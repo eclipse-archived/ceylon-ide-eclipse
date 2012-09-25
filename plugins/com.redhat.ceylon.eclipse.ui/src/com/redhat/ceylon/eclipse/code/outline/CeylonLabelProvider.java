@@ -463,10 +463,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.ImportModule) {
             Tree.ImportModule i = (Tree.ImportModule) n;
-            ImportPath p = i.getImportPath();
+            Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
                 return new StyledString(toPath(p), QUALIFIER_STYLER);
             }
+			Tree.QuotedLiteral ql = i.getQuotedLiteral();
+			if (ql!=null) {
+				return new StyledString(ql.getText().replace("'", ""), 
+						QUALIFIER_STYLER);
+			}
         }
         else if (n instanceof PackageNode) {
             PackageNode pn = (PackageNode) n;
@@ -481,14 +486,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return new StyledString("<something>");
     }
 
-	private static boolean isNonempty(ImportPath p) {
+	private static boolean isNonempty(Tree.ImportPath p) {
 		return p!=null && !p.getIdentifiers().isEmpty();
 	}
 
     private static String toPath(Tree.ImportPath p) {
         String path="";
         for (Tree.Identifier id: p.getIdentifiers()) {
-            path+="." + id.getText();
+        	if (id!=null) {
+        		path+="." + id.getText();
+        	}
         }
         return path.substring(1);
     }
