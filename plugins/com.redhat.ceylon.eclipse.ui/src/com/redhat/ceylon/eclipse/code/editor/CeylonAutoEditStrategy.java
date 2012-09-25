@@ -368,7 +368,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     	//TODO: don't count quoted characters!
     	int result = 0;
     	for (int i=0; i<string.length(); i++) {
-    		if (string.charAt(i)==ch) result++;
+    		char c = string.charAt(i);
+			if (c==ch) result++;
+			if (c=='\\') i++;
     	}
     	return result;
     }
