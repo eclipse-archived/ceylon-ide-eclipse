@@ -52,7 +52,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return ".".toCharArray();
+        return ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     }
 
     public char[] getContextInformationAutoActivationCharacters() {
