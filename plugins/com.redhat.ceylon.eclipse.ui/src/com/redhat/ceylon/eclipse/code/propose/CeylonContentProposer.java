@@ -576,6 +576,9 @@ public class CeylonContentProposer {
                     && prefix.isEmpty() && !memberOp) {
                 addMemberNameProposal(offset, node, result);
             }
+            else if (node instanceof Tree.Declaration) {
+            	addMemberNameProposal(offset, node, result);
+            }
             else {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             	if (//isKeywordProposable(ol) && 
@@ -593,21 +596,27 @@ public class CeylonContentProposer {
             						node, result, dec, doc);
             			}
             		}
-            		if (isProposable(dwp, ol, node.getScope())) {
-            			addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
+            		CommonToken nextToken = getNextToken(cpc, token);
+            		boolean inv = isInvocation(nextToken);
+					if (inv) {
+            			if (isInvocationProposable(dwp, ol)) {
+            				for (Declaration d: overloads(dec)) {
+            					ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+            							getQualifiedProducedReference(node, d) :
+            								getRefinedProducedReference(node, d);
+            							addInvocationProposals(offset, prefix, cpc, result, 
+            									new DeclarationWithProximity(d, dwp), pr, ol);
+            				}
+            			}
+            		}
+					if (isProposable(dwp, ol, node.getScope())) {
+						if (inv || dwp.getDeclaration() instanceof Functional) {
+							addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
+						}
             			if (isDirectlyInsideBlock(node, token, cpc.getTokens()) && !memberOp && !filter) {
             				addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
             				addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
             				addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
-            			}
-            		}
-            		if (isInvocationProposable(dwp, ol)) {
-            			for (Declaration d: overloads(dec)) {
-            				ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
-            						getQualifiedProducedReference(node, d) :
-            							getRefinedProducedReference(node, d);
-            						addInvocationProposals(offset, prefix, cpc, result, 
-            								new DeclarationWithProximity(d, dwp), pr, ol);
             			}
             		}
             		if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
@@ -620,6 +629,29 @@ public class CeylonContentProposer {
         }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
+
+	private static boolean isInvocation(CommonToken nextToken) {
+		return nextToken!=null &&
+				nextToken.getType()!=CeylonLexer.LPAREN && 
+				nextToken.getType()!=CeylonLexer.LBRACE;
+	}
+
+	private static CommonToken getNextToken(final CeylonParseController cpc,
+			CommonToken token) {
+		int i = token.getTokenIndex();
+		CommonToken nextToken=null;
+		List<CommonToken> tokens = cpc.getTokens();
+		do {
+			if (++i<tokens.size()) {
+				nextToken = tokens.get(i);
+			}
+			else {
+				break;
+			}
+		}
+		while (nextToken.getChannel()==CommonToken.HIDDEN_CHANNEL);
+		return nextToken;
+	}
 
     private static boolean isDirectlyInsideNamedArgumentList(
             CeylonParseController cpc, Node node, CommonToken token) {
@@ -919,8 +951,37 @@ public class CeylonContentProposer {
 
     protected static void addMemberNameProposal(int offset,
             Node node, List<ICompletionProposal> result) {
-        String suggestedName=null;
-        if (node instanceof Tree.SimpleType) {
+        String suggestedName = null;
+        String prefix = "";
+        if (node instanceof Tree.TypeDeclaration) {
+        	/*Tree.TypeDeclaration td = (Tree.TypeDeclaration) node;
+        	prefix = td.getIdentifier()==null ? 
+        			"" : td.getIdentifier().getText();
+        	suggestedName = prefix;*/
+        	//TODO: dictionary completions?
+        	return;
+        }
+        else if (node instanceof Tree.TypedDeclaration) {
+        	Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
+        	prefix = td.getIdentifier()==null ? 
+        			"" : td.getIdentifier().getText();
+        	suggestedName = prefix;
+        	if (td.getType() instanceof Tree.SimpleType) {
+        		String type = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
+                if (lower(type).startsWith(prefix)) {
+                	result.add(new CompletionProposal(offset, prefix, null,
+                			lower(type), escape(lower(type)), false));
+                }
+        		if (!suggestedName.endsWith(type)) {
+        			suggestedName += type;
+        		}
+                result.add(new CompletionProposal(offset, prefix, null,
+                		lower(suggestedName), escape(lower(suggestedName)), 
+                		false));
+        	}
+        	return;
+        }
+        else if (node instanceof Tree.SimpleType) {
             suggestedName = ((Tree.SimpleType) node).getIdentifier().getText();
         }
         else if (node instanceof Tree.BaseTypeExpression) {
@@ -930,24 +991,25 @@ public class CeylonContentProposer {
             suggestedName = ((Tree.QualifiedTypeExpression) node).getIdentifier().getText();
         }
         if (suggestedName!=null) {
-            suggestedName = Character.toLowerCase(suggestedName.charAt(0)) + 
-                    suggestedName.substring(1);
-            String text;;
-            if (keywords.contains(suggestedName)) {
-                text = "\\i" + suggestedName;
-            }
-            else {
-                text = suggestedName;
-            }
             result.add(new CompletionProposal(offset, "", null,
-                    suggestedName, text, false) /*{
-            	@Override
-            	public String getAdditionalProposalInfo() {
-            		return "proposed name for new declaration";
-            	}
-            }*/);
+                    lower(suggestedName), escape(lower(suggestedName)), 
+                    false));
         }
     }
+
+	private static String lower(String suggestedName) {
+		return Character.toLowerCase(suggestedName.charAt(0)) + 
+				suggestedName.substring(1);
+	}
+
+	private static String escape(String suggestedName) {
+		if (keywords.contains(suggestedName)) {
+		    return "\\i" + suggestedName;
+		}
+		else {
+		    return suggestedName;
+		}
+	}
     
     private static void addKeywordProposals(int offset, String prefix, 
             List<ICompletionProposal> result) {
