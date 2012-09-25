@@ -53,9 +53,11 @@ final class JdtPhasedUnitsManager implements PhasedUnitsManager {
 	@Override
 	public Iterable<PhasedUnit> getPhasedUnitsForExtraPhase(
 	        List<PhasedUnit> sourceUnits) {
-	    if (CeylonBuilder.getModelState(project).equals(ModelState.Compiled)) {
+	    if (CeylonBuilder.getModelState(project).equals(ModelState.Compiled) || 
+	            CeylonBuilder.compileWithJDTModelLoader(project)) {
 	        return sourceUnits;
 	    }
+
 	    List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
 	    for (PhasedUnits phasedUnits : typeChecker.getPhasedUnitsOfDependencies()) {
 	        for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
