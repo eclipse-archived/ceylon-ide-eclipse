@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static java.lang.Character.isWhitespace;
+
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -33,6 +36,18 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+    	try {
+			if (lastOffset>=0 && offset>0 && 
+					isWhitespace(viewer.getDocument().get(offset-1, 1).charAt(0))) {
+				//user typed a whitespace char with an open
+				//completions window, so close the window
+				return NO_COMPLETIONS;
+			}
+		} 
+    	catch (BadLocationException e1) {
+			e1.printStackTrace();
+    		return NO_COMPLETIONS;
+		}
 		if (offset==lastOffset) {
 			filter = !filter;
 		}
