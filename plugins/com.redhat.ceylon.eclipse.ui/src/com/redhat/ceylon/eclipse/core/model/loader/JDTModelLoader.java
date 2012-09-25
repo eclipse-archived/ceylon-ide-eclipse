@@ -307,6 +307,9 @@ public class JDTModelLoader extends AbstractModelLoader {
             List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
             IPackageFragment packageFragment = null;
             for (IPackageFragmentRoot root : roots) {
+                // skip packages that are not present
+                if(!root.exists())
+                    continue;
                 try {
                     IClasspathEntry entry = root.getRawClasspathEntry();
                     

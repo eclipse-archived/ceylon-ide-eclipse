@@ -52,13 +52,13 @@ public class JDTModule extends LazyModule {
     }
 
     public synchronized List<IPackageFragmentRoot> getPackageFragmentRoots() {
-        if (packageFragmentRoots == null) {
+        if (packageFragmentRoots.isEmpty() && jarPath != null) {
             try {
                 for (IPackageFragmentRoot root : moduleManager.getJavaProject().getPackageFragmentRoots()) {
                     if (root instanceof JarPackageFragmentRoot) {
                         JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
                         try {
-                            if (jarRoot.getJar().getName().equals(jarPath)) {
+                            if (jarRoot.getJar().getName().equals(jarPath.getPath())) {
                                 packageFragmentRoots.add(root);
                             }
                         } catch (CoreException e) {
