@@ -87,54 +87,57 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			{ "[", "]" }};
 
 	public void closeOpening(IDocument doc, DocumentCommand cmd) {
+		
 		try {
 			// TODO: improve this, check the surrounding token type!
 			if (doc.getChar(cmd.offset - 1) == '\\') {
 				return;
 			}
-		} catch (BadLocationException e) {}
-
-		if (isQuotedOrCommented(cmd.offset)) {
-			return;
-		}
+		} 
+		catch (BadLocationException e) {}
 
 		String current = cmd.text;
 		String opening = null;
 		String closing = null;
 
+		boolean found=false;
 		for (String[] type : FENCES) {
-			if (type[0].equals(current) || type[1].equals(current)) {
+			if (type[0].equals(current) || 
+					type[1].equals(current)) {
 				opening = type[0];
 				closing = type[1];
+				found = true;
 				break;
 			}
 		}
-		// no pair found, return
-		if (opening == null && closing == null) {
-			return;
-		}
 		
-		boolean skip = false;
-		if (current.equals(closing)) {
-			try {
-				// skip one ahead if next char is the closing bracket
-				if (String.valueOf(doc.getChar(cmd.offset)).equals(closing)) {
-					skip = true;
-				}
-			} catch (BadLocationException e) {}
+		if (found) {
+		
+			if (current.equals(closing)) {
+				//typed character is a closing fence
+				try {
+					// skip one ahead if next char is already a closing fence
+					if (String.valueOf(doc.getChar(cmd.offset)).equals(closing)) {
+						cmd.text = "";
+						cmd.shiftsCaret = false;
+						cmd.caretOffset = cmd.offset + 1;
+						return;
+					}
+				} 
+				catch (BadLocationException e) {}
+			}
 
-			if (skip) {
-				cmd.text = "";
-				cmd.shiftsCaret = false;
-				cmd.caretOffset = cmd.offset + 1;
+			if (!isQuotedOrCommented(cmd.offset) && 
+					current.equals(opening)) {
+				//typed character is an opening fence
+				if (closeOpeningFence(doc, cmd, opening, closing)) {
+					//add a closing fence
+					cmd.text += closing;
+					cmd.shiftsCaret = false;
+					cmd.caretOffset = cmd.offset + 1;
+				}
 			}
-		}
-		if (!skip && current.equals(opening)) {
-			if (closeOpeningFence(doc, cmd, opening, closing)) {
-				cmd.text += closing;
-				cmd.shiftsCaret = false;
-				cmd.caretOffset = cmd.offset + 1;
-			}
+			
 		}
 	}
 
