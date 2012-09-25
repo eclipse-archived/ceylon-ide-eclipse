@@ -536,6 +536,7 @@ public class CeylonContentProposer {
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
             Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
             CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
+    	if (node instanceof Tree.Literal) return null;
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
