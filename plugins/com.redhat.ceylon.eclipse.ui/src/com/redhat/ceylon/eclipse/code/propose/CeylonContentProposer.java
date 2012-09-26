@@ -611,7 +611,7 @@ public class CeylonContentProposer {
             			}
             		}
 					if (isProposable(dwp, ol, node.getScope())) {
-						if (noParamsFollow || ol==SATISFIES || 
+						if (noParamsFollow || ol==SATISFIES || ol==UPPER_BOUND ||
 								dwp.getDeclaration() instanceof Functional) {
 							addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
 						}
