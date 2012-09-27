@@ -640,10 +640,13 @@ public class DocHover
 		if (elem instanceof IMember) {
 			try {
             	//TODO: Javadoc @ icon?
-				sb.append("<br/>").append(JavadocContentAccess2.getHTMLContent((IMember) elem, true));
-				String base = JavaDocLocations.getBaseURL((IMember) elem);
-				int endHeadIdx= sb.indexOf("</head>");
-				sb.insert(endHeadIdx, "\n<base href='" + base + "'>\n");
+				String jd = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+				if (jd!=null) {
+					sb.append("<br/>").append(jd);
+					String base = JavaDocLocations.getBaseURL((IMember) elem);
+					int endHeadIdx= sb.indexOf("</head>");
+					sb.insert(endHeadIdx, "\n<base href='" + base + "'>\n");
+				}
 			} 
 			catch (JavaModelException e) {
 				e.printStackTrace();
