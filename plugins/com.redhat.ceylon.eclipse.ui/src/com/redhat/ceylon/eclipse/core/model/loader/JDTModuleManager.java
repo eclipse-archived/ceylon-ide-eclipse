@@ -181,12 +181,13 @@ public class JDTModuleManager extends LazyModuleManager {
         try {
             IProject project = javaProject.getProject();
             for (IProject p: project.getReferencedProjects()) {
-                if (p.isAccessible() && moduleFileInProject(moduleName, JavaCore.create(p))) {
+                if (p.isAccessible() && 
+                		moduleFileInProject(moduleName, JavaCore.create(p))) {
                     return true;
                 }
             }
-        } catch (CoreException e) {
-            // TODO Auto-generated catch block
+        } 
+        catch (CoreException e) {
             e.printStackTrace();
         }
         return false;
@@ -196,6 +197,7 @@ public class JDTModuleManager extends LazyModuleManager {
         try {
 			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
 				if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
+					!sourceFolder.isArchive() &&
 					sourceFolder.getPackageFragment(moduleName).exists()) {
 					return true;
 				}
