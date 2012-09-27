@@ -349,6 +349,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		for (Module module: modulesToAdd) {
 			if (module.getNameAsString().equals(Module.DEFAULT_MODULE_NAME) ||
 					module.getNameAsString().equals("java") ||
+					module.getNameAsString().equals("oracle") || //TODO: what is up with this thingy?
 					isProjectModule(javaProject, module)) {
 				continue;
 			}
