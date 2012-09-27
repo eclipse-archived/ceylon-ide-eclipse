@@ -1512,9 +1512,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throw e;
         }
 
+        CompileErrorReporter errorReporter = new CompileErrorReporter(project);
+
         final com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
         context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
-        context.put(DiagnosticListener.class, new CompileErrorReporter());
+        context.put(DiagnosticListener.class, errorReporter);
         CeylonLog.preRegister(context);
         
         BuildFileManager fileManager = new BuildFileManager(context, true, null, project);
@@ -1531,7 +1533,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         ZipFileIndexCache.getSharedInstance().clearCache();
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
-                fileManager, new CompileErrorReporter(), options, null, 
+                fileManager, errorReporter, options, null, 
                 compilationUnits);
         task.setTaskListener(new TaskListener() {
 			@Override

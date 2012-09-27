@@ -101,6 +101,8 @@ public class JDTModule extends LazyModule {
         Set<String> packageList = new TreeSet<String>();
         if(isJava()){
             for(IPackageFragmentRoot fragmentRoot : packageFragmentRoots){
+                if(!fragmentRoot.exists())
+                    continue;
                 IParent parent = fragmentRoot;
                 listPackages(packageList, parent);
             }

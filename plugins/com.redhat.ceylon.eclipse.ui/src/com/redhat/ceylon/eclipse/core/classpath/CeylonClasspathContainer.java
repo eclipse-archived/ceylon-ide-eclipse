@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -53,6 +54,7 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElementDelta;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -372,8 +374,14 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 			}
 			else {
-				System.err.println("no module archive found for classpath container: " + 
-						module.getNameAsString() + "/" + module.getVersion());
+			    // FIXME: ideally we should find the module.java file and put the marker there, but
+			    // I've no idea how to find it and which import is the cause of the import problem
+			    // as it could be transitive
+			    IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+			    marker.setAttribute(IMarker.MESSAGE, "no module archive found for classpath container: " + 
+			            module.getNameAsString() + "/" + module.getVersion());
+			    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+			    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 			}
 		}
 

@@ -11,6 +11,7 @@ import javax.tools.JavaFileObject;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
@@ -18,7 +19,14 @@ import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 
 final class CompileErrorReporter implements
 		DiagnosticListener<JavaFileObject> {
-	@Override
+    
+	private IProject project;
+
+    public CompileErrorReporter(IProject project) {
+	    this.project = project;
+    }
+
+    @Override
 	public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
 		JavaFileObject source = diagnostic.getSource();
 		if (source instanceof CeylonFileObject) {
@@ -31,21 +39,34 @@ final class CompileErrorReporter implements
 					}
 				}
 				IMarker marker = file.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
-				long line = diagnostic.getLineNumber();
-				if (line>=0) {
-					//Javac doesn't have line number 
-					//info for certain errors
-					marker.setAttribute(IMarker.LINE_NUMBER, (int)line);
-					marker.setAttribute(IMarker.CHAR_START, (int)diagnostic.getStartPosition());
-					marker.setAttribute(IMarker.CHAR_END, (int)diagnostic.getEndPosition());
-				}
-				marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
-				marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				setupMarker(marker, diagnostic);
 			} 
 			catch (CoreException e) {
 				e.printStackTrace();
 			}
+		}else if(source == null){
+		    // no source file
+		    try{
+		        IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
+		        setupMarker(marker, diagnostic);
+		    } 
+		    catch (CoreException e) {
+		        e.printStackTrace();
+		    }
 		}
 	}
+
+    private void setupMarker(IMarker marker, Diagnostic<? extends JavaFileObject> diagnostic) throws CoreException {
+        long line = diagnostic.getLineNumber();
+        if (line>=0) {
+            //Javac doesn't have line number 
+            //info for certain errors
+            marker.setAttribute(IMarker.LINE_NUMBER, (int)line);
+            marker.setAttribute(IMarker.CHAR_START, (int)diagnostic.getStartPosition());
+            marker.setAttribute(IMarker.CHAR_END, (int)diagnostic.getEndPosition());
+        }
+        marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
+        marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+    }
 }
