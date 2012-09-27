@@ -25,6 +25,8 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import com.redhat.ceylon.cmr.api.Logger;
+import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportJarWizard extends Wizard implements IExportWizard {
@@ -126,7 +128,27 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 						Path repoModulePath = repoPath.resolve(dir);
 						try {
 							Files.createDirectories(repoModulePath);
-							Files.copy(jarPath, repoModulePath.resolve(fileName), REPLACE_EXISTING);
+							Path targetPath = repoModulePath.resolve(fileName);
+							Files.copy(jarPath, targetPath, REPLACE_EXISTING);
+							Logger log = new Logger() {
+								@Override
+								public void warning(String str) {
+									// TODO Auto-generated method stub
+								}
+								@Override
+								public void info(String str) {
+									// TODO Auto-generated method stub
+								}
+								@Override
+								public void error(String str) {
+									// TODO Auto-generated method stub
+								}
+								@Override
+								public void debug(String str) {
+									// TODO Auto-generated method stub
+								}
+							};
+							ShaSigner.sign(targetPath.toFile(), log, false);
 						}
 						catch (Exception e) {
 							ex = e;
