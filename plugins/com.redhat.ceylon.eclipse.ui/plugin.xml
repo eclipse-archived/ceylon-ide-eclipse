@@ -189,6 +189,15 @@
           <description>Export a Ceylon module to a module repository.</description>
           <selection class="org.eclipse.core.resources.IResource"/> 
       </wizard> 
+      <wizard 
+            id="com.redhat.ceylon.eclipse.ui.exportJarWizard" 
+            name="Java Archive to Module Repository"
+            class="com.redhat.ceylon.eclipse.code.wizard.ExportJarWizard"
+            category="ceylon" 
+            icon="/icons/exportjar_wiz.gif">
+          <description>Export a Java archive to a module repository.</description>
+          <selection class="org.eclipse.core.resources.IResource"/> 
+      </wizard> 
    </extension> 
    
    <extension
