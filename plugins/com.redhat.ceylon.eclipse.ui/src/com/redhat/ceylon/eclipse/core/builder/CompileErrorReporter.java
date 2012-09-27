@@ -34,7 +34,8 @@ final class CompileErrorReporter implements
 					.getFileForLocation(new Path(source.getName()));
 			try {
 				for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
-					if (((Integer)m.getAttribute(IMarker.SEVERITY)).intValue()==IMarker.SEVERITY_ERROR) {
+					int sev = ((Integer)m.getAttribute(IMarker.SEVERITY)).intValue();
+					if (sev==IMarker.SEVERITY_ERROR) {
 						return;
 					}
 				}
@@ -44,7 +45,8 @@ final class CompileErrorReporter implements
 			catch (CoreException e) {
 				e.printStackTrace();
 			}
-		}else if(source == null){
+		}
+		else if (source == null) {
 		    // no source file
 		    try{
 		        IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
@@ -67,6 +69,16 @@ final class CompileErrorReporter implements
         }
         marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(Locale.getDefault()));
         marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+        switch (diagnostic.getKind()) {
+        case ERROR:
+        	marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+        	break;
+        case WARNING:
+        case MANDATORY_WARNING:
+        	marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+        	break;
+        default:
+        	marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+        }
     }
 }
