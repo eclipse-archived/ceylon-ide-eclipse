@@ -221,7 +221,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         //title.setText("The Ceylon module repository contains dependencies:");
         //final Composite composite= new Composite(parent, SWT.NONE);
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
-        composite.setText("Ceylon module repository");
+        composite.setText("Ceylon module repositories");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd);

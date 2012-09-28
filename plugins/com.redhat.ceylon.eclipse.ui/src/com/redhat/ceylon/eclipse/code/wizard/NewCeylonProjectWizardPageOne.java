@@ -78,6 +78,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -102,9 +103,9 @@ import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
  *
  * @since 3.4
  */
-public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
+public class NewCeylonProjectWizardPageOne extends WizardPage {
 
-	abstract void addExtraControls(Composite parent);
+//	abstract void addExtraControls(Composite parent);
 	
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
@@ -121,7 +122,7 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
         Control locationControl= createLocationControl(composite);
         locationControl.setLayoutData(new GridData(FILL_HORIZONTAL));
 
-        addExtraControls(composite);
+        addCompilerSettings(composite);
 
         Control jreControl= createJRESelectionControl(composite);
         jreControl.setLayoutData(new GridData(FILL_HORIZONTAL));
@@ -1457,6 +1458,59 @@ public abstract class NewCeylonProjectWizardPageOne extends WizardPage {
 		return true;
 	}
 
+    private boolean enableJdtClassesDir = false;
+    
+    public boolean isEnableJdtClassesDir() {
+		return enableJdtClassesDir;
+	}
+
+	public boolean isShowCompilerWarnings() {
+		return showCompilerWarnings;
+	}
+
+	private boolean showCompilerWarnings = true;
+
+    //TODO: fix copy/paste!
+    void addCompilerSettings(Composite parent) {
+        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        composite.setText("Ceylon compiler settings");
+        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        composite.setLayout(layout);        
+        
+        final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableJdtClasses.setSelection(false);
+        enableJdtClasses.setEnabled(true);
+
+        final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        showWarnings.setText("Show compiler warnings (for unused declarations)");
+        showWarnings.setSelection(true);
+        showWarnings.setEnabled(true);
+
+//        addSelectRepoSection(parent);
+        
+        enableJdtClasses.addSelectionListener(new SelectionListener() {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
+            	enableJdtClassesDir = !enableJdtClassesDir;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        showWarnings.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	showCompilerWarnings = !showCompilerWarnings;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+    }
 
 }
 
