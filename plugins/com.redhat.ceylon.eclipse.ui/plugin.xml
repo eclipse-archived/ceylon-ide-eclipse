@@ -1001,6 +1001,15 @@
             <adapt type="org.eclipse.core.resources.IProject"/>
          </enabledWhen>
        </page>
+       <page 
+           id="com.redhat.ceylon.eclipse.ui.preferences.repos" 
+           category="com.redhat.ceylon.eclipse.ui.preferences"
+           name="Module Repositories"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonRepoPreferencesPage">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject"/>
+         </enabledWhen>
+       </page>
    </extension>
    
    <extension point="org.eclipse.ui.intro.configExtension">
