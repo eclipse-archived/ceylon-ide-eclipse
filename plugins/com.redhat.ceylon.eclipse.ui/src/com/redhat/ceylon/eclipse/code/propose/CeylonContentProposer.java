@@ -33,14 +33,13 @@ import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -54,7 +53,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -495,22 +496,30 @@ public class CeylonContentProposer {
         }
     }
     
+    private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
+    {
+        JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
+    }
+    private static final SortedSet<String> EMPTY_SORTED_SET = new TreeSet<String>();
+    
     private static void addModuleCompletions(int offset, String prefix,
     		Node node, List<ICompletionProposal> result, int len, String pfp,
     		final CeylonParseController cpc) {
     	final TypeChecker tc = cpc.getTypeChecker();
     	if (tc!=null) {
-    		Collection<ModuleDetails> results = tc.getContext().getRepositoryManager()
-    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM))
-    				.getResults();
-    		for (final ModuleDetails module: results) {
+    		ModuleSearchResult results = tc.getContext().getRepositoryManager()
+    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
+            // add special entries for Java modules
+    		if(pfp == null || AbstractModelLoader.JDK_MODULE.startsWith(pfp)){
+    		    results.addResult(AbstractModelLoader.JDK_MODULE, "Java 7 JDK", "", EMPTY_SORTED_SET, JDK_MODULE_VERSION_SET);
+    		}
+            if(pfp == null || AbstractModelLoader.ORACLE_JDK_MODULE.startsWith(pfp)){
+                results.addResult(AbstractModelLoader.ORACLE_JDK_MODULE, "Oracle-specific Java 7 JDK", "", EMPTY_SORTED_SET, JDK_MODULE_VERSION_SET);
+            }
+    		for (final ModuleDetails module: results.getResults()) {
     		    if (!module.getName().equals(Module.DEFAULT_MODULE_NAME)) {
-    		        // let's put them from newer to older
-    		        List<String> reversedVersions = new LinkedList<String>();
-    		        for(String version : module.getVersions())
-    		            reversedVersions.add(0, version);
-    		        for (final String version : reversedVersions) {
-    		            String versioned = module.getName() + " '" + version + "'";
+    		        for (final String version : module.getVersions().descendingSet()) {
+    		            String versioned = getModuleString(module.getName(), version);
     		            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
     		                                              versioned, versioned.substring(len), false) {
     		                @Override
@@ -522,6 +531,10 @@ public class CeylonContentProposer {
     		    }
     		}
     	}
+    }
+
+    private static String getModuleString(final String name, final String version) {
+        return name + " '" + version + "'";
     }
 
     private static boolean isIdentifierOrKeyword(Token token) {
