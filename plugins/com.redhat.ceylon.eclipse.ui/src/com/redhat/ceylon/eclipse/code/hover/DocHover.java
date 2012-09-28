@@ -706,14 +706,19 @@ public class DocHover
 		
 	}
 
+        
 	public static String getDocumentationFor(ModuleDetails mod, String version) {
+	    return getDocumentationForModule(mod.getName(), version, mod.getDoc());
+    }
+	
+	public static String getDocumentationForModule(String name, String version, String doc) {
 		StringBuffer buffer= new StringBuffer();
 		
-		addImageAndLabel(buffer, mod, fileUrl("jar_l_obj.gif").toExternalForm(), 
-				16, 16, "<b><tt>module " + mod.getName() + " '" + version + "'" +"</tt></b>", 20, 4);
+		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
+				16, 16, "<b><tt>module " + name + " '" + version + "'" +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
-		buffer.append(markdown('"'+mod.getDoc()+'"', null));
+		buffer.append(markdown('"'+doc+'"', null));
 				
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
