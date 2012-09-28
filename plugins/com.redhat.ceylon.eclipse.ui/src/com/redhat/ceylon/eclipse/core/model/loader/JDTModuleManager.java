@@ -134,12 +134,6 @@ public class JDTModuleManager extends LazyModuleManager {
             final Package emptyPackage = createPackage("", defaultModule);
         }
         super.initCoreModules();
-        // FIXME: this should go away somewhere else, but we need it to be set otherwise
-        // when we load the module from compiled sources, ModuleManager.getOrCreateModule() will not
-        // return the language module because its version is null
-        Module languageModule = modules.getLanguageModule();
-        languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
-        Module defaultModule = modules.getDefaultModule();
     }
     
     @Override
