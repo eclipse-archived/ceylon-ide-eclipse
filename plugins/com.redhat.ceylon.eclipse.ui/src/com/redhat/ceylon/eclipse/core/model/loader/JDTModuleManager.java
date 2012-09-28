@@ -223,8 +223,7 @@ public class JDTModuleManager extends LazyModuleManager {
                 }
             } else {
                 for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if (moduleNameString.equals(AbstractModelLoader.JDK_MODULE) 
-                    		|| moduleNameString.equals(AbstractModelLoader.ORACLE_JDK_MODULE) || 
+                    if (AbstractModelLoader.isJDKModule(moduleNameString) || 
                             ! (root instanceof JarPackageFragmentRoot)) {
                         String packageToSearch = moduleNameString;
                         if (root.getPackageFragment(packageToSearch).exists()) {
