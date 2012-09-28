@@ -112,17 +112,16 @@ public class JDTModuleManager extends LazyModuleManager {
 
             //build default module (module in which packages belong to when not explicitly under a module
             final List<String> defaultModuleName = Collections.singletonList(Module.DEFAULT_MODULE_NAME);
-            final Module defaultModule = createModule(defaultModuleName);
+            final Module defaultModule = createModule(defaultModuleName, "unversioned");
             defaultModule.setDefault(true);
             defaultModule.setAvailable(true);
-            defaultModule.setVersion("unversioned");
             modules.getListOfModules().add(defaultModule);
             modules.setDefaultModule(defaultModule);
 
             //create language module and add it as a dependency of defaultModule
             //since packages outside a module cannot declare dependencies
             final List<String> languageName = Arrays.asList("ceylon", "language");
-            Module languageModule = createModule(languageName);
+            Module languageModule = createModule(languageName, TypeChecker.LANGUAGE_MODULE_VERSION);
             languageModule.setLanguageModule(languageModule);
             languageModule.setAvailable(false); //not available yet
             modules.setLanguageModule(languageModule);
@@ -215,7 +214,7 @@ public class JDTModuleManager extends LazyModuleManager {
     }
     
     @Override
-    protected Module createModule(List<String> moduleName) {
+    protected Module createModule(List<String> moduleName, String version) {
         Module module = null;
         String moduleNameString = Util.getName(moduleName);
         List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
