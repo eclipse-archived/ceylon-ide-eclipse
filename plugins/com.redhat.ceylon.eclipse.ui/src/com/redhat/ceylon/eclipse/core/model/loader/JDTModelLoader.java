@@ -276,14 +276,13 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public void loadStandardModules() {
+        // make sure the jdk modules are loaded
+        findOrCreateModule(AbstractModelLoader.JDK_MODULE);
+        findOrCreateModule(AbstractModelLoader.ORACLE_JDK_MODULE);
+        
         /*
-         * We start by loading java.lang and ceylon.language because we will need them no matter what.
+         * We start by loading java.lang because we will need it no matter what.
          */
-        
-        Module javaModule = findOrCreateModule(AbstractModelLoader.JDK_MODULE);
-        Package javaLangPackage = findOrCreatePackage(javaModule, "java.lang");
-        javaLangPackage.setShared(true);
-        
         loadPackage("java.lang", false);
     }
     
