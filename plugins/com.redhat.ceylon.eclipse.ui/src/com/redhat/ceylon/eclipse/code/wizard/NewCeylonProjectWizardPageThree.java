@@ -74,23 +74,26 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
         composite.setText("Ceylon module repositories");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace = true;
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
+        layout.marginWidth = 10;
+        layout.marginHeight = 10;
         layout.numColumns = 4;
         composite.setLayout(layout);
-        gd.grabExcessHorizontalSpace = true;
         
         Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Module repositories on build path: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 4;
+        flgd.grabExcessHorizontalSpace = true;
         folderLabel.setLayoutData(flgd);
 
         repoFolders = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 3;
         fgd.verticalSpan = 4;
-        fgd.heightHint = 100;
+        fgd.heightHint = 250;
         fgd.grabExcessHorizontalSpace = true;
         fgd.widthHint = 200;
         repoFolders.setLayoutData(fgd);
@@ -101,7 +104,19 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
         	repositoryPaths.add(repo);
         }
         
-        Button selectRepoFolder = new Button(composite, SWT.PUSH);
+        Composite buttons = new Composite(composite, SWT.NONE);
+        GridData bgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        bgd.horizontalSpan = 1;
+        bgd.verticalSpan = 4;
+        bgd.verticalAlignment = SWT.TOP;
+        buttons.setLayoutData(bgd);
+        GridLayout l = new GridLayout();
+        l.marginWidth = 0;
+        l.marginHeight = 0;
+        l.numColumns = 1;
+        buttons.setLayout(l);
+        
+        Button selectRepoFolder = new Button(buttons, SWT.PUSH);
         selectRepoFolder.setText("Add Repository...");
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
@@ -119,7 +134,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Button selectRemoteRepo = new Button(composite, SWT.PUSH);
+        Button selectRemoteRepo = new Button(buttons, SWT.PUSH);
         selectRemoteRepo.setText("Add Remote Repository...");
         GridData srrgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         srrgd.horizontalSpan = 1;
@@ -151,7 +166,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Button selectHerdRepo = new Button(composite, SWT.PUSH);
+        Button selectHerdRepo = new Button(buttons, SWT.PUSH);
         selectHerdRepo.setText("Add Ceylon Herd");
         GridData srfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         srfgd.horizontalSpan = 1;
@@ -167,7 +182,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Button deleteRepoFolder = new Button(composite, SWT.PUSH);
+        Button deleteRepoFolder = new Button(buttons, SWT.PUSH);
         deleteRepoFolder.setText("Remove Repository");
         GridData dfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         dfgd.horizontalSpan = 1;
