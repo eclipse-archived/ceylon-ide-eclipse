@@ -81,36 +81,39 @@ public class FindReferenceVisitor extends Visitor {
     
     @Override
     public void visit(Tree.IfClause that) {
-        Condition c = that.getCondition();
-        Tree.Variable var = getConditionVariable(c);
-        if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
-			if (od!=null && od.equals(declaration)) {
-                c.visit(this);
-                Declaration d = declaration;
-                declaration = var.getDeclarationModel();
-                that.getBlock().visit(this);
-                declaration = d;
-                return;
-            }
+        for (Condition c: that.getConditionList().getConditions()) {
+        	Tree.Variable var = getConditionVariable(c);
+        	if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+        		TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+        		if (od!=null && od.equals(declaration)) {
+        			c.visit(this);
+        			Declaration d = declaration;
+        			declaration = var.getDeclarationModel();
+        			that.getBlock().visit(this);
+        			declaration = d;
+        			return;
+        		}
+        	}
         }
         super.visit(that);
     }
 
     @Override
     public void visit(Tree.WhileClause that) {
-        Condition c = that.getCondition();
-        Tree.Variable var = getConditionVariable(c);
-        if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
-			if (od!=null && od.equals(declaration)) {
-                c.visit(this);
-                Declaration d = declaration;
-                declaration = var.getDeclarationModel();
-                that.getBlock().visit(this);
-                declaration = d;
-                return;
-            }
+        for (Condition c: that.getConditionList().getConditions()) {
+        	Tree.Variable var = getConditionVariable(c);
+        	if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+        		TypedDeclaration od = var.getDeclarationModel()
+        				.getOriginalDeclaration();
+        		if (od!=null && od.equals(declaration)) {
+        			c.visit(this);
+        			Declaration d = declaration;
+        			declaration = var.getDeclarationModel();
+        			that.getBlock().visit(this);
+        			declaration = d;
+        			return;
+        		}
+        	}
         }
         super.visit(that);
     }

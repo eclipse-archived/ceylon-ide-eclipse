@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -63,7 +64,12 @@ class InvertIfElse extends ChangeCorrectionProposal {
     		IfClause ifClause = ifStmt.getIfClause();
     		Block ifBlock = ifClause.getBlock();
     		Block elseBlock = ifStmt.getElseClause().getBlock();
-    		Condition ifCondition = ifClause.getCondition();
+    		List<Condition> conditions = ifClause.getConditionList()
+    				.getConditions();
+    		if (conditions.size()!=1) {
+    			return;
+    		}
+    		Condition ifCondition = conditions.get(0);
     		
     		String test = null;
     		String term = getTerm(doc, ifCondition);
