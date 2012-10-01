@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
@@ -69,6 +70,13 @@ class FindOccurrenceLocationVisitor extends Visitor
         super.visit(that);
     }
         
+    public void visit(Tree.CaseTypes that) {
+        if (inBounds(that)) {
+            occurrence = OF;
+        }
+        super.visit(that);
+    }
+    
     @Override
     public void visit(Tree.BinaryOperatorExpression that) {
         Term right = that.getRightTerm();

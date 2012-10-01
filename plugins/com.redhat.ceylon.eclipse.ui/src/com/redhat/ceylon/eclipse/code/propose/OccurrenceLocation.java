@@ -2,7 +2,8 @@ package com.redhat.ceylon.eclipse.code.propose;
 
 public enum OccurrenceLocation { 
     EXTENDS, 
-    SATISFIES, 
+    SATISFIES,
+    OF,
     UPPER_BOUND, 
     IMPORT, 
     EXPRESSION,
