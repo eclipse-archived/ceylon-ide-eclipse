@@ -921,6 +921,7 @@ public class CeylonContentProposer {
             DeclarationWithProximity dwp, ProducedReference pr, 
             OccurrenceLocation ol) {
         Declaration d = pr.getDeclaration();
+        if (!(d instanceof Functional)) return;
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
         Functional fd = (Functional) d;
         List<ParameterList> pls = fd.getParameterLists();
