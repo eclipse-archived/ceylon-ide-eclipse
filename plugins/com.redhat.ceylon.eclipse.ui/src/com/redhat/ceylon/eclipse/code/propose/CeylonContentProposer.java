@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
@@ -624,7 +625,7 @@ public class CeylonContentProposer {
             			}
             		}
 					if (isProposable(dwp, ol, node.getScope())) {
-						if (noParamsFollow || ol==SATISFIES || ol==UPPER_BOUND ||
+						if (noParamsFollow || ol==SATISFIES || ol==OF || ol==UPPER_BOUND ||
 								dwp.getDeclaration() instanceof Functional) {
 							addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
 						}
@@ -713,6 +714,7 @@ public class CeylonContentProposer {
         Declaration dec = dwp.getDeclaration();
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
+                (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || 
                         dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
