@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,7 +82,12 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 
 		Node ifBlockNode = ifBlock.getChildren().get(0);
 		Node elseBlockNode = elseBlock.getChildren().get(0);
-		Condition condition = ifStmt.getIfClause().getCondition();
+		List<Condition> conditions = ifStmt.getIfClause()
+				.getConditionList().getConditions();
+		if (conditions.size()!=1) {
+			return null;
+		}
+		Condition condition = conditions.get(0);
 		Integer replaceFrom = statement.getStartIndex();
 		String test = removeEnclosingParentesis(getTerm(doc, condition));
 		String thenStr = null;
