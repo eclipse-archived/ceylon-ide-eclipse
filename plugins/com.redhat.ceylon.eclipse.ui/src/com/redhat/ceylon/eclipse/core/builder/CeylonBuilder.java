@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
@@ -1379,9 +1379,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             });
 
         List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(makeRepositoryManager(null, repos, 
-        		getCeylonModulesOutputDirectory(project).getAbsolutePath(), 
-        		new EclipseLogger()));
+        typeCheckerBuilder.setRepositoryManager(repoManager().userRepos(repos)
+        		.outRepo(getCeylonModulesOutputDirectory(project).getAbsolutePath()) 
+        		.logger(new EclipseLogger()).buildManager());
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
 		return typeChecker;
 	}

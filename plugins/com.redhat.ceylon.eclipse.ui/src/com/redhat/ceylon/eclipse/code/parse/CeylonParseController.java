@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
@@ -375,8 +375,8 @@ public class CeylonParseController {
 			}
 			repos.add(getCeylonModulesOutputDirectory(project).getAbsolutePath());
 		}
-		tcb.setRepositoryManager(makeRepositoryManager(null, repos, null, 
-				new EclipseLogger()));
+		tcb.setRepositoryManager(repoManager().userRepos(repos).logger(new EclipseLogger())
+				.buildManager());
 		
 		TypeChecker tc = tcb.getTypeChecker();
 		tc.process();

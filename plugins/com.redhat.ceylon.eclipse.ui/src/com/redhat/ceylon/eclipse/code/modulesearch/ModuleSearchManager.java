@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.makeRepositoryManager;
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ public class ModuleSearchManager {
     public ModuleSearchManager(ModuleSearchViewPart moduleSearchViewPart) {
         this.moduleSearchViewPart = moduleSearchViewPart;
         this.globalLookupRepositories = Repositories.get().getGlobalLookupRepositories();
-        this.repositoryManager = makeRepositoryManager(null, null, null, new EclipseLogger());
+        this.repositoryManager = repoManager().logger(new EclipseLogger()).buildManager();
     }
     
     public void searchModules(final String query) {
