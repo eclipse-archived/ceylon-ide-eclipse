@@ -5,6 +5,7 @@ import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -31,6 +32,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewProjectWizard extends NewElementWizard implements IExecutableExtension {
@@ -61,13 +63,6 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         firstPage.setTitle("New Ceylon Project");
         firstPage.setDescription("Create a Ceylon project in the workspace or in an external location.");
         addPage(firstPage);
-        
-        if (thirdPage == null) {
-        	thirdPage = new NewCeylonProjectWizardPageThree();
-        }
-        thirdPage.setTitle("Ceylon Module Repository Settings");
-        thirdPage.setDescription("Specify the Ceylon module repositories for the project.");
-        addPage(thirdPage);
 
         if (secondPage == null) {
             secondPage= new NewCeylonProjectWizardPageTwo(firstPage);
@@ -75,6 +70,13 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         secondPage.setTitle("Ceylon Project Settings");
         secondPage.setDescription("Define the Ceylon build settings.");
         addPage(secondPage);
+        
+        if (thirdPage == null) {
+            thirdPage = new NewCeylonProjectWizardPageThree(secondPage);
+        }
+        thirdPage.setTitle("Ceylon Module Repository Settings");
+        thirdPage.setDescription("Specify the Ceylon module repositories for the project.");
+        addPage(thirdPage);
         
         firstPage.init(getSelection(), getActivePart());
     }
@@ -104,7 +106,6 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             }
         }
-        if (!thirdPage.isRepoValid()) return false;
         
         boolean res= super.performFinish();
         if (res) {
@@ -113,10 +114,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 PlatformUI.getWorkbench().getWorkingSetManager()
                         .addToWorkingSets(getCreatedElement(), workingSets);
             }
+            
+            IProject project = getCreatedElement().getProject();
+            
+            CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+            projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
+            projectConfig.setProjectLookupRepos(thirdPage.getBlock().getProjectLookupRepos());
+            projectConfig.save();            
 
-            IPath outputPath = secondPage.getCeylonOutputLocation();
-    		//if (!embeddedRepo) ExportModuleWizard.persistDefaultRepositoryPath(repositoryPath);
-    		new CeylonNature(outputPath, thirdPage.getRepositoryPaths(),
+    		new CeylonNature(thirdPage.getBlock().getSystemRepo(),
     				firstPage.isEnableJdtClassesDir(), 
     				!firstPage.isShowCompilerWarnings())
                             .addToProject(getCreatedElement().getProject());

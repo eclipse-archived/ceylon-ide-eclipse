@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
@@ -1377,11 +1376,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     return new JDTModuleManager(context, javaProject);
                 }
             });
-
-        List<String> repos = getUserRepositories(project);
-        typeCheckerBuilder.setRepositoryManager(repoManager().userRepos(repos)
-        		.outRepo(getCeylonModulesOutputDirectory(project).getAbsolutePath()) 
-        		.logger(new EclipseLogger()).buildManager());
+		
+		RepositoryManager repositoryManager = repoManager()
+		        .cwd(project.getLocation().toFile())
+		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
+		        .logger(new EclipseLogger())
+		        .buildManager();
+		
+        typeCheckerBuilder.setRepositoryManager(repositoryManager);
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
 		return typeChecker;
 	}
@@ -1706,26 +1708,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         return userRepos;
     }
-    
-    public static String[] getRepositoryPaths(IProject project) {
-    	Map args = getBuilderArgs(project);
-    	List<String> result = new ArrayList<String>();
-    	for (String key: new TreeSet<String>((Set<String>) args.keySet())) {
-			if (key.startsWith("repositoryPath") && 
-					!key.equals("repositoryPath")) {
-				result.add(args.get(key).toString());
-    		}
-    	}
-    	if (!result.isEmpty()) {
-    		return result.toArray(new String[0]);
-    	}
-    	//for legacy projects only!
-    	String paths = (String) args.get("repositoryPath");
-    	if (paths!=null) {
-    		return paths.split(":");
-    	}
-    	return getDefaultUserRepositories();
-    }
 
 	private static Map getBuilderArgs(IProject project) {
 		if (project!=null) {
@@ -1744,23 +1726,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	}
 
     public static List<String> getCeylonRepositories(IProject project) {
-		String[] repoPaths = getRepositoryPaths(project);
-    	List<String> repos = new ArrayList<String>(repoPaths.length);
-        for (String repoPath: repoPaths) {
-        	repos.add(interpolateVariablesInRepositoryPath(repoPath));
-        }
-        /*if (repos.isEmpty()) {
-        	repos.add(CeylonPlugin.getInstance().getCeylonRepository());
-        }*/
-    	return repos;
-    }
+        CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+        List<String> projectLookupRepos = projectConfig.getProjectLookupRepos();
+        List<String> globalLookupRepos = projectConfig.getGlobalLookupRepos();
 
-	public static String interpolateVariablesInRepositoryPath(String repoPath) {
-		String userHomePath = System.getProperty("user.home");
-		String pluginRepoPath = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
-		return repoPath.replace("${user.home}", userHomePath)
-		        .replace("${ceylon.repo}", pluginRepoPath);
-	}
+        List<String> repos = new ArrayList<String>();
+        repos.addAll(projectLookupRepos);
+        repos.addAll(globalLookupRepos);
+        return repos;
+    }
 
     private static File toFile(IProject project, IPath path) {
 		return project.getFolder(path).getRawLocation().toFile();
@@ -2004,6 +1978,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeCheckers.remove(project);
         projectSources.remove(project);
         modelStates.remove(project);
+        CeylonProjectConfig.remove(project);
     }
     
     public static List<IPath> getSourceFolders(IProject project) {
@@ -2306,25 +2281,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
 	public static IFolder getCeylonModulesOutputFolder(IProject project) {
-		IPath path = getCeylonModulesOutputPath(project);
+		IPath path = CeylonProjectConfig.get(project).getOutputRepoPath();
 		return path==null ? 
 				project.getFolder("modules") : 
 			    project.getFolder(path.removeFirstSegments(1));
 	}
-
-	public static IPath getCeylonModulesOutputPath(IProject project) {
-		String op = (String)getBuilderArgs(project).get("outputPath");
-		return op==null ? null : new Path(op);
-	}
-    
-    /**
-     * String representation for debugging purposes
-     */
-    public String toString() {
-        return this.getProject() == null
-            ? "CeylonBuilder for unknown project" //$NON-NLS-1$
-            : "CeylonBuilder for " + getProject().getName(); //$NON-NLS-1$
+	
+    public static String getCeylonSystemRepo(IProject project) {
+        String systemRepo = (String) getBuilderArgs(project).get("systemRepo");
+        if (systemRepo == null) {
+            systemRepo = "${ceylon.repo}";
+        }
+        return systemRepo;
     }
+    
+    public static String getInterpolatedCeylonSystemRepo(IProject project) {
+        return interpolateVariablesInRepositoryPath(getCeylonSystemRepo(project));
+    }    
 
 	public static String[] getDefaultUserRepositories() {
 		return new String[]{
@@ -2333,5 +2306,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 				"http://modules.ceylon-lang.org/test"
 		};
 	}
+	
+    public static String interpolateVariablesInRepositoryPath(String repoPath) {
+        String userHomePath = System.getProperty("user.home");
+        String pluginRepoPath = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+        return repoPath.replace("${user.home}", userHomePath).
+                replace("${ceylon.repo}", pluginRepoPath);
+    }
+    
+    /**
+     * String representation for debugging purposes
+     */
+    public String toString() {
+        return this.getProject() == null
+                ? "CeylonBuilder for unknown project" //$NON-NLS-1$
+                        : "CeylonBuilder for " + getProject().getName(); //$NON-NLS-1$
+    }
 
 }

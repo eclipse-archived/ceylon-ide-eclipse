@@ -294,7 +294,6 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
 			IClasspathEntry[] entries= null;
 			IPath outputJavaLocation= null;
-			IPath outputCeylonLocation= null;
 			IProject project= javaProject.getProject();
 
 			if (fKeepContent) {
@@ -303,7 +302,6 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 							new SubProgressMonitor(monitor, 2));
 					entries= detector.getClasspath();
 					outputJavaLocation= detector.getOutputLocation();
-					outputCeylonLocation = outputJavaLocation; //TODO: auto-detect where the modules are
 					if (entries.length == 0)
 						entries= null;
 				} else {
@@ -329,26 +327,16 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 				entries= cpEntries.toArray(new IClasspathEntry[cpEntries.size()]);
 
 				outputJavaLocation= fFirstPage.getJavaOutputLocation();
-				outputCeylonLocation= fFirstPage.getCeylonOutputLocation();
 				if (outputJavaLocation.segmentCount() > 1) {
 					CoreUtility.createDerivedFolder(root.getFolder(outputJavaLocation), 
 							true, true, new SubProgressMonitor(monitor, 1));
 				}
-				if (outputCeylonLocation.segmentCount() > 1) {
-					IFolder folder= root.getFolder(outputCeylonLocation);
-					CoreUtility.createDerivedFolder(folder, true, true, 
-							new SubProgressMonitor(monitor, 1));
-					//folder.setHidden(true);
-				}
-
-				//javaProject.setOption("ceylonOutput", outputCeylonLocation.toString());
-				
 			}
 			if (monitor.isCanceled()) {
 				throw new OperationCanceledException();
 			}
 
-			init(javaProject, outputJavaLocation, outputCeylonLocation, entries, false);
+			init(javaProject, outputJavaLocation, entries, false);
 		} finally {
 			monitor.done();
 		}
@@ -559,6 +547,10 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 			// cancel pressed
 		}
 	}
+	
+    public IProject getProvisonalProject() {
+        return fCurrProject;
+    }
 
 	private final void doRemoveProject(IProgressMonitor monitor) throws InvocationTargetException {
 		final boolean noProgressMonitor= (fCurrProjectLocation == null); // inside workspace
