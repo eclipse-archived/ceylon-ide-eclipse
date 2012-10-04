@@ -153,7 +153,6 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 	private final TreeListDialogField<CPListElement> fFoldersList;
 
 	private final StringDialogField fJavaOutputLocationField;
-	private final StringDialogField fCeylonOutputLocationField;
 
 	private final SelectionButtonDialogField fUseFolderOutputs;
 
@@ -164,11 +163,10 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 	private final int IDX_REMOVE= 5;
 
 	public SourceContainerWorkbookPage(ListDialogField<CPListElement> classPathList,
-			StringDialogField javaOutputLocationField, StringDialogField ceylonOutputLocationField) {
+			StringDialogField javaOutputLocationField) {
 		fClassPathList= classPathList;
 
 		fJavaOutputLocationField= javaOutputLocationField;
-		fCeylonOutputLocationField= ceylonOutputLocationField;
 
 		fSWTControl= null;
 
@@ -254,8 +252,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 		Composite composite= new Composite(parent, SWT.NONE);
 
 		LayoutUtil.doDefaultLayout(composite, 
-				new DialogField[] { fFoldersList, fUseFolderOutputs,
-				fCeylonOutputLocationField, fJavaOutputLocationField }, 
+				new DialogField[] { fFoldersList, fUseFolderOutputs, fJavaOutputLocationField }, 
 				true, SWT.DEFAULT, SWT.DEFAULT);
 		LayoutUtil.setHorizontalGrabbing(fFoldersList.getTreeControl(null));
 

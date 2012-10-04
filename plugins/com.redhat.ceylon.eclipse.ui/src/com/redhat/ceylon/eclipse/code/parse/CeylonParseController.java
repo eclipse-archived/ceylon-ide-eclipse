@@ -4,7 +4,6 @@ import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
@@ -14,9 +13,9 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvaila
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRInputStream;
@@ -32,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -48,6 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
@@ -358,25 +359,32 @@ public class CeylonParseController {
 			boolean showWarnings) 
 	        throws CoreException {
 		TypeCheckerBuilder tcb = new TypeCheckerBuilder()
-		        .verbose(false).usageWarnings(showWarnings);
+		        .verbose(false)
+		        .usageWarnings(showWarnings);
 		
-		List<String> repos = new LinkedList<String>();
-		if (project==null) {
+		File cwd;
+		String systemRepo;
+        if (project == null) {
 			//I believe this case can only happen
 			//in the structure compare editor, so
 			//it does not really matter what repo
 			//we use as long as it has the language
 			//module
-			repos.add(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+            cwd = null;
+		    systemRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
 		}
 		else {
-			for (String repo: getUserRepositories(project)) {
-				repos.add(repo);
-			}
-			repos.add(getCeylonModulesOutputDirectory(project).getAbsolutePath());
+		    cwd = project.getLocation().toFile();
+		    systemRepo = CeylonBuilder.getInterpolatedCeylonSystemRepo(project);
 		}
-		tcb.setRepositoryManager(repoManager().userRepos(repos).logger(new EclipseLogger())
-				.buildManager());
+        
+        RepositoryManager repositoryManager = repoManager()
+                .cwd(cwd)
+                .systemRepo(systemRepo)
+                .logger(new EclipseLogger())
+                .buildManager();
+        
+        tcb.setRepositoryManager(repositoryManager);
 		
 		TypeChecker tc = tcb.getTypeChecker();
 		tc.process();
