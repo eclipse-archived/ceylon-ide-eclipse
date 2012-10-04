@@ -1,21 +1,13 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.util.CoreUtility;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 
@@ -23,8 +15,17 @@ public class CeylonNature extends ProjectNatureBase {
     
     public static final String NATURE_ID = PLUGIN_ID + ".ceylonNature";
     
-    private IPath outputPath;
-    List<String> repositoryPaths;
+    public static boolean isEnabled(IProject project) {
+        boolean isEnabled = false;
+        try {
+            isEnabled = project.hasNature(NATURE_ID);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+        return isEnabled;
+    }
+    
+    private String systemRepo;
 	boolean enableJdtClasses;
 	boolean hideWarnings;
 	boolean keepSettings;
@@ -33,10 +34,8 @@ public class CeylonNature extends ProjectNatureBase {
     	keepSettings=true;
     }
     
-    public CeylonNature(IPath outputPath, List<String> repositoryPaths,
-    		boolean enableJdtClasses, boolean hideWarnings) {
-    	this.outputPath = outputPath;
-    	this.repositoryPaths = repositoryPaths;
+    public CeylonNature(String systemRepo, boolean enableJdtClasses, boolean hideWarnings) {
+    	this.systemRepo = systemRepo;
     	this.enableJdtClasses = enableJdtClasses;
     	this.hideWarnings = hideWarnings;
     }
@@ -49,57 +48,8 @@ public class CeylonNature extends ProjectNatureBase {
         return BUILDER_ID;
     }
     
-	public void addToProject(final IProject project) {
-        if (outputPath!=null) {
-        	IPath oldPath = getCeylonModulesOutputPath(project);
-        	if (oldPath!=null) {
-				IFolder old = project.getFolder(oldPath.removeFirstSegments(1));
-				if (old.exists() && !oldPath.equals(outputPath)) {
-					boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-						    .getShell(), "Changing Ceylon output folder", 
-						    "The Ceylon output folder has changed. Do you want to remove the old output folder '" +
-						    old.getFullPath().toString() + "' and all its contents?");
-					if (remove) {
-						try {
-							old.delete(true, null);
-						} 
-						catch (CoreException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				if (old.exists() && old.isHidden()) {
-	        		try {
-	        			old.setHidden(false);
-	        		} 
-	        		catch (CoreException e) {
-	        			e.printStackTrace();
-	        		}
-	        	}
-        	}
-        }
+    public void addToProject(final IProject project) {
         super.addToProject(project);
-        if (outputPath!=null) {
-        	IFolder folder = project.getFolder(outputPath.removeFirstSegments(1));
-            if (!folder.exists()) {
-    			try {
-    				CoreUtility.createDerivedFolder(folder, 
-    						true, true, null);
-    			} 
-    			catch (CoreException e) {
-    				e.printStackTrace();
-    			}
-            }
-        	if (!folder.isHidden()) {
-        		try {
-        			folder.setHidden(true);
-        		} 
-        		catch (CoreException e) {
-        			e.printStackTrace();
-        		}
-        	}
-        }
-        //CeylonBuilder.setCeylonModulesOutputPath(project, outputPath.toString());
         new CeylonClasspathContainer(project).runReconfigure();
     }
     
@@ -118,25 +68,15 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
     @Override
-    protected Map getBuilderArguments() {
-    	Map args = super.getBuilderArguments();
+    @SuppressWarnings("unchecked")
+    protected Map<String, String> getBuilderArguments() {
+        Map<String, String> args = super.getBuilderArguments();
     	if (!keepSettings) {
-    		args.put("outputPath", outputPath.toString());
-    		if (repositoryPaths!=null) {
-    	    	for (Map.Entry e: (Set<Map.Entry>) args.entrySet()) {
-    	    		String key = e.getKey().toString();
-    				if (key.startsWith("repositoryPath")) {
-    					args.remove(key);
-    	    		}
-    	    	}
-    	    	for (int i=0; i<repositoryPaths.size(); i++) {
-    	    		args.put("repositoryPath" + i, 
-    	    				repositoryPaths.get(i));
-    	    	}
-    		}
-    		else {
-    			args.remove("repositoryPaths");
-    		}
+            if (!"${ceylon.repo}".equals(systemRepo)) {
+                args.put("systemRepo", systemRepo);
+            } else {
+                args.remove("systemRepo");
+            }
     		if (hideWarnings) {
     			args.put("hideWarnings", "true");
     		}
@@ -152,4 +92,5 @@ public class CeylonNature extends ProjectNatureBase {
     	}
 		return args;
     }
+    
 }
