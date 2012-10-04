@@ -178,6 +178,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		    }
 		    return javaFileObject;
 		}
+
+		@Override
+		protected String getCurrentWorkingDir() {
+			return project.getLocation().toFile().getAbsolutePath();
+		}
 	}
 
 	public static enum ModelState {
