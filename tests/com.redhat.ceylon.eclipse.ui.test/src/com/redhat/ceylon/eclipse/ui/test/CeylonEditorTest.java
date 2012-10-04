@@ -10,42 +10,28 @@
  ************************************************************************************/
 package com.redhat.ceylon.eclipse.ui.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.junit.Test;
 
-import com.redhat.ceylon.eclipse.code.wizard.*;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 
 /**
@@ -63,16 +49,11 @@ public class CeylonEditorTest {
 		
 		IProject project = createJavaProject(name);
 		
-		IPath outputPath = new Path(project.getName()+ "/ceylon-output").makeAbsolute();
-
-		List<String> repositoryPaths = new ArrayList<>();
-
-		CeylonNature nature = new CeylonNature(outputPath, repositoryPaths, true, false);
+		String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
+		CeylonNature nature = new CeylonNature(systemRepo, true, false);
 		nature.addToProject(project);
 		
 		assertEquals(2,project.getDescription().getNatureIds().length);
-		
-
 	}
 
 	private IProject createJavaProject(String name) throws CoreException,

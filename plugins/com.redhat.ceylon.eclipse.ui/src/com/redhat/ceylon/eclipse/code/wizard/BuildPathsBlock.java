@@ -122,7 +122,6 @@ public class BuildPathsBlock {
 
 	private CheckedListDialogField<CPListElement> fClassPathList;
 	private StringButtonDialogField fJavaBuildPathDialogField;
-	private StringButtonDialogField fCeylonBuildPathDialogField;
 
 	private StatusInfo fClassPathStatus;
 	private StatusInfo fOutputFolderStatus;
@@ -131,7 +130,6 @@ public class BuildPathsBlock {
 	private IJavaProject fCurrJProject;
 
 	private IPath fJavaOutputLocationPath;
-	private IPath fCeylonOutputLocationPath;
 
 	private IStatusChangeListener fContext;
 	private Control fSWTWidget;
@@ -177,7 +175,6 @@ public class BuildPathsBlock {
         //fRunnableContext= runnableContext;
 
 		JavaBuildPathAdapter jadapter= new JavaBuildPathAdapter();
-		CeylonBuildPathAdapter cadapter= new CeylonBuildPathAdapter();
 
 		String[] buttonLabels= new String[] {
 			/* IDX_UP */ NewWizardMessages.BuildPathsBlock_classpath_up_button,
@@ -205,12 +202,6 @@ public class BuildPathsBlock {
 		fJavaBuildPathDialogField.setDialogFieldListener(jadapter);
 		//fJavaPathDialogField.setLabelText(NewWizardMessages.BuildPathsBlock_buildpath_label);
 		fJavaBuildPathDialogField.setLabelText("Default Java binary class output folder:");
-
-		fCeylonBuildPathDialogField= new StringButtonDialogField(cadapter);
-		fCeylonBuildPathDialogField.setButtonLabel(NewWizardMessages.BuildPathsBlock_buildpath_button);
-		fCeylonBuildPathDialogField.setDialogFieldListener(cadapter);
-		//fCeylonBuildPathDialogField.setLabelText(NewWizardMessages.BuildPathsBlock_buildpath_label);
-		fCeylonBuildPathDialogField.setLabelText("Ceylon module archive output folder:");
 
 		fBuildPathStatus= new StatusInfo();
 		fClassPathStatus= new StatusInfo();
@@ -245,8 +236,7 @@ public class BuildPathsBlock {
         /*if (fUseNewPage) {
 			fSourceContainerPage= new NewSourceContainerWorkbookPage(fClassPathList, fBuildPathDialogField, fRunnableContext, this);
         } else {*/
-			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList,
-					fJavaBuildPathDialogField, fCeylonBuildPathDialogField);
+			fSourceContainerPage= new SourceContainerWorkbookPage(fClassPathList, fJavaBuildPathDialogField);
         //}
         item.setData(fSourceContainerPage);
         item.setControl(fSourceContainerPage.getControl(folder));
@@ -317,8 +307,7 @@ public class BuildPathsBlock {
 	 * is passed, jdt default settings are used, or - if the project is an existing Java project - the
 	 * classpath entries of the existing project
 	 */
-	public void init(IJavaProject jproject, IPath javaOutputLocation, 
-			IPath ceylonOutputLocation, IClasspathEntry[] classpathEntries) {
+	public void init(IJavaProject jproject, IPath javaOutputLocation, IClasspathEntry[] classpathEntries) {
 		fCurrJProject= jproject;
 		boolean projectExists= false;
 		List<CPListElement> newClassPath= null;
@@ -338,9 +327,6 @@ public class BuildPathsBlock {
 		if (javaOutputLocation == null) {
 			javaOutputLocation= getDefaultJavaOutputLocation(jproject);
 		}
-		if (ceylonOutputLocation == null) {
-			ceylonOutputLocation= getDefaultCeylonOutputLocation(jproject);
-		}
 
 		if (classpathEntries != null) {
 			newClassPath= getCPListElements(classpathEntries, existingEntries);
@@ -358,13 +344,10 @@ public class BuildPathsBlock {
 		}
 
 		fJavaOutputLocationPath = javaOutputLocation.makeRelative();
-		fCeylonOutputLocationPath = ceylonOutputLocation.makeRelative();
 		
 		// inits the dialog field
 		fJavaBuildPathDialogField.setText(fJavaOutputLocationPath.toString());
 		fJavaBuildPathDialogField.enableButton(project.exists());
-		fCeylonBuildPathDialogField.setText(fCeylonOutputLocationPath.toString());
-		fCeylonBuildPathDialogField.enableButton(project.exists());
 		fClassPathList.setElements(newClassPath);
 		fClassPathList.setCheckedElements(exportedEntries);
 
@@ -401,7 +384,6 @@ public class BuildPathsBlock {
 
 	protected void doUpdateUI() {
 		fJavaBuildPathDialogField.refresh();
-		fCeylonBuildPathDialogField.refresh();
 		fClassPathList.refresh();
 
 		doStatusLineUpdate();
@@ -470,13 +452,6 @@ public class BuildPathsBlock {
 	}
 
 	/**
-	 *  @return Returns the current output location. Note that the path returned must not be valid.
-	 */
-	public IPath getCeylonOutputLocation() {
-		return new Path(fCeylonBuildPathDialogField.getText()).makeAbsolute();
-	}
-
-	/**
 	 *  @return Returns the current class path (raw). Note that the entries returned must not be valid.
 	 */
 	public IClasspathEntry[] getRawClassPath() {
@@ -520,10 +495,6 @@ public class BuildPathsBlock {
 		return jproj.getProject().getFullPath().append("classes");
 	}
 
-	public static IPath getDefaultCeylonOutputLocation(IJavaProject jproj) {
-		return jproj.getProject().getFullPath().append("modules");
-	}
-
 	private class JavaBuildPathAdapter implements IStringButtonAdapter, 
 	        IDialogFieldListener, IListAdapter<CPListElement> {
 
@@ -550,31 +521,11 @@ public class BuildPathsBlock {
 		}
 	}
 
-	private class CeylonBuildPathAdapter implements IStringButtonAdapter, IDialogFieldListener {
-
-		// -------- IStringButtonAdapter --------
-		public void changeControlPressed(DialogField field) {
-			buildPathChangeControlPressed(field);
-		}
-
-		// ---------- IDialogFieldListener --------
-		public void dialogFieldChanged(DialogField field) {
-			buildPathDialogFieldChanged(field);
-		}
-		
-	}
-
 	private void buildPathChangeControlPressed(DialogField field) {
 		if (field == fJavaBuildPathDialogField) {
 			IContainer container= chooseContainer(fJavaOutputLocationPath);
 			if (container != null) {
 				fJavaBuildPathDialogField.setText(container.getFullPath().makeRelative().toString());
-			}
-		}
-		if (field == fCeylonBuildPathDialogField) {
-			IContainer container= chooseContainer(fCeylonOutputLocationPath);
-			if (container != null) {
-				fCeylonBuildPathDialogField.setText(container.getFullPath().makeRelative().toString());
 			}
 		}
 	}
@@ -601,9 +552,6 @@ public class BuildPathsBlock {
 		} 
 		else if (field == fJavaBuildPathDialogField) {
 			updateJavaOutputLocationStatus();
-		}
-		else if (field == fCeylonBuildPathDialogField) {
-			updateCeylonOutputLocationStatus();
 		}
 		doStatusLineUpdate();
 	}
@@ -722,46 +670,6 @@ public class BuildPathsBlock {
 		updateBuildPathStatus();
 	}
 
-	/**
-	 * Validates output location & build path.
-	 */
-	private void updateCeylonOutputLocationStatus() {
-		fCeylonOutputLocationPath= null;
-
-		String text= fCeylonBuildPathDialogField.getText();
-		if ("".equals(text)) { //$NON-NLS-1$
-			fOutputFolderStatus.setError(NewWizardMessages.BuildPathsBlock_error_EnterBuildPath);
-			return;
-		}
-		IPath path= getCeylonOutputLocation();
-		fCeylonOutputLocationPath= path;
-
-		IResource res= fWorkspaceRoot.findMember(path);
-		if (res != null) {
-			// if exists, must be a folder or project
-			if (res.getType() == IResource.FILE) {
-				fOutputFolderStatus.setError(NewWizardMessages.BuildPathsBlock_error_InvalidBuildPath);
-				return;
-			}
-		}
-
-		fOutputFolderStatus.setOK();
-
-		String pathStr= fCeylonBuildPathDialogField.getText();
-		Path outputPath= new Path(pathStr);
-		pathStr= outputPath.lastSegment();
-		if (pathStr.equals(".settings") && outputPath.segmentCount() == 2) { //$NON-NLS-1$
-			fOutputFolderStatus.setWarning(NewWizardMessages.OutputLocation_SettingsAsLocation);
-		}
-
-		if (pathStr.charAt(0) == '.' && pathStr.length() > 1) {
-			fOutputFolderStatus.setWarning(Messages.format(NewWizardMessages.OutputLocation_DotAsLocation, 
-					BasicElementLabels.getResourceName(pathStr)));
-		}
-
-		//updateBuildPathStatus();
-	}
-
 	private void updateBuildPathStatus() {
 		List<CPListElement> elements= fClassPathList.getElements();
 		IClasspathEntry[] entries= new IClasspathEntry[elements.size()];
@@ -840,7 +748,7 @@ public class BuildPathsBlock {
 	
 	public void configureJavaProject(String newProjectCompliance, IProgressMonitor monitor) 
 			throws CoreException, OperationCanceledException {
-		flush(fClassPathList.getElements(), getJavaOutputLocation(), getCeylonOutputLocation(),
+		flush(fClassPathList.getElements(), getJavaOutputLocation(),
 				getJavaProject(), newProjectCompliance, monitor);
 		initializeTimeStamps();
 
@@ -863,7 +771,7 @@ public class BuildPathsBlock {
 	 * @throws OperationCanceledException if flushing has been cancelled
 	 */
 	public static void flush(List<CPListElement> classPathEntries, IPath javaOutputLocation, 
-			IPath ceylonOutputLocation, IJavaProject javaProject, String newProjectCompliance, 
+			IJavaProject javaProject, String newProjectCompliance, 
 			IProgressMonitor monitor) 
 					throws CoreException, OperationCanceledException {
 		if (monitor == null) {
@@ -872,9 +780,6 @@ public class BuildPathsBlock {
 		monitor.setTaskName(NewWizardMessages.BuildPathsBlock_operationdesc_java);
 		monitor.beginTask("", classPathEntries.size() * 4 + 4); //$NON-NLS-1$
 		try {
-			
-			//javaProject.setOption("ceylonOutput", ceylonOutputLocation.toString());
-			
 			IProject project= javaProject.getProject();
 			IPath projPath= project.getFullPath();
 
@@ -919,18 +824,6 @@ public class BuildPathsBlock {
 			if (!fWorkspaceRoot.exists(javaOutputLocation)) {
 				CoreUtility.createDerivedFolder(fWorkspaceRoot.getFolder(javaOutputLocation), 
 						true, true, new SubProgressMonitor(monitor, 1));
-			} else {
-				monitor.worked(1);
-			}
-			if (monitor.isCanceled()) {
-				throw new OperationCanceledException();
-			}
-
-			if (!fWorkspaceRoot.exists(ceylonOutputLocation)) {
-				IFolder folder = fWorkspaceRoot.getFolder(ceylonOutputLocation);
-				CoreUtility.createDerivedFolder(folder, 
-						true, true, new SubProgressMonitor(monitor, 1));
-				//folder.setHidden(true);
 			} else {
 				monitor.worked(1);
 			}

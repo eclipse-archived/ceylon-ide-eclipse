@@ -138,16 +138,14 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 	 * the given default classpath and output location is only used if no '.classpath' exists.
 	 */
 	public void init(IJavaProject jproject, IPath defaultJavaOutputLocation, 
-			IPath defaultCeylonOutputLocation, IClasspathEntry[] defaultEntries, 
+			IClasspathEntry[] defaultEntries, 
 			boolean defaultsOverrideExistingClasspath) {
 		if (!defaultsOverrideExistingClasspath && jproject.exists() && 
 				jproject.getProject().getFile(".classpath").exists()) { //$NON-NLS-1$
 			defaultJavaOutputLocation= null;
-			defaultCeylonOutputLocation= null;
 			defaultEntries= null;
 		}
-		getBuildPathsBlock().init(jproject, defaultJavaOutputLocation, 
-				defaultCeylonOutputLocation, defaultEntries);
+		getBuildPathsBlock().init(jproject, defaultJavaOutputLocation, defaultEntries);
 		fJavaProject= jproject;
 	}
 
@@ -174,16 +172,6 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 	 */
 	public IPath getJavaOutputLocation() {
 		return getBuildPathsBlock().getJavaOutputLocation();
-	}
-
-	/**
-	 * Returns the currently configured output location. Note that the returned path
-	 * might not be a valid path.
-	 *
-	 * @return the currently configured output location
-	 */
-	public IPath getCeylonOutputLocation() {
-		return getBuildPathsBlock().getCeylonOutputLocation();
 	}
 
 	/**
