@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
@@ -157,6 +158,7 @@ public class CeylonRepoPreferencesBlock {
 
         initAddRepoButton(lookupRepoButtons);
         initAddExternalRepoButton(lookupRepoButtons);
+        initAddAetherRepoButton(lookupRepoButtons);
         initAddRemoteRepoButton(lookupRepoButtons);
         initRemoveRepoButton(lookupRepoButtons);
         initUpDownButtons(lookupRepoButtons);
@@ -271,6 +273,23 @@ public class CeylonRepoPreferencesBlock {
         });
     }
 
+    private void initAddAetherRepoButton(final Composite buttons) {
+        addExternalRepoButton = new Button(buttons, SWT.PUSH);
+        addExternalRepoButton.setText("Add Aether repository...");
+        addExternalRepoButton.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).create());
+        addExternalRepoButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog fileDialog = new FileDialog(buttons.getShell(), SWT.SHEET);
+                fileDialog.setFileName("settings.xml");
+                String result = fileDialog.open();
+                if (result != null) {
+                    addProjectLookupRepo("aether:" + result, 0);
+                }
+            }
+        });
+    }
+    
     private void initAddRemoteRepoButton(final Composite buttons) {
         addRemoteRepoButton = new Button(buttons, SWT.PUSH);
         addRemoteRepoButton.setText("Add Remote Repository...");

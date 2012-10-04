@@ -51,7 +51,8 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.common-0.4-ide.jar,
  lib/ceylon.language-0.4-ide.jar,
  lib/txtmark-0.8-f17d7e2193.jar,
- lib/shrinkwrap-maven-uberjar-1.1.0-alpha-3.jar
+ lib/cmr-maven-0.4.jar,
+ lib/shrinkwrap-maven-uberjar-1.1.0-alpha-2.jar
 Import-Package: org.eclipse.help
 Export-Package: com.redhat.ceylon.eclipse.code.editor;x-friends:="com.redhat.ceylon.eclipse.ui.test",
  com.redhat.ceylon.eclipse.code.explorer;x-friends:="com.redhat.ceylon.eclipse.ui.test",
