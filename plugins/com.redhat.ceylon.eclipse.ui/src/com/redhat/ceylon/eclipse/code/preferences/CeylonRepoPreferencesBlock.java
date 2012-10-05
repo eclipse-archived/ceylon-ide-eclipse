@@ -45,6 +45,7 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
+import static com.redhat.ceylon.cmr.maven.AetherUtils.getDefaultMavenSettings;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -280,6 +281,9 @@ public class CeylonRepoPreferencesBlock {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog fileDialog = new FileDialog(buttons.getShell(), SWT.SHEET);
                 fileDialog.setFileName("settings.xml");
+                String settingsXml = getDefaultMavenSettings();
+                fileDialog.setFilterPath(settingsXml.replace("settings.xml", ""));
+                fileDialog.setFilterExtensions(new String[] {"*.xml"});
                 String result = fileDialog.open();
                 if (result != null) {
                     addProjectRepo("aether:" + result, lookupRepoTable.getItemCount(), false);
