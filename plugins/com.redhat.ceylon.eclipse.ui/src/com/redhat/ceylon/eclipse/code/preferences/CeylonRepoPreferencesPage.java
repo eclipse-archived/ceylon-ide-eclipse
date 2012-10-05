@@ -27,7 +27,8 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
 
         CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
         projectConfig.setOutputRepo(block.getOutputRepo());
-        projectConfig.setProjectLookupRepos(block.getProjectLookupRepos());
+        projectConfig.setProjectLocalRepos(block.getProjectLocalRepos());
+        projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
 
         new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings).addToProject(project);      

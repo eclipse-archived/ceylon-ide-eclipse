@@ -119,7 +119,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
             projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
-            projectConfig.setProjectLookupRepos(thirdPage.getBlock().getProjectLookupRepos());
+            projectConfig.setProjectLocalRepos(thirdPage.getBlock().getProjectLocalRepos());
+            projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
             projectConfig.save();            
 
     		new CeylonNature(thirdPage.getBlock().getSystemRepo(),

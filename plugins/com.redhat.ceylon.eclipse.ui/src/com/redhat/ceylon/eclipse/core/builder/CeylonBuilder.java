@@ -1732,12 +1732,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static List<String> getCeylonRepositories(IProject project) {
         CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
-        List<String> projectLookupRepos = projectConfig.getProjectLookupRepos();
+        List<String> projectLookupRepos = projectConfig.getProjectLocalRepos();
         List<String> globalLookupRepos = projectConfig.getGlobalLookupRepos();
+        List<String> projectRemoteRepos = projectConfig.getProjectRemoteRepos();
 
         List<String> repos = new ArrayList<String>();
         repos.addAll(projectLookupRepos);
         repos.addAll(globalLookupRepos);
+        repos.addAll(projectRemoteRepos);
         return repos;
     }
 

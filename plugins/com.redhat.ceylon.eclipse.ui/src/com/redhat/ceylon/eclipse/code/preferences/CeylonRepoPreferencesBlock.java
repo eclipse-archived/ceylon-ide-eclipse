@@ -62,7 +62,8 @@ public class CeylonRepoPreferencesBlock {
     private ValidationCallback validationCallback;
 
     private List<String> globalLookupRepos;
-    private List<String> projectLookupRepos;
+    private List<String> projectLocalRepos;
+    private List<String> projectRemoteRepos;
 
     private Text systemRepoText;
     private Text outputRepoText;
@@ -89,21 +90,22 @@ public class CeylonRepoPreferencesBlock {
         return outputRepoText.getText();
     }
 
-    public List<String> getProjectLookupRepos() {
-        return projectLookupRepos;
+    public List<String> getProjectLocalRepos() {
+        return projectLocalRepos;
+    }
+    
+    public List<String> getProjectRemoteRepos() {
+        return projectRemoteRepos;
     }
 
     public void performDefaults() {
         systemRepoText.setText("${ceylon.repo}");
         outputRepoText.setText("./modules");
 
-        projectLookupRepos = new ArrayList<String>();
+        projectLocalRepos = new ArrayList<String>();
+        projectRemoteRepos = new ArrayList<String>();
         lookupRepoTable.removeAll();
-        if( globalLookupRepos != null ) {
-            for (String repo : globalLookupRepos) {
-                addLookupRepo(repo, true);
-            }
-        }
+        addLookupRepos(globalLookupRepos, true);
         
         validate();
     }
@@ -112,7 +114,8 @@ public class CeylonRepoPreferencesBlock {
         this.project = project;
         
         if (isCeylonNatureEnabled) {
-            projectLookupRepos = CeylonProjectConfig.get(project).getProjectLookupRepos();
+            projectLocalRepos = CeylonProjectConfig.get(project).getProjectLocalRepos();
+            projectRemoteRepos = CeylonProjectConfig.get(project).getProjectRemoteRepos();
             globalLookupRepos = CeylonProjectConfig.get(project).getGlobalLookupRepos();
         }
         
@@ -126,16 +129,9 @@ public class CeylonRepoPreferencesBlock {
         
         lookupRepoTable.setEnabled(isCeylonNatureEnabled);
         lookupRepoTable.removeAll();
-        if( projectLookupRepos != null ) {
-            for (String repo : projectLookupRepos) {
-                addLookupRepo(repo, false);
-            }
-        }
-        if( globalLookupRepos != null ) {
-            for (String repo : globalLookupRepos) {
-                addLookupRepo(repo, true);
-            }
-        }
+        addLookupRepos(projectLocalRepos, false);
+        addLookupRepos(globalLookupRepos, true);
+        addLookupRepos(projectRemoteRepos, false);
         
         addRepoButton.setEnabled(isCeylonNatureEnabled);
         addExternalRepoButton.setEnabled(isCeylonNatureEnabled);
@@ -254,7 +250,7 @@ public class CeylonRepoPreferencesBlock {
                 IResource result = openSelectRelativeFolderDialog(buttons);
                 if( result != null ) {
                     String repo = "./" + result.getFullPath().removeFirstSegments(1);
-                    addProjectLookupRepo(repo, 0);
+                    addProjectRepo(repo, 0, true);
                 }
             }
         });
@@ -269,7 +265,7 @@ public class CeylonRepoPreferencesBlock {
             public void widgetSelected(SelectionEvent e) {
                 String result = new DirectoryDialog(buttons.getShell(), SWT.SHEET).open();
                 if (result != null) {
-                    addProjectLookupRepo(result, 0);
+                    addProjectRepo(result, 0, true);
                 }
             }
         });
@@ -286,7 +282,7 @@ public class CeylonRepoPreferencesBlock {
                 fileDialog.setFileName("settings.xml");
                 String result = fileDialog.open();
                 if (result != null) {
-                    addProjectLookupRepo("aether:" + result, 0);
+                    addProjectRepo("aether:" + result, 0, true);
                 }
             }
         });
@@ -314,7 +310,7 @@ public class CeylonRepoPreferencesBlock {
                 InputDialog input = new InputDialog(buttons.getShell(), "Add Remote Repository", "Enter a remote repository URI", "http://", inputValidator);
                 int result = input.open();
                 if (result == InputDialog.OK) {
-                    addProjectLookupRepo(input.getValue(), 0);
+                    addProjectRepo(input.getValue(), 0, true);
                 }
             }
         });
@@ -329,10 +325,12 @@ public class CeylonRepoPreferencesBlock {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int[] selection = lookupRepoTable.getSelectionIndices();
-                for(int index : selection) {
-                    if( index < projectLookupRepos.size() ) {
+                for (int index : selection) {
+                    if (!isGlobalLookupRepoIndex(index)) {
+                        String repo = lookupRepoTable.getItem(index).getText();
                         lookupRepoTable.remove(index);
-                        projectLookupRepos.remove(index);
+                        projectLocalRepos.remove(repo);
+                        projectRemoteRepos.remove(repo);
                     }
                 }
                 lookupRepoTable.deselectAll();
@@ -350,12 +348,21 @@ public class CeylonRepoPreferencesBlock {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int index = lookupRepoTable.getSelectionIndex();
-                if (index > 0 && index <= projectLookupRepos.size()) {
-                    String repo = projectLookupRepos.get(index);
-                    projectLookupRepos.remove(index);
+                if( index != -1 ) {
+                    String repo = lookupRepoTable.getItem(index).getText();
                     lookupRepoTable.remove(index);
-                    addProjectLookupRepo(repo, index - 1);
-                    lookupRepoTable.setSelection(index - 1);
+                    if (index > 0 && index <= projectLocalRepos.size()) {
+                        projectLocalRepos.remove(index);
+                        addProjectRepo(repo, index - 1, true);
+                    }
+                    if (index == projectLocalRepos.size() + globalLookupRepos.size()) {
+                        projectRemoteRepos.remove(repo);
+                        addProjectRepo(repo, projectLocalRepos.size(), true);
+                    }
+                    if (index > projectLocalRepos.size() + globalLookupRepos.size()) {
+                        projectRemoteRepos.remove(repo);
+                        addProjectRepo(repo, index - 1, false);
+                    }                
                 }
             }
         });
@@ -368,12 +375,22 @@ public class CeylonRepoPreferencesBlock {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int index = lookupRepoTable.getSelectionIndex();
-                if (index != -1 && index < projectLookupRepos.size() - 1) {
-                    String repo = projectLookupRepos.get(index);
-                    projectLookupRepos.remove(index);
+                if( index != -1 ) {
+                    String repo = lookupRepoTable.getItem(index).getText();
                     lookupRepoTable.remove(index);
-                    addProjectLookupRepo(repo, index + 1);
-                    lookupRepoTable.setSelection(index + 1);
+                    if (index < projectLocalRepos.size() - 1 && !projectLocalRepos.isEmpty()) {
+                        projectLocalRepos.remove(repo);
+                        addProjectRepo(repo, index + 1, true);
+                    }
+                    if( index == projectLocalRepos.size() - 1 && !projectLocalRepos.isEmpty()) {
+                        projectLocalRepos.remove(repo);
+                        addProjectRepo(repo, projectLocalRepos.size() + globalLookupRepos.size(), false);
+                    }
+                    if( index >= projectLocalRepos.size() + globalLookupRepos.size() 
+                            && index < projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size() - 1 ) {
+                        projectRemoteRepos.remove(repo);
+                        addProjectRepo(repo, index + 1, false);
+                    }
                 }
             }
         });
@@ -387,7 +404,7 @@ public class CeylonRepoPreferencesBlock {
     private void updateRemoveRepoButtonState() {
         int[] selectionIndices = lookupRepoTable.getSelectionIndices();
         for (int index : selectionIndices) {
-            if (index < projectLookupRepos.size()) {
+            if (!isGlobalLookupRepoIndex(index)) {
                 removeRepoButton.setEnabled(true);
                 return;
             }
@@ -402,10 +419,10 @@ public class CeylonRepoPreferencesBlock {
         int[] selectionIndices = lookupRepoTable.getSelectionIndices();
         if (selectionIndices.length == 1) {
             int index = selectionIndices[0];
-            if (index > 0 && index < projectLookupRepos.size()) {
+            if (index > 0 && !isGlobalLookupRepoIndex(index)) {
                 isUpEnabled = true;
             }
-            if (index < projectLookupRepos.size() - 1) {
+            if (index < lookupRepoTable.getItemCount() - 1 && !isGlobalLookupRepoIndex(index)) {
                 isDownEnabled = true;
             }
         }
@@ -422,6 +439,15 @@ public class CeylonRepoPreferencesBlock {
         } else {
             validationCallback.validationResultChange(true, null);
         }
+    }
+
+    private boolean isGlobalLookupRepoIndex(int index) {
+        if (!globalLookupRepos.isEmpty() 
+                && index >= projectLocalRepos.size()
+                && index < projectLocalRepos.size() + globalLookupRepos.size()) {
+            return true;
+        }
+        return false;
     }
 
     private boolean isSystemRepoValid() {
@@ -504,26 +530,40 @@ public class CeylonRepoPreferencesBlock {
         }
     }
 
-    private void addProjectLookupRepo(String repo, int index) {
-        if (!globalLookupRepos.contains(repo) && !projectLookupRepos.contains(repo)) {
-            projectLookupRepos.add(index, repo);
-
-            TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE, index);
-            tableItem.setText(repo);
-            tableItem.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.RUNTIME_OBJ));
-            lookupRepoTable.setSelection(index);
-
-            validate();
-            updateButtonState();
+    private void addProjectRepo(String repo, int index, boolean isLocalRepo) {
+        if (isLocalRepo && projectLocalRepos.contains(repo)) {
+            return;
         }
-    }
-
-    private void addLookupRepo(String repo, boolean isGlobalRepo) {
-        TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE);
+        if (!isLocalRepo && projectRemoteRepos.contains(repo)) {
+            return;
+        }
+        
+        if (isLocalRepo) {
+            projectLocalRepos.add(index, repo);
+        } else {
+            int remoteIndex = index - projectLocalRepos.size() - globalLookupRepos.size();
+            projectRemoteRepos.add(remoteIndex, repo);
+        }
+        
+        TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE, index);
         tableItem.setText(repo);
         tableItem.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.RUNTIME_OBJ));
-        if (isGlobalRepo) {
-            tableItem.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
+        lookupRepoTable.setSelection(index);
+
+        validate();
+        updateButtonState();
+    }
+
+    private void addLookupRepos(List<String> repos, boolean isGlobalRepo) {
+        if (repos != null) {
+            for (String repo : repos) {
+                TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE);
+                tableItem.setText(repo);
+                tableItem.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.RUNTIME_OBJ));
+                if (isGlobalRepo) {
+                    tableItem.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
+                }
+            }
         }
     }
 
