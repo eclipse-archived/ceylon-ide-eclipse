@@ -282,7 +282,7 @@ public class CeylonRepoPreferencesBlock {
                 fileDialog.setFileName("settings.xml");
                 String result = fileDialog.open();
                 if (result != null) {
-                    addProjectRepo("aether:" + result, 0, true);
+                    addProjectRepo("aether:" + result, lookupRepoTable.getItemCount(), false);
                 }
             }
         });
@@ -310,7 +310,7 @@ public class CeylonRepoPreferencesBlock {
                 InputDialog input = new InputDialog(buttons.getShell(), "Add Remote Repository", "Enter a remote repository URI", "http://", inputValidator);
                 int result = input.open();
                 if (result == InputDialog.OK) {
-                    addProjectRepo(input.getValue(), 0, true);
+                    addProjectRepo(input.getValue(), lookupRepoTable.getItemCount(), false);
                 }
             }
         });
