@@ -71,6 +71,7 @@ public class CeylonRepoPreferencesBlock {
     private Button outputRepoBrowseButton;
     private Button addRepoButton;
     private Button addExternalRepoButton;
+    private Button addAetherRepoButton;
     private Button addRemoteRepoButton;
     private Button removeRepoButton;
     private Button upButton;
@@ -138,6 +139,7 @@ public class CeylonRepoPreferencesBlock {
         
         addRepoButton.setEnabled(isCeylonNatureEnabled);
         addExternalRepoButton.setEnabled(isCeylonNatureEnabled);
+        addAetherRepoButton.setEnabled(isCeylonNatureEnabled);
         addRemoteRepoButton.setEnabled(isCeylonNatureEnabled);
     }
 
@@ -274,10 +276,10 @@ public class CeylonRepoPreferencesBlock {
     }
 
     private void initAddAetherRepoButton(final Composite buttons) {
-        addExternalRepoButton = new Button(buttons, SWT.PUSH);
-        addExternalRepoButton.setText("Add Aether repository...");
-        addExternalRepoButton.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).create());
-        addExternalRepoButton.addSelectionListener(new SelectionAdapter() {
+        addAetherRepoButton = new Button(buttons, SWT.PUSH);
+        addAetherRepoButton.setText("Add Aether repository...");
+        addAetherRepoButton.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).create());
+        addAetherRepoButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog fileDialog = new FileDialog(buttons.getShell(), SWT.SHEET);
