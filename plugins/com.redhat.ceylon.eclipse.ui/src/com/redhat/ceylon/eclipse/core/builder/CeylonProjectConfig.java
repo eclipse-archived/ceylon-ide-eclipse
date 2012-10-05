@@ -45,7 +45,8 @@ public class CeylonProjectConfig {
     private CeylonConfig projectConfig;
     
     private String transientOutputRepo;
-    private List<String> transientProjectLookupRepos;
+    private List<String> transientProjectLocalRepos;
+    private List<String> transientProjectRemoteRepos;
 
     private CeylonProjectConfig(IProject project) {
         this.project = project;
@@ -95,58 +96,54 @@ public class CeylonProjectConfig {
     }
 
     public List<String> getGlobalLookupRepos() {
-        List<String> result = new ArrayList<String>();
-        Repository[] globalLookupRepos = mergedRepositories.getGlobalLookupRepositories();
-        if (globalLookupRepos != null) {
-            for (Repository globalLookupRepo : globalLookupRepos) {
-                result.add(globalLookupRepo.getUrl());
-            }
-        }
-        return result;
+        return toRepositoriesUrlList(mergedRepositories.getGlobalLookupRepositories());
     }
 
-    public List<String> getProjectLookupRepos() {
-        List<String> result = new ArrayList<String>();
-        Repository[] projectlookupRepos = projectRepositories.getRepositoriesByType(Repositories.REPO_TYPE_LOCAL_LOOKUP);
-        if (projectlookupRepos != null) {
-            for (Repository projectLookupRepo : projectlookupRepos) {
-                result.add(projectLookupRepo.getUrl());
-            }
-        }
-        return result;
+    public List<String> getProjectLocalRepos() {
+        return toRepositoriesUrlList(projectRepositories.getRepositoriesByType(Repositories.REPO_TYPE_LOCAL_LOOKUP));
+    }
+
+    public void setProjectLocalRepos(List<String> projectLocalRepos) {
+        transientProjectLocalRepos = projectLocalRepos;
     }
     
-    public void setProjectLookupRepos(List<String> projectLookupRepos) {
-        transientProjectLookupRepos = projectLookupRepos;
+    public List<String> getProjectRemoteRepos() {
+        return toRepositoriesUrlList(projectRepositories.getRepositoriesByType(Repositories.REPO_TYPE_REMOTE_LOOKUP));
     }
-
+    
+    public void setProjectRemoteRepos(List<String> projectRemoteRepos) {
+        transientProjectRemoteRepos = projectRemoteRepos;
+    }
+    
     public void save() {
         initProjectRepositories();
         
         String oldOutputRepo = getOutputRepo();
-        List<String> oldProjectLookupRepos = getProjectLookupRepos();
+        List<String> oldProjectLocalRepos = getProjectLocalRepos();
+        List<String> oldProjectRemoteRepos = getProjectRemoteRepos();
         
         boolean isOutputRepoChanged = transientOutputRepo != null && !transientOutputRepo.equals(oldOutputRepo);
-        boolean isProjectLookupReposChanged = transientProjectLookupRepos != null && !transientProjectLookupRepos.equals(oldProjectLookupRepos);
+        boolean isProjectLocalReposChanged = transientProjectLocalRepos != null && !transientProjectLocalRepos.equals(oldProjectLocalRepos);
+        boolean isProjectRemoteReposChanged = transientProjectRemoteRepos != null && !transientProjectRemoteRepos.equals(oldProjectRemoteRepos);
         
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
         }
         
-        if (isOutputRepoChanged || isProjectLookupReposChanged) {
+        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
                     projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_OUTPUT, new Repository[] { newOutputRepo });
                 }
-
-                if (isProjectLookupReposChanged) {
-                    Repository[] newProjectLookupRepos = new Repository[transientProjectLookupRepos.size()];
-                    for (int i = 0; i < transientProjectLookupRepos.size(); i++) {
-                        newProjectLookupRepos[i] = new Repositories.SimpleRepository("", transientProjectLookupRepos.get(i), null);
-                    }
-                    projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_LOCAL_LOOKUP, newProjectLookupRepos);
+                if (isProjectLocalReposChanged) {
+                    Repository[] newLocalRepos = toRepositoriesArray(transientProjectLocalRepos);
+                    projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_LOCAL_LOOKUP, newLocalRepos);
+                }
+                if (isProjectRemoteReposChanged) {
+                    Repository[] newRemoteRepos = toRepositoriesArray(transientProjectRemoteRepos);
+                    projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_REMOTE_LOOKUP, newRemoteRepos);
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
@@ -155,6 +152,28 @@ public class CeylonProjectConfig {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private File getProjectConfigFile() {
+        return new File(project.getLocation().toFile(), ".ceylon/config");
+    }
+
+    private List<String> toRepositoriesUrlList(Repository[] repositories) {
+        List<String> result = new ArrayList<String>();
+        if (repositories != null) {
+            for (Repository repository : repositories) {
+                result.add(repository.getUrl());
+            }
+        }
+        return result;
+    }
+    
+    private Repository[] toRepositoriesArray(List<String> repositoriesUrl) {
+        Repository[] repositories = new Repository[repositoriesUrl.size()];
+        for (int i = 0; i < repositoriesUrl.size(); i++) {
+            repositories[i] = new Repositories.SimpleRepository("", repositoriesUrl.get(i), null);
+        }
+        return repositories;
     }
 
     private void deleteOldOutputFolder(String oldOutputRepo) {
@@ -196,10 +215,6 @@ public class CeylonProjectConfig {
                 e.printStackTrace();
             }
         }
-    }
-
-    private File getProjectConfigFile() {
-        return new File(project.getLocation().toFile(), ".ceylon/config");
     }
 
     private String removeCurrentDirPrefix(String url) {
