@@ -1655,7 +1655,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 				}
 			}
 
-			classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+			File outputDir = toFile(javaProj.getProject(), javaProj.getOutputLocation()
+                    .makeRelativeTo(javaProj.getProject().getFullPath()));			
+			classpathElements.add(outputDir.getAbsolutePath());
 			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
 				if (isInCeylonClassesOutputFolder(cpEntry.getPath())) {
 					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
