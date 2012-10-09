@@ -44,6 +44,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -82,9 +83,12 @@ public class CeylonQuickFixController extends QuickAssistAssistant
 				for (IPackageFragmentRoot pfr: javaProject.getPackageFragmentRoots()) {
 					if (pfr.getPath().isPrefixOf(file.getFullPath())) {
 						IPath relPath = file.getFullPath().makeRelativeTo(pfr.getPath());
-						model = getProjectTypeChecker(project)
-							    .getPhasedUnitFromRelativePath(relPath.toString())
-							    		    .getCompilationUnit();	
+						TypeChecker projectTypeChecker = getProjectTypeChecker(project);
+						if (projectTypeChecker != null) {
+						    model = projectTypeChecker
+	                                .getPhasedUnitFromRelativePath(relPath.toString())
+	                                            .getCompilationUnit();
+						}
 					}
 				}
 			} 
