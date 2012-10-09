@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
+
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleQuery.Type;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
@@ -14,8 +16,8 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.common.config.Repositories.Repository;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class ModuleSearchManager {
@@ -24,16 +26,15 @@ public class ModuleSearchManager {
     private String lastQuery;
     private ModuleSearchResult lastResult;
     private ModuleSearchViewPart moduleSearchViewPart;
-    private RepositoryManager repositoryManager;
-    private Repository[] globalLookupRepositories;
+    private RepositoryManager defaultRepositoryManager;
     
     public ModuleSearchManager(ModuleSearchViewPart moduleSearchViewPart) {
         this.moduleSearchViewPart = moduleSearchViewPart;
-        this.globalLookupRepositories = Repositories.get().getGlobalLookupRepositories();
-        this.repositoryManager = repoManager().logger(new EclipseLogger()).buildManager();
+        this.defaultRepositoryManager = repoManager().logger(new EclipseLogger()).buildManager();
     }
     
     public void searchModules(final String query) {
+        final RepositoryManager repositoryManager = getRepositoryManager();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
@@ -49,6 +50,7 @@ public class ModuleSearchManager {
     }
 
     public void fetchNextModules() {
+        final RepositoryManager repositoryManager = getRepositoryManager();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
@@ -76,6 +78,8 @@ public class ModuleSearchManager {
             return;
         }
         
+        final RepositoryManager repositoryManager = getRepositoryManager();
+        
         new ModuleSearchJobTemplate("Loading module documentation") {
             @Override
             protected void onRun() {
@@ -98,8 +102,16 @@ public class ModuleSearchManager {
         }.schedule();        
     }
     
-    public Repository[] getGlobalLookupRepositories() {
-        return globalLookupRepositories;
+    public RepositoryManager getRepositoryManager() {
+        RepositoryManager repositoryManager = defaultRepositoryManager;
+
+        IProject selectedProject = moduleSearchViewPart.getSelectedProject();
+        if (selectedProject != null) {
+            TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(selectedProject);
+            repositoryManager = typeChecker.getContext().getRepositoryManager();
+        }
+
+        return repositoryManager;
     }
     
     public String getLastQuery() {
