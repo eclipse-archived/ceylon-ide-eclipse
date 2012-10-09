@@ -71,6 +71,14 @@ public class CeylonProjectConfig {
         }
         projectRepositories = Repositories.withConfig(projectConfig);
     }
+    
+    public Repositories getMergedRepositories() {
+        return mergedRepositories;
+    }
+    
+    public Repositories getProjectRepositories() {
+        return projectRepositories;
+    }
 
     public String getOutputRepo() {
         Repository outputRepo = mergedRepositories.getOutputRepository();
