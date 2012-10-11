@@ -72,6 +72,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
+import com.redhat.ceylon.compiler.Options;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
@@ -81,6 +82,7 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
+import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -1437,6 +1439,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		Collection<IFile> filesToCompile, TypeChecker typeChecker, 
     		IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
+        List<String> js_srcdir = new ArrayList<String>();
+        List<String> js_repos = new ArrayList<String>();
+        boolean js_verbose = false;
+        String js_outRepo = null;
 
         String srcPath = "";
         for (IPath sourceFolder : getSourceFolders(javaProject)) {
@@ -1446,6 +1452,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 srcPath += File.pathSeparator;
             }
             srcPath += sourcePathElement.getAbsolutePath();
+            js_srcdir.add(sourcePathElement.getAbsolutePath());
         }
         options.add("-src");
         options.add(srcPath);
@@ -1455,11 +1462,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (String repository : getUserRepositories(project)) {
             options.add("-rep");
             options.add(repository);
+            js_repos.add(repository);
         }
 
         String verbose = System.getProperty("ceylon.verbose");
 		if (verbose!=null && "true".equals(verbose)) {
             options.add("-verbose");
+            js_verbose = true;
         }
         options.add("-g:lines,vars,source");
 
@@ -1467,6 +1476,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (modulesOutputDir!=null) {
             options.add("-out");
             options.add(modulesOutputDir.getAbsolutePath());
+            js_outRepo = modulesOutputDir.getAbsolutePath();
         }
 
         List<File> javaSourceFiles = new ArrayList<File>();
@@ -1486,6 +1496,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
             PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
             boolean success = true;
+            //Compile JS first
+            if (!sourceFiles.isEmpty()) {
+                Options jsopts = new Options(js_repos, js_srcdir, null/*sys repo*/, js_outRepo, null/*uname*/,
+                        null/*pass*/, true, true, true, true, js_verbose, false, false, false,
+                        project.getDefaultCharset());
+                JsCompiler jsc = new JsCompiler(typeChecker, jsopts);
+                try {
+                    jsc.generate();
+                } catch (IOException ex) {
+                    ex.printStackTrace(printWriter);
+                }
+            }
             if (compileWithJDTModelLoader()) {
                 sourceFiles.addAll(javaSourceFiles);
             } 
