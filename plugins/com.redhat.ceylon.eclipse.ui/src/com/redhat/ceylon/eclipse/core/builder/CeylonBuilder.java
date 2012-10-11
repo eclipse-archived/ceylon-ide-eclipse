@@ -1678,6 +1678,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	public static boolean showWarnings(IProject project) {
 		return getBuilderArgs(project).get("hideWarnings")==null;
 	}
+	public static boolean compileToJs(IProject project) {
+        return getBuilderArgs(project).get("compileJs")!=null;
+	}
 	
     public static String fileName(ClassMirror c) {
         if (c instanceof JavacClass) {
