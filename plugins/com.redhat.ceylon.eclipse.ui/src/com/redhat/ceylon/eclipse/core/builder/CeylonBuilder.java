@@ -1497,7 +1497,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
             boolean success = true;
             //Compile JS first
-            if (!sourceFiles.isEmpty()) {
+            if (compileToJs(project) && !sourceFiles.isEmpty()) {
                 Options jsopts = new Options(js_repos, js_srcdir, null/*sys repo*/, js_outRepo, null/*uname*/,
                         null/*pass*/, true, true, true, true, js_verbose, false, false, false,
                         project.getDefaultCharset());
