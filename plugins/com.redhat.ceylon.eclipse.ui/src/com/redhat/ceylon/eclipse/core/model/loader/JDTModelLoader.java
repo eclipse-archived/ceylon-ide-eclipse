@@ -71,6 +71,7 @@ import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.JDKPackageList;
@@ -130,7 +131,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 DefaultErrorHandlingPolicies.proceedWithAllProblems(),
                 compilerOptions,
                 new DefaultProblemFactory());
-        
+        this.timer = new Timer(false);
         internalCreate();
     }
 
