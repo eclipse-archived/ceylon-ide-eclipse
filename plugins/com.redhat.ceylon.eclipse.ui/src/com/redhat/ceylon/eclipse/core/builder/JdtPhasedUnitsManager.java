@@ -78,7 +78,7 @@ final class JdtPhasedUnitsManager implements PhasedUnitsManager {
 	        Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
 	        if (objectClass != null) {
 	            Declaration hashMethod = objectClass.getDirectMember("hash", 
-	            		Collections.<ProducedType>emptyList());
+	            		Collections.<ProducedType>emptyList(), false);
 	            if (hashMethod instanceof TypedDeclaration) {
 	                ((TypedDeclaration)hashMethod).getType().setUnderlyingType("int");
 	            }

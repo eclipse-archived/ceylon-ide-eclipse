@@ -46,7 +46,7 @@ final class ImportProposalsVisitor extends Visitor {
 		List<Declaration> possibles = new ArrayList<Declaration>();
 		for (Package p: cu.getUnit().getPackage().getModule()
 		        .getAllPackages()) {
-			Declaration d = p.getMember(name, null); //TODO: pass sig
+			Declaration d = p.getMember(name, null, false); //TODO: pass sig
 			if (d!=null && d.isToplevel() && 
 					d.isShared() && !d.isAnonymous()) {
 				possibles.add(d);
