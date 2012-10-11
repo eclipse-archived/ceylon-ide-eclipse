@@ -923,7 +923,7 @@ public class CeylonQuickFixAssistant {
                 ValueParameter vp = (ValueParameter)td;
                 if (vp.isHidden()) {
                     td = (TypedDeclaration) vp.getDeclaration()
-                            .getMember(td.getName(), null);
+                            .getMember(td.getName(), null, false);
                 }
             }
             if (node instanceof Tree.BaseMemberExpression){
@@ -1261,7 +1261,7 @@ public class CeylonQuickFixAssistant {
     private static void addImportProposalsForModule(List<Declaration> output,
             Module module, String name) {
         for (Package pkg: module.getAllPackages()) {
-            Declaration member = pkg.getMember(name, null);
+            Declaration member = pkg.getMember(name, null, false);
             if (member!=null) {
                 output.add(member);
             }

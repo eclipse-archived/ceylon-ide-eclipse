@@ -28,7 +28,7 @@ public class FindAssignmentsVisitor extends Visitor {
 	public FindAssignmentsVisitor(Declaration declaration) {
         if (declaration instanceof ValueParameter 
                 && ((ValueParameter) declaration).isHidden()) {
-            declaration = declaration.getContainer().getMember(declaration.getName(), null);
+            declaration = declaration.getContainer().getMember(declaration.getName(), null, false);
         }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
@@ -51,7 +51,7 @@ public class FindAssignmentsVisitor extends Visitor {
 	protected boolean isReference(Declaration ref) {
         if (ref instanceof ValueParameter 
                 && ((ValueParameter) ref).isHidden()) {
-            ref = ref.getContainer().getMember(ref.getName(), null);
+            ref = ref.getContainer().getMember(ref.getName(), null, false);
         }
 	    return ref!=null && declaration.refines(ref);
 	}

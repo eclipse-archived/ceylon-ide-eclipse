@@ -725,7 +725,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void visit(Tree.AnyAttribute that) {
                         super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMember != null) {
                         	ProducedType type = ((TypedDeclaration)binaryMember).getType();
                         	if(type == null)
@@ -743,7 +743,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void visit(Tree.AttributeSetterDefinition that) {
                         super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMember != null) {
                             String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
                             if (underlyingType != null) {
@@ -760,7 +760,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     public void visit(Tree.AnyMethod that) {
                         super.visit(that);
                         Method method = that.getDeclarationModel();
-                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList());
+                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMethod != null) {
                             String underlyingType = ((TypedDeclaration)binaryMethod).getType().getUnderlyingType();
                             if (underlyingType != null) {
