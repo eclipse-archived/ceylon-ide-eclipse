@@ -125,7 +125,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     		new CeylonNature(thirdPage.getBlock().getSystemRepo(),
     				firstPage.isEnableJdtClassesDir(), 
-    				!firstPage.isShowCompilerWarnings())
+    				!firstPage.isShowCompilerWarnings(),
+    				firstPage.isCompileJs())
                             .addToProject(getCreatedElement().getProject());
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);

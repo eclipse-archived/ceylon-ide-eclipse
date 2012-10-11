@@ -1470,6 +1470,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 
 	private boolean showCompilerWarnings = true;
 
+	private boolean compileJs = false;
+	public boolean isCompileJs() {
+	    return compileJs;
+	}
+
     //TODO: fix copy/paste!
     void addCompilerSettings(Composite parent) {
         Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
@@ -1490,6 +1495,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         showWarnings.setSelection(true);
         showWarnings.setEnabled(true);
 
+        final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        jsc.setText("Compile modules to JavaScript also");
+        jsc.setSelection(true);
+        jsc.setEnabled(true);
+
 //        addSelectRepoSection(parent);
         
         enableJdtClasses.addSelectionListener(new SelectionListener() {
@@ -1500,7 +1510,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        
+
         showWarnings.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -1509,7 +1519,15 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        
+
+        jsc.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                compileJs = !compileJs;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
     }
 
 }
