@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
@@ -26,8 +27,10 @@ public class CeylonPreferencesPage extends PropertyPage {
     private boolean explodeModules;
     private boolean showCompilerWarnings=true;
     private boolean builderEnabled = false;
-        
+    private boolean backendJs = false;
+
     private Button showWarnings;
+    private Button compileToJs;
     private Button enableExplodeModules;
 
     @Override
@@ -42,13 +45,15 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableExplodeModules.setSelection(false);
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
+        backendJs = false;
+        compileToJs.setSelection(false);
         super.performDefaults();
     }
     
     private void store() {
         IProject project = getSelectedProject();
         String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
-        new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings).addToProject(project);
+        new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, backendJs).addToProject(project);
     }
 
     private IProject getSelectedProject() {
@@ -92,7 +97,12 @@ public class CeylonPreferencesPage extends PropertyPage {
         showWarnings.setText("Show compiler warnings (for unused declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
-        
+
+        compileToJs = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        compileToJs.setText("Compile modules to JavaScript also");
+        compileToJs.setSelection(backendJs);
+        compileToJs.setEnabled(true);
+
         enableBuilder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -100,6 +110,7 @@ public class CeylonPreferencesPage extends PropertyPage {
                 enableBuilder.setEnabled(false);
                 enableExplodeModules.setEnabled(true);
                 showWarnings.setEnabled(true);
+                compileToJs.setEnabled(false);
                 builderEnabled=true;
             }
         });
@@ -117,6 +128,13 @@ public class CeylonPreferencesPage extends PropertyPage {
             	showCompilerWarnings = !showCompilerWarnings;
             }
         });
+
+        compileToJs.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                backendJs = !backendJs;
+            }
+        });
     }
 	
     @Override
@@ -127,6 +145,7 @@ public class CeylonPreferencesPage extends PropertyPage {
             if (builderEnabled) {
                 explodeModules = isExplodeModulesEnabled(project);
                 showCompilerWarnings = showWarnings(project);
+                backendJs = compileToJs(project);
             }
         }
 
