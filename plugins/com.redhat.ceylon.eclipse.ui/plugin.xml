@@ -136,6 +136,8 @@
              icon="icons/template_obj.gif"
              name="Ceylon Source File"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard">
            <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
@@ -143,8 +145,11 @@
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
              icon="icons/new_wiz.gif"
-             name="Ceylon Project"
+             name="Ceylon Project" 
+             finalPerspective="com.redhat.ceylon.eclipse.ui.perspective"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard"
              project="true">
            <description>Create a Ceylon project</description>
@@ -154,6 +159,8 @@
              icon="icons/jar_l_obj.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewModuleWizard">
            <description>Create a runnable Ceylon module with module and package descriptors</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
@@ -163,6 +170,8 @@
              icon="icons/newpack_wiz.gif"
              name="Ceylon Package"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard">
            <description>Create a Ceylon package with a package descriptor</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
