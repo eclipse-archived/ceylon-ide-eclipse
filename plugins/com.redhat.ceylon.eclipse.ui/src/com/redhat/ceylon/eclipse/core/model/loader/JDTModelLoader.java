@@ -131,6 +131,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 DefaultErrorHandlingPolicies.proceedWithAllProblems(),
                 compilerOptions,
                 new DefaultProblemFactory());
+        this.timer = new Timer(false);
         internalCreate();
     }
 
