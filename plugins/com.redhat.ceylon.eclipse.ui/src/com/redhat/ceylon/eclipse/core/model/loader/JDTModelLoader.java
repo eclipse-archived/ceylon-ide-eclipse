@@ -163,6 +163,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         };
         this.typeParser = new TypeParser(this, typeFactory);
+        this.timer = new Timer(false);
         createLookupEnvironment();
     }
 
