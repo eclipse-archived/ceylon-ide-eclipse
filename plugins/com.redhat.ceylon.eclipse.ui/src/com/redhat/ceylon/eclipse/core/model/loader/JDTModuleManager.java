@@ -254,6 +254,7 @@ public class JDTModuleManager extends LazyModuleManager {
         
         module = new JDTModule(this, roots);
         module.setName(moduleName);
+        module.setVersion(version);
         return module;
     }
 
