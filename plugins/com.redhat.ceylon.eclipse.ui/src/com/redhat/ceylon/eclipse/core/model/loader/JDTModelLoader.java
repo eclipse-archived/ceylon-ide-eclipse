@@ -277,8 +277,10 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public void loadStandardModules() {
         // make sure the jdk modules are loaded
-        findOrCreateModule(AbstractModelLoader.JDK_MODULE);
-        findOrCreateModule(AbstractModelLoader.ORACLE_JDK_MODULE);
+        for(String jdkModule : JDKPackageList.getJDKModuleNames())
+            findOrCreateModule(jdkModule);
+        for(String jdkOracleModule : JDKPackageList.getOracleJDKModuleNames())
+            findOrCreateModule(jdkOracleModule);
         
         /*
          * We start by loading java.lang because we will need it no matter what.
