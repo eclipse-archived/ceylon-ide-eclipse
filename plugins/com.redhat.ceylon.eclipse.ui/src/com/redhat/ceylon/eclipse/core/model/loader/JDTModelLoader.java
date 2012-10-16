@@ -486,52 +486,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    public synchronized Module findOrCreateModule(String pkgName) {
-        java.util.List<String> moduleName;
-        boolean isJava = false;
-        boolean defaultModule = false;
-
-        Module module = lookupModuleInternal(pkgName);
-        if (module != null) {
-            return module;
-        }
-        
-        // FIXME: this is a rather simplistic view of the world
-        if(pkgName == null){
-            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
-            defaultModule = true;
-        } else if(pkgName.equals(JDK_MODULE) || JDKPackageList.isJDKPackage(pkgName)){
-            moduleName = Arrays.asList(JDK_MODULE);
-            isJava = true;
-        } else if(pkgName.equals(ORACLE_JDK_MODULE) || JDKPackageList.isOracleJDKPackage(pkgName)){
-        	moduleName = Arrays.asList(ORACLE_JDK_MODULE);
-            isJava = true;
-        } else if(pkgName.startsWith("ceylon.language."))
-            moduleName = Arrays.asList("ceylon","language");
-        else{
-            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
-            defaultModule = true;
-        }
-        
-        module = moduleManager.getOrCreateModule(moduleName, null);
-        // make sure that when we load the ceylon language module we set it to where
-        // the typechecker will look for it
-        if(pkgName != null
-                 && pkgName.startsWith("ceylon.language.")
-                 && modules.getLanguageModule() == null){
-             modules.setLanguageModule(module);
-         }
-         
-         if (module instanceof LazyModule) {
-             ((LazyModule)module).setJava(isJava);
-         }
-         // FIXME: this can't be that easy.
-         module.setAvailable(true);
-         module.setDefault(defaultModule);
-         return module;
-    }
-
-    @Override
     protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         Unit unit = null;
         JDTClass jdtClass = (JDTClass)classMirror;
