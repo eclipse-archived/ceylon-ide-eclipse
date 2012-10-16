@@ -1388,6 +1388,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		        .cwd(project.getLocation().toFile())
 		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
 		        .logger(new EclipseLogger())
+                .isJDKIncluded(true)
 		        .buildManager();
 		
         typeCheckerBuilder.setRepositoryManager(repositoryManager);
