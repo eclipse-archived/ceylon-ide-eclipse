@@ -501,7 +501,6 @@ public class CeylonContentProposer {
     {
         JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
     }
-    private static final SortedSet<String> EMPTY_SORTED_SET = new TreeSet<String>();
     
     private static void addModuleCompletions(int offset, String prefix,
     		Node node, List<ICompletionProposal> result, int len, String pfp,
@@ -510,13 +509,6 @@ public class CeylonContentProposer {
     	if (tc!=null) {
     		ModuleSearchResult results = tc.getContext().getRepositoryManager()
     				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
-            // add special entries for Java modules
-    		if(pfp == null || AbstractModelLoader.JDK_MODULE.startsWith(pfp)){
-    		    results.addResult(AbstractModelLoader.JDK_MODULE, "Java 7 JDK", "", EMPTY_SORTED_SET, JDK_MODULE_VERSION_SET);
-    		}
-            if(pfp == null || AbstractModelLoader.ORACLE_JDK_MODULE.startsWith(pfp)){
-                results.addResult(AbstractModelLoader.ORACLE_JDK_MODULE, "Oracle-specific Java 7 JDK", "", EMPTY_SORTED_SET, JDK_MODULE_VERSION_SET);
-            }
     		for (final ModuleDetails module: results.getResults()) {
     		    if (!module.getName().equals(Module.DEFAULT_MODULE_NAME)) {
     		        for (final String version : module.getVersions().descendingSet()) {
