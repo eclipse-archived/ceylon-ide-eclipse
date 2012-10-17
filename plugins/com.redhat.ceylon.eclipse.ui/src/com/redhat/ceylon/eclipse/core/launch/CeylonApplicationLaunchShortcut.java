@@ -543,6 +543,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
 	private String getJavaClassName(Declaration declaration) {
 		String name = declaration.getQualifiedNameString();
+		name = name.replace("::", ".");
 		if(declaration instanceof Method)
 			name += "_";
 		return name;
