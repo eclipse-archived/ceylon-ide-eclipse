@@ -30,7 +30,7 @@ public class ModuleSearchManager {
     
     public ModuleSearchManager(ModuleSearchViewPart moduleSearchViewPart) {
         this.moduleSearchViewPart = moduleSearchViewPart;
-        this.defaultRepositoryManager = repoManager().logger(new EclipseLogger()).buildManager();
+        this.defaultRepositoryManager = repoManager().logger(new EclipseLogger()).isJDKIncluded(true).buildManager();
     }
     
     public void searchModules(final String query) {
