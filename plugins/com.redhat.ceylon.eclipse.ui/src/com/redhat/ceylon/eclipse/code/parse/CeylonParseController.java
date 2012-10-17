@@ -382,6 +382,7 @@ public class CeylonParseController {
                 .cwd(cwd)
                 .systemRepo(systemRepo)
                 .logger(new EclipseLogger())
+                .isJDKIncluded(true)
                 .buildManager();
         
         tcb.setRepositoryManager(repositoryManager);
