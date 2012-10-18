@@ -472,7 +472,7 @@ public class CeylonRepoPreferencesBlock {
 
     private boolean isOutputRepoValid() {
         String outputRepoUrl = outputRepoText.getText();
-        if (outputRepoUrl != null && outputRepoUrl.startsWith("."+File.separator)) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             return true;
         }
         return false;
@@ -573,7 +573,7 @@ public class CeylonRepoPreferencesBlock {
 
     private IFolder getOutputFolder() {
         String outputRepoUrl = outputRepoText.getText();
-        if (outputRepoUrl.startsWith("."+File.separator)) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             outputRepoUrl = outputRepoUrl.substring(2);
         }
         return project.getFolder(outputRepoUrl);
