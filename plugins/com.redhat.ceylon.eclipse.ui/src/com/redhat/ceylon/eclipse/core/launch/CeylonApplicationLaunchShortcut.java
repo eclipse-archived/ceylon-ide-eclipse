@@ -427,7 +427,16 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         }
     }
 
+    protected String canLaunch(Declaration declarationToRun) {
+        return null;
+    }
+
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
+        String err = canLaunch(declarationToRun);
+        if (err != null) {
+            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", err); 
+            return;
+        }
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
         if (config == null) {
             config = createConfiguration(declarationToRun, fileToRun);
@@ -441,7 +450,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return getLaunchManager().getLaunchConfigurationType(ID_CEYLON_APPLICATION);        
     }
     
-    private ILaunchManager getLaunchManager() {
+    protected ILaunchManager getLaunchManager() {
         return DebugPlugin.getDefault().getLaunchManager();
     }
     
