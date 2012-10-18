@@ -94,7 +94,7 @@ public class CeylonProjectConfig {
         String outputRepoUrl = outputRepo.getUrl();
 
         IPath outputRepoPath;
-        if (outputRepoUrl.startsWith("./")) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             outputRepoPath = project.getFullPath().append(outputRepoUrl.substring(2));
         } else {
             outputRepoPath = project.getFullPath().append(outputRepoUrl);
@@ -163,7 +163,9 @@ public class CeylonProjectConfig {
     }
 
     private File getProjectConfigFile() {
-        return new File(project.getLocation().toFile(), ".ceylon/config");
+        File projectCeylonDir = new File(project.getLocation().toFile(), ".ceylon");
+        File projectCeylonConfigFile = new File(projectCeylonDir, "config");
+        return projectCeylonConfigFile;
     }
 
     private List<String> toRepositoriesUrlList(Repository[] repositories) {
@@ -226,7 +228,7 @@ public class CeylonProjectConfig {
     }
 
     private String removeCurrentDirPrefix(String url) {
-        return url.startsWith("./") ? url.substring(2) : url;
+        return url.startsWith("./") || url.startsWith(".\\") ? url.substring(2) : url;
     }
 
 }
