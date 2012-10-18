@@ -71,6 +71,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
+import static com.redhat.ceylon.compiler.java.Util.declClassName;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
@@ -542,8 +543,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
 	private String getJavaClassName(Declaration declaration) {
-		String name = declaration.getQualifiedNameString();
-		name = name.replace("::", ".");
+	    
+		String name = declClassName(declaration.getQualifiedNameString());
 		if(declaration instanceof Method)
 			name += "_";
 		return name;
