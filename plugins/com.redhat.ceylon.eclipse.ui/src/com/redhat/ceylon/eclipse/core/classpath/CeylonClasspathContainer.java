@@ -66,7 +66,7 @@ import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.compiler.loader.JDKPackageList;
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
