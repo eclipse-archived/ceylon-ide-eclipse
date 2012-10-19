@@ -241,7 +241,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog fd = new FileDialog(getShell(), SWT.SHEET);
-                fd.setFilterExtensions(new String[]{"jar"});
+                fd.setFilterExtensions(new String[]{"*.jar"});
                 fd.setText("Select Java Archive");
 				String dir = fd.open();
                 if (dir != null) {
