@@ -14,4 +14,5 @@ public interface ICeylonLaunchConfigurationConstants extends
     public static final String ID_JS_APPLICATION = PLUGIN_ID + ".launching.localCeylonJsApplication";
 
     public static final String ATTR_CEYLON_MODULE = PLUGIN_ID + ".launching.ceylonModule";
+    public static final String ATTR_JS_DEBUG = PLUGIN_ID + ".launching.ceylonDebugJs";
 }
