@@ -5,12 +5,17 @@ import java.io.FileNotFoundException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -66,15 +71,33 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                 
                 @Override
                 public void createControl(Composite parent) {
+                    Composite main = new Composite(parent, SWT.FILL);
+                    main.setLayout(new GridLayout(1, false));
+                    main.setFont(parent.getFont());
+                    GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, true);
+                    gd.horizontalSpan = 1;
+                    main.setLayoutData(gd);
+                    main.setVisible(true);
+                    setControl(main);
                     //No idea how this should be editable
-                    new Label(parent, SWT.LEFT).setText("Class/method to run:");
-                    target = new Text(parent, SWT.SINGLE | SWT.LEFT);
-                    new Label(parent, SWT.LEFT).setText("Path to node.js:");
+                    new Label(main, SWT.LEFT).setText("Class/method to run:");
+                    target = new Text(main, SWT.SINGLE | SWT.LEFT);
+                    new Label(main, SWT.LEFT).setText("Path to node.js:");
                     //Ideally we'd have a button next to the text, to open a file dialog and select the path
-                    nodePath = new Text(parent, SWT.SINGLE | SWT.LEFT);
-                    createVerticalSpacer(parent, 10);
-                    debug = createCheckButton(parent, "Output full stack trace on errors");
+                    nodePath = new Text(main, SWT.SINGLE | SWT.LEFT);
+                    createVerticalSpacer(main, 10);
+                    debug = createCheckButton(main, "Output full stack trace on errors");
                     debug.setEnabled(true);
+                    debug.addSelectionListener(new SelectionListener() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            scheduleUpdateJob();
+                        }
+                        @Override
+                        public void widgetDefaultSelected(SelectionEvent e) {
+                            scheduleUpdateJob();
+                        }
+                    });
                 }
                 public String getId() {
                     return "com.redhat.ceylon.js.launcher.conf";
