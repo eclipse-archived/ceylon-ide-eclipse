@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
@@ -20,7 +21,11 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 
 public class JsLaunchShortcut extends CeylonApplicationLaunchShortcut {
 
-    protected String canLaunch(Declaration declarationToRun) {
+    @Override
+    protected String canLaunch(Declaration declarationToRun, IFile file, String mode) {
+        if (!CeylonBuilder.compileToJs(file.getProject())) {
+            return "JavaScript compilation is not enabled for this project";
+        }
         if (!declarationToRun.isShared()) {
             //TODO check that the container hyerarchy is fully shared
             return "JavaScript launcher can only run shared methods";
@@ -68,7 +73,7 @@ public class JsLaunchShortcut extends CeylonApplicationLaunchShortcut {
             wc.setMappedResources(new IResource[] {file});
             config = wc.doSave();
         } catch (CoreException exception) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", 
+            MessageDialog.openError(Util.getShell(), "Ceylon JS Launcher Error", 
                     exception.getStatus().getMessage()); 
         } 
         return config;
