@@ -58,7 +58,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
-            Runner.run(repos, modname, methname, pout);
+            Runner.run(repos, modname, methname, pout, configuration.getAttribute(
+                    ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, false));
         } catch (FileNotFoundException ex) {
             //Install node.js
             System.err.println(ex.getMessage());
