@@ -70,6 +70,7 @@ public class JsLaunchShortcut extends CeylonApplicationLaunchShortcut {
                 ceylonModule = ceylonModule + "/" + mod.getVersion();
             }
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, ceylonModule);
+            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, false);
             wc.setMappedResources(new IResource[] {file});
             config = wc.doSave();
         } catch (CoreException exception) {
