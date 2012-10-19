@@ -1487,17 +1487,17 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         
         final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
-        enableJdtClasses.setSelection(false);
+        enableJdtClasses.setSelection(enableJdtClassesDir);
         enableJdtClasses.setEnabled(true);
 
         final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         showWarnings.setText("Show compiler warnings (for unused declarations)");
-        showWarnings.setSelection(true);
+        showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
 
         final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jsc.setText("Compile modules to JavaScript also");
-        jsc.setSelection(true);
+        jsc.setSelection(compileJs);
         jsc.setEnabled(true);
 
 //        addSelectRepoSection(parent);
