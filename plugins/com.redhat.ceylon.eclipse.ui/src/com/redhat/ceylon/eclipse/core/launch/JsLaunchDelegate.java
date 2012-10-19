@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -16,6 +17,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 
 import com.redhat.ceylon.compiler.js.Runner;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 
@@ -47,12 +49,13 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         String qname = configuration.getAttribute(ATTR_MAIN_TYPE_NAME, "::run");
         String methname = qname.substring(qname.indexOf("::")+2);
         String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
-        System.out.println("Launching " + methname + " from " + modname);
-        ArrayList<String> repos = new ArrayList<String>(4);
-        //Add workspace repo
-        //Add project repo?
-        //Add user repo
-        repos.add("modules");
+        IProject proj = configuration.getMappedResources()[0].getProject();
+        ArrayList<String> repos = new ArrayList<String>();
+        //Add system repo
+        //not working yet - repos.add(CeylonBuilder.getCeylonSystemRepo(proj));
+        //Add project repos
+        repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
+        repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
             Runner.run(repos, modname, methname, pout);
