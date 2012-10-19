@@ -1509,9 +1509,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     ex.printStackTrace(printWriter);
                 }
             }
-            if (compileWithJDTModelLoader()) {
-                sourceFiles.addAll(javaSourceFiles);
-            } 
+            // always add the java files, otherwise ceylon code won't see them and they won't end up in the archives (src/car)
+            sourceFiles.addAll(javaSourceFiles);
             if(!sourceFiles.isEmpty()){
                 success = compile(project, javaProject, options, sourceFiles, 
                 		typeChecker, printWriter, monitor);

@@ -106,7 +106,7 @@ public class JDTModule extends LazyModule {
         }else if(JDKPackageList.isOracleJDKModule(name)){
             packageList.addAll(JDKPackageList.getOracleJDKPackagesByModule().get(name));
         }else if(isJava()){
-            for(IPackageFragmentRoot fragmentRoot : packageFragmentRoots){
+            for(IPackageFragmentRoot fragmentRoot : getPackageFragmentRoots()){
                 if(!fragmentRoot.exists())
                     continue;
                 IParent parent = fragmentRoot;
