@@ -52,7 +52,7 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         IProject proj = configuration.getMappedResources()[0].getProject();
         ArrayList<String> repos = new ArrayList<String>();
         //Add system repo
-        //not working yet - repos.add(CeylonBuilder.getCeylonSystemRepo(proj));
+        repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
         //Add project repos
         repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
         repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
