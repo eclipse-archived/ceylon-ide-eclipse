@@ -35,8 +35,8 @@ import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
