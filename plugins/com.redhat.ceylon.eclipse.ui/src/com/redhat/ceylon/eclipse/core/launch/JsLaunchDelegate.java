@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -50,7 +51,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         final int tipple = qname.indexOf("::");
         final String methname = tipple >= 0 ? qname.substring(tipple+2) : qname;
         final String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
-        final IProject proj = configuration.getMappedResources()[0].getProject();
+        final IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(
+                configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null));
         final ArrayList<String> repos = new ArrayList<String>();
         //Add system repo
         repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
