@@ -23,7 +23,6 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +69,6 @@ import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
-import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
@@ -82,7 +80,6 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyClass;
 import com.redhat.ceylon.compiler.loader.model.LazyInterface;
 import com.redhat.ceylon.compiler.loader.model.LazyMethod;
-import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -303,7 +300,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         if(loadDeclarations && !loadedPackages.add(packageName)){
             return true;
         }
-        Module module = lookupModule(packageName);
+        Module module = lookupModuleInternal(packageName);
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
@@ -363,31 +360,6 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         }
         return false;
-    }
-
-    private Module lookupModule(String packageName) {
-        Module module = lookupModuleInternal(packageName);
-        if (module != null) {
-            return module;
-        }
-        return modules.getDefaultModule();
-    }
-
-    @Override
-    protected Module lookupModuleInternal(String packageName) {
-        for(Module module : modules.getListOfModules()){
-            if(module instanceof LazyModule){
-                if(((LazyModule)module).containsPackage(packageName))
-                    return module;
-            }else if(isSubPackage(module.getNameAsString(), packageName))
-                return module;
-        }
-        return null;
-    }
-
-    private boolean isSubPackage(String moduleName, String pkgName) {
-        return pkgName.equals(moduleName)
-                || pkgName.startsWith(moduleName+".");
     }
 
     synchronized private LookupEnvironment getLookupEnvironment() {
