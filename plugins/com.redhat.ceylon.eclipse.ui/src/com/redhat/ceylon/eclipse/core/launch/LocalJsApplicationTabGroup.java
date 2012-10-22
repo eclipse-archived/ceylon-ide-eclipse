@@ -1,23 +1,27 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -48,6 +52,12 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                     conf.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, nodePath.getText());
                 }
                 
+                void showError(String msg) {
+                    setErrorMessage(msg);
+                    MessageDialog.openError(getShell(), "Ceylon JS Run Configuration", 
+                            msg); 
+                }
+
                 @Override
                 public void initializeFrom(ILaunchConfiguration conf) {
                     try {
@@ -58,9 +68,9 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                                 Runner.findNode()));
                     } catch (FileNotFoundException ex) {
                         nodePath.setText("[NOT FOUND]");
-                        setErrorMessage(ex.getMessage());
+                        showError(ex.getMessage());
                     } catch (CoreException ex) {
-                        setErrorMessage(ex.getMessage());
+                        showError(ex.getMessage());
                     }
                 }
                 
@@ -68,26 +78,66 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                 public String getName() {
                     return "Ceylon JavaScript Launcher";
                 }
-                
+
+                Group createGroup(Composite parent, int cols) {
+                    Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
+                    GridData gd= new GridData(SWT.FILL, SWT.FILL, true, false);
+                    group.setLayoutData(gd);
+                    GridLayout layout = new GridLayout();
+                    layout.numColumns = cols;
+                    group.setLayout(layout); 
+                    return group;
+                }
+
                 @Override
                 public void createControl(Composite parent) {
                     Composite main = new Composite(parent, SWT.FILL);
                     main.setLayout(new GridLayout(1, false));
                     main.setFont(parent.getFont());
-                    GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, true);
+                    GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
                     gd.horizontalSpan = 1;
                     main.setLayoutData(gd);
                     main.setVisible(true);
                     setControl(main);
+
                     //No idea how this should be editable
                     new Label(main, SWT.LEFT).setText("Class/method to run:");
-                    target = new Text(main, SWT.SINGLE | SWT.LEFT);
-                    new Label(main, SWT.LEFT).setText("Path to node.js:");
-                    //Ideally we'd have a button next to the text, to open a file dialog and select the path
-                    nodePath = new Text(main, SWT.SINGLE | SWT.LEFT);
+                    Group group = createGroup(main, 2);
+                    target = new Text(group, SWT.SINGLE | SWT.BORDER | SWT.FILL);
+                    target.setEditable(false);
+                    target.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+                    Button pickTarget = new Button(group, SWT.PUSH);
+                    pickTarget.setText("Choose...");
+
+                    new Label(main, SWT.LEFT).setText("Path to node.js executable:");
+                    group = createGroup(main, 2);
+
+                    //Select the node.js executable
+                    nodePath = new Text(group, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+                    nodePath.setEditable(false);
+                    nodePath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+                    Button pickNode = new Button(group, SWT.PUSH);
+                    pickNode.setText("Browse...");
                     createVerticalSpacer(main, 10);
                     debug = createCheckButton(main, "Output full stack trace on errors");
                     debug.setEnabled(true);
+
+                    pickNode.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            FileDialog fd = new FileDialog(getShell(), SWT.NULL);
+                            String path = fd.open();
+                            if (path != null) {
+                                File np = new File(path);
+                                if (np.isFile() && np.canExecute()) {
+                                    nodePath.setText(path);
+                                    scheduleUpdateJob();
+                                } else {
+                                    showError("You must select an executable file.");
+                                }
+                            }
+                        }
+                    });
                     debug.addSelectionListener(new SelectionListener() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -106,4 +156,5 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
         };
         setTabs(tabs);
     }
+
 }
