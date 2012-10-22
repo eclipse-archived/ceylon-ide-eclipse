@@ -1473,6 +1473,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         options.add("-g:lines,vars,source");
 
+        String systemRepo = getInterpolatedCeylonSystemRepo(project);
+        if(systemRepo != null && !systemRepo.isEmpty()){
+            options.add("-sysrep");
+            options.add(systemRepo);
+        }
+        
         final File modulesOutputDir = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDir!=null) {
             options.add("-out");
