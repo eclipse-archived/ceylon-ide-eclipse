@@ -76,7 +76,7 @@ public class JsLaunchShortcut extends CeylonApplicationLaunchShortcut {
         } catch (CoreException exception) {
             MessageDialog.openError(Util.getShell(), "Ceylon JS Launcher Error", 
                     exception.getStatus().getMessage()); 
-        } 
+        }
         return config;
     }
 }
