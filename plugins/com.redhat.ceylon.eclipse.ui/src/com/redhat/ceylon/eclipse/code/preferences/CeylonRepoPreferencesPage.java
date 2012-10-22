@@ -11,6 +11,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 
 public class CeylonRepoPreferencesPage extends PropertyPage {
 
@@ -32,6 +33,8 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
         projectConfig.setProjectLocalRepos(block.getProjectLocalRepos());
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
+
+        CeylonClasspathUtil.makeSureOutputRepoIsCreated(project, block.getOutputRepo());
 
         new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, !compileJs).addToProject(project);      
 
