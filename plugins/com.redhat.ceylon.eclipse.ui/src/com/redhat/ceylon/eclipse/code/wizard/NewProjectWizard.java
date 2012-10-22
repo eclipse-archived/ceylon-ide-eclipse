@@ -33,6 +33,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewProjectWizard extends NewElementWizard implements IExecutableExtension {
@@ -123,7 +124,9 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
             projectConfig.save();            
 
-    		new CeylonNature(thirdPage.getBlock().getSystemRepo(),
+            CeylonClasspathUtil.makeSureOutputRepoIsCreated(project, thirdPage.getBlock().getOutputRepo());
+
+            new CeylonNature(thirdPage.getBlock().getSystemRepo(),
     				firstPage.isEnableJdtClassesDir(), 
     				!firstPage.isShowCompilerWarnings(),
     				firstPage.isCompileJs())
