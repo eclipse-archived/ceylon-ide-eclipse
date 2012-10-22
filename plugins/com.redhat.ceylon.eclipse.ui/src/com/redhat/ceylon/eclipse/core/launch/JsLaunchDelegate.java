@@ -46,11 +46,12 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
         //Check that JS is enabled for the project
-        String qname = configuration.getAttribute(ATTR_MAIN_TYPE_NAME, "::run");
-        String methname = qname.substring(qname.indexOf("::")+2);
-        String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
-        IProject proj = configuration.getMappedResources()[0].getProject();
-        ArrayList<String> repos = new ArrayList<String>();
+        final String qname = configuration.getAttribute(ATTR_MAIN_TYPE_NAME, "::run");
+        final int tipple = qname.indexOf("::");
+        final String methname = tipple >= 0 ? qname.substring(tipple+2) : qname;
+        final String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
+        final IProject proj = configuration.getMappedResources()[0].getProject();
+        final ArrayList<String> repos = new ArrayList<String>();
         //Add system repo
         repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
         //Add project repos
