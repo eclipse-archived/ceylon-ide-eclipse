@@ -14,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 
@@ -35,7 +36,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             }
         }
         if (cons == null) {
-            cons = new MessageConsole("com.redhat.ceylon", null);
+            cons = new MessageConsole("com.redhat.ceylon", IConsoleConstants.MESSAGE_CONSOLE_TYPE,
+                    null, "UTF-8", true);
             conman.addConsoles(new IConsole[]{cons});
         }
         cons.clearConsole();
