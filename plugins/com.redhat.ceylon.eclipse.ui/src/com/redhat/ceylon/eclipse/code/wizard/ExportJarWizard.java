@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepo
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -117,9 +118,13 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 						Path jarPath = Paths.get(page.getJarPath());
 						Path repoPath = Paths.get(repositoryPath);
 						if (!Files.exists(repoPath)) {
-							MessageDialog.openError(getShell(), "Export Java Archive Error", 
-									"No repository at location: " + repositoryPath);
-							return Status.CANCEL_STATUS;
+						    try {
+                                Files.createDirectories(repoPath);
+                            } catch (IOException e) {
+                                MessageDialog.openError(getShell(), "Export Java Archive Error", 
+                                        "No repository at location: " + repositoryPath);
+                                return Status.CANCEL_STATUS;
+                            }
 						}
 						String name = page.getModuleName();
 						String version = page.getVersion();
