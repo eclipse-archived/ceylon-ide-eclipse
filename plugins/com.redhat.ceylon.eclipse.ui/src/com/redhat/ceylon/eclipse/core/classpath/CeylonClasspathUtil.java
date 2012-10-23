@@ -17,17 +17,13 @@
  */
 package com.redhat.ceylon.eclipse.core.classpath;
 
-import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -227,27 +223,6 @@ public final class CeylonClasspathUtil {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static void makeSureOutputRepoIsCreated(IProject project, String outputRepo){
-        try {
-            URI uri = new URI(outputRepo);
-            if((!uri.isAbsolute()
-                    && uri.getAuthority() == null)
-                    || "file".equals(uri.getScheme()))
-                makeOutputRepo(project, uri.getPath());
-        } catch (URISyntaxException e) {
-            // not a valid URI, it should be a file
-            makeOutputRepo(project, outputRepo);
-        }
-    }
-    
-    private static void makeOutputRepo(IProject project, String path) {
-        File cwd = project.getLocation().toFile();
-        File repo = new File(cwd, path);
-        // do not report errors here, they will be reported later on
-        if(!repo.exists())
-            repo.mkdirs();
     }
 
 }
