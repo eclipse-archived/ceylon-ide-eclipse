@@ -145,34 +145,34 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         }
     };*/
 
-    public static void runInitialize(final IPath containerPath, final IJavaProject project) {
+    public static void runInitialize(final IPath containerPath, final IJavaProject javaProject) {
     	Job job = new Job("Initializing Ceylon dependencies for project " + 
-    			project.getElementName()) {
+    			javaProject.getElementName()) {
     		@Override 
     		protected IStatus run(IProgressMonitor monitor) {			
     			try {
     				
-        			IClasspathContainer c = getClasspathContainer(containerPath, project);
+        			IClasspathContainer c = getClasspathContainer(containerPath, javaProject);
     				CeylonClasspathContainer container;
     				if (c instanceof CeylonClasspathContainer) {
     					container = (CeylonClasspathContainer) c;
     				} 
     				else {
-    					IClasspathEntry entry = getCeylonClasspathEntry(containerPath, project);
+    					IClasspathEntry entry = getCeylonClasspathEntry(containerPath, javaProject);
     					IClasspathAttribute[] attributes = entry == null ? 
     							new IClasspathAttribute[0] : entry.getExtraAttributes();
 						if (c == null) {
-							container = new CeylonClasspathContainer(project, containerPath,
+							container = new CeylonClasspathContainer(javaProject, containerPath,
 									new IClasspathEntry[0], attributes);
 						} 
 						else {
 							// this might be the persisted one: reuse the persisted entries
-							container = new CeylonClasspathContainer(project, containerPath, 
+							container = new CeylonClasspathContainer(javaProject, containerPath, 
 									c.getClasspathEntries(), attributes);
 						}                    
     				}
 
-    				final IProject p = project.getProject();
+    				final IProject p = javaProject.getProject();
     				Job job = new BuildProjectAndDependenciesJob("Initial build of project " + 
     						p.getName(), p) {
     					protected boolean reallyRun() {
@@ -183,8 +183,11 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				job.setPriority(Job.BUILD);
     				job.schedule(3000);
     				
-    				container.resolveClasspath(monitor, true);
-    				
+    	    		boolean changed = container.resolveClasspath(monitor, true);
+    	        	if(changed) {
+    	        		container.refreshClasspathContainer(monitor, javaProject);
+    	        	}
+
     				return Status.OK_STATUS;
     				
     			} 
@@ -224,7 +227,10 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);        			
     	            javaProject.setRawClasspath(classpath, monitor);
     	            
-    	    		resolveClasspath(monitor, false);
+    	    		boolean changed = resolveClasspath(monitor, true);
+    	        	if(changed) {
+    	        		refreshClasspathContainer(monitor, javaProject);
+    	        	}
     	    		
     	            Job job = new BuildProjectAndDependenciesJob("Rebuild of project " + 
     	            		project.getName(), project);
@@ -299,7 +305,13 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}*/
     }
 
-	public void resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
+    /**
+     * Resolves the classpath entries for this container.
+     * @param monitor
+     * @param reparse
+     * @return true if the classpath was changed, false otherwise.
+     */
+	public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
 		IJavaProject javaProject = getJavaProject();
 		IProject project = javaProject.getProject();
 		
@@ -316,26 +328,32 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
 					javaProject, project, typeChecker);
-
-			classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
-
-			setClasspathContainer(path, new IJavaProject[] {javaProject},
-					new IClasspathContainer[] {this}, new SubProgressMonitor(monitor, 1));
-
-			//update the package manager UI
-			new Job("update package manager") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					notifyUpdateClasspathEntries();
-					return Status.OK_STATUS;
-				}
-			}.schedule();
-
+			if(this.classpathEntries == null || !paths.equals(Arrays.asList(this.classpathEntries))) {
+				IClasspathEntry[] classpathEntry = new IClasspathEntry[paths.size()];
+				IClasspathEntry[] newClasspathEntries = paths.toArray(classpathEntry);
+				this.classpathEntries = newClasspathEntries;
+				return true;
+			}
 		}
 		catch (CoreException e) {
 			e.printStackTrace();
 		}
+		return false;
 		
+	}
+
+	public void refreshClasspathContainer(IProgressMonitor monitor,
+			IJavaProject javaProject) throws JavaModelException {
+		setClasspathContainer(path, new IJavaProject[] {javaProject},
+				new IClasspathContainer[] {this}, new SubProgressMonitor(monitor, 1));
+		//update the package manager UI
+		new Job("update package manager") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				notifyUpdateClasspathEntries();
+				return Status.OK_STATUS;
+			}
+		}.schedule();
 	}
 
 	private static Collection<IClasspathEntry> findModuleArchivePaths(

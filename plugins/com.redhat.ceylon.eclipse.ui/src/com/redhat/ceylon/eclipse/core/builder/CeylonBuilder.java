@@ -61,6 +61,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -378,7 +379,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
                 for (CeylonClasspathContainer container: cpContainers) {
-                	container.resolveClasspath(monitor, true);
+                	boolean changed = container.resolveClasspath(monitor, true);
+                	if(changed) {
+                		JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[]{javaProject}, new IClasspathContainer[]{null} , monitor);
+                		container.refreshClasspathContainer(monitor, javaProject);
+                	}
                 }
             }
         }
