@@ -44,7 +44,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -184,9 +183,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				job.setPriority(Job.BUILD);
     				job.schedule(3000);
     				
-    	    		boolean changed = container.resolveClasspath(new NullProgressMonitor(), true);
+    	    		boolean changed = container.resolveClasspath(monitor, true);
     	        	if(changed) {
-    	        		container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
+    	        		container.refreshClasspathContainer(monitor, javaProject);
     	        	}
 
     				return Status.OK_STATUS;
