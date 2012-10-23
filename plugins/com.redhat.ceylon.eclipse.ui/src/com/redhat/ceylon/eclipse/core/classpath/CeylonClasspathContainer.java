@@ -183,8 +183,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				job.setPriority(Job.BUILD);
     				job.schedule(3000);
     				
-    	    		boolean changed = container.resolveClasspath(monitor, true);
-    	        	if(changed) {
+    	        	if(container.resolveClasspath(monitor, true)) {
     	        		container.refreshClasspathContainer(monitor, javaProject);
     	        	}
 
@@ -227,8 +226,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);        			
     	            javaProject.setRawClasspath(classpath, monitor);
     	            
-    	    		boolean changed = resolveClasspath(monitor, true);
-    	        	if(changed) {
+    	        	if(resolveClasspath(monitor, true)) {
     	        		refreshClasspathContainer(monitor, javaProject);
     	        	}
     	    		

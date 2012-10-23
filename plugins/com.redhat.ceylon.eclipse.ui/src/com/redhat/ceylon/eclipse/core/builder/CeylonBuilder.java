@@ -379,8 +379,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
                 for (CeylonClasspathContainer container: cpContainers) {
-                	boolean changed = container.resolveClasspath(monitor, true);
-                	if(changed) {
+                	if(container.resolveClasspath(monitor, true)) {
                 		JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[]{javaProject}, new IClasspathContainer[]{null} , monitor);
                 		container.refreshClasspathContainer(monitor, javaProject);
                 	}

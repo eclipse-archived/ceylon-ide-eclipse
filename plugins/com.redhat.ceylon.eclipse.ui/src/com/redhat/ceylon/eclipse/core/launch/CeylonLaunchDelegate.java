@@ -36,8 +36,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IProject project = javaProject.getProject();
 
     	for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
-    		boolean changed = container.resolveClasspath(new NullProgressMonitor(), true);
-        	if(changed) {
+        	if(container.resolveClasspath(new NullProgressMonitor(), true)) {
         		container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
         	}
     	}
