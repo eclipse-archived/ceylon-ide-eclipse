@@ -35,8 +35,10 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IJavaProject javaProject = getJavaProject(configuration);
         IProject project = javaProject.getProject();
 
-    	for (CeylonClasspathContainer c: getCeylonClasspathContainers(javaProject)) {
-    		c.resolveClasspath(new NullProgressMonitor(), false);
+    	for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
+        	if(container.resolveClasspath(new NullProgressMonitor(), true)) {
+        		container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
+        	}
     	}
     	String[] javaClasspath = super.getClasspath(configuration);
         final List<String> classpathList = new ArrayList<String>(asList(javaClasspath));
