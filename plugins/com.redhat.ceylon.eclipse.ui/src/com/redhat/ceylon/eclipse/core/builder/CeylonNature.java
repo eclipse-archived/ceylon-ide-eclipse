@@ -35,7 +35,10 @@ public class CeylonNature extends ProjectNatureBase {
     	keepSettings=true;
     }
     
-    public CeylonNature(String systemRepo, boolean enableJdtClasses, boolean hideWarnings, boolean js) {
+    public CeylonNature(String systemRepo, 
+    		boolean enableJdtClasses, 
+    		boolean hideWarnings, 
+    		boolean js) {
     	this.systemRepo = systemRepo;
     	this.enableJdtClasses = enableJdtClasses;
     	this.hideWarnings = hideWarnings;

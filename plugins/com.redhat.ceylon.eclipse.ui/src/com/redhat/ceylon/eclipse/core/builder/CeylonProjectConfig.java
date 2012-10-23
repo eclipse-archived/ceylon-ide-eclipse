@@ -191,7 +191,8 @@ public class CeylonProjectConfig {
         if( oldOutputRepoFolder.exists() ) {
             boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
                     "Changing Ceylon output repository", 
-                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
+                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + 
+                    		oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
             if (remove) {
                 try {
                     oldOutputRepoFolder.delete(true, null);
