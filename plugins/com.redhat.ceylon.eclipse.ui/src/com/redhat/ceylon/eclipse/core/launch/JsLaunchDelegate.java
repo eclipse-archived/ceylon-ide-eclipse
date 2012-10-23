@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -13,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 
@@ -34,7 +36,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             }
         }
         if (cons == null) {
-            cons = new MessageConsole("com.redhat.ceylon", null);
+            cons = new MessageConsole("com.redhat.ceylon", IConsoleConstants.MESSAGE_CONSOLE_TYPE,
+                    null, "UTF-8", true);
             conman.addConsoles(new IConsole[]{cons});
         }
         cons.clearConsole();
@@ -46,11 +49,13 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
         //Check that JS is enabled for the project
-        String qname = configuration.getAttribute(ATTR_MAIN_TYPE_NAME, "::run");
-        String methname = qname.substring(qname.indexOf("::")+2);
-        String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
-        IProject proj = configuration.getMappedResources()[0].getProject();
-        ArrayList<String> repos = new ArrayList<String>();
+        final String qname = configuration.getAttribute(ATTR_MAIN_TYPE_NAME, "::run");
+        final int tipple = qname.indexOf("::");
+        final String methname = tipple >= 0 ? qname.substring(tipple+2) : qname;
+        final String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
+        final IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(
+                configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null));
+        final ArrayList<String> repos = new ArrayList<String>();
         //Add system repo
         repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
         //Add project repos

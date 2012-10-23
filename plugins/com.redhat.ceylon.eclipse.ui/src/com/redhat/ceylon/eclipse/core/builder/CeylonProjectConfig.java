@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
@@ -137,6 +138,12 @@ public class CeylonProjectConfig {
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
+        } else {
+            // fix #422: output folder must be create for new projects
+            IFolder newOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
+            if (!newOutputRepoFolder.exists()) {
+                createNewOutputFolder();
+            }
         }
         
         if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged) {
@@ -191,7 +198,8 @@ public class CeylonProjectConfig {
         if( oldOutputRepoFolder.exists() ) {
             boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
                     "Changing Ceylon output repository", 
-                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
+                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + 
+                    		oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
             if (remove) {
                 try {
                     oldOutputRepoFolder.delete(true, null);
@@ -224,6 +232,11 @@ public class CeylonProjectConfig {
             } catch (CoreException e) {
                 e.printStackTrace();
             }
+        }
+        try {
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 

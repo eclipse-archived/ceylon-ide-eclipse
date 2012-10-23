@@ -223,7 +223,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
     private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
-    protected Declaration chooseDeclaration(final List<Declaration> declarations) {
+    public static Declaration chooseDeclaration(final List<Declaration> declarations) {
         FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(Util.getShell())
         {
             {
@@ -321,7 +321,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return null;
     }
 
-    class LabelProvider extends StyledCellLabelProvider 
+    static class LabelProvider extends StyledCellLabelProvider 
             implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
         
         @Override
@@ -375,7 +375,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     
     }
     
-    class DetailsLabelProvider implements ILabelProvider {
+    static class DetailsLabelProvider implements ILabelProvider {
         @Override
         public void removeListener(ILabelProviderListener listener) {}
         
@@ -401,7 +401,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         }
     }
     
-    class SelectionLabelDecorator implements ILabelDecorator {
+    static class SelectionLabelDecorator implements ILabelDecorator {
         @Override
         public void removeListener(ILabelProviderListener listener) {}
         
