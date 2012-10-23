@@ -159,10 +159,11 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         if (modelLoader==null) {
             return null;
         }
-        if (modelLoader.getSourceDeclarations().contains(fullyQualifiedName)) {
+        String javaQualifiedName = fullyQualifiedName.replace("::", ".");
+        if (modelLoader.getSourceDeclarations().contains(javaQualifiedName)) {
             return null;
         }
-        return jp.findType(fullyQualifiedName);
+        return jp.findType(javaQualifiedName);
     }
     
     public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp, Node node)
