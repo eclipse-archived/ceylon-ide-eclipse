@@ -33,7 +33,7 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
 
-        new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, !compileJs).addToProject(project);      
+        new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, compileJs).addToProject(project);      
 
         return true;
     }
