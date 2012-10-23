@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
@@ -137,6 +138,12 @@ public class CeylonProjectConfig {
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
+        } else {
+            // fix #422: output folder must be create for new projects
+            IFolder newOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
+            if (!newOutputRepoFolder.exists()) {
+                createNewOutputFolder();
+            }
         }
         
         if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged) {
@@ -224,6 +231,11 @@ public class CeylonProjectConfig {
             } catch (CoreException e) {
                 e.printStackTrace();
             }
+        }
+        try {
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 
