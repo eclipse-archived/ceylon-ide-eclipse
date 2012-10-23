@@ -232,7 +232,7 @@ public class CeylonRepoPreferencesBlock {
         lookupRepoLabel.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1).grab(true, false).indent(0, 10).create());
 
         lookupRepoTable = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-        lookupRepoTable.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).hint(250, 200).create());
+        lookupRepoTable.setLayoutData(swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(250, 220).create());
         lookupRepoTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
