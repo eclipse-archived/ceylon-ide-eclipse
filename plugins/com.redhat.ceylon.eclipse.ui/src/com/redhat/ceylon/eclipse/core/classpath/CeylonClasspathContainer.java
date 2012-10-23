@@ -227,7 +227,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         			final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);        			
     	            javaProject.setRawClasspath(classpath, monitor);
     	            
-    	    		boolean changed = resolveClasspath(monitor, true);
+    	    		boolean changed = resolveClasspath(monitor, false);
     	        	if(changed) {
     	        		refreshClasspathContainer(monitor, javaProject);
     	        	}
