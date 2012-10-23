@@ -99,7 +99,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         showWarnings.setEnabled(true);
 
         compileToJs = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        compileToJs.setText("Compile modules to JavaScript also");
+        compileToJs.setText("Also compile to JavaScript");
         compileToJs.setSelection(backendJs);
         compileToJs.setEnabled(true);
 
