@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -20,10 +18,8 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 
-import com.redhat.ceylon.ant.Ceylonjs;
 import com.redhat.ceylon.compiler.js.CeylonRunJsException;
 import com.redhat.ceylon.compiler.js.CeylonRunJsTool;
-import com.redhat.ceylon.compiler.js.Runner;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -70,6 +66,9 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
         //Add project repos
         repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
+        //Add referenced project repos
+        repos.addAll(CeylonBuilder.getReferencedProjectsOutputRepositories(proj));
+        //And finally the output repo
         repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
@@ -78,11 +77,28 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             runner.setRun(methname);
             runner.setModuleVersion(modname);
             runner.setOutput(pout);
+            runner.setDebug(true);
             runner.run();
         } catch (CeylonRunJsException ex) {
             //Install node.js
             throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
                     ex.getMessage()));
+        } catch (RuntimeException ex) {
+            ex.printStackTrace();
+            if (proj.getReferencedProjects() != null && proj.getReferencedProjects().length > 0) {
+                boolean all = true;
+                for (IProject dep : proj.getReferencedProjects()) {
+                    all &= CeylonBuilder.compileToJs(dep);
+                }
+                if (!all) {
+                    throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+                            "Not all the referenced projects compile to JavaScript, which may be causing this error:"
+                            + ex.getClass().getName() + " - " + ex.getMessage()));
+                }
+            }
+            throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+                    "Node.js exited abnormally: " + 
+                    ex.getClass().getName() + " - " + ex.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
