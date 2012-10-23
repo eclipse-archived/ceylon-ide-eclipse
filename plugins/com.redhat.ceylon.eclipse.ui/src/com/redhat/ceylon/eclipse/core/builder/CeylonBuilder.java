@@ -1392,7 +1392,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		RepositoryManager repositoryManager = repoManager()
 		        .cwd(project.getLocation().toFile())
 		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
-		        .userRepos(getUserRepositories(project)) // tmp fix for #432, I guess that RepositoryManager builder should provide api for custom repositories which does not override local lookup repos
+		        .extraUserRepos(getReferencedProjectsOutputRepositories(project))
 		        .logger(new EclipseLogger())
                 .isJDKIncluded(true)
 		        .buildManager();
@@ -1733,24 +1733,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = getCeylonRepositories(project);
-        
-        if (project!=null) {
-            for (IProject requiredProject: project.getReferencedProjects()) {
-                if (requiredProject.isOpen() &&
-                		requiredProject.hasNature(NATURE_ID)) {
-                	userRepos.add(getCeylonModulesOutputDirectory(requiredProject)
-                			.getAbsolutePath());	
+        userRepos.addAll(getReferencedProjectsOutputRepositories(project));
+        return userRepos;
+    }
+    
+    public static List<String> getReferencedProjectsOutputRepositories(IProject project) throws CoreException {
+        List<String> repos = new ArrayList<String>();
+        if (project != null) {
+            for (IProject referencedProject : project.getReferencedProjects()) {
+                if (referencedProject.isOpen() && referencedProject.hasNature(NATURE_ID)) {
+                    repos.add(getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath());
                 }
             }
-            
-            /*userRepos.add(project.getLocation().append("modules").toOSString());
-                
-            for (IProject requiredProject : requiredProjects) {
-                userRepos.add(requiredProject.getLocation().append("modules").toOSString());
-            }*/
         }
-        
-        return userRepos;
+        return repos;
     }
 
 	private static Map getBuilderArgs(IProject project) {
