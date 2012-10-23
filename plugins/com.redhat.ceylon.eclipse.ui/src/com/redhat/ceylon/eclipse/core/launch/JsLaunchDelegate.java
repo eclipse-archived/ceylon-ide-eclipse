@@ -20,6 +20,9 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 
+import com.redhat.ceylon.ant.Ceylonjs;
+import com.redhat.ceylon.compiler.js.CeylonRunJsException;
+import com.redhat.ceylon.compiler.js.CeylonRunJsTool;
 import com.redhat.ceylon.compiler.js.Runner;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -70,17 +73,20 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
-            Runner.run(repos, modname, methname, pout, configuration.getAttribute(
-                    ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, false));
-        } catch (FileNotFoundException ex) {
+            CeylonRunJsTool runner = new CeylonRunJsTool();
+            runner.setRepositories(repos);
+            runner.setRun(methname);
+            runner.setModuleVersion(modname);
+            runner.setOutput(pout);
+            runner.run();
+        } catch (CeylonRunJsException ex) {
             //Install node.js
-            System.err.println(ex.getMessage());
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+            throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+                    ex.getMessage()));
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
+                    e.getClass().getName() + " - " + e.getMessage()));
         } finally {
             pout.close();
         }
