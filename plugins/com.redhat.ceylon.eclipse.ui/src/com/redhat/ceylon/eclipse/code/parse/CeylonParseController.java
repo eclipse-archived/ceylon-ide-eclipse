@@ -381,6 +381,7 @@ public class CeylonParseController {
         RepositoryManager repositoryManager = repoManager()
                 .cwd(cwd)
                 .systemRepo(systemRepo)
+                .userRepos(CeylonBuilder.getUserRepositories(project)) // tmp fix for #432, I guess that RepositoryManager builder should provide api for custom repositories which does not override local lookup repos
                 .logger(new EclipseLogger())
                 .isJDKIncluded(true)
                 .buildManager();

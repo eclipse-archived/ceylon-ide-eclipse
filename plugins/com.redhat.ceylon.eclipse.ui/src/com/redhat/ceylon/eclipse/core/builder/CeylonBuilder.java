@@ -1387,6 +1387,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		RepositoryManager repositoryManager = repoManager()
 		        .cwd(project.getLocation().toFile())
 		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
+		        .userRepos(getUserRepositories(project)) // tmp fix for #432, I guess that RepositoryManager builder should provide api for custom repositories which does not override local lookup repos
 		        .logger(new EclipseLogger())
                 .isJDKIncluded(true)
 		        .buildManager();
