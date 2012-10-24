@@ -1496,7 +1496,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         showWarnings.setEnabled(true);
 
         final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        jsc.setText("Compile modules to JavaScript also");
+        jsc.setText("Also compile project to JavaScript");
         jsc.setSelection(compileJs);
         jsc.setEnabled(true);
 
