@@ -44,6 +44,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -78,18 +79,20 @@ public class CeylonQuickFixController extends QuickAssistAssistant
 			file = input.getFile();
 			IProject project = file.getProject();
 			IJavaProject javaProject = JavaCore.create(project);
-			try {
-				for (IPackageFragmentRoot pfr: javaProject.getPackageFragmentRoots()) {
-					if (pfr.getPath().isPrefixOf(file.getFullPath())) {
-						IPath relPath = file.getFullPath().makeRelativeTo(pfr.getPath());
-						model = getProjectTypeChecker(project)
-							    .getPhasedUnitFromRelativePath(relPath.toString())
-							    		    .getCompilationUnit();	
+			TypeChecker tc = getProjectTypeChecker(project);
+			if (tc!=null) {
+				try {
+					for (IPackageFragmentRoot pfr: javaProject.getPackageFragmentRoots()) {
+						if (pfr.getPath().isPrefixOf(file.getFullPath())) {
+							IPath relPath = file.getFullPath().makeRelativeTo(pfr.getPath());
+							model = tc.getPhasedUnitFromRelativePath(relPath.toString())
+									.getCompilationUnit();	
+						}
 					}
+				} 
+				catch (JavaModelException e) {
+					e.printStackTrace();
 				}
-			} 
-			catch (JavaModelException e) {
-				e.printStackTrace();
 			}
 		}
         setQuickAssistProcessor(this);
