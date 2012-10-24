@@ -48,13 +48,15 @@ final class CompileErrorReporter implements
 		}
 		else if (source == null) {
 		    // no source file
-		    try{
-		        IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
-		        setupMarker(marker, diagnostic);
-		    } 
-		    catch (CoreException e) {
-		        e.printStackTrace();
-		    }
+			if (!diagnostic.toString().startsWith("Note: Created module")) {
+				try {
+					IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
+					setupMarker(marker, diagnostic);
+				} 
+				catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
