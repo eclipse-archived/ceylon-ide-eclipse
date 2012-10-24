@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -76,6 +77,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static Image FILE_WITH_WARNING_IMAGE = imageRegistry.get(CEYLON_FILE_WARNING);
     private static Image FILE_WITH_ERROR_IMAGE = imageRegistry.get(CEYLON_FILE_ERROR);
     
+    public static Image ALIAS = imageRegistry.get(CEYLON_ALIAS);
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
     public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
     public static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
@@ -263,6 +265,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return LOCAL_METHOD;
             }
         }
+        else if (n instanceof Tree.TypeAliasDeclaration) {
+            return ALIAS;
+        }
         else if (n instanceof Tree.Parameter) {
             return PARAMETER;
         }
@@ -306,6 +311,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 return LOCAL_METHOD;
             }
+        }
+        else if (d instanceof TypeAlias) {
+            return ALIAS;
         }
         else if (d instanceof Parameter) {
             return PARAMETER;
@@ -398,6 +406,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             StyledString label = new StyledString("interface ", KW_STYLER);
             label.append(name(ai.getIdentifier()), TYPE_ID_STYLER);
             parameters(ai.getTypeParameterList(), label);
+            return label;
+        }
+        if (n instanceof Tree.TypeAliasDeclaration) {
+            Tree.TypeAliasDeclaration ac = (Tree.TypeAliasDeclaration) n;
+            StyledString label = new StyledString("alias ", KW_STYLER);
+            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            parameters(ac.getTypeParameterList(), label);
             return label;
         }
         else if (n instanceof Tree.ObjectDefinition) {
