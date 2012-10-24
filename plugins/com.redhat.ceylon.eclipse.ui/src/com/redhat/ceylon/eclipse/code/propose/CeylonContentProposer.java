@@ -1178,7 +1178,8 @@ public class CeylonContentProposer {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (type!=null) {
-                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
+                return type.resolveAliases().getDeclaration()
+                		.getMatchingMemberDeclarations(prefix, 0);
             }
             else {
                 return Collections.emptyMap();
@@ -1187,7 +1188,8 @@ public class CeylonContentProposer {
         else if (memberOp && node instanceof Tree.Term) {
             ProducedType type = ((Tree.Term)node).getTypeModel();
             if (type!=null) {
-                return type.getDeclaration().getMatchingMemberDeclarations(prefix, 0);
+                return type.resolveAliases().getDeclaration()
+                		.getMatchingMemberDeclarations(prefix, 0);
             }
             else {
                 return Collections.emptyMap();
