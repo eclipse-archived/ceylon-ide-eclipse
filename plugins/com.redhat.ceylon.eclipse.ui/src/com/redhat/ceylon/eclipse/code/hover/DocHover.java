@@ -100,6 +100,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -587,6 +588,9 @@ public class DocHover
 				return dec.isShared() ? 
 						"int_obj.gif" : 
 						"innerclass_private_obj.gif";
+			}
+			else if (dec instanceof TypeAlias) {
+				return "types.gif";
 			}
 			else if (dec instanceof Parameter) {
 				return "methpro_obj.gif";
