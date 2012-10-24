@@ -94,6 +94,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -527,7 +528,17 @@ public class DocHover
 			return null;
 		}
 		if (bits[1].startsWith("/")) {
-			return module.getPackage(bits[1].substring(1)).getModule();
+			String pname = bits[1].substring(1);
+			if (pname.equals(module.getNameAsString())) {
+				return module;
+			}
+			for (ModuleImport mi: module.getImports()) {
+				if (pname.equals(mi.getModule().getNameAsString())) {
+					return module;
+				}
+			}
+			return null;
+			//return module.getPackage(pname).getModule();
 		}
 		Object target = module.getPackage(bits[1]);
 		for (int i=2; i<bits.length; i++) {
