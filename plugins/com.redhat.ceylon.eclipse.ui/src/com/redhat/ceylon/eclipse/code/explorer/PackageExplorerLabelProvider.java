@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.internal.ui.packageview.PackageExplorerProblemsDecorator;
 import org.eclipse.jdt.ui.JavaElementLabels;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StyledString;
@@ -21,12 +20,12 @@ class PackageExplorerLabelProvider extends AppearanceAwareLabelProvider {
 	private Map<ImageDescriptor, Image> fWorkingSetImages;
 
 	private boolean fIsFlatLayout;
-	private PackageExplorerProblemsDecorator fProblemDecorator;
+	private PackageExplorerProblemsLabelDecorator fProblemDecorator;
 
 	public PackageExplorerLabelProvider(PackageExplorerContentProvider cp) {
 		super(DEFAULT_TEXTFLAGS | JavaElementLabels.P_COMPRESSED | JavaElementLabels.ALL_CATEGORY, DEFAULT_IMAGEFLAGS | JavaElementImageProvider.SMALL_ICONS);
 
-		fProblemDecorator= new PackageExplorerProblemsDecorator();
+		fProblemDecorator= new PackageExplorerProblemsLabelDecorator();
 		addLabelDecorator(fProblemDecorator);
 		Assert.isNotNull(cp);
 		fContentProvider= cp;

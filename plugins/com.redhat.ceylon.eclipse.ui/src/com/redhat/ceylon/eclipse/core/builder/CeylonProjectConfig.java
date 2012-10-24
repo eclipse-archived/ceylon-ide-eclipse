@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
@@ -71,6 +72,14 @@ public class CeylonProjectConfig {
         }
         projectRepositories = Repositories.withConfig(projectConfig);
     }
+    
+    public Repositories getMergedRepositories() {
+        return mergedRepositories;
+    }
+    
+    public Repositories getProjectRepositories() {
+        return projectRepositories;
+    }
 
     public String getOutputRepo() {
         Repository outputRepo = mergedRepositories.getOutputRepository();
@@ -86,7 +95,7 @@ public class CeylonProjectConfig {
         String outputRepoUrl = outputRepo.getUrl();
 
         IPath outputRepoPath;
-        if (outputRepoUrl.startsWith("./")) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             outputRepoPath = project.getFullPath().append(outputRepoUrl.substring(2));
         } else {
             outputRepoPath = project.getFullPath().append(outputRepoUrl);
@@ -129,6 +138,12 @@ public class CeylonProjectConfig {
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
+        } else {
+            // fix #422: output folder must be create for new projects
+            IFolder newOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
+            if (!newOutputRepoFolder.exists()) {
+                createNewOutputFolder();
+            }
         }
         
         if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged) {
@@ -155,7 +170,9 @@ public class CeylonProjectConfig {
     }
 
     private File getProjectConfigFile() {
-        return new File(project.getLocation().toFile(), ".ceylon/config");
+        File projectCeylonDir = new File(project.getLocation().toFile(), ".ceylon");
+        File projectCeylonConfigFile = new File(projectCeylonDir, "config");
+        return projectCeylonConfigFile;
     }
 
     private List<String> toRepositoriesUrlList(Repository[] repositories) {
@@ -181,7 +198,8 @@ public class CeylonProjectConfig {
         if( oldOutputRepoFolder.exists() ) {
             boolean remove = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
                     "Changing Ceylon output repository", 
-                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
+                    "The Ceylon output repository has changed. Do you want to remove the old output repository folder '" + 
+                    		oldOutputRepoFolder.getFullPath().toString() + "' and all its contents?");
             if (remove) {
                 try {
                     oldOutputRepoFolder.delete(true, null);
@@ -215,10 +233,15 @@ public class CeylonProjectConfig {
                 e.printStackTrace();
             }
         }
+        try {
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 
     private String removeCurrentDirPrefix(String url) {
-        return url.startsWith("./") ? url.substring(2) : url;
+        return url.startsWith("./") || url.startsWith(".\\") ? url.substring(2) : url;
     }
 
 }

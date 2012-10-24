@@ -381,7 +381,9 @@ public class CeylonParseController {
         RepositoryManager repositoryManager = repoManager()
                 .cwd(cwd)
                 .systemRepo(systemRepo)
+                .extraUserRepos(CeylonBuilder.getReferencedProjectsOutputRepositories(project))
                 .logger(new EclipseLogger())
+                .isJDKIncluded(true)
                 .buildManager();
         
         tcb.setRepositoryManager(repositoryManager);

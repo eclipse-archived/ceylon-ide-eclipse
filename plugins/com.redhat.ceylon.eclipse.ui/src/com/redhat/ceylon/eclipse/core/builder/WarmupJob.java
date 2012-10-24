@@ -33,7 +33,7 @@ final class WarmupJob extends Job {
 			for (Package p: packages) {
 				p.getMembers();
 			}
-			monitor.worked(90000/max(packages.size(),1)/max(modules.size(),1));
+			monitor.worked(90000/max(modules.size(),1));
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}

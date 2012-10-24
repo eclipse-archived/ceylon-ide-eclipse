@@ -211,6 +211,21 @@ final class TerminateStatementAction extends Action {
 				terminate(that, CeylonLexer.RBRACE, " }");
 			}
 			@Override 
+			public void visit(Tree.ImportModule that) {
+				super.visit(that);
+				terminate(that, CeylonLexer.SEMICOLON, ";");
+			}
+			@Override 
+			public void visit(Tree.ImportModuleList that) {
+				super.visit(that);
+				terminate(that, CeylonLexer.RBRACE, " }");
+			}
+			@Override 
+			public void visit(Tree.PackageDescriptor that) {
+				super.visit(that);
+				terminate(that, CeylonLexer.SEMICOLON, ";");
+			}
+			@Override 
 			public void visit(Tree.Body that) {
 				super.visit(that);
 				terminate(that, CeylonLexer.RBRACE, " }");

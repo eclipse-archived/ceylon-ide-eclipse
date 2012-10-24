@@ -136,6 +136,8 @@
              icon="icons/template_obj.gif"
              name="Ceylon Source File"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard">
            <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
@@ -143,8 +145,11 @@
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
              icon="icons/new_wiz.gif"
-             name="Ceylon Project"
+             name="Ceylon Project" 
+             finalPerspective="com.redhat.ceylon.eclipse.ui.perspective"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard"
              project="true">
            <description>Create a Ceylon project</description>
@@ -154,6 +159,8 @@
              icon="icons/jar_l_obj.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewModuleWizard">
            <description>Create a runnable Ceylon module with module and package descriptors</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
@@ -163,6 +170,8 @@
              icon="icons/newpack_wiz.gif"
              name="Ceylon Package"
              category="com.redhat.ceylon.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
              class="com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard">
            <description>Create a Ceylon package with a package descriptor</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
@@ -915,6 +924,16 @@
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.eclipse.core.launch.JsLaunchDelegate"
+            delegateDescription="Ceylon JavaScript Launcher"
+            delegateName="Ceylon Local JavaScript Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonJsApplication"
+            modes="run, debug"
+            name="Ceylon JavaScript Application"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
@@ -930,6 +949,20 @@
             <launchMode
                   mode="run"
                   description="Run Ceylon Application">
+            </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            type="com.redhat.ceylon.eclipse.ui.launching.localCeylonJsApplication"
+            class="com.redhat.ceylon.eclipse.core.launch.LocalJsApplicationTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonJsApplication">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug Ceylon JS Application">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run Ceylon JS Application">
             </launchMode>
       </launchConfigurationTabGroup>
    </extension>
@@ -976,6 +1009,42 @@
          </contextualLaunch>
          <configurationType
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon JavaScript Application"
+            icon="icons/ceylon_app.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.JsLaunchShortcut"
+            description="Launch a JavaScript Ceylon application"
+            id="com.redhat.ceylon.eclipse.ui.launcher.localJavaScriptShortcut">
+         <description 
+               description="Runs a Ceylon/JavaScript application"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a Ceylon/JavaScript application"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+<!--                        <test property="org.eclipse.jdt.launching.hasMain"/>
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                        </and>
+                        -->
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonJsApplication">
          </configurationType>
       </shortcut>
    </extension>

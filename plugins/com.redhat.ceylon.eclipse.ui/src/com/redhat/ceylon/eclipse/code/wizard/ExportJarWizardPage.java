@@ -36,6 +36,8 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     private String repositoryPath;
     private IJavaProject project;
 //    private IJavaElement selection;
+    private Text versionField;
+    private Text nameField;
     
     ExportJarWizardPage(String defaultRepositoryPath, 
     		IJavaProject project, IJavaElement selection) {
@@ -82,7 +84,34 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         return moduleName!=null &&
         		moduleNameIsLegal(moduleName);
     }
-    
+
+    private void updateModuleInfoFromJar() {
+        if(jarPath == null)
+            return;
+        File jar = new File(jarPath);
+        if(!jar.exists())
+            return;
+        String lastPart = jar.getName();
+        if(lastPart == null || lastPart.isEmpty())
+            return;
+        int suffix = lastPart.lastIndexOf('.');
+        if(suffix == -1)
+            return;
+        String nameVersion = lastPart.substring(0, suffix);
+        if(nameVersion.isEmpty())
+            return;
+        int dash = nameVersion.lastIndexOf('-');
+        if(dash != -1){
+            String version = nameVersion.substring(dash+1);
+            versionField.setText(version);
+            String name = nameVersion.substring(0,dash);
+            nameField.setText(name);
+        }else{
+            String name = nameVersion;
+            nameField.setText(name);
+        }
+    }
+
     private void updateMessage() {
 //        if (project==null) {
 //            setErrorMessage("Please select a project");
@@ -178,7 +207,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         jlgd.horizontalSpan = 1;
         nameLabel.setLayoutData(jlgd);
 
-        final Text nameField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        nameField = new Text(composite, SWT.SINGLE | SWT.BORDER);
         GridData ngd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         ngd.horizontalSpan = 1;
         ngd.grabExcessHorizontalSpace = true;
@@ -192,7 +221,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 			}
 		});
         
-        final Text versionField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        versionField = new Text(composite, SWT.SINGLE | SWT.BORDER);
         versionField.setText(version);
         GridData vgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         vgd.horizontalSpan = 1;
@@ -241,12 +270,13 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog fd = new FileDialog(getShell(), SWT.SHEET);
-                fd.setFilterExtensions(new String[]{"jar"});
+                fd.setFilterExtensions(new String[]{"*.jar"});
                 fd.setText("Select Java Archive");
 				String dir = fd.open();
                 if (dir != null) {
                 	jarField.setText(dir);
                 	jarPath = dir;
+                	updateModuleInfoFromJar();
                 	updateMessage();
                 	setPageComplete(isComplete());
                 }
@@ -393,8 +423,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 	
 	private boolean isValidRepo() {
 	    return repositoryPath!=null &&
-                !repositoryPath.isEmpty() &&
-                new File(repositoryPath).exists();
+                !repositoryPath.isEmpty();
 	}
 	
 	private boolean isValidJar() {
