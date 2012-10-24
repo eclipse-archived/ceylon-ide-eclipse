@@ -108,6 +108,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -788,7 +789,7 @@ public class DocHover
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
-				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(getDescriptionFor(dec)) + "</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(description(dec, cpc)) + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
 		if (dec instanceof Parameter) {
@@ -993,6 +994,34 @@ public class DocHover
 		
 		HTMLPrinter.addPageEpilog(buffer);
 		return buffer.toString();
+	}
+
+	private static String description(Declaration dec, CeylonParseController cpc) {
+		String result = getDescriptionFor(dec);
+		if (dec instanceof TypeDeclaration) {
+			if (((TypeDeclaration) dec).isAlias()) {
+				result += " = ";
+				result += ((TypeDeclaration) dec).getExtendedType().getProducedTypeName();
+			}
+		}
+		else if (dec instanceof Value) {
+			if (!((Value) dec).isVariable()) {
+				Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
+				if (refnode instanceof AttributeDeclaration) {
+					Tree.SpecifierOrInitializerExpression sie = ((AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+					if (sie!=null) {
+						if (sie.getExpression()!=null) {
+							Term term = sie.getExpression().getTerm();
+							if (term instanceof Tree.Literal) {
+								result += " = ";
+								result += term.getText();
+							}
+						}
+					}
+				}
+			}
+		}
+		return result;
 	}
 	
 	private static String link(Object model) {
