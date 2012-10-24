@@ -23,5 +23,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.common-0.4-ide.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ceylon.language-0.4-ide.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/txtmark-0.8-f17d7e2193.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.js-0.4-ide.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

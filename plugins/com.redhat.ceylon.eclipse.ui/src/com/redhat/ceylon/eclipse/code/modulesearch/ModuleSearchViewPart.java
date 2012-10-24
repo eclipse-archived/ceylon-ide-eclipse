@@ -4,8 +4,17 @@ import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.internal.events.ILifecycleListener;
+import org.eclipse.core.internal.events.LifecycleEvent;
+import org.eclipse.core.internal.resources.Workspace;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -47,6 +56,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -56,9 +66,12 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.hover.DocHover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -287,11 +300,24 @@ public class ModuleSearchViewPart extends ViewPart {
             setHelpAvailable(false);
             super.create();
             setTitle("Ceylon repositories");
-            setMessage("The following repositories will be searched.\nThe configuration file is located in the user home directory (~/.ceylon/config).");
+            setMessage("The following repositories will be searched.");
         }
         
         @Override
         protected Control createDialogArea(Composite parent) {
+            Repositories repositories;
+            IProject selectedProject = getSelectedProject();
+            if( selectedProject != null ) {
+                repositories = CeylonProjectConfig.get(selectedProject).getMergedRepositories();
+            } else {
+                repositories = Repositories.get();
+            }
+
+            List<Repository> repositoryList = new ArrayList<Repository>();
+            Collections.addAll(repositoryList, repositories.getLocalLookupRepositories());
+            Collections.addAll(repositoryList, repositories.getGlobalLookupRepositories());
+            Collections.addAll(repositoryList, repositories.getRemoteLookupRepositories());
+            
             parent.setLayout(new GridLayout(1, false));
 
             TableViewer tableViewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
@@ -314,14 +340,13 @@ public class ModuleSearchViewPart extends ViewPart {
                 public String getText(Object element) {
                     return ((Repository)element).getUrl();
                 }
-            });            
+            });
 
             tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-            tableViewer.setInput(moduleSearchManager.getGlobalLookupRepositories());
+            tableViewer.setInput(repositoryList);
             tableViewer.getTable().setHeaderVisible(true);
             tableViewer.getTable().setLinesVisible(true);
-
-            GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(tableViewer.getTable());
+            tableViewer.getTable().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
 
             return parent;
         }
@@ -347,6 +372,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private Composite parent;
     private Combo searchCombo;
     private Button searchButton;
+    private Combo projectCombo;
     private Link searchInfo;
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
@@ -355,6 +381,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
     private RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
+    private Map<String, IProject> projectMap = new HashMap<String, IProject>();
     
     @Override
     public void setFocus() {
@@ -364,20 +391,22 @@ public class ModuleSearchViewPart extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
+        this.parent.setLayout(new GridLayout(4, false));
         
         initSearchCombo();       
         initSearchButton();
+        initProjectCombo();
         initSearchInfo();
         initSashForm();
         initModuleTreeViewer();
         initDocBrowser();
         initActions();
-        initLayout();
     }
 
     private void initSearchCombo() {
         searchCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER);
         searchCombo.setVisibleItemCount(10);
+        searchCombo.setLayoutData(GridDataFactory.swtDefaults().hint(300, SWT.DEFAULT).create());
         searchCombo.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
@@ -391,6 +420,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private void initSearchButton() {
         searchButton = new Button(parent, SWT.PUSH);
         searchButton.setText("&Search");
+        searchButton.setLayoutData(GridDataFactory.swtDefaults().hint(100, SWT.DEFAULT).create());
         searchButton.setAlignment(SWT.CENTER);
         searchButton.addSelectionListener(new SelectionListener() {
 			@Override
@@ -403,8 +433,56 @@ public class ModuleSearchViewPart extends ViewPart {
         });
     }
 
+    private void initProjectCombo() {
+        Workspace workspace = (Workspace) ResourcesPlugin.getWorkspace();
+        
+        IProject[] projects = workspace.getRoot().getProjects();
+        if (projects != null) {
+            for (IProject project : projects) {
+                if (project.isOpen() && CeylonNature.isEnabled(project)) {
+                    projectMap.put(project.getName(), project);
+                }
+            }
+        }
+        
+        workspace.addLifecycleListener(new ILifecycleListener() {
+            @Override
+            public void handleEvent(LifecycleEvent event) throws CoreException {
+                if (event.resource instanceof IProject) {
+                    IProject project = (IProject) event.resource;
+                    boolean isCeylonNatuteEnabled = project.isOpen() && CeylonNature.isEnabled(project);
+
+                    if (event.kind == LifecycleEvent.PRE_PROJECT_CLOSE) {
+                        projectMap.remove(project.getName());
+                        updateProjectComboAsync();
+                    }
+                    if (event.kind == LifecycleEvent.PRE_PROJECT_OPEN && isCeylonNatuteEnabled) {
+                        projectMap.put(project.getName(), project);
+                        updateProjectComboAsync();
+                    }
+                    if (event.kind == LifecycleEvent.PRE_PROJECT_MOVE && isCeylonNatuteEnabled) {
+                        IProject newProject = (IProject) event.newResource;
+                        projectMap.remove(project.getName());
+                        projectMap.put(newProject.getName(), newProject);
+                        updateProjectComboAsync();
+                    }
+                }
+            }
+        });
+        
+        Label projectLabel = new Label(parent, SWT.LEFT | SWT.WRAP);
+        projectLabel.setText("use repositories configuration from project");
+        projectLabel.setLayoutData(GridDataFactory.swtDefaults().create());
+        
+        projectCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
+        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(150, SWT.DEFAULT).create());
+        
+        updateProjectCombo();
+    }
+    
     private void initSearchInfo() {
         searchInfo = new Link(parent, 0);
+        searchInfo.setLayoutData(GridDataFactory.swtDefaults().span(4, 1).create());
         searchInfo.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 updateBeforeSearch(false);
@@ -415,7 +493,8 @@ public class ModuleSearchViewPart extends ViewPart {
     }
 
     private void initSashForm() {
-        sashForm = new SashForm(parent, SWT.HORIZONTAL);        
+        sashForm = new SashForm(parent, SWT.HORIZONTAL);
+        sashForm.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(4, 1).create());
     }
 
     private void initModuleTreeViewer() {
@@ -498,15 +577,6 @@ public class ModuleSearchViewPart extends ViewPart {
 
         Menu menu = menuManager.createContextMenu(moduleTreeViewer.getTree());
         moduleTreeViewer.getTree().setMenu(menu);
-    }
-    
-    private void initLayout() {
-        parent.setLayout(new GridLayout(2, false));
-        
-        GridDataFactory.swtDefaults().hint(300, SWT.DEFAULT).applyTo(searchCombo);
-        GridDataFactory.swtDefaults().hint(100, SWT.DEFAULT).applyTo(searchButton);
-        GridDataFactory.swtDefaults().span(2, 1).applyTo(searchInfo);
-        GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(2, 1).applyTo(sashForm);
     }
 
     public void update(boolean newModel) {
@@ -594,7 +664,6 @@ public class ModuleSearchViewPart extends ViewPart {
     private void updateBeforeSearch(boolean newModel) {
         searchInfo.setText("Searching module repositories...");
         searchInfo.pack();
-        //searchCombo.setEnabled(false);
         searchButton.setEnabled(false);
         if( newModel ) {
             moduleTreeViewer.setInput(null);
@@ -619,11 +688,6 @@ public class ModuleSearchViewPart extends ViewPart {
         	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
     				16, 16, "<b><tt>module " + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "'" +"</tt></b>", 20, 4);
         	docBuilder.append("<hr/>");
-//            docBuilder.append("<h1>");
-//            docBuilder.append(versionNode.getModule().getName() );
-//            docBuilder.append(" '");
-//            docBuilder.append(versionNode.getVersion());
-//            docBuilder.append("'</h1>");
             
             if (versionNode.isFilled()) {
                 
@@ -657,6 +721,44 @@ public class ModuleSearchViewPart extends ViewPart {
         docBrowser.setText(docBuilder.toString());
     }
     
+    private void updateProjectComboAsync() {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                updateProjectCombo();
+            }
+        });
+    }
+
+    private void updateProjectCombo() {
+        List<String> projectNames = new ArrayList<String>(projectMap.keySet());
+        projectNames.add("");
+        Collections.sort(projectNames);
+        
+        int selectedIndex = projectCombo.getSelectionIndex();
+        String selectedProjectName = selectedIndex != -1 ? projectCombo.getItem(selectedIndex) : "";
+        
+        projectCombo.setItems(projectNames.toArray(new String[]{}));
+        
+        if (projectNames.contains(selectedProjectName)) {
+            projectCombo.select(projectNames.indexOf(selectedProjectName));
+        } else {
+            projectCombo.select(0);
+        }
+    }
+    
+    public IProject getSelectedProject() {
+        IProject selectedProject = null;
+
+        int selectionIndex = projectCombo.getSelectionIndex();
+        if (selectionIndex != -1) {
+            String selectedProjectName = projectCombo.getItem(selectionIndex);
+            selectedProject = projectMap.get(selectedProjectName);
+        }
+
+        return selectedProject;
+    }
+
     private String markdown(String text) {
         if( text == null || text.length() == 0 ) {
             return text;

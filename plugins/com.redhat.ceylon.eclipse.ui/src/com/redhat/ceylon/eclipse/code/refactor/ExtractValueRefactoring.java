@@ -58,7 +58,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
         Declaration existing = node.getScope()
-                .getMemberOrParameter(node.getUnit(), newName, null);
+                .getMemberOrParameter(node.getUnit(), newName, null, false);
         if (null!=existing) {
             return createWarningStatus("An existing declaration named '" +
                     newName + "' already exists in the same scope");

@@ -35,6 +35,7 @@ import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
@@ -53,23 +54,17 @@ public class JDTModule extends LazyModule {
 
     public synchronized List<IPackageFragmentRoot> getPackageFragmentRoots() {
         if (packageFragmentRoots.isEmpty() && jarPath != null) {
-            try {
-                for (IPackageFragmentRoot root : moduleManager.getJavaProject().getPackageFragmentRoots()) {
-                    if (root instanceof JarPackageFragmentRoot) {
-                        JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
-                        try {
-                            if (jarRoot.getJar().getName().equals(jarPath.getPath())) {
-                                packageFragmentRoots.add(root);
-                            }
-                        } catch (CoreException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+        	IPackageFragmentRoot root = moduleManager.getJavaProject().getPackageFragmentRoot(jarPath.toString());
+            if (root instanceof JarPackageFragmentRoot) {
+                JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+                try {
+                    if (jarRoot.getJar().getName().equals(jarPath.getPath())) {
+                        packageFragmentRoots.add(root);
                     }
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-            } catch (JavaModelException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
         }
         return packageFragmentRoots;
@@ -99,16 +94,21 @@ public class JDTModule extends LazyModule {
 
     private void loadAllPackages() {
         Set<String> packageList = new TreeSet<String>();
-        if(isJava()){
-            for(IPackageFragmentRoot fragmentRoot : packageFragmentRoots){
+        String name = getNameAsString();
+        if(JDKPackageList.isJDKModule(name)){
+            packageList.addAll(JDKPackageList.getJDKPackagesByModule().get(name));
+        }else if(JDKPackageList.isOracleJDKModule(name)){
+            packageList.addAll(JDKPackageList.getOracleJDKPackagesByModule().get(name));
+        }else if(isJava()){
+            for(IPackageFragmentRoot fragmentRoot : getPackageFragmentRoots()){
                 if(!fragmentRoot.exists())
                     continue;
                 IParent parent = fragmentRoot;
                 listPackages(packageList, parent);
             }
-            for (String packageName : packageList) {
-                getPackage(packageName);
-            }
+        }
+        for (String packageName : packageList) {
+            getPackage(packageName);
         }
     }
 

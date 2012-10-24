@@ -50,7 +50,7 @@ public class CeylonEditorTest {
 		IProject project = createJavaProject(name);
 		
 		String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
-		CeylonNature nature = new CeylonNature(systemRepo, true, false);
+		CeylonNature nature = new CeylonNature(systemRepo, true, false, false);
 		nature.addToProject(project);
 		
 		assertEquals(2,project.getDescription().getNatureIds().length);

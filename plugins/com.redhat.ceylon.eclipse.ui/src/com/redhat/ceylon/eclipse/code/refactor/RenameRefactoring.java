@@ -94,7 +94,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
 	    Declaration existing = declaration.getContainer()
-                        .getMemberOrParameter(declaration.getUnit(), newName, null);
+                        .getMemberOrParameter(declaration.getUnit(), newName, null, false);
         if (null!=existing && !existing.equals(declaration)) {
 	        return createWarningStatus("An existing declaration named '" +
 	            newName + "' already exists in the same scope");

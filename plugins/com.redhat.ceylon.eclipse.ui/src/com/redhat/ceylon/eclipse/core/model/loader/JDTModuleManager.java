@@ -46,6 +46,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
+import com.redhat.ceylon.compiler.java.loader.model.CompilerModule;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
@@ -209,7 +211,7 @@ public class JDTModuleManager extends LazyModuleManager {
     
     @Override
     protected Module createModule(List<String> moduleName, String version) {
-        Module module = null;
+        JDTModule module = null;
         String moduleNameString = Util.getName(moduleName);
         List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
         try {
@@ -223,8 +225,23 @@ public class JDTModuleManager extends LazyModuleManager {
                 }
             } else {
                 for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if (AbstractModelLoader.isJDKModule(moduleNameString) || 
-                            ! (root instanceof JarPackageFragmentRoot)) {
+                    if(JDKPackageList.isJDKModule(moduleNameString)){
+                        // find the first package that exists in this root
+                        for(String pkg : JDKPackageList.getJDKPackagesByModule().get(moduleNameString)){
+                            if (root.getPackageFragment(pkg).exists()) {
+                                roots.add(root);
+                                break;
+                            }
+                        }
+                    }else if(JDKPackageList.isOracleJDKModule(moduleNameString)){
+                        // find the first package that exists in this root
+                        for(String pkg : JDKPackageList.getOracleJDKPackagesByModule().get(moduleNameString)){
+                            if (root.getPackageFragment(pkg).exists()) {
+                                roots.add(root);
+                                break;
+                            }
+                        }
+                    }else if (! (root instanceof JarPackageFragmentRoot)) {
                         String packageToSearch = moduleNameString;
                         if (root.getPackageFragment(packageToSearch).exists()) {
                             roots.add(root);
@@ -238,6 +255,8 @@ public class JDTModuleManager extends LazyModuleManager {
         
         module = new JDTModule(this, roots);
         module.setName(moduleName);
+        module.setVersion(version);
+        setupIfJDKModule(module);
         return module;
     }
 

@@ -61,6 +61,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -72,6 +73,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
+import com.redhat.ceylon.compiler.Options;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
@@ -81,6 +83,7 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
+import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -376,7 +379,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
                 for (CeylonClasspathContainer container: cpContainers) {
-                	container.resolveClasspath(monitor, true);
+                	boolean changed = container.resolveClasspath(monitor, true);
+                	if(changed) {
+                		JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[]{javaProject}, new IClasspathContainer[]{null} , monitor);
+                		container.refreshClasspathContainer(monitor, javaProject);
+                	}
                 }
             }
         }
@@ -1385,7 +1392,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		RepositoryManager repositoryManager = repoManager()
 		        .cwd(project.getLocation().toFile())
 		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
+		        .extraUserRepos(getReferencedProjectsOutputRepositories(project))
 		        .logger(new EclipseLogger())
+                .isJDKIncluded(true)
 		        .buildManager();
 		
         typeCheckerBuilder.setRepositoryManager(repositoryManager);
@@ -1437,6 +1446,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		Collection<IFile> filesToCompile, TypeChecker typeChecker, 
     		IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
+        List<String> js_srcdir = new ArrayList<String>();
+        List<String> js_repos = new ArrayList<String>();
+        boolean js_verbose = false;
+        String js_outRepo = null;
 
         String srcPath = "";
         for (IPath sourceFolder : getSourceFolders(javaProject)) {
@@ -1446,6 +1459,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 srcPath += File.pathSeparator;
             }
             srcPath += sourcePathElement.getAbsolutePath();
+            js_srcdir.add(sourcePathElement.getAbsolutePath());
         }
         options.add("-src");
         options.add(srcPath);
@@ -1455,18 +1469,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (String repository : getUserRepositories(project)) {
             options.add("-rep");
             options.add(repository);
+            js_repos.add(repository);
         }
 
         String verbose = System.getProperty("ceylon.verbose");
 		if (verbose!=null && "true".equals(verbose)) {
             options.add("-verbose");
+            js_verbose = true;
         }
         options.add("-g:lines,vars,source");
 
+        String systemRepo = getInterpolatedCeylonSystemRepo(project);
+        if(systemRepo != null && !systemRepo.isEmpty()){
+            options.add("-sysrep");
+            options.add(systemRepo);
+        }
+        
         final File modulesOutputDir = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDir!=null) {
             options.add("-out");
             options.add(modulesOutputDir.getAbsolutePath());
+            js_outRepo = modulesOutputDir.getAbsolutePath();
         }
 
         List<File> javaSourceFiles = new ArrayList<File>();
@@ -1486,9 +1509,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
             PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
             boolean success = true;
-            if (compileWithJDTModelLoader()) {
-                sourceFiles.addAll(javaSourceFiles);
-            } 
+            //Compile JS first
+            if (compileToJs(project) && !sourceFiles.isEmpty()) {
+                Options jsopts = new Options(js_repos, js_srcdir, null/*sys repo*/, js_outRepo, null/*uname*/,
+                        null/*pass*/, true, true, true, true, js_verbose, false, false, false,
+                        project.getDefaultCharset());
+                JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
+                try {
+                    jsc.generate();
+                } catch (IOException ex) {
+                    ex.printStackTrace(printWriter);
+                }
+            }
+            // always add the java files, otherwise ceylon code won't see them and they won't end up in the archives (src/car)
+            sourceFiles.addAll(javaSourceFiles);
             if(!sourceFiles.isEmpty()){
                 success = compile(project, javaProject, options, sourceFiles, 
                 		typeChecker, printWriter, monitor);
@@ -1655,7 +1689,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 				}
 			}
 
-			classpathElements.add(workspaceLocation.append(javaProj.getOutputLocation()).toOSString());
+			File outputDir = toFile(javaProj.getProject(), javaProj.getOutputLocation()
+                    .makeRelativeTo(javaProj.getProject().getFullPath()));			
+			classpathElements.add(outputDir.getAbsolutePath());
 			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
 				if (isInCeylonClassesOutputFolder(cpEntry.getPath())) {
 					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
@@ -1676,6 +1712,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	public static boolean showWarnings(IProject project) {
 		return getBuilderArgs(project).get("hideWarnings")==null;
 	}
+	public static boolean compileToJs(IProject project) {
+        return getBuilderArgs(project).get("compileJs")!=null;
+	}
 	
     public static String fileName(ClassMirror c) {
         if (c instanceof JavacClass) {
@@ -1694,24 +1733,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> userRepos = getCeylonRepositories(project);
-        
-        if (project!=null) {
-            for (IProject requiredProject: project.getReferencedProjects()) {
-                if (requiredProject.isOpen() &&
-                		requiredProject.hasNature(NATURE_ID)) {
-                	userRepos.add(getCeylonModulesOutputDirectory(requiredProject)
-                			.getAbsolutePath());	
+        userRepos.addAll(getReferencedProjectsOutputRepositories(project));
+        return userRepos;
+    }
+    
+    public static List<String> getReferencedProjectsOutputRepositories(IProject project) throws CoreException {
+        List<String> repos = new ArrayList<String>();
+        if (project != null) {
+            for (IProject referencedProject : project.getReferencedProjects()) {
+                if (referencedProject.isOpen() && referencedProject.hasNature(NATURE_ID)) {
+                    repos.add(getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath());
                 }
             }
-            
-            /*userRepos.add(project.getLocation().append("modules").toOSString());
-                
-            for (IProject requiredProject : requiredProjects) {
-                userRepos.add(requiredProject.getLocation().append("modules").toOSString());
-            }*/
         }
-        
-        return userRepos;
+        return repos;
     }
 
 	private static Map getBuilderArgs(IProject project) {

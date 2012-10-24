@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 
@@ -24,6 +25,7 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
         IProject project = getSelectedProject();
         boolean explodeModules = isExplodeModulesEnabled(project);
         boolean showCompilerWarnings = showWarnings(project);
+        boolean compileJs = compileToJs(project);
 
         CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
         projectConfig.setOutputRepo(block.getOutputRepo());
@@ -31,7 +33,7 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
 
-        new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings).addToProject(project);      
+        new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, compileJs).addToProject(project);      
 
         return true;
     }

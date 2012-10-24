@@ -23,7 +23,6 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,9 +70,9 @@ import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.JDKPackageList;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -81,7 +80,6 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.model.LazyClass;
 import com.redhat.ceylon.compiler.loader.model.LazyInterface;
 import com.redhat.ceylon.compiler.loader.model.LazyMethod;
-import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -130,7 +128,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 DefaultErrorHandlingPolicies.proceedWithAllProblems(),
                 compilerOptions,
                 new DefaultProblemFactory());
-        
+        this.timer = new Timer(false);
         internalCreate();
     }
 
@@ -163,6 +161,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         };
         this.typeParser = new TypeParser(this, typeFactory);
+        this.timer = new Timer(false);
         createLookupEnvironment();
     }
 
@@ -276,9 +275,7 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public void loadStandardModules() {
-        // make sure the jdk modules are loaded
-        findOrCreateModule(AbstractModelLoader.JDK_MODULE);
-        findOrCreateModule(AbstractModelLoader.ORACLE_JDK_MODULE);
+        // do not load the jdk modules unless imported explicitely
         
         /*
          * We start by loading java.lang because we will need it no matter what.
@@ -299,7 +296,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         if(loadDeclarations && !loadedPackages.add(packageName)){
             return true;
         }
-        Module module = lookupModule(packageName);
+        Module module = lookupModuleInternal(packageName);
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
@@ -359,31 +356,6 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         }
         return false;
-    }
-
-    private Module lookupModule(String packageName) {
-        Module module = lookupModuleInternal(packageName);
-        if (module != null) {
-            return module;
-        }
-        return modules.getDefaultModule();
-    }
-
-    @Override
-    protected Module lookupModuleInternal(String packageName) {
-        for(Module module : modules.getListOfModules()){
-            if(module instanceof LazyModule){
-                if(((LazyModule)module).containsPackage(packageName))
-                    return module;
-            }else if(isSubPackage(module.getNameAsString(), packageName))
-                return module;
-        }
-        return null;
-    }
-
-    private boolean isSubPackage(String moduleName, String pkgName) {
-        return pkgName.equals(moduleName)
-                || pkgName.startsWith(moduleName+".");
     }
 
     synchronized private LookupEnvironment getLookupEnvironment() {
@@ -481,52 +453,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected boolean isOverridingMethod(MethodMirror methodSymbol) {
         return ((JDTMethod)methodSymbol).isOverridingMethod();
-    }
-
-    @Override
-    public synchronized Module findOrCreateModule(String pkgName) {
-        java.util.List<String> moduleName;
-        boolean isJava = false;
-        boolean defaultModule = false;
-
-        Module module = lookupModuleInternal(pkgName);
-        if (module != null) {
-            return module;
-        }
-        
-        // FIXME: this is a rather simplistic view of the world
-        if(pkgName == null){
-            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
-            defaultModule = true;
-        } else if(pkgName.equals(JDK_MODULE) || JDKPackageList.isJDKPackage(pkgName)){
-            moduleName = Arrays.asList(JDK_MODULE);
-            isJava = true;
-        } else if(pkgName.equals(ORACLE_JDK_MODULE) || JDKPackageList.isOracleJDKPackage(pkgName)){
-        	moduleName = Arrays.asList(ORACLE_JDK_MODULE);
-            isJava = true;
-        } else if(pkgName.startsWith("ceylon.language."))
-            moduleName = Arrays.asList("ceylon","language");
-        else{
-            moduleName = Arrays.asList(Module.DEFAULT_MODULE_NAME);
-            defaultModule = true;
-        }
-        
-        module = moduleManager.getOrCreateModule(moduleName, null);
-        // make sure that when we load the ceylon language module we set it to where
-        // the typechecker will look for it
-        if(pkgName != null
-                 && pkgName.startsWith("ceylon.language.")
-                 && modules.getLanguageModule() == null){
-             modules.setLanguageModule(module);
-         }
-         
-         if (module instanceof LazyModule) {
-             ((LazyModule)module).setJava(isJava);
-         }
-         // FIXME: this can't be that easy.
-         module.setAvailable(true);
-         module.setDefault(defaultModule);
-         return module;
     }
 
     @Override
@@ -725,7 +651,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void visit(Tree.AnyAttribute that) {
                         super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMember != null) {
                         	ProducedType type = ((TypedDeclaration)binaryMember).getType();
                         	if(type == null)
@@ -743,7 +669,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void visit(Tree.AttributeSetterDefinition that) {
                         super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList());
+                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMember != null) {
                             String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
                             if (underlyingType != null) {
@@ -760,7 +686,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     public void visit(Tree.AnyMethod that) {
                         super.visit(that);
                         Method method = that.getDeclarationModel();
-                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList());
+                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList(), false);
                         if (binaryMethod != null) {
                             String underlyingType = ((TypedDeclaration)binaryMethod).getType().getUnderlyingType();
                             if (underlyingType != null) {

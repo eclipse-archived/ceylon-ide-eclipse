@@ -166,7 +166,7 @@ public final class CeylonHierarchyContentProvider
 		            					TypeDeclaration td = (TypeDeclaration) d;
 		            					//TODO: keep the directly refined declarations in the model
 		            					//      (get the typechecker to set this up)
-		            					Declaration mem = td.getDirectMember(declaration.getName(), null);
+		            					Declaration mem = td.getDirectMember(declaration.getName(), null, false);
 		            					if (mem!=null) {
 		            						for (Declaration id: td.getInheritedMembers(declaration.getName())) {
 		            							add(mem, id);

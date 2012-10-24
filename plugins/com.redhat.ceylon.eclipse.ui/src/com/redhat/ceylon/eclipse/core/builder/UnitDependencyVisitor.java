@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -70,7 +71,8 @@ public class UnitDependencyVisitor extends Visitor {
             if (declarationUnit != null) {
             	String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
             	if (!moduleName.equals("ceylon.language") && 
-            			!moduleName.equals("java")) { //TODO: also filter out src archives from external repos
+            			!JDKPackageList.isJDKModule(moduleName)
+            			&& !JDKPackageList.isOracleJDKModule(moduleName)) { //TODO: also filter out src archives from external repos
             		Unit currentUnit = phasedUnit.getUnit();
             		String currentUnitPath = phasedUnit.getUnitFile().getPath();
             		String currentUnitName = currentUnit.getFilename();

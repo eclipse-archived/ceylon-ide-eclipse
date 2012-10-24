@@ -14,21 +14,10 @@ package com.redhat.ceylon.eclipse.code.explorer;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ARCHIVE;
 
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-
-import org.eclipse.jface.resource.ImageDescriptor;
-
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.model.IWorkbenchAdapter;
-
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -40,18 +29,20 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
-
-import org.eclipse.jdt.ui.JavaElementImageDescriptor;
-
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.JavaWorkbenchAdapter;
 import org.eclipse.jdt.internal.ui.viewsupport.ImageDescriptorRegistry;
+import org.eclipse.jdt.ui.JavaElementImageDescriptor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.model.IWorkbenchAdapter;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * Default strategy of the Java plugin for the construction of Java element icons.

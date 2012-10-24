@@ -122,7 +122,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             		//different supertype members
             		//look for a member declared or inherited by 
             		//the superclass
-            		Declaration refined = etd.getMember(dec.getName(), null); //TODO: pass signature?
+            		Declaration refined = etd.getMember(dec.getName(), null, false); //TODO: pass signature?
             		if (refined==null) {
             			//nothing; they are all declared by 
             			//satisfied interfaces :-(

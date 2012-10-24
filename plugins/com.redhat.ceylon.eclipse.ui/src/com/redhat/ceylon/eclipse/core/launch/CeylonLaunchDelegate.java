@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
@@ -34,8 +35,11 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         IJavaProject javaProject = getJavaProject(configuration);
         IProject project = javaProject.getProject();
 
-    	for (CeylonClasspathContainer c: getCeylonClasspathContainers(javaProject)) {
-    		c.resolveClasspath(new NullProgressMonitor(), false);
+    	for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
+    		boolean changed = container.resolveClasspath(new NullProgressMonitor(), false);
+        	if(changed) {
+        		container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
+        	}
     	}
     	String[] javaClasspath = super.getClasspath(configuration);
         final List<String> classpathList = new ArrayList<String>(asList(javaClasspath));
@@ -51,8 +55,10 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         Set<Module> modulesToAdd = context.getModules().getListOfModules();
         //modulesToAdd.add(projectModules.getLanguageModule());        
     	for (Module module: modulesToAdd) {
-    		if (module.getNameAsString().equals(Module.DEFAULT_MODULE_NAME) ||
-    				module.getNameAsString().equals("java") ||
+    	    String name = module.getNameAsString(); 
+    		if (name.equals(Module.DEFAULT_MODULE_NAME) ||
+    				JDKPackageList.isJDKModule(name) ||
+                    JDKPackageList.isOracleJDKModule(name) ||
     				!isProjectModule(javaProject, module)) {
     			continue;
     		}

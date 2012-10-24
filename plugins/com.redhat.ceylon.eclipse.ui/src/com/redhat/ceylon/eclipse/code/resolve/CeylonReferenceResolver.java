@@ -73,7 +73,7 @@ public class CeylonReferenceResolver {
                 }
                 else if (dec.getName()!=null) {
                     Declaration att = pd.getMemberOrParameter(dec.getUnit(), 
-                    		dec.getName(), null);
+                    		dec.getName(), null, false);
                     if (att!=null) dec = att;
                 }
             }

@@ -71,6 +71,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
+import static com.redhat.ceylon.compiler.java.Util.declClassName;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
@@ -222,7 +223,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
     private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
-    protected Declaration chooseDeclaration(final List<Declaration> declarations) {
+    public static Declaration chooseDeclaration(final List<Declaration> declarations) {
         FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(Util.getShell())
         {
             {
@@ -320,7 +321,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return null;
     }
 
-    class LabelProvider extends StyledCellLabelProvider 
+    static class LabelProvider extends StyledCellLabelProvider 
             implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
         
         @Override
@@ -374,7 +375,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     
     }
     
-    class DetailsLabelProvider implements ILabelProvider {
+    static class DetailsLabelProvider implements ILabelProvider {
         @Override
         public void removeListener(ILabelProviderListener listener) {}
         
@@ -400,7 +401,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         }
     }
     
-    class SelectionLabelDecorator implements ILabelDecorator {
+    static class SelectionLabelDecorator implements ILabelDecorator {
         @Override
         public void removeListener(ILabelProviderListener listener) {}
         
@@ -426,7 +427,16 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         }
     }
 
+    protected String canLaunch(Declaration declarationToRun, IFile fileToRun, String mode) {
+        return null;
+    }
+
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
+        String err = canLaunch(declarationToRun, fileToRun, mode);
+        if (err != null) {
+            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", err); 
+            return;
+        }
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
         if (config == null) {
             config = createConfiguration(declarationToRun, fileToRun);
@@ -440,7 +450,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return getLaunchManager().getLaunchConfigurationType(ID_CEYLON_APPLICATION);        
     }
     
-    private ILaunchManager getLaunchManager() {
+    protected ILaunchManager getLaunchManager() {
         return DebugPlugin.getDefault().getLaunchManager();
     }
     
@@ -536,13 +546,14 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             config = wc.doSave();
         } catch (CoreException exception) {
             MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", 
-                    exception.getStatus().getMessage()); 
+                    exception.getStatus().getMessage());
         } 
         return config;
     }
 
 	private String getJavaClassName(Declaration declaration) {
-		String name = declaration.getQualifiedNameString();
+	    
+		String name = declClassName(declaration.getQualifiedNameString());
 		if(declaration instanceof Method)
 			name += "_";
 		return name;

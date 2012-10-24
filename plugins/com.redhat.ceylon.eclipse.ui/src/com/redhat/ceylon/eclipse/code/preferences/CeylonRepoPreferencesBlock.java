@@ -101,7 +101,7 @@ public class CeylonRepoPreferencesBlock {
 
     public void performDefaults() {
         systemRepoText.setText("${ceylon.repo}");
-        outputRepoText.setText("./modules");
+        outputRepoText.setText("."+File.separator+"modules");
 
         projectLocalRepos = new ArrayList<String>();
         projectRemoteRepos = new ArrayList<String>();
@@ -219,7 +219,7 @@ public class CeylonRepoPreferencesBlock {
             public void widgetSelected(SelectionEvent e) {
                 IResource result = openSelectRelativeFolderDialog(composite);
                 if (result != null) {
-                    String outputRepoUrl = "./" + result.getFullPath().removeFirstSegments(1);
+                    String outputRepoUrl = "." + File.separator + result.getFullPath().removeFirstSegments(1);
                     outputRepoText.setText(outputRepoUrl);
                 }
             }
@@ -232,7 +232,7 @@ public class CeylonRepoPreferencesBlock {
         lookupRepoLabel.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).span(2, 1).grab(true, false).indent(0, 10).create());
 
         lookupRepoTable = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-        lookupRepoTable.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).hint(250, 200).create());
+        lookupRepoTable.setLayoutData(swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(250, 220).create());
         lookupRepoTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -250,7 +250,7 @@ public class CeylonRepoPreferencesBlock {
             public void widgetSelected(SelectionEvent e) {
                 IResource result = openSelectRelativeFolderDialog(buttons);
                 if( result != null ) {
-                    String repo = "./" + result.getFullPath().removeFirstSegments(1);
+                    String repo = "." + File.separator + result.getFullPath().removeFirstSegments(1);
                     addProjectRepo(repo, 0, true);
                 }
             }
@@ -459,8 +459,8 @@ public class CeylonRepoPreferencesBlock {
         if (systemRepoUrl != null && !systemRepoUrl.isEmpty()) {
             systemRepoUrl = CeylonBuilder.interpolateVariablesInRepositoryPath(systemRepoUrl);
 
-            String ceylonLanguageSubdir = "/ceylon/language/" + LANGUAGE_MODULE_VERSION;
-            String ceylonLanguageFileName = "/ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
+            String ceylonLanguageSubdir = File.separator+"ceylon"+File.separator+"language"+File.separator + LANGUAGE_MODULE_VERSION;
+            String ceylonLanguageFileName = File.separator+"ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
 
             File ceylonLanguageFile = new File(systemRepoUrl + ceylonLanguageSubdir + ceylonLanguageFileName);
             if (ceylonLanguageFile.exists() && ceylonLanguageFile.isFile()) {
@@ -472,7 +472,7 @@ public class CeylonRepoPreferencesBlock {
 
     private boolean isOutputRepoValid() {
         String outputRepoUrl = outputRepoText.getText();
-        if (outputRepoUrl != null && outputRepoUrl.startsWith("./")) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             return true;
         }
         return false;
@@ -573,7 +573,7 @@ public class CeylonRepoPreferencesBlock {
 
     private IFolder getOutputFolder() {
         String outputRepoUrl = outputRepoText.getText();
-        if (outputRepoUrl.startsWith("./")) {
+        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
             outputRepoUrl = outputRepoUrl.substring(2);
         }
         return project.getFolder(outputRepoUrl);
