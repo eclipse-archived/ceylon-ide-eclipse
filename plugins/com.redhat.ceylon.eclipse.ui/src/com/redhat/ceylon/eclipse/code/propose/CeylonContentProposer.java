@@ -1636,6 +1636,9 @@ public class CeylonContentProposer {
         else if (d instanceof Interface) {
             result.append("interface", KW_STYLER);
         }
+        else if (d instanceof TypeAlias) {
+            result.append("alias", KW_STYLER);
+        }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();

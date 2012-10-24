@@ -6,6 +6,7 @@ public interface CeylonResources {
     public static final String CEYLON_FILE_WARNING = "ceylon_file_warning";
     public static final String CEYLON_FILE_ERROR = "ceylon_file_error";
     
+    public static final String CEYLON_ALIAS = "ceylon_alias";
     public static final String CEYLON_CLASS = "ceylon_class";
     public static final String CEYLON_INTERFACE = "ceylon_interface";
     public static final String CEYLON_LOCAL_CLASS = "ceylon_local_class";
