@@ -534,7 +534,7 @@ public class DocHover
 			}
 			for (ModuleImport mi: module.getImports()) {
 				if (pname.equals(mi.getModule().getNameAsString())) {
-					return module;
+					return mi.getModule();
 				}
 			}
 			return null;
