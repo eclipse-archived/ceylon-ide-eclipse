@@ -35,7 +35,7 @@ import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
-import com.redhat.ceylon.cmr.impl.JDKPackageList;
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
@@ -95,10 +95,10 @@ public class JDTModule extends LazyModule {
     private void loadAllPackages() {
         Set<String> packageList = new TreeSet<String>();
         String name = getNameAsString();
-        if(JDKPackageList.isJDKModule(name)){
-            packageList.addAll(JDKPackageList.getJDKPackagesByModule().get(name));
-        }else if(JDKPackageList.isOracleJDKModule(name)){
-            packageList.addAll(JDKPackageList.getOracleJDKPackagesByModule().get(name));
+        if(JDKUtils.isJDKModule(name)){
+            packageList.addAll(JDKUtils.getJDKPackagesByModule(name));
+        }else if(JDKUtils.isOracleJDKModule(name)){
+            packageList.addAll(JDKUtils.getOracleJDKPackagesByModule(name));
         }else if(isJava()){
             for(IPackageFragmentRoot fragmentRoot : getPackageFragmentRoots()){
                 if(!fragmentRoot.exists())

@@ -21,8 +21,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
@@ -57,8 +57,8 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
     	for (Module module: modulesToAdd) {
     	    String name = module.getNameAsString(); 
     		if (name.equals(Module.DEFAULT_MODULE_NAME) ||
-    				JDKPackageList.isJDKModule(name) ||
-                    JDKPackageList.isOracleJDKModule(name) ||
+    				JDKUtils.isJDKModule(name) ||
+    				JDKUtils.isOracleJDKModule(name) ||
     				!isProjectModule(javaProject, module)) {
     			continue;
     		}
