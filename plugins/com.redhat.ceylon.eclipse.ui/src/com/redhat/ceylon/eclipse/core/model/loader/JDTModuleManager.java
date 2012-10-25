@@ -46,8 +46,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
-import com.redhat.ceylon.cmr.impl.JDKPackageList;
-import com.redhat.ceylon.compiler.java.loader.model.CompilerModule;
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
@@ -225,17 +224,17 @@ public class JDTModuleManager extends LazyModuleManager {
                 }
             } else {
                 for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if(JDKPackageList.isJDKModule(moduleNameString)){
+                    if(JDKUtils.isJDKModule(moduleNameString)){
                         // find the first package that exists in this root
-                        for(String pkg : JDKPackageList.getJDKPackagesByModule().get(moduleNameString)){
+                        for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
                             if (root.getPackageFragment(pkg).exists()) {
                                 roots.add(root);
                                 break;
                             }
                         }
-                    }else if(JDKPackageList.isOracleJDKModule(moduleNameString)){
+                    }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
                         // find the first package that exists in this root
-                        for(String pkg : JDKPackageList.getOracleJDKPackagesByModule().get(moduleNameString)){
+                        for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
                             if (root.getPackageFragment(pkg).exists()) {
                                 roots.add(root);
                                 break;

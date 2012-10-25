@@ -65,8 +65,8 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.impl.JDKPackageList;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -368,8 +368,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		for (Module module: modulesToAdd) {
 		    String name = module.getNameAsString(); 
 			if (name.equals(Module.DEFAULT_MODULE_NAME) ||
-			        JDKPackageList.isJDKModule(name) ||
-			        JDKPackageList.isOracleJDKModule(name) ||
+					JDKUtils.isJDKModule(name) ||
+					JDKUtils.isOracleJDKModule(name) ||
 					isProjectModule(javaProject, module)) {
 				continue;
 			}
