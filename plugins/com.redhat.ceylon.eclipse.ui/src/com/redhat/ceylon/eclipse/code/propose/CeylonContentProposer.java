@@ -707,7 +707,7 @@ public class CeylonContentProposer {
         Declaration dec = dwp.getDeclaration();
         return (dec instanceof Class || ol!=EXTENDS) && 
                 (dec instanceof Interface || ol!=SATISFIES) &&
-                (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
+                (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration() != null && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || 
                         dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
