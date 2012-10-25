@@ -10,7 +10,9 @@ import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -181,15 +183,20 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
         return new IInformationControlCreator() {
             public IInformationControl createInformationControl(Shell parent) {
-                return new BrowserInformationControl(parent, 
-                		APPEARANCE_JAVADOC_FONT, (String)null, null
-                		/*CeylonTokenColorer.getCurrentThemeColor("docHover")*/) {
-					@Override
-					public Point computeSizeHint() {
-						Point sh = super.computeSizeHint();
-						return new Point(sh.x+20, sh.y*3/2);
-					}
-                };
+                try{
+                    return new BrowserInformationControl(parent, 
+                            APPEARANCE_JAVADOC_FONT, (String)null, null
+                            /*CeylonTokenColorer.getCurrentThemeColor("docHover")*/) {
+                        @Override
+                        public Point computeSizeHint() {
+                            Point sh = super.computeSizeHint();
+                            return new Point(sh.x+20, sh.y*3/2);
+                        }
+                    };
+                }catch(org.eclipse.swt.SWTError x){
+                    return new DefaultInformationControl(parent, "Press 'F2' for focus", 
+                            new HTMLTextPresenter(true));
+                }
             }
         };
     }
