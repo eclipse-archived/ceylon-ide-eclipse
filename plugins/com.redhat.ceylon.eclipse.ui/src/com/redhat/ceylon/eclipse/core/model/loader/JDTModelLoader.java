@@ -372,7 +372,14 @@ public class JDTModelLoader extends AbstractModelLoader {
             return new SourceClass(sourceDeclarations.get(name));
         }
         
-        return buildClassMirror(name);
+        ClassMirror mirror = buildClassMirror(name);
+        if (mirror == null && lastPartHasLowerInitial(name)) {
+            // We have to try the unmunged name first, so that we find the symbol
+            // from the source in preference to the symbol from any 
+            // pre-existing .class file
+            mirror = buildClassMirror(name+"_");
+        }
+        return mirror;
     }
 
     private ClassMirror buildClassMirror(String name) {
