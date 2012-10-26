@@ -49,6 +49,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -391,7 +392,7 @@ public class ModuleSearchViewPart extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-        this.parent.setLayout(new GridLayout(4, false));
+        this.parent.setLayout(new GridLayout(2, false));
         
         initSearchCombo();       
         initSearchButton();
@@ -406,7 +407,8 @@ public class ModuleSearchViewPart extends ViewPart {
     private void initSearchCombo() {
         searchCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER);
         searchCombo.setVisibleItemCount(10);
-        searchCombo.setLayoutData(GridDataFactory.swtDefaults().hint(300, SWT.DEFAULT).create());
+        GridData gd = GridDataFactory.swtDefaults().span(1, 1).hint(250, SWT.DEFAULT).create();
+		searchCombo.setLayoutData(gd);
         searchCombo.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
@@ -420,7 +422,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private void initSearchButton() {
         searchButton = new Button(parent, SWT.PUSH);
         searchButton.setText("&Search");
-        searchButton.setLayoutData(GridDataFactory.swtDefaults().hint(100, SWT.DEFAULT).create());
+        searchButton.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
         searchButton.setAlignment(SWT.CENTER);
         searchButton.addSelectionListener(new SelectionListener() {
 			@Override
@@ -470,19 +472,20 @@ public class ModuleSearchViewPart extends ViewPart {
             }
         });
         
-        Label projectLabel = new Label(parent, SWT.LEFT | SWT.WRAP);
-        projectLabel.setText("use repositories configuration from project");
-        projectLabel.setLayoutData(GridDataFactory.swtDefaults().create());
+        Label projectLabel = new Label(parent, SWT.RIGHT | SWT.WRAP);
+        projectLabel.setText("Search in repositories of project");
+        GridData gd = GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).create();
+		projectLabel.setLayoutData(gd);
         
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
-        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(150, SWT.DEFAULT).create());
+        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
         
         updateProjectCombo();
     }
     
     private void initSearchInfo() {
         searchInfo = new Link(parent, 0);
-        searchInfo.setLayoutData(GridDataFactory.swtDefaults().span(4, 1).create());
+        searchInfo.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
         searchInfo.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 updateBeforeSearch(false);
