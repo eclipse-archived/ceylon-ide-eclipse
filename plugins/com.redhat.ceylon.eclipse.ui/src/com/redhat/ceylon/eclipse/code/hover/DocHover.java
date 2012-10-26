@@ -82,6 +82,7 @@ import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
 import com.github.rjeschke.txtmark.SpanEmitter;
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -691,6 +692,12 @@ public class DocHover
 			}
 		}
 		
+		if (pack.getModule().isJava()) {
+			buffer.append("<p>This package is implemented in Java.</p>");
+		}
+		if (JDKUtils.isJDKModule(pack.getModule().getNameAsString())) {
+			buffer.append("<p>This package forms part of the Java SDK.</p>");			
+		}
 		
 		boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
@@ -748,6 +755,16 @@ public class DocHover
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
 				16, 16, "<b><tt>module " + getLabel(mod) + " '" + mod.getVersion() + "'" +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
+
+		if (mod.isJava()) {
+			buffer.append("<p>This module is implemented in Java.</p>");
+		}
+		if (mod.isDefault()) {
+			buffer.append("<p>The default module for packages which do not belong to explicit module.</p>");
+		}
+		if (JDKUtils.isJDKModule(mod.getNameAsString())) {
+			buffer.append("<p>This module forms part of the Java SDK.</p>");			
+		}
 
 		PhasedUnit pu = cpc.getTypeChecker()
 				.getPhasedUnitFromRelativePath(mod.getNameAsString().replace('.', '/') + "/module.ceylon");
