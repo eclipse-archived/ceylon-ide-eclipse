@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.util;
 import java.util.HashSet;
 import java.util.Set;
 
+import ceylon.language.null_;
+
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -67,8 +69,8 @@ public class FindReferenceVisitor extends Visitor {
         Tree.CaseItem ci = that.getCaseItem();
         if (ci instanceof Tree.IsCase) {
             Tree.Variable var = ((Tree.IsCase) ci).getVariable();
-            if (var.getDeclarationModel().getOriginalDeclaration()
-                    .equals(declaration)) {
+            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+			if (od!=null && od.equals(declaration)) {
                 Declaration d = declaration;
                 declaration = var.getDeclarationModel();
                 that.getBlock().visit(this);
