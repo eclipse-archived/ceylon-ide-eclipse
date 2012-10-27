@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.util;
 import java.util.HashSet;
 import java.util.Set;
 
-import ceylon.language.null_;
-
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
