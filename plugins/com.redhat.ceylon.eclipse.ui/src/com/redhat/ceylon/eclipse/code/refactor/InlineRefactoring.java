@@ -29,6 +29,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import ceylon.language.null_;
+
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
@@ -36,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -433,8 +436,8 @@ public class InlineRefactoring extends AbstractRefactoring {
             @Override
             public void visit(Tree.Variable that) {
                 if (that.getType() instanceof Tree.SyntheticVariable) {
-                    if (that.getDeclarationModel().getOriginalDeclaration()
-                            .equals(declaration)) {
+                    TypedDeclaration od = that.getDeclarationModel().getOriginalDeclaration();
+					if (od!=null && od.equals(declaration)) {
                         tfc.addEdit(new InsertEdit(that.getSpecifierExpression().getStartIndex(), 
                                 that.getIdentifier().getText()+" = "));
                     }
