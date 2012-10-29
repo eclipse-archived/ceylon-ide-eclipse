@@ -751,7 +751,7 @@ public class CeylonQuickFixAssistant {
             else if (!isUpperCase) {
                 String type = isVoid ? "Void" : 
                     stn.equals("unknown") ? "value" : stn;
-                def = type + " " + brokenName + " = bottom;";
+                def = type + " " + brokenName + " = " + defaultValue(node.getUnit(), et) + ";";
                 desc = "value '" + brokenName + "'";
                 image = ATTRIBUTE;
             }
@@ -784,6 +784,8 @@ public class CeylonQuickFixAssistant {
                 CreateInNewUnitProposal.addCreateToplevelProposal(proposals, 
                 		def.replace("$indent", ""), desc, image, file, brokenName,
                 		returnType, paramTypes);
+                
+                addCreateParameterProposal(proposals, project, cu, node, brokenName, def, returnType);
             }
             
         }
@@ -976,6 +978,26 @@ public class CeylonQuickFixAssistant {
         }
     }
 
+    private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, IProject project, Tree.CompilationUnit cu, Node node,
+            String brokenName, String def, ProducedType returnType) {
+        FindContainerVisitor fcv = new FindContainerVisitor(node);
+        fcv.visit(cu);
+        Tree.Declaration decl = fcv.getDeclaration();
+        Tree.ParameterList paramList = getParameters(decl);
+    
+        if (paramList != null) {
+            String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + def.substring(0, def.length() - 1);
+            String paramDesc = "parameter '" + brokenName + "'";
+    
+            for (PhasedUnit unit : getUnits(project)) {
+                if (unit.getUnit().equals(cu.getUnit())) {
+                    CreateProposal.addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, decl.getDeclarationModel(), unit, decl, paramList, returnType);
+                    break;
+                }
+            }
+        }
+    }
+
     private void addCreateParameterProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
@@ -1031,19 +1053,19 @@ public class CeylonQuickFixAssistant {
 
     private static String defaultValue(Unit unit, ProducedType t) {
         String tn = t.getProducedTypeQualifiedName();
-        if (tn.equals("ceylon.language.Boolean")) {
+        if (tn.equals("ceylon.language::Boolean")) {
             return "false";
         }
-        else if (tn.equals("ceylon.language.Integer")) {
+        else if (tn.equals("ceylon.language::Integer")) {
             return "0";
         }
-        else if (tn.equals("ceylon.language.Float")) {
+        else if (tn.equals("ceylon.language::Float")) {
             return "0.0";
         }
         else if (unit.isOptionalType(t)) {
             return "null";
         }
-        else if (tn.equals("ceylon.language.String")) {
+        else if (tn.equals("ceylon.language::String")) {
             return "\"\"";
         }
         else {
