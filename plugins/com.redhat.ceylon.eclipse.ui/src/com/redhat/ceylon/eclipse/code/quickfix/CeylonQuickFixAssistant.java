@@ -983,8 +983,11 @@ public class CeylonQuickFixAssistant {
         FindContainerVisitor fcv = new FindContainerVisitor(node);
         fcv.visit(cu);
         Tree.Declaration decl = fcv.getDeclaration();
+        if (decl == null || decl.getDeclarationModel() == null || decl.getDeclarationModel().isActual()) {
+            return;
+        }
+        
         Tree.ParameterList paramList = getParameters(decl);
-    
         if (paramList != null) {
             String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + def.substring(0, def.length() - 1);
             String paramDesc = "parameter '" + brokenName + "'";
