@@ -131,6 +131,15 @@ public abstract class AbstractRefactoring extends Refactoring {
         return toString(term, tokens);
     }
     
+    Tree.Term unparenthesize(Tree.Term term) {
+    	if (term instanceof Tree.Expression) {
+    		return unparenthesize(((Tree.Expression) term).getTerm());
+    	}
+    	else {
+    		return term;
+    	}
+    }
+    
     public static String toString(Node term, List<CommonToken> theTokens) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;

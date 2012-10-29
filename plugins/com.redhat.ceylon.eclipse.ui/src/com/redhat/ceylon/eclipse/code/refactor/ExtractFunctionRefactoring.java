@@ -298,7 +298,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
-		String exp = toString(term);
+		String exp = toString(unparenthesize(term));
 		FindContainerVisitor fsv = new FindContainerVisitor(term);
 		rootNode.visit(fsv);
 		Tree.Declaration decNode = fsv.getDeclaration();
