@@ -17,12 +17,12 @@
 	<classpathentry exported="true" kind="lib" path="lib/jandex-1.0.3.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sardine-314.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.4-ide.jar" sourcepath="/ceylon-compiler/src"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-0.4-ide.jar" sourcepath="/ceylon-spec/src"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.4-ide.jar" sourcepath="/ceylon-module-resolver"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.common-0.4-ide.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ceylon.language-0.4-ide.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/txtmark-0.8-f17d7e2193.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.js-0.4-ide.jar"/>
+	<classpathentry kind="lib" path="lib/ceylon.language-0.5-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-0.5-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.5-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.js-0.5-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.5-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-0.5-ide.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
