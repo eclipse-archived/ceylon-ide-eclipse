@@ -35,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -133,11 +134,12 @@ public abstract class AbstractRefactoring extends Refactoring {
     
     Tree.Term unparenthesize(Tree.Term term) {
     	if (term instanceof Tree.Expression) {
-    		return unparenthesize(((Tree.Expression) term).getTerm());
+    		Expression e = (Tree.Expression) term;
+    		if (!(e.getTerm() instanceof Tree.Tuple)) {
+    			return unparenthesize(e.getTerm());
+    		}
     	}
-    	else {
-    		return term;
-    	}
+    	return term;
     }
     
     public static String toString(Node term, List<CommonToken> theTokens) {
