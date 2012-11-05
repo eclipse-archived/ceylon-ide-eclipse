@@ -4,8 +4,8 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.QUOTED_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.core.runtime.Platform.getPreferencesService;
@@ -145,11 +145,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			String opening, String closing) {
 		boolean closeOpening;
 		if (opening.equals(closing)) { 
-			closeOpening = count(doc.get(), opening.charAt(0))%2==0;
+			closeOpening = count(opening)%2==0;
 		}
 		else { 
-			closeOpening = count(doc.get(), opening.charAt(0)) >= 
-					count(doc.get(), closing.charAt(0));
+			closeOpening = count(opening)>=count(closing);
 		}
 
 		if (opening.equals("<")) {
@@ -356,7 +355,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             }
             
             StringBuilder buf = new StringBuilder(c.text);
-            boolean closeBrace = count(d.get(), '{')>count(d.get(), '}');
+            boolean closeBrace = count("{")>count("}");
             appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
                     false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
@@ -364,15 +363,26 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
     
-    int count(String string, char ch) {
-    	//TODO: don't count quoted characters!
-    	int result = 0;
-    	for (int i=0; i<string.length(); i++) {
-    		char c = string.charAt(i);
-			if (c==ch) result++;
-			if (c=='\\') i++;
+    int count(String token) {
+    	int count = 0;
+    	if (editor!=null) {
+    		CeylonParseController pc = editor.getParseController();
+    		if (pc.getTokens()!=null) {
+    			for (CommonToken tok: pc.getTokens()) {
+    				if (tok.getText().equals(token)) {
+    					count++;
+    				}
+    			}
+    		}
     	}
-    	return result;
+    	return count;
+//    	int result = 0;
+//    	for (int i=0; i<string.length(); i++) {
+//    		char c = string.charAt(i);
+//			if (c==ch) result++;
+//			if (c=='\\') i++;
+//    	}
+//    	return result;
     }
     
     private void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
