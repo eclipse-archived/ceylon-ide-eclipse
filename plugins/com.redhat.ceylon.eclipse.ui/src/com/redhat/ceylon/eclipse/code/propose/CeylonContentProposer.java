@@ -73,7 +73,6 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -354,10 +353,6 @@ public class CeylonContentProposer {
         Scope scope = node.getScope();
         if (scope instanceof Interface || 
                 scope instanceof Package) {
-            return false;
-        }
-        else if (scope instanceof NamedArgumentList &&
-                !((NamedArgumentList) scope).isSynthetic()) {
             return false;
         }
         else {
