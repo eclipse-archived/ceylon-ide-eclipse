@@ -569,18 +569,20 @@ public class DocHover
 	}
 
 	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		Node node = findNode(editor.getParseController().getRootNode(), 
-				hoverRegion.getOffset());
-		if (node instanceof Tree.ImportPath) {
-			Referenceable r = ((Tree.ImportPath) node).getModel();
-			if (r!=null) {
-				return getHoverInfo(r, null, node);
+		Tree.CompilationUnit rn = editor.getParseController().getRootNode();
+		if (rn!=null) {
+			Node node = findNode(rn, hoverRegion.getOffset());
+			if (node instanceof Tree.ImportPath) {
+				Referenceable r = ((Tree.ImportPath) node).getModel();
+				if (r!=null) {
+					return getHoverInfo(r, null, node);
+				}
 			}
-			return null;
+			else {
+				return getHoverInfo(getReferencedDeclaration(node), null, node);
+			}
 		}
-		else {
-			return getHoverInfo(getReferencedDeclaration(node), null, node);
-		}
+		return null;
 	}
 	
 	private static String getIcon(Object obj) {
