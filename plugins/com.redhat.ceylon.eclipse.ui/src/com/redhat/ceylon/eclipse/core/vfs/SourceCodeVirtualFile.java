@@ -1,9 +1,10 @@
 package com.redhat.ceylon.eclipse.core.vfs;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
@@ -12,22 +13,23 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 
 
 public class SourceCodeVirtualFile implements VirtualFile {
-    public static final List<VirtualFile> EMPTY_CHILDREN = Collections.unmodifiableList( new ArrayList<VirtualFile>(0) );
+	
+    public static final List<VirtualFile> EMPTY_CHILDREN = unmodifiableList( new ArrayList<VirtualFile>(0) );
     
-    InputStream stream;
-    String path = "unknown.ceylon";
-    String name = "unknown.ceylon";
+    private InputStream stream;
+    private String path;
+    private String name;
     
-    public SourceCodeVirtualFile(String fileContent)
-    {
+    public SourceCodeVirtualFile(String fileContent) {
         stream = new ByteArrayInputStream(fileContent.getBytes());
+        path = "unknown.ceylon";
+        name = "unknown.ceylon";
     }
     
-    public SourceCodeVirtualFile(String fileContent, IPath path)
-    {
+    public SourceCodeVirtualFile(String fileContent, IPath path) {
         stream = new ByteArrayInputStream(fileContent.getBytes());
         this.path = path.toString();
-        this.name = path.toFile().getName();
+        name = path.toFile().getName();
     }
     
     public boolean isFolder() {

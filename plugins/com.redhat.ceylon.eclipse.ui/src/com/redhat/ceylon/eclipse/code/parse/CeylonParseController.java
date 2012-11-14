@@ -4,11 +4,13 @@ import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUserRepositories;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getAllRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
@@ -48,7 +50,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
@@ -375,13 +376,13 @@ public class CeylonParseController {
 		}
 		else {
 		    cwd = project.getLocation().toFile();
-		    systemRepo = CeylonBuilder.getInterpolatedCeylonSystemRepo(project);
+		    systemRepo = getInterpolatedCeylonSystemRepo(project);
 		}
         
         RepositoryManager repositoryManager = repoManager()
                 .cwd(cwd)
                 .systemRepo(systemRepo)
-                .extraUserRepos(CeylonBuilder.getReferencedProjectsOutputRepositories(project))
+                .extraUserRepos(getReferencedProjectsOutputRepositories(project))
                 .logger(new EclipseLogger())
                 .isJDKIncluded(true)
                 .buildManager();
@@ -418,7 +419,7 @@ public class CeylonParseController {
 			String relPath = pp.substring(i+2);
 			for (IProject p: getProjects()) {
 				try {
-					for (String repo: getUserRepositories(p)) {
+					for (String repo: getAllRepositories(p)) {
 						if (osp.startsWith(repo)) {
 							PhasedUnit pu = getProjectTypeChecker(p)
 									.getPhasedUnitFromRelativePath(relPath);

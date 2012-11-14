@@ -1737,10 +1737,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return userRepos;
     }
     
+    public static List<String> getAllRepositories(IProject project) throws CoreException {
+    	List<String> allRepos = getUserRepositories(project);
+    	allRepos.add(CeylonProjectConfig.get(project).getMergedRepositories().getCacheRepository().getUrl());
+        return allRepos;
+    }
+    
     public static List<String> getReferencedProjectsOutputRepositories(IProject project) throws CoreException {
         List<String> repos = new ArrayList<String>();
         if (project != null) {
-            for (IProject referencedProject : project.getReferencedProjects()) {
+            for (IProject referencedProject: project.getReferencedProjects()) {
                 if (referencedProject.isOpen() && referencedProject.hasNature(NATURE_ID)) {
                     repos.add(getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath());
                 }
