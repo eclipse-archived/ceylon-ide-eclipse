@@ -241,19 +241,37 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 type==MULTI_COMMENT;
     }
 
-	public int tokenType(int offset) {
-		if (editor==null) return -1;
+    private boolean isMultilineCommentStart(int offset, IDocument d) {
+    	CommonToken token = token(offset);
+    	if (token==null) return false;
+        try {
+			return token.getType()==MULTI_COMMENT && 
+					!token.getText().endsWith("*/") &&
+					d.getLineOfOffset(offset)+1==token.getLine();
+		} 
+        catch (BadLocationException e) {
+			return false;
+		}
+    }
+
+    public int tokenType(int offset) {
+    	CommonToken token = token(offset);
+		return token==null ? -1 : token.getType();
+    }
+    
+	public CommonToken token(int offset) {
+		if (editor==null) return null;
         CeylonParseController pc = editor.getParseController();
         if (pc.getTokens()!=null) {
         	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
         	if (tokenIndex>=0) {
         		CommonToken token = pc.getTokens().get(tokenIndex);
         		if (token.getStartIndex()<offset) {
-        			return token.getType();
+        			return token;
         		}
         	}
         }
-		return -1;
+		return null;
 	}
 
     /*private boolean isLineComment(int offset) {
@@ -360,6 +378,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
                     false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
             c.text = buf.toString();
+        }
+        if (isMultilineCommentStart(c.offset, d)) {
+        	c.shiftsCaret=false;
+        	c.caretOffset=c.offset+c.text.length();
+        	c.text = c.text + c.text + "*/";
         }
     }
     
