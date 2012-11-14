@@ -1891,7 +1891,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     attributes.put(IMarker.LINE_NUMBER, token.getLine());
                     attributes.put(IMarker.CHAR_START, token.getStartIndex());
                     attributes.put(IMarker.CHAR_END, token.getStopIndex());
-                    attributes.put(IMarker.MESSAGE, token.getText().substring(2));   
+                    attributes.put(IMarker.MESSAGE, token.getText().substring(2).trim());   
                     attributes.put(IMarker.SOURCE_ID, SOURCE);
                     try {
                         file.createMarker(TASK_MARKER_ID).setAttributes(attributes);
@@ -1978,11 +1978,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     // generated files go into parent folder
 
     public static int priority(Token token) {
-        String comment = token.getText().toLowerCase();
-        if (comment.startsWith("//todo")) {
+        String comment = token.getText().substring(2).trim().toLowerCase();
+        if (comment.startsWith("todo")) {
             return IMarker.PRIORITY_NORMAL;
         }
-        else if (comment.startsWith("//fix")) {
+        else if (comment.startsWith("fix")) {
             return IMarker.PRIORITY_HIGH;
         }
         else {
