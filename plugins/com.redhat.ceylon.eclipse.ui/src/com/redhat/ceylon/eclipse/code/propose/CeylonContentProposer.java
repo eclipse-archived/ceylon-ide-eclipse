@@ -1212,7 +1212,7 @@ public class CeylonContentProposer {
             return qme.getUnit().getDefiniteType(type);
         }
         else if (qme.getMemberOperator() instanceof Tree.SpreadOp) {
-            return qme.getUnit().getElementType(type);
+            return qme.getUnit().getIteratedType(type);
         }
         else {
             return type;
