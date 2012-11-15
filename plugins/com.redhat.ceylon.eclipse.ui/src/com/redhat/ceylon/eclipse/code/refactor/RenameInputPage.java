@@ -47,6 +47,7 @@ public class RenameInputPage extends UserInputWizardPage {
 				getRenameRefactoring().setNewName(name);
 			}
 		});
+		text.selectAll();
 		text.setFocus();
 	}
 	
