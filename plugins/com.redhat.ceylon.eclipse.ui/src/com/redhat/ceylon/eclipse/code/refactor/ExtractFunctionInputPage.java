@@ -49,7 +49,8 @@ public class ExtractFunctionInputPage extends UserInputWizardPage {
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
-		});		
+		});
+		text.selectAll();
         text.setFocus();
 	}
 
