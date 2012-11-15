@@ -70,7 +70,7 @@ public class RequiredTypeVisitor extends Visitor
                     Parameter param = params.get(pos);
                     requiredType = pr.getTypedParameter(param).getFullType();
                     if (param.isSequenced()) {
-                        requiredType = that.getUnit().getElementType(requiredType);
+                        requiredType = that.getUnit().getIteratedType(requiredType);
                     }
                 }
             }
@@ -84,7 +84,7 @@ public class RequiredTypeVisitor extends Visitor
                     Parameter param = params.get(params.size()-1);
                     if (param.isSequenced()) {
                         requiredType = namedArgTarget.getTypedParameter(param).getFullType();
-                        requiredType = that.getUnit().getElementType(requiredType);
+                        requiredType = that.getUnit().getIteratedType(requiredType);
                     }
                 }
             }
