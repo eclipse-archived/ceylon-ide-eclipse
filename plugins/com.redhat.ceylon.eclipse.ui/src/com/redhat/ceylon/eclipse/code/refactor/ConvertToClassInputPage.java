@@ -43,6 +43,7 @@ public class ConvertToClassInputPage extends UserInputWizardPage {
 				getConvertToClassRefactoring().setNewName(name);
 			}
 		});
+		text.addKeyListener(new SubwordIterator(text));
 		text.selectAll();
 		text.setFocus();
 	}
