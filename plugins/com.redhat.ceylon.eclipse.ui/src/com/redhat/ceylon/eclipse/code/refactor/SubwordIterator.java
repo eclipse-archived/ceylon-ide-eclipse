@@ -9,6 +9,17 @@ import org.eclipse.swt.widgets.Text;
 
 final class SubwordIterator implements KeyListener {
 	private final Text text;
+	private static final int MOD; 
+	static {
+		String platform = SWT.getPlatform();
+		if ("carbon".equals (platform) || 
+			"cocoa".equals (platform)) {
+			MOD = SWT.MOD3;
+		}
+		else {
+			MOD = SWT.MOD1;
+		}
+	}
 
 	SubwordIterator(Text text) {
 		this.text = text;
@@ -20,7 +31,7 @@ final class SubwordIterator implements KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if (e.keyCode==SWT.ARROW_RIGHT && 
-				e.stateMask==SWT.MOD3) { //TODO: CTRL on windows?
+				e.stateMask==MOD) { //TODO: CTRL on windows?
 			int len = text.getText().length();
 			for (int i = text.getCaretPosition()+1; i<len; i++) {
 				if (isUpperCase(text.getText().charAt(i))) {
@@ -31,7 +42,7 @@ final class SubwordIterator implements KeyListener {
 			}
 		}
 		if (e.keyCode==SWT.ARROW_LEFT && 
-				e.stateMask==SWT.MOD3) { //TODO: CTRL on windows?
+				e.stateMask==MOD) { //TODO: CTRL on windows?
 			for (int i = text.getCaretPosition()-1; i>=0; i--) {
 				if (isUpperCase(text.getText().charAt(i))) {
 					text.setSelection(i);
