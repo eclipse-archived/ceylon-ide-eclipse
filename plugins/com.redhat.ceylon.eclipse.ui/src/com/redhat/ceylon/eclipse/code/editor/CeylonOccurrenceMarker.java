@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +32,7 @@ public class CeylonOccurrenceMarker {
             }
             
             occurrences = new ArrayList<Object>();
-            Declaration declaration = getReferencedDeclaration((Node) node);
+            Declaration declaration = getReferencedExplicitDeclaration((Node) node, root);
             if (declaration != null) {
                 FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
                 root.visit(frv);
