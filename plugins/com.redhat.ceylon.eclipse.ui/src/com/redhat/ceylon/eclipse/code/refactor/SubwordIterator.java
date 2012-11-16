@@ -31,7 +31,7 @@ final class SubwordIterator implements KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if (e.keyCode==SWT.ARROW_RIGHT && 
-				e.stateMask==MOD) { //TODO: CTRL on windows?
+				e.stateMask==MOD) {
 			int len = text.getText().length();
 			for (int i = text.getCaretPosition()+1; i<len; i++) {
 				if (isUpperCase(text.getText().charAt(i))) {
@@ -42,7 +42,7 @@ final class SubwordIterator implements KeyListener {
 			}
 		}
 		if (e.keyCode==SWT.ARROW_LEFT && 
-				e.stateMask==MOD) { //TODO: CTRL on windows?
+				e.stateMask==MOD) {
 			for (int i = text.getCaretPosition()-1; i>=0; i--) {
 				if (isUpperCase(text.getText().charAt(i))) {
 					text.setSelection(i);
