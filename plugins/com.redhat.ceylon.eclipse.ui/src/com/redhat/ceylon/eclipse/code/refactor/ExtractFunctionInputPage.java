@@ -50,6 +50,7 @@ public class ExtractFunctionInputPage extends UserInputWizardPage {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {}
 		});
+		text.addKeyListener(new SubwordIterator(text));
 		text.selectAll();
         text.setFocus();
 	}

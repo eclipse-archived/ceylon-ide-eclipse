@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -47,6 +48,7 @@ public class RenameInputPage extends UserInputWizardPage {
 				getRenameRefactoring().setNewName(name);
 			}
 		});
+		text.addKeyListener(new SubwordIterator(text));
 		text.selectAll();
 		text.setFocus();
 	}
