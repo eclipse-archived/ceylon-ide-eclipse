@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
+import ceylon.language.null_;
+
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -107,7 +109,7 @@ public class CeylonReferenceResolver {
     
     public static Declaration getReferencedExplicitDeclaration(Node node, Tree.CompilationUnit rn) {
     	Declaration dec = getReferencedDeclaration(node);
-    	if (dec.getUnit().equals(node.getUnit())) {
+    	if (dec!=null && dec.getUnit().equals(node.getUnit())) {
     		FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
     		fdv.visit(rn);
     		Node decNode = fdv.getDeclarationNode();
