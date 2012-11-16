@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class CeylonReferenceResolver {
 
@@ -103,6 +104,24 @@ public class CeylonReferenceResolver {
             return null;
         }
     }*/
+    
+    public static Declaration getReferencedExplicitDeclaration(Node node, Tree.CompilationUnit rn) {
+    	Declaration dec = getReferencedDeclaration(node);
+    	if (dec.getUnit().equals(node.getUnit())) {
+    		FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+    		fdv.visit(rn);
+    		Node decNode = fdv.getDeclarationNode();
+        	if (decNode instanceof Tree.Variable) {
+        		Tree.Variable var = (Tree.Variable) decNode;
+        		if (var.getType() instanceof Tree.SyntheticVariable) {
+                	return getReferencedExplicitDeclaration(
+                			var.getSpecifierExpression().getExpression().getTerm(), 
+                			rn);
+        		}
+        	}
+    	}
+    	return dec;
+    }
 
     public static Declaration getReferencedDeclaration(Node node) {
         //NOTE: this must accept a null node, returning null!

@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.belongsToProject;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.List;
@@ -51,14 +51,19 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	public RenameRefactoring(ITextEditor editor) {
 	    super(editor);
-		Declaration refDec = getReferencedDeclaration(node);
-		if (refDec!=null) {
-            declaration = refDec.getRefinedDeclaration();
-    		newName = declaration.getName();
-		}
-		else {
-		    declaration = null;
-		}
+	    if (rootNode!=null) {
+	    	Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
+	    	if (refDec!=null) {
+	    		declaration = refDec.getRefinedDeclaration();
+	    		newName = declaration.getName();
+	    	}
+	    	else {
+	    		declaration = null;
+	    	}
+	    }
+	    else {
+    		declaration = null;
+	    }
 	}
 	
 	@Override

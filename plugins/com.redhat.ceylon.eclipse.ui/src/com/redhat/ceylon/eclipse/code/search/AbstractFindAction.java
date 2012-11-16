@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getProject;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 
@@ -74,7 +74,9 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         this.site = editor.getSite();
         project = editor==null ? null : getProject(editor);
         if (editor instanceof CeylonEditor) {
-            declaration = getReferencedDeclaration(getSelectedNode((CeylonEditor) editor));
+            CeylonEditor ce = (CeylonEditor) editor;
+			declaration = getReferencedExplicitDeclaration(getSelectedNode(ce), 
+					ce.getParseController().getRootNode());
             setEnabled(isValidSelection());
         }
         else {
