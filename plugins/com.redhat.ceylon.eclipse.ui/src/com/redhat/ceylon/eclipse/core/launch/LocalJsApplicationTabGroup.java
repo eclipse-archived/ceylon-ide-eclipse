@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
@@ -33,7 +32,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-import com.redhat.ceylon.compiler.js.Runner;
+import com.redhat.ceylon.compiler.js.CeylonRunJsException;
+import com.redhat.ceylon.compiler.js.CeylonRunJsTool;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -61,8 +61,8 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                 public void setDefaults(ILaunchConfigurationWorkingCopy conf) {
                     setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, conf, false, false);
                     try {
-                        conf.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, Runner.findNode());
-                    } catch (FileNotFoundException ex) {
+                        conf.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, CeylonRunJsTool.findNode());
+                    } catch (CeylonRunJsException ex) {
                         conf.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, "");
                     }
                 }
@@ -92,9 +92,9 @@ public class LocalJsApplicationTabGroup extends AbstractLaunchConfigurationTabGr
                                 "::run"));
                         debug.setSelection(conf.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, false));
                         nodePath.setText(conf.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH,
-                                Runner.findNode()));
+                                CeylonRunJsTool.findNode()));
                         projectName = conf.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null);
-                    } catch (FileNotFoundException ex) {
+                    } catch (CeylonRunJsException ex) {
                         nodePath.setText("[NOT FOUND]");
                         showError(ex.getMessage());
                     } catch (CoreException ex) {
