@@ -78,6 +78,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             runner.setModuleVersion(modname);
             runner.setOutput(pout);
             runner.setDebug(true);
+            runner.setNodeExe(configuration.getAttribute(
+                    ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, (String)null));
             runner.run();
         } catch (CeylonRunJsException ex) {
             //Install node.js
