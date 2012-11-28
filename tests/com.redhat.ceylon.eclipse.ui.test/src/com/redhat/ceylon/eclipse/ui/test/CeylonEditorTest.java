@@ -54,6 +54,7 @@ public class CeylonEditorTest {
 		nature.addToProject(project);
 		
 		assertEquals(2,project.getDescription().getNatureIds().length);
+		
 	}
 
 	private IProject createJavaProject(String name) throws CoreException,
