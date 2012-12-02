@@ -276,8 +276,13 @@ class CreateSubtypeProposal implements ICompletionProposal,
         	def.append("(");
         	for (Parameter p: c.getParameterList().getParameters()) {
         		ProducedTypedReference ptr = type.getTypedParameter(p);
-        		def.append(ptr.getType().getProducedTypeName())
-        		    .append(" ").append(p.getName()).append(", ");
+        		if (ptr.getType()!=null && ptr.getType().isWellDefined()) {
+        			def.append(ptr.getType().getProducedTypeName());
+        		}
+        		else {
+        			def.append("Void");
+        		}
+        		def.append(" ").append(p.getName()).append(", ");
         	}
         	def.setLength(def.length()-2);
         	def.append(")");
