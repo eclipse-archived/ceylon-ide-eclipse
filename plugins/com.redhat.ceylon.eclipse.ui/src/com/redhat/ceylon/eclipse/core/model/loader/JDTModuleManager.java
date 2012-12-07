@@ -261,7 +261,7 @@ public class JDTModuleManager extends LazyModuleManager {
 
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
-		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies) {
+		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
         if (! isModuleLoadedFromCompiledSource(module.getNameAsString())) {
             File file = artifact.artifact();
             if (artifact.artifact().getName().endsWith(".src")) {
@@ -270,7 +270,7 @@ public class JDTModuleManager extends LazyModuleManager {
             }
             classpath.add(file);
         }
-        super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies);
+        super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies, forCompiledModule);
     }
 
     @Override
