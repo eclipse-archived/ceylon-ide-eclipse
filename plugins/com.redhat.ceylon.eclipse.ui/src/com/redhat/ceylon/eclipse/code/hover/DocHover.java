@@ -1029,9 +1029,10 @@ public class DocHover
 	private static String description(Declaration dec, CeylonParseController cpc) {
 		String result = getDescriptionFor(dec);
 		if (dec instanceof TypeDeclaration) {
-			if (((TypeDeclaration) dec).isAlias()) {
+			TypeDeclaration td = (TypeDeclaration) dec;
+			if (td.isAlias() && td.getExtendedType()!=null) {
 				result += " = ";
-				result += ((TypeDeclaration) dec).getExtendedType().getProducedTypeName();
+				result += td.getExtendedType().getProducedTypeName();
 			}
 		}
 		else if (dec instanceof Value) {
