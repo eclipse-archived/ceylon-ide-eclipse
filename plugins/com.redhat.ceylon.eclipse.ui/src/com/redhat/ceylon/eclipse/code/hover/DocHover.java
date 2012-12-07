@@ -108,9 +108,9 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
@@ -1038,11 +1038,11 @@ public class DocHover
 		else if (dec instanceof Value) {
 			if (!((Value) dec).isVariable()) {
 				Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
-				if (refnode instanceof AttributeDeclaration) {
-					Tree.SpecifierOrInitializerExpression sie = ((AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+				if (refnode instanceof Tree.AttributeDeclaration) {
+					Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
 					if (sie!=null) {
 						if (sie.getExpression()!=null) {
-							Term term = sie.getExpression().getTerm();
+							Tree.Term term = sie.getExpression().getTerm();
 							if (term instanceof Tree.Literal) {
 								result += " = ";
 								result += term.getText();
@@ -1052,6 +1052,25 @@ public class DocHover
 				}
 			}
 		}
+		/*else if (dec instanceof ValueParameter) {
+			Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
+			if (refnode instanceof Tree.ValueParameterDeclaration) {
+				Tree.DefaultArgument da = ((Tree.ValueParameterDeclaration) refnode).getDefaultArgument();
+				if (da!=null) {
+					Tree.Expression e = da.getSpecifierExpression().getExpression();
+					if (e!=null) {
+						Tree.Term term = e.getTerm();
+						if (term instanceof Tree.Literal) {
+							result += " = ";
+							result += term.getText();
+						}
+						else {
+							result += " =";
+						}
+					}
+				}
+			}
+		}*/
 		return result;
 	}
 	
