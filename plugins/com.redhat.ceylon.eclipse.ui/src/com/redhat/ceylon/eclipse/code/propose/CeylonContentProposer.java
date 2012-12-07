@@ -1756,6 +1756,7 @@ public class CeylonContentProposer {
                                 result.setLength(result.length()-2);
                                 result.append(")");
                             }*/
+                            if (p.isDefaulted()) result.append("=");
                             result.append(", ");
                         }
                         result.setLength(result.length()-2);
