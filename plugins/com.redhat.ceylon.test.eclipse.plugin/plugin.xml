@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType"
+            icon="icons/ceylon_test.png"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunch.png">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigTabGroup"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationTabGroup"
+            type="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType">
+         <launchMode
+               description="Run Ceylon Test"
+               mode="run">
+         </launchMode>
+         <launchMode
+               description="Debug Ceylon Test"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut"
+            icon="icons/ceylon_test.png"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchShortcut"
+            label="Ceylon Test"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.test.eclipse.plugin.canLaunchAsCeylonTest">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType">
+         </configurationType>
+         <description
+               description="Run Ceylon Test"
+               mode="run">
+         </description>
+         <description
+               description="Debug Ceylon Test"
+               mode="debug">
+         </description>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchDelegate"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType"
+            modes="run, debug"
+            name="Ceylon Test"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestPropertyTester"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestPropertyTester"
+            namespace="com.redhat.ceylon.test.eclipse.plugin"
+            properties="canLaunchAsCeylonTest"
+            type="java.lang.Object">
+      </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.test.eclipse.plugin.testview.TestViewPart"
+            icon="icons/ceylon_test.png"
+            id="com.redhat.ceylon.test.eclipse.plugin.testview"
+            name="Ceylon Test">
+      </view>
+   </extension>
+
+</plugin>

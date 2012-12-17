@@ -1,0 +1,82 @@
+package com.redhat.ceylon.test.eclipse.plugin;
+
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
+import org.osgi.framework.Bundle;
+
+public class CeylonTestImageRegistry {
+
+    public static final String ERROR_OVR = "error_ovr.gif";
+    public static final String FAILED_OVR = "failed_ovr.gif";
+    public static final String SUCCESS_OVR = "success_ovr.gif";
+    
+    public static final String TEST = "test.gif";
+    public static final String TEST_ERROR = "test_error.gif";
+    public static final String TEST_FAILED = "test_failed.gif";
+    public static final String TEST_IGNORED = "test_ignored.gif";
+    public static final String TEST_RUNNING = "test_running.gif";
+    public static final String TEST_SUCCESS = "test_success.gif";
+    
+    public static final String STACK_TRACE = "stack_trace.gif";
+    public static final String STACK_TRACE_FILTER = "stack_trace_filter.gif";
+    public static final String STACK_TRACE_LINE = "stack_trace_line.gif";
+    
+    public static final String SHOW_FAILURES = "show_failures.gif";
+    public static final String SHOW_NEXT = "show_next.gif";
+    public static final String SHOW_PREV = "show_prev.gif";
+    
+    public static final String RELAUNCH = "relaunch.gif";
+    public static final String STOP = "stop.gif";
+
+    private static final IPath ICONS_PATH = new Path("icons/");
+
+    public static Image getImage(String key) {
+        return CeylonTestPlugin.getDefault().getImageRegistry().get(key);
+    }
+
+    public static ImageDescriptor getImageDescriptor(String key) {
+        return CeylonTestPlugin.getDefault().getImageRegistry().getDescriptor(key);
+    }
+
+    public static void init(ImageRegistry imageRegistry) {
+        imageRegistry.put(ERROR_OVR, image(ERROR_OVR));
+        imageRegistry.put(FAILED_OVR, image(FAILED_OVR));
+        imageRegistry.put(SUCCESS_OVR, image(SUCCESS_OVR));
+        
+        imageRegistry.put(TEST, image(TEST));
+        imageRegistry.put(TEST_ERROR, image(TEST_ERROR));
+        imageRegistry.put(TEST_FAILED, image(TEST_FAILED));
+        imageRegistry.put(TEST_IGNORED, image(TEST_IGNORED));
+        imageRegistry.put(TEST_RUNNING, image(TEST_RUNNING));
+        imageRegistry.put(TEST_SUCCESS, image(TEST_SUCCESS));
+        
+        imageRegistry.put(STACK_TRACE, image(STACK_TRACE));
+        imageRegistry.put(STACK_TRACE_FILTER, image(STACK_TRACE_FILTER));
+        imageRegistry.put(STACK_TRACE_LINE, image(STACK_TRACE_LINE));
+        
+        imageRegistry.put(SHOW_FAILURES, image(SHOW_FAILURES));
+        imageRegistry.put(SHOW_NEXT, image(SHOW_NEXT));
+        imageRegistry.put(SHOW_PREV, image(SHOW_PREV));
+        
+        imageRegistry.put(RELAUNCH, image(RELAUNCH));
+        imageRegistry.put(STOP, image(STOP));
+    }
+
+    private static ImageDescriptor image(String file) {
+        Bundle bundle = CeylonTestPlugin.getDefault().getBundle();
+        URL url = FileLocator.find(bundle, ICONS_PATH.append(file), null);
+        if (url != null) {
+            return ImageDescriptor.createFromURL(url);
+        }
+        else {
+            return null;
+        }
+    }
+
+}

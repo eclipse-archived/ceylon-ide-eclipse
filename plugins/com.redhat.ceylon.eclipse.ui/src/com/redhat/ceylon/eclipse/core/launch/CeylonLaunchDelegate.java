@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
@@ -30,23 +31,36 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
-    public String[] getClasspath(ILaunchConfiguration configuration)
-            throws CoreException {
+    public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         IJavaProject javaProject = getJavaProject(configuration);
-        IProject project = javaProject.getProject();
 
-    	for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
-    		boolean changed = container.resolveClasspath(new NullProgressMonitor(), false);
-        	if(changed) {
-        		container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
-        	}
-    	}
-    	String[] javaClasspath = super.getClasspath(configuration);
-        final List<String> classpathList = new ArrayList<String>(asList(javaClasspath));
+        String[] javaClasspath = getJavaClasspath(configuration);
+        String[] ceylonProjectClasspath = getCeylonProjectClasspath(javaProject);
+
+        List<String> classpathList = new ArrayList<String>();
+        classpathList.addAll(asList(javaClasspath));
+        classpathList.addAll(asList(ceylonProjectClasspath));
+
+        return classpathList.toArray(new String[classpathList.size()]);
+    }
+    
+    protected String[] getJavaClasspath(ILaunchConfiguration configuration) throws CoreException {
+        return super.getClasspath(configuration);
+    }
+    
+    protected String[] getCeylonProjectClasspath(IJavaProject javaProject) throws JavaModelException {
+        final List<String> classpathList = new ArrayList<String>();
+        
+        for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
+            boolean changed = container.resolveClasspath(new NullProgressMonitor(), false);
+            if(changed) {
+                container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
+            }
+        }
         
         //add the car files of the output directory
-        
-		Context context = getProjectTypeChecker(project).getContext();
+        IProject project = javaProject.getProject();
+        Context context = getProjectTypeChecker(project).getContext();
 
         IPath modulesFolder = getCeylonModulesOutputFolder(project).getLocation();
         classpathList.add(modulesFolder.append("default").append("default.car").toOSString());
@@ -54,27 +68,27 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         RepositoryManager provider = context.getRepositoryManager();
         Set<Module> modulesToAdd = context.getModules().getListOfModules();
         //modulesToAdd.add(projectModules.getLanguageModule());        
-    	for (Module module: modulesToAdd) {
-    	    String name = module.getNameAsString(); 
-    		if (name.equals(Module.DEFAULT_MODULE_NAME) ||
-    				JDKUtils.isJDKModule(name) ||
-    				JDKUtils.isOracleJDKModule(name) ||
-    				!isProjectModule(javaProject, module)) {
-    			continue;
-    		}
-    		IPath modulePath = getModuleArchive(provider, module);
+        for (Module module: modulesToAdd) {
+            String name = module.getNameAsString(); 
+            if (name.equals(Module.DEFAULT_MODULE_NAME) ||
+                    JDKUtils.isJDKModule(name) ||
+                    JDKUtils.isOracleJDKModule(name) ||
+                    !isProjectModule(javaProject, module)) {
+                continue;
+            }
+            IPath modulePath = getModuleArchive(provider, module);
             if (modulePath!=null) {
-            	if (modulePath.toFile().exists()) {
-					//if (project.getLocation().isPrefixOf(modulePath)) {
-            		//if (!classpathList.contains(modulePath.toOSString())) {
-            			classpathList.add(modulePath.toOSString());
-            		//}
-            		//}
-            	} 
-            	else {
-            		System.err.println("ignoring nonexistent module artifact for launch classpath: " + 
-            				modulePath);
-            	}
+                if (modulePath.toFile().exists()) {
+                    //if (project.getLocation().isPrefixOf(modulePath)) {
+                    //if (!classpathList.contains(modulePath.toOSString())) {
+                        classpathList.add(modulePath.toOSString());
+                    //}
+                    //}
+                } 
+                else {
+                    System.err.println("ignoring nonexistent module artifact for launch classpath: " + 
+                            modulePath);
+                }
             }
             else {
                 System.err.println("no module archive found for launch classpath: " + 

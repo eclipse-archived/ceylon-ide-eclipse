@@ -1,0 +1,7 @@
+? javascript backend
+? default modules 
+? naming convention
+- synchronize access to TestRun
+- implement RefactoringParticipant
+- test history
+- compare test results
