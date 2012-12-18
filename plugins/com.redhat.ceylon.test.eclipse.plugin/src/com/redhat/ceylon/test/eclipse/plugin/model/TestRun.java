@@ -1,17 +1,21 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.debug.core.ILaunch;
 
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent;
+import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
 
 public class TestRun {
 
     private final ILaunch launch;
     private final List<TestElement> testElements = new ArrayList<TestElement>();
+    private final Map<String, List<TestElement>> testElementsByPackages = new LinkedHashMap<String, List<TestElement>>();
     private boolean isRunning;
     private boolean isFinished;
     private boolean isInterrupted;
@@ -30,6 +34,10 @@ public class TestRun {
     
     public List<TestElement> getTestElements() {
         return testElements;
+    }
+    
+    public Map<String, List<TestElement>> getTestElementsByPackages() {
+        return testElementsByPackages;
     }
     
     public boolean isRunning() {
@@ -72,10 +80,25 @@ public class TestRun {
         return successCount + failureCount + errorCount;
     }
 
+    public State getPackageState(String packageName) {
+        State result = State.UNDEFINED;
+    
+        List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
+        if (testElementsInPackage != null) {
+            for (TestElement testElement : testElementsInPackage) {
+                if (testElement.getState().getPriority() > result.getPriority()) {
+                    result = testElement.getState();
+                }
+            }
+        }
+    
+        return result;
+    }
+
     public void processRemoteTestEvent(RemoteTestEvent event) {
         switch (event.getType()) {
         case TEST_RUN_STARTED:
-            testElements.addAll(event.getTestElements());
+            updateTestElements(event.getTestElements());
             isRunning = true;
             isFinished = false;
             isInterrupted = false;
@@ -87,7 +110,7 @@ public class TestRun {
             break;
         case TEST_STARTED:
             updateTestElement(event.getTestElement());
-            startedCount++;
+            updateCounters(event);
             break;
         case TEST_FINISHED:
             updateTestElement(event.getTestElement());
@@ -109,25 +132,50 @@ public class TestRun {
         }
     }
 
+    private void updateTestElements(List<TestElement> testElementList) {
+        testElements.clear();
+        testElements.addAll(testElementList);
+        
+        testElementsByPackages.clear();
+        for (TestElement testElement : testElements) {
+            String packageName = testElement.getPackageName();
+            List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
+            if (testElementsInPackage == null) {
+                testElementsInPackage = new ArrayList<TestElement>();
+                testElementsByPackages.put(packageName, testElementsInPackage);
+            }
+            testElementsInPackage.add(testElement);
+        }
+    }
+
     private void updateTestElement(TestElement testElement) {
         int index = testElements.indexOf(testElement);
         testElements.set(index, testElement);
+        
+        List<TestElement> testElementsInPackage = testElementsByPackages.get(testElement.getPackageName());
+        index = testElementsInPackage.indexOf(testElement);
+        testElementsInPackage.set(index, testElement);
     }
 
     private void updateCounters(RemoteTestEvent event) {
-        State state = event.getTestElement().getState();
-        switch (state) {
-        case SUCCESS:
-            successCount++;
-            break;
-        case FAILURE:
-            failureCount++;
-            break;
-        case ERROR:
-            errorCount++;
-            break;
-        default:
-            throw new IllegalStateException(event.toString());
+        if (event.getType() == Type.TEST_STARTED) {
+            startedCount++;
+        }
+        if (event.getType() == Type.TEST_FINISHED) {
+            State state = event.getTestElement().getState();
+            switch (state) {
+            case SUCCESS:
+                successCount++;
+                break;
+            case FAILURE:
+                failureCount++;
+                break;
+            case ERROR:
+                errorCount++;
+                break;
+            default:
+                throw new IllegalStateException(event.toString());
+            }
         }
     }
 

@@ -6,6 +6,11 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_PREV;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
@@ -15,16 +20,21 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPreviousFailureLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsGroupedByPackages;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
+
+import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,7 +49,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -50,18 +59,20 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 public class TestViewer extends Composite {
 
     private TestRun currentTestRun;
+    private TestViewPart viewPart;
     private TreeViewer viewer;
-    private ToolBar toolBar;
-    private ToolBarManager toolBarManager;
     private ShowFailuresOnlyAction showFailuresOnlyAction;
     private ShowPreviousFailureAction showPreviousFailureAction;
     private ShowNextFailureAction showNextFailureAction;
     private ShowFailuresOnlyFilter showFailuresOnlyFilter;
+    private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
 
-    public TestViewer(Composite parent) {
+    public TestViewer(TestViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
+        
+        this.viewPart = viewPart;
 
         GridLayout gridLayout = new GridLayout(1, false);
         gridLayout.marginLeft = 0;
@@ -71,6 +82,7 @@ public class TestViewer extends Composite {
         setLayout(gridLayout);
 
         createToolBar();
+        createMenuBar();
         createViewer();
     }
 
@@ -81,10 +93,8 @@ public class TestViewer extends Composite {
         showFailuresOnlyFilter = new ShowFailuresOnlyFilter();
         relaunchAction = new RelaunchAction();
         stopAction = new StopAction();
-
-        toolBar = new ToolBar(this, SWT.FLAT | SWT.WRAP);
-        toolBar.setLayoutData(GridDataFactory.swtDefaults().align(SWT.RIGHT, SWT.CENTER).grab(true, false).create());
-        toolBarManager = new ToolBarManager(toolBar);
+        
+        IToolBarManager toolBarManager = viewPart.getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(showNextFailureAction);
         toolBarManager.add(showPreviousFailureAction);
         toolBarManager.add(showFailuresOnlyAction);
@@ -93,6 +103,14 @@ public class TestViewer extends Composite {
         toolBarManager.add(stopAction);
         toolBarManager.update(true);
     }    
+
+    private void createMenuBar() {
+        showTestsGroupedByPackagesAction = new ShowTestsGroupedByPackagesAction();
+        
+        IMenuManager menuManager = viewPart.getViewSite().getActionBars().getMenuManager();
+        menuManager.add(showTestsGroupedByPackagesAction);
+        menuManager.update(true);
+    }
 
     private void createViewer() {
         viewer = new TreeViewer(this, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -129,8 +147,49 @@ public class TestViewer extends Composite {
     public TreeViewer getViewer() {
         return viewer;
     }
-
+    
     private class TestContentProvider implements ITreeContentProvider {
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
+            if (inputElement instanceof TestRun) {
+                TestRun testRun = (TestRun) inputElement;
+                if (isGrouped) {
+                    return testRun.getTestElementsByPackages().keySet().toArray();
+                } else {
+                    return testRun.getTestElements().toArray();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
+            if (isGrouped && parentElement instanceof String) {
+                String packageName = (String) parentElement;
+                List<TestElement> testElementsInPackage = currentTestRun.getTestElementsByPackages().get(packageName);
+                if (testElementsInPackage != null) {
+                    return testElementsInPackage.toArray();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
+            if (isGrouped && element instanceof String) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            return null;
+        }
 
         @Override
         public void dispose() {
@@ -140,48 +199,44 @@ public class TestViewer extends Composite {
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
 
-        @Override
-        public Object[] getElements(Object inputElement) {
-            if (inputElement instanceof TestRun) {
-                TestRun testRun = (TestRun) inputElement;
-                return testRun.getTestElements().toArray();
-            }
-            return null;
-        }
-
-        @Override
-        public Object[] getChildren(Object parentElement) {
-            return null;
-        }
-
-        @Override
-        public Object getParent(Object element) {
-            return null;
-        }
-
-        @Override
-        public boolean hasChildren(Object element) {
-            return false;
-        }
-
     }
 
-    private static class TestLabelProvider extends StyledCellLabelProvider {
+    private class TestLabelProvider extends StyledCellLabelProvider {
 
         @Override
         public void update(ViewerCell cell) {
-            TestElement element = (TestElement) cell.getElement();
-            cell.setText(element.getName());
-
+            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
+            
+            String text = null;
             Image image = null;
-            switch(element.getState()) {
-            case RUNNING: image = getImage(TEST_RUNNING); break;
-            case SUCCESS: image = getImage(TEST_SUCCESS); break;
-            case FAILURE: image = getImage(TEST_FAILED); break;
-            case ERROR: image = getImage(TEST_ERROR); break;
-            default: image = getImage(TEST); break;
+            
+            if (cell.getElement() instanceof TestElement) {
+                TestElement testElement = (TestElement) cell.getElement();
+                text = isGrouped ? testElement.getName() : testElement.getQualifiedName();
+                
+                switch(testElement.getState()) {
+                    case RUNNING: image = getImage(TEST_RUNNING); break;
+                    case SUCCESS: image = getImage(TEST_SUCCESS); break;
+                    case FAILURE: image = getImage(TEST_FAILED); break;
+                    case ERROR: image = getImage(TEST_ERROR); break;
+                    default: image = getImage(TEST); break;
+                }
+            }
+            if (cell.getElement() instanceof String) {
+                String packageName = (String) cell.getElement();
+                text = packageName;
+                
+                State state = currentTestRun.getPackageState(packageName);
+                switch(state) {
+                    case RUNNING: image = getImage(TESTS_RUNNING); break;
+                    case SUCCESS: image = getImage(TESTS_SUCCESS); break;
+                    case FAILURE: image = getImage(TESTS_FAILED); break;
+                    case ERROR: image = getImage(TESTS_ERROR); break;
+                    default: image = getImage(TESTS); break;
+                }
             }
 
+            cell.setText(text);
             cell.setImage(image);
 
             super.update(cell);
@@ -314,6 +369,27 @@ public class TestViewer extends Composite {
         
     }
     
+    private class ShowTestsGroupedByPackagesAction extends Action {
+
+        public ShowTestsGroupedByPackagesAction() {
+            super(showTestsGroupedByPackages, AS_CHECK_BOX);
+            setDescription(showTestsGroupedByPackages);
+            setToolTipText(showTestsGroupedByPackages);
+
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            setChecked(preferenceStore.getBoolean(PREF_SHOW_TESTS_GROUPED_BY_PACKAGES));
+        }
+
+        @Override
+        public void run() {
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            preferenceStore.setValue(PREF_SHOW_TESTS_GROUPED_BY_PACKAGES, isChecked());
+
+            viewer.refresh();
+        }
+
+    }
+
     private class RelaunchAction extends Action {
         
         public RelaunchAction() {

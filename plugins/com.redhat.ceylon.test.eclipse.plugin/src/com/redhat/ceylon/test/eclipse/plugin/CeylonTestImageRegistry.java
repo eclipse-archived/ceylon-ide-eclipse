@@ -23,6 +23,12 @@ public class CeylonTestImageRegistry {
     public static final String TEST_RUNNING = "test_running.gif";
     public static final String TEST_SUCCESS = "test_success.gif";
     
+    public static final String TESTS = "tests.gif";
+    public static final String TESTS_ERROR = "tests_error.gif";
+    public static final String TESTS_FAILED = "tests_failed.gif";
+    public static final String TESTS_RUNNING = "tests_running.gif";
+    public static final String TESTS_SUCCESS = "tests_success.gif";
+    
     public static final String STACK_TRACE = "stack_trace.gif";
     public static final String STACK_TRACE_FILTER = "stack_trace_filter.gif";
     public static final String STACK_TRACE_LINE = "stack_trace_line.gif";
@@ -55,6 +61,12 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(TEST_IGNORED, image(TEST_IGNORED));
         imageRegistry.put(TEST_RUNNING, image(TEST_RUNNING));
         imageRegistry.put(TEST_SUCCESS, image(TEST_SUCCESS));
+        
+        imageRegistry.put(TESTS, image(TESTS));
+        imageRegistry.put(TESTS_ERROR, image(TESTS_ERROR));
+        imageRegistry.put(TESTS_FAILED, image(TESTS_FAILED));
+        imageRegistry.put(TESTS_RUNNING, image(TESTS_RUNNING));
+        imageRegistry.put(TESTS_SUCCESS, image(TESTS_SUCCESS));
         
         imageRegistry.put(STACK_TRACE, image(STACK_TRACE));
         imageRegistry.put(STACK_TRACE_FILTER, image(STACK_TRACE_FILTER));
