@@ -87,6 +87,7 @@ public class RemoteTestEventPublisher implements TestListener {
         testElement.setQualifiedName(testUnit.getName());
         testElement.setState(convertTestState(testUnit.getState()));
         testElement.setException(convertThrowable(testUnit.getException()));
+        testElement.setElapsedTimeInMilis(testUnit.getElapsedTimeInMilis());
         return testElement;
     }
 

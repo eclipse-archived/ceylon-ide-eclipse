@@ -23,6 +23,10 @@ public class TestElement implements Serializable {
         public int getPriority() {
             return priority;            
         }
+        
+        public boolean isFinished() {
+            return this == SUCCESS || this == FAILURE || this == ERROR;
+        }
 
     }
 
@@ -31,6 +35,7 @@ public class TestElement implements Serializable {
     private String qualifiedName;
     private State state;
     private String exception;
+    private long elapsedTimeInMilis;
     
     public String getName() {
         return name;
@@ -71,6 +76,14 @@ public class TestElement implements Serializable {
 
     public void setException(String exception) {
         this.exception = exception;
+    }
+    
+    public long getElapsedTimeInMilis() {
+        return elapsedTimeInMilis;
+    }
+    
+    public void setElapsedTimeInMilis(long elapsedTimeInMilis) {
+        this.elapsedTimeInMilis = elapsedTimeInMilis;
     }
     
     @Override

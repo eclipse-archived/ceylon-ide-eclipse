@@ -20,12 +20,16 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPreviousFailureLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsElapsedTime;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsGroupedByPackages;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -41,6 +45,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -65,14 +70,22 @@ public class TestViewer extends Composite {
     private ShowPreviousFailureAction showPreviousFailureAction;
     private ShowNextFailureAction showNextFailureAction;
     private ShowFailuresOnlyFilter showFailuresOnlyFilter;
+    private ShowTestsElapsedTimeAction showTestsElapsedTimeAction;
     private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
+    private NumberFormat elapsedTimeFormat;
 
     public TestViewer(TestViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
         
         this.viewPart = viewPart;
+        
+        elapsedTimeFormat = NumberFormat.getNumberInstance();
+        elapsedTimeFormat.setGroupingUsed(true);
+        elapsedTimeFormat.setMinimumFractionDigits(3);
+        elapsedTimeFormat.setMaximumFractionDigits(3);
+        elapsedTimeFormat.setMinimumIntegerDigits(1);
 
         GridLayout gridLayout = new GridLayout(1, false);
         gridLayout.marginLeft = 0;
@@ -105,9 +118,11 @@ public class TestViewer extends Composite {
     }    
 
     private void createMenuBar() {
+        showTestsElapsedTimeAction = new ShowTestsElapsedTimeAction();
         showTestsGroupedByPackagesAction = new ShowTestsGroupedByPackagesAction();
         
         IMenuManager menuManager = viewPart.getViewSite().getActionBars().getMenuManager();
+        menuManager.add(showTestsElapsedTimeAction);
         menuManager.add(showTestsGroupedByPackagesAction);
         menuManager.update(true);
     }
@@ -209,6 +224,7 @@ public class TestViewer extends Composite {
             
             String text = null;
             Image image = null;
+            long elapsedTimeInMilis = -1;
             
             if (cell.getElement() instanceof TestElement) {
                 TestElement testElement = (TestElement) cell.getElement();
@@ -220,6 +236,10 @@ public class TestViewer extends Composite {
                     case FAILURE: image = getImage(TEST_FAILED); break;
                     case ERROR: image = getImage(TEST_ERROR); break;
                     default: image = getImage(TEST); break;
+                }
+                
+                if( testElement.getState().isFinished() ) {
+                    elapsedTimeInMilis = testElement.getElapsedTimeInMilis();
                 }
             }
             if (cell.getElement() instanceof String) {
@@ -234,9 +254,21 @@ public class TestViewer extends Composite {
                     case ERROR: image = getImage(TESTS_ERROR); break;
                     default: image = getImage(TESTS); break;
                 }
+                
+                if( state.isFinished() ) {
+                    elapsedTimeInMilis = currentTestRun.getPackageElapsedTimeInMilis(packageName);
+                }
+            }
+            
+            StyledString styledText = new StyledString();
+            styledText.append(text);
+            if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
+                String elapsedSeconds = elapsedTimeFormat.format(TimeUnit.MILLISECONDS.toSeconds(elapsedTimeInMilis));
+                styledText.append(" (" + elapsedSeconds + " s)", StyledString.COUNTER_STYLER);
             }
 
-            cell.setText(text);
+            cell.setText(styledText.getString());
+            cell.setStyleRanges(styledText.getStyleRanges());
             cell.setImage(image);
 
             super.update(cell);
@@ -367,6 +399,27 @@ public class TestViewer extends Composite {
             return false;
         }
         
+    }
+    
+    private class ShowTestsElapsedTimeAction extends Action {
+
+        public ShowTestsElapsedTimeAction() {
+            super(showTestsElapsedTime, AS_CHECK_BOX);
+            setDescription(showTestsElapsedTime);
+            setToolTipText(showTestsElapsedTime);
+
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            setChecked(preferenceStore.getBoolean(PREF_SHOW_TESTS_ELAPSED_TIME));
+        }
+
+        @Override
+        public void run() {
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            preferenceStore.setValue(PREF_SHOW_TESTS_ELAPSED_TIME, isChecked());
+
+            viewer.refresh();
+        }
+
     }
     
     private class ShowTestsGroupedByPackagesAction extends Action {
