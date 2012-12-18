@@ -95,6 +95,21 @@ public class TestRun {
         return result;
     }
 
+    public long getPackageElapsedTimeInMilis(String packageName) {
+        long elapsedTimeInMilis = 0;
+
+        List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
+        if (testElementsInPackage != null) {
+            for (TestElement testElement : testElementsInPackage) {
+                if (testElement.getState().isFinished()) {
+                    elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
+                }
+            }
+        }
+
+        return elapsedTimeInMilis;
+    }
+
     public void processRemoteTestEvent(RemoteTestEvent event) {
         switch (event.getType()) {
         case TEST_RUN_STARTED:
