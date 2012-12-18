@@ -8,24 +8,53 @@ public class TestElement implements Serializable {
 
     public enum State {
 
-        UNDEFINED,
-        RUNNING,
-        SUCCESS,
-        FAILURE,
-        ERROR
+        UNDEFINED(0),
+        RUNNING(2),
+        SUCCESS(1),
+        FAILURE(3),
+        ERROR(4);
+        
+        private final int priority;
+        
+        private State(int priority) {
+            this.priority = priority;
+        }
+        
+        public int getPriority() {
+            return priority;            
+        }
 
     }
 
     private String name;
+    private String packageName;
+    private String qualifiedName;
     private State state;
     private String exception;
-
+    
     public String getName() {
         return name;
     }
+    
+    public String getPackageName() {
+        return packageName;
+    }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getQualifiedName() {
+        return qualifiedName;
+    }
+
+    public void setQualifiedName(String qualifiedName) {
+        this.qualifiedName = qualifiedName;
+        
+        int packageSeparatorIndex = qualifiedName.indexOf("::");
+        if (packageSeparatorIndex != -1) {
+            name = qualifiedName.substring(packageSeparatorIndex + 2);
+            packageName = qualifiedName.substring(0, packageSeparatorIndex);
+        } else {
+            name = qualifiedName;
+            packageName = "";
+        }
     }
 
     public State getState() {
@@ -49,15 +78,15 @@ public class TestElement implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (name != null && obj instanceof TestElement) {
-            return name.equals(((TestElement) obj).name);
+        if (qualifiedName != null && obj instanceof TestElement) {
+            return qualifiedName.equals(((TestElement) obj).qualifiedName);
         }
         return false;
     }
     
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return qualifiedName != null ? qualifiedName.hashCode() : 0;
     }
     
     @Override
@@ -65,7 +94,7 @@ public class TestElement implements Serializable {
         StringBuilder builder = new StringBuilder();
         builder.append("TestElement");
         builder.append("[");
-        builder.append("name=").append(name).append(", ");
+        builder.append("name=").append(qualifiedName).append(", ");
         builder.append("state=").append(state);
         builder.append("]");
         return builder.toString();

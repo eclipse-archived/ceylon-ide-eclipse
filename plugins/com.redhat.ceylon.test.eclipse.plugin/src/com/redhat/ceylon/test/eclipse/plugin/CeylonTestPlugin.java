@@ -22,6 +22,7 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String PREF_SHOW_COMPLATE_TREE = PLUGIN_ID + ".showComplateTree";
     public static final String PREF_SHOW_COMPLETE_DESCRIPTION = PLUGIN_ID + ".showCompleteDescription";
     public static final String PREF_SHOW_FAILURES_ONLY = PLUGIN_ID + ".showFailuresOnly";
+    public static final String PREF_SHOW_TESTS_GROUPED_BY_PACKAGES = PLUGIN_ID + ".showTestsGroupedByPackages";
     public static final String PREF_STACK_TRACE_FILTER = PLUGIN_ID + ".stackTraceFilter";
 
     private static CeylonTestPlugin plugin;

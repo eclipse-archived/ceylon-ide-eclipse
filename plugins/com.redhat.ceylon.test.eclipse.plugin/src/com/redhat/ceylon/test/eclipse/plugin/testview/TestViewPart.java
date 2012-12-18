@@ -126,7 +126,7 @@ public class TestViewPart extends ViewPart {
     }
 
     private void createTestViewer() {
-        testViewer = new TestViewer(sashForm);
+        testViewer = new TestViewer(this, sashForm);
         testViewer.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
