@@ -44,7 +44,6 @@ public class TestCounterPanel extends Composite {
 
     public void setCurrentTestRun(TestRun currentTestRun) {
         this.currentTestRun = currentTestRun;
-        updateView();
     }
 
     private void createRuns() {

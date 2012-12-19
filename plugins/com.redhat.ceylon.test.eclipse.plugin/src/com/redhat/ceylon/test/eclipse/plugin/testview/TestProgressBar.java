@@ -66,7 +66,6 @@ public class TestProgressBar extends Canvas {
 
     public void setCurrentTestRun(TestRun currentTestRun) {
         this.currentTestRun = currentTestRun;
-        updateView();
     }
 
     public void updateView() {

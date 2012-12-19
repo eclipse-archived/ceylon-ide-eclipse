@@ -35,6 +35,10 @@ public class CeylonTestMessages extends NLS {
     public static String errorMethodIsNotTestable;
     public static String errorNoSocket;
     
+    public static String statusTestRunRunning;
+    public static String statusTestRunFinished;
+    public static String statusTestRunInterrupted;
+    
     public static String counterRuns;
     public static String counterFailures;
     public static String counterErrors;

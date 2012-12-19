@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 
+import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
@@ -109,6 +111,27 @@ public class TestRun {
 
         return elapsedTimeInMilis;
     }
+    
+    public String getRunName() {
+        String name = null;
+        ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
+        if (launchConfig != null) {
+            name = launchConfig.getName();
+        }
+        return name;
+    }
+
+    public long getRunElapsedTimeInMilis() {
+        long elapsedTimeInMilis = 0;
+
+        for (TestElement testElement : testElements) {
+            if (testElement.getState().isFinished()) {
+                elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
+            }
+        }
+
+        return elapsedTimeInMilis;
+    }
 
     public void processRemoteTestEvent(RemoteTestEvent event) {
         switch (event.getType()) {
@@ -117,23 +140,27 @@ public class TestRun {
             isRunning = true;
             isFinished = false;
             isInterrupted = false;
+            fireTestRunStarted();
             break;
         case TEST_RUN_FINISHED:
             isRunning = false;
             isFinished = true;
             isInterrupted = false;
+            fireTestRunFinished();
             break;
         case TEST_STARTED:
             updateTestElement(event.getTestElement());
             updateCounters(event);
+            fireTestStarted(event.getTestElement());
             break;
         case TEST_FINISHED:
             updateTestElement(event.getTestElement());
             updateCounters(event);
+            fireTestFinished(event.getTestElement());
             break;
         }
     }
-
+    
     public void processLaunchTerminatedEvent() {
         if( isRunning ) {
             for (TestElement testElement : testElements) {
@@ -144,6 +171,7 @@ public class TestRun {
             isRunning = false;
             isFinished = false;
             isInterrupted = true;
+            fireTestRunInterrupted();
         }
     }
 
@@ -191,6 +219,40 @@ public class TestRun {
             default:
                 throw new IllegalStateException(event.toString());
             }
+        }
+    }
+    
+    private List<TestRunListener> getTestRunListeners() {
+        return CeylonTestPlugin.getDefault().getModel().getTestRunListeners();
+    }
+
+    private void fireTestRunStarted() {
+        for (TestRunListener listener : getTestRunListeners()) {
+            listener.testRunStarted(this);
+        }
+    }
+
+    private void fireTestRunFinished() {
+        for (TestRunListener listener : getTestRunListeners()) {
+            listener.testRunFinished(this);
+        }
+    }
+
+    private void fireTestRunInterrupted() {
+        for (TestRunListener listener : getTestRunListeners()) {
+            listener.testRunInterrupted(this);
+        }
+    }
+    
+    private void fireTestStarted(TestElement testElement) {
+        for (TestRunListener listener : getTestRunListeners()) {
+            listener.testStarted(this, testElement);
+        }
+    }
+
+    private void fireTestFinished(TestElement testElement) {
+        for (TestRunListener listener : getTestRunListeners()) {
+            listener.testFinished(this, testElement);
         }
     }
 
