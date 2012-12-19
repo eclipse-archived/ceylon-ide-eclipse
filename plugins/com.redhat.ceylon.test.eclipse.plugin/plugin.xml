@@ -95,5 +95,11 @@
             name="Ceylon Test">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.redhat.ceylon.test.eclipse.plugin.CeylonTestPreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>
