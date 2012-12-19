@@ -1,6 +1,7 @@
 package com.redhat.ceylon.test.eclipse.plugin.testview;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_FAILURES;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_NEXT;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_PREV;
@@ -17,6 +18,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.scrollLockLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPreviousFailureLabel;
@@ -28,7 +30,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_T
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
 
 import java.text.NumberFormat;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.debug.core.DebugException;
@@ -46,6 +50,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -60,6 +65,8 @@ import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
 public class TestViewer extends Composite {
 
@@ -81,8 +88,12 @@ public class TestViewer extends Composite {
     private ShowFailuresOnlyFilter showFailuresOnlyFilter;
     private ShowTestsElapsedTimeAction showTestsElapsedTimeAction;
     private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction;
+    private ScrollLockAction scrollLockAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
+    private TestRunListenerAdapter testRunListener;
+    private TestElement lastStartedTestElement;
+    private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
 
     public TestViewer(TestViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
@@ -99,6 +110,11 @@ public class TestViewer extends Composite {
         createToolBar();
         createMenuBar();
         createViewer();
+        createTestRunListener();
+    }
+
+    public void setCurrentTestRun(TestRun currentTestRun) {
+        this.currentTestRun = currentTestRun;
     }
 
     private void createToolBar() {
@@ -106,6 +122,7 @@ public class TestViewer extends Composite {
         showPreviousFailureAction = new ShowPreviousFailureAction();
         showFailuresOnlyAction = new ShowFailuresOnlyAction();
         showFailuresOnlyFilter = new ShowFailuresOnlyFilter();
+        scrollLockAction = new ScrollLockAction();
         relaunchAction = new RelaunchAction();
         stopAction = new StopAction();
         
@@ -113,6 +130,7 @@ public class TestViewer extends Composite {
         toolBarManager.add(showNextFailureAction);
         toolBarManager.add(showPreviousFailureAction);
         toolBarManager.add(showFailuresOnlyAction);
+        toolBarManager.add(scrollLockAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(relaunchAction);
         toolBarManager.add(stopAction);
@@ -137,16 +155,49 @@ public class TestViewer extends Composite {
         viewer.getControl().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
     }
     
-    public void setCurrentTestRun(TestRun currentTestRun) {
-        this.currentTestRun = currentTestRun;
+    private TreePath createTreePath(TestElement testElement) {
+        if (showTestsGroupedByPackagesAction.isChecked()) {
+            return new TreePath(new Object[] { testElement.getPackageName(), testElement });
+        } else {
+            return new TreePath(new Object[] { testElement });
+        }
     }
 
+    private void createTestRunListener() {
+        testRunListener = new TestRunListenerAdapter() {
+            @Override
+            public void testStarted(TestRun testRun, TestElement testElement) {
+                if (currentTestRun == testRun) {
+                    lastStartedTestElement = testElement;
+                }
+            }
+            @Override
+            public void testFinished(TestRun testRun, TestElement testElement) {
+                if (currentTestRun == testRun) {
+                    lastFinishedPackages.add(testElement.getPackageName());
+                }
+            }
+        };
+
+        TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
+        testRunContainer.addTestRunListener(testRunListener);
+    }
+    
     public void updateView() {
+        updateViewer();
+        updateActionState();
+        automaticRevealLastStarted();
+        automaticCollapseLastSuccessPackages();
+    }
+
+    private void updateViewer() {
         if( viewer.getInput() != currentTestRun ) {
             viewer.setInput(currentTestRun);
         }
         viewer.refresh();
-
+    }
+    
+    private void updateActionState() {
         boolean containsFailures = false;
         boolean canRelaunch = false;
         boolean canStop = false;
@@ -156,15 +207,45 @@ public class TestViewer extends Composite {
             canRelaunch = !currentTestRun.isRunning();
             canStop = currentTestRun.isRunning();
         }
-
+    
         showNextFailureAction.setEnabled(containsFailures);
         showPreviousFailureAction.setEnabled(containsFailures);
         relaunchAction.setEnabled(canRelaunch);
         stopAction.setEnabled(canStop);
     }
-    
+
+    private void automaticRevealLastStarted() {
+        if (currentTestRun != null &&
+                lastStartedTestElement != null &&
+                !scrollLockAction.isChecked()) {
+            viewer.reveal(createTreePath(lastStartedTestElement));
+        }
+    }
+
+    private void automaticCollapseLastSuccessPackages() {
+        if (currentTestRun != null &&
+                showTestsGroupedByPackagesAction.isChecked() &&
+                !scrollLockAction.isChecked() &&
+                !lastFinishedPackages.isEmpty()) {
+            for (String packageName : lastFinishedPackages) {
+                State packageState = currentTestRun.getPackageState(packageName);
+                if (packageState == State.SUCCESS) {
+                    viewer.collapseToLevel(packageName, TreeViewer.ALL_LEVELS);
+                }
+            }
+            lastFinishedPackages.clear();
+        }
+    }
+
     public TreeViewer getViewer() {
         return viewer;
+    }
+    
+    @Override
+    public void dispose() {
+        TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
+        testRunContainer.removeTestRunListener(testRunListener);
+        super.dispose();
     }
     
     private class TestContentProvider implements ITreeContentProvider {
@@ -389,20 +470,30 @@ public class TestViewer extends Composite {
     }
     
     private class ShowFailuresOnlyFilter extends ViewerFilter {
-        
+
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            return select(((TestElement) element));
-        }
-
-        public boolean select(TestElement testElement) {
-            State state = testElement.getState();
-            if (state == State.FAILURE || state == State.ERROR) {
-                return true;
+            if (element instanceof String) {
+                return select(((String) element));
+            } else if (element instanceof TestElement) {
+                return select(((TestElement) element));
             }
             return false;
         }
-        
+
+        private boolean select(String packageName) {
+            if (currentTestRun != null) {
+                State packageState = currentTestRun.getPackageState(packageName);
+                return packageState.isFailureOrError();
+            }
+            return false;
+        }
+
+        private boolean select(TestElement testElement) {
+            State state = testElement.getState();
+            return state.isFailureOrError();
+        }
+
     }
     
     private class ShowTestsElapsedTimeAction extends Action {
@@ -445,6 +536,17 @@ public class TestViewer extends Composite {
             viewer.refresh();
         }
 
+    }
+
+    private class ScrollLockAction extends Action {
+    
+        public ScrollLockAction() {
+            super(scrollLockLabel, AS_CHECK_BOX);
+            setDescription(scrollLockLabel);
+            setToolTipText(scrollLockLabel);
+            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(SCROLL_LOCK));
+        }
+    
     }
 
     private class RelaunchAction extends Action {
@@ -501,6 +603,6 @@ public class TestViewer extends Composite {
             }
         }
         
-    }
+    }    
 
 }
