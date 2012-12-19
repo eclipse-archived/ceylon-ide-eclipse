@@ -39,6 +39,7 @@ public class CeylonTestImageRegistry {
     
     public static final String RELAUNCH = "relaunch.gif";
     public static final String STOP = "stop.gif";
+    public static final String SCROLL_LOCK = "scroll_lock.gif";
 
     private static final IPath ICONS_PATH = new Path("icons/");
 
@@ -78,6 +79,7 @@ public class CeylonTestImageRegistry {
         
         imageRegistry.put(RELAUNCH, image(RELAUNCH));
         imageRegistry.put(STOP, image(STOP));
+        imageRegistry.put(SCROLL_LOCK, image(SCROLL_LOCK));
     }
 
     private static ImageDescriptor image(String file) {

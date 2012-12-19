@@ -1,7 +1,10 @@
 ? javascript backend
 ? default modules 
-? naming convention
 - synchronize access to TestRun
 - implement RefactoringParticipant
 - test history
 - compare test results
+
+
+vychozi hodnoty pro pref
+double click na test by me melo prenest na zdrojak

@@ -28,6 +28,10 @@ public class TestElement implements Serializable {
             return this == SUCCESS || this == FAILURE || this == ERROR;
         }
 
+        public boolean isFailureOrError() {
+            return this == FAILURE || this == ERROR;
+        }
+
     }
 
     private String name;

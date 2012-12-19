@@ -33,6 +33,7 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
 public class TestViewPart extends ViewPart {
 
@@ -151,28 +152,10 @@ public class TestViewPart extends ViewPart {
     }
 
     private void createTestRunListener() {
-        testRunListener = new TestRunListener() {
+        testRunListener = new TestRunListenerAdapter() {
             @Override
             public void testRunAdded(TestRun testRun) {
                 setCurrentTestRun(testRun);
-            }
-            @Override
-            public void testRunRemoved(TestRun testRun) {
-            }
-            @Override
-            public void testRunStarted(TestRun testRun) {
-            }
-            @Override
-            public void testRunFinished(TestRun testRun) {
-            }
-            @Override
-            public void testRunInterrupted(TestRun testRun) {
-            }
-            @Override
-            public void testStarted(TestRun testRun, final TestElement testElement) {
-            }
-            @Override
-            public void testFinished(TestRun testRun, TestElement testElement) {
             }
         };
 
@@ -237,6 +220,8 @@ public class TestViewPart extends ViewPart {
         testRunContainer.removeTestRunListener(testRunListener);
         
         getViewSite().getPage().removePartListener(viewPartListener);
+        
+        super.dispose();
     }
 
     private class UpdateViewJob extends UIJob {
