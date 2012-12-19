@@ -63,6 +63,15 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 
 public class TestViewer extends Composite {
 
+    public static final NumberFormat ELAPSED_TIME_FORMAT;
+    static {
+        ELAPSED_TIME_FORMAT = NumberFormat.getNumberInstance();
+        ELAPSED_TIME_FORMAT.setGroupingUsed(true);
+        ELAPSED_TIME_FORMAT.setMinimumFractionDigits(3);
+        ELAPSED_TIME_FORMAT.setMaximumFractionDigits(3);
+        ELAPSED_TIME_FORMAT.setMinimumIntegerDigits(1);
+    }
+    
     private TestRun currentTestRun;
     private TestViewPart viewPart;
     private TreeViewer viewer;
@@ -74,18 +83,11 @@ public class TestViewer extends Composite {
     private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
-    private NumberFormat elapsedTimeFormat;
 
     public TestViewer(TestViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
         
         this.viewPart = viewPart;
-        
-        elapsedTimeFormat = NumberFormat.getNumberInstance();
-        elapsedTimeFormat.setGroupingUsed(true);
-        elapsedTimeFormat.setMinimumFractionDigits(3);
-        elapsedTimeFormat.setMaximumFractionDigits(3);
-        elapsedTimeFormat.setMinimumIntegerDigits(1);
 
         GridLayout gridLayout = new GridLayout(1, false);
         gridLayout.marginLeft = 0;
@@ -129,6 +131,7 @@ public class TestViewer extends Composite {
 
     private void createViewer() {
         viewer = new TreeViewer(this, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        viewer.setUseHashlookup(true);
         viewer.setContentProvider(new TestContentProvider());
         viewer.setLabelProvider(new TestLabelProvider());
         viewer.getControl().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
@@ -136,11 +139,12 @@ public class TestViewer extends Composite {
     
     public void setCurrentTestRun(TestRun currentTestRun) {
         this.currentTestRun = currentTestRun;
-        viewer.setInput(currentTestRun);
-        updateView();
     }
 
     public void updateView() {
+        if( viewer.getInput() != currentTestRun ) {
+            viewer.setInput(currentTestRun);
+        }
         viewer.refresh();
 
         boolean containsFailures = false;
@@ -263,7 +267,7 @@ public class TestViewer extends Composite {
             StyledString styledText = new StyledString();
             styledText.append(text);
             if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
-                String elapsedSeconds = elapsedTimeFormat.format(TimeUnit.MILLISECONDS.toSeconds(elapsedTimeInMilis));
+                String elapsedSeconds = ELAPSED_TIME_FORMAT.format(TimeUnit.MILLISECONDS.toSeconds(elapsedTimeInMilis));
                 styledText.append(" (" + elapsedSeconds + " s)", StyledString.COUNTER_STYLER);
             }
 

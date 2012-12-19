@@ -1,7 +1,13 @@
 package com.redhat.ceylon.test.eclipse.plugin.testview;
 
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunFinished;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunInterrupted;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunRunning;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getActivePage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
+
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -153,35 +159,71 @@ public class TestViewPart extends ViewPart {
             @Override
             public void testRunRemoved(TestRun testRun) {
             }
+            @Override
+            public void testRunStarted(TestRun testRun) {
+            }
+            @Override
+            public void testRunFinished(TestRun testRun) {
+            }
+            @Override
+            public void testRunInterrupted(TestRun testRun) {
+            }
+            @Override
+            public void testStarted(TestRun testRun, final TestElement testElement) {
+            }
+            @Override
+            public void testFinished(TestRun testRun, TestElement testElement) {
+            }
         };
 
         TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
         testRunContainer.addTestRunListener(testRunListener);
     }
-
+    
     private void setCurrentTestRun(TestRun testRun) {
         currentTestRun = testRun;
+        testCounterPanel.setCurrentTestRun(testRun);
+        testProgressBar.setCurrentTestRun(testRun);
+        testViewer.setCurrentTestRun(testRun);
         
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                testCounterPanel.setCurrentTestRun(currentTestRun);
-                testProgressBar.setCurrentTestRun(currentTestRun);
-                testViewer.setCurrentTestRun(currentTestRun);
-                
-                if( currentTestRun != null ) {
-                    updateViewJob.schedule(REFRESH_INTERVAL);
-                }
+                updateView();
             }
         });
+        
+        if( currentTestRun != null ) {
+            updateViewJob.schedule(REFRESH_INTERVAL);
+        }
     }
     
     private void updateView() {
+        updateStatusMessage();
         testCounterPanel.updateView();
         testProgressBar.updateView();
         testViewer.updateView();
     }
     
+    private void updateStatusMessage() {
+        String msg = "";
+    
+        if (currentTestRun != null) {
+            if (currentTestRun.isRunning()) {
+                msg = msg(statusTestRunRunning, currentTestRun.getRunName());
+            }
+            else if (currentTestRun.isFinished()) {
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(currentTestRun.getRunElapsedTimeInMilis());
+                msg = msg(statusTestRunFinished, TestViewer.ELAPSED_TIME_FORMAT.format(seconds));
+            }
+            else if (currentTestRun.isInterrupted()) {
+                msg = msg(statusTestRunInterrupted, currentTestRun.getRunName());
+            }
+        }
+    
+        setContentDescription(msg);
+    }
+
     @Override
     public void setFocus() {
     }
