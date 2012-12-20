@@ -39,6 +39,8 @@ public class TestElement implements Serializable {
     private String qualifiedName;
     private State state;
     private String exception;
+    private String expectedValue;
+    private String actualValue;
     private long elapsedTimeInMilis;
     
     public String getName() {
@@ -80,6 +82,22 @@ public class TestElement implements Serializable {
 
     public void setException(String exception) {
         this.exception = exception;
+    }
+    
+    public String getExpectedValue() {
+        return expectedValue;
+    }
+    
+    public void setExpectedValue(String expectedValue) {
+        this.expectedValue = expectedValue;
+    }
+    
+    public String getActualValue() {
+        return actualValue;
+    }
+    
+    public void setActualValue(String actualValue) {
+        this.actualValue = actualValue;
     }
     
     public long getElapsedTimeInMilis() {

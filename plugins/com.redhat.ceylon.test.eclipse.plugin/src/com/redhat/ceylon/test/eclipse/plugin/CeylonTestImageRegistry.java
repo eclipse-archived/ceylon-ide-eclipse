@@ -42,6 +42,7 @@ public class CeylonTestImageRegistry {
     public static final String SCROLL_LOCK = "scroll_lock.gif";
     public static final String COLLAPSE_ALL = "collapse_all.gif";
     public static final String EXPAND_ALL = "expand_all.gif";
+    public static final String COMPARE = "compare.gif";
 
     private static final IPath ICONS_PATH = new Path("icons/");
 
@@ -84,6 +85,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(SCROLL_LOCK, image(SCROLL_LOCK));
         imageRegistry.put(COLLAPSE_ALL, image(COLLAPSE_ALL));
         imageRegistry.put(EXPAND_ALL, image(EXPAND_ALL));
+        imageRegistry.put(COMPARE, image(COMPARE));
     }
 
     private static ImageDescriptor image(String file) {

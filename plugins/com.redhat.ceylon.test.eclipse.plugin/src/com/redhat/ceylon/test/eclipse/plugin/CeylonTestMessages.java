@@ -58,6 +58,12 @@ public class CeylonTestMessages extends NLS {
     public static String collapseAllLabel;
     public static String expandAllLabel;
     
+    public static String compareLabel;
+    public static String compareDlgTitle;
+    public static String compareDlgOk;
+    public static String compareDlgExpected;
+    public static String compareDlgActual;
+    
     public static String add;
     public static String remove;
     public static String moveUp;

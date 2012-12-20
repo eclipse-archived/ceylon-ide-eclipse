@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import ceylon.test.AssertComparisonException;
 import ceylon.test.TestListener;
 import ceylon.test.TestResult;
 import ceylon.test.TestRunner;
@@ -88,6 +89,13 @@ public class RemoteTestEventPublisher implements TestListener {
         testElement.setState(convertTestState(testUnit.getState()));
         testElement.setException(convertThrowable(testUnit.getException()));
         testElement.setElapsedTimeInMilis(testUnit.getElapsedTimeInMilis());
+        
+        if (testUnit.getException() instanceof AssertComparisonException) {
+            AssertComparisonException ace = (AssertComparisonException) testUnit.getException();
+            testElement.setExpectedValue(ace.getExpectedValue());
+            testElement.setActualValue(ace.getActualValue());
+        }
+        
         return testElement;
     }
 

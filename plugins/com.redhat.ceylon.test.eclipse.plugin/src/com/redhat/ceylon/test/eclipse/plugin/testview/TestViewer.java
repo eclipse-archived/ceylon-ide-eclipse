@@ -137,12 +137,12 @@ public class TestViewer extends Composite {
         IToolBarManager toolBarManager = viewPart.getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(showNextFailureAction);
         toolBarManager.add(showPreviousFailureAction);
-        toolBarManager.add(showFailuresOnlyAction);
-        toolBarManager.add(scrollLockAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(expandAllAction);
         toolBarManager.add(collapseAllAction);
         toolBarManager.add(new Separator());
+        toolBarManager.add(showFailuresOnlyAction);
+        toolBarManager.add(scrollLockAction);
         toolBarManager.add(relaunchAction);
         toolBarManager.add(stopAction);
         toolBarManager.update(true);
