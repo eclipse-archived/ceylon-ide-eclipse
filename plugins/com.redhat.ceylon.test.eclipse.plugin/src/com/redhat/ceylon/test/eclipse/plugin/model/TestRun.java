@@ -14,6 +14,12 @@ import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
 
 public class TestRun {
+    
+    private static final Object NULL_LOCK = new Object();
+
+    public static Object acquireLock(TestRun testRun) {
+        return testRun != null ? testRun : NULL_LOCK;
+    }
 
     private final ILaunch launch;
     private final List<TestElement> testElements = new ArrayList<TestElement>();
@@ -133,7 +139,7 @@ public class TestRun {
         return elapsedTimeInMilis;
     }
 
-    public void processRemoteTestEvent(RemoteTestEvent event) {
+    public synchronized void processRemoteTestEvent(RemoteTestEvent event) {
         switch (event.getType()) {
         case TEST_RUN_STARTED:
             updateTestElements(event.getTestElements());
@@ -161,7 +167,7 @@ public class TestRun {
         }
     }
     
-    public void processLaunchTerminatedEvent() {
+    public synchronized void processLaunchTerminatedEvent() {
         if( isRunning ) {
             for (TestElement testElement : testElements) {
                 if (testElement.getState() == State.RUNNING) {
