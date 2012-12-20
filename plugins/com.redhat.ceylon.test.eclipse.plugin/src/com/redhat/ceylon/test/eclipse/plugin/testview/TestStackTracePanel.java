@@ -1,11 +1,13 @@
 package com.redhat.ceylon.test.eclipse.plugin.testview;
 
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COMPARE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_FILTER;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_LINE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceCopyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceFilterLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceLabel;
@@ -23,6 +25,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -37,6 +41,7 @@ import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
+import com.redhat.ceylon.test.eclipse.plugin.testview.compare.CompareDialog;
 
 public class TestStackTracePanel extends Composite {
     
@@ -54,6 +59,7 @@ public class TestStackTracePanel extends Composite {
     private Table stackTraceTable;
     private StackTraceFilterAction stackTraceFilterAction;
     private StackTraceCopyAction stackTraceCopyAction;
+    private CompareAction compareAction;
 
     public TestStackTracePanel(Composite parent) {
         super(parent, SWT.NONE);
@@ -74,7 +80,7 @@ public class TestStackTracePanel extends Composite {
 
     public void setSelectedTestElement(TestElement selectedTestElement) {
         this.selectedTestElement = selectedTestElement;
-        updateStackTrace();
+        updateView();
     }
 
     private void createHeader() {
@@ -87,11 +93,13 @@ public class TestStackTracePanel extends Composite {
     private void createToolBar() {
         stackTraceFilterAction = new StackTraceFilterAction();
         stackTraceCopyAction = new StackTraceCopyAction();
+        compareAction = new CompareAction();
         
         toolBar = new ToolBar(this, SWT.FLAT | SWT.WRAP);
         toolBar.setLayoutData(GridDataFactory.swtDefaults().align(SWT.RIGHT, SWT.CENTER).grab(true, false).create());
         toolBarManager = new ToolBarManager(toolBar);
         toolBarManager.add(stackTraceFilterAction);
+        toolBarManager.add(compareAction);
         toolBarManager.add(stackTraceCopyAction);
         toolBarManager.update(true);
     }
@@ -139,23 +147,41 @@ public class TestStackTracePanel extends Composite {
         tableItem.setImage(image);
     }
 
-    private void updateStackTrace() {
+    private void updateView() {
+        updateStackTraceTable();
+        updateActionState();
+    }
+
+    private void updateStackTraceTable() {
         stackTraceTable.setRedraw(false);
         stackTraceTable.removeAll();
-        boolean stackTraceAvailable = isStackTraceAvailable();
-        if (stackTraceAvailable) {
+        if (isStackTraceAvailable()) {
             createStackTraceLines(selectedTestElement.getException());
         }
-        stackTraceCopyAction.setEnabled(stackTraceAvailable);
         stackTraceTable.setRedraw(true);
+    }
+
+    private void updateActionState() {
+        stackTraceCopyAction.setEnabled(isStackTraceAvailable());
+        compareAction.setEnabled(isCompareResultAvailable());
     }
 
     private boolean isStackTraceAvailable() {
         if (selectedTestElement != null &&
                 selectedTestElement.getException() != null &&
-                (selectedTestElement.getState() == State.FAILURE || selectedTestElement.getState() == State.ERROR)) {
+                selectedTestElement.getState().isFailureOrError()) {
             return true;
         }        
+        return false;
+    }
+    
+    private boolean isCompareResultAvailable() {
+        if( selectedTestElement != null && 
+                selectedTestElement.getState() == State.FAILURE && 
+                selectedTestElement.getActualValue() != null && 
+                selectedTestElement.getExpectedValue() != null ) {
+            return true;
+        }
         return false;
     }
 
@@ -202,7 +228,7 @@ public class TestStackTracePanel extends Composite {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_STACK_TRACE_FILTER, isChecked());
     
-            updateStackTrace();
+            updateView();
         }
     
     }
@@ -228,6 +254,39 @@ public class TestStackTracePanel extends Composite {
             }
         }
         
+    }
+    
+    private class CompareAction extends Action {
+
+        private CompareDialog dlg;
+
+        public CompareAction() {
+            super(compareLabel);
+            setDescription(compareLabel);
+            setToolTipText(compareLabel);
+            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(COMPARE));
+            setEnabled(false);
+        }
+
+        @Override
+        public void run() {
+            if (dlg == null) {
+                dlg = new CompareDialog(TestStackTracePanel.this.getShell());
+                dlg.create();
+                dlg.getShell().addDisposeListener(new DisposeListener() {
+                    @Override
+                    public void widgetDisposed(DisposeEvent e) {
+                        dlg = null;
+                    }
+                });
+                dlg.setTestElement(selectedTestElement);
+                dlg.open();
+            } else {
+                dlg.setTestElement(selectedTestElement);
+                dlg.getShell().setActive();
+            }
+        }
+
     }
 
 }
