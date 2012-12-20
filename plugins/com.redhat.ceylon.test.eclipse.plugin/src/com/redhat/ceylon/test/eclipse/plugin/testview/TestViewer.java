@@ -38,7 +38,6 @@ import java.text.NumberFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -367,7 +366,7 @@ public class TestViewer extends Composite {
             StyledString styledText = new StyledString();
             styledText.append(text);
             if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
-                String elapsedSeconds = ELAPSED_TIME_FORMAT.format(TimeUnit.MILLISECONDS.toSeconds(elapsedTimeInMilis));
+                String elapsedSeconds = ELAPSED_TIME_FORMAT.format(elapsedTimeInMilis/1000.0);
                 styledText.append(" (" + elapsedSeconds + " s)", StyledString.COUNTER_STYLER);
             }
 
