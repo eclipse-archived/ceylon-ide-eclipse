@@ -396,17 +396,22 @@ public class TestViewer extends Composite {
             }
             
             Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-            Object nextElement = null;
 
             int fromIndex = 0;
-            if (currentElement != null) {
+            if (currentElement instanceof String ) {
+                List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
+                if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
+                    fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0));
+                }
+            } else if (currentElement instanceof TestElement) {
                 fromIndex = currentTestRun.getTestElements().indexOf(currentElement) + 1;
             }
 
+            TestElement nextElement = null;
             if (fromIndex < currentTestRun.getTestElements().size()) {
                 for (int i = fromIndex; i < currentTestRun.getTestElements().size(); i++) {
                     TestElement testElement = currentTestRun.getTestElements().get(i);
-                    if (testElement.getState() == State.FAILURE || testElement.getState() == State.ERROR) {
+                    if (testElement.getState().isFailureOrError()) {
                         nextElement = testElement;
                         break;
                     }
@@ -414,6 +419,7 @@ public class TestViewer extends Composite {
             }
 
             if (nextElement != null) {
+                viewer.reveal(createTreePath(nextElement));
                 viewer.setSelection(new StructuredSelection(nextElement), true);
             }
         }
@@ -437,17 +443,24 @@ public class TestViewer extends Composite {
             }
             
             Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-            Object prevElement = null;
 
-            int fromIndex = currentTestRun.getTestElements().size() - 1;
-            if (currentElement != null) {
+            int fromIndex = -1;
+            if (currentElement instanceof String) {
+                List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
+                if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
+                    fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0)) - 1;
+                }
+            } else if (currentElement instanceof TestElement) {
                 fromIndex = currentTestRun.getTestElements().indexOf(currentElement) - 1;
+            } else {
+                fromIndex = currentTestRun.getTestElements().size() - 1;
             }
 
+            TestElement prevElement = null;
             if (fromIndex >= 0) {
                 for (int i = fromIndex; i >= 0; i--) {
                     TestElement testElement = currentTestRun.getTestElements().get(i);
-                    if (testElement.getState() == State.FAILURE || testElement.getState() == State.ERROR) {
+                    if (testElement.getState().isFailureOrError()) {
                         prevElement = testElement;
                         break;
                     }
@@ -455,6 +468,7 @@ public class TestViewer extends Composite {
             }
 
             if (prevElement != null) {
+                viewer.reveal(createTreePath(prevElement));
                 viewer.setSelection(new StructuredSelection(prevElement), true);
             }
         }
