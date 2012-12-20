@@ -29,6 +29,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPrevi
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsElapsedTime;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsGroupedByPackages;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
@@ -577,6 +578,15 @@ public class TestViewer extends Composite {
             setDescription(scrollLockLabel);
             setToolTipText(scrollLockLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(SCROLL_LOCK));
+            
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            setChecked(preferenceStore.getBoolean(PREF_SCROLL_LOCK));
+        }
+        
+        @Override
+        public void run() {
+            IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
+            preferenceStore.setValue(PREF_SCROLL_LOCK, isChecked());
         }
     
     }

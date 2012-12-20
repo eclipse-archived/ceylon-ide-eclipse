@@ -24,6 +24,7 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String PREF_SHOW_FAILURES_ONLY = PLUGIN_ID + ".showFailuresOnly";
     public static final String PREF_SHOW_TESTS_GROUPED_BY_PACKAGES = PLUGIN_ID + ".showTestsGroupedByPackages";
     public static final String PREF_SHOW_TESTS_ELAPSED_TIME = PLUGIN_ID + ".showTestsElapsedTime";
+    public static final String PREF_SCROLL_LOCK = PLUGIN_ID + ".scrollLock";
     public static final String PREF_STACK_TRACE_FILTER = PLUGIN_ID + ".stackTraceFilter";
 
     private static CeylonTestPlugin plugin;
