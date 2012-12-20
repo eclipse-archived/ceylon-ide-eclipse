@@ -1,6 +1,5 @@
 ? javascript backend
 ? default modules 
-- synchronize access to TestRun
 - implement RefactoringParticipant
 - test history
 - go to source

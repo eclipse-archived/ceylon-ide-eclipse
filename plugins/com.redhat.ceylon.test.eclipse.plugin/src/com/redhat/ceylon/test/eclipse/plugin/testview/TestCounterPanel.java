@@ -26,7 +26,6 @@ public class TestCounterPanel extends Composite {
     private Label failuresImage;
     private Label failuresLabel;
     private Text failuresText;
-    private TestRun currentTestRun;
 
     public TestCounterPanel(Composite parent) {
         super(parent, SWT.WRAP);
@@ -39,11 +38,7 @@ public class TestCounterPanel extends Composite {
         createRuns();
         createFailures();
         createErrors();
-        updateView();
-    }
-
-    public void setCurrentTestRun(TestRun currentTestRun) {
-        this.currentTestRun = currentTestRun;
+        updateView(null);
     }
 
     private void createRuns() {
@@ -74,7 +69,7 @@ public class TestCounterPanel extends Composite {
         errorsText.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
     }
 
-    public void updateView() {
+    public void updateView(TestRun currentTestRun) {
         int totalCount = 0;
         int finishedCount = 0;
         int failureCount = 0;

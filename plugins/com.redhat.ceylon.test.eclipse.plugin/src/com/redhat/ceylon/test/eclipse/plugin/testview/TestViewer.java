@@ -120,7 +120,11 @@ public class TestViewer extends Composite {
     }
 
     public void setCurrentTestRun(TestRun currentTestRun) {
-        this.currentTestRun = currentTestRun;
+        synchronized (TestRun.acquireLock(this.currentTestRun)) {
+            this.currentTestRun = currentTestRun;
+            this.lastStartedTestElement = null;
+            this.lastFinishedPackages.clear();
+        }
     }
 
     private void createToolBar() {
@@ -195,10 +199,12 @@ public class TestViewer extends Composite {
     }
     
     public void updateView() {
-        updateViewer();
-        updateActionState();
-        automaticRevealLastStarted();
-        automaticCollapseLastSuccessPackages();
+        synchronized (TestRun.acquireLock(currentTestRun)) {
+            updateViewer();
+            updateActionState();
+            automaticRevealLastStarted();
+            automaticCollapseLastSuccessPackages();
+        }
     }
 
     private void updateViewer() {
@@ -252,6 +258,13 @@ public class TestViewer extends Composite {
                 }
             }
             lastFinishedPackages.clear();
+        }
+    }
+    
+    private void moveTo(TestElement testElement) {
+        if (testElement != null) {
+            viewer.reveal(createTreePath(testElement));
+            viewer.setSelection(new StructuredSelection(testElement), true);
         }
     }
 
@@ -391,36 +404,35 @@ public class TestViewer extends Composite {
 
         @Override
         public void run() {
-            if( currentTestRun == null ) {
-                return;
-            }
-            
-            Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-
-            int fromIndex = 0;
-            if (currentElement instanceof String ) {
-                List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
-                if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
-                    fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0));
+            synchronized (TestRun.acquireLock(currentTestRun)) {
+                if( currentTestRun == null ) {
+                    return;
                 }
-            } else if (currentElement instanceof TestElement) {
-                fromIndex = currentTestRun.getTestElements().indexOf(currentElement) + 1;
-            }
 
-            TestElement nextElement = null;
-            if (fromIndex < currentTestRun.getTestElements().size()) {
-                for (int i = fromIndex; i < currentTestRun.getTestElements().size(); i++) {
-                    TestElement testElement = currentTestRun.getTestElements().get(i);
-                    if (testElement.getState().isFailureOrError()) {
-                        nextElement = testElement;
-                        break;
+                Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+
+                int fromIndex = 0;
+                if (currentElement instanceof String ) {
+                    List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
+                    if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
+                        fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0));
+                    }
+                } else if (currentElement instanceof TestElement) {
+                    fromIndex = currentTestRun.getTestElements().indexOf(currentElement) + 1;
+                }
+
+                TestElement nextElement = null;
+                if (fromIndex < currentTestRun.getTestElements().size()) {
+                    for (int i = fromIndex; i < currentTestRun.getTestElements().size(); i++) {
+                        TestElement testElement = currentTestRun.getTestElements().get(i);
+                        if (testElement.getState().isFailureOrError()) {
+                            nextElement = testElement;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (nextElement != null) {
-                viewer.reveal(createTreePath(nextElement));
-                viewer.setSelection(new StructuredSelection(nextElement), true);
+                moveTo(nextElement);
             }
         }
         
@@ -438,38 +450,37 @@ public class TestViewer extends Composite {
 
         @Override
         public void run() {
-            if( currentTestRun == null ) {
-                return;
-            }
-            
-            Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-
-            int fromIndex = -1;
-            if (currentElement instanceof String) {
-                List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
-                if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
-                    fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0)) - 1;
+            synchronized (TestRun.acquireLock(currentTestRun)) {
+                if( currentTestRun == null ) {
+                    return;
                 }
-            } else if (currentElement instanceof TestElement) {
-                fromIndex = currentTestRun.getTestElements().indexOf(currentElement) - 1;
-            } else {
-                fromIndex = currentTestRun.getTestElements().size() - 1;
-            }
 
-            TestElement prevElement = null;
-            if (fromIndex >= 0) {
-                for (int i = fromIndex; i >= 0; i--) {
-                    TestElement testElement = currentTestRun.getTestElements().get(i);
-                    if (testElement.getState().isFailureOrError()) {
-                        prevElement = testElement;
-                        break;
+                Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+
+                int fromIndex = -1;
+                if (currentElement instanceof String) {
+                    List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
+                    if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
+                        fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0)) - 1;
+                    }
+                } else if (currentElement instanceof TestElement) {
+                    fromIndex = currentTestRun.getTestElements().indexOf(currentElement) - 1;
+                } else {
+                    fromIndex = currentTestRun.getTestElements().size() - 1;
+                }
+
+                TestElement prevElement = null;
+                if (fromIndex >= 0) {
+                    for (int i = fromIndex; i >= 0; i--) {
+                        TestElement testElement = currentTestRun.getTestElements().get(i);
+                        if (testElement.getState().isFailureOrError()) {
+                            prevElement = testElement;
+                            break;
+                        }
                     }
                 }
-            }
-
-            if (prevElement != null) {
-                viewer.reveal(createTreePath(prevElement));
-                viewer.setSelection(new StructuredSelection(prevElement), true);
+                
+                moveTo(prevElement);
             }
         }
         
@@ -602,18 +613,20 @@ public class TestViewer extends Composite {
         
         @Override
         public void run() {
-            if( currentTestRun == null || currentTestRun.isRunning() )
-                return;
+            synchronized (TestRun.acquireLock(currentTestRun)) {
+                if( currentTestRun == null || currentTestRun.isRunning() )
+                    return;
 
-            ILaunch launch = currentTestRun.getLaunch();
-            if( launch == null )
-                return;
+                ILaunch launch = currentTestRun.getLaunch();
+                if( launch == null )
+                    return;
 
-            ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
-            if( launchConfiguration == null )
-                return;
+                ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
+                if( launchConfiguration == null )
+                    return;
 
-            DebugUITools.launch(launchConfiguration, launch.getLaunchMode());
+                DebugUITools.launch(launchConfiguration, launch.getLaunchMode());
+            }
         }
         
     }
@@ -630,17 +643,19 @@ public class TestViewer extends Composite {
         
         @Override
         public void run() {
-            if( currentTestRun == null || !currentTestRun.isRunning() )
-                return;
-            
-            ILaunch launch = currentTestRun.getLaunch();
-            if( launch == null || !launch.canTerminate() )
-                return;
-            
-            try {
-                launch.terminate();
-            } catch (DebugException e) {
-                CeylonTestPlugin.logError("", e);
+            synchronized (TestRun.acquireLock(currentTestRun)) {
+                if( currentTestRun == null || !currentTestRun.isRunning() )
+                    return;
+
+                ILaunch launch = currentTestRun.getLaunch();
+                if( launch == null || !launch.canTerminate() )
+                    return;
+
+                try {
+                    launch.terminate();
+                } catch (DebugException e) {
+                    CeylonTestPlugin.logError("", e);
+                }
             }
         }
         

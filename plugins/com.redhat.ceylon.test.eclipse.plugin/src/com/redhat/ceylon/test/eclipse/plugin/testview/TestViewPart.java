@@ -161,29 +161,31 @@ public class TestViewPart extends ViewPart {
         testRunContainer.addTestRunListener(testRunListener);
     }
     
-    private void setCurrentTestRun(TestRun testRun) {
-        currentTestRun = testRun;
-        testCounterPanel.setCurrentTestRun(testRun);
-        testProgressBar.setCurrentTestRun(testRun);
-        testViewer.setCurrentTestRun(testRun);
-        
+    private void setCurrentTestRun(final TestRun testRun) {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                updateView();
+                synchronized (TestRun.acquireLock(testRun)) {
+                    currentTestRun = testRun;
+                    testViewer.setCurrentTestRun(testRun);
+                    
+                    updateView();
+                    
+                    if( testRun != null ) {
+                        updateViewJob.schedule(REFRESH_INTERVAL);
+                    }
+                }
             }
         });
-        
-        if( currentTestRun != null ) {
-            updateViewJob.schedule(REFRESH_INTERVAL);
-        }
     }
     
     private void updateView() {
-        updateStatusMessage();
-        testCounterPanel.updateView();
-        testProgressBar.updateView();
-        testViewer.updateView();
+        synchronized (TestRun.acquireLock(currentTestRun)) {
+            updateStatusMessage();
+            testCounterPanel.updateView(currentTestRun);
+            testProgressBar.updateView(currentTestRun);
+            testViewer.updateView();
+        }
     }
     
     private void updateStatusMessage() {

@@ -24,7 +24,6 @@ public class TestProgressBar extends Canvas {
     private Color failureColor;
     private Color interruptedColor;
 
-    private TestRun currentTestRun;
     private boolean isSuccess;
     private boolean isInterrupted;
     private int value;
@@ -64,11 +63,7 @@ public class TestProgressBar extends Canvas {
         });
     }
 
-    public void setCurrentTestRun(TestRun currentTestRun) {
-        this.currentTestRun = currentTestRun;
-    }
-
-    public void updateView() {
+    public void updateView(TestRun currentTestRun) {
         if (currentTestRun != null) {
             isSuccess = currentTestRun.isSuccess();
             isInterrupted = currentTestRun.isInterrupted();
