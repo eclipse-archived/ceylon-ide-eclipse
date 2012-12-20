@@ -1,5 +1,7 @@
 package com.redhat.ceylon.test.eclipse.plugin.testview;
 
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COLLAPSE_ALL;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.EXPAND_ALL;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_FAILURES;
@@ -17,6 +19,8 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.collapseAllLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.scrollLockLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
@@ -91,6 +95,8 @@ public class TestViewer extends Composite {
     private ScrollLockAction scrollLockAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
+    private ExpandAllAction expandAllAction;
+    private CollapseAllAction collapseAllAction;
     private TestRunListenerAdapter testRunListener;
     private TestElement lastStartedTestElement;
     private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
@@ -125,12 +131,17 @@ public class TestViewer extends Composite {
         scrollLockAction = new ScrollLockAction();
         relaunchAction = new RelaunchAction();
         stopAction = new StopAction();
+        expandAllAction = new ExpandAllAction();
+        collapseAllAction = new CollapseAllAction();
         
         IToolBarManager toolBarManager = viewPart.getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(showNextFailureAction);
         toolBarManager.add(showPreviousFailureAction);
         toolBarManager.add(showFailuresOnlyAction);
         toolBarManager.add(scrollLockAction);
+        toolBarManager.add(new Separator());
+        toolBarManager.add(expandAllAction);
+        toolBarManager.add(collapseAllAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(relaunchAction);
         toolBarManager.add(stopAction);
@@ -201,17 +212,24 @@ public class TestViewer extends Composite {
         boolean containsFailures = false;
         boolean canRelaunch = false;
         boolean canStop = false;
+        boolean canExpandCollapse = false;
         
         if (currentTestRun != null) {
             containsFailures = !currentTestRun.isSuccess();
             canRelaunch = !currentTestRun.isRunning();
             canStop = currentTestRun.isRunning();
+            
+            if (showTestsGroupedByPackagesAction.isChecked()) {
+                canExpandCollapse = true;
+            }
         }
-    
+        
         showNextFailureAction.setEnabled(containsFailures);
         showPreviousFailureAction.setEnabled(containsFailures);
         relaunchAction.setEnabled(canRelaunch);
         stopAction.setEnabled(canStop);
+        expandAllAction.setEnabled(canExpandCollapse);
+        collapseAllAction.setEnabled(canExpandCollapse);
     }
 
     private void automaticRevealLastStarted() {
@@ -512,7 +530,7 @@ public class TestViewer extends Composite {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_SHOW_TESTS_ELAPSED_TIME, isChecked());
 
-            viewer.refresh();
+            updateView();
         }
 
     }
@@ -533,7 +551,7 @@ public class TestViewer extends Composite {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_SHOW_TESTS_GROUPED_BY_PACKAGES, isChecked());
 
-            viewer.refresh();
+            updateView();
         }
 
     }
@@ -603,6 +621,40 @@ public class TestViewer extends Composite {
             }
         }
         
-    }    
+    }
+    
+    private class CollapseAllAction extends Action {
+
+        public CollapseAllAction() {
+            super(collapseAllLabel);
+            setDescription(collapseAllLabel);
+            setToolTipText(collapseAllLabel);
+            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(COLLAPSE_ALL));
+            setEnabled(false);
+        }
+
+        @Override
+        public void run() {
+            viewer.collapseAll();
+        }
+
+    }
+    
+    private class ExpandAllAction extends Action {
+
+        public ExpandAllAction() {
+            super(expandAllLabel);
+            setDescription(expandAllLabel);
+            setToolTipText(expandAllLabel);
+            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(EXPAND_ALL));
+            setEnabled(false);
+        }
+
+        @Override
+        public void run() {
+            viewer.expandAll();
+        }
+
+    }
 
 }
