@@ -7,8 +7,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTes
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getActivePage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -196,7 +194,7 @@ public class TestViewPart extends ViewPart {
                 msg = msg(statusTestRunRunning, currentTestRun.getRunName());
             }
             else if (currentTestRun.isFinished()) {
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(currentTestRun.getRunElapsedTimeInMilis());
+                double seconds = currentTestRun.getRunElapsedTimeInMilis() / 1000.0;
                 msg = msg(statusTestRunFinished, TestViewer.ELAPSED_TIME_FORMAT.format(seconds));
             }
             else if (currentTestRun.isInterrupted()) {
