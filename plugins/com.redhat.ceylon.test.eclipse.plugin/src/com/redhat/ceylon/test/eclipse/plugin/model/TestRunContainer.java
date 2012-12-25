@@ -1,7 +1,8 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.debug.core.ILaunch;
 
@@ -9,8 +10,12 @@ public class TestRunContainer {
     
     private static final int MAX_RUNS_COUNT = 10;
 
-    private final List<TestRun> testRuns = new ArrayList<TestRun>();
-    private final List<TestRunListener> testRunListeners = new ArrayList<TestRunListener>();
+    private final List<TestRun> testRuns = new CopyOnWriteArrayList<TestRun>();
+    private final List<TestRunListener> testRunListeners = new CopyOnWriteArrayList<TestRunListener>();
+
+    public List<TestRunListener> getTestRunListeners() {
+        return Collections.unmodifiableList(testRunListeners);
+    }
 
     public void addTestRunListener(TestRunListener testRunListener) {
         testRunListeners.add(testRunListener);
@@ -20,8 +25,8 @@ public class TestRunContainer {
         testRunListeners.remove(testRunListener);
     }
     
-    public List<TestRunListener> getTestRunListeners() {
-        return testRunListeners;
+    public List<TestRun> getTestRuns() {
+        return Collections.unmodifiableList(testRuns);
     }
     
     public TestRun getTestRun(ILaunch launch) {
@@ -49,8 +54,7 @@ public class TestRunContainer {
                 List<TestRun> obsoleteRuns = testRuns.subList(MAX_RUNS_COUNT, testRuns.size());
                 for (TestRun obsoleteRun : obsoleteRuns) {
                     if (!obsoleteRun.isRunning()) {
-                        testRuns.remove(obsoleteRun);
-                        fireTestRunRemoved(obsoleteRun);
+                        removeTestRun(obsoleteRun);
                     }
                 }
             }
@@ -59,6 +63,14 @@ public class TestRunContainer {
         return result;
     }
     
+    public void removeTestRun(TestRun testRun) {
+        if( testRun.isRunning() ) {
+            throw new IllegalStateException();
+        }
+        testRuns.remove(testRun);
+        fireTestRunRemoved(testRun);
+    }
+
     private void fireTestRunAdded(TestRun testRun) {
         for (TestRunListener testRunListener : testRunListeners) {
             testRunListener.testRunAdded(testRun);

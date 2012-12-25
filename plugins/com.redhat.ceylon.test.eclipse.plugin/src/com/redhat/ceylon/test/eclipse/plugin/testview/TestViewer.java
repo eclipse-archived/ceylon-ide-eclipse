@@ -2,12 +2,10 @@ package com.redhat.ceylon.test.eclipse.plugin.testview;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COLLAPSE_ALL;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.EXPAND_ALL;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_FAILURES;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_NEXT;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_PREV;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
@@ -21,14 +19,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.collapseAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.scrollLockLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPreviousFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsElapsedTime;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsGroupedByPackages;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
@@ -39,10 +35,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -93,8 +85,6 @@ public class TestViewer extends Composite {
     private ShowTestsElapsedTimeAction showTestsElapsedTimeAction;
     private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction;
     private ScrollLockAction scrollLockAction;
-    private RelaunchAction relaunchAction;
-    private StopAction stopAction;
     private ExpandAllAction expandAllAction;
     private CollapseAllAction collapseAllAction;
     private TestRunListenerAdapter testRunListener;
@@ -133,8 +123,6 @@ public class TestViewer extends Composite {
         showFailuresOnlyAction = new ShowFailuresOnlyAction();
         showFailuresOnlyFilter = new ShowFailuresOnlyFilter();
         scrollLockAction = new ScrollLockAction();
-        relaunchAction = new RelaunchAction();
-        stopAction = new StopAction();
         expandAllAction = new ExpandAllAction();
         collapseAllAction = new CollapseAllAction();
         
@@ -147,8 +135,6 @@ public class TestViewer extends Composite {
         toolBarManager.add(new Separator());
         toolBarManager.add(showFailuresOnlyAction);
         toolBarManager.add(scrollLockAction);
-        toolBarManager.add(relaunchAction);
-        toolBarManager.add(stopAction);
         toolBarManager.update(true);
     }    
 
@@ -216,15 +202,10 @@ public class TestViewer extends Composite {
     
     private void updateActionState() {
         boolean containsFailures = false;
-        boolean canRelaunch = false;
-        boolean canStop = false;
         boolean canExpandCollapse = false;
         
         if (currentTestRun != null) {
             containsFailures = !currentTestRun.isSuccess();
-            canRelaunch = !currentTestRun.isRunning();
-            canStop = currentTestRun.isRunning();
-            
             if (showTestsGroupedByPackagesAction.isChecked()) {
                 canExpandCollapse = true;
             }
@@ -232,8 +213,6 @@ public class TestViewer extends Composite {
         
         showNextFailureAction.setEnabled(containsFailures);
         showPreviousFailureAction.setEnabled(containsFailures);
-        relaunchAction.setEnabled(canRelaunch);
-        stopAction.setEnabled(canStop);
         expandAllAction.setEnabled(canExpandCollapse);
         collapseAllAction.setEnabled(canExpandCollapse);
     }
@@ -599,66 +578,6 @@ public class TestViewer extends Composite {
             preferenceStore.setValue(PREF_SCROLL_LOCK, isChecked());
         }
     
-    }
-
-    private class RelaunchAction extends Action {
-        
-        public RelaunchAction() {
-            super(relaunchLabel);
-            setDescription(relaunchLabel);
-            setToolTipText(relaunchLabel);
-            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(RELAUNCH));
-            setEnabled(false);
-        }
-        
-        @Override
-        public void run() {
-            synchronized (TestRun.acquireLock(currentTestRun)) {
-                if( currentTestRun == null || currentTestRun.isRunning() )
-                    return;
-
-                ILaunch launch = currentTestRun.getLaunch();
-                if( launch == null )
-                    return;
-
-                ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
-                if( launchConfiguration == null )
-                    return;
-
-                DebugUITools.launch(launchConfiguration, launch.getLaunchMode());
-            }
-        }
-        
-    }
-    
-    private class StopAction extends Action {
-        
-        public StopAction() {
-            super(stopLabel);
-            setDescription(stopLabel);
-            setToolTipText(stopLabel);
-            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(STOP));
-            setEnabled(false);
-        }
-        
-        @Override
-        public void run() {
-            synchronized (TestRun.acquireLock(currentTestRun)) {
-                if( currentTestRun == null || !currentTestRun.isRunning() )
-                    return;
-
-                ILaunch launch = currentTestRun.getLaunch();
-                if( launch == null || !launch.canTerminate() )
-                    return;
-
-                try {
-                    launch.terminate();
-                } catch (DebugException e) {
-                    CeylonTestPlugin.logError("", e);
-                }
-            }
-        }
-        
     }
     
     private class CollapseAllAction extends Action {
