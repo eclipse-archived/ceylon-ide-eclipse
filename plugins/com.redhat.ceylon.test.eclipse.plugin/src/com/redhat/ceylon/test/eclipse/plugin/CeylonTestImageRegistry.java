@@ -28,6 +28,7 @@ public class CeylonTestImageRegistry {
     public static final String TESTS_FAILED = "tests_failed.gif";
     public static final String TESTS_RUNNING = "tests_running.gif";
     public static final String TESTS_SUCCESS = "tests_success.gif";
+    public static final String TESTS_INTERRUPTED = "tests_interrupted.gif";
     
     public static final String STACK_TRACE = "stack_trace.gif";
     public static final String STACK_TRACE_FILTER = "stack_trace_filter.gif";
@@ -43,6 +44,7 @@ public class CeylonTestImageRegistry {
     public static final String COLLAPSE_ALL = "collapse_all.gif";
     public static final String EXPAND_ALL = "expand_all.gif";
     public static final String COMPARE = "compare.gif";
+    public static final String HISTORY = "history.gif";
 
     private static final IPath ICONS_PATH = new Path("icons/");
 
@@ -71,6 +73,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(TESTS_FAILED, image(TESTS_FAILED));
         imageRegistry.put(TESTS_RUNNING, image(TESTS_RUNNING));
         imageRegistry.put(TESTS_SUCCESS, image(TESTS_SUCCESS));
+        imageRegistry.put(TESTS_INTERRUPTED, image(TESTS_INTERRUPTED));
         
         imageRegistry.put(STACK_TRACE, image(STACK_TRACE));
         imageRegistry.put(STACK_TRACE_FILTER, image(STACK_TRACE_FILTER));
@@ -86,6 +89,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(COLLAPSE_ALL, image(COLLAPSE_ALL));
         imageRegistry.put(EXPAND_ALL, image(EXPAND_ALL));
         imageRegistry.put(COMPARE, image(COMPARE));
+        imageRegistry.put(HISTORY, image(HISTORY));
     }
 
     private static ImageDescriptor image(String file) {

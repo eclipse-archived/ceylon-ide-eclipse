@@ -1,6 +1,7 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class TestRun {
         return testRun != null ? testRun : NULL_LOCK;
     }
 
+    private final Date startDate;
     private final ILaunch launch;
     private final List<TestElement> testElements = new ArrayList<TestElement>();
     private final Map<String, List<TestElement>> testElementsByPackages = new LinkedHashMap<String, List<TestElement>>();
@@ -34,6 +36,7 @@ public class TestRun {
 
     public TestRun(ILaunch launch) {
         this.launch = launch;
+        this.startDate = new Date();
     }
 
     public ILaunch getLaunch() {
@@ -62,6 +65,10 @@ public class TestRun {
 
     public boolean isSuccess() {
         return failureCount == 0 && errorCount == 0;
+    }
+    
+    public boolean isFailureOrError() {
+        return failureCount != 0 || errorCount != 0;
     }
 
     public int getTotalCount() {
@@ -137,6 +144,10 @@ public class TestRun {
         }
 
         return elapsedTimeInMilis;
+    }
+    
+    public Date getRunStartDate() {
+        return startDate;
     }
 
     public synchronized void processRemoteTestEvent(RemoteTestEvent event) {

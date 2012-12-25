@@ -58,6 +58,17 @@ public class CeylonTestMessages extends NLS {
     public static String collapseAllLabel;
     public static String expandAllLabel;
     
+    public static String historyLabel;
+    public static String historyDlgTitle;
+    public static String historyDlgMessage;
+    public static String historyColumnName;
+    public static String historyColumnStartDate;
+    public static String historyColumnTotal;
+    public static String historyColumnSuccess;
+    public static String historyColumnFailures;
+    public static String historyColumnErrors;
+    public static String historyDlgCanNotRemoveRunningTest;
+    
     public static String compareLabel;
     public static String compareDlgTitle;
     public static String compareDlgOk;
@@ -66,8 +77,10 @@ public class CeylonTestMessages extends NLS {
     
     public static String add;
     public static String remove;
+    public static String removeAll;
     public static String moveUp;
     public static String moveDown;
+    public static String information;
     public static String inProjectPrefix;
 
     static {
