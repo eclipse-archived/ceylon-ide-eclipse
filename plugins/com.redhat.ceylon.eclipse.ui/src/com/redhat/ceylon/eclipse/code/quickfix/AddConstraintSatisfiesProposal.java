@@ -229,8 +229,10 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         if (fcv.getStatementOrArgument() instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface coi = (Tree.ClassOrInterface) fcv.getStatementOrArgument();
             if( coi.getSatisfiedTypes() != null ) {
-                for( Tree.SimpleType st : coi.getSatisfiedTypes().getTypes() ) {
-                    determineSatisfiedTypesTypeParams(typeParam, st, stTypeParams);
+                for( Tree.StaticType st : coi.getSatisfiedTypes().getTypes() ) {
+                    // FIXME: gavin this needs checking
+                    if(st instanceof Tree.SimpleType)
+                        determineSatisfiedTypesTypeParams(typeParam, (Tree.SimpleType)st, stTypeParams);
                 }
             }
         }
