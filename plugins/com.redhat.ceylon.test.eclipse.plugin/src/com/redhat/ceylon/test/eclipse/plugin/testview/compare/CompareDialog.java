@@ -1,9 +1,9 @@
 package com.redhat.ceylon.test.eclipse.plugin.testview.compare;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareDlgActual;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareDlgExpected;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareDlgOk;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareDlgTitle;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgActual;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgExpected;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgOk;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgTitle;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareViewerPane;
@@ -72,7 +72,7 @@ public class CompareDialog extends TrayDialog {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(compareDlgTitle);
+        shell.setText(compareValuesDlgTitle);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class CompareDialog extends TrayDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, compareDlgOk, true);
+        createButton(parent, IDialogConstants.OK_ID, compareValuesDlgOk, true);
     }
 
     private void createCompareViewerPane(Composite composite) {
@@ -101,9 +101,9 @@ public class CompareDialog extends TrayDialog {
 
     private void createPreviewer() {
         final CompareConfiguration compareConfiguration = new CompareConfiguration();
-        compareConfiguration.setLeftLabel(compareDlgExpected);
+        compareConfiguration.setLeftLabel(compareValuesDlgExpected);
         compareConfiguration.setLeftEditable(false);
-        compareConfiguration.setRightLabel(compareDlgActual);
+        compareConfiguration.setRightLabel(compareValuesDlgActual);
         compareConfiguration.setRightEditable(false);
         compareConfiguration.setProperty(CompareConfiguration.IGNORE_WHITESPACE, Boolean.FALSE);
         compareConfiguration.setProperty(PREFIX_SUFFIX_PROPERTY, prefixSuffix);

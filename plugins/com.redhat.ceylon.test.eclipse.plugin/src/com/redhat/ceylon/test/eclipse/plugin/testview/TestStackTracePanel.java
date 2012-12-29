@@ -7,7 +7,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STAC
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesActionLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceCopyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceFilterLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceLabel;
@@ -261,9 +261,9 @@ public class TestStackTracePanel extends Composite {
         private CompareDialog dlg;
 
         public CompareAction() {
-            super(compareLabel);
-            setDescription(compareLabel);
-            setToolTipText(compareLabel);
+            super(compareValuesActionLabel);
+            setDescription(compareValuesActionLabel);
+            setToolTipText(compareValuesActionLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(COMPARE));
             setEnabled(false);
         }

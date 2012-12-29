@@ -12,6 +12,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTes
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getActivePage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getShell;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -236,8 +237,7 @@ public class TestViewPart extends ViewPart {
                 msg = msg(statusTestRunRunning, currentTestRun.getRunName());
             }
             else if (currentTestRun.isFinished()) {
-                double seconds = currentTestRun.getRunElapsedTimeInMilis() / 1000.0;
-                msg = msg(statusTestRunFinished, TestViewer.ELAPSED_TIME_FORMAT.format(seconds));
+                msg = msg(statusTestRunFinished, getElapsedTimeInSeconds(currentTestRun.getRunElapsedTimeInMilis()));
             }
             else if (currentTestRun.isInterrupted()) {
                 msg = msg(statusTestRunInterrupted, currentTestRun.getRunName());
