@@ -13,17 +13,17 @@ public class TestElement implements Serializable {
         SUCCESS(1),
         FAILURE(3),
         ERROR(4);
-        
+
         private final int priority;
-        
+
         private State(int priority) {
             this.priority = priority;
         }
-        
+
         public int getPriority() {
             return priority;            
         }
-        
+
         public boolean isFinished() {
             return this == SUCCESS || this == FAILURE || this == ERROR;
         }
@@ -42,11 +42,11 @@ public class TestElement implements Serializable {
     private String expectedValue;
     private String actualValue;
     private long elapsedTimeInMilis;
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getPackageName() {
         return packageName;
     }
@@ -57,7 +57,7 @@ public class TestElement implements Serializable {
 
     public void setQualifiedName(String qualifiedName) {
         this.qualifiedName = qualifiedName;
-        
+
         int packageSeparatorIndex = qualifiedName.indexOf("::");
         if (packageSeparatorIndex != -1) {
             name = qualifiedName.substring(packageSeparatorIndex + 2);
@@ -83,31 +83,31 @@ public class TestElement implements Serializable {
     public void setException(String exception) {
         this.exception = exception;
     }
-    
+
     public String getExpectedValue() {
         return expectedValue;
     }
-    
+
     public void setExpectedValue(String expectedValue) {
         this.expectedValue = expectedValue;
     }
-    
+
     public String getActualValue() {
         return actualValue;
     }
-    
+
     public void setActualValue(String actualValue) {
         this.actualValue = actualValue;
     }
-    
+
     public long getElapsedTimeInMilis() {
         return elapsedTimeInMilis;
     }
-    
+
     public void setElapsedTimeInMilis(long elapsedTimeInMilis) {
         this.elapsedTimeInMilis = elapsedTimeInMilis;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -118,12 +118,12 @@ public class TestElement implements Serializable {
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         return qualifiedName != null ? qualifiedName.hashCode() : 0;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

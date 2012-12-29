@@ -89,7 +89,7 @@
          point="org.eclipse.ui.views">
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
-            class="com.redhat.ceylon.test.eclipse.plugin.testview.TestViewPart"
+            class="com.redhat.ceylon.test.eclipse.plugin.ui.TestRunViewPart"
             icon="icons/ceylon_test.png"
             id="com.redhat.ceylon.test.eclipse.plugin.testview"
             name="Ceylon Test">

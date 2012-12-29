@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.ERROR_OVR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.FAILED_OVR;
@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 
-public class TestCounterPanel extends Composite {
+public class CounterPanel extends Composite {
 
     private Label runsLabel;
     private Text runsText;
@@ -27,7 +27,7 @@ public class TestCounterPanel extends Composite {
     private Label failuresLabel;
     private Text failuresText;
 
-    public TestCounterPanel(Composite parent) {
+    public CounterPanel(Composite parent) {
         super(parent, SWT.WRAP);
 
         GridLayout gridLayout = new GridLayout();
@@ -74,18 +74,18 @@ public class TestCounterPanel extends Composite {
         int finishedCount = 0;
         int failureCount = 0;
         int errorCount = 0;
-        
+
         if( currentTestRun != null ) {
             totalCount = currentTestRun.getTotalCount();
             finishedCount = currentTestRun.getFinishedCount();
             failureCount = currentTestRun.getFailureCount();
             errorCount = currentTestRun.getErrorCount();
         }
-        
+
         runsText.setText(Integer.toString(finishedCount) + "/" + Integer.toString(totalCount));
         failuresText.setText(Integer.toString(failureCount));
         errorsText.setText(Integer.toString(errorCount));
-        
+
         redraw();
     }
 

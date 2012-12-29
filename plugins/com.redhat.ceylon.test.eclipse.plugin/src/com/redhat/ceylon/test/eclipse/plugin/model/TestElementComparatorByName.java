@@ -19,8 +19,8 @@ public class TestElementComparatorByName implements Comparator<TestElement> {
         }
         if (testElement1 == null && testElement2 == null) {
             return 0;
-        }      
-        
+        }
+
         String name1 = testElement1.getQualifiedName();
         String name2 = testElement2.getQualifiedName();
 

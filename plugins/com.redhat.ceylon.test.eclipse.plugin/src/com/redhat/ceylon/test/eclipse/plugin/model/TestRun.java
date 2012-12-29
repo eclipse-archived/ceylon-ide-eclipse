@@ -15,7 +15,7 @@ import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
 
 public class TestRun {
-    
+
     private static final Object NULL_LOCK = new Object();
 
     public static Object acquireLock(TestRun testRun) {
@@ -42,15 +42,15 @@ public class TestRun {
     public ILaunch getLaunch() {
         return launch;
     }
-    
+
     public List<TestElement> getTestElements() {
         return testElements;
     }
-    
+
     public Map<String, List<TestElement>> getTestElementsByPackages() {
         return testElementsByPackages;
     }
-    
+
     public boolean isRunning() {
         return isRunning;
     }
@@ -58,7 +58,7 @@ public class TestRun {
     public boolean isFinished() {
         return isFinished;
     }
-    
+
     public boolean isInterrupted() {
         return isInterrupted;
     }
@@ -66,7 +66,7 @@ public class TestRun {
     public boolean isSuccess() {
         return failureCount == 0 && errorCount == 0;
     }
-    
+
     public boolean isFailureOrError() {
         return failureCount != 0 || errorCount != 0;
     }
@@ -97,7 +97,7 @@ public class TestRun {
 
     public State getPackageState(String packageName) {
         State result = State.UNDEFINED;
-    
+
         List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
         if (testElementsInPackage != null) {
             for (TestElement testElement : testElementsInPackage) {
@@ -106,7 +106,7 @@ public class TestRun {
                 }
             }
         }
-    
+
         return result;
     }
 
@@ -124,7 +124,7 @@ public class TestRun {
 
         return elapsedTimeInMilis;
     }
-    
+
     public String getRunName() {
         String name = null;
         ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
@@ -145,7 +145,7 @@ public class TestRun {
 
         return elapsedTimeInMilis;
     }
-    
+
     public Date getRunStartDate() {
         return startDate;
     }
@@ -177,7 +177,7 @@ public class TestRun {
             break;
         }
     }
-    
+
     public synchronized void processLaunchTerminatedEvent() {
         if( isRunning ) {
             for (TestElement testElement : testElements) {
@@ -195,7 +195,7 @@ public class TestRun {
     private void updateTestElements(List<TestElement> testElementList) {
         testElements.clear();
         testElements.addAll(testElementList);
-        
+
         testElementsByPackages.clear();
         for (TestElement testElement : testElements) {
             String packageName = testElement.getPackageName();
@@ -211,7 +211,7 @@ public class TestRun {
     private void updateTestElement(TestElement testElement) {
         int index = testElements.indexOf(testElement);
         testElements.set(index, testElement);
-        
+
         List<TestElement> testElementsInPackage = testElementsByPackages.get(testElement.getPackageName());
         index = testElementsInPackage.indexOf(testElement);
         testElementsInPackage.set(index, testElement);
@@ -238,7 +238,7 @@ public class TestRun {
             }
         }
     }
-    
+
     private List<TestRunListener> getTestRunListeners() {
         return CeylonTestPlugin.getDefault().getModel().getTestRunListeners();
     }
@@ -260,7 +260,7 @@ public class TestRun {
             listener.testRunInterrupted(this);
         }
     }
-    
+
     private void fireTestStarted(TestElement testElement) {
         for (TestRunListener listener : getTestRunListeners()) {
             listener.testStarted(this, testElement);

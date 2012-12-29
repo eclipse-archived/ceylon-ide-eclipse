@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 
-public class TestProgressBar extends Canvas {
+public class ProgressBar extends Canvas {
 
     private static final int DEFAULT_WIDTH = 160;
     private static final int DEFAULT_HEIGHT = 18;
@@ -29,7 +29,7 @@ public class TestProgressBar extends Canvas {
     private int value;
     private int total;
 
-    public TestProgressBar(Composite parent) {
+    public ProgressBar(Composite parent) {
         super(parent, SWT.NONE);
         initColors();
         initPaintListener();
