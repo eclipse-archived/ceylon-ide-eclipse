@@ -565,7 +565,7 @@ public class CompareRunsDialog extends TrayDialog {
 
         public ShowOnlyUnchangedAction() {
             super(compareRunsDlgUnchanged, AS_CHECK_BOX);
-            setText(compareRunsDlgChanged + " (" + comparedStateCounts.get(ComparedState.UNCHANGED) + ")");
+            setText(compareRunsDlgUnchanged + " (" + comparedStateCounts.get(ComparedState.UNCHANGED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.UNCHANGED) != 0);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(STATE_UNCHANGED));
         }
