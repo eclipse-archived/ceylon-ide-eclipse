@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.HISTORY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
@@ -49,25 +49,23 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
-public class TestViewPart extends ViewPart {
+public class TestRunViewPart extends ViewPart {
 
     private static final String NAME = "com.redhat.ceylon.test.eclipse.plugin.testview";
     private static final int REFRESH_INTERVAL= 200;
 
-    private TestCounterPanel testCounterPanel;
-    private TestProgressBar testProgressBar;
+    private CounterPanel counterPanel;
+    private ProgressBar progressBar;
     private SashForm sashForm;
-    private TestViewer testViewer;
-    private TestStackTracePanel testStackTracePanel;
+    private TestsPanel testsPanel;
+    private StackTracePanel stackTracePanel;
     private IPartListener2 viewPartListener;
     private TestRunListener testRunListener;
     private TestRun currentTestRun;
-
     private UpdateViewJob updateViewJob = new UpdateViewJob();
     private ShowHistoryAction showHistoryAction;
     private RelaunchAction relaunchAction;
     private StopAction stopAction;
-
     private boolean isDisposed;
     private boolean isVisible;
 
@@ -83,7 +81,7 @@ public class TestViewPart extends ViewPart {
         try {
             IWorkbenchPage page = getActivePage();
             if (page != null) {
-                TestViewPart view = (TestViewPart) page.findView(NAME);
+                TestRunViewPart view = (TestRunViewPart) page.findView(NAME);
                 if (view == null) {
                     page.showView(NAME, null, IWorkbenchPage.VIEW_VISIBLE);
                 }
@@ -105,7 +103,7 @@ public class TestViewPart extends ViewPart {
         createCounterPanel(composite);
         createProgressBar(composite);
         createSashForm(composite);
-        createTestViewer();
+        createTestsPanel();
         createStackTracePanel();
         createToolBar();
         createViewPartListener();
@@ -138,13 +136,13 @@ public class TestViewPart extends ViewPart {
     }
 
     private void createCounterPanel(Composite composite) {
-        testCounterPanel = new TestCounterPanel(composite);
-        testCounterPanel.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
+        counterPanel = new CounterPanel(composite);
+        counterPanel.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
     }
 
     private void createProgressBar(Composite composite) {
-        testProgressBar = new TestProgressBar(composite);
-        testProgressBar.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
+        progressBar = new ProgressBar(composite);
+        progressBar.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
     }
 
     private void createSashForm(Composite composite) {
@@ -152,9 +150,9 @@ public class TestViewPart extends ViewPart {
         sashForm.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
     }
 
-    private void createTestViewer() {
-        testViewer = new TestViewer(this, sashForm);
-        testViewer.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+    private void createTestsPanel() {
+        testsPanel = new TestsPanel(this, sashForm);
+        testsPanel.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 TestElement selectedTestElement = null;
@@ -162,20 +160,20 @@ public class TestViewPart extends ViewPart {
                 if (selectedItem instanceof TestElement) {
                     selectedTestElement = (TestElement) selectedItem;
                 }
-                testStackTracePanel.setSelectedTestElement(selectedTestElement);
+                stackTracePanel.setSelectedTestElement(selectedTestElement);
             }
         });
     }
 
     private void createStackTracePanel() {
-        testStackTracePanel = new TestStackTracePanel(sashForm);
+        stackTracePanel = new StackTracePanel(sashForm);
     }
 
     private void createToolBar() {
         relaunchAction = new RelaunchAction();
         stopAction = new StopAction();
         showHistoryAction = new ShowHistoryAction();
-    
+
         IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(relaunchAction);
         toolBarManager.add(stopAction);
@@ -207,7 +205,7 @@ public class TestViewPart extends ViewPart {
             public void run() {
                 synchronized (TestRun.acquireLock(testRun)) {
                     currentTestRun = testRun;
-                    testViewer.setCurrentTestRun(testRun);
+                    testsPanel.setCurrentTestRun(testRun);
 
                     updateView();
 
@@ -223,9 +221,9 @@ public class TestViewPart extends ViewPart {
         synchronized (TestRun.acquireLock(currentTestRun)) {
             updateStatusMessage();
             updateActionState();
-            testCounterPanel.updateView(currentTestRun);
-            testProgressBar.updateView(currentTestRun);
-            testViewer.updateView();
+            counterPanel.updateView(currentTestRun);
+            progressBar.updateView(currentTestRun);
+            testsPanel.updateView();
         }
     }
 
@@ -246,16 +244,16 @@ public class TestViewPart extends ViewPart {
 
         setContentDescription(msg);
     }
-    
+
     private void updateActionState() {
         boolean canRelaunch = false;
         boolean canStop = false;
-        
+
         if (currentTestRun != null) {
             canRelaunch = !currentTestRun.isRunning();
             canStop = currentTestRun.isRunning();
         }
-        
+
         relaunchAction.setEnabled(canRelaunch);
         stopAction.setEnabled(canStop);
     }
@@ -358,17 +356,17 @@ public class TestViewPart extends ViewPart {
         }
 
     }    
-    
+
     private class ShowHistoryAction extends Action {
-        
+
         public ShowHistoryAction() {
             super(historyLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(HISTORY));
         }
-        
+
         @Override
         public void run() {
-            TestHistoryDialog dlg = new TestHistoryDialog(getShell());
+            HistoryDialog dlg = new HistoryDialog(getShell());
             if (dlg.open() == Dialog.OK) {
                 TestRun selectedTestRun = dlg.getSelectedTestRun();
                 if( selectedTestRun != currentTestRun ) {
@@ -376,7 +374,7 @@ public class TestViewPart extends ViewPart {
                 }
             }
         }
-        
+
     }
 
 }

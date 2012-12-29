@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
@@ -52,29 +52,29 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;
 
-public class TestHistoryDialog extends TitleAreaDialog {
+public class HistoryDialog extends TitleAreaDialog {
 
     private TestRunContainer testRunContainer;
     private TestRunListener testRunListener;
     private TestRun selectedTestRun;
-    
+
     private Composite panel;
     private TableViewer tableViewer;
     private Button buttonCompare;
     private Button buttonRemove;
     private Button buttonRemoveAll;
-    
+
     private DateFormat startDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     private Color successColor = new Color(getDisplay(), 95, 191, 95);
     private Color failureColor = new Color(getDisplay(), 159, 63, 63);
-    
-    public TestHistoryDialog(Shell shell) {
+
+    public HistoryDialog(Shell shell) {
         super(shell);
         createTestRunListener();
         testRunContainer = CeylonTestPlugin.getDefault().getModel();
         testRunContainer.addTestRunListener(testRunListener);
     }
-    
+
     public TestRun getSelectedTestRun() {
         return selectedTestRun;
     }
@@ -83,12 +83,12 @@ public class TestHistoryDialog extends TitleAreaDialog {
     protected boolean isResizable() {
         return true;
     }
-    
+
     @Override
     protected Point getInitialSize() {
         return new Point(900, 500);
     }
-    
+
     @Override
     public void create() {
         setBlockOnOpen(true);
@@ -108,7 +108,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
     protected Control createDialogArea(Composite parent) {
         GridLayout layout = new GridLayout(2, false);
         layout.horizontalSpacing = 10;
-        
+
         panel = new Composite(parent, SWT.NONE);
         panel.setLayout(layout);
         panel.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
@@ -118,7 +118,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
         createButtonCompare();
         createButtonRemove();
         createButtonRemoveAll();
-        
+
         return parent;
     }
 
@@ -145,7 +145,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
             public String getText(Object element) {
                 return ((TestRun) element).getRunName();
             }
-    
+
             @Override
             public Image getImage(Object element) {
                 TestRun testRun = (TestRun) element;
@@ -177,7 +177,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
             }
         });
     }
-    
+
     private void createColumnCounts() {
         TableViewerColumn colTotal = new TableViewerColumn(tableViewer, SWT.NONE);
         colTotal.getColumn().setWidth(70);
@@ -231,7 +231,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
             }
         });
     }
-    
+
     private void createButtonCompare() {
         buttonCompare = new Button(panel, SWT.PUSH);
         buttonCompare.setEnabled(false);
@@ -260,7 +260,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
                         testRunYounger = testRun1;
                     }
 
-                    TestRunsCompareDialog dlg = new TestRunsCompareDialog(getShell(), testRunOlder, testRunYounger);
+                    CompareRunsDialog dlg = new CompareRunsDialog(getShell(), testRunOlder, testRunYounger);
                     dlg.open();
                 }
             }
@@ -277,7 +277,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
             }
         });
     }
-    
+
     private void createButtonRemove() {
         buttonRemove = new Button(panel, SWT.PUSH);
         buttonRemove.setText(remove);
@@ -325,13 +325,13 @@ public class TestHistoryDialog extends TitleAreaDialog {
                 selectedTestRun = (TestRun) selectedElement;
             }
         }
-        
+
         testRunContainer.removeTestRunListener(testRunListener);
         successColor.dispose();
         failureColor.dispose();
         return super.close();
     }
-    
+
     private void createTestRunListener() {
         testRunListener = new TestRunListener() {
             @Override

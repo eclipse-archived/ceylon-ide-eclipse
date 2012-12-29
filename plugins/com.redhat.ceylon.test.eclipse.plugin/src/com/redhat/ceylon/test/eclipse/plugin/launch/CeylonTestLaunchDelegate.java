@@ -37,7 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.testview.TestViewPart;
+import com.redhat.ceylon.test.eclipse.plugin.ui.TestRunViewPart;
 
 public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
     
@@ -56,7 +56,7 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
             portThreadLocal.remove();
         }
         
-        TestViewPart.showPageAsync();
+        TestRunViewPart.showPageAsync();
     }
 
     @Override

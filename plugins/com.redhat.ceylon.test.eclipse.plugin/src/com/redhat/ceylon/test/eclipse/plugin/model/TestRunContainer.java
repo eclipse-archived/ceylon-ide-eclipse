@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.debug.core.ILaunch;
 
 public class TestRunContainer {
-    
+
     private static final int MAX_RUNS_COUNT = 10;
 
     private final List<TestRun> testRuns = new CopyOnWriteArrayList<TestRun>();
@@ -24,11 +24,11 @@ public class TestRunContainer {
     public void removeTestRunListener(TestRunListener testRunListener) {
         testRunListeners.remove(testRunListener);
     }
-    
+
     public List<TestRun> getTestRuns() {
         return Collections.unmodifiableList(testRuns);
     }
-    
+
     public TestRun getTestRun(ILaunch launch) {
         TestRun result = null;
 
@@ -49,7 +49,7 @@ public class TestRunContainer {
             result = new TestRun(launch);
             testRuns.add(0, result);
             fireTestRunAdded(result);
-        
+
             if (testRuns.size() > MAX_RUNS_COUNT) {
                 List<TestRun> obsoleteRuns = testRuns.subList(MAX_RUNS_COUNT, testRuns.size());
                 for (TestRun obsoleteRun : obsoleteRuns) {
@@ -62,7 +62,7 @@ public class TestRunContainer {
 
         return result;
     }
-    
+
     public void removeTestRun(TestRun testRun) {
         if( testRun.isRunning() ) {
             throw new IllegalStateException();
@@ -76,7 +76,7 @@ public class TestRunContainer {
             testRunListener.testRunAdded(testRun);
         }
     }
-    
+
     private void fireTestRunRemoved(TestRun testRun) {
         for (TestRunListener testRunListener : testRunListeners) {
             testRunListener.testRunRemoved(testRun);

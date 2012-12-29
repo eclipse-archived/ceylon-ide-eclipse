@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COLLAPSE_ALL;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.EXPAND_ALL;
@@ -60,10 +60,10 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
-public class TestViewer extends Composite {
+public class TestsPanel extends Composite {
 
     private TestRun currentTestRun;
-    private TestViewPart viewPart;
+    private TestRunViewPart viewPart;
     private TreeViewer viewer;
     private ShowFailuresOnlyAction showFailuresOnlyAction;
     private ShowPreviousFailureAction showPreviousFailureAction;
@@ -78,9 +78,9 @@ public class TestViewer extends Composite {
     private TestElement lastStartedTestElement;
     private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
 
-    public TestViewer(TestViewPart viewPart, Composite parent) {
+    public TestsPanel(TestRunViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
-        
+
         this.viewPart = viewPart;
 
         GridLayout gridLayout = new GridLayout(1, false);
@@ -112,7 +112,7 @@ public class TestViewer extends Composite {
         scrollLockAction = new ScrollLockAction();
         expandAllAction = new ExpandAllAction();
         collapseAllAction = new CollapseAllAction();
-        
+
         IToolBarManager toolBarManager = viewPart.getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(showNextFailureAction);
         toolBarManager.add(showPreviousFailureAction);
@@ -128,7 +128,7 @@ public class TestViewer extends Composite {
     private void createMenuBar() {
         showTestsElapsedTimeAction = new ShowTestsElapsedTimeAction();
         showTestsGroupedByPackagesAction = new ShowTestsGroupedByPackagesAction();
-        
+
         IMenuManager menuManager = viewPart.getViewSite().getActionBars().getMenuManager();
         menuManager.add(showTestsElapsedTimeAction);
         menuManager.add(showTestsGroupedByPackagesAction);
@@ -142,7 +142,7 @@ public class TestViewer extends Composite {
         viewer.setLabelProvider(new TestLabelProvider());
         viewer.getControl().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
     }
-    
+
     private TreePath createTreePath(TestElement testElement) {
         if (showTestsGroupedByPackagesAction.isChecked()) {
             return new TreePath(new Object[] { testElement.getPackageName(), testElement });
@@ -170,7 +170,7 @@ public class TestViewer extends Composite {
         TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
         testRunContainer.addTestRunListener(testRunListener);
     }
-    
+
     public void updateView() {
         synchronized (TestRun.acquireLock(currentTestRun)) {
             updateViewer();
@@ -186,18 +186,18 @@ public class TestViewer extends Composite {
         }
         viewer.refresh();
     }
-    
+
     private void updateActionState() {
         boolean containsFailures = false;
         boolean canExpandCollapse = false;
-        
+
         if (currentTestRun != null) {
             containsFailures = !currentTestRun.isSuccess();
             if (showTestsGroupedByPackagesAction.isChecked()) {
                 canExpandCollapse = true;
             }
         }
-        
+
         showNextFailureAction.setEnabled(containsFailures);
         showPreviousFailureAction.setEnabled(containsFailures);
         expandAllAction.setEnabled(canExpandCollapse);
@@ -226,25 +226,25 @@ public class TestViewer extends Composite {
             lastFinishedPackages.clear();
         }
     }
-    
+
     private void moveTo(TestElement testElement) {
         if (testElement != null) {
             viewer.reveal(createTreePath(testElement));
             viewer.setSelection(new StructuredSelection(testElement), true);
         }
     }
-    
+
     public TreeViewer getViewer() {
         return viewer;
     }
-    
+
     @Override
     public void dispose() {
         TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
         testRunContainer.removeTestRunListener(testRunListener);
         super.dispose();
     }
-    
+
     private class TestContentProvider implements ITreeContentProvider {
 
         @Override
@@ -303,16 +303,16 @@ public class TestViewer extends Composite {
         @Override
         public void update(ViewerCell cell) {
             boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
-            
+
             String text = null;
             Image image = null;
             long elapsedTimeInMilis = -1;
-            
+
             if (cell.getElement() instanceof TestElement) {
                 TestElement testElement = (TestElement) cell.getElement();
                 text = isGrouped ? testElement.getName() : testElement.getQualifiedName();
                 image = getTestStateImage(testElement);
-                
+
                 if( testElement.getState().isFinished() ) {
                     elapsedTimeInMilis = testElement.getElapsedTimeInMilis();
                 }
@@ -320,21 +320,21 @@ public class TestViewer extends Composite {
             if (cell.getElement() instanceof String) {
                 String packageName = (String) cell.getElement();
                 text = packageName;
-                
+
                 State state = currentTestRun.getPackageState(packageName);
                 switch(state) {
-                    case RUNNING: image = getImage(TESTS_RUNNING); break;
-                    case SUCCESS: image = getImage(TESTS_SUCCESS); break;
-                    case FAILURE: image = getImage(TESTS_FAILED); break;
-                    case ERROR: image = getImage(TESTS_ERROR); break;
-                    default: image = getImage(TESTS); break;
+                case RUNNING: image = getImage(TESTS_RUNNING); break;
+                case SUCCESS: image = getImage(TESTS_SUCCESS); break;
+                case FAILURE: image = getImage(TESTS_FAILED); break;
+                case ERROR: image = getImage(TESTS_ERROR); break;
+                default: image = getImage(TESTS); break;
                 }
-                
+
                 if( state.isFinished() ) {
                     elapsedTimeInMilis = currentTestRun.getPackageElapsedTimeInMilis(packageName);
                 }
             }
-            
+
             StyledString styledText = new StyledString();
             styledText.append(text);
             if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
@@ -393,7 +393,7 @@ public class TestViewer extends Composite {
                 moveTo(nextElement);
             }
         }
-        
+
     }
 
     private class ShowPreviousFailureAction extends Action {
@@ -437,21 +437,21 @@ public class TestViewer extends Composite {
                         }
                     }
                 }
-                
+
                 moveTo(prevElement);
             }
         }
-        
+
     }
 
     private class ShowFailuresOnlyAction extends Action {
-        
+
         public ShowFailuresOnlyAction() {
             super(showFailuresOnlyLabel, AS_CHECK_BOX);
             setDescription(showFailuresOnlyLabel);
             setToolTipText(showFailuresOnlyLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(SHOW_FAILURES));
-            
+
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             setChecked(preferenceStore.getBoolean(PREF_SHOW_FAILURES_ONLY));
         }
@@ -460,16 +460,16 @@ public class TestViewer extends Composite {
         public void run() {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_SHOW_FAILURES_ONLY, isChecked());
-            
+
             if( isChecked() ) {
                 viewer.addFilter(showFailuresOnlyFilter);
             } else {
                 viewer.removeFilter(showFailuresOnlyFilter);
             }
         }
-        
+
     }
-    
+
     private class ShowFailuresOnlyFilter extends ViewerFilter {
 
         @Override
@@ -496,7 +496,7 @@ public class TestViewer extends Composite {
         }
 
     }
-    
+
     private class ShowTestsElapsedTimeAction extends Action {
 
         public ShowTestsElapsedTimeAction() {
@@ -517,7 +517,7 @@ public class TestViewer extends Composite {
         }
 
     }
-    
+
     private class ShowTestsGroupedByPackagesAction extends Action {
 
         public ShowTestsGroupedByPackagesAction() {
@@ -540,25 +540,25 @@ public class TestViewer extends Composite {
     }
 
     private class ScrollLockAction extends Action {
-    
+
         public ScrollLockAction() {
             super(scrollLockLabel, AS_CHECK_BOX);
             setDescription(scrollLockLabel);
             setToolTipText(scrollLockLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(SCROLL_LOCK));
-            
+
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             setChecked(preferenceStore.getBoolean(PREF_SCROLL_LOCK));
         }
-        
+
         @Override
         public void run() {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_SCROLL_LOCK, isChecked());
         }
-    
+
     }
-    
+
     private class CollapseAllAction extends Action {
 
         public CollapseAllAction() {
@@ -575,7 +575,7 @@ public class TestViewer extends Composite {
         }
 
     }
-    
+
     private class ExpandAllAction extends Action {
 
         public ExpandAllAction() {

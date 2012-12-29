@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COMPARE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE;
@@ -41,16 +41,15 @@ import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
-import com.redhat.ceylon.test.eclipse.plugin.testview.compare.CompareDialog;
 
-public class TestStackTracePanel extends Composite {
-    
+public class StackTracePanel extends Composite {
+
     private static final String[] STACK_TRACE_FILTER_PATTERNS = new String[] {
-            "com.redhat.ceylon.test.eclipse.plugin.*",
-            "java.lang.reflect.Method.invoke",
-            "sun.reflect.*",
+        "com.redhat.ceylon.test.eclipse.plugin.*",
+        "java.lang.reflect.Method.invoke",
+        "sun.reflect.*",
     };
-    
+
     private TestElement selectedTestElement;
     private Label panelIcon;
     private Label panelLabel;
@@ -59,20 +58,18 @@ public class TestStackTracePanel extends Composite {
     private Table stackTraceTable;
     private StackTraceFilterAction stackTraceFilterAction;
     private StackTraceCopyAction stackTraceCopyAction;
-    private CompareAction compareAction;
+    private CompareValuesAction compareValuesAction;
 
-    public TestStackTracePanel(Composite parent) {
+    public StackTracePanel(Composite parent) {
         super(parent, SWT.NONE);
-        
+
         GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginTop = 10;
-        gridLayout.marginLeft = 0;
-        gridLayout.marginRight = 0;
         gridLayout.marginWidth = 0;
         gridLayout.marginHeight = 0;
         gridLayout.verticalSpacing = 0;
         setLayout(gridLayout);
-        
+
         createHeader();
         createToolBar();
         createStackTraceTable();
@@ -93,13 +90,13 @@ public class TestStackTracePanel extends Composite {
     private void createToolBar() {
         stackTraceFilterAction = new StackTraceFilterAction();
         stackTraceCopyAction = new StackTraceCopyAction();
-        compareAction = new CompareAction();
-        
+        compareValuesAction = new CompareValuesAction();
+
         toolBar = new ToolBar(this, SWT.FLAT | SWT.WRAP);
         toolBar.setLayoutData(GridDataFactory.swtDefaults().align(SWT.RIGHT, SWT.CENTER).grab(true, false).create());
         toolBarManager = new ToolBarManager(toolBar);
         toolBarManager.add(stackTraceFilterAction);
-        toolBarManager.add(compareAction);
+        toolBarManager.add(compareValuesAction);
         toolBarManager.add(stackTraceCopyAction);
         toolBarManager.update(true);
     }
@@ -130,7 +127,7 @@ public class TestStackTracePanel extends Composite {
 
     private void createStackTraceLine(boolean isFirstLine, String line) {
         String text = line.replace("\t", "  ");
-    
+
         Image image = null;
         if (isFirstLine || text.startsWith("Caused by: ")) {
             if (selectedTestElement.getState() == State.FAILURE) {
@@ -141,7 +138,7 @@ public class TestStackTracePanel extends Composite {
         } else if (text.startsWith("  at ")) {
             image = getImage(STACK_TRACE_LINE);
         }
-    
+
         TableItem tableItem = new TableItem(stackTraceTable, SWT.NONE);
         tableItem.setText(text);
         tableItem.setImage(image);
@@ -163,7 +160,7 @@ public class TestStackTracePanel extends Composite {
 
     private void updateActionState() {
         stackTraceCopyAction.setEnabled(isStackTraceAvailable());
-        compareAction.setEnabled(isCompareResultAvailable());
+        compareValuesAction.setEnabled(isCompareResultAvailable());
     }
 
     private boolean isStackTraceAvailable() {
@@ -174,7 +171,7 @@ public class TestStackTracePanel extends Composite {
         }        
         return false;
     }
-    
+
     private boolean isCompareResultAvailable() {
         if( selectedTestElement != null && 
                 selectedTestElement.getState() == State.FAILURE && 
@@ -210,31 +207,31 @@ public class TestStackTracePanel extends Composite {
         }
         return false;
     }
-    
+
     private class StackTraceFilterAction extends Action {
-    
+
         public StackTraceFilterAction() {
             super(stackTraceFilterLabel, AS_CHECK_BOX);
             setDescription(stackTraceFilterLabel);
             setToolTipText(stackTraceFilterLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(STACK_TRACE_FILTER));
-    
+
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             setChecked(preferenceStore.getBoolean(PREF_STACK_TRACE_FILTER));
         }
-    
+
         @Override
         public void run() {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
             preferenceStore.setValue(PREF_STACK_TRACE_FILTER, isChecked());
-    
+
             updateView();
         }
-    
+
     }
 
     private class StackTraceCopyAction extends Action {
-        
+
         public StackTraceCopyAction() {
             super(stackTraceCopyLabel);
             setDescription(stackTraceCopyLabel);
@@ -242,25 +239,25 @@ public class TestStackTracePanel extends Composite {
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
             setEnabled(false);
         }
-        
+
         @Override
         public void run() {
             if( isStackTraceAvailable() ) {
                 String stackTrace = selectedTestElement.getException();
-                
+
                 Clipboard clipboard = new Clipboard(getDisplay());
                 clipboard.setContents(new String[] { stackTrace }, new Transfer[] { TextTransfer.getInstance() });
                 clipboard.dispose();                
             }
         }
-        
+
     }
-    
-    private class CompareAction extends Action {
 
-        private CompareDialog dlg;
+    private class CompareValuesAction extends Action {
 
-        public CompareAction() {
+        private CompareValuesDialog dlg;
+
+        public CompareValuesAction() {
             super(compareValuesActionLabel);
             setDescription(compareValuesActionLabel);
             setToolTipText(compareValuesActionLabel);
@@ -271,7 +268,7 @@ public class TestStackTracePanel extends Composite {
         @Override
         public void run() {
             if (dlg == null) {
-                dlg = new CompareDialog(TestStackTracePanel.this.getShell());
+                dlg = new CompareValuesDialog(StackTracePanel.this.getShell());
                 dlg.create();
                 dlg.getShell().addDisposeListener(new DisposeListener() {
                     @Override

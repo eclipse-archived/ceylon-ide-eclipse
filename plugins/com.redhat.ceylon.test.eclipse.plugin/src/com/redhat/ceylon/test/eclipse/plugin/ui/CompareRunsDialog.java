@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STATE_ADDED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STATE_CHANGED;
@@ -82,7 +82,7 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElementComparatorByName;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 
-public class TestRunsCompareDialog extends TrayDialog {
+public class CompareRunsDialog extends TrayDialog {
 
     private final DateFormat startDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
@@ -92,13 +92,13 @@ public class TestRunsCompareDialog extends TrayDialog {
     private final List<ComparedElement> comparedElements = new ArrayList<ComparedElement>();
     private final Map<ComparedState, Integer> comparedStateCounts = new HashMap<ComparedState, Integer>();
 
-    private ShowOnlyFixed showOnlyFixed;
-    private ShowOnlyRegressedError showOnlyRegressedError;
-    private ShowOnlyRegressedFailure showOnlyRegressedFailure;
-    private ShowOnlyChanged showonlyChanged;
-    private ShowOnlyUnchanged showOnlyUnchanged;
-    private ShowOnlyAdded showOnlyAdded;
-    private ShowOnlyRemoved showOnlyRemoved;
+    private ShowOnlyFixedAction showOnlyFixedAction;
+    private ShowOnlyRegressedErrorAction showOnlyRegressedErrorAction;
+    private ShowOnlyRegressedFailureAction showOnlyRegressedFailureAction;
+    private ShowOnlyChangedAction showonlyChangedAction;
+    private ShowOnlyUnchangedAction showOnlyUnchangedAction;
+    private ShowOnlyAddedAction showOnlyAddedAction;
+    private ShowOnlyRemovedAction showOnlyRemovedAction;
 
     private Composite panel;
     private SashForm sashForm;
@@ -106,7 +106,7 @@ public class TestRunsCompareDialog extends TrayDialog {
     private StyledText exceptionText1;
     private StyledText exceptionText2;
 
-    public TestRunsCompareDialog(Shell shell, TestRun testRun1, TestRun testRun2) {
+    public CompareRunsDialog(Shell shell, TestRun testRun1, TestRun testRun2) {
         super(shell);
         this.testRun1 = testRun1;
         this.testRun2 = testRun2;
@@ -117,20 +117,20 @@ public class TestRunsCompareDialog extends TrayDialog {
     private void initComparedElements() {
         TestElement[] testElements1 = testRun1.getTestElements().toArray(new TestElement[] {});
         TestElement[] testElements2 = testRun2.getTestElements().toArray(new TestElement[] {});
-    
+
         Arrays.sort(testElements1, TestElementComparatorByName.INSTANCE);
         Arrays.sort(testElements2, TestElementComparatorByName.INSTANCE);
-    
+
         int index1 = 0;
         int index2 = 0;
         TestElement testElement1 = null;
         TestElement testElement2 = null;
         ComparedElement comparedElement = null;
-    
+
         while (index1 < testElements1.length || index2 < testElements2.length) {
             testElement1 = (index1 < testElements1.length) ? testElements1[index1] : null;
             testElement2 = (index2 < testElements2.length) ? testElements2[index2] : null;
-    
+
             int compare = TestElementComparatorByName.INSTANCE.compare(testElement1, testElement2);
             if (compare == 0) {
                 index1++;
@@ -143,7 +143,7 @@ public class TestRunsCompareDialog extends TrayDialog {
                 index2++;
                 comparedElement = new ComparedElement(null, testElement2);
             }
-    
+
             comparedElements.add(comparedElement);
         }
     }
@@ -212,133 +212,133 @@ public class TestRunsCompareDialog extends TrayDialog {
     private void createTestRunSummary(TestRun testRun) {
         Color backgroundColor = getDisplay().getSystemColor(SWT.COLOR_WHITE);
         Color labelForegroundColor = JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR);
-    
+
         Group g = new Group(panel, SWT.SHADOW_IN);
         g.setLayout(new GridLayout(2, false));
         g.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
         g.setBackground(backgroundColor);
-    
+
         Label runNameLabel = new Label(g, SWT.NONE);
         runNameLabel.setText(compareRunsDlgRunName);
         runNameLabel.setBackground(backgroundColor);
         runNameLabel.setForeground(labelForegroundColor);
-    
+
         Text runNameText = new Text(g, SWT.READ_ONLY);
         runNameText.setText(testRun.getRunName());
         runNameText.setBackground(backgroundColor);
         runNameText.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
-    
+
         Label startDateLabel = new Label(g, SWT.NONE);
         startDateLabel.setText(compareRunsDlgStartDate);
         startDateLabel.setBackground(backgroundColor);
         startDateLabel.setForeground(labelForegroundColor);
-    
+
         Text startDateText = new Text(g, SWT.READ_ONLY);
         startDateText.setText(startDateFormat.format(testRun.getRunStartDate()));
         startDateText.setBackground(backgroundColor);
         startDateText.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
-    
+
         Label elapsedTimeLabel = new Label(g, SWT.NONE);
         elapsedTimeLabel.setText(compareRunsDlgElapsedTime);
         elapsedTimeLabel.setBackground(backgroundColor);
         elapsedTimeLabel.setForeground(labelForegroundColor);
-    
+
         Text elapsedTimeText = new Text(g, SWT.READ_ONLY);
         elapsedTimeText.setText(getElapsedTimeInSeconds(testRun.getRunElapsedTimeInMilis()) + " s");
         elapsedTimeText.setBackground(backgroundColor);
         elapsedTimeText.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
-    
+
         Composite c = new Composite(g, SWT.NONE);
         c.setLayout(new GridLayout(6, false));
         c.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).span(2, 1).create());
         c.setBackground(backgroundColor);
-    
+
         Label totalIcon = new Label(c, SWT.NONE);
         totalIcon.setImage(CeylonTestImageRegistry.getImage(TEST));
         totalIcon.setBackground(backgroundColor);
-    
+
         Label totalLabel = new Label(c, SWT.NONE);
         totalLabel.setText(compareRunsDlgTotal);
         totalLabel.setBackground(backgroundColor);
         totalLabel.setForeground(labelForegroundColor);
-    
+
         Text totalText = new Text(c, SWT.READ_ONLY);
         totalText.setText(Integer.toString(testRun.getTotalCount()));
         totalText.setBackground(backgroundColor);
-    
+
         Label successIcon = new Label(c, SWT.NONE);
         successIcon.setImage(CeylonTestImageRegistry.getImage(TEST_SUCCESS));
         successIcon.setBackground(backgroundColor);
         successIcon.setLayoutData(GridDataFactory.swtDefaults().indent(50, 0).create());
-    
+
         Label successLabel = new Label(c, SWT.NONE);
         successLabel.setText(compareRunsDlgSuccess);
         successLabel.setBackground(backgroundColor);
         successLabel.setForeground(labelForegroundColor);
-    
+
         Text successText = new Text(c, SWT.READ_ONLY);
         successText.setText(Integer.toString(testRun.getSuccessCount()));
         successText.setBackground(backgroundColor);
-    
+
         Label failureIcon = new Label(c, SWT.NONE);
         failureIcon.setImage(CeylonTestImageRegistry.getImage(TEST_FAILED));
         failureIcon.setBackground(backgroundColor);
-    
+
         Label failureLabel = new Label(c, SWT.NONE);
         failureLabel.setText(compareRunsDlgFailures);
         failureLabel.setBackground(backgroundColor);
         failureLabel.setForeground(labelForegroundColor);
-    
+
         Text failureText = new Text(c, SWT.READ_ONLY);
         failureText.setText(Integer.toString(testRun.getFailureCount()));
         failureText.setBackground(backgroundColor);
-    
+
         Label errorIcon = new Label(c, SWT.NONE);
         errorIcon.setImage(CeylonTestImageRegistry.getImage(TEST_ERROR));
         errorIcon.setBackground(backgroundColor);
         errorIcon.setLayoutData(GridDataFactory.swtDefaults().indent(50, 0).create());
-    
+
         Label errorLabel = new Label(c, SWT.NONE);
         errorLabel.setText(compareRunsDlgErrors);
         errorLabel.setBackground(backgroundColor);
         errorLabel.setForeground(labelForegroundColor);
-    
+
         Text errorText = new Text(c, SWT.READ_ONLY);
         errorText.setText(Integer.toString(testRun.getErrorCount()));
         errorText.setBackground(backgroundColor);
     }
 
     private void createToolBar() {
-        showOnlyFixed = new ShowOnlyFixed();
-        showOnlyRegressedFailure = new ShowOnlyRegressedFailure();
-        showOnlyRegressedError = new ShowOnlyRegressedError();
-        showonlyChanged = new ShowOnlyChanged();
-        showOnlyUnchanged = new ShowOnlyUnchanged();
-        showOnlyAdded = new ShowOnlyAdded();
-        showOnlyRemoved = new ShowOnlyRemoved();
-    
+        showOnlyFixedAction = new ShowOnlyFixedAction();
+        showOnlyRegressedFailureAction = new ShowOnlyRegressedFailureAction();
+        showOnlyRegressedErrorAction = new ShowOnlyRegressedErrorAction();
+        showonlyChangedAction = new ShowOnlyChangedAction();
+        showOnlyUnchangedAction = new ShowOnlyUnchangedAction();
+        showOnlyAddedAction = new ShowOnlyAddedAction();
+        showOnlyRemovedAction = new ShowOnlyRemovedAction();
+
         GridLayout layout = new GridLayout(2, false);
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         layout.horizontalSpacing = 0;
         layout.verticalSpacing = 0;
-    
+
         Composite toolBarPanel = new Composite(panel, SWT.NONE);
         toolBarPanel.setLayout(layout);
         toolBarPanel.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).span(2, 1).indent(0, 20).create());
-    
+
         Label showOnlyLabel = new Label(toolBarPanel, SWT.NONE);
         showOnlyLabel.setText(compareRunsDlgShowOnly);
-    
+
         ToolBar toolBar = new ToolBar(toolBarPanel, SWT.FLAT | SWT.RIGHT);
         ToolBarManager toolBarManager = new ToolBarManager(toolBar);
-        toolBarManager.add(createActionContributionItem(showOnlyFixed));
-        toolBarManager.add(createActionContributionItem(showOnlyRegressedFailure));
-        toolBarManager.add(createActionContributionItem(showOnlyRegressedError));
-        toolBarManager.add(createActionContributionItem(showonlyChanged));
-        toolBarManager.add(createActionContributionItem(showOnlyUnchanged));
-        toolBarManager.add(createActionContributionItem(showOnlyAdded));
-        toolBarManager.add(createActionContributionItem(showOnlyRemoved));
+        toolBarManager.add(createActionContributionItem(showOnlyFixedAction));
+        toolBarManager.add(createActionContributionItem(showOnlyRegressedFailureAction));
+        toolBarManager.add(createActionContributionItem(showOnlyRegressedErrorAction));
+        toolBarManager.add(createActionContributionItem(showonlyChangedAction));
+        toolBarManager.add(createActionContributionItem(showOnlyUnchangedAction));
+        toolBarManager.add(createActionContributionItem(showOnlyAddedAction));
+        toolBarManager.add(createActionContributionItem(showOnlyRemovedAction));
         toolBarManager.update(true);
     }
 
@@ -353,7 +353,6 @@ public class TestRunsCompareDialog extends TrayDialog {
         exceptionGroup1.setBackground(backgroundColor);
 
         exceptionText1 = new StyledText(exceptionGroup1, SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
-        exceptionText1.setAlwaysShowScrollBars(false);
         exceptionText1.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
 
         Group exceptionGroup2 = new Group(exceptionSashForm, SWT.SHADOW_IN);
@@ -361,17 +360,16 @@ public class TestRunsCompareDialog extends TrayDialog {
         exceptionGroup2.setBackground(backgroundColor);
 
         exceptionText2 = new StyledText(exceptionGroup2, SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
-        exceptionText2.setAlwaysShowScrollBars(false);
         exceptionText2.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
     }
 
     private void createTestsViewer() {
         testsViewer = new TableViewer(sashForm, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-    
+
         createColumnName1();
         createColumnCompareState();
         createColumnName2();
-    
+
         testsViewer.setContentProvider(ArrayContentProvider.getInstance());
         testsViewer.setInput(comparedElements);
         testsViewer.addFilter(new ShowOnlyViewerFilter());
@@ -390,12 +388,12 @@ public class TestRunsCompareDialog extends TrayDialog {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ComparedElement comparedElement = null;
-    
+
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 if (!selection.isEmpty()) {
                     comparedElement = (ComparedElement) selection.getFirstElement();
                 }
-    
+
                 String exception1 = "";
                 String exception2 = "";
                 if (comparedElement != null) {
@@ -406,7 +404,7 @@ public class TestRunsCompareDialog extends TrayDialog {
                         exception2 = comparedElement.getTestElement2().getException();
                     }
                 }
-    
+
                 exceptionText1.setText(exception1);
                 exceptionText2.setText(exception2);
             }
@@ -450,7 +448,7 @@ public class TestRunsCompareDialog extends TrayDialog {
                 return "";
             }
         });
-    
+
         // workaround: image alignment doesn't work
         testsViewer.getTable().addListener(SWT.PaintItem, new Listener() {
             @Override
@@ -461,19 +459,19 @@ public class TestRunsCompareDialog extends TrayDialog {
                     if (image != null) {
                         int w = testsViewer.getTable().getColumn(event.index).getWidth();
                         int h = tableItem.getBounds().height;
-    
+
                         int x = (w / 2 - image.getBounds().width / 2);
                         if (x <= 0)
                             x = event.x;
                         else
                             x += event.x;
-    
+
                         int y = (h / 2 - image.getBounds().height / 2);
                         if (y <= 0)
                             y = event.y;
                         else
                             y += event.y;
-    
+
                         event.gc.drawImage(image, x, y);
                     }
                 }
@@ -499,9 +497,9 @@ public class TestRunsCompareDialog extends TrayDialog {
         }
     }
 
-    private class ShowOnlyFixed extends Action {
+    private class ShowOnlyFixedAction extends Action {
 
-        public ShowOnlyFixed() {
+        public ShowOnlyFixedAction() {
             super(compareRunsDlgFixed, AS_CHECK_BOX);
             setText(compareRunsDlgFixed + " (" + comparedStateCounts.get(ComparedState.FIXED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.FIXED) != 0);
@@ -515,9 +513,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyRegressedError extends Action {
+    private class ShowOnlyRegressedErrorAction extends Action {
 
-        public ShowOnlyRegressedError() {
+        public ShowOnlyRegressedErrorAction() {
             super(compareRunsDlgRegressedError, AS_CHECK_BOX);
             setText(compareRunsDlgRegressedError + " (" + comparedStateCounts.get(ComparedState.REGRESSED_ERROR) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.REGRESSED_ERROR) != 0);
@@ -531,9 +529,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyRegressedFailure extends Action {
+    private class ShowOnlyRegressedFailureAction extends Action {
 
-        public ShowOnlyRegressedFailure() {
+        public ShowOnlyRegressedFailureAction() {
             super(compareRunsDlgRegressedFailure, AS_CHECK_BOX);
             setText(compareRunsDlgRegressedFailure + " (" + comparedStateCounts.get(ComparedState.REGRESSED_FAILURE) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.REGRESSED_FAILURE) != 0);
@@ -547,9 +545,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyChanged extends Action {
+    private class ShowOnlyChangedAction extends Action {
 
-        public ShowOnlyChanged() {
+        public ShowOnlyChangedAction() {
             super(compareRunsDlgChanged, AS_CHECK_BOX);
             setText(compareRunsDlgChanged + " (" + comparedStateCounts.get(ComparedState.CHANGED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.CHANGED) != 0);
@@ -563,9 +561,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyUnchanged extends Action {
+    private class ShowOnlyUnchangedAction extends Action {
 
-        public ShowOnlyUnchanged() {
+        public ShowOnlyUnchangedAction() {
             super(compareRunsDlgUnchanged, AS_CHECK_BOX);
             setText(compareRunsDlgChanged + " (" + comparedStateCounts.get(ComparedState.UNCHANGED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.UNCHANGED) != 0);
@@ -579,9 +577,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyAdded extends Action {
+    private class ShowOnlyAddedAction extends Action {
 
-        public ShowOnlyAdded() {
+        public ShowOnlyAddedAction() {
             super(compareRunsDlgAdded, AS_CHECK_BOX);
             setText(compareRunsDlgAdded + " (" + comparedStateCounts.get(ComparedState.ADDED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.ADDED) != 0);
@@ -595,9 +593,9 @@ public class TestRunsCompareDialog extends TrayDialog {
 
     }
 
-    private class ShowOnlyRemoved extends Action {
+    private class ShowOnlyRemovedAction extends Action {
 
-        public ShowOnlyRemoved() {
+        public ShowOnlyRemovedAction() {
             super(compareRunsDlgRemoved, AS_CHECK_BOX);
             setText(compareRunsDlgRemoved + " (" + comparedStateCounts.get(ComparedState.REMOVED) + ")");
             setEnabled(comparedStateCounts.get(ComparedState.REMOVED) != 0);
@@ -615,13 +613,13 @@ public class TestRunsCompareDialog extends TrayDialog {
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            boolean added = showOnlyAdded.isChecked();
-            boolean removed = showOnlyRemoved.isChecked();
-            boolean changed = showonlyChanged.isChecked();
-            boolean unchanged = showOnlyUnchanged.isChecked();
-            boolean fixed = showOnlyFixed.isChecked();
-            boolean regressedError = showOnlyRegressedError.isChecked();
-            boolean regressedFailure = showOnlyRegressedFailure.isChecked();
+            boolean added = showOnlyAddedAction.isChecked();
+            boolean removed = showOnlyRemovedAction.isChecked();
+            boolean changed = showonlyChangedAction.isChecked();
+            boolean unchanged = showOnlyUnchangedAction.isChecked();
+            boolean fixed = showOnlyFixedAction.isChecked();
+            boolean regressedError = showOnlyRegressedErrorAction.isChecked();
+            boolean regressedFailure = showOnlyRegressedFailureAction.isChecked();
 
             if (added || removed || changed || unchanged || fixed || regressedError || regressedFailure) {
                 ComparedState state = ((ComparedElement) element).getState();

@@ -1,44 +1,69 @@
-package com.redhat.ceylon.test.eclipse.plugin.testview.compare;
+package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgActual;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgExpected;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgOk;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgTitle;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareViewerPane;
+import org.eclipse.compare.IEncodedStreamContentAccessor;
+import org.eclipse.compare.ITypedElement;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.TextPresentation;
+import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.presentation.IPresentationDamager;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.presentation.IPresentationRepairer;
+import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 
-public class CompareDialog extends TrayDialog {
+public class CompareValuesDialog extends TrayDialog {
 
     public static final String PREFIX_SUFFIX_PROPERTY = "com.redhat.ceylon.test.eclipse.plugin.testview.compare.CompareResultDialog.prefixSuffix";
 
     // Lengths of common prefix and suffix. Note: this array is passed to the DamagerRepairer and the lengths are updated on content change.
     private final int[] prefixSuffix = new int[2];
-    
+
     private CompareViewerPane compareViewerPane;
     private TextMergeViewer viewer;
     private String testName;
     private String expectedValue;
     private String actualValue;
 
-    public CompareDialog(Shell parentShell) {
+    public CompareValuesDialog(Shell parentShell) {
         super(parentShell);
         setShellStyle((getShellStyle() & ~SWT.APPLICATION_MODAL) | SWT.TOOL);
         setBlockOnOpen(false);
@@ -49,7 +74,7 @@ public class CompareDialog extends TrayDialog {
         testName = testElement.getQualifiedName();
         expectedValue = testElement.getExpectedValue();
         actualValue = testElement.getActualValue();
-    
+
         updateView();
     }
 
@@ -83,7 +108,7 @@ public class CompareDialog extends TrayDialog {
         createCompareViewerPane(composite);
         createPreviewer();
         applyDialogFont(parent);
-        
+
         return composite;
     }
 
@@ -108,7 +133,7 @@ public class CompareDialog extends TrayDialog {
         compareConfiguration.setProperty(CompareConfiguration.IGNORE_WHITESPACE, Boolean.FALSE);
         compareConfiguration.setProperty(PREFIX_SUFFIX_PROPERTY, prefixSuffix);
 
-        viewer = new CompareDialogMergeViewer(compareViewerPane, SWT.NONE, compareConfiguration);
+        viewer = new CompareValuesMergeViewer(compareViewerPane, SWT.NONE, compareConfiguration);
 
         Control control = viewer.getControl();
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -123,9 +148,9 @@ public class CompareDialog extends TrayDialog {
 
     private void updateView() {
         updatePrefixSuffix();
-        
+
         if (!viewer.getControl().isDisposed()) {
-            viewer.setInput(new DiffNode(new CompareElement(expectedValue), new CompareElement(actualValue)));
+            viewer.setInput(new DiffNode(new CompareValueElement(expectedValue), new CompareValueElement(actualValue)));
             compareViewerPane.setText(testName);
         }
     }
@@ -137,7 +162,7 @@ public class CompareDialog extends TrayDialog {
             if (expectedValue.charAt(i) != actualValue.charAt(i))
                 break;
         prefixSuffix[0] = i;
-    
+
         int j = expectedValue.length() - 1;
         int k = actualValue.length() - 1;
         int l = 0;
@@ -148,5 +173,110 @@ public class CompareDialog extends TrayDialog {
         }
         prefixSuffix[1] = l;
     }
+
+    public class CompareValueElement implements ITypedElement, IEncodedStreamContentAccessor {
+
+        private final String content;
+
+        public CompareValueElement(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public String getName() {
+            return "<no name>";
+        }
+
+        @Override
+        public Image getImage() {
+            return null;
+        }
+
+        @Override
+        public String getType() {
+            return "txt";
+        }
+
+        @Override
+        public String getCharset() throws CoreException {
+            return "UTF-8";
+        }
+
+        @Override
+        public InputStream getContents() {
+            try {
+                return new ByteArrayInputStream(content.getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                return new ByteArrayInputStream(content.getBytes());
+            }
+        }
+
+    }
+
+    private static class CompareValuesMergeViewer extends TextMergeViewer {
+
+        public CompareValuesMergeViewer(Composite parent, int style, CompareConfiguration configuration) {
+            super(parent, style, configuration);
+        }
+
+        @Override
+        protected void configureTextViewer(TextViewer textViewer) {
+            if (textViewer instanceof SourceViewer) {
+                int[] prefixSuffixOffsets = (int[]) getCompareConfiguration().getProperty(CompareValuesDialog.PREFIX_SUFFIX_PROPERTY);
+                ((SourceViewer)textViewer).configure(new CompareValuesViewerConfiguration(prefixSuffixOffsets));
+            }
+        }
+
+    }
+
+    private static class CompareValuesDamagerRepairer implements IPresentationDamager, IPresentationRepairer {
+
+        private IDocument document;
+        private final int[] prefixSuffixOffsets2;
+
+        public CompareValuesDamagerRepairer(int[] prefixSuffixOffsets) {
+            this.prefixSuffixOffsets2 = prefixSuffixOffsets;
+        }
+
+        @Override
+        public void setDocument(IDocument document) {
+            this.document = document;
+        }
+
+        @Override
+        public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent event, boolean changed) {
+            return new Region(0, document.getLength());
+        }
+
+        @Override
+        public void createPresentation(TextPresentation presentation, ITypedRegion damage) {
+            presentation.setDefaultStyleRange(new StyleRange(0, document.getLength(), null, null));
+            int prefix = prefixSuffixOffsets2[0];
+            int suffix = prefixSuffixOffsets2[1];
+            TextAttribute attr = new TextAttribute(Display.getDefault().getSystemColor(SWT.COLOR_RED), null, SWT.BOLD);
+            presentation.addStyleRange(new StyleRange(prefix, document.getLength() - suffix - prefix, attr
+                    .getForeground(), attr.getBackground(), attr.getStyle()));
+        }
+
+    }    
+
+    private static class CompareValuesViewerConfiguration extends SourceViewerConfiguration {
+
+        private final int[] prefixSuffixOffsets;
+
+        public CompareValuesViewerConfiguration(int[] prefixSuffixOffsets) {
+            this.prefixSuffixOffsets = prefixSuffixOffsets;
+        }
+
+        @Override
+        public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
+            PresentationReconciler reconciler = new PresentationReconciler();
+            CompareValuesDamagerRepairer dr = new CompareValuesDamagerRepairer(prefixSuffixOffsets);
+            reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
+            reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
+            return reconciler;
+        }
+
+    }    
 
 }
