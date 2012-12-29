@@ -67,19 +67,37 @@ public class CeylonTestMessages extends NLS {
     public static String historyColumnSuccess;
     public static String historyColumnFailures;
     public static String historyColumnErrors;
+    public static String historyDlgCanNotCompareRunningTest;
     public static String historyDlgCanNotRemoveRunningTest;
     
-    public static String compareLabel;
-    public static String compareDlgTitle;
-    public static String compareDlgOk;
-    public static String compareDlgExpected;
-    public static String compareDlgActual;
+    public static String compareValuesActionLabel;
+    public static String compareValuesDlgTitle;
+    public static String compareValuesDlgOk;
+    public static String compareValuesDlgExpected;
+    public static String compareValuesDlgActual;
+    
+    public static String compareRunsDlgRunName;
+    public static String compareRunsDlgStartDate;
+    public static String compareRunsDlgElapsedTime;
+    public static String compareRunsDlgTotal;
+    public static String compareRunsDlgSuccess;
+    public static String compareRunsDlgFailures;
+    public static String compareRunsDlgErrors;
+    public static String compareRunsDlgShowOnly;
+    public static String compareRunsDlgFixed;
+    public static String compareRunsDlgRegressedError;
+    public static String compareRunsDlgRegressedFailure;
+    public static String compareRunsDlgChanged;
+    public static String compareRunsDlgUnchanged;
+    public static String compareRunsDlgAdded;
+    public static String compareRunsDlgRemoved;
     
     public static String add;
     public static String remove;
     public static String removeAll;
     public static String moveUp;
     public static String moveDown;
+    public static String compare;
     public static String information;
     public static String inProjectPrefix;
 

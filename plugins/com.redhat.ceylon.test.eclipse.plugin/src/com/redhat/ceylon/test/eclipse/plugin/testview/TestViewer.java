@@ -6,16 +6,11 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SCRO
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_FAILURES;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_NEXT;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW_PREV;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.collapseAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
@@ -29,8 +24,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getElapsedTimeInSeconds;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getTestStateImage;
 
-import java.text.NumberFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,15 +62,6 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
 public class TestViewer extends Composite {
 
-    public static final NumberFormat ELAPSED_TIME_FORMAT;
-    static {
-        ELAPSED_TIME_FORMAT = NumberFormat.getNumberInstance();
-        ELAPSED_TIME_FORMAT.setGroupingUsed(true);
-        ELAPSED_TIME_FORMAT.setMinimumFractionDigits(3);
-        ELAPSED_TIME_FORMAT.setMaximumFractionDigits(3);
-        ELAPSED_TIME_FORMAT.setMinimumIntegerDigits(1);
-    }
-    
     private TestRun currentTestRun;
     private TestViewPart viewPart;
     private TreeViewer viewer;
@@ -246,7 +233,7 @@ public class TestViewer extends Composite {
             viewer.setSelection(new StructuredSelection(testElement), true);
         }
     }
-
+    
     public TreeViewer getViewer() {
         return viewer;
     }
@@ -324,14 +311,7 @@ public class TestViewer extends Composite {
             if (cell.getElement() instanceof TestElement) {
                 TestElement testElement = (TestElement) cell.getElement();
                 text = isGrouped ? testElement.getName() : testElement.getQualifiedName();
-                
-                switch(testElement.getState()) {
-                    case RUNNING: image = getImage(TEST_RUNNING); break;
-                    case SUCCESS: image = getImage(TEST_SUCCESS); break;
-                    case FAILURE: image = getImage(TEST_FAILED); break;
-                    case ERROR: image = getImage(TEST_ERROR); break;
-                    default: image = getImage(TEST); break;
-                }
+                image = getTestStateImage(testElement);
                 
                 if( testElement.getState().isFinished() ) {
                     elapsedTimeInMilis = testElement.getElapsedTimeInMilis();
@@ -358,8 +338,7 @@ public class TestViewer extends Composite {
             StyledString styledText = new StyledString();
             styledText.append(text);
             if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
-                String elapsedSeconds = ELAPSED_TIME_FORMAT.format(elapsedTimeInMilis/1000.0);
-                styledText.append(" (" + elapsedSeconds + " s)", StyledString.COUNTER_STYLER);
+                styledText.append(" (" + getElapsedTimeInSeconds(elapsedTimeInMilis) + " s)", StyledString.COUNTER_STYLER);
             }
 
             cell.setText(styledText.getString());

@@ -1,5 +1,4 @@
 ? javascript backend
 ? default modules 
 - implement RefactoringParticipant
-- test history
 - go to source

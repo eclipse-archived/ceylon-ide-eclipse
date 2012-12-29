@@ -5,12 +5,14 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_INTERRUPTED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnTotal;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotCompareRunningTest;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotRemoveRunningTest;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgMessage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgTitle;
@@ -26,7 +28,9 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -56,6 +60,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
     
     private Composite panel;
     private TableViewer tableViewer;
+    private Button buttonCompare;
     private Button buttonRemove;
     private Button buttonRemoveAll;
     
@@ -110,6 +115,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
         parent.setLayout(new GridLayout(1, false));
 
         createViewer();
+        createButtonCompare();
         createButtonRemove();
         createButtonRemoveAll();
         
@@ -127,7 +133,7 @@ public class TestHistoryDialog extends TitleAreaDialog {
         tableViewer.setInput(testRunContainer.getTestRuns());
         tableViewer.getTable().setHeaderVisible(true);
         tableViewer.getTable().setLinesVisible(true);
-        tableViewer.getTable().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(1, 3).create());
+        tableViewer.getTable().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(1, 4).create());
     }
 
     private void createColumnName() {
@@ -226,10 +232,56 @@ public class TestHistoryDialog extends TitleAreaDialog {
         });
     }
     
+    private void createButtonCompare() {
+        buttonCompare = new Button(panel, SWT.PUSH);
+        buttonCompare.setEnabled(false);
+        buttonCompare.setText(compare);
+        buttonCompare.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).hint(110, SWT.DEFAULT).create());
+        buttonCompare.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+                if (selection.size() == 2) {
+                    TestRun testRun1 = (TestRun) selection.toArray()[0];
+                    TestRun testRun2 = (TestRun) selection.toArray()[1];
+
+                    if (testRun1.isRunning() || testRun2.isRunning()) {
+                        MessageDialog.openInformation(getShell(), information, historyDlgCanNotCompareRunningTest);
+                        return;
+                    }
+
+                    TestRun testRunOlder = null;
+                    TestRun testRunYounger = null;
+                    if (testRun1.getRunStartDate().before(testRun2.getRunStartDate())) {
+                        testRunOlder = testRun1;
+                        testRunYounger = testRun2;
+                    } else {
+                        testRunOlder = testRun2;
+                        testRunYounger = testRun1;
+                    }
+
+                    TestRunsCompareDialog dlg = new TestRunsCompareDialog(getShell(), testRunOlder, testRunYounger);
+                    dlg.open();
+                }
+            }
+        });
+        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                if (selection.size() == 2) {
+                    buttonCompare.setEnabled(true);
+                } else {
+                    buttonCompare.setEnabled(false);
+                }
+            }
+        });
+    }
+    
     private void createButtonRemove() {
         buttonRemove = new Button(panel, SWT.PUSH);
         buttonRemove.setText(remove);
-        buttonRemove.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).hint(110, SWT.DEFAULT).create());
+        buttonRemove.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 10).create());
         buttonRemove.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

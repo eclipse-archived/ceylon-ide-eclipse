@@ -38,6 +38,14 @@ public class CeylonTestImageRegistry {
     public static final String SHOW_NEXT = "show_next.gif";
     public static final String SHOW_PREV = "show_prev.gif";
     
+    public static final String STATE_FIXED = "state_fixed.gif";
+    public static final String STATE_REGRESSED_ERROR = "state_regressed_error.gif";
+    public static final String STATE_REGRESSED_FAILURE = "state_regressed_failed.gif";
+    public static final String STATE_CHANGED = "state_changed.gif";
+    public static final String STATE_UNCHANGED = "state_unchanged.gif";
+    public static final String STATE_ADDED = "state_added.gif";
+    public static final String STATE_REMOVED = "state_removed.gif";
+    
     public static final String RELAUNCH = "relaunch.gif";
     public static final String STOP = "stop.gif";
     public static final String SCROLL_LOCK = "scroll_lock.gif";
@@ -82,6 +90,14 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(SHOW_FAILURES, image(SHOW_FAILURES));
         imageRegistry.put(SHOW_NEXT, image(SHOW_NEXT));
         imageRegistry.put(SHOW_PREV, image(SHOW_PREV));
+        
+        imageRegistry.put(STATE_FIXED, image(STATE_FIXED));
+        imageRegistry.put(STATE_REGRESSED_ERROR, image(STATE_REGRESSED_ERROR));
+        imageRegistry.put(STATE_REGRESSED_FAILURE, image(STATE_REGRESSED_FAILURE));
+        imageRegistry.put(STATE_CHANGED, image(STATE_CHANGED));
+        imageRegistry.put(STATE_UNCHANGED, image(STATE_UNCHANGED));
+        imageRegistry.put(STATE_ADDED, image(STATE_ADDED));
+        imageRegistry.put(STATE_REMOVED, image(STATE_REMOVED));
         
         imageRegistry.put(RELAUNCH, image(RELAUNCH));
         imageRegistry.put(STOP, image(STOP));

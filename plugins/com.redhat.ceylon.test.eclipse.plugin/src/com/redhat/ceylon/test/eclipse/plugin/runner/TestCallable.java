@@ -2,8 +2,6 @@ package com.redhat.ceylon.test.eclipse.plugin.runner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import ceylon.language.Callable;
 
@@ -44,12 +42,6 @@ public class TestCallable implements Callable<Object> {
             throw (ceylon.language.Exception) e.getTargetException();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                // TODO tmp only for testing
-                long milis = Math.abs(new Random().nextLong() % 3000);
-                TimeUnit.MILLISECONDS.sleep(milis);
-            } catch (InterruptedException e) {}
         }
         
         return null;
