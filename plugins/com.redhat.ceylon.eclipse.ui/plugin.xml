@@ -995,14 +995,10 @@
                <with variable="selection">
                   <count value="1"/>
                   <iterate>
-                     <or>
-<!--                        <test property="org.eclipse.jdt.launching.hasMain"/>
-                        <and>
-                           <test property="org.eclipse.jdt.launching.isContainer"/>
-                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-                        </and>
-                        -->
-                     </or>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                     </test>
                   </iterate>
                </with>
             </enablement>
@@ -1031,14 +1027,10 @@
                <with variable="selection">
                   <count value="1"/>
                   <iterate>
-                     <or>
-<!--                        <test property="org.eclipse.jdt.launching.hasMain"/>
-                        <and>
-                           <test property="org.eclipse.jdt.launching.isContainer"/>
-                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-                        </and>
-                        -->
-                     </or>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                     </test>
                   </iterate>
                </with>
             </enablement>
@@ -1819,6 +1811,16 @@
           </with>
         </enablement>
       </renameParticipant>
+    </extension>
+    <extension
+          point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"
+             id="com.redhat.ceylon.eclipse.core.launch.ceylonRunPropertyTester"
+             namespace="com.redhat.ceylon.eclipse.ui"
+             properties="canLaunchAsCeylonApp"
+             type="java.lang.Object">
+       </propertyTester>
     </extension>
     
 </plugin>

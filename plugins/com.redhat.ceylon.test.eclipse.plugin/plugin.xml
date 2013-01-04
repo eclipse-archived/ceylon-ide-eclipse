@@ -44,6 +44,9 @@
                   </count>
                   <iterate>
                      <test
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                     </test>
+                     <test
                            forcePluginActivation="true"
                            property="com.redhat.ceylon.test.eclipse.plugin.canLaunchAsCeylonTest">
                      </test>
