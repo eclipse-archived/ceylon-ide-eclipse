@@ -749,7 +749,7 @@ public class CeylonQuickFixAssistant {
                 }
             }
             else if (!isUpperCase) {
-                String type = isVoid ? "Void" : 
+                String type = isVoid ? "Anything" : 
                     stn.equals("unknown") ? "value" : stn;
                 def = type + " " + brokenName + " = " + defaultValue(node.getUnit(), et) + ";";
                 desc = "value '" + brokenName + "'";

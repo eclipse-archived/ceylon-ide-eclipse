@@ -58,7 +58,7 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.model.BottomType;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -192,7 +192,7 @@ public class CeylonContentProposer {
         		ProducedType fullType = fullType(d);
 				if (requiredType!=null && (type==null ||
         				(!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
-        				type.isSubtypeOf(rn.getUnit().getNothingDeclaration().getType()))) {
+        				type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
         			iter.remove();
         		}
         	}
@@ -1085,8 +1085,8 @@ public class CeylonContentProposer {
                     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
                         ProducedType xtype = type(x.getDeclaration());
                         ProducedType ytype = type(y.getDeclaration());
-                        boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof BottomType;
-                        boolean ybottom = ytype!=null && ytype.getDeclaration() instanceof BottomType;
+                        boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof NothingType;
+                        boolean ybottom = ytype!=null && ytype.getDeclaration() instanceof NothingType;
                         if (xbottom && !ybottom) {
                             return 1;
                         }
