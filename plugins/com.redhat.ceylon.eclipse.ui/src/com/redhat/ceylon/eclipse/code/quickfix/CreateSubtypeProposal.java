@@ -280,7 +280,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
         			def.append(ptr.getType().getProducedTypeName());
         		}
         		else {
-        			def.append("Void");
+        			def.append("Anything");
         		}
         		def.append(" ").append(p.getName()).append(", ");
         	}
@@ -367,7 +367,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
     		return (dec instanceof ClassOrInterface ||
     					dec instanceof IntersectionType) &&
     				dec.isExtendable() &&
-    				dec!=unit.getVoidDeclaration() &&
+    				dec!=unit.getAnythingDeclaration() &&
     				dec!=unit.getObjectDeclaration() &&
     				dec!=unit.getIdentifiableObjectDeclaration() &&
     				dec!=unit.getIdentifiableDeclaration();
