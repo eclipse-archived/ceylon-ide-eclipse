@@ -93,7 +93,7 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.SatisfiesCondition that) {
-        ProducedType objectType = that.getUnit().getValueDeclaration().getType();
+        ProducedType objectType = that.getUnit().getObjectDeclaration().getType();
         currentType = objectType;
         super.visit(that);
         currentType = null;
