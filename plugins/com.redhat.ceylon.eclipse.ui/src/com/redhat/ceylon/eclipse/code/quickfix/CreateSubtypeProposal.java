@@ -368,7 +368,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
     					dec instanceof IntersectionType) &&
     				dec.isExtendable() &&
     				dec!=unit.getAnythingDeclaration() &&
-    				dec!=unit.getValueDeclaration() &&
+    				dec!=unit.getObjectDeclaration() &&
     				dec!=unit.getBasicDeclaration() &&
     				dec!=unit.getIdentifiableDeclaration();
     	}
