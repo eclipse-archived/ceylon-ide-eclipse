@@ -51,7 +51,7 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 
 	@Override
 	protected boolean isObject(ProducedType type) {
-		return unit(type).getObjectDeclaration().equals(type.getDeclaration());
+		return unit(type).getValueDeclaration().equals(type.getDeclaration());
 	}
 
 	@Override
@@ -59,9 +59,9 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 		//TODO: is this correct??
 		Unit unit = unit(type);
 		TypeDeclaration dec = type.getDeclaration();
-		return unit.getObjectDeclaration()==dec ||
+		return unit.getValueDeclaration()==dec ||
 				unit.getIdentifiableDeclaration()==dec ||
-				unit.getIdentifiableObjectDeclaration()==dec ||
+				unit.getBasicDeclaration()==dec ||
 				unit.getNullDeclaration()==dec ||
 				unit.getAnythingDeclaration()==dec ||
 				dec instanceof NothingType ||
