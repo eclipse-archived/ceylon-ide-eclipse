@@ -156,13 +156,6 @@ class FindOccurrenceLocationVisitor extends Visitor
     }
         
     @Override
-    public void visit(Tree.SyntheticBlock that) {
-        ((Tree.InvocationExpression) ((Tree.Return) that.getStatements().get(0))
-                .getExpression().getTerm())
-                .getNamedArgumentList().visit(this);
-    }
-        
-    @Override
     public void visit(Tree.Declaration that) {
         if (inBounds(that) && 
                 !(that instanceof Tree.Parameter)) {
