@@ -66,7 +66,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.core.model.ModuleSourceFile;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
+import com.redhat.ceylon.eclipse.core.model.LazySourceFile;
 
 /**
  * @author david
@@ -357,7 +359,7 @@ public class JDTModuleManager extends LazyModuleManager {
                     Tree.CompilationUnit cu = parser.compilationUnit();
                     List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                     tokens.addAll(tokenStream.getTokens());
-                    PhasedUnit phasedUnit = new CeylonSourceFile(file, srcDir, cu, 
+                    PhasedUnit phasedUnit = new ModuleSourceFile(file, srcDir, cu, 
                             getModuleManager().getCurrentPackage(), getModuleManager(),
                             getTypeChecker(), tokens);
                     addPhasedUnit(file, phasedUnit);
