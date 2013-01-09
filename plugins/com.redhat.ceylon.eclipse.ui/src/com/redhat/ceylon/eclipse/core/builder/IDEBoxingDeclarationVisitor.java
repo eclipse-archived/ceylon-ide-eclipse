@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import com.redhat.ceylon.compiler.java.codegen.BoxingDeclarationVisitor;
-import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
@@ -21,7 +21,7 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 
 	private boolean isCeylonBoolean(ProducedType type) {
 		return type.isSubtypeOf(unit(type).getBooleanDeclaration().getType())
-				&& !(type.getDeclaration() instanceof BottomType);
+				&& !(type.getDeclaration() instanceof NothingType);
 	}
 
 	private boolean isCeylonString(ProducedType type) {
@@ -45,8 +45,8 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 	}
 
 	@Override
-	protected boolean isNothing(ProducedType type) {
-		return unit(type).getNothingDeclaration().equals(type.getDeclaration());
+	protected boolean isNull(ProducedType type) {
+		return unit(type).getNullDeclaration().equals(type.getDeclaration());
 	}
 
 	@Override
@@ -61,10 +61,11 @@ public class IDEBoxingDeclarationVisitor extends BoxingDeclarationVisitor {
 		TypeDeclaration dec = type.getDeclaration();
 		return unit.getObjectDeclaration()==dec ||
 				unit.getIdentifiableDeclaration()==dec ||
-				unit.getIdentifiableObjectDeclaration()==dec ||
-				unit.getNothingDeclaration()==dec ||
-				unit.getVoidDeclaration()==dec ||
-				dec instanceof BottomType ||
+				unit.getBasicDeclaration()==dec ||
+				unit.getNullDeclaration()==dec ||
+				unit.getNullValueDeclaration().getTypeDeclaration()==dec ||
+				unit.getAnythingDeclaration()==dec ||
+				dec instanceof NothingType ||
 				dec instanceof UnionType || 
 				dec instanceof IntersectionType;
 	}

@@ -353,9 +353,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		String ending;
 		ProducedType tt = term.getTypeModel();
 		if (tt!=null) {
-            boolean isVoid = tt.getDeclaration()
-    		        .equals(term.getUnit().getVoidDeclaration());
-            if (isVoid) {
+            boolean isAnything = tt.getDeclaration()
+    		        .equals(term.getUnit().getAnythingDeclaration());
+            if (isAnything) {
     	         type = "void";
     	         ending = "";
     		}
