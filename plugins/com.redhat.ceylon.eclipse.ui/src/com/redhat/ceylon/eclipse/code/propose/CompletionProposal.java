@@ -77,7 +77,7 @@ public class CompletionProposal implements ICompletionProposal,
             return new Point(offset-prefix.length() + start, length);
         }
         else {
-            int loc = text.indexOf("bottom;");
+            int loc = text.indexOf("nothing;");
             int length;
             int start;
             if (loc<0) {
@@ -87,7 +87,7 @@ public class CompletionProposal implements ICompletionProposal,
             }
             else {
                 start = offset + loc-prefix.length();
-                length = 6;
+                length = 7;
             }
             return new Point(start, length);
         }

@@ -742,7 +742,7 @@ public class CeylonQuickFixAssistant {
                 else {
                     String type = isVoid ? "void" : 
                         stn.equals("unknown") ? "function" : stn;
-                    String impl = isVoid ? " {}" : " { return bottom; }";
+                    String impl = isVoid ? " {}" : " { return nothing; }";
                     def = type + " " + brokenName + params + impl;
                     desc = "function '" + brokenName + params + "'";
                     image = METHOD;
@@ -1072,7 +1072,7 @@ public class CeylonQuickFixAssistant {
             return "\"\"";
         }
         else {
-            return "bottom";
+            return "nothing";
         }
     }
     

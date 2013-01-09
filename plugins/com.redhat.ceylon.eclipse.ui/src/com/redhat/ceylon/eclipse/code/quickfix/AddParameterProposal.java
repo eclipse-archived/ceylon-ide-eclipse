@@ -64,7 +64,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 SpecifierOrInitializerExpression sie = decNode.getSpecifierOrInitializerExpression();
                 String def;
                 if (sie==null) {
-                    def = " = bottom";
+                    def = " = nothing";
                 }
                 else {
                     def = AbstractRefactoring.toString(sie, 
