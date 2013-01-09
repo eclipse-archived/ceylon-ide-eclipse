@@ -3,16 +3,16 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 
-import com.redhat.ceylon.compiler.typechecker.model.BottomType;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class InferTypeVisitor extends Visitor {
     Unit unit;
@@ -26,7 +26,7 @@ class InferTypeVisitor extends Visitor {
             }
             else {
                 ProducedType it = intersectionType(inferredType, pt, unit);
-                if (!(it.getDeclaration() instanceof BottomType)) {
+                if (!(it.getDeclaration() instanceof NothingType)) {
                     inferredType = it;
                 }
             }
