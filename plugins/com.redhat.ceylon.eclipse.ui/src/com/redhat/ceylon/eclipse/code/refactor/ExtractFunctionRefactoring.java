@@ -25,6 +25,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -353,9 +354,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		String ending;
 		ProducedType tt = term.getTypeModel();
 		if (tt!=null) {
-            boolean isAnything = tt.getDeclaration()
-    		        .equals(term.getUnit().getAnythingDeclaration());
-            if (isAnything) {
+            boolean isVoid = (tt.getDeclaration() instanceof Class) && 
+            		tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
+            if (isVoid) {
     	         type = "void";
     	         ending = "";
     		}

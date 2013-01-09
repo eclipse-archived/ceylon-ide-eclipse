@@ -126,13 +126,6 @@ class FindNodeVisitor extends Visitor
     }
     
     @Override
-    public void visit(Tree.SyntheticBlock that) {
-        ((Tree.InvocationExpression) ((Tree.Return) that.getStatements().get(0))
-                .getExpression().getTerm())
-                .getNamedArgumentList().visit(this);
-    }
-    
-    @Override
     public void visit(Tree.StaticMemberOrTypeExpression that) {
         if (inBounds(that.getIdentifier())) {
             node = that;

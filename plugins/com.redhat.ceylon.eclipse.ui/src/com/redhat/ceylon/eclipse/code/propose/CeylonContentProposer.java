@@ -192,7 +192,7 @@ public class CeylonContentProposer {
         		ProducedType fullType = fullType(d);
 				if (requiredType!=null && (type==null ||
         				(!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
-        				type.isSubtypeOf(rn.getUnit().getNothingDeclaration().getType()))) {
+        				type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
         			iter.remove();
         		}
         	}
