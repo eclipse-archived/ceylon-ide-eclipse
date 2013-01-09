@@ -321,6 +321,7 @@ public class CeylonQuickFixAssistant {
         	break;
         case 1302:
         case 1312:
+        case 1307:
         	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
         	break;
         case 1303:
@@ -749,7 +750,7 @@ public class CeylonQuickFixAssistant {
                 }
             }
             else if (!isUpperCase) {
-                String type = isVoid ? "Void" : 
+                String type = isVoid ? "Anything" : 
                     stn.equals("unknown") ? "value" : stn;
                 def = type + " " + brokenName + " = " + defaultValue(node.getUnit(), et) + ";";
                 desc = "value '" + brokenName + "'";

@@ -280,7 +280,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
         			def.append(ptr.getType().getProducedTypeName());
         		}
         		else {
-        			def.append("Void");
+        			def.append("Anything");
         		}
         		def.append(" ").append(p.getName()).append(", ");
         	}
