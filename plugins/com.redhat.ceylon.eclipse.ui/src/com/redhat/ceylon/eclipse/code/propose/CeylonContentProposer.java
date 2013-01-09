@@ -903,7 +903,7 @@ public class CeylonContentProposer {
             OccurrenceLocation ol) {
         result.add(new DeclarationCompletionProposal(offset, prefix, 
                 getDescriptionFor(dwp, ol), 
-                getTextFor(dwp, ol) + " = bottom;", 
+                getTextFor(dwp, ol) + " = nothing;", 
                 true, cpc, d));
     }
 
@@ -1054,15 +1054,15 @@ public class CeylonContentProposer {
                         null, prop, prop, true));
             }
             if ("function".startsWith(prefix)) {
-                String prop = "function method() { return bottom; }";
+                String prop = "function method() { return nothing; }";
                 result.add(sourceProposal(offset, prefix, null, 
                         null, prop, prop, true));
             }
             if ("value".startsWith(prefix)) {
-                String prop = "value attribute = bottom;";
+                String prop = "value attribute = nothing;";
                 result.add(sourceProposal(offset, prefix, null, 
                         null, prop, prop, true));
-                prop = "value attribute { return bottom; }";
+                prop = "value attribute { return nothing; }";
                 result.add(sourceProposal(offset, prefix, null, 
                         null, prop, prop, true));
             }
@@ -1691,11 +1691,11 @@ public class CeylonContentProposer {
     		String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
             result.append( ((Functional) d).isDeclaredVoid() ?
-                    " {}" : " {" + extraIndent(indent) + "return bottom;" + indent + "}" );
+                    " {}" : " {" + extraIndent(indent) + "return nothing;" + indent + "}" );
         }
         else if (d instanceof MethodOrValue) {
         	if (isInterface) {
-        		result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
+        		result.append(" {" + extraIndent(indent) + "return nothing;" + indent + "}");
         		if (isVariable(d)) {
         			result.append(indent + "assign " + d.getName() + " {}");
         		}
@@ -1703,11 +1703,11 @@ public class CeylonContentProposer {
         	else {
         		result.append(" ")
         			.append(isVariable(d) ? ":=" : "=")
-        			.append(" bottom;");
+        			.append(" nothing;");
         	}
         }
         else if (d instanceof ValueParameter) {
-            result.append(" {" + extraIndent(indent) + "return bottom;" + indent + "}");
+            result.append(" {" + extraIndent(indent) + "return nothing;" + indent + "}");
         }
         else {
             //TODO: in the case of a class, formal member refinements!
