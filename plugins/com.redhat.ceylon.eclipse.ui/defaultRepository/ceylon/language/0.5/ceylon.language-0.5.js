@@ -67,12 +67,6 @@ var superProto = arguments[i].$$.prototype;
 for (var $ in superProto) {proto[$] = superProto[$]}
 }
 }
-function reify(obj, params) {
-if (obj) {
-obj.$$targs$$=params;
-}
-return obj;
-}
 var inheritProtoI = inheritProto;
 exports.initType=initType;
 exports.initTypeProto=initTypeProto;
@@ -81,7 +75,6 @@ exports.initExistingType=initExistingType;
 exports.initExistingTypeProto=initExistingTypeProto;
 exports.inheritProto=inheritProto;
 exports.inheritProtoI=inheritProtoI;
-exports.reify=reify;
 function Anything(wat) {
 return wat;
 }
@@ -181,7 +174,7 @@ var r=[];
 for (var i = 0; i < keys.length; i++) {
 r.push(this.item(keys[i]));
 }
-return ArraySequence(r);
+return ArraySequence(r, [this.$$targs$$[1]]);
 }
 return empty;
 }
@@ -212,7 +205,7 @@ var next;
 while ((next = iter.next()) !== $finished) {
 a.push(next);
 }
-return ArraySequence(a);
+return ArraySequence(a, this.$$targs$$);
 }
 Iterable$proto.$map = function(mapper) {
 var iter = this;
@@ -276,7 +269,7 @@ if (r === larger) return 1;
 if (r === smaller) return -1;
 return 0;
 });
-return ArraySequence(a);
+return ArraySequence(a, this.$$targs$$);
 }
 Iterable$proto.any = function(/*Callable<Boolean,Element>*/selecting) {
 var iter = this.getIterator();
@@ -385,32 +378,35 @@ return this.$map(collecting).getSequence();
 Iterable$proto.select = function(selecting) {
 return this.$filter(selecting).getSequence();
 }
-Iterable$proto.group = function(grouping) {
+Iterable$proto.group = function(grouping, $$$mptypes) {
 var map = HashMap();
 var it = this.getIterator();
 var elem;
-var newSeq = ArraySequence([]);
+var newSeq = ArraySequence([], this.$$targs$$);
 while ((elem=it.next()) !== $finished) {
 var key = grouping(elem);
-var seq = map.put(Entry(key, newSeq), true);
+var seq = map.put(Entry(key, newSeq, [$$$mptypes[0], {t:Sequence, a:this.$$targs$$}]), true);
 if (seq === null) {
 seq = newSeq;
-newSeq = ArraySequence([]);
+newSeq = ArraySequence([], this.$$targs$$);
 }
 seq.push(elem);
 }
 return map;
 }
-exports.Iterable=Iterable;
-Iterable$proto.chain = function(other) {
-return ChainedIterable(this, other);
+Iterable$proto.chain = function(other, $$$mptypes) {
+return ChainedIterable(this, other, [this.$$targs$$[0], $$$mptypes[0]]);
+}
+Iterable$proto.getSize = function() {
+return this.count(function() { return true; });
 }
 exports.Iterable=Iterable;
-function ChainedIterable(first, second, chained) {
+function ChainedIterable(first, second, $$targs$$, chained) {
 if (chained===undefined) {chained = new ChainedIterable.$$;}
 Basic(chained);
 chained.first = first;
 chained.second = second;
+chained.$$targs$$=$$targs$$;
 return chained;
 }
 initTypeProto(ChainedIterable, "ceylon.language::ChainedIterable",
@@ -421,101 +417,10 @@ return ChainedIterator(this.first, this.second);
 }
 function toTuple(iterable) {
 var seq = iterable.getSequence();
-return reify(Tuple(seq.getFirst(), seq.getRest().getSequence()), seq.$$targs$$);
+return Tuple(seq.getFirst(), seq.getRest().getSequence(),
+[seq.$$targs$$[0], seq.$$targs$$[0], {t:Sequential, a:seq.$$targs$$}]);
 }
 exports.toTuple=toTuple;
-function List(wat) {
-return wat;
-}
-function $init$List() {
-if (List.$$===undefined) {
-initTypeProtoI(List, 'ceylon.language::List', $init$Collection(), $init$Correspondence(), $init$Ranged(), $init$Cloneable());
-}
-return List;
-}
-$init$List();
-var List$proto = List.$$.prototype;
-List$proto.getSize = function() {
-var li = this.getLastIndex();
-return li === null ? 0 : li.getSuccessor();
-}
-List$proto.defines = function(idx) {
-var li = this.getLastIndex();
-if (li === null) li = -1;
-return li.compare(idx) !== smaller;
-}
-List$proto.getIterator = function() {
-return ListIterator(this);
-}
-List$proto.equals = function(other) {
-if (isOfType(other, {t:List}) && other.getSize().equals(this.getSize())) {
-for (var i = 0; i < this.getSize(); i++) {
-var mine = this.item(i);
-var theirs = other.item(i);
-if (((mine === null) && theirs) || !(mine && mine.equals(theirs))) {
-return false;
-}
-}
-return true;
-}
-return false;
-}
-List$proto.getHash = function() {
-var hc=1;
-var iter=this.getIterator();
-var e; while ((e = iter.next()) != $finished) {
-hc*=31;
-if (e !== null) {
-hc += e.getHash();
-}
-}
-return hc;
-}
-List$proto.findLast = function(select) {
-var li = this.getLastIndex();
-if (li !== null) {
-while (li>=0) {
-var e = this.item(li);
-if (e !== null && select(e)) {
-return e;
-}
-li = li.getPredecessor();
-}
-}
-return null;
-}
-List$proto.withLeading = function(other) {
-var sb = SequenceBuilder();
-sb.append(other);
-sb.appendAll(this);
-return sb.getSequence();
-}
-List$proto.withTrailing = function(other) {
-var sb = SequenceBuilder();
-sb.appendAll(this);
-sb.append(other);
-return sb.getSequence();
-}
-exports.List=List;
-function ListIterator(list) {
-var that = new ListIterator.$$;
-that.list=list;
-that.index=0;
-that.lastIndex=list.getLastIndex();
-if (that.lastIndex === null) {
-that.lastIndex = -1;
-} else {
-that.lastIndex = that.lastIndex;
-}
-return that;
-}
-initTypeProtoI(ListIterator, 'ceylon.language::ListIterator', $init$Iterator());
-ListIterator.$$.prototype.next = function() {
-if (this.index <= this.lastIndex) {
-return this.list.item(this.index++);
-}
-return $finished;
-}
 function Sequential($$sequential) {
 return $$sequential;
 }
@@ -530,6 +435,7 @@ exports.Sequential=Sequential;
 function Empty() {
 var that = new Empty.$$;
 that.value = [];
+that.$$targs$$=[{t:Nothing}];
 return that;
 }
 initTypeProtoI(Empty, 'ceylon.language::Empty', Sequential, $init$Ranged(), $init$Cloneable());
@@ -568,10 +474,10 @@ Empty$proto.$filter = function(f) { return this; }
 Empty$proto.getCoalesced = function() { return this; }
 Empty$proto.getIndexed = function() { return this; }
 Empty$proto.withLeading = function(other) {
-return new ArraySequence([other]);
+return new ArraySequence([other], [{t:other.getT$all()[other.getT$name()]}]);
 }
 Empty$proto.withTrailing = function(other) {
-return new ArraySequence([other]);
+return new ArraySequence([other], [{t:other.getT$all()[other.getT$name()]}]);
 }
 Empty$proto.chain = function(other) { return other; }
 var empty = Empty();
@@ -580,6 +486,7 @@ exports.Empty=Empty;
 function emptyIterator(){
 var $$emptyIterator=new emptyIterator.$$;
 Iterator($$emptyIterator);
+$$emptyIterator.$$targs$$=[{t:Nothing}];
 return $$emptyIterator;
 }
 function $init$emptyIterator(){
@@ -596,30 +503,131 @@ var $$emptyIterator=this;
 return $finished;
 };
 })(emptyIterator.$$.prototype);
-var emptyIterator$2=emptyIterator(new emptyIterator.$$);
+var emptyIterator$2=emptyIterator();
 var getEmptyIterator=function(){
 return emptyIterator$2;
 }
-function Comprehension(makeNextFunc, compr) {
+function Comprehension(makeNextFunc, $$targs$$, compr) {
 if (compr===undefined) {compr = new Comprehension.$$;}
 Basic(compr);
 compr.makeNextFunc = makeNextFunc;
+compr.$$targs$$=$$targs$$;
 return compr;
 }
 initTypeProto(Comprehension, 'ceylon.language::Comprehension', Basic, Iterable);
 var Comprehension$proto = Comprehension.$$.prototype;
 Comprehension$proto.getIterator = function() {
-return ComprehensionIterator(this.makeNextFunc());
+return ComprehensionIterator(this.makeNextFunc(), this.$$targs$$);
 }
 exports.Comprehension=Comprehension;
-function ComprehensionIterator(nextFunc, it) {
+function ComprehensionIterator(nextFunc, $$targs$$, it) {
 if (it===undefined) {it = new ComprehensionIterator.$$;}
+it.$$targs$$=$$targs$$;
 Basic(it);
 it.next = nextFunc;
 return it;
 }
 initTypeProto(ComprehensionIterator, 'ceylon.language::ComprehensionIterator',
 Basic, $init$Iterator());
+function List(wat) {
+Collection(wat);
+Correspondence(wat);
+Ranged(wat);
+Cloneable(wat);
+return wat;
+}
+function $init$List() {
+if (List.$$===undefined) {
+initTypeProto(List, 'ceylon.language::List', $init$Collection(), $init$Correspondence(),
+$init$Ranged(), $init$Cloneable());
+}
+var List$proto = List.$$.prototype;
+List$proto.getSize = function() {
+var li = this.getLastIndex();
+return li === null ? 0 : li.getSuccessor();
+}
+List$proto.defines = function(idx) {
+var li = this.getLastIndex();
+if (li === null) li = -1;
+return li.compare(idx) !== smaller;
+}
+List$proto.equals = function(other) {
+if (isOfType(other, {t:List}) && other.getSize().equals(this.getSize())) {
+for (var i = 0; i < this.getSize(); i++) {
+var mine = this.item(i);
+var theirs = other.item(i);
+if (((mine === null) && theirs) || !(mine && mine.equals(theirs))) {
+return false;
+}
+}
+return true;
+}
+return false;
+}
+List$proto.getHash = function() {
+var hc=1;
+var iter=this.getIterator();
+var e; while ((e = iter.next()) != $finished) {
+hc*=31;
+if (e !== null) {
+hc += e.getHash();
+}
+}
+return hc;
+}
+List$proto.findLast = function(select) {
+var li = this.getLastIndex();
+if (li !== null) {
+while (li>=0) {
+var e = this.item(li);
+if (e !== null && select(e)) {
+return e;
+}
+li = li.getPredecessor();
+}
+}
+return null;
+}
+List$proto.withLeading = function(other, $$$mptypes) {
+var sb = SequenceBuilder([{t:'u',l:[this.$$targs$$[0], $$$mptypes[0]]}]);
+sb.append(other);
+sb.appendAll(this);
+return sb.getSequence();
+}
+List$proto.withTrailing = function(other, $$$mptypes) {
+var sb = SequenceBuilder([{t:'u',l:[this.$$targs$$[0], $$$mptypes[0]]}]);
+sb.appendAll(this);
+sb.append(other);
+return sb.getSequence();
+}
+exports.List=List;
+List$proto.getIterator = function() {
+return ListIterator(this);
+}
+return List;
+}
+$init$List();
+function ListIterator(list) {
+var that = new ListIterator.$$;
+Iterator(that);
+that.list=list;
+that.$$targs$$=list.$$targs$$;
+that.index=0;
+that.lastIndex=list.getLastIndex();
+if (that.lastIndex === null) {
+that.lastIndex = -1;
+} else {
+that.lastIndex = that.lastIndex;
+}
+return that;
+}
+initTypeProtoI(ListIterator, 'ceylon.language::ListIterator', $init$Iterator());
+ListIterator.$$.prototype.next = function() {
+if (this.index <= this.lastIndex) {
+return this.list.item(this.index++);
+}
+return $finished;
+}
 //Compiled from Ceylon sources
 function Ranged($$ranged){
 }
@@ -718,24 +726,24 @@ function $init$Collection(){
                 }
             };$$collection.getElementsString$6=function getElementsString$6(){
                 var $$collection=this;
-                return String(", ",2).join(reify(Comprehension(function(){
+                return String$(", ",2).join(Comprehension(function(){
                     var it$7=$$collection.getIterator();
                     var elem$8=getFinished();
                     var next$elem$8=function(){return elem$8=it$7.next();}
                     next$elem$8();
                     return function(){
                         if(elem$8!==getFinished()){
-                            var tmpvar$9=(opt$10=(opt$11=elem$8,opt$11!==null?opt$11.getString():null),opt$10!==null?opt$10:String("null",4));
+                            var tmpvar$9=(opt$10=(opt$11=elem$8,opt$11!==null?opt$11.getString():null),opt$10!==null?opt$10:String$("null",4));
                             next$elem$8();
                             return tmpvar$9;
                         }
                         return getFinished();
                     }
-                }),[{t:String$}]));
+                },[{t:String$}]));
             };
             $$collection.getString=function getString(){
                 var $$collection=this;
-                return (opt$12=($$collection.getEmpty()?String("{}",2):null),opt$12!==null?opt$12:StringBuilder().appendAll([String("{ ",2),$$collection.getElementsString$6().getString(),String(" }",2)]).getString());
+                return (opt$12=($$collection.getEmpty()?String$("{}",2):null),opt$12!==null?opt$12:StringBuilder().appendAll([String$("{ ",2),$$collection.getElementsString$6().getString(),String$(" }",2)]).getString());
             };
         })(Collection.$$.prototype);
     }
@@ -809,9 +817,10 @@ function $init$Iterator(){
 }
 exports.$init$Iterator=$init$Iterator;
 $init$Iterator();
-function Tuple(first$19, rest$20, $$tuple){
+function Tuple(first$19, rest$20, $$targs$$,$$tuple){
     $init$Tuple();
     if ($$tuple===undefined)$$tuple=new Tuple.$$;
+    $$tuple.$$targs$$=$$targs$$;
     Object$($$tuple);
     Sequence($$tuple);
     Cloneable($$tuple);
@@ -859,7 +868,7 @@ function $init$Tuple(){
                 }
             };$$tuple.getReversed=function getReversed(){
                 var $$tuple=this;
-                return $$tuple.getRest().getReversed().withTrailing($$tuple.getFirst());
+                return $$tuple.getRest().getReversed().withTrailing($$tuple.getFirst(),[$$tuple.$$targs$$[1]]);
             };
             $$tuple.segment=function segment(from$27,length$28){
                 var $$tuple=this;
@@ -869,7 +878,7 @@ function $init$Tuple(){
                 var realFrom$29=(opt$30=(from$27.compare((0)).equals(getSmaller())?(0):null),opt$30!==null?opt$30:from$27);
                 var opt$30;
                 if(realFrom$29.equals((0))){
-                    return (opt$31=(length$28.equals((1))?Tuple($$tuple.getFirst(),empty):null),opt$31!==null?opt$31:$$tuple.getRest().segment((0),length$28.plus(realFrom$29).minus((1))).withLeading($$tuple.getFirst()));
+                    return (opt$31=(length$28.equals((1))?Tuple($$tuple.getFirst(),empty,[$$tuple.$$targs$$[1],$$tuple.$$targs$$[1],{t:Empty}]):null),opt$31!==null?opt$31:$$tuple.getRest().segment((0),length$28.plus(realFrom$29).minus((1))).withLeading($$tuple.getFirst(),[$$tuple.$$targs$$[1]]));
                     var opt$31;
                 }
                 return $$tuple.getRest().segment(realFrom$29.minus((1)),length$28);
@@ -893,7 +902,7 @@ function $init$Tuple(){
             };
             $$tuple.getString=function getString(){
                 var $$tuple=this;
-                var b$40=StringBuilder().append(String("[ ",2));
+                var b$40=StringBuilder().append(String$("[ ",2));
                 var first$41=true;
                 var setFirst$41=function(first$42){return first$41=first$42;};
                 var it$43 = $$tuple.getIterator();
@@ -901,16 +910,16 @@ function $init$Tuple(){
                     if(first$41){
                         first$41=false;
                     }else {
-                        b$40.append(String(", ",2));
+                        b$40.append(String$(", ",2));
                     }
                     var el$45;
                     if((el$45=el$44)!==null){
                         b$40.append(el$45.getString());
                     }else {
-                        b$40.append(String("null",4));
+                        b$40.append(String$("null",4));
                     }
                 }
-                return b$40.append(String(" ]",2)).getString();
+                return b$40.append(String$(" ]",2)).getString();
             };
         })(Tuple.$$.prototype);
     }
@@ -919,9 +928,10 @@ function $init$Tuple(){
 exports.$init$Tuple=$init$Tuple;
 $init$Tuple();
 var opt$38;
-function ChainedIterator(first$46, second$47, $$chainedIterator){
+function ChainedIterator(first$46, second$47, $$targs$$,$$chainedIterator){
     $init$ChainedIterator();
     if ($$chainedIterator===undefined)$$chainedIterator=new ChainedIterator.$$;
+    $$chainedIterator.$$targs$$=$$targs$$;
     $$chainedIterator.second$47=second$47;
     Iterator($$chainedIterator);
     $$chainedIterator.iter$48=first$46.getIterator();
@@ -965,9 +975,10 @@ function $init$ChainedIterator(){
 }
 exports.$init$ChainedIterator=$init$ChainedIterator;
 $init$ChainedIterator();
-function Entry(key$55, item$56, $$entry){
+function Entry(key$55, item$56, $$targs$$,$$entry){
     $init$Entry();
     if ($$entry===undefined)$$entry=new Entry.$$;
+    $$entry.$$targs$$=$$targs$$;
     Object$($$entry);
     $$entry.key$57=key$55;
     $$entry.item$58=item$56;
@@ -998,7 +1009,7 @@ function $init$Entry(){
             };
             $$entry.getString=function getString(){
                 var $$entry=this;
-                return $$entry.getKey().getString().plus(String("->",2)).plus($$entry.getItem().getString());
+                return $$entry.getKey().getString().plus(String$("->",2)).plus($$entry.getItem().getString());
             };
         })(Entry.$$.prototype);
     }
@@ -1154,11 +1165,11 @@ function $init$Exception(){
             };
             $$exception.getMessage=function getMessage(){
                 var $$exception=this;
-                return (opt$65=(opt$66=$$exception.getDescription$64(),opt$66!==null?opt$66:(opt$67=$$exception.getCause(),opt$67!==null?opt$67.getMessage():null)),opt$65!==null?opt$65:String("",0));
+                return (opt$65=(opt$66=$$exception.getDescription$64(),opt$66!==null?opt$66:(opt$67=$$exception.getCause(),opt$67!==null?opt$67.getMessage():null)),opt$65!==null?opt$65:String$("",0));
             };
             $$exception.getString=function getString(){
                 var $$exception=this;
-                return className($$exception).plus(StringBuilder().appendAll([String(" \"",2),$$exception.getMessage().getString(),String("\"",1)]).getString());
+                return className($$exception).plus(StringBuilder().appendAll([String$(" \"",2),$$exception.getMessage().getString(),String$("\"",1)]).getString());
             };
             $$exception.printStackTrace=function printStackTrace(){
                 var $$exception=this;
@@ -1174,7 +1185,7 @@ var opt$65,opt$66,opt$67;
 function RecursiveInitializationException($$recursiveInitializationException){
     $init$RecursiveInitializationException();
     if ($$recursiveInitializationException===undefined)$$recursiveInitializationException=new RecursiveInitializationException.$$;
-    Exception(String("Name could not be initialized due to recursive access during initialization",75),null,$$recursiveInitializationException);
+    Exception(String$("Name could not be initialized due to recursive access during initialization",75),null,$$recursiveInitializationException);
     return $$recursiveInitializationException;
 }
 exports.RecursiveInitializationException=RecursiveInitializationException;
@@ -1189,7 +1200,7 @@ $init$RecursiveInitializationException();
 function NegativeNumberException($$negativeNumberException){
     $init$NegativeNumberException();
     if ($$negativeNumberException===undefined)$$negativeNumberException=new NegativeNumberException.$$;
-    Exception(String("Negative number",15),null,$$negativeNumberException);
+    Exception(String$("Negative number",15),null,$$negativeNumberException);
     return $$negativeNumberException;
 }
 exports.NegativeNumberException=NegativeNumberException;
@@ -1204,7 +1215,7 @@ $init$NegativeNumberException();
 function OverflowException($$overflowException){
     $init$OverflowException();
     if ($$overflowException===undefined)$$overflowException=new OverflowException.$$;
-    Exception(String("Numeric overflow",16),null,$$overflowException);
+    Exception(String$("Numeric overflow",16),null,$$overflowException);
     return $$overflowException;
 }
 exports.OverflowException=OverflowException;
@@ -1216,10 +1227,74 @@ function $init$OverflowException(){
 }
 exports.$init$OverflowException=$init$OverflowException;
 $init$OverflowException();
-function LazyList(elems$68, $$lazyList){
+function Set($$set){
+    Collection($$set);
+    Cloneable($$set);
+}
+exports.Set=Set;
+function $init$Set(){
+    if (Set.$$===undefined){
+        initTypeProto(Set,'ceylon.language::Set',$init$Collection(),$init$Cloneable());
+        (function($$set){
+            $$set.superset=function superset(set$68){
+                var $$set=this;
+                var it$69 = set$68.getIterator();
+                var element$70;while ((element$70=it$69.next())!==getFinished()){
+                    if((!$$set.contains(element$70))){
+                        return false;
+                    }
+                }
+                if (getFinished() === element$70){
+                    return true;
+                }
+            };$$set.subset=function subset(set$71){
+                var $$set=this;
+                var it$72 = $$set.getIterator();
+                var element$73;while ((element$73=it$72.next())!==getFinished()){
+                    if((!set$71.contains(element$73))){
+                        return false;
+                    }
+                }
+                if (getFinished() === element$73){
+                    return true;
+                }
+            };$$set.equals=function equals(that$74){
+                var $$set=this;
+                var that$75;
+                if(isOfType((that$75=that$74),{t:Set,a:[{t:Object$}]})&&that$75.getSize().equals($$set.getSize())){
+                    var it$76 = $$set.getIterator();
+                    var element$77;while ((element$77=it$76.next())!==getFinished()){
+                        if((!that$75.contains(element$77))){
+                            return false;
+                        }
+                    }
+                    if (getFinished() === element$77){
+                        return true;
+                    }
+                }
+                return false;
+            };$$set.getHash=function getHash(){
+                var $$set=this;
+                var hashCode$78=(1);
+                var setHashCode$78=function(hashCode$79){return hashCode$78=hashCode$79;};
+                var it$80 = $$set.getIterator();
+                var elem$81;while ((elem$81=it$80.next())!==getFinished()){
+                    (hashCode$78=hashCode$78.times((31)));
+                    (hashCode$78=hashCode$78.plus(elem$81.getHash()));
+                }
+                return hashCode$78;
+            };
+        })(Set.$$.prototype);
+    }
+    return Set;
+}
+exports.$init$Set=$init$Set;
+$init$Set();
+function LazyList(elems$82, $$targs$$,$$lazyList){
     $init$LazyList();
     if ($$lazyList===undefined)$$lazyList=new LazyList.$$;
-    $$lazyList.elems$68=elems$68;
+    $$lazyList.$$targs$$=$$targs$$;
+    $$lazyList.elems$82=elems$82;
     List($$lazyList);
     return $$lazyList;
 }
@@ -1230,95 +1305,95 @@ function $init$LazyList(){
         (function($$lazyList){
             $$lazyList.getLastIndex=function getLastIndex(){
                 var $$lazyList=this;
-                var c$69=$$lazyList.elems$68.count(function (e$70,$$$mptypes){
+                var c$83=$$lazyList.elems$82.count(function (e$84){
                     var $$lazyList=this;
                     return true;
                 });
-                return (opt$71=(c$69.compare((0)).equals(getLarger())?c$69.minus((1)):null),opt$71!==null?opt$71:null);
-                var opt$71;
-            };$$lazyList.item=function item(index$72){
+                return (opt$85=(c$83.compare((0)).equals(getLarger())?c$83.minus((1)):null),opt$85!==null?opt$85:null);
+                var opt$85;
+            };$$lazyList.item=function item(index$86){
                 var $$lazyList=this;
-                if(index$72.equals((0))){
-                    return $$lazyList.elems$68.getFirst();
+                if(index$86.equals((0))){
+                    return $$lazyList.elems$82.getFirst();
                 }else {
-                    return $$lazyList.elems$68.skipping(index$72).getFirst();
+                    return $$lazyList.elems$82.skipping(index$86).getFirst();
                 }
             };$$lazyList.getIterator=function getIterator(){
                 var $$lazyList=this;
-                return $$lazyList.elems$68.getIterator();
+                return $$lazyList.elems$82.getIterator();
             };
             $$lazyList.getReversed=function getReversed(){
                 var $$lazyList=this;
-                return $$lazyList.elems$68.getSequence().getReversed();
+                return $$lazyList.elems$82.getSequence().getReversed();
             };
             $$lazyList.getClone=function getClone(){
                 var $$lazyList=this;
                 return $$lazyList;
             };
-            $$lazyList.span=function span(from$73,to$74){
+            $$lazyList.span=function span(from$87,to$88){
                 var $$lazyList=this;
-                if((to$74.compare((0)).equals(getSmaller())&&from$73.compare((0)).equals(getSmaller()))){
+                if((to$88.compare((0)).equals(getSmaller())&&from$87.compare((0)).equals(getSmaller()))){
                     return empty;
                 }
-                var toIndex$75=largest(to$74,(0),[{t:Integer}]);
-                var fromIndex$76=largest(from$73,(0),[{t:Integer}]);
-                if((toIndex$75.compare(fromIndex$76)!==getSmaller())){
-                    var els$77=(opt$78=(fromIndex$76.compare((0)).equals(getLarger())?$$lazyList.elems$68.skipping(fromIndex$76):null),opt$78!==null?opt$78:$$lazyList.elems$68);
-                    var opt$78;
-                    return reify(LazyList(els$77.taking(toIndex$75.minus(fromIndex$76).plus((1)))),[this.$$targs$$[0]]);
+                var toIndex$89=largest(to$88,(0),[{t:Integer}]);
+                var fromIndex$90=largest(from$87,(0),[{t:Integer}]);
+                if((toIndex$89.compare(fromIndex$90)!==getSmaller())){
+                    var els$91=(opt$92=(fromIndex$90.compare((0)).equals(getLarger())?$$lazyList.elems$82.skipping(fromIndex$90):null),opt$92!==null?opt$92:$$lazyList.elems$82);
+                    var opt$92;
+                    return LazyList(els$91.taking(toIndex$89.minus(fromIndex$90).plus((1))),[$$lazyList.$$targs$$[0]]);
                 }else {
-                    var seq$79=(opt$80=(toIndex$75.compare((0)).equals(getLarger())?$$lazyList.elems$68.skipping(toIndex$75):null),opt$80!==null?opt$80:$$lazyList.elems$68);
-                    var opt$80;
-                    return seq$79.taking(fromIndex$76.minus(toIndex$75).plus((1))).getSequence().getReversed();
+                    var seq$93=(opt$94=(toIndex$89.compare((0)).equals(getLarger())?$$lazyList.elems$82.skipping(toIndex$89):null),opt$94!==null?opt$94:$$lazyList.elems$82);
+                    var opt$94;
+                    return seq$93.taking(fromIndex$90.minus(toIndex$89).plus((1))).getSequence().getReversed();
                 }
-            };$$lazyList.spanTo=function spanTo(to$81){
+            };$$lazyList.spanTo=function spanTo(to$95){
                 var $$lazyList=this;
-                return (opt$82=(to$81.compare((0)).equals(getSmaller())?empty:null),opt$82!==null?opt$82:reify(LazyList($$lazyList.elems$68.taking(to$81.plus((1)))),[this.$$targs$$[0]]));
-                var opt$82;
-            };$$lazyList.spanFrom=function spanFrom(from$83){
+                return (opt$96=(to$95.compare((0)).equals(getSmaller())?empty:null),opt$96!==null?opt$96:LazyList($$lazyList.elems$82.taking(to$95.plus((1))),[$$lazyList.$$targs$$[0]]));
+                var opt$96;
+            };$$lazyList.spanFrom=function spanFrom(from$97){
                 var $$lazyList=this;
-                return (opt$84=(from$83.compare((0)).equals(getLarger())?reify(LazyList($$lazyList.elems$68.skipping(from$83)),[this.$$targs$$[0]]):null),opt$84!==null?opt$84:$$lazyList);
-                var opt$84;
-            };$$lazyList.segment=function segment(from$85,length$86){
+                return (opt$98=(from$97.compare((0)).equals(getLarger())?LazyList($$lazyList.elems$82.skipping(from$97),[$$lazyList.$$targs$$[0]]):null),opt$98!==null?opt$98:$$lazyList);
+                var opt$98;
+            };$$lazyList.segment=function segment(from$99,length$100){
                 var $$lazyList=this;
-                if(length$86.compare((0)).equals(getLarger())){
-                    var els$87=(opt$88=(from$85.compare((0)).equals(getLarger())?$$lazyList.elems$68.skipping(from$85):null),opt$88!==null?opt$88:$$lazyList.elems$68);
-                    var opt$88;
-                    return reify(LazyList(els$87.taking(length$86)),[this.$$targs$$[0]]);
+                if(length$100.compare((0)).equals(getLarger())){
+                    var els$101=(opt$102=(from$99.compare((0)).equals(getLarger())?$$lazyList.elems$82.skipping(from$99):null),opt$102!==null?opt$102:$$lazyList.elems$82);
+                    var opt$102;
+                    return LazyList(els$101.taking(length$100),[$$lazyList.$$targs$$[0]]);
                 }else {
                     return empty;
                 }
-            };$$lazyList.equals=function equals(that$89){
+            };$$lazyList.equals=function equals(that$103){
                 var $$lazyList=this;
-                var that$90;
-                if(isOfType((that$90=that$89),{t:List,a:[{t:Anything}]})){
-                    var s$91=$$lazyList.elems$68.count(function (e$92,$$$mptypes){
+                var that$104;
+                if(isOfType((that$104=that$103),{t:List,a:[{t:Anything}]})){
+                    var s$105=$$lazyList.elems$82.count(function (e$106){
                         var $$lazyList=this;
                         return true;
                     });
-                    if(that$90.getSize().equals(s$91)){
-                        var it$93 = Range((0),s$91.minus((1))).getIterator();
-                        var i$94;while ((i$94=it$93.next())!==getFinished()){
-                            var x$95=$$lazyList.item(i$94);
-                            var y$96=that$90.item(i$94);
-                            var x$97;
-                            if((x$97=x$95)!==null){
-                                var y$98;
-                                if((y$98=y$96)!==null){
-                                    if((!x$97.equals(y$98))){
+                    if(that$104.getSize().equals(s$105)){
+                        var it$107 = Range((0),s$105.minus((1)),[{t:Integer}]).getIterator();
+                        var i$108;while ((i$108=it$107.next())!==getFinished()){
+                            var x$109=$$lazyList.item(i$108);
+                            var y$110=that$104.item(i$108);
+                            var x$111;
+                            if((x$111=x$109)!==null){
+                                var y$112;
+                                if((y$112=y$110)!==null){
+                                    if((!x$111.equals(y$112))){
                                         return false;
                                     }
                                 }else {
                                     return false;
                                 }
                             }else {
-                                var y$99;
-                                if((y$99=y$96)!==null){
+                                var y$113;
+                                if((y$113=y$110)!==null){
                                     return false;
                                 }
                             }
                         }
-                        if (getFinished() === i$94){
+                        if (getFinished() === i$108){
                             return true;
                         }
                     }
@@ -1326,28 +1401,28 @@ function $init$LazyList(){
                 return false;
             };$$lazyList.getHash=function getHash(){
                 var $$lazyList=this;
-                var hash$100=(1);
-                var setHash$100=function(hash$101){return hash$100=hash$101;};
-                var it$102 = $$lazyList.elems$68.getIterator();
-                var elem$103;while ((elem$103=it$102.next())!==getFinished()){
-                    (hash$100=hash$100.times((31)));
-                    var elem$104;
-                    if((elem$104=elem$103)!==null){
-                        (hash$100=hash$100.plus(elem$104.getHash()));
+                var hash$114=(1);
+                var setHash$114=function(hash$115){return hash$114=hash$115;};
+                var it$116 = $$lazyList.elems$82.getIterator();
+                var elem$117;while ((elem$117=it$116.next())!==getFinished()){
+                    (hash$114=hash$114.times((31)));
+                    var elem$118;
+                    if((elem$118=elem$117)!==null){
+                        (hash$114=hash$114.plus(elem$118.getHash()));
                     }
                 }
-                return hash$100;
-            };$$lazyList.findLast=function (selecting$105){
+                return hash$114;
+            };$$lazyList.findLast=function (selecting$119){
                 var $$lazyList=this;
-                return $$lazyList.elems$68.findLast(selecting$105);
+                return $$lazyList.elems$82.findLast(selecting$119);
             };
             $$lazyList.getFirst=function getFirst(){
                 var $$lazyList=this;
-                return $$lazyList.elems$68.getFirst();
+                return $$lazyList.elems$82.getFirst();
             };
             $$lazyList.getLast=function getLast(){
                 var $$lazyList=this;
-                return $$lazyList.elems$68.getLast();
+                return $$lazyList.elems$82.getLast();
             };
         })(LazyList.$$.prototype);
     }
@@ -1355,73 +1430,188 @@ function $init$LazyList(){
 }
 exports.$init$LazyList=$init$LazyList;
 $init$LazyList();
-function Set($$set){
-    Collection($$set);
-    Cloneable($$set);
+function LazySet(elems$120, $$targs$$,$$lazySet){
+    $init$LazySet();
+    if ($$lazySet===undefined)$$lazySet=new LazySet.$$;
+    $$lazySet.$$targs$$=$$targs$$;
+    $$lazySet.elems$120=elems$120;
+    Set($$lazySet);
+    return $$lazySet;
 }
-exports.Set=Set;
-function $init$Set(){
-    if (Set.$$===undefined){
-        initTypeProto(Set,'ceylon.language::Set',$init$Collection(),$init$Cloneable());
-        (function($$set){
-            $$set.superset=function superset(set$106){
-                var $$set=this;
-                var it$107 = set$106.getIterator();
-                var element$108;while ((element$108=it$107.next())!==getFinished()){
-                    if((!$$set.contains(element$108))){
-                        return false;
-                    }
-                }
-                if (getFinished() === element$108){
-                    return true;
-                }
-            };$$set.subset=function subset(set$109){
-                var $$set=this;
-                var it$110 = $$set.getIterator();
-                var element$111;while ((element$111=it$110.next())!==getFinished()){
-                    if((!set$109.contains(element$111))){
-                        return false;
-                    }
-                }
-                if (getFinished() === element$111){
-                    return true;
-                }
-            };$$set.equals=function equals(that$112){
-                var $$set=this;
-                var that$113;
-                if(isOfType((that$113=that$112),{t:Set,a:[{t:Object$}]})&&that$113.getSize().equals($$set.getSize())){
-                    var it$114 = $$set.getIterator();
-                    var element$115;while ((element$115=it$114.next())!==getFinished()){
-                        if((!that$113.contains(element$115))){
-                            return false;
+exports.LazySet=LazySet;
+function $init$LazySet(){
+    if (LazySet.$$===undefined){
+        initTypeProto(LazySet,'ceylon.language::LazySet',Basic,$init$Set());
+        (function($$lazySet){
+            $$lazySet.getClone=function getClone(){
+                var $$lazySet=this;
+                return $$lazySet;
+            };
+            $$lazySet.getSize=function getSize(){
+                var $$lazySet=this;
+                var c$121=(0);
+                var setC$121=function(c$122){return c$121=c$122;};
+                var sorted$123=$$lazySet.elems$120.$sort(byIncreasing(function (e$124){
+                    var $$lazySet=this;
+                    return e$124.getHash();
+                },[$$lazySet.$$targs$$[0],{t:Integer}]));
+                var l$125;
+                if((l$125=sorted$123.getFirst())!==null){
+                    c$121=(1);
+                    var last$126=l$125;
+                    var setLast$126=function(last$127){return last$126=last$127;};
+                    var it$128 = sorted$123.getRest().getIterator();
+                    var e$129;while ((e$129=it$128.next())!==getFinished()){
+                        if((!e$129.equals(last$126))){
+                            (oldc$130=c$121,c$121=oldc$130.getSuccessor(),oldc$130);
+                            var oldc$130;
+                            last$126=e$129;
                         }
                     }
-                    if (getFinished() === element$115){
-                        return true;
+                }
+                return c$121;
+            };$$lazySet.getIterator=function getIterator(){
+                var $$lazySet=this;
+                return $$lazySet.elems$120.getIterator();
+            };
+            $$lazySet.union=function (set$131,$$$mptypes){
+                var $$lazySet=this;
+                return LazySet($$lazySet.elems$120.chain(set$131,[$$$mptypes[0]]),[{ t:'u', l:[$$lazySet.$$targs$$[0],$$$mptypes[0]]}]);
+            };
+            $$lazySet.intersection=function (set$132,$$$mptypes){
+                var $$lazySet=this;
+                return LazySet(Comprehension(function(){
+                    var e$135;
+                    var it$133=set$132.getIterator();
+                    var e$134=getFinished();
+                    var e$135;
+                    var next$e$134=function(){
+                        while((e$134=it$133.next())!==getFinished()){
+                            if(isOfType((e$135=e$134),$$lazySet.$$targs$$[0])&&$$lazySet.contains(e$135)){
+                                return e$134;
+                            }
+                        }
+                        return getFinished();
+                    }
+                    next$e$134();
+                    return function(){
+                        if(e$134!==getFinished()){
+                            var tmpvar$136=e$135;
+                            next$e$134();
+                            return tmpvar$136;
+                        }
+                        return getFinished();
+                    }
+                },[{ t:'i', l:[$$$mptypes[0],$$lazySet.$$targs$$[0]]}]),[{ t:'i', l:[$$$mptypes[0],$$lazySet.$$targs$$[0]]}]);
+            };
+            $$lazySet.exclusiveUnion=function exclusiveUnion(other$137,$$$mptypes){
+                var $$lazySet=this;
+                var hereNotThere$138=Comprehension(function(){
+                    var it$139=$$lazySet.elems$120.getIterator();
+                    var e$140=getFinished();
+                    var next$e$140=function(){
+                        while((e$140=it$139.next())!==getFinished()){
+                            if((!other$137.contains(e$140))){
+                                return e$140;
+                            }
+                        }
+                        return getFinished();
+                    }
+                    next$e$140();
+                    return function(){
+                        if(e$140!==getFinished()){
+                            var tmpvar$141=e$140;
+                            next$e$140();
+                            return tmpvar$141;
+                        }
+                        return getFinished();
+                    }
+                },[$$lazySet.$$targs$$[0]]);
+                var thereNotHere$142=Comprehension(function(){
+                    var it$143=other$137.getIterator();
+                    var e$144=getFinished();
+                    var next$e$144=function(){
+                        while((e$144=it$143.next())!==getFinished()){
+                            if((!$$lazySet.contains(e$144))){
+                                return e$144;
+                            }
+                        }
+                        return getFinished();
+                    }
+                    next$e$144();
+                    return function(){
+                        if(e$144!==getFinished()){
+                            var tmpvar$145=e$144;
+                            next$e$144();
+                            return tmpvar$145;
+                        }
+                        return getFinished();
+                    }
+                },[$$$mptypes[0]]);
+                return LazySet(hereNotThere$138.chain(thereNotHere$142,[$$$mptypes[0]]),[{ t:'u', l:[$$lazySet.$$targs$$[0],$$$mptypes[0]]}]);
+            };$$lazySet.complement=function (set$146,$$$mptypes){
+                var $$lazySet=this;
+                return LazySet(Comprehension(function(){
+                    var it$147=$$lazySet.getIterator();
+                    var e$148=getFinished();
+                    var next$e$148=function(){
+                        while((e$148=it$147.next())!==getFinished()){
+                            if((!set$146.contains(e$148))){
+                                return e$148;
+                            }
+                        }
+                        return getFinished();
+                    }
+                    next$e$148();
+                    return function(){
+                        if(e$148!==getFinished()){
+                            var tmpvar$149=e$148;
+                            next$e$148();
+                            return tmpvar$149;
+                        }
+                        return getFinished();
+                    }
+                },[$$lazySet.$$targs$$[0]]),[$$lazySet.$$targs$$[0]]);
+            };
+            $$lazySet.equals=function equals(that$150){
+                var $$lazySet=this;
+                var that$151;
+                if(isOfType((that$151=that$150),{t:Set,a:[{t:Object$}]})){
+                    if(that$151.getSize().equals($$lazySet.getSize())){
+                        var it$152 = $$lazySet.elems$120.getIterator();
+                        var element$153;while ((element$153=it$152.next())!==getFinished()){
+                            if((!that$151.contains(element$153))){
+                                return false;
+                            }
+                        }
+                        if (getFinished() === element$153){
+                            return true;
+                        }
                     }
                 }
                 return false;
-            };$$set.getHash=function getHash(){
-                var $$set=this;
-                var hashCode$116=(1);
-                var setHashCode$116=function(hashCode$117){return hashCode$116=hashCode$117;};
-                var it$118 = $$set.getIterator();
-                var elem$119;while ((elem$119=it$118.next())!==getFinished()){
-                    (hashCode$116=hashCode$116.times((31)));
-                    (hashCode$116=hashCode$116.plus(elem$119.getHash()));
+            };$$lazySet.getHash=function getHash(){
+                var $$lazySet=this;
+                var hashCode$154=(1);
+                var setHashCode$154=function(hashCode$155){return hashCode$154=hashCode$155;};
+                var it$156 = $$lazySet.elems$120.getIterator();
+                var elem$157;while ((elem$157=it$156.next())!==getFinished()){
+                    (hashCode$154=hashCode$154.times((31)));
+                    (hashCode$154=hashCode$154.plus(elem$157.getHash()));
                 }
-                return hashCode$116;
+                return hashCode$154;
             };
-        })(Set.$$.prototype);
+        })(LazySet.$$.prototype);
     }
-    return Set;
+    return LazySet;
 }
-exports.$init$Set=$init$Set;
-$init$Set();
-function LazyMap(entries$120, $$lazyMap){
+exports.$init$LazySet=$init$LazySet;
+$init$LazySet();
+function LazyMap(entries$158, $$targs$$,$$lazyMap){
     $init$LazyMap();
     if ($$lazyMap===undefined)$$lazyMap=new LazyMap.$$;
-    $$lazyMap.entries$120=entries$120;
+    $$lazyMap.$$targs$$=$$targs$$;
+    $$lazyMap.entries$158=entries$158;
     Map($$lazyMap);
     return $$lazyMap;
 }
@@ -1436,38 +1626,38 @@ function $init$LazyMap(){
             };
             $$lazyMap.getSize=function getSize(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$120.count(function (e$121){
+                return $$lazyMap.entries$158.count(function (e$159){
                     var $$lazyMap=this;
                     return true;
                 });
             };
-            $$lazyMap.item=function (key$122){
+            $$lazyMap.item=function (key$160){
                 var $$lazyMap=this;
-                return (opt$123=$$lazyMap.entries$120.find(function (e$124){
+                return (opt$161=$$lazyMap.entries$158.find(function (e$162){
                     var $$lazyMap=this;
-                    return e$124.getKey().equals(key$122);
-                }),opt$123!==null?opt$123.getItem():null);
+                    return e$162.getKey().equals(key$160);
+                }),opt$161!==null?opt$161.getItem():null);
             };
             $$lazyMap.getIterator=function getIterator(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$120.getIterator();
+                return $$lazyMap.entries$158.getIterator();
             };
-            $$lazyMap.equals=function equals(that$125){
+            $$lazyMap.equals=function equals(that$163){
                 var $$lazyMap=this;
-                var that$126;
-                if(isOfType((that$126=that$125),{t:Map,a:[{t:Object$},{t:Object$}]})){
-                    if(that$126.getSize().equals($$lazyMap.getSize())){
-                        var it$127 = $$lazyMap.getIterator();
-                        var entry$128;while ((entry$128=it$127.next())!==getFinished()){
-                            var item$129;
-                            if((item$129=that$126.item(entry$128.getKey()))!==null){
-                                if(item$129.equals(entry$128.getItem())){
+                var that$164;
+                if(isOfType((that$164=that$163),{t:Map,a:[{t:Object$},{t:Object$}]})){
+                    if(that$164.getSize().equals($$lazyMap.getSize())){
+                        var it$165 = $$lazyMap.getIterator();
+                        var entry$166;while ((entry$166=it$165.next())!==getFinished()){
+                            var item$167;
+                            if((item$167=that$164.item(entry$166.getKey()))!==null){
+                                if(item$167.equals(entry$166.getItem())){
                                     continue;
                                 }
                             }
                             return false;
                         }
-                        if (getFinished() === entry$128){
+                        if (getFinished() === entry$166){
                             return true;
                         }
                     }
@@ -1475,14 +1665,14 @@ function $init$LazyMap(){
                 return false;
             };$$lazyMap.getHash=function getHash(){
                 var $$lazyMap=this;
-                var hashCode$130=(1);
-                var setHashCode$130=function(hashCode$131){return hashCode$130=hashCode$131;};
-                var it$132 = $$lazyMap.entries$120.getIterator();
-                var elem$133;while ((elem$133=it$132.next())!==getFinished()){
-                    (hashCode$130=hashCode$130.times((31)));
-                    (hashCode$130=hashCode$130.plus(elem$133.getHash()));
+                var hashCode$168=(1);
+                var setHashCode$168=function(hashCode$169){return hashCode$168=hashCode$169;};
+                var it$170 = $$lazyMap.entries$158.getIterator();
+                var elem$171;while ((elem$171=it$170.next())!==getFinished()){
+                    (hashCode$168=hashCode$168.times((31)));
+                    (hashCode$168=hashCode$168.plus(elem$171.getHash()));
                 }
-                return hashCode$130;
+                return hashCode$168;
             };
         })(LazyMap.$$.prototype);
     }
@@ -1490,217 +1680,386 @@ function $init$LazyMap(){
 }
 exports.$init$LazyMap=$init$LazyMap;
 $init$LazyMap();
-var opt$123;
-function zip(keys$134,items$135){
-    var iter$136=items$135.getIterator();
-    return toTuple(reify(Comprehension(function(){
-        var item$139;
-        var it$137=keys$134.getIterator();
-        var key$138=getFinished();
-        var item$139;
-        var next$key$138=function(){
-            while((key$138=it$137.next())!==getFinished()){
-                if(!isOfType((item$139=iter$136.next()),{t:Finished})){
-                    return key$138;
+var opt$161;
+function Singleton(element$172, $$targs$$,$$singleton){
+    $init$Singleton();
+    if ($$singleton===undefined)$$singleton=new Singleton.$$;
+    $$singleton.$$targs$$=$$targs$$;
+    $$singleton.element$172=element$172;
+    Object$($$singleton);
+    Sequence($$singleton);
+    return $$singleton;
+}
+exports.Singleton=Singleton;
+function $init$Singleton(){
+    if (Singleton.$$===undefined){
+        initTypeProto(Singleton,'ceylon.language::Singleton',Object$,$init$Sequence());
+        (function($$singleton){
+            $$singleton.getLastIndex=function getLastIndex(){
+                var $$singleton=this;
+                return (0);
+            };
+            $$singleton.getSize=function getSize(){
+                var $$singleton=this;
+                return (1);
+            };
+            $$singleton.getFirst=function getFirst(){
+                var $$singleton=this;
+                return $$singleton.element$172;
+            };
+            $$singleton.getLast=function getLast(){
+                var $$singleton=this;
+                return $$singleton.element$172;
+            };
+            $$singleton.getRest=function getRest(){
+                var $$singleton=this;
+                return empty;
+            };
+            $$singleton.item=function item(index$173){
+                var $$singleton=this;
+                if(index$173.equals((0))){
+                    return $$singleton.element$172;
+                }else {
+                    return null;
+                }
+            };$$singleton.getClone=function getClone(){
+                var $$singleton=this;
+                return $$singleton;
+            };
+            $$singleton.getIterator=function getIterator(){
+                var $$singleton=this;
+                function SingletonIterator$174($$singletonIterator$174){
+                    $init$SingletonIterator$174();
+                    if ($$singletonIterator$174===undefined)$$singletonIterator$174=new SingletonIterator$174.$$;
+                    $$singletonIterator$174.$$targs$$=[$$singleton.$$targs$$[0]];
+                    Iterator($$singletonIterator$174);
+                    $$singletonIterator$174.done$175=false;
+                    return $$singletonIterator$174;
+                }
+                function $init$SingletonIterator$174(){
+                    if (SingletonIterator$174.$$===undefined){
+                        initTypeProto(SingletonIterator$174,'ceylon.language::Singleton.iterator.SingletonIterator',Basic,$init$Iterator());
+                        (function($$singletonIterator$174){
+                            $$singletonIterator$174.getDone$175=function getDone$175(){
+                                return this.done$175;
+                            };
+                            $$singletonIterator$174.setDone$175=function setDone$175(done$176){
+                                return this.done$175=done$176;
+                            };
+                            $$singletonIterator$174.next=function next(){
+                                var $$singletonIterator$174=this;
+                                if($$singletonIterator$174.getDone$175()){
+                                    return getFinished();
+                                }else {
+                                    $$singletonIterator$174.setDone$175(true);
+                                    return $$singleton.element$172;
+                                }
+                            };$$singletonIterator$174.getString=function getString(){
+                                var $$singletonIterator$174=this;
+                                return String$("SingletonIterator",17);
+                            };
+                        })(SingletonIterator$174.$$.prototype);
+                    }
+                    return SingletonIterator$174;
+                }
+                $init$SingletonIterator$174();
+                return SingletonIterator$174();
+            };$$singleton.getString=function getString(){
+                var $$singleton=this;
+                return StringBuilder().appendAll([String$("{ ",2),$$singleton.getFirst().getString().getString(),String$(" }",2)]).getString();
+            };
+            $$singleton.segment=function (from$177,length$178){
+                var $$singleton=this;
+                return (opt$179=(((from$177.compare((0))!==getLarger())&&from$177.plus(length$178).compare((0)).equals(getLarger()))?$$singleton:null),opt$179!==null?opt$179:empty);
+            };
+            $$singleton.span=function (from$180,to$181){
+                var $$singleton=this;
+                return (opt$182=((((from$180.compare((0))!==getLarger())&&(to$181.compare((0))!==getSmaller()))||((from$180.compare((0))!==getSmaller())&&(to$181.compare((0))!==getLarger())))?$$singleton:null),opt$182!==null?opt$182:empty);
+            };
+            $$singleton.spanTo=function (to$183){
+                var $$singleton=this;
+                return (opt$184=(to$183.compare((0)).equals(getSmaller())?empty:null),opt$184!==null?opt$184:$$singleton);
+            };
+            $$singleton.spanFrom=function (from$185){
+                var $$singleton=this;
+                return (opt$186=(from$185.compare((0)).equals(getLarger())?empty:null),opt$186!==null?opt$186:$$singleton);
+            };
+            $$singleton.getReversed=function getReversed(){
+                var $$singleton=this;
+                return $$singleton;
+            };
+            $$singleton.equals=function equals(that$187){
+                var $$singleton=this;
+                throw Exception();
+            };$$singleton.getHash=function getHash(){
+                var $$singleton=this;
+                return (31).plus($$singleton.element$172.getHash());
+            };
+            $$singleton.contains=function (element$188){
+                var $$singleton=this;
+                return $$singleton.element$172.equals(element$188);
+            };
+            $$singleton.count=function (selecting$189){
+                var $$singleton=this;
+                return (opt$190=(selecting$189($$singleton.element$172)?(1):null),opt$190!==null?opt$190:(0));
+            };
+            $$singleton.$map=function (selecting$191,$$$mptypes){
+                var $$singleton=this;
+                return Tuple(selecting$191($$singleton.element$172),empty,[$$$mptypes[0],$$$mptypes[0],{t:Empty}]);
+            };
+            $$singleton.$filter=function (selecting$192){
+                var $$singleton=this;
+                return (opt$193=(selecting$192($$singleton.element$172)?$$singleton:null),opt$193!==null?opt$193:empty);
+            };
+            $$singleton.fold=function (initial$194,accumulating$195,$$$mptypes){
+                var $$singleton=this;
+                return accumulating$195(initial$194,$$singleton.element$172);
+            };
+            $$singleton.find=function (selecting$196){
+                var $$singleton=this;
+                return (selecting$196($$singleton.element$172)?$$singleton.element$172:null);
+            };
+            $$singleton.$sort=function (comparing$197){
+                var $$singleton=this;
+                return $$singleton;
+            };
+            $$singleton.any=function (selecting$198){
+                var $$singleton=this;
+                return selecting$198($$singleton.element$172);
+            };
+            $$singleton.$every=function (selecting$199){
+                var $$singleton=this;
+                return selecting$199($$singleton.element$172);
+            };
+            $$singleton.skipping=function (skip$200){
+                var $$singleton=this;
+                return (opt$201=(skip$200.compare((1)).equals(getSmaller())?$$singleton:null),opt$201!==null?opt$201:empty);
+            };
+            $$singleton.taking=function (take$202){
+                var $$singleton=this;
+                return (opt$203=(take$202.compare((0)).equals(getLarger())?$$singleton:null),opt$203!==null?opt$203:empty);
+            };
+            $$singleton.getCoalesced=function getCoalesced(){
+                var $$singleton=this;
+                return $$singleton;
+            };
+        })(Singleton.$$.prototype);
+    }
+    return Singleton;
+}
+exports.$init$Singleton=$init$Singleton;
+$init$Singleton();
+var opt$179,opt$182,opt$184,opt$186,opt$190,opt$193,opt$201,opt$203;
+function zip(keys$204,items$205,$$$mptypes){
+    var iter$206=items$205.getIterator();
+    return toTuple(Comprehension(function(){
+        var item$209;
+        var it$207=keys$204.getIterator();
+        var key$208=getFinished();
+        var item$209;
+        var next$key$208=function(){
+            while((key$208=it$207.next())!==getFinished()){
+                if(!isOfType((item$209=iter$206.next()),{t:Finished})){
+                    return key$208;
                 }
             }
             return getFinished();
         }
-        next$key$138();
+        next$key$208();
         return function(){
-            if(key$138!==getFinished()){
-                var tmpvar$140=reify(Entry(key$138,item$139),[/*SAME METHOD TYPEPARM plist 0#0*/'ceylon.language::Iterable<Key>',/*SAME METHOD TYPEPARM plist 0#1*/'ceylon.language::Iterable<Item>']);
-                next$key$138();
-                return tmpvar$140;
+            if(key$208!==getFinished()){
+                var tmpvar$210=Entry(key$208,item$209,[$$$mptypes[0],$$$mptypes[1]]);
+                next$key$208();
+                return tmpvar$210;
             }
             return getFinished();
         }
-    }),[{t:Entry,a:[/*SAME METHOD TYPEPARM plist 0#0*/'ceylon.language::Iterable<Key>',/*SAME METHOD TYPEPARM plist 0#1*/'ceylon.language::Iterable<Item>']}]));
+    },[{t:Entry,a:[$$$mptypes[0],$$$mptypes[1]]}]))/* tuple type [{t:Entry,a:[$$$mptypes[0],$$$mptypes[1]]}]*/;
 }
 exports.zip=zip;
-function max(values$141){
-    var cwfe$142=values$141;
-    var first$143=cwfe$142.getFirst();
-    var first$144;
-    if((first$144=first$143)!==null){
-        var max$145=first$144;
-        var setMax$145=function(max$146){return max$145=max$146;};
-        var it$147 = values$141.getRest().getIterator();
-        var val$148;while ((val$148=it$147.next())!==getFinished()){
-            if(val$148.compare(max$145).equals(getLarger())){
-                max$145=val$148;
+function max(values$211,$$$mptypes){
+    var cwfe$212=values$211;
+    var first$213=cwfe$212.getFirst();
+    var first$214;
+    if((first$214=first$213)!==null){
+        var max$215=first$214;
+        var setMax$215=function(max$216){return max$215=max$216;};
+        var it$217 = values$211.getRest().getIterator();
+        var val$218;while ((val$218=it$217.next())!==getFinished()){
+            if(val$218.compare(max$215).equals(getLarger())){
+                max$215=val$218;
             }
         }
-        return max$145;
+        return max$215;
     }else {
-        return first$143;
+        return first$213;
     }
 }
 exports.max=max;
-function byIncreasing(comparable$149){
-    return function(x$150,y$151,$$$mptypes){
-        var cx$152;
-        var cy$153;
-        if((cx$152=comparable$149(x$150))!==null&&(cy$153=comparable$149(y$151))!==null){
-            return cx$152.compare(cy$153);
+function byIncreasing(comparable$219,$$$mptypes){
+    return function(x$220,y$221,$$$mptypes){
+        var cx$222;
+        var cy$223;
+        if((cx$222=comparable$219(x$220))!==null&&(cy$223=comparable$219(y$221))!==null){
+            return cx$222.compare(cy$223);
         }else {
             return null;
         }
     }
 }
 exports.byIncreasing=byIncreasing;
-var elements=function (elements$154){
-    if(elements$154===undefined){elements$154=empty;}
-    return elements$154;
+var elements=function (elements$224,$$$mptypes){
+    if(elements$224===undefined){elements$224=empty;}
+    return elements$224;
 };
 exports.elements=elements;
-var smallest=function (x$155,y$156,$$$mptypes){
-    return (opt$157=(x$155.compare(y$156).equals(getSmaller())?x$155:null),opt$157!==null?opt$157:y$156);
+var smallest=function (x$225,y$226,$$$mptypes){
+    return (opt$227=(x$225.compare(y$226).equals(getSmaller())?x$225:null),opt$227!==null?opt$227:y$226);
 };
 exports.smallest=smallest;
-var opt$157;
-var forItem=function (resulting$158,$$$mptypes){
-    return function(entry$159){{
-        return resulting$158(entry$159.getItem());
+var opt$227;
+var forItem=function (resulting$228,$$$mptypes){
+    return function(entry$229,$$$mptypes){{
+        return resulting$228(entry$229.getItem());
     }
 }
 }
 ;
 exports.forItem=forItem;
-var lessThan=function (val$160,$$$mptypes){
-    return function(element$161,$$$mptypes){{
-        return element$161.compare(val$160).equals(getSmaller());
+var lessThan=function (val$230,$$$mptypes){
+    return function(element$231,$$$mptypes){{
+        return element$231.compare(val$230).equals(getSmaller());
     }
 }
 }
 ;
 exports.lessThan=lessThan;
-var coalesce=function (values$162){
-    if(values$162===undefined){values$162=empty;}
-    return values$162.getCoalesced();
+var coalesce=function (values$232,$$$mptypes){
+    if(values$232===undefined){values$232=empty;}
+    return values$232.getCoalesced();
 };
 exports.coalesce=coalesce;
-var equalTo=function (val$163,$$$mptypes){
-    return function(element$164,$$$mptypes){{
-        return element$164.equals(val$163);
+var equalTo=function (val$233,$$$mptypes){
+    return function(element$234,$$$mptypes){{
+        return element$234.equals(val$233);
     }
 }
 }
 ;
 exports.equalTo=equalTo;
-var forKey=function (resulting$165,$$$mptypes){
-    return function(entry$166){{
-        return resulting$165(entry$166.getKey());
+var forKey=function (resulting$235,$$$mptypes){
+    return function(entry$236,$$$mptypes){{
+        return resulting$235(entry$236.getKey());
     }
 }
 }
 ;
 exports.forKey=forKey;
-var join=function (iterables$167){
-    if(iterables$167===undefined){iterables$167=empty;}
-    return toTuple(reify(Comprehension(function(){
-        var it$168=iterables$167.getIterator();
-        var it$169=getFinished();
-        var next$it$169=function(){
-            if((it$169=it$168.next())!==getFinished()){
-                it$170=it$169.getIterator();
-                next$val$171();
-                return it$169;
+var join=function (iterables$237,$$$mptypes){
+    if(iterables$237===undefined){iterables$237=empty;}
+    return toTuple(Comprehension(function(){
+        var it$238=iterables$237.getIterator();
+        var it$239=getFinished();
+        var next$it$239=function(){
+            if((it$239=it$238.next())!==getFinished()){
+                it$240=it$239.getIterator();
+                next$val$241();
+                return it$239;
             }
             return getFinished();
         }
-        var it$170;
-        var val$171=getFinished();
-        var next$val$171=function(){return val$171=it$170.next();}
-        next$it$169();
+        var it$240;
+        var val$241=getFinished();
+        var next$val$241=function(){return val$241=it$240.next();}
+        next$it$239();
         return function(){
             do{
-                if(val$171!==getFinished()){
-                    var tmpvar$172=val$171;
-                    next$val$171();
-                    return tmpvar$172;
+                if(val$241!==getFinished()){
+                    var tmpvar$242=val$241;
+                    next$val$241();
+                    return tmpvar$242;
                 }
-            }while(next$it$169()!==getFinished());
+            }while(next$it$239()!==getFinished());
             return getFinished();
         }
-    }),[/*SAME METHOD TYPEPARM plist 0#0*/'ceylon.language::Sequential<ceylon.language::Iterable<Element>>']));
+    },[$$$mptypes[0]]))/* tuple type [$$$mptypes[0]]*/;
 };
 exports.join=join;
-var entries=function (elements$173){
-    if(elements$173===undefined){elements$173=empty;}
-    return elements$173.getIndexed();
+var entries=function (elements$243,$$$mptypes){
+    if(elements$243===undefined){elements$243=empty;}
+    return elements$243.getIndexed();
 };
 exports.entries=entries;
-function sum(values$174){
-    var sum$175=values$174.getFirst();
-    var setSum$175=function(sum$176){return sum$175=sum$176;};
-    var it$177 = values$174.getRest().getIterator();
-    var val$178;while ((val$178=it$177.next())!==getFinished()){
-        (sum$175=sum$175.plus(val$178));
+function sum(values$244,$$$mptypes){
+    var sum$245=values$244.getFirst();
+    var setSum$245=function(sum$246){return sum$245=sum$246;};
+    var it$247 = values$244.getRest().getIterator();
+    var val$248;while ((val$248=it$247.next())!==getFinished()){
+        (sum$245=sum$245.plus(val$248));
     }
-    return sum$175;
+    return sum$245;
 }
 exports.sum=sum;
-function print(line$179){
-    getProcess().writeLine((opt$180=(opt$181=line$179,opt$181!==null?opt$181.getString():null),opt$180!==null?opt$180:String("«null»",6)));
-    var opt$180,opt$181;
+function print(line$249){
+    getProcess().writeLine((opt$250=(opt$251=line$249,opt$251!==null?opt$251.getString():null),opt$250!==null?opt$250:String$("«null»",6)));
+    var opt$250,opt$251;
 }
 exports.print=print;
-function any(values$182){
-    if(values$182===undefined){values$182=empty;}
-    var it$183 = values$182.getIterator();
-    var val$184;while ((val$184=it$183.next())!==getFinished()){
-        if(val$184){
+function any(values$252){
+    if(values$252===undefined){values$252=empty;}
+    var it$253 = values$252.getIterator();
+    var val$254;while ((val$254=it$253.next())!==getFinished()){
+        if(val$254){
             return true;
         }
     }
     return false;
 }
 exports.any=any;
-function min(values$185){
-    var cwfe$186=values$185;
-    var first$187=cwfe$186.getFirst();
-    var first$188;
-    if((first$188=first$187)!==null){
-        var min$189=first$188;
-        var setMin$189=function(min$190){return min$189=min$190;};
-        var it$191 = values$185.getRest().getIterator();
-        var val$192;while ((val$192=it$191.next())!==getFinished()){
-            if(val$192.compare(min$189).equals(getSmaller())){
-                min$189=val$192;
+function min(values$255,$$$mptypes){
+    var cwfe$256=values$255;
+    var first$257=cwfe$256.getFirst();
+    var first$258;
+    if((first$258=first$257)!==null){
+        var min$259=first$258;
+        var setMin$259=function(min$260){return min$259=min$260;};
+        var it$261 = values$255.getRest().getIterator();
+        var val$262;while ((val$262=it$261.next())!==getFinished()){
+            if(val$262.compare(min$259).equals(getSmaller())){
+                min$259=val$262;
             }
         }
-        return min$189;
+        return min$259;
     }else {
-        return first$187;
+        return first$257;
     }
 }
 exports.min=min;
-var byKey=function (comparing$193){
-    return function(x$194,y$195){{
-        return comparing$193(x$194.getKey(),y$195.getKey());
+var byKey=function (comparing$263){
+    return function(x$264,y$265,$$$mptypes){{
+        return comparing$263(x$264.getKey(),y$265.getKey());
     }
 }
 }
 ;
 exports.byKey=byKey;
-function count(values$196){
-    if(values$196===undefined){values$196=empty;}
-    var count$197=(0);
-    var setCount$197=function(count$198){return count$197=count$198;};
-    var it$199 = values$196.getIterator();
-    var val$200;while ((val$200=it$199.next())!==getFinished()){
-        if(val$200){
-            (oldcount$201=count$197,count$197=oldcount$201.getSuccessor(),oldcount$201);
-            var oldcount$201;
+function count(values$266){
+    if(values$266===undefined){values$266=empty;}
+    var count$267=(0);
+    var setCount$267=function(count$268){return count$267=count$268;};
+    var it$269 = values$266.getIterator();
+    var val$270;while ((val$270=it$269.next())!==getFinished()){
+        if(val$270){
+            (oldcount$271=count$267,count$267=oldcount$271.getSuccessor(),oldcount$271);
+            var oldcount$271;
         }
     }
-    return count$197;
+    return count$267;
 }
 exports.count=count;
-var greaterThan=function (val$202,$$$mptypes){
-    return function(element$203,$$$mptypes){{
-        return element$203.compare(val$202).equals(getLarger());
+var greaterThan=function (val$272,$$$mptypes){
+    return function(element$273,$$$mptypes){{
+        return element$273.compare(val$272).equals(getLarger());
     }
 }
 }
@@ -1710,66 +2069,80 @@ var getNothing=function(){
     throw Exception();
 }
 exports.getNothing=getNothing;
-var identical=function (x$204,y$205){
-    return (x$204===y$205);
+var identical=function (x$274,y$275){
+    return (x$274===y$275);
 };
 exports.identical=identical;
-function byDecreasing(comparable$206){
-    return function(x$207,y$208,$$$mptypes){
-        var cx$209;
-        var cy$210;
-        if((cx$209=comparable$206(x$207))!==null&&(cy$210=comparable$206(y$208))!==null){
-            return cy$210.compare(cx$209);
+function byDecreasing(comparable$276,$$$mptypes){
+    return function(x$277,y$278,$$$mptypes){
+        var cx$279;
+        var cy$280;
+        if((cx$279=comparable$276(x$277))!==null&&(cy$280=comparable$276(y$278))!==null){
+            return cy$280.compare(cx$279);
         }else {
             return null;
         }
     }
 }
 exports.byDecreasing=byDecreasing;
-var largest=function (x$211,y$212,$$$mptypes){
-    return (opt$213=(x$211.compare(y$212).equals(getLarger())?x$211:null),opt$213!==null?opt$213:y$212);
+var largest=function (x$281,y$282,$$$mptypes){
+    return (opt$283=(x$281.compare(y$282).equals(getLarger())?x$281:null),opt$283!==null?opt$283:y$282);
 };
 exports.largest=largest;
-var opt$213;
-var byItem=function (comparing$214){
-    return function(x$215,y$216){{
-        return comparing$214(x$215.getItem(),y$216.getItem());
+var opt$283;
+var byItem=function (comparing$284){
+    return function(x$285,y$286,$$$mptypes){{
+        return comparing$284(x$285.getItem(),y$286.getItem());
     }
 }
 }
 ;
 exports.byItem=byItem;
-function first(elements$217){
-    if(elements$217===undefined){elements$217=empty;}
-    var first$218;
-    if(!isOfType((first$218=elements$217.getIterator().next()),{t:Finished})){
-        return first$218;
+function first(elements$287,$$$mptypes){
+    if(elements$287===undefined){elements$287=empty;}
+    var first$288;
+    if(!isOfType((first$288=elements$287.getIterator().next()),{t:Finished})){
+        return first$288;
     }else {
         return null;
     }
 }
 exports.first=first;
-function every(values$219){
-    if(values$219===undefined){values$219=empty;}
-    var it$220 = values$219.getIterator();
-    var val$221;while ((val$221=it$220.next())!==getFinished()){
-        if((!val$221)){
+function every(values$289){
+    if(values$289===undefined){values$289=empty;}
+    var it$290 = values$289.getIterator();
+    var val$291;while ((val$291=it$290.next())!==getFinished()){
+        if((!val$291)){
             return false;
         }
     }
     return true;
 }
 exports.every=every;
-function emptyOrSingleton(element$222){
-    var element$223;
-    if((element$223=element$222)!==null){
-        return reify(Singleton(element$223),[/*SAME METHOD TYPEPARM plist 0#0*/'Element']);
+function emptyOrSingleton(element$292,$$$mptypes){
+    var element$293;
+    if((element$293=element$292)!==null){
+        return Singleton(element$293,[$$$mptypes[0]]);
     }else {
         return empty;
     }
 }
 exports.emptyOrSingleton=emptyOrSingleton;
 //Ends compiled from Ceylon sources
+/****************************************************************
+* Overwriting of some methods not yet working in compiled code *
+****************************************************************/
+Singleton.$$.prototype.equals = function(other) {
+if (isOfType(other, {t:List})) {
+if (other.getSize() !== 1) {
+return false;
+}
+var o = other.item(0);
+return o !== null && o.equals(this.getFirst());
+}
+return false;
+}
+Singleton.$$.prototype.getKeys = function() { return TypeCategory(this, {t:Integer}); }
 function Map(wat) {
 return wat;
 }
@@ -1804,9 +2177,10 @@ hc += elem.getHash();
 return hc;
 }
 Map$proto.getValues = function() { return MapValues(this); }
-function MapValues(map) {
+function MapValues(map, $$targs$$) {
 var val = new MapValues.$$;
 val.map = map;
+val.$$targs$$=$$targs$$;
 return val;
 }
 initTypeProto(MapValues, 'ceylon.language::MapValues', Basic, Collection);
@@ -1818,6 +2192,7 @@ MapValues$proto.getIterator = function() { return MapValuesIterator(this.map); }
 function MapValuesIterator(map) {
 var iter = new MapValuesIterator.$$;
 iter.it = map.getIterator();
+iter.$$targs$$=[map.$$targs$$[1]];
 return iter;
 }
 initTypeProto(MapValuesIterator, 'ceylon.language::MapValuesIterator', Basic, Iterator);
@@ -1826,9 +2201,10 @@ var entry = this.it.next();
 return (entry!==$finished) ? entry.getItem() : $finished;
 }
 Map$proto.getKeys = function() { return KeySet(this); }
-function KeySet(map) {
+function KeySet(map, $$targs$$) {
 var set = new KeySet.$$;
 set.map = map;
+set.$$targs$$=[map.$$targs$$[0]];
 return set;
 }
 initTypeProto(KeySet, 'ceylon.language::KeySet', Basic, Set);
@@ -1841,6 +2217,7 @@ KeySet$proto.getIterator = function() { return KeySetIterator(this.map); }
 function KeySetIterator(map) {
 var iter = new KeySetIterator.$$;
 iter.it = map.getIterator();
+iter.$$targs$$=[map.$$targs$$[0]];
 return iter;
 }
 initTypeProto(KeySetIterator, 'ceylon.language::KeySetIterator', Basic, Iterator);
@@ -1848,13 +2225,13 @@ KeySetIterator.$$.prototype.next = function() {
 var entry = this.it.next();
 return (entry!==$finished) ? entry.getKey() : $finished;
 }
-KeySet$proto.union = function(other) {
+KeySet$proto.union = function(other, $$$mptypes) {
 var set = hashSetFromMap(this.map);
 set.addAll(other);
 return set;
 }
-KeySet$proto.intersection = function(other) {
-var set = HashSet();
+KeySet$proto.intersection = function(other, $$$mptypes) {
+var set = HashSet(undefined, [{t:'i', l:[this.$$targs$$[0], $$$mptypes[0]]}]);
 var it = this.map.getIterator();
 var entry;
 while ((entry=it.next()) !== $finished) {
@@ -1863,8 +2240,8 @@ if (other.contains(key)) { set.add(key); }
 }
 return set;
 }
-KeySet$proto.exclusiveUnion = function(other) {
-var set = this.complement(other);
+KeySet$proto.exclusiveUnion = function(other, $$$mptypes) {
+var set = this.complement(other, $$$mptypes);
 var it = other.getIterator();
 var elem;
 while ((elem=it.next()) !== $finished) {
@@ -1872,8 +2249,8 @@ if (!this.map.defines(elem)) { set.add(elem); }
 }
 return set;
 }
-KeySet$proto.complement = function(other) {
-var set = HashSet();
+KeySet$proto.complement = function(other, $$$mptypes) {
+var set = HashSet(undefined, [{t:'u', l:[this.$$targs$$[0], $$$mptypes[0]]}]);
 var it = this.map.getIterator();
 var entry;
 while ((entry=it.next()) !== $finished) {
@@ -1883,52 +2260,55 @@ if (!other.contains(key)) { set.add(key); }
 return set;
 }
 Map$proto.getInverse = function() {
-var inv = HashMap();
+var inv = HashMap(undefined, [this.$$targs$$[1], {t:Set, a:[this.$$targs$$[0]]}]);
 var it = this.getIterator();
 var entry;
-var newSet = HashSet();
+var newSet = HashSet(undefined, [this.$$targs$$[0]]);
 while ((entry=it.next()) !== $finished) {
 var item = entry.getItem();
-var set = inv.put(Entry(item, newSet), true);
+var set = inv.put(Entry(item, newSet, [this.$$targs$$[1], {t:Set, a:[this.$$targs$$[0]]}]), true);
 if (set === null) {
 set = newSet;
-newSet = HashSet();
+newSet = HashSet(undefined, [this.$$targs$$[0]]);
 }
 set.add(entry.getKey());
 }
 return inv;
 }
-Map$proto.mapItems = function(mapping) {
-function EmptyMap(orig) {
+Map$proto.mapItems = function(mapping, $$$mptypes) {
+function EmptyMap(orig, $$targs$$) {
 var em = new EmptyMap.$$;
+em.$$targs$$=$$targs$$;
 Basic(em);
 em.orig=orig;
 em.clone=function() { return this; }
 em.getItem=function() { return null; }
 em.getIterator=function() {
-function miter(iter) {
+function miter(iter, $$targs1$$) {
 var $i = new miter.$$;
 $i.iter = iter;
+$i.$$targs$$=$$targs1$$;
 $i.next = function() {
 var e = this.iter.next();
-return e===$finished ? e : Entry(e.getKey(), mapping(e.getKey(), e.getItem()));
+return e===$finished ? e : Entry(e.getKey(), mapping(e.getKey(), e.getItem()), this.$$targs$$);
 };
 return $i;
 }
 initTypeProto(miter, 'ceylon.language::MappedIterator', Basic, Iterator);
-return miter(orig.getIterator());
+return miter(orig.getIterator(), [{t:Entry, a:em.$$targs$$}]);
 }
 em.getSize=function() { return this.orig.getSize(); }
 em.getString=function() { return String$('',0); }
 return em;
 }
 initTypeProto(EmptyMap, 'ceylon.language::EmptyMap', Basic, Map);
-return EmptyMap(this);
+return EmptyMap(this, [this.$$targs$$[0], $$$mptypes[0]]);
 }
 exports.Map=Map;
-function HashMap(entries, map) {
+function HashMap(entries, $$targs$$, map) {
 if (map===undefined) { map = new HashMap.$$; }
 Basic(map);
+map.$$targs$$=$$targs$$;
 map.map = {};
 map.size = 0;
 if (entries !== undefined) { map.putAll(entries); }
@@ -1936,7 +2316,7 @@ return map;
 }
 initTypeProto(HashMap, 'ceylon.language::HashMap', Basic, Map);
 function copyHashMap(orig) {
-var map = HashMap();
+var map = HashMap(undefined, orig.$$targs$$);
 for (var hash in Object.keys(orig.map)) {
 map.map[hash] = orig.map[hash].slice(0);
 }
@@ -1997,10 +2377,11 @@ if (item !== null) { return item.equals(elem.getItem()); }
 return false;
 }
 HashMap$proto.defines = function(key) { return this.item(key) !== null; }
-function HashSet(elems, set) {
+function HashSet(elems, $$targs$$, set) {
 if (set===undefined) { set = new HashSet.$$; }
 Basic(set);
-set.map = HashMap();
+set.$$targs$$=$$targs$$;
+set.map = HashMap(undefined, [$$targs$$[0], {t:Boolean$}]);
 if (elems !== undefined) { set.addAll(elems); }
 return set;
 }
@@ -2009,14 +2390,15 @@ function hashSetFromMap(map) {
 var set = new HashSet.$$;
 Basic(set);
 set.map = this;
+set.$$targs$$=[map.$$targs$$[0]];
 return set;
 }
 var HashSet$proto = HashSet.$$.prototype;
-HashSet$proto.add = function(elem) { this.map.put(Entry(elem, true)); }
+HashSet$proto.add = function(elem) { this.map.put(Entry(elem, true, [this.$$targs$$[0], {t:Boolean$}])); }
 HashSet$proto.addAll = function(elems) {
 var it = elems.getIterator();
 var elem;
-while ((elem=it.next()) !== $finished) { this.map.put(Entry(elem, true)); }
+while ((elem=it.next()) !== $finished) { this.map.put(Entry(elem, true, [this.$$targs$$[0], {t:Boolean$}])); }
 }
 HashSet$proto.getSize = function() { return this.map.size; }
 HashSet$proto.getEmpty = function() { return this.map.size===0; }
@@ -2024,16 +2406,17 @@ HashSet$proto.getLast = function() {
 var entry = this.map.getLast();
 return (entry !== null) ? entry.getKey() : null;
 }
-HashSet$proto.getIterator = function() { return HashSetIterator(this.map); }
+HashSet$proto.getIterator = function() { return HashSetIterator(this.map, this.$$targs$$); }
 HashSet$proto.getClone = function() { return this; }
 HashSet$proto.contains = function(elem) { return this.map.item(elem) !== null; }
-HashSet$proto.union = function(other) {
+HashSet$proto.union = function(other, $$$mptypes) {
 var set = hashSetFromMap(copyHashMap(this.map));
+set.$$targs$$=[{t:'u', l:[this.$$targs$$[0], $$$mptypes[0]]}];
 set.addAll(other);
 return set;
 }
-HashSet$proto.intersection = function(other) {
-var set = HashSet();
+HashSet$proto.intersection = function(other, $$$mptypes) {
+var set = HashSet(undefined, [{t:'i', l:[this.$$targs$$[0], $$$mptypes[0]]}]);
 var it = this.getIterator();
 var elem;
 while ((elem=it.next()) !== $finished) {
@@ -2051,7 +2434,7 @@ if (this.map.item(elem) === null) { set.map.put(Entry(elem, true)); }
 return set;
 }
 HashSet$proto.complement = function(other) {
-var set = HashSet();
+var set = HashSet(undfined, [{t:'u', l:[this.$$targs$$[0], $$$mptypes[0]]}]);
 var it = this.getIterator();
 var elem;
 while ((elem=it.next()) !== $finished) {
@@ -2059,9 +2442,10 @@ if (!other.contains(elem)) { set.map.put(Entry(elem, true)); }
 }
 return set;
 }
-function HashMapIterator(map) {
+function HashMapIterator(map, $$targs$$) {
 var it = new HashMapIterator.$$;
 it.map = map;
+it.$$targs$$=$$targs$$;
 it.hashs = Object.keys(map);
 it.hashIndex = 0;
 it.arrIndex = 0;
@@ -2081,9 +2465,10 @@ return entry;
 }
 return $finished;
 }
-function HashSetIterator(map) {
+function HashSetIterator(map, $$targs$$) {
 var it = new HashSetIterator.$$;
 it.mapIt = map.getIterator();
+it.$$targs$$=$$targs$$;
 return it;
 }
 initTypeProto(HashSetIterator, 'ceylon.language::HashSetIterator', Basic, Iterator);
@@ -2091,51 +2476,6 @@ HashSetIterator.$$.prototype.next = function() {
 var entry = this.mapIt.next();
 return (entry !== $finished) ? entry.getKey() : $finished;
 }
-function LazySet(elems, set) {
-if (set===undefined) {set = new LazySet.$$;}
-Basic(set);
-set.elems = elems===undefined?empty:elems;
-return set;
-}
-initTypeProto(LazySet, 'ceylon.language::LazySet', Basic, Set);
-var LazySet$proto = LazySet.$$.prototype;
-LazySet$proto.getEmpty = function() { return this.elems.getEmpty(); }
-LazySet$proto.getSize = function() { return HashSet(this.elems).getSize(); }
-LazySet$proto.getClone = function() { return this; }
-LazySet$proto.getIterator = function() { return HashSet(this.elems).getIterator(); }
-LazySet$proto.equals = function(other) {
-var hset = HashSet(this.elems);
-var it = other.getIterator();
-var elem;
-var count = 0;
-while ((elem=it.next()) !== $finished) {
-if (!hset.contains(elem)) { return false; }
-++count;
-}
-return count==hset.getSize();
-}
-LazySet$proto.union = function(other) {
-var set = HashSet(this.elems);
-set.addAll(other);
-return set;
-}
-LazySet$proto.intersection = function(other) {
-var set = HashSet(this.elems);
-var result = HashSet();
-var it = other.getIterator();
-var elem;
-while ((elem=it.next()) !== $finished) {
-if (set.contains(elem)) { result.add(elem); }
-}
-return result;
-}
-LazySet$proto.exclusiveUnion = function(other) {
-return other.exclusiveUnion(HashSet(this.elems));
-}
-LazySet$proto.complement = function(other) {
-return other.complement(HashSet(this.elems));
-}
-exports.LazySet=LazySet;
 function Number$(wat) {
 return wat;
 }
@@ -2150,10 +2490,10 @@ return Number$;
 function JSNumber(value) { return Number(value); }
 initExistingType(JSNumber, Number, 'ceylon.language::JSNumber');
 var origNumToString = Number.prototype.toString;
-inheritProtoI(JSNumber, Object$, Scalar, Castable, Integral, Exponentiable);
+inheritProtoI(JSNumber, Object$, Scalar, Castable, $init$Integral(), Exponentiable);
 function Integer(value) { return Number(value); }
 initTypeProto(Integer, 'ceylon.language::Integer', Object$, Scalar, Castable,
-Integral, Exponentiable, Binary);
+$init$Integral(), Exponentiable, Binary);
 function Float(value) {
 var that = new Number(value);
 that.$float = true;
@@ -2206,6 +2546,7 @@ return value==other ? equal : (value<other ? smaller:larger);
 }
 JSNum$proto.getFloat = function() { return Float(this.valueOf()); }
 JSNum$proto.getInteger = function() { return this|0; }
+JSNum$proto.getIntegerValue = function() { return this|0; }
 JSNum$proto.getCharacter = function() { return Character(this.valueOf()); }
 JSNum$proto.getSuccessor = function() { return this+1 }
 JSNum$proto.getPredecessor = function() { return this-1 }
@@ -2298,6 +2639,7 @@ exports.parseFloat=$parseFloat;
 function String$(value,size) {
 var that = new String(value);
 that.codePoints = size;
+that.$$targs$$=[{t:Character}];
 return that;
 }
 initExistingType(String$, String, 'ceylon.language::String', Object$, Sequential, Comparable,
@@ -2578,7 +2920,7 @@ return String$(result, isNaN(len)?undefined:len);
 function isWhitespace(c) { return c.value in $WS; }
 String$proto.$split = function(sep, discard, group) {
 // shortcut for empty input
-if (this.length === 0) {return Singleton(this);}
+if (this.length === 0) {return Singleton(this, {t:String$});}
 if (sep === undefined) {sep = isWhitespace}
 if (discard === undefined) {discard = true}
 if (group === undefined) {group = true}
@@ -2684,7 +3026,7 @@ tokens.push(String$("", 0));
 }
 }
 this.codePoints = count;
-return ArraySequence(tokens);
+return ArraySequence(tokens, {t:String$});
 }
 String$proto.getReversed = function() {
 var result = "";
@@ -2787,7 +3129,7 @@ var that = new Character.$$;
 that.value = value;
 return that;
 }
-initTypeProto(Character, 'ceylon.language::Character', Object$, Comparable);
+initTypeProto(Character, 'ceylon.language::Character', Object$, Comparable, $init$Enumerable());
 var Character$proto = Character.$$.prototype;
 Character$proto.getString = function() { return String$(codepointToString(this.value)) }
 Character$proto.equals = function(other) {
@@ -3036,7 +3378,6 @@ _ints=true;
 return _ints ? inters||unions : unions;
 }
 function extendsType(t1, t2) {
-//TODO deal with union/intersection types
 if (t1.t === 'u' || t1.t === 'i') {
 var unions = false;
 var inters = true;
@@ -3141,7 +3482,7 @@ return f(ne, no);
 };
 });
 }
-function sort(elems) {
+function sort(elems, $$$mptypes) {
 if (elems===undefined) {return empty;}
 var arr = [];
 var it = elems.getIterator();
@@ -3152,7 +3493,7 @@ arr.sort(function(a, b) {
 var cmp = a.compare(b);
 return (cmp===larger) ? 1 : ((cmp===smaller) ? -1 : 0);
 });
-return ArraySequence(arr);
+return ArraySequence(arr, $$$mptypes);
 }
 exports.string=string;
 exports.combine=combine;
@@ -3160,19 +3501,21 @@ exports.sort=sort;
 function Sequence($$sequence) {
 return $$sequence;
 }
-initTypeProtoI(Sequence, 'ceylon.language::Sequence', Sequential, Cloneable);
 function $init$Sequence() {
 if (Sequence.$$===undefined) {
-initTypeProtoI(Sequence, 'ceylon.language::Sequence', $init$Sequential(), $init$Cloneable());
+initTypeProtoI(Sequence, 'ceylon.language::Sequence', $init$Sequential(),
+$init$ContainerWithFirstElement(), $init$Cloneable());
 }
 return Sequence;
 }
+$init$Sequence();
 var Sequence$proto = Sequence.$$.prototype;
 Sequence$proto.getLast = function() {
 var last = this.item(this.getLastIndex());
 if (last === null) throw Exception();
 return last;
 }
+Sequence$proto.getEmpty = function() { return false; }
 function Array$() {
 var that = new Array$.$$;
 return that;
@@ -3183,6 +3526,10 @@ var Array$proto = Array.prototype;
 var origArrToString = Array$proto.toString;
 inheritProtoI(Array$, Object$, Cloneable, Ranged, $init$List());
 Array$proto.toString = origArrToString;
+Array$proto.reifyCeylonType = function(typeParameters) {
+this.$$targs$$ = typeParameters;
+return this;
+}
 exports.Array=Array$;
 function EmptyArray() {
 return [];
@@ -3192,8 +3539,9 @@ function ArrayList(items) {
 return items;
 }
 initTypeProto(ArrayList, 'ceylon.language::ArrayList', Array$, $init$List());
-function ArraySequence(/* js array */value) {
+function ArraySequence(/* js array */value, $$targs$$) {
 value.$seq = true;
+value.$$targs$$=$$targs$$;
 return value;
 }
 initTypeProto(ArraySequence, 'ceylon.language::ArraySequence', Basic, Sequence);
@@ -3221,11 +3569,11 @@ Array$proto.getReversed = function() {
 if (this.length === 0) { return this; }
 var arr = this.slice(0);
 arr.reverse();
-return this.$seq ? ArraySequence(arr) : arr;
+return this.$seq ? ArraySequence(arr,this.$$targs$$) : arr.reifyCeylonType(this.$$targs$$);
 }
-Array$proto.chain = function(other) {
+Array$proto.chain = function(other, $$$mptypes) {
 if (this.length === 0) { return other; }
-return Iterable.$$.prototype.chain.call(this, other);
+return Iterable.$$.prototype.chain.call(this, other, $$$mptypes);
 }
 Array$proto.getFirst = function() { return this.length>0 ? this[0] : null; }
 Array$proto.getLast = function() { return this.length>0 ? this[this.length-1] : null; }
@@ -3233,13 +3581,13 @@ Array$proto.segment = function(from, len) {
 if (len <= 0) { return empty; }
 var stop = from + len;
 var seq = this.slice((from>=0)?from:0, (stop>=0)?stop:0);
-return (seq.length > 0) ? ArraySequence(seq) : empty;
+return (seq.length > 0) ? ArraySequence(seq,this.$$targs$$) : empty;
 }
 Array$proto.span = function(from, to) {
 if (from > to) {
 var arr = this.segment(to, from-to+1);
 arr.reverse();
-return arr;
+return arr.reifyCeylonType(this.$$targs$$);
 }
 return this.segment(from, to-from+1);
 }
@@ -3250,7 +3598,7 @@ Array$proto.spanFrom = function(from) {
 return this.span(from, 0x7fffffff);
 }
 Array$proto.getRest = function() {
-return this.length<=1 ? empty : ArraySequence(this.slice(1));
+return this.length<=1 ? empty : ArraySequence(this.slice(1),this.$$targs$$);
 }
 Array$proto.items = function(keys) {
 if (keys === undefined) return empty;
@@ -3259,7 +3607,7 @@ for (var i = 0; i < keys.getSize(); i++) {
 var key = keys.item(i);
 seq.push(this.item(key));
 }
-return ArraySequence(seq);
+return ArraySequence(seq,this.$$targs$$);
 }
 Array$proto.getKeys = function() { return TypeCategory(this, {t:Integer}); }
 Array$proto.contains = function(elem) {
@@ -3282,12 +3630,13 @@ e.push(item);
 e.$$targs$$=$$$ptypes;
 return e;
 }
-exports.arrayOfSize=function(size, elem) {
+exports.arrayOfSize=function(size, elem, $$$mptypes) {
 if (size > 0) {
 var elems = [];
 for (var i = 0; i < size; i++) {
 elems.push(elem);
 }
+elems.$$targs$$=$$$mptypes;
 return elems;
 } else return [];
 }
@@ -3302,15 +3651,16 @@ var TypeCategory$proto = TypeCategory.$$.prototype;
 TypeCategory$proto.contains = function(k) {
 return isOfType(k, this.type) && this.seq.defines(k);
 }
-function SequenceBuilder() {
+function SequenceBuilder($$targs$$) {
 var that = new SequenceBuilder.$$;
 that.seq = [];
+that.$$targs$$=$$targs$$;
 return that;
 }
 initTypeProto(SequenceBuilder, 'ceylon.language::SequenceBuilder', Basic);
 var SequenceBuilder$proto = SequenceBuilder.$$.prototype;
 SequenceBuilder$proto.getSequence = function() {
-return (this.seq.length > 0) ? ArraySequence(this.seq) : empty;
+return (this.seq.length > 0) ? ArraySequence(this.seq,this.$$targs$$) : empty;
 }
 SequenceBuilder$proto.append = function(e) { this.seq.push(e); }
 SequenceBuilder$proto.appendAll = function(/*Iterable*/arr) {
@@ -3321,113 +3671,18 @@ this.seq.push(e);
 }
 }
 SequenceBuilder$proto.getSize = function() { return this.seq.length; }
-function SequenceAppender(other) {
+function SequenceAppender(other, $$targs$$) {
 var that = new SequenceAppender.$$;
 that.seq = [];
+that.$$targs$$=$$targs$$;
 that.appendAll(other);
 return that;
 }
 initTypeProto(SequenceAppender, 'ceylon.language::SequenceAppender', SequenceBuilder);
-function Singleton(elem) {
-var that = new Singleton.$$;
-that.value = [elem];
-that.elem = elem;
-return that;
-}
-initTypeProto(Singleton, 'ceylon.language::Singleton', Object$, Sequence);
-var Singleton$proto = Singleton.$$.prototype;
-Singleton$proto.getString = function() { return String$("{ " + this.elem.getString() + " }") }
-Singleton$proto.item = function(index) {
-return index===0 ? this.value[0] : null;
-}
-Singleton$proto.getSize = function() { return 1; }
-Singleton$proto.getLastIndex = function() { return 0; }
-Singleton$proto.getFirst = function() { return this.elem; }
-Singleton$proto.getLast = function() { return this.elem; }
-Singleton$proto.getEmpty = function() { return false; }
-Singleton$proto.getRest = function() { return empty; }
-Singleton$proto.defines = function(idx) { return idx.equals(0); }
-Singleton$proto.getKeys = function() { return TypeCategory(this, {t:Integer}); }
-Singleton$proto.span = function(from, to) {
-return (((from <= 0) && (to >= 0)) || ((from >= 0) && (to <= 0))) ? this : empty;
-}
-Singleton$proto.spanTo = function(to) {
-return to < 0 ? empty : this;
-}
-Singleton$proto.spanFrom = function(from) {
-return from > 0 ? empty : this;
-}
-Singleton$proto.segment = function(idx, len) {
-return ((idx <= 0) && ((idx+len) > 0)) ? this : empty;
-}
-Singleton$proto.getIterator = function() { return SingletonIterator(this.elem); }
-Singleton$proto.getReversed = function() { return this; }
-Singleton$proto.equals = function(other) {
-if (isOfType(other, {t:List})) {
-if (other.getSize() !== 1) {
-return false;
-}
-var o = other.item(0);
-return o !== null && o.equals(this.elem);
-}
-return false;
-}
-Singleton$proto.$map = function(f) { return ArraySequence([ f(this.elem) ]); }
-Singleton$proto.$filter = function(f) {
-return f(this.elem) ? this : empty;
-}
-Singleton$proto.fold = function(v,f) {
-return f(v, this.elem);
-}
-Singleton$proto.find = function(f) {
-return f(this.elem) ? this.elem : null;
-}
-Singleton$proto.findLast = function(f) {
-return f(this.elem) ? this.elem : null;
-}
-Singleton$proto.any = function(f) {
-return f(this.elem);
-}
-Singleton$proto.$every = function(f) {
-return f(this.elem);
-}
-Singleton$proto.skipping = function(skip) {
-return skip==0 ? this : empty;
-}
-Singleton$proto.taking = function(take) {
-return take>0 ? this : empty;
-}
-Singleton$proto.by = function(step) {
-return this;
-}
-Singleton$proto.$sort = function(f) { return this; }
-Singleton$proto.count = function(f) {
-return f(this.elem) ? 1 : 0;
-}
-Singleton$proto.contains = function(o) {
-return this.elem.equals(o);
-}
-Singleton$proto.getCoalesced = function() { return this; }
-function SingletonIterator(elem) {
-var that = new SingletonIterator.$$;
-that.elem = elem;
-that.done = false;
-return that;
-}
-initTypeProto(SingletonIterator, 'ceylon.language::SingletonIterator', Basic, Iterator);
-var $SingletonIterator$proto = SingletonIterator.$$.prototype;
-$SingletonIterator$proto.next = function() {
-if (this.done) {
-return $finished;
-}
-this.done = true;
-return this.elem;
-}
 exports.Sequence=Sequence;
 exports.SequenceBuilder=SequenceBuilder;
 exports.SequenceAppender=SequenceAppender;
 exports.ArraySequence=ArraySequence;
-exports.Singleton=Singleton;
 // implementation of object "process" in ceylon.language
 function languageClass() {
 var lang = new languageClass.$$;
@@ -3486,7 +3741,7 @@ namedArgs[arg] = null;
 }
 args[i] = String$(args[i]);
 }
-argv = ArraySequence(args);
+argv = ArraySequence(args, [{t:String$}]);
 }
 } else if (typeof window !== "undefined") {
 // parse URL parameters
@@ -3496,7 +3751,7 @@ var argStrings = new Array(parts.length);
 //can't do "for (i in parts)" anymore because of the added stuff to arrays
 var i;
 for (i=0; i<parts.length; i++) { argStrings[i] = String$(parts[i]); }
-argv = ArraySequence(argStrings);
+argv = ArraySequence(argStrings, [{t:String$}]);
 for (i=0; i < parts.length; i++) {
 var part = parts[i];
 var pos = part.indexOf('=');
@@ -3636,12 +3891,14 @@ return String$("Unknown");
 var process$ = processClass();
 function getProcess() { return process$; }
 exports.getProcess=getProcess;
-function Range(first, last) {
-var that = new Range.$$;
+function Range(first, last, $$targs$$, that) {
+if (that === undefined) that = new Range.$$;
 that.first = first;
 that.last = last;
-var dist = last.distanceFrom(first);
-that.size=(dist>0?dist:-dist)+1;
+that.$$targs$$=$$targs$$;
+if (isOfType(first, $init$Enumerable()) && isOfType(last, $init$Enumerable())) {
+that.size=last.getIntegerValue().minus(first.getIntegerValue()).getMagnitude().plus(1);
+}
 return that;
 }
 initTypeProto(Range, 'ceylon.language::Range', Object$, Sequence, Category);
@@ -3655,8 +3912,19 @@ return this.first.compare(this.last) === larger;
 Range$proto.next = function(x) {
 return this.getDecreasing() ? x.getPredecessor() : x.getSuccessor();
 }
-Range$proto.getSize = function() { return this.size; }
-Range$proto.getLastIndex = function() { return this.size-1; }
+Range$proto.getSize = function() {
+if (this.size === undefined) {
+var size=1;
+var curr = this.first;
+while (!curr.equals(this.last)) {
+size++;
+curr = this.next(curr);
+}
+this.size=size;
+}
+return this.size;
+}
+Range$proto.getLastIndex = function() { return this.getSize()-1; }
 Range$proto.item = function(index) {
 var idx = 0;
 var x = this.first;
@@ -3683,7 +3951,7 @@ return false;
 Range$proto.getRest = function() {
 if (this.first.equals(this.last)) return empty;
 var n = this.next(this.first);
-return Range(n, this.last);
+return Range(n, this.last, this.$$targs$$);
 }
 Range$proto.segment = function(from, len) {
 //only positive length for now
@@ -3694,7 +3962,7 @@ for (var i=0; i < from; i++) { x = this.next(x); }
 var y = x;
 for (var i=1; i < len; i++) { y = this.next(y); }
 if (!this.includes(y)) { y = this.last; }
-return Range(x, y);
+return Range(x, y, this.$$targs);
 }
 Range$proto.span = function(from, to) {
 var li = this.getLastIndex();
@@ -3720,7 +3988,7 @@ var x = this.first;
 for (var i=0; i < from; i++) { x = this.next(x); }
 var y = this.first;
 for (var i=0; i < to; i++) { y = this.next(y); }
-return Range(x, y);
+return Range(x, y, this.$$targs);
 }
 Range$proto.spanTo = function(to) {
 return to<0 ? empty : this.span(0, to);
@@ -3751,14 +4019,14 @@ if (!other) { return false; }
 return this.first.equals(other.getFirst()) && this.last.equals(other.getLast());
 }
 Range$proto.getIterator = function() { return RangeIterator(this); }
-Range$proto.getReversed = function() { return Range(this.last, this.first); }
+Range$proto.getReversed = function() { return Range(this.last, this.first, this.$$targs$$); }
 Range$proto.skipping = function(skip) {
 var x=0;
 var e=this.first;
 while (x++<skip) {
 e=this.next(e);
 }
-return this.includes(e) ? new Range(e, this.last) : empty;
+return this.includes(e) ? new Range(e, this.last, this.$$targs$$) : empty;
 }
 Range$proto.taking = function(take) {
 if (take == 0) {
@@ -3769,7 +4037,7 @@ var e=this.first;
 while (++x<take) {
 e=this.next(e);
 }
-return this.includes(e) ? new Range(this.first, e) : this;
+return this.includes(e) ? new Range(this.first, e, this.$$targs$$) : this;
 }
 Range$proto.getSequence = function() { return this; }
 Range$proto.getCoalesced = function() { return this; }
@@ -3788,6 +4056,7 @@ function RangeIterator(range) {
 var that = new RangeIterator.$$;
 that.range = range;
 that.current = range.getFirst();
+that.$$targs$$ = range.$$targs$$;
 that.next = (range.last>=range.first) ? RangeIterator$forwardNext : RangeIterator$backwardNext;
 return that;
 }
@@ -3816,6 +4085,7 @@ this.current = $finished;
 }
 return rval;
 }
+exports.Range=Range;
 //Turns out we need to have empty implementations of these annotations
 exports.see=function(){};
 exports.by=function(){};
@@ -3834,7 +4104,6 @@ exports.getTrue=getTrue;
 exports.getFalse=getFalse;
 exports.Finished=Finished;
 exports.getFinished=getFinished;
-exports.Range=Range;
 });
 }(typeof define==='function' && define.amd ?
 define : function (factory) {
