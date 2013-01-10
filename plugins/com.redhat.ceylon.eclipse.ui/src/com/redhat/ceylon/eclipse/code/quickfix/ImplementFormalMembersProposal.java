@@ -64,6 +64,7 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         else {
             return;
         }
+        if (body==null) return;
         List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
