@@ -2,3 +2,4 @@
 *.idx
 /.settings
 /.project
+plugins/com.redhat.ceylon.test.eclipse.plugin/bin/
