@@ -88,13 +88,29 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
-    @Override public void visit(Tree.PositionalArgument that) {
+    @Override public void visit(Tree.ListedArgument that) {
         super.visit(that);
         Tree.Term bme = that.getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
             if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null) {
+                	//TODO: is this correct for a sequenced parameter?
+                	//intersect(unit.getIterableType(p.getType()));
+                	intersect(p.getType());
+                }
+            }
+        }
+    }
+    
+    @Override public void visit(Tree.SpreadArgument that) {
+        super.visit(that);
+        Tree.Term bme = that.getExpression().getTerm();
+        if (bme instanceof Tree.BaseMemberExpression) {
+            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+                Parameter p = that.getParameter();
+                if (p!=null) {
+                	//TODO: is this correct?
                 	intersect(p.getType());
                 }
             }

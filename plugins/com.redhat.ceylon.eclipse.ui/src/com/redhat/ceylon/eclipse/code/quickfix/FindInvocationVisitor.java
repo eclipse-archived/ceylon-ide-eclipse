@@ -19,7 +19,16 @@ class FindInvocationVisitor extends Visitor {
         this.node=node;
     }
     @Override
-    public void visit(Tree.PositionalArgument that) {
+    public void visit(Tree.ListedArgument that) {
+        Expression e = that.getExpression();
+        if (e!=null && node==e.getTerm()) {
+            result=current;
+            parameter=that.getParameter();
+        }
+        super.visit(that);
+    }
+    @Override
+    public void visit(Tree.SpreadArgument that) {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             result=current;

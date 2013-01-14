@@ -98,14 +98,14 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
             StringBuilder result = new StringBuilder().append(" {");
             boolean sequencedArgs = false;
             for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
-                if (arg.getParameter().isSequenced() && pal.getEllipsis()==null) {
+                if (arg.getParameter().isSequenced() && (arg instanceof Tree.ListedArgument)) {
                     if (sequencedArgs) result.append(",");
                     sequencedArgs=true;
-                    result.append(" " + AbstractRefactoring.toString(arg.getExpression().getTerm(), cpc.getTokens()));
+                    result.append(" " + AbstractRefactoring.toString(arg, cpc.getTokens()));
                 }
                 else {
                     result.append(" " + arg.getParameter().getName() + "=" + 
-                            AbstractRefactoring.toString(arg.getExpression().getTerm(), cpc.getTokens()) + ";");
+                            AbstractRefactoring.toString(arg, cpc.getTokens()) + ";");
                 }
             }
             result.append(" }");
