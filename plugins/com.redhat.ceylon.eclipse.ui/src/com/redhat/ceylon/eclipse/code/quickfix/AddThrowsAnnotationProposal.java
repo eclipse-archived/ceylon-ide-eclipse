@@ -17,22 +17,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Throw;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
     
-    public static void addThrowsAnnotationProposal(Collection<ICompletionProposal> proposals, Statement statement, CompilationUnit cu, IFile file, IDocument doc) {
+    public static void addThrowsAnnotationProposal(Collection<ICompletionProposal> proposals, 
+    		Tree.Statement statement, Tree.CompilationUnit cu, IFile file, IDocument doc) {
         ProducedType exceptionType = determineExceptionType(statement);
         if (exceptionType == null) {
             return;
@@ -60,12 +51,12 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static ProducedType determineExceptionType(Statement statement) {
+    private static ProducedType determineExceptionType(Tree.Statement statement) {
         ProducedType exceptionType = null;
     
-        if (statement instanceof Throw) {
+        if (statement instanceof Tree.Throw) {
             ProducedType ceylonLangExceptionType = statement.getUnit().getExceptionDeclaration().getType();
-            Expression throwExpression = ((Throw) statement).getExpression();
+            Tree.Expression throwExpression = ((Tree.Throw) statement).getExpression();
             if (throwExpression == null) {
                 exceptionType = ceylonLangExceptionType;
             } else {
@@ -80,36 +71,39 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
         return exceptionType;
     }
 
-    private static Tree.Declaration determineThrowContainer(Statement statement, CompilationUnit cu) {
+    private static Tree.Declaration determineThrowContainer(Tree.Statement statement, 
+    		Tree.CompilationUnit cu) {
         FindContainerVisitor fcv = new FindContainerVisitor(statement);
         fcv.visit(cu);
         return fcv.getDeclaration();
     }
 
     private static boolean isAlreadyPresent(Tree.Declaration throwContainer, ProducedType exceptionType) {
-        AnnotationList annotationList = throwContainer.getAnnotationList();
+    	Tree.AnnotationList annotationList = throwContainer.getAnnotationList();
         if (annotationList != null) {
-            for (Annotation annotation : annotationList.getAnnotations()) {
+            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 String annotationIdentifier = getAnnotationIdentifier(annotation);
                 if ("throws".equals(annotationIdentifier)) {
-                    PositionalArgumentList positionalArgumentList = annotation.getPositionalArgumentList();
+                	Tree.PositionalArgumentList positionalArgumentList = annotation.getPositionalArgumentList();
                     if (positionalArgumentList != null && 
                             positionalArgumentList.getPositionalArguments() != null &&
                             positionalArgumentList.getPositionalArguments().size() > 0) {
-                        PositionalArgument throwsArg = positionalArgumentList.getPositionalArguments().get(0);
-                        Expression throwsArgExp = throwsArg.getExpression();
-                        if (throwsArgExp != null) {
-                            Term term = throwsArgExp.getTerm();
-                            if (term instanceof MemberOrTypeExpression) {
-                                Declaration declaration = ((MemberOrTypeExpression) term).getDeclaration();
-                                if (declaration instanceof TypeDeclaration) {
-                                    ProducedType type = ((TypeDeclaration) declaration).getType();
-                                    if (exceptionType.isExactly(type)) {
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
+                    	Tree.PositionalArgument throwsArg = positionalArgumentList.getPositionalArguments().get(0);
+                    	if (throwsArg instanceof Tree.ListedArgument) {
+                    		Tree.Expression throwsArgExp = ((Tree.ListedArgument) throwsArg).getExpression();
+                    		if (throwsArgExp != null) {
+                    			Tree.Term term = throwsArgExp.getTerm();
+                    			if (term instanceof Tree.MemberOrTypeExpression) {
+                    				Declaration declaration = ((Tree.MemberOrTypeExpression) term).getDeclaration();
+                    				if (declaration instanceof TypeDeclaration) {
+                    					ProducedType type = ((TypeDeclaration) declaration).getType();
+                    					if (exceptionType.isExactly(type)) {
+                    						return true;
+                    					}
+                    				}
+                    			}
+                    		}
+                    	}
                     }
                 }
             }

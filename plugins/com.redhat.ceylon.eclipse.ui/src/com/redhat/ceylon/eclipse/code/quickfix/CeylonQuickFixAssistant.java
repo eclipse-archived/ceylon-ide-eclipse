@@ -70,8 +70,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -879,7 +877,7 @@ public class CeylonQuickFixAssistant {
                 fsv.visit(cu);
                 if( fsv.getStatement() instanceof Tree.AttributeDeclaration ) {
                     Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) fsv.getStatement();
-                    Tree.SimpleType st = (SimpleType) ad.getType();
+                    Tree.SimpleType st = (Tree.SimpleType) ad.getType();
 
                     TypeParameter stTypeParam = null;
                     if( st.getTypeArgumentList() != null ) {
@@ -1230,21 +1228,26 @@ public class CeylonQuickFixAssistant {
     private List<ProducedType> appendPositionalArgs(FindArgumentsVisitor fav, StringBuilder params) {
     	List<ProducedType> types = new ArrayList<ProducedType>();
         for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
-            ProducedType t = pa.getUnit()
-            		.denotableType(pa.getExpression().getTypeModel());
-			params.append( t.getProducedTypeName() )
-                .append(" ");
-            if ( pa.getExpression().getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
-                params.append( ((Tree.StaticMemberOrTypeExpression) pa.getExpression().getTerm())
-                        .getIdentifier().getText() );
-            }
-            else {
-                int loc = params.length();
-                params.append( pa.getExpression().getTypeModel().getDeclaration().getName() );
-                params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
-            }
-            params.append(", ");
-            types.add(t);
+        	if (pa instanceof Tree.ListedArgument) {
+        		Tree.Expression e = ((Tree.ListedArgument) pa).getExpression();
+        		if (e.getTypeModel()!=null) {
+        			ProducedType t = pa.getUnit()
+        					.denotableType(e.getTypeModel());
+        			params.append( t.getProducedTypeName() )
+        			.append(" ");
+        			if ( e.getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
+        				params.append( ((Tree.StaticMemberOrTypeExpression) e.getTerm())
+        						.getIdentifier().getText() );
+        			}
+        			else {
+        				int loc = params.length();
+        				params.append( e.getTypeModel().getDeclaration().getName() );
+        				params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
+        			}
+        			params.append(", ");
+        			types.add(t);
+        		}
+        	}
         }
         return types;
     }
@@ -1421,14 +1424,14 @@ public class CeylonQuickFixAssistant {
 
 	public static int applyImports(TextChange change,
 			Set<Declaration> alreadyImported, 
-			CompilationUnit cu) {
+			Tree.CompilationUnit cu) {
 		return applyImports(change, alreadyImported, null, cu);
 	}
 	
 	public static int applyImports(TextChange change,
 			Set<Declaration> alreadyImported, 
 			Declaration declarationBeingDeleted,
-			CompilationUnit cu) {
+			Tree.CompilationUnit cu) {
 		int il=0;
 		for (InsertEdit ie: importEdit(cu, alreadyImported, declarationBeingDeleted)) {
 			il+=ie.getText().length();

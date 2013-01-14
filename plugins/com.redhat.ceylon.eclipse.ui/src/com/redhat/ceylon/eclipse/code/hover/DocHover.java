@@ -108,14 +108,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -1112,16 +1106,20 @@ public class DocHover
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression) {
-                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                if (annotPrim instanceof Tree.BaseMemberExpression) {
+                    String name = ((Tree.BaseMemberExpression) annotPrim).getIdentifier().getText();
                     if ("doc".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             if (!args.isEmpty()) {
-                                String text = args.get(0).getExpression().getTerm().getText();
-                                if (text!=null) {
-                                    documentation.append(markdown(text, linkScope));
+                                Tree.PositionalArgument a = args.get(0);
+                                if (a instanceof Tree.ListedArgument) {
+                                	String text = ((Tree.ListedArgument) a).getExpression()
+                                			.getTerm().getText();
+                                	if (text!=null) {
+                                		documentation.append(markdown(text, linkScope));
+                                	}
                                 }
                             }
                         }
@@ -1136,29 +1134,31 @@ public class DocHover
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression) {
-                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                if (annotPrim instanceof Tree.BaseMemberExpression) {
+                    String name = ((Tree.BaseMemberExpression) annotPrim).getIdentifier().getText();
                     if ("see".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             for (Tree.PositionalArgument arg: args) {
-                                Term term = arg.getExpression().getTerm();
-								if (term instanceof MemberOrTypeExpression) {
-									Declaration dec = ((MemberOrTypeExpression) term).getDeclaration();
-									if (dec!=null) {
-										String dn = dec.getName();
-										if (term instanceof QualifiedMemberOrTypeExpression) {
-											Primary p = ((QualifiedMemberOrTypeExpression) term).getPrimary();
-											if (p instanceof MemberOrTypeExpression) {
-												dn = ((MemberOrTypeExpression) p).getDeclaration().getName()
-														+ "." + dn;
-											}
-										}
-										addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-												"see <tt><a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
-									}
-								}
+                            	if (arg instanceof Tree.ListedArgument) {
+                            		Tree.Term term = ((Tree.ListedArgument) arg).getExpression().getTerm();
+                            		if (term instanceof Tree.MemberOrTypeExpression) {
+                            			Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
+                            			if (dec!=null) {
+                            				String dn = dec.getName();
+                            				if (term instanceof Tree.QualifiedMemberOrTypeExpression) {
+                            					Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) term).getPrimary();
+                            					if (p instanceof Tree.MemberOrTypeExpression) {
+                            						dn = ((Tree.MemberOrTypeExpression) p).getDeclaration().getName()
+                            								+ "." + dn;
+                            					}
+                            				}
+                            				addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                            						"see <tt><a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
+                            			}
+                            		}
+                            	}
 								/*if (term instanceof QualifiedMemberOrTypeExpression) {
 	                            	documentation.append("<p><tt>see ");
 									ProducedReference target = ((QualifiedMemberOrTypeExpression) term).getTarget();
@@ -1184,33 +1184,35 @@ public class DocHover
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
-                if (annotPrim instanceof BaseMemberExpression) {
-                    String name = ((BaseMemberExpression) annotPrim).getIdentifier().getText();
+                if (annotPrim instanceof Tree.BaseMemberExpression) {
+                    String name = ((Tree.BaseMemberExpression) annotPrim).getIdentifier().getText();
                     if ("throws".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             if (args.isEmpty()) continue;
                             Tree.PositionalArgument typeArg = args.get(0);
-                            Tree.PositionalArgument textArg = args.size()>1 ? args.get(1) : null;
-                            Term typeArgTerm = typeArg.getExpression().getTerm();
-                            Term textArgTerm = textArg==null ? null : textArg.getExpression().getTerm();
-							String text = textArgTerm instanceof Tree.StringLiteral ?
-                            		textArgTerm.getText() : "";
-                            if (typeArgTerm instanceof MemberOrTypeExpression) {
-                            	Declaration dec = ((MemberOrTypeExpression) typeArgTerm).getDeclaration();
-                            	if (dec!=null) {
-                            		String dn = dec.getName();
-                            		if (typeArgTerm instanceof QualifiedMemberOrTypeExpression) {
-                            			Primary p = ((QualifiedMemberOrTypeExpression) typeArgTerm).getPrimary();
-                            			if (p instanceof MemberOrTypeExpression) {
-                            				dn = ((MemberOrTypeExpression) p).getDeclaration().getName()
-                            						+ "." + dn;
+                        	Tree.PositionalArgument textArg = args.size()>1 ? args.get(1) : null;
+                            if (typeArg instanceof Tree.ListedArgument && textArg instanceof Tree.ListedArgument) {
+                            	Tree.Term typeArgTerm = ((Tree.ListedArgument) typeArg).getExpression().getTerm();
+                            	Tree.Term textArgTerm = textArg==null ? null : ((Tree.ListedArgument) textArg).getExpression().getTerm();
+                            	String text = textArgTerm instanceof Tree.StringLiteral ?
+                            			textArgTerm.getText() : "";
+                            			if (typeArgTerm instanceof Tree.MemberOrTypeExpression) {
+                            				Declaration dec = ((Tree.MemberOrTypeExpression) typeArgTerm).getDeclaration();
+                            				if (dec!=null) {
+                            					String dn = dec.getName();
+                            					if (typeArgTerm instanceof Tree.QualifiedMemberOrTypeExpression) {
+                            						Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) typeArgTerm).getPrimary();
+                            						if (p instanceof Tree.MemberOrTypeExpression) {
+                            							dn = ((Tree.MemberOrTypeExpression) p).getDeclaration().getName()
+                            									+ "." + dn;
+                            						}
+                            					}
+                            					addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                            							"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text, linkScope), 20, 2);
+                            				}
                             			}
-                            		}
-                            		addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                            				"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text, linkScope), 20, 2);
-                            	}
                             }
                         }
                     }
