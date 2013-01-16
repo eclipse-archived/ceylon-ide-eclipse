@@ -28,4 +28,8 @@ public class IdePhasedUnit extends PhasedUnit {
             typeChecker = ((IdePhasedUnit) other).typeChecker;
         }
     }
+
+    public TypeChecker getTypeChecker() {
+        return typeChecker;
+    }
 }

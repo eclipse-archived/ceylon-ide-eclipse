@@ -55,7 +55,9 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -66,6 +68,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.LazyPhasedUnit;
@@ -189,7 +193,7 @@ public class JDTModuleManager extends LazyModuleManager {
         return false;
     }
 
-    private boolean moduleFileInProject(String moduleName, IJavaProject p) {
+    private static boolean moduleFileInProject(String moduleName, IJavaProject p) {
         try {
 			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
 				if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
@@ -345,6 +349,8 @@ public class JDTModuleManager extends LazyModuleManager {
         
         return new PhasedUnits(getContext(), moduleManagerFactory) {
 
+            private IProject referencedProject = null;
+            
             @Override
             protected void parseFile(VirtualFile file, VirtualFile srcDir)
                     throws Exception {
@@ -359,9 +365,18 @@ public class JDTModuleManager extends LazyModuleManager {
                     Tree.CompilationUnit cu = parser.compilationUnit();
                     List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                     tokens.addAll(tokenStream.getTokens());
-                    PhasedUnit phasedUnit = new ExternalPhasedUnit(file, srcDir, cu, 
-                            getModuleManager().getCurrentPackage(), getModuleManager(),
-                            getTypeChecker(), tokens);
+                    PhasedUnit phasedUnit = null;
+                    if (referencedProject == null) {
+                        phasedUnit = new ExternalPhasedUnit(file, srcDir, cu, 
+                                getModuleManager().getCurrentPackage(), getModuleManager(),
+                                getTypeChecker(), tokens);
+                    }
+                    else {
+                        phasedUnit = new CrossProjectPhasedUnit(file, srcDir, cu, 
+                                getModuleManager().getCurrentPackage(), getModuleManager(),
+                                getTypeChecker(), tokens, referencedProject);
+                    }
+
                     addPhasedUnit(file, phasedUnit);
 
                     List<LexError> lexerErrors = lexer.getErrors();
@@ -377,6 +392,26 @@ public class JDTModuleManager extends LazyModuleManager {
                     parserErrors.clear();
 
                 }
+            }
+
+            @Override
+            public void parseUnit(VirtualFile srcDir) {
+                if (srcDir instanceof ZipFileVirtualFile) {
+                    ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
+                    String archiveName = zipFileVirtualFile.getPath();
+                    try {
+                        for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
+                            if (archiveName.contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
+                                referencedProject = refProject;
+                                break;
+                            }
+                        }
+                    } catch (CoreException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                super.parseUnit(srcDir);
             }
             
         };
