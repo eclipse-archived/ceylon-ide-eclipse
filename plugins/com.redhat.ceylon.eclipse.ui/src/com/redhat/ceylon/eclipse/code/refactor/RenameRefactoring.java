@@ -71,7 +71,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public boolean isEnabled() {
 	    return declaration!=null &&
 	            declaration.getUnit() instanceof ProjectSourceFile &&
-	            ((ProjectSourceFile)declaration.getUnit()).getProject().equals(project) ;
+	            ((ProjectSourceFile)declaration.getUnit()).getProjectResource().equals(project) ;
 	}
 	
 	public int getCount() {

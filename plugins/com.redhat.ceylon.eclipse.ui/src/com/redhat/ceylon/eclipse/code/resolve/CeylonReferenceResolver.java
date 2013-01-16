@@ -18,7 +18,15 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class CeylonReferenceResolver {
@@ -189,59 +197,37 @@ public class CeylonReferenceResolver {
                 return root;
             }
             else {
-                TypeChecker typeChecker = cpc.getTypeChecker();
-                String relativePath = getRelativePath(r);
-                PhasedUnit pu = typeChecker==null || relativePath==null ? null : 
-                        typeChecker.getPhasedUnits()
-                                .getPhasedUnitFromRelativePath(relativePath);
-                if (pu!=null) {
-                    return pu.getCompilationUnit();
+                Unit unit = r.getUnit();
+                PhasedUnit pu = null; 
+                if (unit instanceof ProjectSourceFile) {
+                    pu = ((ProjectSourceFile) unit).getPhasedUnit();
+                    // Here pu should never be null !
                 }
                 
-                IProject currentProject = cpc.getProject();
-                if (currentProject!=null && r instanceof Declaration) {
-                    try {
-						for (IProject project: currentProject.getReferencedProjects()) {
-						    JDTModelLoader requiredProjectLoader = getProjectModelLoader(project);
-						    if (requiredProjectLoader==null) {
-						        continue;
-						    }
-						    Declaration originalDecl = requiredProjectLoader
-						    		.getDeclaration(((Declaration)r).getQualifiedNameString(), 
-						    		        DeclarationType.TYPE); //TODO: make this work for modules/packages!
-						    if (originalDecl!=null) {
-						        String fileName = originalDecl.getUnit().getFilename();
-						        String packagePath = originalDecl.getUnit().getPackage()
-						        		.getQualifiedNameString().replace('.', '/');
-						        String fileRelativePath = packagePath + "/" + fileName;
-
-						        TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(project);
-						        if (requiredProjectTypeChecker==null) {
-						            continue;
-						        }
-						        PhasedUnit requiredProjectPhasedUnit = requiredProjectTypeChecker
-						        		.getPhasedUnitFromRelativePath(fileRelativePath);
-						        if (requiredProjectPhasedUnit != null 
-						        		&& requiredProjectPhasedUnit.isFullyTyped()) {
-						            pu = requiredProjectPhasedUnit;
-						            break;
-						        }
-						    }
-						}
-					} 
-                    catch (CoreException e) {
-						e.printStackTrace();
-					}
-                }
-                
-                if (pu==null && typeChecker!=null && relativePath!=null) {
-                    for (PhasedUnits dependencies: typeChecker.getPhasedUnitsOfDependencies()) {
-                        pu = dependencies.getPhasedUnitFromRelativePath(relativePath);
-                        if (pu!=null) {
-                            break;
+                if (unit instanceof CrossProjectSourceFile) {
+                    CrossProjectPhasedUnit crossProjectPhasedUnit = ((CrossProjectSourceFile) unit).getPhasedUnit();
+                    if (crossProjectPhasedUnit != null) {
+                        ProjectPhasedUnit requiredProjectPhasedUnit = crossProjectPhasedUnit.getOriginalProjectPhasedUnit();
+                        if (requiredProjectPhasedUnit != null 
+                                && requiredProjectPhasedUnit.isFullyTyped()) {
+                            pu = requiredProjectPhasedUnit;
+                        }
+                        else {
+                            pu = crossProjectPhasedUnit;
                         }
                     }
                 }
+                
+                if (unit instanceof ExternalSourceFile || 
+                        unit instanceof CeylonBinaryUnit) {
+                    pu = ((ExternalSourceFile)unit).getPhasedUnit();
+                }
+                
+                // TODO : When using binary ceylon archives, add a case here with
+                //        unit instanceof CeylonBinaryUnit
+                //        And perform the same sort of thing as for ExternalSourceFile :
+                //           -> return the associated source PhasedUnit if any 
+                
                 if (pu!=null) {
                     return pu.getCompilationUnit();
                 }
