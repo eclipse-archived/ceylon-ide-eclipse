@@ -59,7 +59,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 	boolean isEnabled() {
 	    return  declaration!=null && 
 	            declaration.getUnit() instanceof ProjectSourceFile &&
-	            ((ProjectSourceFile)declaration.getUnit()).getProject().equals(project) &&
+	            ((ProjectSourceFile)declaration.getUnit()).getProjectResource().equals(project) &&
 	            declaration instanceof MethodOrValue &&
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&
