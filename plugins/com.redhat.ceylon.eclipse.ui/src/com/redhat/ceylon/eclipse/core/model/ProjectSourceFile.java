@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.core.model;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
-public class ProjectSourceFile extends SourceFile {
+public class ProjectSourceFile extends SourceFile implements IResourceAware {
 
     public ProjectSourceFile(ProjectPhasedUnit phasedUnit) {
         super(phasedUnit);
@@ -17,13 +19,19 @@ public class ProjectSourceFile extends SourceFile {
         return (ProjectPhasedUnit) super.getPhasedUnit();
     }
 
-    public IProject getProject() {
-        return getPhasedUnit().getProject();
+    @Override
+    public IProject getProjectResource() {
+        return getPhasedUnit().getProjectResource();
     }
 
     
     @Override
-    public IResource getResource() {
-        return ((ResourceVirtualFile) (getPhasedUnit().getUnitFile())).getResource();
+    public IFile getFileResource() {
+        return (IFile)((ResourceVirtualFile) (getPhasedUnit().getUnitFile())).getResource();
+    }
+
+    @Override
+    public IFolder getRootFolderResource() {
+        return null;
     }
 }

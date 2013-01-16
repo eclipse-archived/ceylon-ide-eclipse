@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.model;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ITypeRoot;
@@ -10,7 +11,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 /*
  * Created inside the JDTModelLoader.getCompiledUnit() function if the unit is a ceylon one
  */
-public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelUnit {
+public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     
     
     /*
@@ -34,10 +35,5 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelUnit {
         // Look into the mapping.txt of the module archive, and get the name of the source unit
         // Then get the PhasedUnits related to this module, and search for the relative path in it.
         // Then set in inot the Weakef with createPhasedUnit
-    }
-
-    @Override
-    public IResource getResource() {
-        return null;
     }
 }
