@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
@@ -206,13 +207,17 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
 	public ExtractFunctionRefactoring(ITextEditor editor) {
 	    super(editor);
-	    init((ITextSelection) editor.getSelectionProvider().getSelection());
-	    if (result!=null) {
-	        newName = result.getDeclarationModel().getName();
+	    if (editor instanceof CeylonEditor && 
+	            editor.getSelectionProvider()!=null) {
+	        init((ITextSelection) editor.getSelectionProvider()
+	                .getSelection());
 	    }
-	    else {
-		    newName = guessName(node);
-	    }
+        if (result!=null) {
+            newName = result.getDeclarationModel().getName();
+        }
+        else {
+            newName = guessName(node);
+        }
 	}
 
     private void init(ITextSelection selection) {
