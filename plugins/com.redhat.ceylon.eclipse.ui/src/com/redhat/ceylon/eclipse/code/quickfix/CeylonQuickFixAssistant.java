@@ -839,10 +839,12 @@ public class CeylonQuickFixAssistant {
             IProject project, String def, String desc, Image image, 
             Tree.QualifiedMemberOrTypeExpression qmte, ProducedType returnType, 
             List<ProducedType> paramTypes) {
-        Declaration typeDec = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary()
-                .getTypeModel().getDeclaration();
-        addCreateMemberProposals(proposals, project, def, desc, image, typeDec, 
-        		returnType, paramTypes);
+        Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary();
+        if (p.getTypeModel()!=null) {
+            Declaration typeDec = p.getTypeModel().getDeclaration();
+            addCreateMemberProposals(proposals, project, def, desc, image, typeDec, 
+                    returnType, paramTypes);
+        }
     }
     
     private void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
