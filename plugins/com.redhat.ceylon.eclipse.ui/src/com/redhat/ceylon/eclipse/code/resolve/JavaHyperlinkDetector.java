@@ -155,6 +155,9 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
 	private static IType findType(IJavaProject jp, String fullyQualifiedName) 
     		throws JavaModelException {
+	    if (fullyQualifiedName==null) {
+	        return null;
+	    }
         JDTModelLoader modelLoader = getProjectModelLoader(jp.getProject());
         if (modelLoader==null) {
             return null;
