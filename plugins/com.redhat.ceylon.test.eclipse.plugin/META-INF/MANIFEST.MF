@@ -28,4 +28,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/ceylon.language-0.5-ide.jar,
- lib/ceylon.test-0.1-ide.jar
+ lib/ceylon.test-0.5-ide.jar
