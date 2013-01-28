@@ -261,7 +261,9 @@ class CreateSubtypeProposal implements ICompletionProposal,
 		else {
 			importedDecs.add(d);
 			for (ProducedType a: pt.getTypeArgumentList()) {
-				addTypeDeclarations(importedDecs, a.getType());
+			    if (a!=null) {
+			        addTypeDeclarations(importedDecs, a.getType());
+			    }
 			}
 		}
 	}
