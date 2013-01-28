@@ -1056,6 +1056,9 @@ public class CeylonQuickFixAssistant {
     }
 
     private static String defaultValue(Unit unit, ProducedType t) {
+        if (t==null) {
+            return "nothing";
+        }
         String tn = t.getProducedTypeQualifiedName();
         if (tn.equals("ceylon.language::Boolean")) {
             return "false";
