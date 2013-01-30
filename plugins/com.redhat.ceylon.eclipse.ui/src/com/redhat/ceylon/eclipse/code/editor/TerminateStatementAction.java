@@ -191,6 +191,26 @@ final class TerminateStatementAction extends Action {
 				super.visit(that);
 				terminate(that, CeylonLexer.RBRACE, " }");
 			}
+            @Override 
+            public void visit(Tree.SequenceEnumeration that) {
+                super.visit(that);
+                terminate(that, CeylonLexer.RBRACE, " }");
+            }
+            @Override 
+            public void visit(Tree.IterableType that) {
+                super.visit(that);
+                terminate(that, CeylonLexer.RBRACE, "}");
+            }
+            @Override 
+            public void visit(Tree.Tuple that) {
+                super.visit(that);
+                terminate(that, CeylonLexer.RBRACKET, "]");
+            }
+            @Override 
+            public void visit(Tree.TupleType that) {
+                super.visit(that);
+                terminate(that, CeylonLexer.RBRACKET, "]");
+            }
 			@Override
 			public void visit(Tree.Condition that) {
 				super.visit(that);
