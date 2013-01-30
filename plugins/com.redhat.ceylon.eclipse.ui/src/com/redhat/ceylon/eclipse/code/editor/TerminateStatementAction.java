@@ -141,7 +141,7 @@ final class TerminateStatementAction extends Action {
 		CeylonParseController parser = parse();
 		CompilationUnit rootNode = parser.getRootNode();
 		IRegion li = getLineInfo(doc);
-		String lineText = doc.get(li.getOffset(), li.getLength());
+		final String lineText = doc.get(li.getOffset(), li.getLength());
 		final List<CommonToken> tokens = parser.getTokens();
 		final int startOfCodeInLine = getCodeStart(li, lineText, tokens);
 		final int endOfCodeInLine = getCodeEnd(li, lineText, tokens);
@@ -212,7 +212,7 @@ final class TerminateStatementAction extends Action {
                 terminate(that, CeylonLexer.RBRACKET, "]");
             }
 			@Override
-			public void visit(Tree.Condition that) {
+			public void visit(Tree.ConditionList that) {
 				super.visit(that);
 				initiate(that, CeylonLexer.LPAREN, "(");
 				//does not really work right:
@@ -253,12 +253,12 @@ final class TerminateStatementAction extends Action {
 			@Override 
 			public void visit(Tree.StatementOrArgument that) {
 				super.visit(that);
-				if (that instanceof Tree.ExecutableStatement && 
+				if (/*that instanceof Tree.ExecutableStatement && 
 						!(that instanceof Tree.ControlStatement) ||
 					that instanceof Tree.AttributeDeclaration ||
 					that instanceof Tree.MethodDeclaration ||
 					that instanceof Tree.ClassDeclaration ||
-					that instanceof Tree.InterfaceDeclaration ||
+					that instanceof Tree.InterfaceDeclaration ||*/
 					that instanceof Tree.SpecifiedArgument) {
 					terminate(that, CeylonLexer.SEMICOLON, ";");
 				}
