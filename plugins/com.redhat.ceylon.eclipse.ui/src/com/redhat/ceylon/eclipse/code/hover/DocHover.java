@@ -110,6 +110,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -1104,6 +1105,10 @@ public class DocHover
     private static void appendDocAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation, Scope linkScope) {
         if (annotationList!=null) {
+            AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
+            if (aa!=null) {
+                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope));
+            }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
                 if (annotPrim instanceof Tree.BaseMemberExpression) {
