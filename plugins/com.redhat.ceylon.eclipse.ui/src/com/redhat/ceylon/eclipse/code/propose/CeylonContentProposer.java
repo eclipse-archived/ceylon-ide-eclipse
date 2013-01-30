@@ -1456,7 +1456,7 @@ public class CeylonContentProposer {
                 for (Parameter p: params) {
                     appendParameters(p, pr.getTypedParameter(p), result);
                     if (p instanceof FunctionalParameter) {
-                        result.append(" ");
+                        result.append(" => ");
                     }
                     result.append(p.getName()).append(", ");
                 }
