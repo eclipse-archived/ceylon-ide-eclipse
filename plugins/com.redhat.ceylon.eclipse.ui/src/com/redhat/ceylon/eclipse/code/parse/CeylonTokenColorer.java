@@ -26,6 +26,8 @@ public class CeylonTokenColorer  {
     public static String KEYWORDS = "keywords";
     public static String NUMBERS = "numbers";
     public static String STRINGS = "strings";
+    public static String CHARS = "characters";
+    public static String INTERP = "interpolation";
     public static String COMMENTS = "comments";
     public static String TODOS = "todos";
     public static String ANNOTATIONS = "annotations";
@@ -42,7 +44,7 @@ public class CeylonTokenColorer  {
     
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
-    semiAttribute, braceAttribute, packageAttribute;
+    semiAttribute, braceAttribute, packageAttribute, interpAttribute, charAttribute;
     
     private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
         return new TextAttribute(color(colorRegistry, key), null, style); 
@@ -80,12 +82,18 @@ public class CeylonTokenColorer  {
         numberAttribute = text(colorRegistry, NUMBERS, SWT.NORMAL);
         commentAttribute = text(colorRegistry, COMMENTS, SWT.NORMAL);
         stringAttribute = text(colorRegistry, STRINGS, SWT.NORMAL);
+        charAttribute = text(colorRegistry, CHARS, SWT.NORMAL);
+        interpAttribute = text(colorRegistry, INTERP, SWT.NORMAL);
         annotationStringAttribute = text(colorRegistry, ANNOTATION__STRINGS, SWT.NORMAL);
         annotationAttribute = text(colorRegistry, ANNOTATIONS, SWT.NORMAL);
         todoAttribute = text(colorRegistry, TODOS, SWT.NORMAL);
         semiAttribute = text(colorRegistry, SEMIS, SWT.NORMAL);
         braceAttribute = text(colorRegistry, BRACES, SWT.NORMAL);
         packageAttribute = text(colorRegistry, PACKAGES, SWT.NORMAL);
+    }
+    
+    public TextAttribute getInterpolationColoring() {
+        return interpAttribute;
     }
     
     public TextAttribute getColoring(Token token) {
@@ -103,6 +111,8 @@ public class CeylonTokenColorer  {
                 return numberAttribute;
             case CeylonParser.ASTRING_LITERAL:
                 return annotationStringAttribute;
+            case CeylonParser.CHAR_LITERAL:
+                return charAttribute;
             case CeylonParser.STRING_LITERAL:
             case CeylonParser.STRING_END:
             case CeylonParser.STRING_START:

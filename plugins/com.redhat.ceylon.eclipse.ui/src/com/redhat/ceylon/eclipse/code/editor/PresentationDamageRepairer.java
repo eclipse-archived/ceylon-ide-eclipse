@@ -97,8 +97,9 @@ class PresentationDamageRepairer implements IPresentationDamager,
 			}
 			break;
 		case CeylonLexer.STRING_LITERAL:
+        case CeylonLexer.CHAR_LITERAL:
 			for (char c: event.getText().toCharArray()) {
-				if (c=='"') {
+				if (c=='"'||c=='\'') {
 					return false;
 				}
 			}
@@ -143,6 +144,17 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				}
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
+                switch (token.getType()) {
+                case CeylonParser.STRING_MID:
+                    endOffset--; startOffset++; 
+                    break;
+                case CeylonParser.STRING_START:
+                    endOffset--; 
+                    break;
+                case CeylonParser.STRING_END:
+                    startOffset++; 
+                    break;
+                }
 				/*if (startOffset <= prevEndOffset && 
 						endOffset >= prevStartOffset) {
 					//this case occurs when applying a
@@ -150,9 +162,21 @@ class PresentationDamageRepairer implements IPresentationDamager,
 					//from SWT if we let it through
 					continue;
 				}*/
+				if (token.getType()==CeylonParser.STRING_MID ||
+				    token.getType()==CeylonParser.STRING_END) {
+                    changeTokenPresentation(presentation, 
+                            tokenColorer.getInterpolationColoring(),
+                            startOffset-1,startOffset-1);
+				}
 				changeTokenPresentation(presentation, 
 						tokenColorer.getColoring(token), 
 						startOffset, endOffset);
+                if (token.getType()==CeylonParser.STRING_MID ||
+                        token.getType()==CeylonParser.STRING_START) {
+                    changeTokenPresentation(presentation, 
+                            tokenColorer.getInterpolationColoring(),
+                            endOffset+1,endOffset+1);
+                }
 				//prevStartOffset= startOffset;
 				//prevEndOffset= endOffset;
 			}
