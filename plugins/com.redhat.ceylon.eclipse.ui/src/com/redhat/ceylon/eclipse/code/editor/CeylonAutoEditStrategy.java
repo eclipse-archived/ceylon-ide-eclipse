@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
@@ -22,6 +23,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
@@ -240,7 +242,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 
     private boolean isQuotedOrCommented(int offset) {
         int type = tokenType(offset);
-        return type==STRING_LITERAL || 
+        return type==STRING_LITERAL ||
+                type==CHAR_LITERAL || 
                 type==STRING_MID ||
                 type==STRING_START ||
                 type==STRING_END ||

@@ -1238,6 +1238,14 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation" label="String interpolation"
+        value="COLOR_BLACK">
+        <description>
+            Color for string interpolation delimiters
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" label="Annotations"
         value="COLOR_DARK_CYAN">
         <description>
@@ -1281,7 +1289,15 @@
         id="com.redhat.ceylon.eclipse.ui.theme.color.strings" label="String literals"
         value="COLOR_BLUE">
         <description>
-            Color for highlighting string literals and character literals
+            Color for highlighting string literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.characters" label="Character literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting character literals
         </description>
     </colorDefinition>
     <colorDefinition
