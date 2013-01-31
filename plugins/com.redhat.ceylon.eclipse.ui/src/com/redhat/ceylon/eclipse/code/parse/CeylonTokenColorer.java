@@ -104,8 +104,9 @@ public class CeylonTokenColorer  {
             case CeylonParser.ASTRING_LITERAL:
                 return annotationStringAttribute;
             case CeylonParser.STRING_LITERAL:
-            case CeylonParser.CHAR_LITERAL:
-            case CeylonParser.QUOTED_LITERAL:
+            case CeylonParser.STRING_END:
+            case CeylonParser.STRING_START:
+            case CeylonParser.STRING_MID:
                 return stringAttribute;
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
