@@ -1,11 +1,12 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.QUOTED_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.core.runtime.Platform.getPreferencesService;
@@ -226,7 +227,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isStringOrCommentContinuation(int offset) {
         int type = tokenType(offset);
         return type==STRING_LITERAL || 
-        		type==QUOTED_LITERAL ||
+        		type==STRING_MID ||
+        		type==STRING_START ||
+        		type==STRING_END ||
         		type==ASTRING_LITERAL ||
         		type==MULTI_COMMENT;
     }
@@ -234,9 +237,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isQuotedOrCommented(int offset) {
         int type = tokenType(offset);
         return type==STRING_LITERAL || 
-        		type==QUOTED_LITERAL ||
+                type==STRING_MID ||
+                type==STRING_START ||
+                type==STRING_END ||
                 type==ASTRING_LITERAL ||
-                type==CHAR_LITERAL ||
                 type==LINE_COMMENT ||
                 type==MULTI_COMMENT;
     }
@@ -299,8 +303,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     		CommonToken token = pc.getTokens().get(tokenIndex);
     		if (token!=null && 
     			(token.getType()==STRING_LITERAL || 
-    			    token.getType()==QUOTED_LITERAL ||
-    				token.getType()==ASTRING_LITERAL) &&
+    			token.getType()==STRING_MID ||
+    			token.getType()==STRING_START ||
+    			token.getType()==STRING_END ||
+    			token.getType()==ASTRING_LITERAL) &&
     			token.getStartIndex()<offset) {
     			return token.getCharPositionInLine()+1;
     		}
