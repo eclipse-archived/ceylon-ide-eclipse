@@ -26,6 +26,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
+    //TODO: when pasting inside an existing string literal, should
+    //      we automagically escape unescaped quotes in the pasted
+    //      text?
+    
 	CeylonEditor editor;
 	
 	public CeylonAutoEditStrategy(CeylonEditor editor) {
@@ -37,7 +41,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         //Note that IMP's Correct Indentation sends us a tab
     	//character at the start of each line of selected
     	//text. This is amazingly sucky because it's very
-    	//difficult to distingush Correct Indentation from
+    	//difficult to distinguish Correct Indentation from
     	//an actual typed tab.
     	//Note also that typed tabs are replaced with spaces
     	//before this method is called if the spacesfortabs 
@@ -128,7 +132,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				catch (BadLocationException e) {}
 			}
 
-			if (!isQuotedOrCommented(cmd.offset) && 
+			if (!isQuotedOrCommented(cmd.offset, opening) && 
 					current.equals(opening)) {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
@@ -243,6 +247,18 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 type==ASTRING_LITERAL ||
                 type==LINE_COMMENT ||
                 type==MULTI_COMMENT;
+    }
+
+    private boolean isQuotedOrCommented(int offset, String fence) {
+        if ("'".equals(fence)) {
+            int type = tokenType(offset);
+            return //type==ASTRING_LITERAL ||
+                    type==LINE_COMMENT ||
+                    type==MULTI_COMMENT;
+        }
+        else {
+            return isQuotedOrCommented(offset);
+        }
     }
 
     private boolean isMultilineCommentStart(int offset, IDocument d) {
