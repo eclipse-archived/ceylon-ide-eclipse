@@ -146,13 +146,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				int endOffset= getEndOffset(token);
                 switch (token.getType()) {
                 case CeylonParser.STRING_MID:
-                    endOffset--; startOffset++; 
+                    endOffset-=2; startOffset+=2; 
                     break;
                 case CeylonParser.STRING_START:
-                    endOffset--; 
+                    endOffset-=2; 
                     break;
                 case CeylonParser.STRING_END:
-                    startOffset++; 
+                    startOffset+=2; 
                     break;
                 }
 				/*if (startOffset <= prevEndOffset && 
@@ -166,7 +166,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				    token.getType()==CeylonParser.STRING_END) {
                     changeTokenPresentation(presentation, 
                             tokenColorer.getInterpolationColoring(),
-                            startOffset-1,startOffset-1);
+                            startOffset-2,startOffset-1);
 				}
 				changeTokenPresentation(presentation, 
 						tokenColorer.getColoring(token), 
@@ -175,7 +175,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                         token.getType()==CeylonParser.STRING_START) {
                     changeTokenPresentation(presentation, 
                             tokenColorer.getInterpolationColoring(),
-                            endOffset+1,endOffset+1);
+                            endOffset+1,endOffset+2);
                 }
 				//prevStartOffset= startOffset;
 				//prevEndOffset= endOffset;
