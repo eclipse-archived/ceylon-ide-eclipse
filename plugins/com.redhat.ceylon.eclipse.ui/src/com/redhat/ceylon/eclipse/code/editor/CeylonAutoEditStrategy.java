@@ -23,7 +23,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
@@ -124,7 +123,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				//typed character is a closing fence
 				try {
 					// skip one ahead if next char is already a closing fence
-					if (String.valueOf(doc.getChar(cmd.offset)).equals(closing)) {
+					if (skipClosingFence(doc, cmd, closing)) {
 						cmd.text = "";
 						cmd.shiftsCaret = false;
 						cmd.caretOffset = cmd.offset + 1;
@@ -139,14 +138,34 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
 					//add a closing fence
-					cmd.text += closing;
-					cmd.shiftsCaret = false;
-					cmd.caretOffset = cmd.offset + 1;
+                    cmd.shiftsCaret = false;
+				    try {
+                        if (opening.equals("`")) {
+                            if (cmd.offset>0 &&
+                                    !doc.get(cmd.offset-1,1).equals("`")) {
+                                cmd.text += "```";
+                                cmd.caretOffset = cmd.offset + 2;
+                            }
+                            else {
+                                cmd.caretOffset = cmd.offset + 1;
+                            }
+                        }
+                        else {
+                            cmd.text += closing;
+                            cmd.caretOffset = cmd.offset + 1;
+                        }
+                    } 
+				    catch (BadLocationException e) {}
 				}
 			}
 			
 		}
 	}
+
+    private boolean skipClosingFence(IDocument doc, DocumentCommand cmd,
+            String closing) throws BadLocationException {
+        return String.valueOf(doc.getChar(cmd.offset)).equals(closing);
+    }
 
 	private boolean closeOpeningFence(IDocument doc, DocumentCommand cmd,
 			String opening, String closing) {
@@ -255,7 +274,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isQuotedOrCommented(int offset, String fence) {
         if ("`".equals(fence)) {
             int type = tokenType(offset);
-            return //type==ASTRING_LITERAL ||
+            return type==ASTRING_LITERAL ||
                     type==LINE_COMMENT ||
                     type==MULTI_COMMENT;
         }
