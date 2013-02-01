@@ -110,6 +110,7 @@ public class CeylonTokenColorer  {
             case CeylonParser.NATURAL_LITERAL:
                 return numberAttribute;
             case CeylonParser.ASTRING_LITERAL:
+            case CeylonParser.AVERBATIM_STRING:
                 return annotationStringAttribute;
             case CeylonParser.CHAR_LITERAL:
                 return charAttribute;
@@ -117,6 +118,7 @@ public class CeylonTokenColorer  {
             case CeylonParser.STRING_END:
             case CeylonParser.STRING_START:
             case CeylonParser.STRING_MID:
+            case CeylonParser.VERBATIM_STRING:
                 return stringAttribute;
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
