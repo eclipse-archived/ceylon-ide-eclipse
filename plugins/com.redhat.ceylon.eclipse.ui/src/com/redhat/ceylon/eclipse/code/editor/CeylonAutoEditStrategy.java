@@ -274,9 +274,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private boolean isQuotedOrCommented(int offset, String fence) {
         if ("`".equals(fence)) {
             int type = tokenType(offset);
-            return type==ASTRING_LITERAL ||
+            return type!=STRING_LITERAL &&
+                    type!=STRING_START &&
+                    type!=STRING_END &&
+                    type!=STRING_MID;
+            /*return type==ASTRING_LITERAL ||
                     type==LINE_COMMENT ||
-                    type==MULTI_COMMENT;
+                    type==MULTI_COMMENT;*/
         }
         else {
             return isQuotedOrCommented(offset);
