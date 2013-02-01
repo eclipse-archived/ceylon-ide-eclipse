@@ -31,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
@@ -115,7 +116,13 @@ public class CeylonSourcePositionLocator {
 	        return ((Tree.PackageDescriptor) node).getImportPath();
 	    }
 	    else if (node instanceof Tree.NamedArgument) {
-	        return ((Tree.NamedArgument) node).getIdentifier();
+	        Identifier id = ((Tree.NamedArgument) node).getIdentifier();
+	        if (id==null || id.getToken()==null) {
+	            return node;
+	        }
+	        else {
+	            return id;
+	        }
 	    }
 	    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
 	        return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
