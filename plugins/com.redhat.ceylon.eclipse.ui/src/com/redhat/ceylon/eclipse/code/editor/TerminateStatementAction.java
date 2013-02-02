@@ -184,7 +184,9 @@ final class TerminateStatementAction extends Action {
 			@Override 
 			public void visit(Tree.PositionalArgumentList that) {
 				super.visit(that);
-				terminate(that, CeylonLexer.RPAREN, ")");
+                if (that.getToken().getType()==CeylonLexer.LPAREN) { //for infix function syntax
+                    terminate(that, CeylonLexer.RPAREN, ")");
+                }
 			}
 			@Override 
 			public void visit(Tree.NamedArgumentList that) {
