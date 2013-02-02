@@ -328,21 +328,21 @@ final class TerminateStatementAction extends Action {
 					}
 				}
 				private void terminateWithSemicolon(Node that) {
-					if (that.getStartIndex()<=endOfCodeInLine &&
-							that.getStopIndex()>=endOfCodeInLine) {
-						Token et = that.getEndToken();
-						if (et==null || et.getType()!=CeylonLexer.SEMICOLON ||
-								that.getStopIndex()>endOfCodeInLine) {
-							try {
-								if (!change.getEdit().hasChildren()) {
-									change.addEdit(new InsertEdit(endOfCodeInLine+1, ";"));
-								}
-							}
-							catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}
+				    try {
+				        if (that.getStartIndex()<=endOfCodeInLine &&
+				                that.getStopIndex()>=endOfCodeInLine) {
+				            Token et = that.getEndToken();
+				            if (et==null || et.getType()!=CeylonLexer.SEMICOLON ||
+				                    that.getStopIndex()>endOfCodeInLine) {
+				                if (!change.getEdit().hasChildren()) {
+				                    change.addEdit(new InsertEdit(endOfCodeInLine+1, ";"));
+				                }
+				            }
+				        }
+				    }
+				    catch (Exception e) {
+				        e.printStackTrace();
+				    }
 				}
 			}.visit(rootNode);
 			if (change.getEdit().hasChildren()) {

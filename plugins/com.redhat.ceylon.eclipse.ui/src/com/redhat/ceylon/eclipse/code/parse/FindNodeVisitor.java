@@ -191,7 +191,9 @@ class FindNodeVisitor extends Visitor
     }
     
     private boolean inBounds(Node that) {
-        if (that.getToken()==null) return false;
+        if (that==null || that.getToken()==null) {
+            return false;
+        }
         return inBounds(that, that);
     }
     
