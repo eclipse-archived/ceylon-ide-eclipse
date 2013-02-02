@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
-import ceylon.language.null_;
-
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
