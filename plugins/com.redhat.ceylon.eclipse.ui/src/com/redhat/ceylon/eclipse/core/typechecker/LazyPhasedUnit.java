@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
-public class LazyPhasedUnit extends IdePhasedUnit {
+public abstract class LazyPhasedUnit extends IdePhasedUnit {
 
     private TypeChecker typeChecker;
     private boolean validatingTree = false; 
