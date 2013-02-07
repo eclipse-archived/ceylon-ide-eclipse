@@ -6,7 +6,7 @@ import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ITypeRoot;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 
 /*
  * Created inside the JDTModelLoader.getCompiledUnit() function if the unit is a ceylon one
@@ -22,8 +22,8 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
      */
     
     @Override
-    public IdePhasedUnit getPhasedUnit() {
-        return super.getPhasedUnit();
+    public ExternalPhasedUnit getPhasedUnit() {
+        return (ExternalPhasedUnit) super.getPhasedUnit();
     }
     
     public IClassFile getJavaElement() {
