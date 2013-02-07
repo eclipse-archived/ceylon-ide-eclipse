@@ -24,6 +24,7 @@ public class CeylonTestMessages extends NLS {
     public static String testSelectDialogShowComplateTree;
     public static String testSelectDialogShowComplateDescription;
     
+    public static String errorDialogTitle;
     public static String errorNoTests;
     public static String errorMultipleProjectsAreNotAllowed;
     public static String errorCanNotFindProject;
@@ -34,6 +35,7 @@ public class CeylonTestMessages extends NLS {
     public static String errorClassIsNotTestable;
     public static String errorMethodIsNotTestable;
     public static String errorNoSocket;
+    public static String errorMissingCeylonTestImport;
     
     public static String statusTestRunRunning;
     public static String statusTestRunFinished;
@@ -100,6 +102,7 @@ public class CeylonTestMessages extends NLS {
     public static String compare;
     public static String information;
     public static String inProjectPrefix;
+    public static String importCeylonTestModule;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, CeylonTestMessages.class);
