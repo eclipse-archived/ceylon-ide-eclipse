@@ -51,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
@@ -337,9 +338,9 @@ public class CeylonParseController {
             	pkg = getPackage(file, srcDir, builtPhasedUnit);
             }
             
-            phasedUnit = new PhasedUnit(file, srcDir, cu, pkg, 
+            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
                     typeChecker.getPhasedUnits().getModuleManager(), 
-                    typeChecker.getContext(), tokens);  
+                    typeChecker, tokens);  
             
             phasedUnit.validateTree();
             phasedUnit.visitSrcModulePhase();
