@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.typechecker;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -14,24 +15,24 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
 public abstract class IdePhasedUnit extends PhasedUnit {
 
-    private TypeChecker typeChecker;
+    protected WeakReference<TypeChecker> typeCheckerRef = null;
 
     public IdePhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
         super(unitFile, srcDir, cu, p, moduleManager, typeChecker.getContext(), tokenStream);
-        this.typeChecker = typeChecker;
+        typeCheckerRef = new WeakReference<TypeChecker>(typeChecker);
     }
     
     public IdePhasedUnit(PhasedUnit other) {
         super(other);
         if (other instanceof IdePhasedUnit) {
-            typeChecker = ((IdePhasedUnit) other).typeChecker;
+            typeCheckerRef = new WeakReference<TypeChecker>(((IdePhasedUnit) other).getTypeChecker());
         }
     }
 
     public TypeChecker getTypeChecker() {
-        return typeChecker;
+        return typeCheckerRef.get();
     }
     
     protected abstract Unit createUnit();
