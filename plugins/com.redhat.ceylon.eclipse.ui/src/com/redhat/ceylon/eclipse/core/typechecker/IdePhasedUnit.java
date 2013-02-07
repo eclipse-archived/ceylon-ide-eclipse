@@ -34,5 +34,5 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return typeChecker;
     }
     
-    public abstract Unit createUnit();
+    protected abstract Unit createUnit();
 }
