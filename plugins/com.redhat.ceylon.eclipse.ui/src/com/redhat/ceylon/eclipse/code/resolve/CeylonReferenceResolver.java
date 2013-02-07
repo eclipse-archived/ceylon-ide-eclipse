@@ -220,7 +220,7 @@ public class CeylonReferenceResolver {
                 
                 if (unit instanceof ExternalSourceFile || 
                         unit instanceof CeylonBinaryUnit) {
-                    pu = ((ExternalSourceFile)unit).getPhasedUnit();
+                    pu = ((CeylonUnit)unit).getPhasedUnit();
                 }
                 
                 // TODO : When using binary ceylon archives, add a case here with
