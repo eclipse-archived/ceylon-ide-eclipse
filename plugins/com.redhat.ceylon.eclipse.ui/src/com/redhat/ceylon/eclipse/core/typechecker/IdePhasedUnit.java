@@ -9,9 +9,10 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
-public class IdePhasedUnit extends PhasedUnit {
+public abstract class IdePhasedUnit extends PhasedUnit {
 
     private TypeChecker typeChecker;
 
@@ -32,4 +33,6 @@ public class IdePhasedUnit extends PhasedUnit {
     public TypeChecker getTypeChecker() {
         return typeChecker;
     }
+    
+    public abstract Unit createUnit();
 }
