@@ -21,8 +21,10 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.SocketUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -58,22 +60,16 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
         
         TestRunViewPart.showPageAsync();
     }
-
+    
     @Override
     public boolean preLaunchCheck(ILaunchConfiguration config, String mode, IProgressMonitor monitor) throws CoreException {
-        final String errorMessage = validateConfig(config);
-    
-        if (errorMessage == null) {
-            return super.preLaunchCheck(config, mode, monitor);
-        } else {
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    MessageDialog.openInformation(getShell(), CeylonTestMessages.launchDialogInfoTitle, CeylonTestMessages.launchConfigIsNotValid + "\n" + errorMessage);
-                }
-            });
+        if( !validateConfig(config) )
             return false;
-        }
+        
+        if( !validateCeylonTestDependency(config) )
+            return false;
+    
+        return super.preLaunchCheck(config, mode, monitor);
     }
 
     @Override
@@ -144,15 +140,42 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
         return programArguments.toString();
     };
 
-    private String validateConfig(ILaunchConfiguration config) throws CoreException {
+    private boolean validateCeylonTestDependency(ILaunchConfiguration config) throws CoreException {
+        IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(promptStatus);
+        if (prompter != null) {
+            if (!((Boolean) prompter.handleStatus(CeylonTestDependencyStatusHandler.CODE, config)).booleanValue()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean validateConfig(ILaunchConfiguration config) throws CoreException {
+        String errorMessage = null;
+
         List<CeylonTestLaunchConfigEntry> entries = CeylonTestLaunchConfigEntry.buildFromLaunchConfig(config);
         for (CeylonTestLaunchConfigEntry entry : entries) {
             entry.validate();
             if (!entry.isValid()) {
-                return entry.getErrorMessage();
+                errorMessage = entry.getErrorMessage();
+                break;
             }
         }
-        return null;
+
+        if (errorMessage != null) {
+            final String errorMessageFinal = errorMessage;
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    MessageDialog.openInformation(getShell(),
+                            CeylonTestMessages.launchDialogInfoTitle,
+                            CeylonTestMessages.launchConfigIsNotValid + "\n" + errorMessageFinal);
+                }
+            });
+            return false;
+        }
+
+        return true;
     }
 
     private List<String> getPluginClasspath() {

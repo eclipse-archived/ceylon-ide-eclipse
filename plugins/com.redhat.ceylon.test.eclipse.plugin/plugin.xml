@@ -104,5 +104,14 @@
             class="com.redhat.ceylon.test.eclipse.plugin.CeylonTestPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestDependencyStatusHandler"
+            code="1001"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestDependencyStatusHandler"
+            plugin="com.redhat.ceylon.test.eclipse.plugin">
+      </statusHandler>
+   </extension>
 
 </plugin>
