@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.runner;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -36,7 +37,10 @@ public class TestCallable implements Callable<Object> {
             if (methodSeparatorIndex == -1) {
                 method.invoke(null, new Object[] {});
             } else {
-                method.invoke(testClazz.newInstance(), new Object[] {});
+                Constructor<?> constructor = testClazz.getDeclaredConstructor(new Class<?>[]{});
+                constructor.setAccessible(true);
+                Object instance = constructor.newInstance((Object[])null);
+                method.invoke(instance, new Object[] {});                
             }
         } catch (InvocationTargetException e) {
             throw (ceylon.language.Exception) e.getTargetException();
