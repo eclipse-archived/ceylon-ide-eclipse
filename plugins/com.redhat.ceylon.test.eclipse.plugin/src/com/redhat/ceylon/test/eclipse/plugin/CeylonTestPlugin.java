@@ -15,6 +15,9 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
 
     public static final String PLUGIN_ID = "com.redhat.ceylon.test.eclipse.plugin";
     
+    public static final String CEYLON_TEST_MODULE_NAME = "ceylon.test";
+    public static final String CEYLON_TEST_MODULE_DEFAULT_VERSION = "0.5";
+    
     public static final String LAUNCH_CONFIG_TYPE = PLUGIN_ID + ".ceylonTestLaunchConfigurationType";
     public static final String LAUNCH_CONFIG_ENTRIES_KEY = PLUGIN_ID + ".entries";
     public static final String LAUNCH_CONFIG_PORT = PLUGIN_ID + ".port";

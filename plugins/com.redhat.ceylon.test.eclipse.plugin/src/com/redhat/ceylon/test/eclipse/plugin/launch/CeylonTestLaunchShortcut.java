@@ -2,12 +2,6 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getShell;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isCeylonFile;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isCeylonProject;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableMethod;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS_LOCAL;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD;
@@ -15,6 +9,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfi
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.MODULE;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.PACKAGE;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.PROJECT;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonFile;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonProject;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 

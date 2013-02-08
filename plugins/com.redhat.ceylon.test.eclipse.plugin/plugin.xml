@@ -113,5 +113,11 @@
             plugin="com.redhat.ceylon.test.eclipse.plugin">
       </statusHandler>
    </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="com.redhat.ceylon.test.eclipse.plugin.CeylonTestSturtup">
+      </startup>
+   </extension>
 
 </plugin>

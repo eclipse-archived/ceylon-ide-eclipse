@@ -2,11 +2,11 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getPackage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getProject;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableMethod;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 
 import java.util.ArrayList;
 import java.util.List;

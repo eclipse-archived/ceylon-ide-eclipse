@@ -102,7 +102,7 @@ public class CeylonTestMessages extends NLS {
     public static String compare;
     public static String information;
     public static String inProjectPrefix;
-    public static String importCeylonTestModule;
+    public static String addCeylonTestImport;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, CeylonTestMessages.class);

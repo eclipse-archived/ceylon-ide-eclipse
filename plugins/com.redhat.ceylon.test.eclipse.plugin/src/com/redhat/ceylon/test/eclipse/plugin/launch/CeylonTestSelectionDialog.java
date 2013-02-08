@@ -2,12 +2,12 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLATE_TREE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getModules;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getProjects;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getWorkspaceRoot;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestable;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableMethod;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModules;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 
 import java.text.Collator;
 import java.util.ArrayList;
