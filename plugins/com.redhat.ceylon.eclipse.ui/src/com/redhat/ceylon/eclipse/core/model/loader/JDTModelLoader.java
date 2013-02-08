@@ -285,9 +285,11 @@ public class JDTModelLoader extends AbstractModelLoader {
         loadPackage("java.lang", false);
     }
     
-    private String getQualifiedName(final String pkgName, String name) {
-        // FIXME: some refactoring needed
-        name = Util.quoteIfJavaKeyword(name);
+    private String getToplevelQualifiedName(final String pkgName, String name) {
+        if (! Util.isInitialLowerCase(name)) {
+            name = Util.quoteIfJavaKeyword(name);
+        }
+
         String className = pkgName.isEmpty() ? name : Util.quoteJavaKeywords(pkgName) + "." + name;
         return className;
     }
@@ -333,7 +335,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                     if(!classFile.exists())
                                         continue;
                                     IType type = classFile.getType();
-                                    if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                    if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) { // only top-levels ar added in source declarations 
                                         convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
@@ -342,7 +344,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                     if(!compilationUnit.exists())
                                         continue;
                                     for (IType type : compilationUnit.getTypes()) {
-                                        if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                        if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
                                             convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
                                         }
                                     }
@@ -526,7 +528,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         
         for (Declaration decl : allDeclarations) {
-            String fqn = getQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
+            String fqn = getToplevelQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
             sourceDeclarations.remove(fqn);
         }
         
@@ -577,8 +579,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     @Override
                     public void loadFromSource(Tree.Declaration decl) {
                         if (decl.getIdentifier()!=null) {
-                            String name = Util.quoteIfJavaKeyword(decl.getIdentifier().getText());
-                            String fqn = getQualifiedName(pkgName, name);
+                            String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
                             if (! sourceDeclarations.containsKey(fqn)) {
                                 sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
                             }
