@@ -10,10 +10,10 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTes
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunInterrupted;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunRunning;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getActivePage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getElapsedTimeInSeconds;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getShell;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getActivePage;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;

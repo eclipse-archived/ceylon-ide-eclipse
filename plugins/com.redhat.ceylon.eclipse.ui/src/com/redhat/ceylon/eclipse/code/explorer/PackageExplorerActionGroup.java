@@ -70,7 +70,7 @@ import org.eclipse.ui.views.framelist.GoIntoAction;
 import org.eclipse.ui.views.framelist.TreeFrame;
 import org.eclipse.ui.views.framelist.UpAction;
 
-class PackageExplorerActionGroup extends CompositeActionGroup {
+public class PackageExplorerActionGroup extends CompositeActionGroup {
 
 	private static final String FRAME_ACTION_SEPARATOR_ID= "FRAME_ACTION_SEPARATOR_ID"; //$NON-NLS-1$
 	private static final String FRAME_ACTION_GROUP_ID= "FRAME_ACTION_GROUP_ID"; //$NON-NLS-1$

@@ -1,13 +1,13 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getModules;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getPackage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getProject;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getShell;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.isTestableMethod;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModules;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;

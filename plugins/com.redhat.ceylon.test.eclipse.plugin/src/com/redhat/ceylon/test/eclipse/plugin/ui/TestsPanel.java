@@ -24,8 +24,8 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getElapsedTimeInSeconds;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getTestStateImage;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 
 import java.util.LinkedHashSet;
 import java.util.List;

@@ -26,9 +26,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRu
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgSuccess;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgTotal;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgUnchanged;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getElapsedTimeInSeconds;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getTestStateImage;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 
 import java.text.DateFormat;
 import java.util.ArrayList;

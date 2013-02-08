@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package com.redhat.ceylon.test.eclipse.plugin.util;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
@@ -6,6 +6,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -29,9 +30,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 
 public class CeylonTestUtil {
@@ -211,6 +214,15 @@ public class CeylonTestUtil {
     public static String getElapsedTimeInSeconds(long milis) {
         double seconds = milis / 1000.0;
         return ELAPSED_TIME_FORMAT.format(seconds);
+    }
+    
+    public static boolean containsCeylonTestImport(Module module) {
+        for (ModuleImport moduleImport : module.getImports()) {
+            if (moduleImport.getModule().getNameAsString().equals(CEYLON_TEST_MODULE_NAME)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

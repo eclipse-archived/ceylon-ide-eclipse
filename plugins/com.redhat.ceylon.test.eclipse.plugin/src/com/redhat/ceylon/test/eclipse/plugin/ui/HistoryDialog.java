@@ -19,7 +19,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDl
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.information;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestUtil.getDisplay;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 
 import java.text.DateFormat;
 

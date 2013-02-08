@@ -154,7 +154,7 @@ public class PackageExplorerPart extends ViewPart
 	public static final int PROJECTS_AS_ROOTS= 1;
 	public static final int WORKING_SETS_AS_ROOTS= 2;
 
-	private final static String VIEW_ID= PLUGIN_ID + ".view.PackageExplorer";
+	public final static String VIEW_ID= PLUGIN_ID + ".view.PackageExplorer";
 
 	// Persistence tags.
 	private static final String TAG_LAYOUT= "layout"; //$NON-NLS-1$
@@ -1498,5 +1498,9 @@ public class PackageExplorerPart extends ViewPart
 			fViewer.setComparator(new JavaElementComparator());
 		}
 	}
+	
+    public PackageExplorerActionGroup getPackageExplorerActionGroup() {
+        return fActionSet;
+    }
+	
 }
-
