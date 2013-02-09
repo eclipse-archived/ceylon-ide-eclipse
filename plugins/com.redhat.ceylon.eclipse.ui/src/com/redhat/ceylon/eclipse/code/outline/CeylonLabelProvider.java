@@ -539,7 +539,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         		}
         		String tn = tm.getProducedTypeName();
         		if (sequenced) {
-        			tn+="...";
+        			tn+="*";
         		}
 				return tn;
         	}

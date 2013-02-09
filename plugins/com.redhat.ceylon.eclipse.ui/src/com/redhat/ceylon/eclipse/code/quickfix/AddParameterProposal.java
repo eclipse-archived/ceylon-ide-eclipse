@@ -68,8 +68,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                 }
                 else {
                     def = AbstractRefactoring.toString(sie, 
-                              editor.getParseController().getTokens())
-                                  .replace(":=", "=");
+                              editor.getParseController().getTokens());
                     int start = sie.getStartIndex();
                     try {
                         if (doc.get(start-1,1).equals(" ")) {

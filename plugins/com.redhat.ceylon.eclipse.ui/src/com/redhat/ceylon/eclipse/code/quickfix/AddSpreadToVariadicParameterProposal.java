@@ -19,7 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProposal {
+public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionProposal {
     
     public static void addEllipsisToSequenceParameterProposal(CompilationUnit cu, Node node, Collection<ICompletionProposal> proposals, IFile file) {
         if( !(node instanceof Tree.Term) ) {
@@ -41,9 +41,9 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
             return;
         }
         
-        TextFileChange change = new TextFileChange("Add '...' to iterable argument of sequenced parameter", file);
-        change.setEdit(new InsertEdit(term.getStopIndex() + 1, "..."));
-        AddEllipsisToSequenceParameterProposal p = new AddEllipsisToSequenceParameterProposal(fiv.parameter, term.getStopIndex() + 4, file, change);
+        TextFileChange change = new TextFileChange("Add '*' to iterable argument of variadic parameter", file);
+        change.setEdit(new InsertEdit(term.getStopIndex() + 1, "*"));
+        AddSpreadToVariadicParameterProposal p = new AddSpreadToVariadicParameterProposal(fiv.parameter, term.getStopIndex() + 4, file, change);
         if ( !proposals.contains(p)) {
             proposals.add(p);
         }                               
@@ -53,8 +53,8 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
     private IFile file;
     private TypedDeclaration parameter;
     
-    private AddEllipsisToSequenceParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
-        super("Add '...' to iterable argument of sequenced parameter", change, 10, CORRECTION);
+    private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
+        super("Add '*' to iterable argument of variadic parameter", change, 10, CORRECTION);
         this.file=file;
         this.offset=offset;
         this.parameter = parameter;
@@ -68,8 +68,8 @@ public class AddEllipsisToSequenceParameterProposal extends ChangeCorrectionProp
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof AddEllipsisToSequenceParameterProposal) {
-            AddEllipsisToSequenceParameterProposal that = (AddEllipsisToSequenceParameterProposal) obj;
+        if (obj instanceof AddSpreadToVariadicParameterProposal) {
+            AddSpreadToVariadicParameterProposal that = (AddSpreadToVariadicParameterProposal) obj;
             return that.parameter.equals(parameter);
         }
         return false;

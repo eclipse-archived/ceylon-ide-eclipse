@@ -138,7 +138,7 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 				return null;
 			}
 			
-			operator = " := ";
+			operator = " = ";
 			action = attributeIdentifier + operator;
 			thenStr = getOperands(doc, ifAssign.getRightTerm());
 			elseStr = getOperands(doc, elseAssign.getRightTerm());
