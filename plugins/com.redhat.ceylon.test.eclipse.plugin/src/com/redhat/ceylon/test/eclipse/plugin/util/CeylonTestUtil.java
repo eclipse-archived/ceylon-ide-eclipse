@@ -217,9 +217,11 @@ public class CeylonTestUtil {
     }
     
     public static boolean containsCeylonTestImport(Module module) {
-        for (ModuleImport moduleImport : module.getImports()) {
-            if (moduleImport.getModule().getNameAsString().equals(CEYLON_TEST_MODULE_NAME)) {
-                return true;
+        if( module != null ) {
+            for (ModuleImport moduleImport : module.getImports()) {
+                if (moduleImport.getModule().getNameAsString().equals(CEYLON_TEST_MODULE_NAME)) {
+                    return true;
+                }
             }
         }
         return false;
