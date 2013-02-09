@@ -5,7 +5,6 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -41,7 +39,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -288,14 +285,11 @@ public class CeylonQuickFixAssistant {
         	break;
         case 803:
         	addMakeVariableProposal(proposals, project, node);
-        	addFixSpecificationProposal(problem, proposals, project, file, node);
         	break;
         case 801:
         	addMakeVariableDecProposal(cu, proposals, project, node);
-        	addFixSpecificationProposal(problem, proposals, project, file, node);
         	break;
         case 802:
-        	addFixAssignmentProposal(problem, proposals, project, file, node);
         	break;
         case 905:
         	addMakeContainerAbstractProposal(proposals, project, node);
@@ -346,7 +340,7 @@ public class CeylonQuickFixAssistant {
         	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
         case 2101:
-            AddEllipsisToSequenceParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
+            AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
@@ -485,24 +479,6 @@ public class CeylonQuickFixAssistant {
                 proposals, project);
     }
     
-    private void addFixSpecificationProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
-        addFixAssignmentProposal(proposals, "=", ((CommonToken) node.getMainToken()).getStartIndex(), file);
-    }
-    
-    private void addFixAssignmentProposal(ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IProject project, IFile file, Node node) {
-        addFixAssignmentProposal(proposals, ":=", ((CommonToken) node.getMainToken()).getStartIndex(), file);
-    }
-    
-    private void addFixAssignmentProposal(Collection<ICompletionProposal> proposals, 
-            String op, int offset, IFile file) {
-        String desc = "Change to '" + op + "'";
-        TextFileChange change = new TextFileChange(desc, file);
-        change.setEdit(new ReplaceEdit(offset, op.length()==1 ? 2 : 1, op));
-        proposals.add(new ChangeCorrectionProposal(desc, change, 10, CORRECTION));
-    }
-
     private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec = null;

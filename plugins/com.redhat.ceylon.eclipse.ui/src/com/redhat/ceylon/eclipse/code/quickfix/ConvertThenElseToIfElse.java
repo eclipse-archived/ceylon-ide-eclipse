@@ -19,7 +19,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
@@ -74,7 +73,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     				return;
     			}
 				Tree.AssignOp assignOp = (Tree.AssignOp) expression.getChildren().get(0);
-    			action = getTerm(doc, assignOp.getLeftTerm()) + " := ";
+    			action = getTerm(doc, assignOp.getLeftTerm()) + " = ";
     			operation = assignOp.getRightTerm();
     		} else if (statement instanceof Tree.SpecifierStatement) {
     			Tree.SpecifierStatement specifierStmt = (Tree.SpecifierStatement) statement;
@@ -101,7 +100,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				declaration = annotations + type + " " + identifier + ";";
     			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
     			if (sie==null) return;
-				action = identifier + " " + getToken(sie) + " ";
+				action = identifier + " = ";
     			operation = sie.getExpression().getTerm();
     		} else {
     			return;
@@ -168,15 +167,6 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 		}
     }
     
-	private static String getToken(
-			SpecifierOrInitializerExpression token) {
-		if (token instanceof SpecifierExpression) {
-			return "=";
-		} else {
-			return ":=";
-		}
-	}
-
 	private static String removeEnclosingParentesis(String s) {
     	if (s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')') {
     		return s.substring(1, s.length() - 1);

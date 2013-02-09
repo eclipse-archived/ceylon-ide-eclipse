@@ -1601,7 +1601,7 @@ public class CeylonContentProposer {
                     result.append(typeName);
                 }
                 if (isSequenced) {
-                	result.append("...");
+                	result.append("*");
                 }
             }
         }
@@ -1662,7 +1662,7 @@ public class CeylonContentProposer {
                     result.append(typeName, TYPE_STYLER);
                 }
                 if (isSequenced) {
-                	result.append("...");
+                	result.append("*");
                 }
             }
         }
@@ -1702,7 +1702,7 @@ public class CeylonContentProposer {
         	}
         	else {
         		result.append(" ")
-        			.append(isVariable(d) ? ":=" : "=")
+        			.append("=")
         			.append(" nothing;");
         	}
         }
