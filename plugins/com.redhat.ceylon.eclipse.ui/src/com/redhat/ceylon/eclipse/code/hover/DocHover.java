@@ -1346,7 +1346,7 @@ public class DocHover
 	        return text;
 	    }
 
-	    String unquotedText = text.substring(1, text.length()-1);
+//	    String unquotedText = text.substring(1, text.length()-1);
 
 	    Builder builder = Configuration.builder().forceExtentedProfile();
 	    builder.setCodeBlockEmitter(new CeylonBlockEmitter());
@@ -1377,7 +1377,7 @@ public class DocHover
                 }
             });
 	    }
-	    return Processor.process(unquotedText, builder.build());
+	    return Processor.process(text, builder.build());
 	}
 	
     private static String resolveLink(String linkTarget, Scope linkScope) {
