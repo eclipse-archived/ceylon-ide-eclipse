@@ -893,8 +893,9 @@ public class CeylonQuickFixAssistant {
             node = ((Tree.Expression) node).getTerm();
         }
         if (node instanceof Tree.Term) {
-            ProducedType type = node.getUnit().denotableType(((Tree.Term) node)
-            		.getTypeModel());
+            ProducedType t = ((Tree.Term) node).getTypeModel();
+            if (t==null) return;
+            ProducedType type = node.getUnit().denotableType(t);
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
