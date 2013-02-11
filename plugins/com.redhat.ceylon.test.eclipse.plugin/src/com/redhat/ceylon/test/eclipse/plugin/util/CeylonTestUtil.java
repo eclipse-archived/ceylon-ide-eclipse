@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.util;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
@@ -7,6 +8,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
+import static java.util.Collections.emptyList;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -31,8 +33,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
@@ -108,7 +110,11 @@ public class CeylonTestUtil {
     public static List<Module> getModules(IProject project) {
         List<Module> modules = new ArrayList<Module>();
         IJavaProject javaProject = JavaCore.create(project);
-        for (Module module : CeylonBuilder.getProjectModules(project).getListOfModules()) {
+        Modules projectModules = getProjectModules(project);
+        if (projectModules==null) {
+            return emptyList();
+        }
+        for (Module module : projectModules.getListOfModules()) {
             if (!module.isDefault() && !module.isJava()) {
                 try {
                     for (IPackageFragment pkg : javaProject.getPackageFragments()) {
