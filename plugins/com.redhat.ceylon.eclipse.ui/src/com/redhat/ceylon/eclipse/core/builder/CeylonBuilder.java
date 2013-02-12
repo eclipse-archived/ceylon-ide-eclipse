@@ -120,6 +120,7 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
@@ -2212,22 +2213,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 moduleJars.add(moduleJar);
                 String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
                 try {
-                    ZipFile zipFile = new ZipFile(moduleJar);
-                    FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
                     List<String> entriesToDelete = new ArrayList<String>();
-                    ZipInputStream zis = zipFile.getInputStream(fileHeader);
-                    try {
-                        Properties mapping = new Properties();
-                        mapping.load(zis);
-                        for (String className : mapping.stringPropertyNames()) {
-                            String sourceFile = mapping.getProperty(className);
-                            if (relativeFilePath.equals(sourceFile)) {
-                                entriesToDelete.add(className);
-                            }
+                    ZipFile zipFile = new ZipFile(moduleJar);
+                    
+                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
+
+                    for (String className : mapping.stringPropertyNames()) {
+                        String sourceFile = mapping.getProperty(className);
+                        if (relativeFilePath.equals(sourceFile)) {
+                            entriesToDelete.add(className);
                         }
-                    } finally {
-                        zis.close();
                     }
+
                     for (String entryToDelete : entriesToDelete) {
                         zipFile.removeFile(entryToDelete);
                         if (explodeModules) {
@@ -2284,6 +2281,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 			ShaSigner.sign(moduleJar, log, false);
         }
     }
+
 
     private static File getCeylonClassesOutputDirectory(IProject project) {
         return getCeylonClassesOutputFolder(project)
