@@ -8,11 +8,12 @@ import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 
 public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
 
@@ -45,5 +46,10 @@ public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
             }
         }
         return originalProjectPhasedUnitRef != null ? originalProjectPhasedUnitRef.get() : null;
+    }
+    
+    @Override
+    protected Unit createUnit() {
+        return new CrossProjectSourceFile(this);
     }
 }
