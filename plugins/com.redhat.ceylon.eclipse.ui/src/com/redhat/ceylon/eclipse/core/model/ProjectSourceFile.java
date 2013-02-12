@@ -27,11 +27,11 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
     
     @Override
     public IFile getFileResource() {
-        return (IFile)((ResourceVirtualFile) (getPhasedUnit().getUnitFile())).getResource();
+        return getPhasedUnit().getSourceFileResource();
     }
 
     @Override
     public IFolder getRootFolderResource() {
-        return null;
+        return getPhasedUnit().getSourceFolderResource();
     }
 }
