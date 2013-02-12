@@ -17,28 +17,23 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class UnitDependencyVisitor extends Visitor {
     
     private final PhasedUnit phasedUnit;
-    private final PhasedUnits phasedUnits;
-    private final List<PhasedUnits> phasedUnitsOfDependencies;
     private Set<Declaration> alreadyDone;
     
-    public UnitDependencyVisitor(PhasedUnit phasedUnit, PhasedUnits phasedUnits, 
-    		List<PhasedUnits> phasedUnitsOfDependencies) {
+    public UnitDependencyVisitor(PhasedUnit phasedUnit) {
         this.phasedUnit = phasedUnit;
-        this.phasedUnits = phasedUnits;
-        this.phasedUnitsOfDependencies = phasedUnitsOfDependencies;
         alreadyDone = new HashSet<Declaration>();
     }
     
-    private String getSrcFolderRelativePath(Unit u) {
-        return u.getPackage().getQualifiedNameString().replace('.', '/') + 
-                "/" + u.getFilename();
-    }
-
     private void storeDependency(Declaration d) {
         if (d!=null && (d instanceof UnionType || 
                         d instanceof IntersectionType || 
@@ -86,28 +81,41 @@ public class UnitDependencyVisitor extends Visitor {
             		String currentUnitName = currentUnit.getFilename();
             		String dependedOnUnitName = declarationUnit.getFilename();
             		String currentUnitPackage = currentUnit.getPackage().getNameAsString();
-            		String dependedOnPackage = currentUnit.getPackage().getNameAsString();
+            		String dependedOnPackage = declarationUnit.getPackage().getNameAsString();
             		if (!dependedOnUnitName.equals(currentUnitName) ||
             				!dependedOnPackage.equals(currentUnitPackage)) {
             			if (! (declarationUnit instanceof SourceFile)) {
             				//TODO: this does not seem to work for cross-project deps
+                            //TODO: All the dependencies to class files are also added... It is really useful ?
+                            // I assume in the case of the classes in the classes or exploded dirs, it might be,
+                            // but not sure it is also used not in the case of jar-located classes 
             				declarationUnit.getDependentsOf().add(currentUnitPath);
             			} 
             			else {
-            				String dependedOnUnitRelPath = getSrcFolderRelativePath(declarationUnit);
-            				PhasedUnit dependedOnPhasedUnit = phasedUnits.getPhasedUnitFromRelativePath(dependedOnUnitRelPath);
-            				if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
-            					dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
-            				} else {
-            				    // This case is only for cross-project dependencies managed by source archives
-            					for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
-            						dependedOnPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(dependedOnUnitRelPath);
-            						if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
-            							dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
-            							break;
-            						}
-            					}
-            				}
+            			    if (declarationUnit instanceof ProjectSourceFile) {
+            			        ProjectSourceFile dependedOnSourceFile = (ProjectSourceFile) declarationUnit;
+            			        ProjectPhasedUnit dependedOnPhasedUnit = dependedOnSourceFile.getPhasedUnit();
+                                if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
+                                    dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
+                                }
+            			    }
+            			    else if (declarationUnit instanceof CrossProjectSourceFile) {
+            			        CrossProjectPhasedUnit crossProjectPhasedUnits = ((CrossProjectSourceFile) declarationUnit).getPhasedUnit();
+            			        if (crossProjectPhasedUnits != null) {
+            			            ProjectPhasedUnit dependedOnPhasedUnit = crossProjectPhasedUnits.getOriginalProjectPhasedUnit();
+                                    if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
+                                        dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
+                                    }
+            			        }
+            			    }
+            			    else if (declarationUnit instanceof ExternalSourceFile) {
+            			        // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
+            			        // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
+            			        // Might change in the future 
+            			    }
+            			    else {
+                                assert(false);
+            			    }
             			}
             		}
             	}

@@ -114,6 +114,7 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
+import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -644,16 +645,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
 	private void collectDependencies(IProject project, TypeChecker typeChecker,
 			List<PhasedUnit> builtPhasedUnits) throws CoreException {
-		List<PhasedUnits> phasedUnitsForDependencies = new ArrayList<PhasedUnits>();
-		for (IProject referencingProject: project.getReferencedProjects()) {
-		    TypeChecker requiredProjectTypeChecker = getProjectTypeChecker(referencingProject);
-		    if (requiredProjectTypeChecker!=null) {
-		        phasedUnitsForDependencies.add(requiredProjectTypeChecker.getPhasedUnits());
-		    }
-		}
 		for (PhasedUnit pu : builtPhasedUnits) {
-		    new UnitDependencyVisitor(pu, typeChecker.getPhasedUnits(), phasedUnitsForDependencies)
-		            .visit(pu.getCompilationUnit());
+		    new UnitDependencyVisitor(pu).visit(pu.getCompilationUnit());
 		}
 	}
 
@@ -924,13 +917,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         PhasedUnit referencingPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(relativePath);
                         if (referencingPhasedUnit != null) {
                             phasedUnitsOfDependency.removePhasedUnitForRelativePath(relativePath);
-                            PhasedUnit newReferencingPhasedUnit = new PhasedUnit(referencingPhasedUnit.getUnitFile(), 
+                            PhasedUnit newReferencingPhasedUnit = new CrossProjectPhasedUnit(referencingPhasedUnit.getUnitFile(), 
                                     referencingPhasedUnit.getSrcDir(), 
                                     builtPhasedUnit.getCompilationUnit(), 
                                     referencingPhasedUnit.getPackage(), 
                                     phasedUnitsOfDependency.getModuleManager(), 
-                                    referencingTypeChecker.getContext(), 
-                                    builtPhasedUnit.getTokens());
+                                    referencingTypeChecker, 
+                                    builtPhasedUnit.getTokens(),
+                                    project);
                             phasedUnitsOfDependency.addPhasedUnit(newReferencingPhasedUnit.getUnitFile(), 
                                     newReferencingPhasedUnit);
                             // replace referencingPhasedUnit
