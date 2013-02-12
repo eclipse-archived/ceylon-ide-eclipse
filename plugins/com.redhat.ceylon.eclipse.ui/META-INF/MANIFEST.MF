@@ -140,6 +140,7 @@ Export-Package: antlr;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.c
  com.redhat.ceylon.eclipse.core.launch;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.model;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.model.loader;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
+ com.redhat.ceylon.eclipse.core.typechecker;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.vfs;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.ui;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.util;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
