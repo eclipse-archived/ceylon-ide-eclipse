@@ -55,7 +55,7 @@ public class ModelLoaderTests extends ModelLoaderTest {
             
 	        try {
         		projectDescriptionPath = userDirPath.append("resources/model-loader-tests/declarations/.project");
-        		projectDeclarations = Utils.importProject(workspace, projectDescriptionPath);
+        		projectDeclarations = Utils.importProject(workspace, "model-loader-tests", projectDescriptionPath);
 	        }
             catch(Exception e) {
                 Assert.fail("Import of the declarations project failed with the exception : \n" + e.toString());
@@ -76,7 +76,7 @@ public class ModelLoaderTests extends ModelLoaderTest {
 	        
 	        try {
                 projectDescriptionPath = userDirPath.append("resources/model-loader-tests/references/.project");
-                projectReferences = Utils.importProject(workspace,
+                projectReferences = Utils.importProject(workspace, "model-loader-tests",
                         projectDescriptionPath);
             }
             catch(Exception e) {

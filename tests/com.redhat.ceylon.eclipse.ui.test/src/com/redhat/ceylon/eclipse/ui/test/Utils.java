@@ -19,6 +19,7 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 public class Utils {
 
     public static IProject importProject(final IWorkspace workspace,
+            final String destinationRootPath,
             IPath projectDescriptionPath) throws CoreException,
             InvocationTargetException, InterruptedException {
         IProjectDescription description =
@@ -46,7 +47,7 @@ public class Utils {
             desc.setNatureIds(description.getNatureIds());
             desc.setReferencedProjects(description
                     .getReferencedProjects());
-            desc.setLocation(workspace.getRoot().getLocation().append("model-loader-tests/" + projectName + "/"));
+            desc.setLocation(workspace.getRoot().getLocation().append(destinationRootPath + "/" + projectName + "/"));
             description = desc;
         }
     
