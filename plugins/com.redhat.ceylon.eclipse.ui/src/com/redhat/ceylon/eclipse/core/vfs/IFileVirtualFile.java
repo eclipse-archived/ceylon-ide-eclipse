@@ -24,7 +24,7 @@ public class IFileVirtualFile extends ResourceVirtualFile {
 
     @Override
     protected IResource createResourceFromIPath() {
-        return project.getFolder(path);
+        return project.getFile(path);
     }
     
     @Override
