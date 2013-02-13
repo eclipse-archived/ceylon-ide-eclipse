@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
@@ -86,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -469,8 +469,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         Unit unit = null;
-        JDTClass jdtClass = (JDTClass)classMirror;
+        JDTClass jdtClass = (JDTClass) classMirror;
         String unitName = jdtClass.getFileName();
+        
         if (!jdtClass.isBinary()) {
             // This search is for source Java classes since several classes mmight have the same file name 
             //  and live inside the same Java source file => into the same Unit
@@ -479,14 +480,28 @@ public class JDTModelLoader extends AbstractModelLoader {
                     return unitToTest;
                 }
             }
-            unit = new JavaCompilationUnit();
+        }
+
+        ITypeRoot typeRoot = null;
+        try {
+            IType javaType = javaProject.findType(jdtClass.getQualifiedName());
+            if (javaType != null) {
+                typeRoot = javaType.getTypeRoot();
+            }
+            
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+        }
+        
+        if (!jdtClass.isBinary()) {
+            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot);
         }
         else {
             if (jdtClass.isCeylon()) {
-                unit = new CeylonBinaryUnit();
+                unit = new CeylonBinaryUnit((IClassFile)typeRoot);
             }
             else {
-                unit = new JavaClassFile();
+                unit = new JavaClassFile((IClassFile)typeRoot);
             }
         }
 
