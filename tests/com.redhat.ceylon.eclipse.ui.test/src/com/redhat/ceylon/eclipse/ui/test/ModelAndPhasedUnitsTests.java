@@ -278,7 +278,7 @@ public class ModelAndPhasedUnitsTests {
 
         IFile archiveFile = mainProject.getFile("imported_modules/source_and_binary_external_module/1.0.0/source_and_binary_external_module-1.0.0.src");
         Assert.assertNotNull(archiveFile);
-        ExternalSourceFile unit = checkCeylonSourceUnits(ExternalSourceFile.class,
+        checkCeylonSourceUnits(ExternalSourceFile.class,
                 archiveFile.getLocation().toString() + "!",
                 "source_and_binary_external_module", 
                 "External_Source_Binary");
