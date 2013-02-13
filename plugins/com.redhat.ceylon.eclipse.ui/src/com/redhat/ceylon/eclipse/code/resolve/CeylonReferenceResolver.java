@@ -1,15 +1,6 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-
-import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
@@ -23,9 +14,7 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
@@ -166,24 +155,6 @@ public class CeylonReferenceResolver {
         }
     }
     
-    public static Tree.CompilationUnit getCompilationUnit(IProject project, 
-            Declaration dec) {
-        PhasedUnit phasedUnit = getPhasedUnit(project, dec);
-        return phasedUnit==null ? null : phasedUnit.getCompilationUnit();
-    }
-
-    public static PhasedUnit getPhasedUnit(IProject project, 
-            Declaration dec) {
-        String path = getRelativePath(dec);
-        if (path==null) {
-        	return null;
-        }
-        else {
-            return getProjectTypeChecker(project)
-                    .getPhasedUnitFromRelativePath(path);
-        }
-    }
-
     public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
             Referenceable r) {
         if (cpc==null || r==null) {

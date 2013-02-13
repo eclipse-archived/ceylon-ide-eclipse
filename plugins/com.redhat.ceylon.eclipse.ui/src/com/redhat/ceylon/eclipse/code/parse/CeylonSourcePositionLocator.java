@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 
 import java.util.Collections;
@@ -11,23 +10,15 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -35,6 +26,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
@@ -207,85 +203,33 @@ public class CeylonSourcePositionLocator {
     }
     
     public static boolean belongsToProject(Unit unit, IProject project) {
-    	return getPath(unit, project)!=null;
+        if (project == null) {
+            return false;
+        }
+        
+    	return (unit instanceof IResourceAware) &&
+    	        project.equals(((IResourceAware)unit).getProjectResource());
     }
 
-	private static IPath getPath(Unit unit, IProject project) {
-		try {
-			for (IPackageFragmentRoot srcDir: JavaCore.create(project)
-					.getPackageFragmentRoots()) {
-				IPackageFragment pkg = srcDir.getPackageFragment(unit.getPackage()
-						.getQualifiedNameString());
-				IResource rsrc = pkg.getResource();
-				if (rsrc instanceof IFolder && rsrc.exists()) {
-					IFile file = ((IFolder) rsrc).getFile(unit.getFilename());
-					if (file!=null && file.exists()) {
-						return file.getLocation();
-					}
-				}
-			}
-		} 
-    	catch (JavaModelException e) {
-			e.printStackTrace();
-		}
-    	return null;
-	}
-    
     public static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
-    	Unit unit = node.getUnit();
+        Unit unit = node.getUnit();
+
+        if (unit instanceof IResourceAware) {
+    	    IFile fileResource = ((IResourceAware) unit).getFileResource();
+    	    if (fileResource != null) {
+                return fileResource.getLocation();
+    	    }
+    	}
     	
-    	//look for a source file in a project
-    	if (project!=null) {
-    		//first look for it in the current project
-    		IPath path = getPath(unit, project);
-    		if (path!=null) return path;
-    		try {
-    			//now look for it in projects that the current
-    			//project depends on
-    			for (IProject p: project.getReferencedProjects()) {
-    				path = getPath(unit, p);
-    				if (path!=null) return path;
-    			}
-    		} 
-    		catch (CoreException e) {
-    			e.printStackTrace();
-    		}
-    	}
-    	else for (IProject p: getProjects()) {
-    		//if we weren't given a project,
-    		//iterate over all of them (note
-    		//that this case happens in the 
-    		//hierarchy popup for an archive
-    		//unit that is extended by a 
-    		//project source file)
-    		IPath path = getPath(unit, p);
-    		if (path!=null) return path;
-    	}
-
-    	//finally look for it in a module archive 
-    	PhasedUnit pu = tc.getPhasedUnitFromRelativePath(getRelativePath(unit));
-    	if (pu!=null) {
-    		return new Path(pu.getUnitFile().getPath());
-    		/*VirtualFile unitFile = pu.getUnitFile();
-                if (unitFile instanceof IFileVirtualFile) {
-                    return ((IFileVirtualFile) unitFile).getFile().getFullPath();
-                }
-                else {
-                    return new Path(unitFile.getPath());
-                }*/
-    	}
-
+    	if ((unit instanceof ExternalSourceFile ) ||
+	            (unit instanceof CeylonBinaryUnit )) {
+	        IdePhasedUnit externalPhasedUnit = ((CeylonUnit) unit).getPhasedUnit();
+	        return new Path(externalPhasedUnit.getUnitFile().getPath());
+	    }
+    	
     	return null;
-
     }
 
-	private static String getRelativePath(Unit unit) {
-		String fileName = unit.getFilename();
-		String packagePath = unit.getPackage().getQualifiedNameString().replace('.', '/');
-		String fileRelativePath = packagePath + "/" + fileName;
-		return fileRelativePath;
-	}
-    
     public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, IRegion region) {
         int regionOffset = region.getOffset();
         int regionLength = region.getLength();

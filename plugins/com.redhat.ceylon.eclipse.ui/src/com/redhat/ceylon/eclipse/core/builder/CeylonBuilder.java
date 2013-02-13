@@ -4,7 +4,6 @@ import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getPhasedUnit;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
@@ -35,8 +34,6 @@ import javax.tools.JavaFileObject;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.io.ZipInputStream;
-import net.lingala.zip4j.model.FileHeader;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
@@ -96,7 +93,6 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -109,13 +105,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
+import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
@@ -763,13 +760,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		                sourceToCompile.add(fileToAdd);
 		            }
 		            for (Declaration duplicateDeclaration : duplicateDeclarations) {
-		                PhasedUnit duplicateDeclPU = getPhasedUnit(project, duplicateDeclaration);
-		                if (duplicateDeclPU != null) {
-		                    IFile duplicateDeclFile = ((IFileVirtualFile)(duplicateDeclPU.getUnitFile())).getFile();
-		                    if (duplicateDeclFile.exists()) {
-		                        sourceToCompile.add(duplicateDeclFile);
-		                    }
-		                }
+		                Unit duplicateUnit = duplicateDeclaration.getUnit();
+	                    if ((duplicateUnit instanceof SourceFile) && 
+                            (duplicateUnit instanceof IResourceAware)) {
+                            IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getFileResource();
+                            if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
+                                sourceToCompile.add(duplicateDeclFile);
+                            }
+	                    }
 		            }
 		        }
 		    }
