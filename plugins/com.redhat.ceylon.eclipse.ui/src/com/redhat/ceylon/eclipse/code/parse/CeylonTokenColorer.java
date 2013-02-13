@@ -40,7 +40,8 @@ public class CeylonTokenColorer  {
             "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
             "module", "package", "of", "extends", "satisfies", "adapts", "abstracts", "in", "out", 
             "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
-            "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then" ));
+            "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
+            "dynamic"));
     
     private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
