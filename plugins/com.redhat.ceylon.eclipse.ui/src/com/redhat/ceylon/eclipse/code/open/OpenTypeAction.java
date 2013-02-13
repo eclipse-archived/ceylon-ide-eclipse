@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -71,9 +72,13 @@ public class OpenTypeAction extends Action {
         			}
         		}
         	}
-        	Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, getCompilationUnit(project, dec));
-        	if (node!=null) {
-        		gotoNode(node, project, getProjectTypeChecker(project));
+
+        	if (dec.getUnit() instanceof CeylonUnit) {
+                CeylonUnit ceylonUnit = (CeylonUnit) dec.getUnit();
+                Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, ceylonUnit.getCompilationUnit());
+                if (node!=null) {
+                    gotoNode(node, project, getProjectTypeChecker(project));
+                }
         	}
         	else {
         		gotoJavaNode(dec, null, project);
