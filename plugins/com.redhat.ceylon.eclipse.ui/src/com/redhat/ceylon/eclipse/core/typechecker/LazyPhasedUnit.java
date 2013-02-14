@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package com.redhat.ceylon.eclipse.core.typechecker;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
-public class LazySourceFile extends CeylonSourceFile {
+public class LazyPhasedUnit extends IdePhasedUnit {
 
     private TypeChecker typeChecker;
     private boolean validatingTree = false; 
@@ -22,17 +22,17 @@ public class LazySourceFile extends CeylonSourceFile {
     private boolean analysingTypes = false; 
     private boolean analyzingFlow = false; 
     
-    public LazySourceFile(VirtualFile unitFile, VirtualFile srcDir,
+    public LazyPhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
         super(unitFile, srcDir, cu, p, moduleManager, typeChecker, tokenStream);
         this.typeChecker = typeChecker;
     }
     
-    public LazySourceFile(PhasedUnit other) {
+    public LazyPhasedUnit(PhasedUnit other) {
         super(other);
-        if (other instanceof LazySourceFile) {
-            typeChecker = ((LazySourceFile) other).typeChecker;
+        if (other instanceof LazyPhasedUnit) {
+            typeChecker = ((LazyPhasedUnit) other).typeChecker;
         }
     }
 

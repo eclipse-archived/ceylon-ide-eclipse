@@ -25,6 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -69,8 +70,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	@Override
 	public boolean isEnabled() {
 	    return declaration!=null &&
-	            !(declaration.getUnit() instanceof ExternalUnit) &&
-	            belongsToProject(declaration.getUnit(), project);
+	            declaration.getUnit() instanceof ProjectSourceFile &&
+	            ((ProjectSourceFile)declaration.getUnit()).getProject().equals(project) ;
 	}
 	
 	public int getCount() {

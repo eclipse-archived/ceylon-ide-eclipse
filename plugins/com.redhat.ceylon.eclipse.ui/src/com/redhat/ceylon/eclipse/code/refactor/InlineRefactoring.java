@@ -41,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -56,9 +57,9 @@ public class InlineRefactoring extends AbstractRefactoring {
 	
 	@Override
 	boolean isEnabled() {
-	    return declaration!=null && 
-	            !(declaration.getUnit() instanceof ExternalUnit) &&
-	            belongsToProject(declaration.getUnit(), project) &&
+	    return  declaration!=null && 
+	            declaration.getUnit() instanceof ProjectSourceFile &&
+	            ((ProjectSourceFile)declaration.getUnit()).getProject().equals(project) &&
 	            declaration instanceof MethodOrValue &&
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&

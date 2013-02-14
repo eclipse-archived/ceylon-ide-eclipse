@@ -17,6 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.SourceFile;
 
 public class UnitDependencyVisitor extends Visitor {
     
@@ -72,7 +73,14 @@ public class UnitDependencyVisitor extends Visitor {
             	String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
             	if (!moduleName.equals("ceylon.language") && 
             			!JDKUtils.isJDKModule(moduleName)
-            			&& !JDKUtils.isOracleJDKModule(moduleName)) { //TODO: also filter out src archives from external repos
+            			&& !JDKUtils.isOracleJDKModule(moduleName)) { 
+            	    //TODO: also filter out src archives from external repos
+            	    //      Now with specialized units we could do : 
+            	    //         if (unit instanceOf ProjectSourceFile 
+            	    //             || unit instanceOf JavaCompilationUnit)
+            	    //      Might be necesary though to manage a specific case 
+            	    //      for cross-project dependencies when they will be managed 
+            	    //      and not from source archives anymore
             		Unit currentUnit = phasedUnit.getUnit();
             		String currentUnitPath = phasedUnit.getUnitFile().getPath();
             		String currentUnitName = currentUnit.getFilename();
@@ -81,7 +89,7 @@ public class UnitDependencyVisitor extends Visitor {
             		String dependedOnPackage = currentUnit.getPackage().getNameAsString();
             		if (!dependedOnUnitName.equals(currentUnitName) ||
             				!dependedOnPackage.equals(currentUnitPackage)) {
-            			if (declarationUnit instanceof ExternalUnit) {
+            			if (! (declarationUnit instanceof SourceFile)) {
             				//TODO: this does not seem to work for cross-project deps
             				declarationUnit.getDependentsOf().add(currentUnitPath);
             			} 
@@ -91,6 +99,7 @@ public class UnitDependencyVisitor extends Visitor {
             				if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
             					dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
             				} else {
+            				    // This case is only for cross-project dependencies managed by source archives
             					for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
             						dependedOnPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(dependedOnUnitRelPath);
             						if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {

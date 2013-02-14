@@ -16,14 +16,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilerAnnotation;
-import com.redhat.ceylon.eclipse.core.model.CeylonDeclaration;
 
 public class SourceClass implements ClassMirror {
 
-    private CeylonDeclaration ceylonDeclaration;
+    private SourceDeclarationHolder sourceDeclarationHolder;
 
-    public SourceClass(CeylonDeclaration ceylonDeclaration) {
-        this.ceylonDeclaration = ceylonDeclaration;
+    public SourceClass(SourceDeclarationHolder sourceDeclarationHolder) {
+        this.sourceDeclarationHolder = sourceDeclarationHolder;
     }
     
     @Override
@@ -168,17 +167,17 @@ public class SourceClass implements ClassMirror {
     }
 
     public Declaration getModelDeclaration() {
-        return ceylonDeclaration.getModelDeclaration();
+        return sourceDeclarationHolder.getModelDeclaration();
     }
 
     public Tree.Declaration getAstDeclaration() {
-        return ceylonDeclaration.getAstDeclaration();
+        return sourceDeclarationHolder.getAstDeclaration();
     }
 
     @Override
     public boolean isLoadedFromSource() {
         return true;
-        // return ceylonDeclaration.isSourceToCompile();  
+        // return sourceDeclarationHolder.isSourceToCompile();  
     }
 
     @Override
