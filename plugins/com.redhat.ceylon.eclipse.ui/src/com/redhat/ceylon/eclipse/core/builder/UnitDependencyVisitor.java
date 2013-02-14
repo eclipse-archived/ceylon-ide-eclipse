@@ -6,9 +6,7 @@ import java.util.Set;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.ExternalUnit;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -17,12 +15,12 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
+import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.SourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class UnitDependencyVisitor extends Visitor {
     
@@ -69,13 +67,6 @@ public class UnitDependencyVisitor extends Visitor {
             	if (!moduleName.equals("ceylon.language") && 
             			!JDKUtils.isJDKModule(moduleName)
             			&& !JDKUtils.isOracleJDKModule(moduleName)) { 
-            	    //TODO: also filter out src archives from external repos
-            	    //      Now with specialized units we could do : 
-            	    //         if (unit instanceOf ProjectSourceFile 
-            	    //             || unit instanceOf JavaCompilationUnit)
-            	    //      Might be necesary though to manage a specific case 
-            	    //      for cross-project dependencies when they will be managed 
-            	    //      and not from source archives anymore
             		Unit currentUnit = phasedUnit.getUnit();
             		String currentUnitPath = phasedUnit.getUnitFile().getPath();
             		String currentUnitName = currentUnit.getFilename();
@@ -84,39 +75,43 @@ public class UnitDependencyVisitor extends Visitor {
             		String dependedOnPackage = declarationUnit.getPackage().getNameAsString();
             		if (!dependedOnUnitName.equals(currentUnitName) ||
             				!dependedOnPackage.equals(currentUnitPackage)) {
-            			if (! (declarationUnit instanceof SourceFile)) {
-            				//TODO: this does not seem to work for cross-project deps
+            		    
+            		    // WOW : Ceylon Abstract Data types and swith case would be cool here ;) 
+        			    if (declarationUnit instanceof ProjectSourceFile) {
+                            declarationUnit.getDependentsOf().add(currentUnitPath);
+        			    }
+        			    else if (declarationUnit instanceof CrossProjectSourceFile) {
+        			        ProjectSourceFile originalProjectSourceFile = ((CrossProjectSourceFile) declarationUnit).getOriginalSourceFile();
+        			        if (originalProjectSourceFile != null) {
+        			            originalProjectSourceFile.getDependentsOf().add(currentUnitPath);
+        			        }
+        			    }
+        			    else if (declarationUnit instanceof ExternalSourceFile) {
+        			        // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
+        			        // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
+        			        // Might change in the future 
+        			    }
+        			    else if (declarationUnit instanceof CeylonBinaryUnit) {
+                            //TODO: When we can typecheck from binary modules, we'll have to manage the case when a binary module 
+        			        // corresponding PhasedUnit is in fact a CrossProjectPhasedUnit. 
+        			        // And then take the corresponding ProjectSourceFile in the referenced project 
+                            declarationUnit.getDependentsOf().add(currentUnitPath);
+                        } 
+                        else if (declarationUnit instanceof JavaCompilationUnit) {
+                            //TODO: this does not seem to work for cross-project deps
+                            // We should introduce a CrossProjectJavaUnit that can return 
+                            // the original JavaCompilationUnit from the original project 
+                            declarationUnit.getDependentsOf().add(currentUnitPath);
+                        } 
+                        else if (declarationUnit instanceof JavaClassFile) {
                             //TODO: All the dependencies to class files are also added... It is really useful ?
                             // I assume in the case of the classes in the classes or exploded dirs, it might be,
-                            // but not sure it is also used not in the case of jar-located classes 
-            				declarationUnit.getDependentsOf().add(currentUnitPath);
-            			} 
-            			else {
-            			    if (declarationUnit instanceof ProjectSourceFile) {
-            			        ProjectSourceFile dependedOnSourceFile = (ProjectSourceFile) declarationUnit;
-            			        ProjectPhasedUnit dependedOnPhasedUnit = dependedOnSourceFile.getPhasedUnit();
-                                if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
-                                    dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
-                                }
-            			    }
-            			    else if (declarationUnit instanceof CrossProjectSourceFile) {
-            			        CrossProjectPhasedUnit crossProjectPhasedUnits = ((CrossProjectSourceFile) declarationUnit).getPhasedUnit();
-            			        if (crossProjectPhasedUnits != null) {
-            			            ProjectPhasedUnit dependedOnPhasedUnit = crossProjectPhasedUnits.getOriginalProjectPhasedUnit();
-                                    if (dependedOnPhasedUnit != null && dependedOnPhasedUnit.getUnit() != null) {
-                                        dependedOnPhasedUnit.getUnit().getDependentsOf().add(currentUnitPath);
-                                    }
-            			        }
-            			    }
-            			    else if (declarationUnit instanceof ExternalSourceFile) {
-            			        // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
-            			        // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
-            			        // Might change in the future 
-            			    }
-            			    else {
-                                assert(false);
-            			    }
-            			}
+                            // but not sure it is also used not in the case of jar-located classes
+                            declarationUnit.getDependentsOf().add(currentUnitPath);
+                        } 
+        			    else {
+                            assert(false);
+        			    }
             		}
             	}
             }
