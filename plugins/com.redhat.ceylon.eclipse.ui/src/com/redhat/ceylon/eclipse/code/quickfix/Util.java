@@ -57,7 +57,7 @@ public class Util {
 
 	//TODO: copy/pasted from AbstractFindAction
 	public static Node getSelectedNode(CeylonEditor editor) {
-	    CeylonParseController cpc = editor.getParseController();
+	    CeylonParseController cpc = editor==null ? null : editor.getParseController();
 	    return cpc==null || cpc.getRootNode()==null ? null : 
 	        findNode(cpc.getRootNode(), 
 	            (ITextSelection) editor.getSelectionProvider().getSelection());
