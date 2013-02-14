@@ -109,12 +109,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
-import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
@@ -901,7 +902,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         } 
         else {
             Unit unit = getJavaUnit(currentFileProject, srcFile);
-            if (unit instanceof ExternalUnit) {
+            if (unit instanceof JavaCompilationUnit) {
                 return unit.getDependentsOf();
             }
         }
@@ -988,7 +989,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         parserErrors.clear();
         
         
-        PhasedUnit newPhasedUnit = new ProjectSourceFile(file, srcDir, cu, pkg, 
+        PhasedUnit newPhasedUnit = new ProjectPhasedUnit(file, srcDir, cu, pkg, 
                 moduleManager, typeChecker, tokens);
         
         return newPhasedUnit;
@@ -1156,6 +1157,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
             IJavaElement packageFragment = compilationUnit.getParent();
             JDTModelLoader projectModelLoader = getProjectModelLoader(project);
+            // TODO : Why not use the Model Loader cache to get the declaration 
+            //      instead of iterating through all the packages ?
             if (projectModelLoader != null) {
                 Package pkg = projectModelLoader.findPackage(packageFragment.getElementName());
                 if (pkg != null) {

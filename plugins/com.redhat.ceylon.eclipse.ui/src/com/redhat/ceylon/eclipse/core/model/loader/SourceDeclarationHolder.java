@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.model;
+package com.redhat.ceylon.eclipse.core.model.loader;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-public class CeylonDeclaration {
+public class SourceDeclarationHolder {
 
     
     private PhasedUnit phasedUnit;
@@ -12,7 +12,7 @@ public class CeylonDeclaration {
     private Declaration modelDeclaration = null;
     private boolean isSourceToCompile = true;
 
-    public CeylonDeclaration(PhasedUnit phasedUnit, Tree.Declaration astDeclaration, boolean isSourceToCompile) {
+    public SourceDeclarationHolder(PhasedUnit phasedUnit, Tree.Declaration astDeclaration, boolean isSourceToCompile) {
         this.phasedUnit = phasedUnit;
         this.astDeclaration = astDeclaration;
         this.isSourceToCompile = isSourceToCompile;

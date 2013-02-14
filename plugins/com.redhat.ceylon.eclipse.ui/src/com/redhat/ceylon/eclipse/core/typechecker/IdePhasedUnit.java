@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package com.redhat.ceylon.eclipse.core.typechecker;
 
 import java.util.List;
 
@@ -11,14 +11,21 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
-public class ModuleSourceFile extends CeylonSourceFile {
-    public ModuleSourceFile(VirtualFile unitFile, VirtualFile srcDir,
+public class IdePhasedUnit extends PhasedUnit {
+
+    private TypeChecker typeChecker;
+
+    public IdePhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
-        super(unitFile, srcDir, cu, p, moduleManager, typeChecker, tokenStream);
+        super(unitFile, srcDir, cu, p, moduleManager, typeChecker.getContext(), tokenStream);
+        this.typeChecker = typeChecker;
     }
     
-    public ModuleSourceFile(PhasedUnit other) {
+    public IdePhasedUnit(PhasedUnit other) {
         super(other);
+        if (other instanceof IdePhasedUnit) {
+            typeChecker = ((IdePhasedUnit) other).typeChecker;
+        }
     }
 }

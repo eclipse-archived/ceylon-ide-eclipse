@@ -24,13 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.env.IDependent;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
+import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
@@ -186,6 +190,10 @@ public class JDTClass implements ClassMirror {
         return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Method.class);
     }
 
+    public boolean isCeylon() {
+        return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Ceylon.class);
+    }
+
     @Override
     public List<FieldMirror> getDirectFields() {
         if (fields == null) {
@@ -253,5 +261,19 @@ public class JDTClass implements ClassMirror {
     @Override
     public boolean isJavaSource() {
         return (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
+    }
+    
+    public String getFullPath() {
+        char[] fileName = klass.getFileName();
+        int jarFileEntrySeparatorIndex = CharOperation.indexOf(IDependent.JAR_FILE_ENTRY_SEPARATOR, fileName);
+        if (jarFileEntrySeparatorIndex > 0) {
+            char[] jarPart = CharOperation.subarray(fileName, 0, jarFileEntrySeparatorIndex);
+            IJavaElement jarPackageFragmentRoot = JavaCore.create(new String(jarPart));
+            String jarPath = jarPackageFragmentRoot.getPath().toOSString();
+            char[] entryPart = CharOperation.subarray(fileName, jarFileEntrySeparatorIndex + 1, fileName.length);
+            return new StringBuilder(jarPath).append('!').append(entryPart).toString();
+        }
+        String result = new String(fileName);
+        return result;
     }
 }
