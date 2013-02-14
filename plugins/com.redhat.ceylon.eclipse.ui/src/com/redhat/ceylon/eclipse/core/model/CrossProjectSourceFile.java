@@ -34,4 +34,9 @@ public class CrossProjectSourceFile extends SourceFile implements IResourceAware
     public CrossProjectPhasedUnit getPhasedUnit() {
         return (CrossProjectPhasedUnit) super.getPhasedUnit();
     }
+    
+    public ProjectSourceFile getOriginalSourceFile() {
+        ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
+        return ppu != null ? (ProjectSourceFile) ppu.getUnit() : null;
+    }
 }
