@@ -271,7 +271,7 @@ public class JDTClass implements ClassMirror {
             IJavaElement jarPackageFragmentRoot = JavaCore.create(new String(jarPart));
             String jarPath = jarPackageFragmentRoot.getPath().toOSString();
             char[] entryPart = CharOperation.subarray(fileName, jarFileEntrySeparatorIndex + 1, fileName.length);
-            return new StringBuilder(jarPath).append('!').append(entryPart).toString();
+            return new StringBuilder(jarPath).append("!/").append(entryPart).toString();
         }
         String result = new String(fileName);
         return result;
