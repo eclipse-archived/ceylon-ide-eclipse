@@ -37,6 +37,12 @@ shared class TypeParameters <T,U> (T t, U u) {
  }
  
  //
+ // methods with defaulted type params
+ 
+ shared void methodWithDefaultedTypeParameters<A, T = Number | String, U = Number>(){
+ }
+
+ //
  // upper bounds tests
  
  shared F methodWithUpperBounds<F>(F f)
@@ -55,7 +61,7 @@ shared class TypeParameters <T,U> (T t, U u) {
  }
 
  shared F methodWithErasedUpperBounds<F>(F f)
-  given F satisfies IdentifiableObject {
+  given F satisfies Basic {
   return f;
  }
  
@@ -65,6 +71,12 @@ shared class TypeParameters <T,U> (T t, U u) {
   given I satisfies O{
   return i;
  }
+}
+
+//
+// class with defaulted type params
+
+shared class ClassWithDefaultedTypeParameters<A, T = Number | String, U = Number>(){
 }
 
 //
@@ -83,7 +95,7 @@ shared class ClassWithSelfParameterizedUpperBounds<F>(F f)
 }
 
 shared class ClassWithErasedUpperBounds<F>(F f)
- given F satisfies IdentifiableObject {
+ given F satisfies Basic {
 }
  
 //
@@ -104,6 +116,12 @@ shared T methodWithTypeParameters<T, U>(T t, U u){
 }
 
 //
+// methods with defaulted type params
+
+shared void methodWithDefaultedTypeParameters<A, T = Number | String, U = Number>(){
+}
+
+//
 // upper bounds tests
 
 shared F methodWithUpperBounds<F>(F f)
@@ -119,7 +137,7 @@ shared F methodWithSelfParameterizedUpperBounds<F>(F f)
  return f;
 }
 shared F methodWithErasedUpperBounds<F>(F f)
- given F satisfies IdentifiableObject {
+ given F satisfies Basic {
  return f;
 }
 
@@ -129,3 +147,16 @@ shared O methodWithVariance<in I, out O>(I i)
  given I satisfies O{
  return i;
 }
+
+//
+// case types
+
+shared class ClassWithCaseTypes<T>() 
+ given T of Integer | String {
+ shared void methodWithCaseTypes<T>() 
+  given T of Integer | String {}
+}
+
+shared void methodWithCaseTypes<T>() 
+ given T of Integer | String {}
+
