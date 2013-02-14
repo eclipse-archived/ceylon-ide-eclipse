@@ -473,7 +473,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         String unitName = jdtClass.getFileName();
         
         if (!jdtClass.isBinary()) {
-            // This search is for source Java classes since several classes mmight have the same file name 
+            // This search is for source Java classes since several classes might have the same file name 
             //  and live inside the same Java source file => into the same Unit
             for (Unit unitToTest : pkg.getUnits()) {
                 if (unitToTest.getFilename().equals(unitName)) {
