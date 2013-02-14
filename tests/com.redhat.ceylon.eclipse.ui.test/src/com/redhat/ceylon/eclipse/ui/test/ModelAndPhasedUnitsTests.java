@@ -25,26 +25,34 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
+import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
-
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
+@SuppressWarnings("restriction")
 public class ModelAndPhasedUnitsTests {
     static private AssertionError compilationError = null;
     static private IProject mainProject;
@@ -327,5 +335,207 @@ public class ModelAndPhasedUnitsTests {
         Assert.assertEquals("Eclipse File Resource for Unit : " + unit.getFullPath(),
                 referencedCeylonProject.getFile("src/" + unit.getRelativePath()),
                 unit.getFileResource());
+    }
+    
+    @SuppressWarnings("restriction")
+    @Test 
+    public void checkJavaLibrayrUnits() throws CoreException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(mainProject);
+        
+        String jarName = null;
+        IClassFile javaElement = null;
+        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+            if (root instanceof JarPackageFragmentRoot) {
+                JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+                IPackageFragment pkg = root.getPackageFragment("java.util.logging");
+                if (pkg.exists()) {
+                    javaElement = pkg.getClassFile("Logger.class");
+                    jarName = jarRoot.getJar().getName();
+                    break;
+                }
+            }
+        }
+        
+        JavaClassFile javaClass = checkDeclarationUnit("java.util.logging.Logger", 
+                JavaClassFile.class, 
+                jarName + "!/" + "java/util/logging/Logger.class", 
+                "java/util/logging/Logger.class", 
+                "Logger.class");
+        Assert.assertEquals("Wrong Java Element : ", javaElement, javaClass.getJavaElement());
+        Assert.assertNull("Project Resource should be null :", javaClass.getProjectResource());
+        Assert.assertNull("Root Folder Resource should be null :", javaClass.getRootFolderResource());
+        Assert.assertNull("File Resource should be null :", javaClass.getFileResource());
+    }
+    
+    @Test 
+    public void checkMainProjectJavaCeylonUnits() throws CoreException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(mainProject);
+        
+        String rootPath = null;
+        ICompilationUnit javaClassElement = null;
+        ICompilationUnit javaObjectElement = null;
+        ICompilationUnit javaMethodElement = null;
+        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+            IPackageFragment pkg = root.getPackageFragment("mainModule");
+            if (pkg.exists() && pkg.getCompilationUnit("JavaCeylonTopLevelClass_Main_Ceylon_Project.java").exists()) {
+                javaClassElement = pkg.getCompilationUnit("JavaCeylonTopLevelClass_Main_Ceylon_Project.java");
+                javaObjectElement = pkg.getCompilationUnit("javaCeylonTopLevelObject_Main_Ceylon_Project_.java");
+                javaMethodElement = pkg.getCompilationUnit("javaCeylonTopLevelMethod_Main_Ceylon_Project_.java");
+                rootPath = root.getPath().toOSString();
+                break;
+            }
+        }
+        
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("mainModule.JavaCeylonTopLevelClass_Main_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
+                "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
+                "JavaCeylonTopLevelClass_Main_Ceylon_Project.java");
+        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Class should not be null :", javaClassCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
+
+        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit("mainModule.javaCeylonTopLevelObject_Main_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
+                "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
+                "javaCeylonTopLevelObject_Main_Ceylon_Project_.java");
+        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Object should not be null :", javaObjectCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
+
+        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit("mainModule.javaCeylonTopLevelMethod_Main_Ceylon_Project_", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
+                "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
+                "javaCeylonTopLevelMethod_Main_Ceylon_Project_.java");
+        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Method should not be null :", javaMethodCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Method should not be null :", javaMethodCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Method not be null :", javaMethodCompilationUnit.getFileResource());
+    }
+    
+    @Test 
+    public void checkMainProjectPureJavaUnits() throws CoreException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(mainProject);
+        
+        String rootPath = null;
+        ICompilationUnit javaElement = null;
+        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+            IPackageFragment pkg = root.getPackageFragment("mainModule");
+            if (pkg.exists() && pkg.getCompilationUnit("JavaClassInCeylonModule_Main_Ceylon_Project.java").exists()) {
+                javaElement = pkg.getCompilationUnit("JavaClassInCeylonModule_Main_Ceylon_Project.java");
+                rootPath = root.getPath().toOSString();
+                break;
+            }
+        }
+        
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("mainModule.JavaClassInCeylonModule_Main_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
+                "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
+                "JavaClassInCeylonModule_Main_Ceylon_Project.java");
+        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Pure Java Class should not be null :", javaClassCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  Pure Java for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  Pure Java for Class not be null :", javaClassCompilationUnit.getFileResource());
+    }
+    
+    @Test 
+    public void checkReferencedProjectJavaCeylonUnits() throws CoreException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(referencedCeylonProject);
+        
+        String rootPath = null;
+        ICompilationUnit javaClassElement = null;
+        ICompilationUnit javaObjectElement = null;
+        ICompilationUnit javaMethodElement = null;
+        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+            IPackageFragment pkg = root.getPackageFragment("referencedCeylonProject");
+            if (pkg.exists() && pkg.getCompilationUnit("JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java").exists()) {
+                javaClassElement = pkg.getCompilationUnit("JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java");
+                javaObjectElement = pkg.getCompilationUnit("javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java");
+                javaMethodElement = pkg.getCompilationUnit("javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java");
+                rootPath = root.getPath().toOSString();
+                break;
+            }
+        }
+        
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("referencedCeylonProject.JavaCeylonTopLevelClass_Referenced_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
+                "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
+                "JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java");
+        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Class should not be null :", javaClassCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
+
+        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit("referencedCeylonProject.javaCeylonTopLevelObject_Referenced_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
+                "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
+                "javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java");
+        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Object should not be null :", javaObjectCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
+
+        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit("referencedCeylonProject.javaCeylonTopLevelMethod_Referenced_Ceylon_Project_", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
+                "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
+                "javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java");
+        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Method should not be null :", javaMethodCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  for Method should not be null :", javaMethodCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  for Method not be null :", javaMethodCompilationUnit.getFileResource());
+    }
+    
+    @Test 
+    public void checkReferencedProjectPureJavaUnits() throws CoreException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        IJavaProject javaProject = JavaCore.create(referencedCeylonProject);
+        
+        String rootPath = null;
+        ICompilationUnit javaElement = null;
+        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+            IPackageFragment pkg = root.getPackageFragment("referencedCeylonProject");
+            if (pkg.exists() && pkg.getCompilationUnit("JavaClassInCeylonModule_Referenced_Ceylon_Project.java").exists()) {
+                javaElement = pkg.getCompilationUnit("JavaClassInCeylonModule_Referenced_Ceylon_Project.java");
+                rootPath = root.getPath().toOSString();
+                break;
+            }
+        }
+        
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("referencedCeylonProject.JavaClassInCeylonModule_Referenced_Ceylon_Project", 
+                JavaCompilationUnit.class, 
+                rootPath + "/" + "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
+                "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
+                "JavaClassInCeylonModule_Referenced_Ceylon_Project.java");
+        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertNotNull("Project Resource  for Pure Java Class should not be null :", javaClassCompilationUnit.getProjectResource());
+        Assert.assertNotNull("Root Folder Resource  Pure Java for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
+        Assert.assertNotNull("File Resource should  Pure Java for Class not be null :", javaClassCompilationUnit.getFileResource());
     }
 }
