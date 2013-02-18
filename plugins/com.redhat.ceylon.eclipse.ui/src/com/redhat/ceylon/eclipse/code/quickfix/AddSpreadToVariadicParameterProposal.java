@@ -41,8 +41,8 @@ public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionPropos
             return;
         }
         
-        TextFileChange change = new TextFileChange("Add '*' to iterable argument of variadic parameter", file);
-        change.setEdit(new InsertEdit(term.getStopIndex() + 1, "*"));
+        TextFileChange change = new TextFileChange("Spread iterable argument of variadic parameter", file);
+        change.setEdit(new InsertEdit(term.getStartIndex(), "*"));
         AddSpreadToVariadicParameterProposal p = new AddSpreadToVariadicParameterProposal(fiv.parameter, term.getStopIndex() + 4, file, change);
         if ( !proposals.contains(p)) {
             proposals.add(p);
@@ -54,7 +54,7 @@ public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionPropos
     private TypedDeclaration parameter;
     
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
-        super("Add '*' to iterable argument of variadic parameter", change, 10, CORRECTION);
+        super("Spread iterable argument of variadic parameter", change, 10, CORRECTION);
         this.file=file;
         this.offset=offset;
         this.parameter = parameter;
