@@ -1690,20 +1690,20 @@ public class CeylonContentProposer {
     private static void appendImpl(Declaration d, boolean isInterface, 
     		String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
-            result.append( ((Functional) d).isDeclaredVoid() ?
-                    " {}" : " {" + extraIndent(indent) + "return nothing;" + indent + "}" );
+            result.append(" {").append(extraIndent(indent));
+            result.append(((Functional) d).isDeclaredVoid() ? "" : "return nothing; ");
+            result.append("/* TODO auto-generated stub */");
+            result.append(indent).append("}");
         }
         else if (d instanceof MethodOrValue) {
         	if (isInterface) {
-        		result.append(" {" + extraIndent(indent) + "return nothing;" + indent + "}");
+        		result.append(" {" + extraIndent(indent) + "return nothing; /* TODO auto-generated stub */" + indent + "}");
         		if (isVariable(d)) {
-        			result.append(indent + "assign " + d.getName() + " {}");
+        			result.append(indent + "assign " + d.getName() + " {" + extraIndent(indent) + " /* TODO auto-generated stub */" + indent + "}");
         		}
         	}
         	else {
-        		result.append(" ")
-        			.append("=")
-        			.append(" nothing;");
+        		result.append(" = nothing; /* TODO auto-generated stub */");
         	}
         }
         else if (d instanceof ValueParameter) {
