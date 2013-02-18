@@ -5,6 +5,9 @@ import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -28,6 +31,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
@@ -36,6 +40,12 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
 	public static final String LANGUAGE_ID = "ceylon";
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
+    private static final String[] RUNTIME_LIBRARIES = new String[]{
+        "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+        "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+    };
 	
 	private FontRegistry fontRegistry;
 
@@ -147,6 +157,27 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return ceylonRepository;
     }
 
+    /**
+     * Returns the list of jars bundled in this plugin that are required by the ceylon.language module at runtime
+     */
+    public static List<String> getRuntimeRequiredJars(){
+        Bundle bundle = Platform.getBundle(PLUGIN_ID);
+        Path path = new Path("lib");
+        URL eclipseUrl = FileLocator.find(bundle, path, null);
+        try{
+            URL fileURL = FileLocator.resolve(eclipseUrl);
+            File libDir = new File(fileURL.toURI());
+            List<String> jars = new ArrayList<String>(RUNTIME_LIBRARIES.length);
+            for(String jar : RUNTIME_LIBRARIES){
+                jars.add(new File(libDir, jar).getAbsolutePath());
+            }
+            return jars;
+        }catch(Exception x){
+            x.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+    
 	public String getID() {
 		return PLUGIN_ID;
 	}
