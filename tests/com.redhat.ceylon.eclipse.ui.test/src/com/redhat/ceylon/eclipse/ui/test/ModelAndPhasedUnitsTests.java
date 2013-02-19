@@ -11,20 +11,11 @@
 package com.redhat.ceylon.eclipse.ui.test;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -32,149 +23,25 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 @SuppressWarnings("restriction")
-public class ModelAndPhasedUnitsTests {
-    static private AssertionError compilationError = null;
-    static private IProject mainProject;
-    static private IProject referencedCeylonProject;
-    static private IProject referencedJavaProject;
-    static private String projectGroup = "model-and-phased-units";
-    static private TypeChecker typeChecker = null;
-    static private JDTModelLoader modelLoader = null;
-    
-    @BeforeClass
-    public static void importAndBuildProjects() {
-        try {
-            IPath projectDescriptionPath = null;
-            IPath userDirPath = new Path(System.getProperty("user.dir"));
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
-            
-            try {
-                projectDescriptionPath = projectPathPrefix.append("referenced-java-project/.project");
-                referencedJavaProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
-            }
-            catch(Exception e) {
-                Assert.fail("Import of the referenced java project failed with the exception : \n" + e.toString());
-            }
+public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
 
-            try {
-                buildProject(referencedJavaProject);
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the referenced java project failed with the exception : \n" + e.toString());
-            }
-
-            try {
-                projectDescriptionPath = projectPathPrefix.append("referenced-ceylon-project/.project");
-                referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
-            }
-            catch(Exception e) {
-                Assert.fail("Import of the referenced ceylon project failed with the exception : \n" + e.toString());
-            }
-
-            
-            try {
-                buildProject(referencedCeylonProject);
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the referenced ceylon project failed with the exception : \n" + e.toString());
-            }
-
-            Assert.assertNotNull("Referenced ceylon project compilation didn't produce a Car file", 
-                    referencedCeylonProject.exists(new Path("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.car")));
-            Assert.assertNotNull("Referenced ceylon project compilation didn't produce a Src file", 
-                    referencedCeylonProject.exists(new Path("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.src")));
-
-            try {
-                projectDescriptionPath = projectPathPrefix.append("main-ceylon-project/.project");
-                mainProject = Utils.importProject(workspace, projectGroup,
-                        projectDescriptionPath);
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the main project failed with the exception : \n" + e.toString());
-            }
-            
-            try {
-                buildProject(mainProject);
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the main project failed with the exception : \n" + e.toString());
-            }
-
-            Assert.assertNotNull("Main ceylon project compilation didn't produce the main module Car file", 
-                    mainProject.exists(new Path("modules/mainModule/1.0.0/mainModule-1.0.0.car")));
-            Assert.assertNotNull("Main ceylon project compilation didn't produce the main module Src file", 
-                    mainProject.exists(new Path("modules/mainModule/1.0.0/mainModule-1.0.0.src")));
-            Assert.assertNotNull("Main ceylon project compilation didn't produce the used module Car file", 
-                    mainProject.exists(new Path("modules/usedModule/1.0.0/usedModule-1.0.0.car")));
-            Assert.assertNotNull("Main ceylon project compilation didn't produce the used module Src file", 
-                    mainProject.exists(new Path("modules/usedModule/1.0.0/usedModule-1.0.0.src")));
-
-            typeChecker = CeylonBuilder.getProjectTypeChecker(mainProject);
-            modelLoader = CeylonBuilder.getProjectModelLoader(mainProject);
-        }
-        catch(AssertionError e) {
-            compilationError = e;
-        }
-    }
-
-    public static void buildProject(IProject project) throws CoreException,
-            InterruptedException {
-        final CountDownLatch build;
-        
-        build = new CountDownLatch(1);
-        project.build(IncrementalProjectBuilder.FULL_BUILD, new IProgressMonitor() {
-            @Override
-            public void worked(int work) {
-            }
-            @Override
-            public void subTask(String name) {
-            }
-            @Override
-            public void setTaskName(String name) {
-            }
-            @Override
-            public void setCanceled(boolean value) {
-            }
-            @Override
-            public boolean isCanceled() {
-                return false;
-            }
-            @Override
-            public void internalWorked(double work) {
-            }
-            @Override
-            public void beginTask(String name, int totalWork) {
-            }
-            @Override
-            public void done() {
-                build.countDown();
-            }
-        });
-        build.await(60, TimeUnit.SECONDS);
-    }
-    
     @SuppressWarnings("unchecked")
     private <T extends PhasedUnit> T checkPhasedUnitClass(String phasedUnitPath, Class<T> phasedUnitClass) {
         PhasedUnit pu = null;

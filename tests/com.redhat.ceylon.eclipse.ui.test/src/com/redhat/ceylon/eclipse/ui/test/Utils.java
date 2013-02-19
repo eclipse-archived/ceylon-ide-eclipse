@@ -66,8 +66,7 @@ public class Utils {
                             return IOverwriteQuery.ALL;
                         }
             }, filesToImport);
-            operation.setContext(PlatformUI.getWorkbench().
-                    getActiveWorkbenchWindow().getShell());
+            operation.setContext(null);
             operation.setOverwriteResources(true); // need to overwrite
             // .project, .classpath
             // files
