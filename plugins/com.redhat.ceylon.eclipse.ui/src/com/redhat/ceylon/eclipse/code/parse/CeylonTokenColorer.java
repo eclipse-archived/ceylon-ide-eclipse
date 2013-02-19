@@ -4,9 +4,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.antlr.runtime.Token;
+import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -17,7 +18,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
+import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.Task;
 
 public class CeylonTokenColorer  {
     
@@ -97,7 +99,7 @@ public class CeylonTokenColorer  {
         return interpAttribute;
     }
     
-    public TextAttribute getColoring(Token token) {
+    public TextAttribute getColoring(CommonToken token) {
         switch (token.getType()) {
             case CeylonParser.PIDENTIFIER:
                 return packageAttribute;
@@ -123,7 +125,8 @@ public class CeylonTokenColorer  {
                 return stringAttribute;
             case CeylonParser.MULTI_COMMENT:
             case CeylonParser.LINE_COMMENT:
-                if (CeylonBuilder.priority(token)>=0) {
+                List<Task> tasks = CeylonTaskUtil.getTasks(token);
+                if (tasks != null && tasks.size() > 0) {
                     return todoAttribute;
                 }
                 else {

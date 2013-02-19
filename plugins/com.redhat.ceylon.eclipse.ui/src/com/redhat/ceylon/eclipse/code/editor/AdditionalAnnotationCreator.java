@@ -27,7 +27,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
  * Responsible for adding refinement annotations to the 
@@ -81,11 +80,9 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
 
         }.visit(cpc.getRootNode());
         
-        for (CommonToken token: (List<CommonToken>) cpc.getTokens()) {
-            if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                if (CeylonBuilder.priority(token)>=0) {
-                    addTodoAnnotation(token, model);
-                }
+        for (CommonToken token : (List<CommonToken>) cpc.getTokens()) {
+            if (token.getType() == CeylonLexer.LINE_COMMENT || token.getType() == CeylonLexer.MULTI_COMMENT) {
+                CeylonTaskUtil.addTaskAnnotation(token, model);
             }
         }
     }
@@ -149,12 +146,6 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             model.addAnnotation(ra, new Position(getStartOffset(that), 
             		getLength(that)+1));
         }
-    }
-    
-    private void addTodoAnnotation(CommonToken token, IAnnotationModel model) {
-        model.addAnnotation(new Annotation(TODO_ANNOTATION_TYPE, false, null), 
-                new Position(token.getStartIndex(), 
-                		token.getStopIndex()-token.getStartIndex()+1));
     }
     
     class SelectionListener implements ISelectionChangedListener {
