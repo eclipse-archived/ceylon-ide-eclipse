@@ -52,6 +52,7 @@ import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
@@ -338,9 +339,16 @@ public class CeylonParseController {
             	pkg = getPackage(file, srcDir, builtPhasedUnit);
             }
             
-            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                    typeChecker.getPhasedUnits().getModuleManager(), 
-                    typeChecker, tokens);  
+            if (builtPhasedUnit instanceof ProjectPhasedUnit) {
+                phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                        typeChecker.getPhasedUnits().getModuleManager(), 
+                        typeChecker, tokens, (ProjectPhasedUnit) builtPhasedUnit);  
+            }
+            else {
+                phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                        typeChecker.getPhasedUnits().getModuleManager(), 
+                        typeChecker, tokens, null);
+            }
             
             phasedUnit.validateTree();
             phasedUnit.visitSrcModulePhase();
