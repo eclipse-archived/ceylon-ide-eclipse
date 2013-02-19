@@ -38,6 +38,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -50,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
@@ -414,40 +416,23 @@ public class CeylonParseController {
 		        return p;
 		    }
 		}
-		
-		//for files from external repos, search for
-		//the repo by iterating all repos referenced
-		//by all projects (yuck, this is fragile!!!)
-		//TODO: this causes a bug where we see errors
-		//      in the source file if we find the
-		//      the wrong project here
-		String pp = path.toPortableString();
-		String osp = path.toOSString();
-		int i = pp.indexOf('!'); //this is a bit fragile
-		if (i>0) {
-			String relPath = pp.substring(i+2);
-			for (IProject p: getProjects()) {
-				try {
-					for (String repo: getAllRepositories(p)) {
-						if (osp.startsWith(repo)) {
-							PhasedUnit pu = getProjectTypeChecker(p)
-									.getPhasedUnitFromRelativePath(relPath);
-							if (pu!=null) {
-								Module m = pu.getPackage().getModule();
-								if (pp.contains(m.getNameAsString() + '-' + 
-										m.getVersion())) { //this is a bit fragile
-									return p;
-								}
-							}
-						}
-					}
-				} 
-				catch (CoreException e) {
-					e.printStackTrace();
-				}
-			}
+
+		for (IProject p : CeylonBuilder.getProjects()) {
+		    TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(p);
+		    for (PhasedUnit unit : typeChecker.getPhasedUnits().getPhasedUnits()) {
+		        if (unit.getUnit().getFullPath().equals(path)) {
+		            return p;
+		        }
+		    }
+            for (PhasedUnits units : typeChecker.getPhasedUnitsOfDependencies()) {
+                for (PhasedUnit unit : units.getPhasedUnits()) {
+                    if (unit.getUnit().getFullPath().equals(path.toString())) {
+                        return p;
+                    }
+                }
+            }
+		    
 		}
-		
 		return null;
 	}
 
