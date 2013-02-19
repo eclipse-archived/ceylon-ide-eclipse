@@ -5,6 +5,7 @@ Bundle-SymbolicName: com.redhat.ceylon.eclipse.ui.test;singleton:=true
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.test.CeylonUITestActivator
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.junit;bundle-version="4.8.1",
+ org.hamcrest,
  com.redhat.ceylon.eclipse.ui;bundle-version="1.0.0",
  org.eclipse.ui.ide;bundle-version="3.7.0",
  org.eclipse.core.runtime,
@@ -30,7 +31,17 @@ Require-Bundle: org.junit;bundle-version="4.8.1",
  org.eclipse.jdt.debug,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.debug.ui,
- org.eclipse.ui.cheatsheets
+ org.eclipse.ui.cheatsheets,
+ org.eclipse.swtbot.eclipse.core;bundle-version="2.0.5",
+ org.eclipse.swtbot.eclipse.finder;bundle-version="2.0.5",
+ org.eclipse.swtbot.eclipse.gef.finder;bundle-version="2.0.5",
+ org.eclipse.swtbot.eclipse.junit4.headless;bundle-version="2.0.5",
+ org.eclipse.swtbot.eclipse.spy;bundle-version="2.0.5",
+ org.eclipse.swtbot.eclipse.ui;bundle-version="2.0.5",
+ org.eclipse.swtbot.forms.finder;bundle-version="2.0.5",
+ org.eclipse.swtbot.go;bundle-version="2.0.5",
+ org.eclipse.swtbot.junit4_x;bundle-version="2.0.5",
+ org.eclipse.swtbot.swt.finder;bundle-version="2.0.5"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: %BundleVendor
