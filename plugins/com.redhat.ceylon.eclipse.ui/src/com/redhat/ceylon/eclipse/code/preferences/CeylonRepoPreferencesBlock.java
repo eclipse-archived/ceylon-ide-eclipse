@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.cmr.maven.AetherUtils.getDefaultMavenSettings;
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
@@ -45,7 +46,8 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
-import static com.redhat.ceylon.cmr.maven.AetherUtils.getDefaultMavenSettings;
+import com.redhat.ceylon.common.config.ConfigParser;
+import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -101,7 +103,7 @@ public class CeylonRepoPreferencesBlock {
 
     public void performDefaults() {
         systemRepoText.setText("${ceylon.repo}");
-        outputRepoText.setText("."+File.separator+"modules");
+        outputRepoText.setText(Repositories.withConfig(ConfigParser.loadDefaultConfig(null)).getOutputRepository().getUrl());
 
         projectLocalRepos = new ArrayList<String>();
         projectRemoteRepos = new ArrayList<String>();
