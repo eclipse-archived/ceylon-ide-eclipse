@@ -1306,21 +1306,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 		//}
 		return outputLocationPath;
 	}
-
-	/**
-	 * Returns the source class path entries to be added on new projects.
-	 * The underlying resource may not exist.
-	 *
-	 * @return returns the default class path entries
-	 */
-	public IPath getCeylonOutputLocation() {
-		IPath outputLocationPath= new Path(getProjectName()).makeAbsolute();
-		//if (fLayoutGroup.isSrcBin()) {
-			outputLocationPath= outputLocationPath.append("modules");
-		//}
-		return outputLocationPath;
-	}
-
+	
 	/**
 	 * Returns the working sets to which the new project should be added.
 	 *
