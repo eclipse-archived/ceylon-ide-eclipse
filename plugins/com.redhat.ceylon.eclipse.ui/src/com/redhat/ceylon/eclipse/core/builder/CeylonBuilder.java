@@ -107,6 +107,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
@@ -1879,31 +1880,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
 
     private static void addTaskMarkers(IFile file, List<CommonToken> tokens) {
-        //clearTaskMarkersOn(file);
-        for (CommonToken token: tokens) {
-            if (token.getType()==CeylonLexer.LINE_COMMENT) {
-                int priority = priority(token);
-                if (priority>=0) {
-                    Map<String, Object> attributes = new HashMap<String, Object>();
-                    attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-                    attributes.put(IMarker.PRIORITY, priority);
-                    attributes.put(IMarker.USER_EDITABLE, false);
-                    attributes.put(IMarker.LINE_NUMBER, token.getLine());
-                    attributes.put(IMarker.CHAR_START, token.getStartIndex());
-                    attributes.put(IMarker.CHAR_END, token.getStopIndex());
-                    attributes.put(IMarker.MESSAGE, token.getText().substring(2).trim());   
-                    attributes.put(IMarker.SOURCE_ID, SOURCE);
-                    try {
-                        file.createMarker(TASK_MARKER_ID).setAttributes(attributes);
-                    } 
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+        // clearTaskMarkersOn(file);
+        for (CommonToken token : tokens) {
+            if (token.getType() == CeylonLexer.LINE_COMMENT || token.getType() == CeylonLexer.MULTI_COMMENT) {
+                CeylonTaskUtil.addTaskMarkers(token, file);
             }
         }
     }
-
+    
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
         super.clean(monitor);
@@ -1976,19 +1960,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     // TODO think: doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
-
-    public static int priority(Token token) {
-        String comment = token.getText().substring(2).trim().toLowerCase();
-        if (comment.startsWith("todo")) {
-            return IMarker.PRIORITY_NORMAL;
-        }
-        else if (comment.startsWith("fix")) {
-            return IMarker.PRIORITY_HIGH;
-        }
-        else {
-            return -1;
-        }
-    }
 
     private static List<IFile> getProjectSources(IProject project) {
         return projectSources.get(project);
