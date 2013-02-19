@@ -12,6 +12,8 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -813,8 +815,7 @@ public class BuildPathsBlock {
 				}
 			}
 			
-			//TODO: more robust clean up the "old" ceylon output location!
-			project.getFolder("modules").delete(true, monitor);
+			getCeylonModulesOutputFolder(project).delete(true, monitor);
 
 			monitor.worked(1);
 
