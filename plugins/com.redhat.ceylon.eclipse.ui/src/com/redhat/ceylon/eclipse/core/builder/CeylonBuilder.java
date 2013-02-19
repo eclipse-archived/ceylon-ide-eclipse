@@ -2330,9 +2330,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
 	public static IFolder getCeylonModulesOutputFolder(IProject project) {
 		IPath path = CeylonProjectConfig.get(project).getOutputRepoPath();
-		return path==null ? 
-				project.getFolder("modules") : 
-			    project.getFolder(path.removeFirstSegments(1));
+		return project.getFolder(path.removeFirstSegments(1));
 	}
 	
     public static String getCeylonSystemRepo(IProject project) {
@@ -2366,9 +2364,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * String representation for debugging purposes
      */
     public String toString() {
-        return this.getProject() == null
-                ? "CeylonBuilder for unknown project" //$NON-NLS-1$
-                        : "CeylonBuilder for " + getProject().getName(); //$NON-NLS-1$
+        return this.getProject() == null ? 
+                "CeylonBuilder for unknown project" : 
+                "CeylonBuilder for " + getProject().getName();
     }
 
 }
