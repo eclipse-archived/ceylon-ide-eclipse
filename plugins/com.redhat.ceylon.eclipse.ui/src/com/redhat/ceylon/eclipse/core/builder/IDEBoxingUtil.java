@@ -255,7 +255,7 @@ public class IDEBoxingUtil {
         return type;
     }
 
-    static private boolean isTypeParameter(ProducedType type) {
+    static public boolean isTypeParameter(ProducedType type) {
         if (unit(type).isOptionalType(type)) {
             type = type.minus(unit(type).getNullDeclaration().getType());
         } 

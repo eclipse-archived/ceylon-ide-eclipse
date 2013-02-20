@@ -20,4 +20,9 @@ public class IDEBoxingVisitor extends BoxingVisitor {
     protected boolean hasErasure(ProducedType type) {
         return IDEBoxingUtil.hasErasure(type);
     }
+
+    @Override
+    protected boolean isTypeParameter(ProducedType type) {
+        return IDEBoxingUtil.isTypeParameter(type);
+    }
 }
