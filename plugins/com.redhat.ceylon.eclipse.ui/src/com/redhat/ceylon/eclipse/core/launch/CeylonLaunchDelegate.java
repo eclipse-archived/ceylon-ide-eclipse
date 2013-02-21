@@ -25,6 +25,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
@@ -58,7 +59,7 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             writeModuleInfoFile(tmpFile, configuration);
             // then we save the path to the file and the main method to invoke in the launch, to be accessed in getVMRunner
             launch.setAttribute("CEYLON_MODULE_DESCRIPTOR", tmpFile.getAbsolutePath());
-            launch.setAttribute("CEYLON_MAIN", configuration.getAttribute("CEYLON_MAIN", (String)null));
+            launch.setAttribute("CEYLON_MAIN", configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String)null));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
