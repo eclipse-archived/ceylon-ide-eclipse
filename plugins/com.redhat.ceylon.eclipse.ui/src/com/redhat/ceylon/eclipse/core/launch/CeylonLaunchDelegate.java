@@ -164,11 +164,13 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         return classpathList.toArray(new String[classpathList.size()]);
     }
     
-    private String[] getJavaClasspath(ILaunchConfiguration configuration) throws CoreException {
+    // overridden by test subclass
+    protected String[] getJavaClasspath(ILaunchConfiguration configuration) throws CoreException {
         return super.getClasspath(configuration);
     }
     
-    private String[] getCeylonProjectClasspath(IJavaProject javaProject) throws JavaModelException {
+    // overridden by test subclass
+    protected String[] getCeylonProjectClasspath(IJavaProject javaProject) throws JavaModelException {
         final List<String> classpathList = new ArrayList<String>();
         
         for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
