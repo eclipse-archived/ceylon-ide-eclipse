@@ -37,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.ui.TestRunViewPart;
@@ -83,7 +84,10 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
         
         String[] ceylonClasspath = getCeylonProjectClasspath(project);
         classpathList.addAll(asList(ceylonClasspath));
-        
+
+        // at runtime, we need the compiler/common/typechecker/cmr jars to be present for the runtime module system
+        classpathList.addAll(CeylonPlugin.getRuntimeRequiredJars());
+
         List<String> pluginClasspath = getPluginClasspath();
         classpathList.addAll(pluginClasspath);
 
