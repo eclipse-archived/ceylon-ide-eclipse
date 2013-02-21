@@ -38,6 +38,11 @@
       <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
       <url>http://download.jboss.org/tools/extras/imp</url>
     </repository>
+   <repository>
+     <id>swtbot</id>
+     <layout>p2</layout>
+     <url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site</url>
+   </repository>
 
   </repositories>
 
