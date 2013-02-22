@@ -140,27 +140,24 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
 					//add a closing fence
-                    cmd.shiftsCaret = false;
-				    try {
-                        if (opening.equals("`")) {
-                            if (cmd.offset>0 &&
-                                    !doc.get(cmd.offset-1,1).equals("`")) {
-                                cmd.text += "```";
-                                cmd.caretOffset = cmd.offset + 2;
-                            }
-                            else {
-                                cmd.caretOffset = cmd.offset + 1;
-                            }
-                        }
-                        else {
-                            cmd.text += closing;
-                            cmd.caretOffset = cmd.offset + 1;
-                        }
-                    } 
-				    catch (BadLocationException e) {}
+				    cmd.shiftsCaret = false;
+                    cmd.caretOffset = cmd.offset + 1;
+				    if (opening.equals("`")) {
+				        try {
+				            if (cmd.offset>1 &&
+				                    doc.get(cmd.offset-1,1).equals("`") &&
+				                    !doc.get(cmd.offset-2,1).equals("`")) {
+				                cmd.text += "``";
+				            }
+				        } 
+				        catch (BadLocationException e) {}
+				    }
+				    else {
+				        cmd.text += closing;
+				    }
 				}
 			}
-			
+
 		}
 	}
 
