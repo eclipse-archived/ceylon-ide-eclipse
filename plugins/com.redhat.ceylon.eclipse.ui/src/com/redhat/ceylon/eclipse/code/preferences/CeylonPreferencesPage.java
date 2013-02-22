@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
@@ -28,9 +29,11 @@ public class CeylonPreferencesPage extends PropertyPage {
     private boolean showCompilerWarnings=true;
     private boolean builderEnabled = false;
     private boolean backendJs = false;
+    private boolean backendJava = false;
 
     private Button showWarnings;
     private Button compileToJs;
+    private Button compileToJava;
     private Button enableExplodeModules;
 
     @Override
@@ -46,14 +49,17 @@ public class CeylonPreferencesPage extends PropertyPage {
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
         backendJs = false;
+        backendJava = true;
         compileToJs.setSelection(false);
+        compileToJava.setSelection(true);
         super.performDefaults();
     }
     
     private void store() {
         IProject project = getSelectedProject();
         String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
-        new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, backendJs).addToProject(project);
+        new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
+                backendJava, backendJs).addToProject(project);
     }
 
     private IProject getSelectedProject() {
@@ -96,12 +102,17 @@ public class CeylonPreferencesPage extends PropertyPage {
         showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         showWarnings.setText("Show compiler warnings (for unused declarations)");
         showWarnings.setSelection(showCompilerWarnings);
-        showWarnings.setEnabled(true);
+        showWarnings.setEnabled(builderEnabled);
+
+        compileToJava = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        compileToJava.setText("Compile project for JVM");
+        compileToJava.setSelection(backendJava);
+        compileToJava.setEnabled(builderEnabled);
 
         compileToJs = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        compileToJs.setText("Also compile project to JavaScript");
+        compileToJs.setText("Compile project to JavaScript");
         compileToJs.setSelection(backendJs);
-        compileToJs.setEnabled(true);
+        compileToJs.setEnabled(builderEnabled);
 
         enableBuilder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -110,7 +121,8 @@ public class CeylonPreferencesPage extends PropertyPage {
                 enableBuilder.setEnabled(false);
                 enableExplodeModules.setEnabled(true);
                 showWarnings.setEnabled(true);
-                compileToJs.setEnabled(false);
+                compileToJs.setEnabled(true);
+                compileToJava.setEnabled(true);
                 builderEnabled=true;
             }
         });
@@ -129,6 +141,13 @@ public class CeylonPreferencesPage extends PropertyPage {
             }
         });
 
+        compileToJava.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                backendJava = !backendJava;
+            }
+        });
+        
         compileToJs.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -146,6 +165,7 @@ public class CeylonPreferencesPage extends PropertyPage {
                 explodeModules = isExplodeModulesEnabled(project);
                 showCompilerWarnings = showWarnings(project);
                 backendJs = compileToJs(project);
+                backendJava = compileToJava(project);
             }
         }
 
