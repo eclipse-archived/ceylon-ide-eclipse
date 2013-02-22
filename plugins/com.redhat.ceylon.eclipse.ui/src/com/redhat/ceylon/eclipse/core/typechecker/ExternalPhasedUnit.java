@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.typechecker;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;

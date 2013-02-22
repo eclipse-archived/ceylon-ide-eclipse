@@ -1518,11 +1518,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     ex.printStackTrace(printWriter);
                 }
             }
-            // always add the java files, otherwise ceylon code won't see them and they won't end up in the archives (src/car)
-            sourceFiles.addAll(javaSourceFiles);
-            if(!sourceFiles.isEmpty()){
-                success = compile(project, javaProject, options, sourceFiles, 
-                		typeChecker, printWriter, monitor);
+            if (compileToJava(project)) {
+                // always add the java files, otherwise ceylon code won't see them and they won't end up in the archives (src/car)
+                sourceFiles.addAll(javaSourceFiles);
+                if(!sourceFiles.isEmpty()){
+                    success = compile(project, javaProject, options, sourceFiles, 
+                            typeChecker, printWriter, monitor);
+                }
             }
             return success;
         }
@@ -1712,6 +1714,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	public static boolean compileToJs(IProject project) {
         return getBuilderArgs(project).get("compileJs")!=null;
 	}
+    public static boolean compileToJava(IProject project) {
+        return getBuilderArgs(project).get("compileJava")==null;
+    }
 	
     public static String fileName(ClassMirror c) {
         if (c instanceof JavacClass) {

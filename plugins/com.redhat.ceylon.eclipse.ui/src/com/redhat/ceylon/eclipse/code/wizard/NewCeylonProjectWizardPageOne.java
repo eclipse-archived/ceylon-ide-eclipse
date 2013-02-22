@@ -1456,6 +1456,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 
 	private boolean showCompilerWarnings = true;
 
+    private boolean compileJava = true;
+    public boolean isCompileJava() {
+        return compileJava;
+    }
+
 	private boolean compileJs = false;
 	public boolean isCompileJs() {
 	    return compileJs;
@@ -1481,8 +1486,14 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
 
+        final Button jc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        jc.setText("Compile project for JVM");
+        jc.setSelection(compileJava);
+        jc.setEnabled(true);
+        jc.setSelection(true);
+
         final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        jsc.setText("Also compile project to JavaScript");
+        jsc.setText("Compile project to JavaScript");
         jsc.setSelection(compileJs);
         jsc.setEnabled(true);
 
@@ -1501,6 +1512,15 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
             	showCompilerWarnings = !showCompilerWarnings;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+
+        jc.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                compileJava = !compileJava;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}

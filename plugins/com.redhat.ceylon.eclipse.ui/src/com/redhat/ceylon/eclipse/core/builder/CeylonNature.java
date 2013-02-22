@@ -30,6 +30,7 @@ public class CeylonNature extends ProjectNatureBase {
 	boolean hideWarnings;
 	boolean keepSettings;
 	boolean compileJs;
+	boolean compileJava;
 
     public CeylonNature() {
     	keepSettings=true;
@@ -38,11 +39,13 @@ public class CeylonNature extends ProjectNatureBase {
     public CeylonNature(String systemRepo, 
     		boolean enableJdtClasses, 
     		boolean hideWarnings, 
+    		boolean java,
     		boolean js) {
     	this.systemRepo = systemRepo;
     	this.enableJdtClasses = enableJdtClasses;
     	this.hideWarnings = hideWarnings;
     	compileJs = js;
+    	compileJava = java;
     }
     
     public String getNatureID() {
@@ -94,6 +97,11 @@ public class CeylonNature extends ProjectNatureBase {
     		else {
     			args.remove("explodeModules");
     		}
+            if (compileJava) {
+                args.remove("compileJava");
+            } else {
+                args.put("compileJava", "false");
+            }
     		if (compileJs) {
     		    args.put("compileJs", "true");
     		} else {
