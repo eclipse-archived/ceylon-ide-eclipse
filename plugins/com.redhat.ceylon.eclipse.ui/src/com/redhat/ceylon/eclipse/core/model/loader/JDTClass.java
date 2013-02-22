@@ -34,7 +34,6 @@ import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
-import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
@@ -234,7 +233,12 @@ public class JDTClass implements ClassMirror {
     public boolean isStatic() {
         return klass.isStatic();
     }
-    
+
+    @Override
+    public boolean isFinal() {
+        return klass.isFinal();
+    }
+
     public String getFileName() {
         char[] fileName = klass.getFileName();
         int start = CharOperation.lastIndexOf('/', fileName) + 1;

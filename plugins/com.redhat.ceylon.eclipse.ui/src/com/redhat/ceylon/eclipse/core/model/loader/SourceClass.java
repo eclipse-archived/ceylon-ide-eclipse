@@ -14,6 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilerAnnotation;
 
@@ -53,6 +54,15 @@ public class SourceClass implements ClassMirror {
     @Override
     public boolean isStatic() {
         return false;
+    }
+
+    @Override
+    public boolean isFinal() {
+        Declaration decl = getModelDeclaration();
+        if (! (decl instanceof TypeDeclaration)) {
+            return false;
+        }
+        return ((TypeDeclaration)decl).isFinal();
     }
 
     @Override
