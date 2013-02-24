@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isCeylon;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.retrievePackage;
 
 import org.eclipse.core.resources.IFile;
@@ -47,25 +49,35 @@ final class DeltaScanner implements IResourceDeltaVisitor {
 	    
 	    else if (resource instanceof IFile) {
 	        if (resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
-	            //a package descriptor has been added, removed, or changed
-	            mustDoFullBuild.value = true;
+                //a package descriptor has been added, removed, or changed
+	            if (resourceDelta.getKind()!=IResourceDelta.CHANGED) {
+	                mustDoFullBuild.value = true;
+	            }
+	            else {
+	                sourceModified.value = true;
+	            }
 	        }
 	        else if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
 	            //a module descriptor has been added, removed, or changed
 	            mustResolveClasspathContainer.value = true;
-	            mustDoFullBuild.value = true;
+                if (resourceDelta.getKind()!=IResourceDelta.CHANGED) {
+                    mustDoFullBuild.value = true;
+                }
+                else {
+                    sourceModified.value = true;
+                }
 	        }
 	        else if (resource.getName().equals(".classpath")) {
 	            //the classpath changed
 	        	mustDoFullBuild.value = true;
 	        	mustResolveClasspathContainer.value = true;
 	        }
-	        else if (CeylonBuilder.isCeylon((IFile) resource)) {
+	        else if (isCeylon((IFile) resource)) {
 	        	//a Ceylon source file was modified, we can
 	        	//compile incrementally
 	            sourceModified.value = true;
 	        }
-	        else if (CeylonBuilder.isJava((IFile) resource)) {
+	        else if (isJava((IFile) resource)) {
 	        	if (!resource.getProject().equals(project)) {
 	        		//a Java source file in a project we depend
 	        		//on was modified - we must do a full build, 
