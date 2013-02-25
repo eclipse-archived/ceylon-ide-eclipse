@@ -23,7 +23,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -69,10 +68,9 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public boolean isEnabled() {
 	    return declaration!=null &&
                 project != null &&
-                declaration.getUnit() instanceof EditedSourceFile &&
-                project.equals(((EditedSourceFile)declaration.getUnit()).getProjectResource());
+                inSameProject(declaration);
 	}
-	
+
 	public int getCount() {
 	    return declaration==null ? 0 : countDeclarationOccurrences();
 	}
