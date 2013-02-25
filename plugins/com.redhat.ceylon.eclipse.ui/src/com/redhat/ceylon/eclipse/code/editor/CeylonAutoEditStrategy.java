@@ -434,7 +434,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
                     false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
+            if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
+                String hanging = d.get(c.offset, getEndOfCurrentLine(d, c)-c.offset); //stuff after the { on the current line
+                buf.insert(buf.length()-2, hanging);
+                c.length = hanging.length();
+            }
             c.text = buf.toString();
+            
         }
         if (isMultilineCommentStart(c.offset, d)) {
         	c.shiftsCaret=false;
