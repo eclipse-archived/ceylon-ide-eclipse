@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.createInsertAnnotationEdit;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.getAnnotationIdentifier;
@@ -65,28 +66,15 @@ public class AddDocAnnotationProposal extends ChangeCorrectionProposal {
             }
         } else if (node instanceof ModuleDescriptor) {
             ImportPath importPath = ((ModuleDescriptor) node).getImportPath();
-            name = determineDocumentableNodeName(importPath);
+            name = formatPath(importPath.getIdentifiers());
         } else if (node instanceof PackageDescriptor) {
             ImportPath importPath = ((PackageDescriptor) node).getImportPath();
-            name = determineDocumentableNodeName(importPath);
+            name = formatPath(importPath.getIdentifiers());
         } else if (node instanceof Assertion) {
             name = "assert";
         }
 
         return name;
-    }
-    
-    private static String determineDocumentableNodeName(ImportPath importPath) {
-        StringBuilder name = new StringBuilder();
-        if (importPath != null) {
-            for (Identifier identifier : importPath.getIdentifiers()) {
-                if (name.length() > 0) {
-                    name.append(".");
-                }
-                name.append(identifier.getText());
-            }
-        }
-        return name.toString();
     }
     
     private static boolean isAlreadyPresent(Node node) {

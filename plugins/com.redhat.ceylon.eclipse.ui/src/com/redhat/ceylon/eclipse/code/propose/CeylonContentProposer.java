@@ -90,6 +90,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -441,9 +442,7 @@ public class CeylonContentProposer {
 			Tree.ImportPath path) {
 		StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            for (int i=0; i<path.getIdentifiers().size(); i++) {
-                fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
-            }
+            fullPath.append(Util.formatPath(path.getIdentifiers()));
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }
 		return fullPath.toString();
