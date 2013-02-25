@@ -25,6 +25,7 @@ public class EditedPhasedUnit extends IdePhasedUnit {
             TypeChecker typeChecker, List<CommonToken> tokenStream, ProjectPhasedUnit savedPhasedUnit) {
         super(unitFile, srcDir, cu, p, moduleManager, typeChecker, tokenStream);
         savedPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(savedPhasedUnit);
+        savedPhasedUnit.addWorkingCopy(this);
     }
     
     public EditedPhasedUnit(PhasedUnit other) {
@@ -34,6 +35,11 @@ public class EditedPhasedUnit extends IdePhasedUnit {
     @Override
     public Unit createUnit() {
         return new EditedSourceFile(this);
+    }
+    
+    @Override
+    public EditedSourceFile getUnit() {
+        return (EditedSourceFile) super.getUnit();
     }
 
     public ProjectPhasedUnit getOriginalPhasedUnit() {

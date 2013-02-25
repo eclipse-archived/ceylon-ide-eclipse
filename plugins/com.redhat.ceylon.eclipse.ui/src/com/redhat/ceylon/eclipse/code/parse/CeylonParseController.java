@@ -89,6 +89,13 @@ public class CeylonParseController {
 	 */
 	protected Tree.CompilationUnit rootNode;
 
+    /**
+     * The EditedPhasedUnit associated with the most recent typecheck. 
+     * May be null if this parse controller has never parsed or 
+     * successfully typechecked anything.
+     */
+    private PhasedUnit phasedUnit;
+
 	/**
 	 * The most-recently parsed source document. May be null 
 	 * if this parse controller has never parsed anything.
@@ -251,9 +258,9 @@ public class CeylonParseController {
         }
 
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
-        cu = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
-        
-        collectErrors(cu);
+        phasedUnit = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
+        rootNode = phasedUnit.getCompilationUnit();
+        collectErrors(rootNode);
         
         if (stager!=null) {
         	stager.afterStage(TYPE_ANALYSIS, monitor);
@@ -313,14 +320,12 @@ public class CeylonParseController {
         }
 	}
 
-	private Tree.CompilationUnit typecheck(IPath path, VirtualFile file,
+	private PhasedUnit typecheck(IPath path, VirtualFile file,
 			Tree.CompilationUnit cu, VirtualFile srcDir, 
 			boolean showWarnings, PhasedUnit builtPhasedUnit) {
 		PhasedUnit phasedUnit;
         if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
-        	cu = builtPhasedUnit.getCompilationUnit();
-            rootNode = cu;
             phasedUnit = builtPhasedUnit;
             phasedUnit.analyseTypes();
 			if (showWarnings) {
@@ -362,7 +367,7 @@ public class CeylonParseController {
             }
             phasedUnit.analyseFlow();
         }
-        return cu;
+        return phasedUnit;
 	}
 
 	private static TypeChecker createTypeChecker(IProject project, 
