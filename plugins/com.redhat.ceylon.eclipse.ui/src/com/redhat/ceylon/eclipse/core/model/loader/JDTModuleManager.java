@@ -55,7 +55,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -71,8 +70,6 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.LazyPhasedUnit;
 
 /**
  * @author david
