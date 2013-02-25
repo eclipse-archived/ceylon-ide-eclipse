@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import java.lang.ref.WeakReference;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 
