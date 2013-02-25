@@ -52,4 +52,9 @@ public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
     protected Unit createUnit() {
         return new CrossProjectSourceFile(this);
     }
+
+    @Override
+    public CrossProjectSourceFile getUnit() {
+        return (CrossProjectSourceFile) super.getUnit();
+    }
 }

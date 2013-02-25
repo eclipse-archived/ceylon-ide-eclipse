@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IProject;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
-public class CrossProjectSourceFile extends SourceFile implements IResourceAware {
+public class CrossProjectSourceFile extends ExternalSourceFile implements IResourceAware {
     public CrossProjectSourceFile(CrossProjectPhasedUnit phasedUnit) {
         super(phasedUnit);
     }

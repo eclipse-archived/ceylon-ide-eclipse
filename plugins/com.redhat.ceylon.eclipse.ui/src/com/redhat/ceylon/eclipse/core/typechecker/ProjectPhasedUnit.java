@@ -1,12 +1,13 @@
 package com.redhat.ceylon.eclipse.core.typechecker;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -18,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class ProjectPhasedUnit extends IdePhasedUnit {
     private IFolder sourceFolderResource;
+    private WeakHashMap<EditedPhasedUnit, Object> workingCopies = new WeakHashMap<EditedPhasedUnit, Object>();
     
     public ProjectPhasedUnit(ResourceVirtualFile unitFile, ResourceVirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
@@ -48,5 +50,15 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     @Override
     protected Unit createUnit() {
         return new ProjectSourceFile(this);
+    }
+    
+    public void addWorkingCopy(EditedPhasedUnit workingCopy) {
+        if (! workingCopies.containsKey(workingCopy)) {
+            workingCopies.put(workingCopy, null);
+        }
+    }
+    
+    public Iterator<EditedPhasedUnit> getWorkingCopies() {
+        return workingCopies.keySet().iterator();
     }
 }
