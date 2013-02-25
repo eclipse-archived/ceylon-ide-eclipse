@@ -332,13 +332,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         IJavaProject javaProject = JavaCore.create(project);
 		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(),100);
 		
-		if (kind==FULL_BUILD||kind==CLEAN_BUILD) {
-		    System.out.println("full build of project " + project.getName());
-		}
-		else {
-		    System.out.println("incremental build of project " + project.getName());
-		}
-        
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
         	Object message = m.getAttribute("message");
@@ -380,6 +373,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         if (!somethingToDo && (args==null || !args.containsKey(BUILDER_ID + ".reentrant"))) {
             return project.getReferencedProjects();
+        }
+        
+        if (mustDoFullBuild.value) {
+            System.out.println("full build of project " + project.getName());
+        }
+        else {
+            System.out.println("incremental build of project " + project.getName());
         }
         
         if (monitor.isCanceled()) {
@@ -898,17 +898,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             		.getPhasedUnit(createResourceVirtualFile(srcFile));
             Set<String> result = new LinkedHashSet<String>();
             if (phasedUnit != null && phasedUnit.getUnit() != null) {
-                if (ModuleManager.MODULE_FILE.equals(srcFile.getName())) {
-                    for (Package p: phasedUnit.getPackage().getModule().getPackages()) {
-                        for (Unit u: p.getUnits()) {
-                            result.add(u.getFullPath());
-                            for (Declaration d: u.getDeclarations()) {
-                                result.addAll(d.getUnit().getDependentsOf());
-                            }
-                        }
-                    }
-                }
-                else if (ModuleManager.PACKAGE_FILE.equals(srcFile.getName())) {
+//                if (ModuleManager.MODULE_FILE.equals(srcFile.getName())) {
+//                    for (Package p: phasedUnit.getPackage().getModule().getPackages()) {
+//                        for (Unit u: p.getUnits()) {
+//                            result.add(u.getFullPath());
+//                            for (Declaration d: u.getDeclarations()) {
+//                                result.addAll(d.getUnit().getDependentsOf());
+//                            }
+//                        }
+//                    }
+//                }
+                if (ModuleManager.PACKAGE_FILE.equals(srcFile.getName())) {
                     for (Unit u: phasedUnit.getPackage().getUnits()) {
                         result.add(u.getFullPath());
                         for (Declaration d: u.getDeclarations()) {
@@ -1069,7 +1069,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 pkg = alreadyBuiltPhasedUnit.getPackage();
                 if (alreadyBuiltPhasedUnit.getUnit() != null) {
                     dependentsOf.addAll(alreadyBuiltPhasedUnit.getUnit().getDependentsOf());
-                    if (ModuleManager.MODULE_FILE.equals(alreadyBuiltPhasedUnit.getUnit().getFilename())) {
+                    /*if (ModuleManager.MODULE_FILE.equals(alreadyBuiltPhasedUnit.getUnit().getFilename())) {
                         for (Package p: alreadyBuiltPhasedUnit.getPackage().getModule().getPackages()) {
                             for (Unit u: p.getUnits()) {
                                 dependentsOf.add(u.getFullPath());
@@ -1086,7 +1086,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 dependentsOf.addAll(d.getUnit().getDependentsOf());
                             }
                         }
-                    }
+                    }*/
                 }
             }
             else {

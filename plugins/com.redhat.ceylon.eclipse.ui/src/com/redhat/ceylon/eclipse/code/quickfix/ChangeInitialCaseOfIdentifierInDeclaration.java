@@ -32,7 +32,9 @@ public class ChangeInitialCaseOfIdentifierInDeclaration extends ChangeCorrection
         else if (node instanceof Tree.ImportPath) {
             List<Identifier> importIdentifiers = ((Tree.ImportPath) node).getIdentifiers();
             for (Identifier importIdentifier : importIdentifiers) {
-                if (importIdentifier.getText() != null && !importIdentifier.getText().isEmpty() && Character.isUpperCase(importIdentifier.getText().charAt(0))) {
+                if (importIdentifier.getText() != null && 
+                        !importIdentifier.getText().isEmpty() && 
+                        Character.isUpperCase(importIdentifier.getText().charAt(0))) {
                     identifier = importIdentifier;
                     break;
                 }

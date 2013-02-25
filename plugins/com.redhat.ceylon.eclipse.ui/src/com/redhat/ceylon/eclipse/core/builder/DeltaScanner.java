@@ -1,9 +1,13 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isCeylon;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.retrievePackage;
 
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -13,7 +17,13 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
@@ -64,6 +74,62 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                     mustDoFullBuild.value = true;
                 }
                 else {
+                    try {
+                        CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(((IFile) resource).getContents(), 
+                                System.getProperty("file.encoding"))); //TODO: char encoding
+                        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+                        CeylonParser parser = new CeylonParser(tokenStream);
+                        Tree.CompilationUnit cu = parser.compilationUnit();
+                        Tree.ModuleDescriptor md = cu.getModuleDescriptor();
+                        String version = md.getVersion().getText();
+                        String name = formatPath(md.getImportPath().getIdentifiers());
+                        Modules modules = getProjectModules(project);
+                        for (Module m: modules.getListOfModules()) {
+                            if (m.getNameAsString().equals(name)) {
+                                if (!("'"+m.getVersion()+"'").equals(version)) {
+                                    mustDoFullBuild.value = true;
+                                }
+                                else {
+                                    for (ModuleImport mi: m.getImports()) {
+                                        String n = mi.getModule().getNameAsString();
+                                        String v = "'"+mi.getModule().getVersion()+"'";
+                                        if (!n.equals("ceylon.language")) {
+                                            boolean found = false;
+                                            for (Tree.ImportModule im: md.getImportModuleList().getImportModules()) {
+                                                if (n.equals(formatPath(im.getImportPath().getIdentifiers()))) {
+                                                    if (v.equals(im.getVersion().getText())) {
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (!found) {
+                                                mustDoFullBuild.value = true;
+                                            }
+                                        }
+                                    }
+                                    for (Tree.ImportModule im: md.getImportModuleList().getImportModules()) {
+                                        String n = formatPath(im.getImportPath().getIdentifiers());
+                                        String v = im.getVersion().getText();
+                                        boolean found = false;
+                                        for (ModuleImport mi: m.getImports()) {
+                                            if (mi.getModule().getNameAsString().equals(n)) {
+                                                if (("'"+mi.getModule().getVersion()+"'").equals(v)) {
+                                                    found = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!found) {
+                                            mustDoFullBuild.value = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     sourceModified.value = true;
                 }
 	        }

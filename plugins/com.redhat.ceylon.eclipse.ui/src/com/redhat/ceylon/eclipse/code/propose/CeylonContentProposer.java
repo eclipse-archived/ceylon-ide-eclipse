@@ -8,6 +8,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
@@ -441,9 +442,7 @@ public class CeylonContentProposer {
 			Tree.ImportPath path) {
 		StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            for (int i=0; i<path.getIdentifiers().size(); i++) {
-                fullPath.append(path.getIdentifiers().get(i).getText()).append('.');
-            }
+            fullPath.append(formatPath(path.getIdentifiers()));
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }
 		return fullPath.toString();

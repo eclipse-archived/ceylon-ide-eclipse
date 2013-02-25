@@ -16,7 +16,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
 public class EditedPhasedUnit extends IdePhasedUnit {
     WeakReference<ProjectPhasedUnit> savedPhasedUnitRef;
