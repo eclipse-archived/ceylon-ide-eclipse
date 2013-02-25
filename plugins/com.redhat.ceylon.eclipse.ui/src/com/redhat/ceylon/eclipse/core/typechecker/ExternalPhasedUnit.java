@@ -28,4 +28,10 @@ public class ExternalPhasedUnit extends IdePhasedUnit {
     protected Unit createUnit() {
         return new ExternalSourceFile(this);
     }
+    
+    @Override
+    public ExternalSourceFile getUnit() {
+        return (ExternalSourceFile) super.getUnit();
+    }
+
 }
