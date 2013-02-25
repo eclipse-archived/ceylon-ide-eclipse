@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
@@ -506,13 +507,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 	}
 
     private static String toPath(Tree.ImportPath p) {
-        String path="";
-        for (Tree.Identifier id: p.getIdentifiers()) {
-        	if (id!=null) {
-        		path+="." + id.getText();
-        	}
-        }
-        return path.substring(1);
+        return formatPath(p.getIdentifiers());
     }
     
     public static String getLabelFor(Node n) {
