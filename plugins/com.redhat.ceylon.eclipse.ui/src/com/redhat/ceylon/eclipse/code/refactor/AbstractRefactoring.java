@@ -31,6 +31,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -41,6 +42,8 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 
 public abstract class AbstractRefactoring extends Refactoring {
     
@@ -84,6 +87,13 @@ public abstract class AbstractRefactoring extends Refactoring {
     }
     
     abstract boolean isEnabled();
+    
+    boolean inSameProject(Declaration declaration) {
+        return declaration.getUnit() instanceof EditedSourceFile &&
+        project.equals(((EditedSourceFile)declaration.getUnit()).getProjectResource()) ||
+        declaration.getUnit() instanceof ProjectSourceFile &&
+                project.equals(((ProjectSourceFile)declaration.getUnit()).getProjectResource());
+    }
     
     public static String guessName(Node node) {
         Node identifyingNode = node;
