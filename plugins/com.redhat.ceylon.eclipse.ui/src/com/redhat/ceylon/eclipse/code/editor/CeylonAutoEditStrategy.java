@@ -436,7 +436,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                     false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
                 String hanging = d.get(c.offset, getEndOfCurrentLine(d, c)-c.offset); //stuff after the { on the current line
-                buf.insert(buf.length()-2, hanging);
+                buf.insert(c.caretOffset-c.offset, hanging);
                 c.length = hanging.length();
             }
             c.text = buf.toString();
