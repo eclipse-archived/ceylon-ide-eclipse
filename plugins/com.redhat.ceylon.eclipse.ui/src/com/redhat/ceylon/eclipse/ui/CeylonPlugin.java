@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.ui;
 
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
 import java.io.File;
 import java.net.URI;
@@ -23,9 +24,11 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -75,6 +78,19 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	}
 
 	public CeylonPlugin() {
+        final String version = System.getProperty("java.version");
+        if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    ErrorDialog.openError(getWorkbench().getActiveWorkbenchWindow().getShell(),
+                            "Ceylon IDE does not support this JVM",  
+                            "Ceylon IDE requires Java 1.7 or 1.8.", 
+                            new Status(IStatus.ERROR, PLUGIN_ID, 
+                                    "Eclipse is running on a Java " + version + " VM.", 
+                                    null));
+                }});
+        }
 		pluginInstance = this;
 	}
 
@@ -102,14 +118,14 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         .getNode(JavaCore.PLUGIN_ID);
                 /*IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE
                         .getNode(JavaCore.PLUGIN_ID);*/
-                String filter = instancePreferences.get(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
+                String filter = instancePreferences.get(CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
                 if (filter.isEmpty()) {
                     filter = "*.launch, *.ceylon";
                 }
                 else if (!filter.contains("*.ceylon")) {
                     filter += ", *.ceylon";
                 }
-                instancePreferences.put(JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
+                instancePreferences.put(CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
                 try {
                     instancePreferences.flush();
                 } 
