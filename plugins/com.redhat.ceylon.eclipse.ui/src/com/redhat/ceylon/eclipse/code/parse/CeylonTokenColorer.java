@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.parse;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +38,7 @@ public class CeylonTokenColorer  {
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
     
-    public static final Set<String> keywords = new HashSet<String>(Arrays.asList("import", "assert",
+    public static final Set<String> keywords = new LinkedHashSet<String>(Arrays.asList("import", "assert",
             "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
             "module", "package", "of", "extends", "satisfies", "adapts", "abstracts", "in", "out", 
             "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
