@@ -46,12 +46,14 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
@@ -94,6 +96,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -539,6 +542,10 @@ public class CeylonContentProposer {
             CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
     	if (node instanceof Tree.Literal) return null;
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+        
+        if (isEmptyModuleDescriptor(cpc, node, token, prefix)) {
+            addModuleDescriptorCompletion(cpc, offset, prefix, result);
+        }
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
@@ -587,7 +594,7 @@ public class CeylonContentProposer {
             	if (//isKeywordProposable(ol) && 
             			!filter &&
             			!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-            		addKeywordProposals(offset, prefix, result);
+            		addKeywordProposals(offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
             	}
             	for (DeclarationWithProximity dwp: set) {
@@ -634,7 +641,29 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-	private static boolean noParametersFollow(CommonToken nextToken) {
+    private static boolean isEmptyModuleDescriptor(CeylonParseController cpc, Node node, CommonToken token, String prefix) {
+        return node instanceof Tree.CompilationUnit 
+                && cpc.getPath().toString().endsWith("module.ceylon") 
+                && (token.getText() == null || token.getText().trim().isEmpty() || token.getText().equals("<EOF>") ) 
+                && prefix.isEmpty();
+    }
+
+    private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+        IFile file = cpc.getProject().getFile(cpc.getPath());
+        String moduleName = CeylonBuilder.getPackageName(file);
+        String moduleDesc = "module " + moduleName;
+        String moduleText = "module " + moduleName + " 'version' {}";
+        final int selectionStart = offset + moduleName.length() + 9;
+        final int selectionLength = 7;
+        
+        result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
+            @Override
+            public Point getSelection(IDocument document) {
+                return new Point(selectionStart, selectionLength);
+            }});
+    }
+
+    private static boolean noParametersFollow(CommonToken nextToken) {
 		return nextToken!=null &&
 				nextToken.getType()!=CeylonLexer.LPAREN && 
 				nextToken.getType()!=CeylonLexer.LBRACE;
@@ -1017,21 +1046,27 @@ public class CeylonContentProposer {
 		}
 	}
     
-    private static void addKeywordProposals(int offset, String prefix, 
-            List<ICompletionProposal> result) {
-        for (final String keyword: keywords) {
-            if (!prefix.isEmpty() && keyword.startsWith(prefix) 
-                    /*&& !keyword.equals(prefix)*/) {
-                result.add(new CompletionProposal(offset, prefix, null, 
-                		keyword, keyword, true) {
-                	@Override
-                	public StyledString getStyledDisplayString() {
-                		return new StyledString(keyword, 
-                				CeylonLabelProvider.KW_STYLER);
-                	}
-                });
+    private static void addKeywordProposals(int offset, String prefix, List<ICompletionProposal> result, Node node) {
+        if( prefix.isEmpty() ) {
+            if( node instanceof Tree.ImportModuleList ) {
+                addKeywordProposal(offset, prefix, result, "import");
+            }
+        } else {
+            for (String keyword : keywords) {
+                if (keyword.startsWith(prefix)) {
+                    addKeywordProposal(offset, prefix, result, keyword);
+                }
             }
         }
+    }
+
+    private static void addKeywordProposal(int offset, String prefix, List<ICompletionProposal> result, final String keyword) {
+        result.add(new CompletionProposal(offset, prefix, null, keyword, keyword, true) {
+            @Override
+            public StyledString getStyledDisplayString() {
+                return new StyledString(keyword, CeylonLabelProvider.KW_STYLER);
+            }
+        });
     }
     
     /*private static void addTemplateProposal(int offset, String prefix, 
