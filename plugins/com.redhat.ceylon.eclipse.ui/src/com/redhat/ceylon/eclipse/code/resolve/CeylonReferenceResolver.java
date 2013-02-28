@@ -207,7 +207,7 @@ public class CeylonReferenceResolver {
         }
     }
 
-    private static String getRelativePath(Referenceable r) {
+    /*private static String getRelativePath(Referenceable r) {
     	Unit unit = r.getUnit();
 		if (unit==null) {
 			return null;
@@ -217,6 +217,6 @@ public class CeylonReferenceResolver {
 					.getQualifiedNameString().replace('.', '/')
 					+ "/" + unit.getFilename();
 		}
-    }
+    }*/
 
 }
