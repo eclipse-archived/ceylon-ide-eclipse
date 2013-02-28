@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.resolve;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
@@ -74,6 +75,10 @@ public class CeylonReferenceResolver {
                     		dec.getName(), null, false);
                     if (att!=null) dec = att;
                 }
+            }
+            if (dec instanceof MethodOrValue && 
+                    ((MethodOrValue) dec).isShortcutRefinement()) {
+                dec = dec.getRefinedDeclaration();
             }
             return dec;
         }
