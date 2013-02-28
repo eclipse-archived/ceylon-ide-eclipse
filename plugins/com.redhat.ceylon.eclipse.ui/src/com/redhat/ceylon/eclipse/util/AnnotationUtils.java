@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
-import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import java.net.URL;
 import java.util.ArrayList;
