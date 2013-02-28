@@ -543,9 +543,13 @@ public class CeylonContentProposer {
     	if (node instanceof Tree.Literal) return null;
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
-        if (isEmptyModuleDescriptor(cpc, node)) {
+        if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, prefix, result);
         }
+        else if (isEmptyPackageDescriptor(cpc)) {
+            addPackageDescriptorCompletion(cpc, offset, prefix, result);
+        }
+        
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
@@ -594,11 +598,22 @@ public class CeylonContentProposer {
             	if (//isKeywordProposable(ol) && 
             			!filter &&
             			!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-            		addKeywordProposals(offset, prefix, result, node, token);
+            		addKeywordProposals(cpc, offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
             	}
+            	
+            	boolean isModuleDescriptor = isModuleDescriptor(cpc);
             	for (DeclarationWithProximity dwp: set) {
             		Declaration dec = dwp.getDeclaration();
+            		
+                    if (isModuleDescriptor) {
+                        String qualifiedName = dec.getQualifiedNameString();
+                        if (!qualifiedName.equals("ceylon.language::shared") && 
+                            !qualifiedName.equals("ceylon.language::optional")) {
+                            continue;
+                        }
+                    }
+            		
             		if (isParameterOfNamedArgInvocation(node, dwp)) {
             			if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
             				addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -640,11 +655,15 @@ public class CeylonContentProposer {
         }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
+    
+    private static boolean isModuleDescriptor(CeylonParseController cpc) {
+        return cpc.getPath().toString().endsWith("module.ceylon"); 
+    }
 
-    private static boolean isEmptyModuleDescriptor(CeylonParseController cpc, Node node) {
-        return cpc.getPath().toString().endsWith("module.ceylon") && 
-                node instanceof Tree.CompilationUnit && 
-                ((Tree.CompilationUnit)node).getModuleDescriptor() == null; 
+    private static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
+        return isModuleDescriptor(cpc) && 
+                cpc.getRootNode() != null && 
+                cpc.getRootNode().getModuleDescriptor() == null; 
     }
 
     private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
@@ -652,7 +671,7 @@ public class CeylonContentProposer {
         String moduleName = CeylonBuilder.getPackageName(file);
         String moduleDesc = "module " + moduleName;
         String moduleText = "module " + moduleName + " 'version' {}";
-        final int selectionStart = offset + moduleName.length() + 9;
+        final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
         final int selectionLength = 7;
         
         result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
@@ -661,6 +680,21 @@ public class CeylonContentProposer {
                 return new Point(selectionStart, selectionLength);
             }});
     }
+    
+    private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
+        return cpc.getPath().toString().endsWith("package.ceylon") && 
+                cpc.getRootNode() != null && 
+                cpc.getRootNode().getPackageDescriptor() == null;
+    }
+
+    private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+        IFile file = cpc.getProject().getFile(cpc.getPath());
+        String packageName = CeylonBuilder.getPackageName(file);
+        String packageDesc = "package " + packageName;
+        String packageText = "package " + packageName + ";";
+
+        result.add(new CompletionProposal(offset, prefix, PACKAGE, packageDesc, packageText, false));
+    }    
 
     private static boolean noParametersFollow(CommonToken nextToken) {
 		return nextToken!=null &&
@@ -1045,28 +1079,30 @@ public class CeylonContentProposer {
 		}
 	}
     
-    private static void addKeywordProposals(int offset, String prefix, List<ICompletionProposal> result, Node node, CommonToken token) {
-        if( prefix.isEmpty() ) {
-            if (node instanceof Tree.CompilationUnit) {
-                Tree.ModuleDescriptor moduleDescriptor = ((Tree.CompilationUnit) node).getModuleDescriptor();
-                if (moduleDescriptor != null && 
-                        moduleDescriptor.getImportModuleList() != null && 
-                        moduleDescriptor.getImportModuleList().getStartIndex() < offset && 
-                        moduleDescriptor.getStopIndex() + 1 > offset) {
-                    addKeywordProposal(offset, prefix, result, "import");
-                }
-            }
-            else if (node instanceof Tree.ImportModuleList) {
-                addKeywordProposal(offset, prefix, result, "import");
-            }
-        } else {
-            for (String keyword : keywords) {
-                if (keyword.startsWith(prefix)) {
-                    addKeywordProposal(offset, prefix, result, keyword);
-                }
-            }
-        }
-    }
+	private static void addKeywordProposals(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result, Node node) {
+	    if( isModuleDescriptor(cpc) ) {
+	        if( prefix.isEmpty() || "import".startsWith(prefix) ) {
+	            if (node instanceof Tree.CompilationUnit) {
+	                Tree.ModuleDescriptor moduleDescriptor = ((Tree.CompilationUnit) node).getModuleDescriptor();
+	                if (moduleDescriptor != null && 
+	                        moduleDescriptor.getImportModuleList() != null && 
+	                        moduleDescriptor.getImportModuleList().getStartIndex() < offset ) {
+	                    addKeywordProposal(offset, prefix, result, "import");
+	                }
+	            }
+	            else if (node instanceof Tree.ImportModuleList || node instanceof Tree.BaseMemberExpression) {
+	                addKeywordProposal(offset, prefix, result, "import");
+	            }
+	        }
+	    }
+	    else {
+	        for (String keyword : keywords) {
+	            if (keyword.startsWith(prefix)) {
+	                addKeywordProposal(offset, prefix, result, keyword);
+	            }
+	        }
+	    }
+	}
 
     private static void addKeywordProposal(int offset, String prefix, List<ICompletionProposal> result, final String keyword) {
         result.add(new CompletionProposal(offset, prefix, null, keyword, keyword, true) {
