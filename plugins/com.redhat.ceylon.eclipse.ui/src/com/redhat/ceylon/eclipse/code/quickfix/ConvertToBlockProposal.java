@@ -17,6 +17,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -40,7 +41,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
     static void addConvertToBlockProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.LazySpecifierExpression spec,
-            Tree.Declaration decNode) {
+            Node decNode) {
         TextChange change = new DocumentChange("Convert To Block", doc);
         change.setEdit(new MultiTextEdit());
         Integer offset = spec.getStartIndex();
@@ -54,9 +55,24 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
             e.printStackTrace();
             return;
         }
-        Declaration dm = decNode.getDeclarationModel();
-        boolean isVoid = dm instanceof Setter ||
-                dm instanceof Method && ((Method) dm).isDeclaredVoid();
+        boolean isVoid;
+        if (decNode instanceof Tree.Declaration) {
+            Declaration dm = ((Tree.Declaration) decNode).getDeclarationModel();
+            isVoid = dm instanceof Setter ||
+                    dm instanceof Method && ((Method) dm).isDeclaredVoid();
+        }
+        else if (decNode instanceof Tree.MethodArgument) {
+            isVoid = ((Tree.MethodArgument) decNode).getDeclarationModel().isDeclaredVoid();            
+        }
+        else if (decNode instanceof Tree.AttributeArgument) {
+            isVoid = false;            
+        }
+        else if (decNode instanceof Tree.FunctionArgument) {
+            isVoid = ((Tree.FunctionArgument) decNode).getDeclarationModel().isDeclaredVoid();
+        }
+        else {
+            return;
+        }
         change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
         change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
         proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , file, change));
