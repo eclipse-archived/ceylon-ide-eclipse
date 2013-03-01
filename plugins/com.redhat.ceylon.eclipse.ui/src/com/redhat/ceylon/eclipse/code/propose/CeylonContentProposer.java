@@ -1581,16 +1581,16 @@ public class CeylonContentProposer {
                             	result.append("; ");
                             }
                             else {
-                            	result.append(" { return ")
+                            	result.append(" => ")
 	                            	//.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-	                            	.append(p.getName())
-	                            	.append("; } ");
+	                            	.append("nothing")
+	                            	.append("; ");
                             }
                         }
                         else {
                             result.append(p.getName()).append(" = ")
                                 //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-                                .append(p.getName())
+                                .append("nothing")
                                 .append("; ");
                         }
                     }
@@ -1768,16 +1768,14 @@ public class CeylonContentProposer {
     private static void appendImpl(Declaration d, boolean isInterface, 
     		String indent, StringBuilder result) {
         if (d instanceof Method || d instanceof FunctionalParameter) {
-            result.append(" {").append(extraIndent(indent));
-            result.append(((Functional) d).isDeclaredVoid() ? "" : "return nothing; ");
-            result.append("/* TODO auto-generated stub */");
-            result.append(indent).append("}");
+            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing;");
+            result.append(" /* TODO auto-generated stub */");
         }
         else if (d instanceof MethodOrValue) {
         	if (isInterface) {
-        		result.append(" {" + extraIndent(indent) + "return nothing; /* TODO auto-generated stub */" + indent + "}");
+        		result.append(" => nothing; /* TODO auto-generated stub */");
         		if (isVariable(d)) {
-        			result.append(indent + "assign " + d.getName() + " {" + extraIndent(indent) + " /* TODO auto-generated stub */" + indent + "}");
+        			result.append(indent + "assign " + d.getName() + " {} /* TODO auto-generated stub */");
         		}
         	}
         	else {
@@ -1785,7 +1783,7 @@ public class CeylonContentProposer {
         	}
         }
         else if (d instanceof ValueParameter) {
-            result.append(" {" + extraIndent(indent) + "return nothing;" + indent + "}");
+            result.append(" => nothing;");
         }
         else {
             //TODO: in the case of a class, formal member refinements!
