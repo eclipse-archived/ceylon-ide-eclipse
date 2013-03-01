@@ -10,21 +10,23 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class ConvertToGetterProposal extends ChangeCorrectionProposal {
+class ConvertToBlockProposal extends ChangeCorrectionProposal {
     
     final int offset; 
     final IFile file;
     
-    ConvertToGetterProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Convert '" + dec.getName() + "' to getter", change, 10, CORRECTION);
+    ConvertToBlockProposal(int offset, IFile file, TextChange change) {
+        super("Convert => to block", change, 10, CORRECTION);
         this.offset=offset;
         this.file=file;
     }
@@ -35,28 +37,29 @@ class ConvertToGetterProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset);
     }
 
-    static void addConvertToGetterProposal(IDocument doc,
+    static void addConvertToBlockProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.AttributeDeclaration decNode) {
-        Value dec = decNode.getDeclarationModel();
-        if (dec==null) return;
-        if (!dec.isVariable()) { //TODO: temp restriction, autocreate setter!
-            TextChange change = new DocumentChange("Convert To Getter", doc);
+            Tree.LazySpecifierExpression spec,
+            Tree.Declaration decNode) {
+            TextChange change = new DocumentChange("Convert To Block", doc);
             change.setEdit(new MultiTextEdit());
-            Integer offset = decNode.getSpecifierOrInitializerExpression().getStartIndex();
+            Integer offset = spec.getStartIndex();
             String space;
+            String spaceAfter;
             try {
                 space = doc.getChar(offset-1)==' ' ? "" : " ";
+                spaceAfter = doc.getChar(offset+2)==' ' ? "" : " ";
             }
             catch (BadLocationException e) {
                 e.printStackTrace();
                 return;
             }
-            change.addEdit(new ReplaceEdit(offset, 1, "=>"));
-//            change.addEdit(new ReplaceEdit(offset, 1, space + "{ return" + spaceAfter));
-//            change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
-            proposals.add(new ConvertToGetterProposal(dec, offset + space.length() + 2 , file, change));
-        }
+            Declaration dm = decNode.getDeclarationModel();
+            boolean isVoid = dm instanceof Setter ||
+                    dm instanceof Method && ((Method) dm).isDeclaredVoid();
+            change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
+            change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
+            proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , file, change));
     }
     
 }
