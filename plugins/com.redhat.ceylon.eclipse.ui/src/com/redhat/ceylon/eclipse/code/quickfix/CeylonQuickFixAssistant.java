@@ -202,10 +202,29 @@ public class CeylonQuickFixAssistant {
                 }
             }
             if (decNode instanceof Tree.AttributeSetterDefinition) {
-                Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression(); 
+                Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
                 if (se instanceof Tree.LazySpecifierExpression) {
                     ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, decNode);
+                }
+                Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
+                if (b!=null) {
+                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
+                            file, b, decNode);
+                }
+            }
+            if (decNode instanceof Tree.AttributeGetterDefinition) {
+                Tree.Block b = ((Tree.AttributeGetterDefinition) decNode).getBlock(); 
+                if (b!=null) {
+                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
+                            file, b, decNode);
+                }
+            }
+            if (decNode instanceof Tree.MethodDefinition) {
+                Tree.Block b = ((Tree.MethodDefinition) decNode).getBlock(); 
+                if (b!=null) {
+                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
+                            file, b, decNode);
                 }
             }
             if (decNode instanceof Tree.AttributeDeclaration) {

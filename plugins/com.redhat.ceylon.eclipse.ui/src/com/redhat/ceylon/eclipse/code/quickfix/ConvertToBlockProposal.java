@@ -41,25 +41,25 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.LazySpecifierExpression spec,
             Tree.Declaration decNode) {
-            TextChange change = new DocumentChange("Convert To Block", doc);
-            change.setEdit(new MultiTextEdit());
-            Integer offset = spec.getStartIndex();
-            String space;
-            String spaceAfter;
-            try {
-                space = doc.getChar(offset-1)==' ' ? "" : " ";
-                spaceAfter = doc.getChar(offset+2)==' ' ? "" : " ";
-            }
-            catch (BadLocationException e) {
-                e.printStackTrace();
-                return;
-            }
-            Declaration dm = decNode.getDeclarationModel();
-            boolean isVoid = dm instanceof Setter ||
-                    dm instanceof Method && ((Method) dm).isDeclaredVoid();
-            change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
-            change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
-            proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , file, change));
+        TextChange change = new DocumentChange("Convert To Block", doc);
+        change.setEdit(new MultiTextEdit());
+        Integer offset = spec.getStartIndex();
+        String space;
+        String spaceAfter;
+        try {
+            space = doc.getChar(offset-1)==' ' ? "" : " ";
+            spaceAfter = doc.getChar(offset+2)==' ' ? "" : " ";
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return;
+        }
+        Declaration dm = decNode.getDeclarationModel();
+        boolean isVoid = dm instanceof Setter ||
+                dm instanceof Method && ((Method) dm).isDeclaredVoid();
+        change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
+        change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
+        proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , file, change));
     }
-    
+
 }
