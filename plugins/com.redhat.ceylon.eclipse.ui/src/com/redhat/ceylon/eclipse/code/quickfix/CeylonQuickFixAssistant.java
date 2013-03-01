@@ -210,21 +210,21 @@ public class CeylonQuickFixAssistant {
                 Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
                 if (b!=null) {
                     ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b, decNode);
+                            file, b);
                 }
             }
             if (decNode instanceof Tree.AttributeGetterDefinition) {
                 Tree.Block b = ((Tree.AttributeGetterDefinition) decNode).getBlock(); 
                 if (b!=null) {
                     ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b, decNode);
+                            file, b);
                 }
             }
             if (decNode instanceof Tree.MethodDefinition) {
                 Tree.Block b = ((Tree.MethodDefinition) decNode).getBlock(); 
                 if (b!=null) {
                     ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b, decNode);
+                            file, b);
                 }
             }
             if (decNode instanceof Tree.AttributeDeclaration) {
@@ -238,9 +238,34 @@ public class CeylonQuickFixAssistant {
                 		attDecNode, editor);
             }
             
+            if (node instanceof Tree.MethodArgument) {
+                Tree.SpecifierOrInitializerExpression se = ((Tree.MethodArgument) node).getSpecifierExpression(); 
+                if (se instanceof Tree.LazySpecifierExpression) {
+                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                            (Tree.LazySpecifierExpression) se, node);
+                }
+                Tree.Block b = ((Tree.MethodArgument) node).getBlock(); 
+                if (b!=null) {
+                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
+                            file, b);
+                }
+            }
+            if (node instanceof Tree.AttributeArgument) {
+                Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeArgument) node).getSpecifierExpression(); 
+                if (se instanceof Tree.LazySpecifierExpression) {
+                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                            (Tree.LazySpecifierExpression) se, node);
+                }
+                Tree.Block b = ((Tree.AttributeArgument) node).getBlock(); 
+                if (b!=null) {
+                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
+                            file, b);
+                }
+            }
+            
             CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
             CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
-
+            
             Tree.Statement statement = findStatement(cu, node);
             ConvertThenElseToIfElse.addConvertToIfElseProposal(doc, proposals, file, statement);
             ConvertIfElseToThenElse.addConvertToThenElseProposal(cu, doc, proposals, file, statement);

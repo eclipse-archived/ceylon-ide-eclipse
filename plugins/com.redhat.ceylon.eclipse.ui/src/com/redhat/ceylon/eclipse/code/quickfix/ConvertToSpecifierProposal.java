@@ -36,8 +36,7 @@ class ConvertToSpecifierProposal extends ChangeCorrectionProposal {
 
     static void addConvertToSpecifierProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.Block block,
-            Tree.Declaration decNode) {
+            Tree.Block block) {
         if (block.getStatements().size()==1) {
             Tree.Statement s = block.getStatements().get(0);
             Node end = null;
