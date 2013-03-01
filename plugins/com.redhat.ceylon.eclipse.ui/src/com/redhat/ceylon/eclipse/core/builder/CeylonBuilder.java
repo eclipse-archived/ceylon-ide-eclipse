@@ -328,7 +328,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(),100);
+		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {

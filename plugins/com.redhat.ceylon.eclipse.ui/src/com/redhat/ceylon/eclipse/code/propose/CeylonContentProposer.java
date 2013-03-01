@@ -1095,8 +1095,8 @@ public class CeylonContentProposer {
 	            }
 	        }
 	    }
-	    else {
-	        for (String keyword : keywords) {
+	    else if (!prefix.isEmpty()) {
+	        for (String keyword: keywords) {
 	            if (keyword.startsWith(prefix)) {
 	                addKeywordProposal(offset, prefix, result, keyword);
 	            }
