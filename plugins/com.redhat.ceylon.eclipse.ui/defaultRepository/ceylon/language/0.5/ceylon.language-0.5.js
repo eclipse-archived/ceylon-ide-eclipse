@@ -249,14 +249,14 @@ function $init$Iterable(){
         (function($$iterable){
             defineAttr($$iterable,'empty',function(){
                 var $$iterable=this;
-                return isOfType($$iterable.iterator.next(),{t:Finished})
+                return isOfType($$iterable.iterator.next(),{t:Finished});
             });
             defineAttr($$iterable,'size',function(){
                 var $$iterable=this;
                 return $$iterable.count(function (e$1){
                     var $$iterable=this;
                     return true;
-                })
+                });
             });
             $$iterable.contains=function (element$2){
                 var $$iterable=this;
@@ -264,7 +264,7 @@ function $init$Iterable(){
             };
             defineAttr($$iterable,'first',function(){
                 var $$iterable=this;
-                return internalFirst($$iterable,{Value:$$iterable.$$targs$$.Element,Absent:$$iterable.$$targs$$.Absent})
+                return internalFirst($$iterable,{Value:$$iterable.$$targs$$.Element,Absent:$$iterable.$$targs$$.Absent});
             });
             defineAttr($$iterable,'last',function(){
                 var $$iterable=this;
@@ -277,7 +277,7 @@ function $init$Iterable(){
                 return e$4;
             });defineAttr($$iterable,'rest',function(){
                 var $$iterable=this;
-                return $$iterable.skipping((1))
+                return $$iterable.skipping((1));
             });
             defineAttr($$iterable,'sequence',function(){
                 var $$iterable=this;
@@ -295,7 +295,7 @@ function $init$Iterable(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Anything},Element:$$iterable.$$targs$$.Element}).sequence
+                },{Absent:{t:Anything},Element:$$iterable.$$targs$$.Element}).sequence;
             });
             $$iterable.$map=function (collecting$12,$$$mptypes){
                 var $$iterable=this;
@@ -440,7 +440,7 @@ function $init$Iterable(){
                                 }
                             });defineAttr($$iterable$49,'last',function(){
                                 var $$iterable$49=this;
-                                return $$iterable.last
+                                return $$iterable.last;
                             });
                         })(iterable$49.$$.prototype);
                         var iterable$55=iterable$49({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
@@ -494,7 +494,7 @@ function $init$Iterable(){
                                     defineAttr($$iterator$62,'i$63',function(){return this.i$63_;},function(i$64){return this.i$63_=i$64;});
                                     $$iterator$62.next=function next(){
                                         var $$iterator$62=this;
-                                        return (opt$65=(($$iterator$62.i$63=$$iterator$62.i$63.successor).compare(take$56).equals(getLarger())?getFinished():null),opt$65!==null?opt$65:iter$61.next());
+                                        return (opt$65=(($$iterator$62.i$63=$$iterator$62.i$63.successor,$$iterator$62.i$63).compare(take$56).equals(getLarger())?getFinished():null),opt$65!==null?opt$65:iter$61.next());
                                         var opt$65;
                                     };
                                 })(iterator$62.$$.prototype);
@@ -505,11 +505,11 @@ function $init$Iterable(){
                                 return getIterator$66();
                             });defineAttr($$iterable$60,'first',function(){
                                 var $$iterable$60=this;
-                                return $$iterable.first
+                                return $$iterable.first;
                             });
                             defineAttr($$iterable$60,'last',function(){
                                 var $$iterable$60=this;
-                                return $$iterable.last
+                                return $$iterable.last;
                             });
                         })(iterable$60.$$.prototype);
                         var iterable$67=iterable$60({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
@@ -565,7 +565,7 @@ function $init$Iterable(){
                                         var next$75=iter$73.next();
                                         var i$76=(0);
                                         var setI$76=function(i$77){return i$76=i$77;};
-                                        while(((i$76=i$76.successor).compare(step$68).equals(getSmaller())&&(!isOfType(iter$73.next(),{t:Finished})))){}
+                                        while(((i$76=i$76.successor,i$76).compare(step$68).equals(getSmaller())&&(!isOfType(iter$73.next(),{t:Finished})))){}
                                         return next$75;
                                     };
                                 })(iterator$74.$$.prototype);
@@ -623,7 +623,7 @@ function $init$Iterable(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Anything},Element:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}})
+                },{Absent:{t:Anything},Element:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
             });
             defineAttr($$iterable,'indexed',function(){
                 var $$iterable=this;
@@ -716,7 +716,7 @@ function $init$Iterable(){
                 (function($$chained$107){
                     defineAttr($$chained$107,'iterator',function(){
                         var $$chained$107=this;
-                        return ChainedIterator($$iterable,other$106,{Other:$$$mptypes.Other,Element:$$iterable.$$targs$$.Element})
+                        return ChainedIterator($$iterable,other$106,{Other:$$$mptypes.Other,Element:$$iterable.$$targs$$.Element});
                     });
                 })(chained$107.$$.prototype);
                 var chained$108=chained$107({Absent:{t:Null},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
@@ -774,7 +774,7 @@ function $init$Empty(){
         (function($$empty){
             defineAttr($$empty,'iterator',function(){
                 var $$empty=this;
-                return getEmptyIterator()
+                return getEmptyIterator();
             });
             $$empty.get=function (index$118){
                 var $$empty=this;
@@ -798,51 +798,51 @@ function $init$Empty(){
             };
             defineAttr($$empty,'empty',function(){
                 var $$empty=this;
-                return true
+                return true;
             });
             defineAttr($$empty,'size',function(){
                 var $$empty=this;
-                return (0)
+                return (0);
             });
             defineAttr($$empty,'reversed',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             defineAttr($$empty,'sequence',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             defineAttr($$empty,'string',function(){
                 var $$empty=this;
-                return String$("{}",2)
+                return String$("{}",2);
             });
             defineAttr($$empty,'lastIndex',function(){
                 var $$empty=this;
-                return null
+                return null;
             });
             defineAttr($$empty,'first',function(){
                 var $$empty=this;
-                return null
+                return null;
             });
             defineAttr($$empty,'last',function(){
                 var $$empty=this;
-                return null
+                return null;
             });
             defineAttr($$empty,'rest',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             defineAttr($$empty,'clone',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             defineAttr($$empty,'coalesced',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             defineAttr($$empty,'indexed',function(){
                 var $$empty=this;
-                return $$empty
+                return $$empty;
             });
             $$empty.chain=function (other$125,$$$mptypes){
                 var $$empty=this;
@@ -979,11 +979,11 @@ function $init$Sequence(){
         (function($$sequence){
             defineAttr($$sequence,'empty',function(){
                 var $$sequence=this;
-                return false
+                return false;
             });
             defineAttr($$sequence,'sequence',function(){
                 var $$sequence=this;
-                return $$sequence
+                return $$sequence;
             });
             $$sequence.$sort=function $sort(comparing$148){
                 var $$sequence=this;
@@ -1001,7 +1001,7 @@ function $init$Sequence(){
                 return s$153;
             };defineAttr($$sequence,'clone',function(){
                 var $$sequence=this;
-                return $$sequence
+                return $$sequence;
             });
         })(Sequence.$$.prototype);
     }
@@ -1024,15 +1024,15 @@ function $init$Sequential(){
         (function($$sequential){
             defineAttr($$sequential,'sequence',function(){
                 var $$sequential=this;
-                return $$sequential
+                return $$sequential;
             });
             defineAttr($$sequential,'clone',function(){
                 var $$sequential=this;
-                return $$sequential
+                return $$sequential;
             });
             defineAttr($$sequential,'string',function(){
                 var $$sequential=this;
-                return (opt$154=($$sequential.empty?String$("[]",2):null),opt$154!==null?opt$154:StringBuilder().appendAll([String$("[",1),commaList($$sequential).string,String$("]",1)]).string)
+                return (opt$154=($$sequential.empty?String$("[]",2):null),opt$154!==null?opt$154:StringBuilder().appendAll([String$("[",1),commaList($$sequential).string,String$("]",1)]).string);
             });
         })(Sequential.$$.prototype);
     }
@@ -1054,7 +1054,7 @@ function $init$Correspondence(){
             };
             defineAttr($$correspondence,'keys',function(){
                 var $$correspondence=this;
-                return Keys($$correspondence,{Key:$$correspondence.$$targs$$.Key,Item:$$correspondence.$$targs$$.Item})
+                return Keys($$correspondence,{Key:$$correspondence.$$targs$$.Key,Item:$$correspondence.$$targs$$.Item});
             });
             $$correspondence.definesEvery=function definesEvery(keys$156){
                 var $$correspondence=this;
@@ -1132,7 +1132,7 @@ $init$finished$167();
 (function($$finished){
     defineAttr($$finished,'string',function(){
         var $$finished=this;
-        return String$("finished",8)
+        return String$("finished",8);
     });
 })(finished$167.$$.prototype);
 var finished$168=finished$167();
@@ -1260,7 +1260,7 @@ function $init$Collection(){
         (function($$collection){
             defineAttr($$collection,'empty',function(){
                 var $$collection=this;
-                return $$collection.size.equals((0))
+                return $$collection.size.equals((0));
             });
             $$collection.contains=function contains(element$179){
                 var $$collection=this;
@@ -1276,7 +1276,7 @@ function $init$Collection(){
                 }
             };defineAttr($$collection,'string',function(){
                 var $$collection=this;
-                return (opt$183=($$collection.empty?String$("{}",2):null),opt$183!==null?opt$183:StringBuilder().appendAll([String$("{ ",2),commaList($$collection).string,String$(" }",2)]).string)
+                return (opt$183=($$collection.empty?String$("{}",2):null),opt$183!==null?opt$183:StringBuilder().appendAll([String$("{ ",2),commaList($$collection).string,String$(" }",2)]).string);
             });
         })(Collection.$$.prototype);
     }
@@ -1397,7 +1397,7 @@ function $init$List(){
         (function($$list){
             defineAttr($$list,'size',function(){
                 var $$list=this;
-                return (opt$200=$$list.lastIndex,opt$200!==null?opt$200:(-(1))).plus((1))
+                return (opt$200=$$list.lastIndex,opt$200!==null?opt$200:(-(1))).plus((1));
             });
             $$list.defines=function (index$201){
                 var $$list=this;
@@ -1478,16 +1478,16 @@ function $init$List(){
                 var setHash$219=function(hash$220){return hash$219=hash$220;};
                 var it$221 = $$list.iterator;
                 var elem$222;while ((elem$222=it$221.next())!==getFinished()){
-                    (hash$219=hash$219.times((31)));
+                    (hash$219=hash$219.times((31)),hash$219);
                     var elem$223;
                     if((elem$223=elem$222)!==null){
-                        (hash$219=hash$219.plus(elem$223.hash));
+                        (hash$219=hash$219.plus(elem$223.hash),hash$219);
                     }
                 }
                 return hash$219;
             });defineAttr($$list,'first',function(){
                 var $$list=this;
-                return $$list.get((0))
+                return $$list.get((0));
             });
             defineAttr($$list,'last',function(){
                 var $$list=this;
@@ -1547,7 +1547,7 @@ function $init$Tuple(){
             defineAttr($$tuple,'rest',function(){return this.rest$234_;});
             defineAttr($$tuple,'size',function(){
                 var $$tuple=this;
-                return (1).plus($$tuple.rest.size)
+                return (1).plus($$tuple.rest.size);
             });
             $$tuple.get=function get(index$235){
                 var $$tuple=this;
@@ -1578,7 +1578,7 @@ function $init$Tuple(){
                 }
             });defineAttr($$tuple,'reversed',function(){
                 var $$tuple=this;
-                return $$tuple.rest.reversed.withTrailing($$tuple.first,{Other:$$tuple.$$targs$$.First})
+                return $$tuple.rest.reversed.withTrailing($$tuple.first,{Other:$$tuple.$$targs$$.First});
             });
             $$tuple.segment=function segment(from$239,length$240){
                 var $$tuple=this;
@@ -1613,7 +1613,7 @@ function $init$Tuple(){
             };
             defineAttr($$tuple,'clone',function(){
                 var $$tuple=this;
-                return $$tuple
+                return $$tuple;
             });
             defineAttr($$tuple,'iterator',function(){
                 var $$tuple=this;
@@ -1704,11 +1704,11 @@ function $init$Entry(){
                 }
             };defineAttr($$entry,'hash',function(){
                 var $$entry=this;
-                return (31).plus($$entry.key.hash).times((31)).plus($$entry.item.hash)
+                return (31).plus($$entry.key.hash).times((31)).plus($$entry.item.hash);
             });
             defineAttr($$entry,'string',function(){
                 var $$entry=this;
-                return StringBuilder().appendAll([$$entry.key.string,String$("->",2),$$entry.item.string]).string
+                return StringBuilder().appendAll([$$entry.key.string,String$("->",2),$$entry.item.string]).string;
             });
         })(Entry.$$.prototype);
     }
@@ -1847,11 +1847,11 @@ function $init$Exception(){
             defineAttr($$exception,'description$270',function(){return this.description$270_;});
             defineAttr($$exception,'message',function(){
                 var $$exception=this;
-                return (opt$271=(opt$272=$$exception.description$270,opt$272!==null?opt$272:(opt$273=$$exception.cause,opt$273!==null?opt$273.message:null)),opt$271!==null?opt$271:String$("",0))
+                return (opt$271=(opt$272=$$exception.description$270,opt$272!==null?opt$272:(opt$273=$$exception.cause,opt$273!==null?opt$273.message:null)),opt$271!==null?opt$271:String$("",0));
             });
             defineAttr($$exception,'string',function(){
                 var $$exception=this;
-                return className($$exception).plus(StringBuilder().appendAll([String$(" \"",2),$$exception.message.string,String$("\"",1)]).string)
+                return className($$exception).plus(StringBuilder().appendAll([String$(" \"",2),$$exception.message.string,String$("\"",1)]).string);
             });
         })(Exception.$$.prototype);
     }
@@ -1940,11 +1940,11 @@ function $init$Range(){
             defineAttr($$range,'last',function(){return this.last$279_;});
             defineAttr($$range,'string',function(){
                 var $$range=this;
-                return $$range.first.string.plus(String$("..",2)).plus($$range.last.string)
+                return $$range.first.string.plus(String$("..",2)).plus($$range.last.string);
             });
             defineAttr($$range,'decreasing',function(){
                 var $$range=this;
-                return $$range.last.compare($$range.first).equals(getSmaller())
+                return $$range.last.compare($$range.first).equals(getSmaller());
             });
             $$range.next$280=function (x$281){
                 var $$range=this;
@@ -1970,7 +1970,7 @@ function $init$Range(){
                 }
             });defineAttr($$range,'lastIndex',function(){
                 var $$range=this;
-                return $$range.size.minus((1))
+                return $$range.size.minus((1));
             });
             defineAttr($$range,'rest',function(){
                 var $$range=this;
@@ -1990,7 +1990,7 @@ function $init$Range(){
                     if(x$295.equals($$range.last)){
                         return null;
                     }else {
-                        (index$293=index$293.successor);
+                        (index$293=index$293.successor,index$293);
                         x$295=$$range.next$280(x$295);
                     }
                 }
@@ -2077,7 +2077,7 @@ function $init$Range(){
             };
             defineAttr($$range,'clone',function(){
                 var $$range=this;
-                return $$range
+                return $$range;
             });
             $$range.segment=function segment(from$317,length$318){
                 var $$range=this;
@@ -2153,7 +2153,7 @@ function $init$Range(){
                 return $$range.span(from$347,$$range.size);
             };defineAttr($$range,'reversed',function(){
                 var $$range=this;
-                return Range($$range.last,$$range.first,{Element:$$range.$$targs$$.Element})
+                return Range($$range.last,$$range.first,{Element:$$range.$$targs$$.Element});
             });
             $$range.skipping=function skipping(skip$348){
                 var $$range=this;
@@ -2176,18 +2176,18 @@ function $init$Range(){
                 var setX$356=function(x$357){return x$356=x$357;};
                 var e$358=$$range.first;
                 var setE$358=function(e$359){return e$358=e$359;};
-                while((x$356=x$356.successor).compare(take$355).equals(getSmaller())){
+                while((x$356=x$356.successor,x$356).compare(take$355).equals(getSmaller())){
                     e$358=$$range.next$280(e$358);
                 }
                 return (opt$360=($$range.includes(e$358)?Range($$range.first,e$358,{Element:$$range.$$targs$$.Element}):null),opt$360!==null?opt$360:$$range);
                 var opt$360;
             };defineAttr($$range,'coalesced',function(){
                 var $$range=this;
-                return $$range
+                return $$range;
             });
             defineAttr($$range,'sequence',function(){
                 var $$range=this;
-                return $$range
+                return $$range;
             });
         })(Range.$$.prototype);
     }
@@ -2249,8 +2249,8 @@ function $init$Set(){
                 var setHashCode$371=function(hashCode$372){return hashCode$371=hashCode$372;};
                 var it$373 = $$set.iterator;
                 var elem$374;while ((elem$374=it$373.next())!==getFinished()){
-                    (hashCode$371=hashCode$371.times((31)));
-                    (hashCode$371=hashCode$371.plus(elem$374.hash));
+                    (hashCode$371=hashCode$371.times((31)),hashCode$371);
+                    (hashCode$371=hashCode$371.plus(elem$374.hash),hashCode$371);
                 }
                 return hashCode$371;
             });
@@ -2276,23 +2276,23 @@ function $init$Singleton(){
         (function($$singleton){
             defineAttr($$singleton,'lastIndex',function(){
                 var $$singleton=this;
-                return (0)
+                return (0);
             });
             defineAttr($$singleton,'size',function(){
                 var $$singleton=this;
-                return (1)
+                return (1);
             });
             defineAttr($$singleton,'first',function(){
                 var $$singleton=this;
-                return $$singleton.element$375
+                return $$singleton.element$375;
             });
             defineAttr($$singleton,'last',function(){
                 var $$singleton=this;
-                return $$singleton.element$375
+                return $$singleton.element$375;
             });
             defineAttr($$singleton,'rest',function(){
                 var $$singleton=this;
-                return getEmpty()
+                return getEmpty();
             });
             $$singleton.get=function get(index$376){
                 var $$singleton=this;
@@ -2303,7 +2303,7 @@ function $init$Singleton(){
                 }
             };defineAttr($$singleton,'clone',function(){
                 var $$singleton=this;
-                return $$singleton
+                return $$singleton;
             });
             defineAttr($$singleton,'iterator',function(){
                 var $$singleton=this;
@@ -2340,7 +2340,7 @@ function $init$Singleton(){
                 return SingletonIterator$377();
             });defineAttr($$singleton,'string',function(){
                 var $$singleton=this;
-                return StringBuilder().appendAll([String$("[",1),$$singleton.element$375.string.string,String$("]",1)]).string
+                return StringBuilder().appendAll([String$("[",1),$$singleton.element$375.string.string,String$("]",1)]).string;
             });
             $$singleton.segment=function (from$380,length$381){
                 var $$singleton=this;
@@ -2360,7 +2360,7 @@ function $init$Singleton(){
             };
             defineAttr($$singleton,'reversed',function(){
                 var $$singleton=this;
-                return $$singleton
+                return $$singleton;
             });
             $$singleton.equals=function equals(that$390){
                 var $$singleton=this;
@@ -2376,7 +2376,7 @@ function $init$Singleton(){
                 return false;
             };defineAttr($$singleton,'hash',function(){
                 var $$singleton=this;
-                return (31).plus($$singleton.element$375.hash)
+                return (31).plus($$singleton.element$375.hash);
             });
             $$singleton.contains=function (element$393){
                 var $$singleton=this;
@@ -2428,7 +2428,7 @@ function $init$Singleton(){
             };
             defineAttr($$singleton,'coalesced',function(){
                 var $$singleton=this;
-                return $$singleton
+                return $$singleton;
             });
         })(Singleton.$$.prototype);
     }
@@ -2464,19 +2464,19 @@ function $init$LazyList(){
                 }
             };defineAttr($$lazyList,'rest',function(){
                 var $$lazyList=this;
-                return LazyList($$lazyList.elems$410.rest,{Element:$$lazyList.$$targs$$.Element})
+                return LazyList($$lazyList.elems$410.rest,{Element:$$lazyList.$$targs$$.Element});
             });
             defineAttr($$lazyList,'iterator',function(){
                 var $$lazyList=this;
-                return $$lazyList.elems$410.iterator
+                return $$lazyList.elems$410.iterator;
             });
             defineAttr($$lazyList,'reversed',function(){
                 var $$lazyList=this;
-                return $$lazyList.elems$410.sequence.reversed
+                return $$lazyList.elems$410.sequence.reversed;
             });
             defineAttr($$lazyList,'clone',function(){
                 var $$lazyList=this;
-                return $$lazyList
+                return $$lazyList;
             });
             $$lazyList.span=function span(from$414,to$415){
                 var $$lazyList=this;
@@ -2550,10 +2550,10 @@ function $init$LazyList(){
                 var setHash$440=function(hash$441){return hash$440=hash$441;};
                 var it$442 = $$lazyList.elems$410.iterator;
                 var elem$443;while ((elem$443=it$442.next())!==getFinished()){
-                    (hash$440=hash$440.times((31)));
+                    (hash$440=hash$440.times((31)),hash$440);
                     var elem$444;
                     if((elem$444=elem$443)!==null){
-                        (hash$440=hash$440.plus(elem$444.hash));
+                        (hash$440=hash$440.plus(elem$444.hash),hash$440);
                     }
                 }
                 return hash$440;
@@ -2563,11 +2563,11 @@ function $init$LazyList(){
             };
             defineAttr($$lazyList,'first',function(){
                 var $$lazyList=this;
-                return $$lazyList.elems$410.first
+                return $$lazyList.elems$410.first;
             });
             defineAttr($$lazyList,'last',function(){
                 var $$lazyList=this;
-                return $$lazyList.elems$410.last
+                return $$lazyList.elems$410.last;
             });
         })(LazyList.$$.prototype);
     }
@@ -2591,19 +2591,19 @@ function $init$LazyMap(){
         (function($$lazyMap){
             defineAttr($$lazyMap,'first',function(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$446.first
+                return $$lazyMap.entries$446.first;
             });
             defineAttr($$lazyMap,'last',function(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$446.last
+                return $$lazyMap.entries$446.last;
             });
             defineAttr($$lazyMap,'clone',function(){
                 var $$lazyMap=this;
-                return $$lazyMap
+                return $$lazyMap;
             });
             defineAttr($$lazyMap,'size',function(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$446.size
+                return $$lazyMap.entries$446.size;
             });
             $$lazyMap.get=function (key$447){
                 var $$lazyMap=this;
@@ -2614,7 +2614,7 @@ function $init$LazyMap(){
             };
             defineAttr($$lazyMap,'iterator',function(){
                 var $$lazyMap=this;
-                return $$lazyMap.entries$446.iterator
+                return $$lazyMap.entries$446.iterator;
             });
             $$lazyMap.equals=function equals(that$450){
                 var $$lazyMap=this;
@@ -2643,8 +2643,8 @@ function $init$LazyMap(){
                 var setHashCode$455=function(hashCode$456){return hashCode$455=hashCode$456;};
                 var it$457 = $$lazyMap.entries$446.iterator;
                 var elem$458;while ((elem$458=it$457.next())!==getFinished()){
-                    (hashCode$455=hashCode$455.times((31)));
-                    (hashCode$455=hashCode$455.plus(elem$458.hash));
+                    (hashCode$455=hashCode$455.times((31)),hashCode$455);
+                    (hashCode$455=hashCode$455.plus(elem$458.hash),hashCode$455);
                 }
                 return hashCode$455;
             });
@@ -2670,7 +2670,7 @@ function $init$LazySet(){
         (function($$lazySet){
             defineAttr($$lazySet,'clone',function(){
                 var $$lazySet=this;
-                return $$lazySet
+                return $$lazySet;
             });
             defineAttr($$lazySet,'size',function(){
                 var $$lazySet=this;
@@ -2697,7 +2697,7 @@ function $init$LazySet(){
                 return c$460;
             });defineAttr($$lazySet,'iterator',function(){
                 var $$lazySet=this;
-                return $$lazySet.elems$459.iterator
+                return $$lazySet.elems$459.iterator;
             });
             $$lazySet.union=function (set$470,$$$mptypes){
                 var $$lazySet=this;
@@ -2825,8 +2825,8 @@ function $init$LazySet(){
                 var setHashCode$497=function(hashCode$498){return hashCode$497=hashCode$498;};
                 var it$499 = $$lazySet.elems$459.iterator;
                 var elem$500;while ((elem$500=it$499.next())!==getFinished()){
-                    (hashCode$497=hashCode$497.times((31)));
-                    (hashCode$497=hashCode$497.plus(elem$500.hash));
+                    (hashCode$497=hashCode$497.times((31)),hashCode$497);
+                    (hashCode$497=hashCode$497.plus(elem$500.hash),hashCode$497);
                 }
                 return hashCode$497;
             });
@@ -2874,8 +2874,8 @@ function $init$Map(){
                 var setHashCode$506=function(hashCode$507){return hashCode$506=hashCode$507;};
                 var it$508 = $$map.iterator;
                 var elem$509;while ((elem$509=it$508.next())!==getFinished()){
-                    (hashCode$506=hashCode$506.times((31)));
-                    (hashCode$506=hashCode$506.plus(elem$509.hash));
+                    (hashCode$506=hashCode$506.times((31)),hashCode$506);
+                    (hashCode$506=hashCode$506.plus(elem$509.hash),hashCode$506);
                 }
                 return hashCode$506;
             });defineAttr($$map,'keys',function(){
@@ -2904,7 +2904,7 @@ function $init$Map(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Anything},Element:$$map.$$targs$$.Key}),{Element:$$map.$$targs$$.Key})
+                },{Absent:{t:Anything},Element:$$map.$$targs$$.Key}),{Element:$$map.$$targs$$.Key});
             });
             defineAttr($$map,'values',function(){
                 var $$map=this;
@@ -2932,7 +2932,7 @@ function $init$Map(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Anything},Element:$$map.$$targs$$.Item}),{Element:$$map.$$targs$$.Item})
+                },{Absent:{t:Anything},Element:$$map.$$targs$$.Item}),{Element:$$map.$$targs$$.Item});
             });
             defineAttr($$map,'inverse',function(){
                 var $$map=this;
@@ -2986,7 +2986,7 @@ function $init$Map(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Anything},Element:{t:Entry,a:{Key:$$map.$$targs$$.Item,Item:{t:LazySet,a:{Element:$$map.$$targs$$.Key}}}}}),{Key:$$map.$$targs$$.Item,Item:{t:LazySet,a:{Element:$$map.$$targs$$.Key}}})
+                },{Absent:{t:Anything},Element:{t:Entry,a:{Key:$$map.$$targs$$.Item,Item:{t:LazySet,a:{Element:$$map.$$targs$$.Key}}}}}),{Key:$$map.$$targs$$.Item,Item:{t:LazySet,a:{Element:$$map.$$targs$$.Key}}});
             });
             $$map.mapItems=function (mapping$538,$$$mptypes){
                 var $$map=this;
@@ -3250,7 +3250,7 @@ function product(values$617,$$$mptypes){
     var setProduct$618=function(product$619){return product$618=product$619;};
     var it$620 = values$617.rest.iterator;
     var val$621;while ((val$621=it$620.next())!==getFinished()){
-        (product$618=product$618.times(val$621));
+        (product$618=product$618.times(val$621),product$618);
     }
     return product$618;
 }
@@ -3265,7 +3265,7 @@ function sum(values$625,$$$mptypes){
     var setSum$626=function(sum$627){return sum$626=sum$627;};
     var it$628 = values$625.rest.iterator;
     var val$629;while ((val$629=it$628.next())!==getFinished()){
-        (sum$626=sum$626.plus(val$629));
+        (sum$626=sum$626.plus(val$629),sum$626);
     }
     return sum$626;
 }
@@ -4897,6 +4897,20 @@ exports.getProcess=getProcess;
 exports.see=function(){};
 exports.by=function(){};
 exports.tagged=function(){};
+function NativeException(e) {
+var that = new NativeException.$$;
+var msg;
+if (typeof e === 'string') {
+msg = String$(e);
+} else if (e) {
+msg = String$(e.toString());
+} else {
+msg = String$("Native JavaScript Exception",27);
+}
+Exception(msg,null,that);
+return that;
+}
+initTypeProto(NativeException, 'ceylon.language::NativeException', $init$Exception());
 exports.Identifiable=Identifiable;
 exports.identityHash=$identityHash;
 exports.Object=Object$;
@@ -4908,6 +4922,7 @@ exports.Comparison=Comparison;
 exports.getNull=getNull;
 exports.getTrue=getTrue;
 exports.getFalse=getFalse;
+exports.NativeException=NativeException;
 });
 }(typeof define==='function' && define.amd ?
 define : function (factory) {
