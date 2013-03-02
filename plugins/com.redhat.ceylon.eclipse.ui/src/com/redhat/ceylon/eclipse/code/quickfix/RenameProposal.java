@@ -41,10 +41,10 @@ class RenameProposal extends ChangeCorrectionProposal implements ICompletionProp
             Collection<ICompletionProposal> proposals, IFile file,
             String brokenName, DeclarationWithProximity dwp, int dist) {
         TextFileChange change = new TextFileChange("Change Reference", file);
-          change.setEdit(new ReplaceEdit(problem.getOffset(), 
-                  brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
-          proposals.add(new RenameProposal(problem, file, dwp.getName(), 
-                  dwp.getDeclaration(), dist, change));
+        change.setEdit(new ReplaceEdit(problem.getOffset(), 
+                brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
+        proposals.add(new RenameProposal(problem, file, dwp.getName(), 
+                dwp.getDeclaration(), dist, change));
     }
 
 	@Override
