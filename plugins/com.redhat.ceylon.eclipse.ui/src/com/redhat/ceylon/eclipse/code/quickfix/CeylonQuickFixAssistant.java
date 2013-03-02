@@ -39,6 +39,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -1328,45 +1329,58 @@ public class CeylonQuickFixAssistant {
               }
           }
     }
-
+    
     private void addImportProposals(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
-            String brokenName = getIdentifyingNode(node).getText();
-            for (Declaration decl: findImportCandidates(cu, brokenName)) {
-                ICompletionProposal ip = createImportProposal(cu, file, decl);
+            Node id = getIdentifyingNode(node);
+            String brokenName = id.getText();
+            Module module = cu.getUnit().getPackage().getModule();
+            for (Declaration decl: findImportCandidates(module, brokenName)) {
+                ICompletionProposal ip = createImportProposal(cu, file, decl, id);
                 if (ip!=null) proposals.add(ip);
             }
         }
     }
-
-    private static Collection<Declaration> findImportCandidates(Tree.CompilationUnit cu, 
-            String name) {
-        List<Declaration> result = new ArrayList<Declaration>();
-        addImportProposalsForModule(result, 
-        		cu.getUnit().getPackage().getModule(), name);
-        return result;
-    }
-
-    private static void addImportProposalsForModule(List<Declaration> output,
-            Module module, String name) {
+    
+    private static Set<Declaration> findImportCandidates(Module module, String name) {
+        Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
             Declaration member = pkg.getMember(name, null, false);
             if (member!=null) {
-                output.add(member);
+                result.add(member);
             }
         }
+        if (result.isEmpty()) {
+            for (Package pkg: module.getAllPackages()) {
+                for (Declaration member: pkg.getMembers()) {
+                    int dist = getLevenshteinDistance(name, member.getName());
+                    //TODO: would it be better to just sort by dist, and
+                    //      then select the 3 closest possibilities?
+                    if (dist<=name.length()/3+1) {
+                        result.add(member);
+                    }
+                }
+            }
+        }
+        return result;
     }
-
+    
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
-    		IFile file, Declaration declaration) {
+    		IFile file, Declaration declaration, Node id) {
         TextFileChange change = new TextFileChange("Add Import", file);
         List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), null);
         if (ies.isEmpty()) return null;
 		change.setEdit(new MultiTextEdit());
 		for (InsertEdit ie: ies) change.addEdit(ie);
-        return new ChangeCorrectionProposal("Add import of '" + declaration.getName() + "'" + 
+		String brokenName = id.getText();
+        String proposedName = declaration.getName();
+        if (!brokenName.equals(proposedName)) {
+		    change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
+		            proposedName));
+		}
+        return new ChangeCorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
                 change, 50, CeylonLabelProvider.IMPORT);
     }
