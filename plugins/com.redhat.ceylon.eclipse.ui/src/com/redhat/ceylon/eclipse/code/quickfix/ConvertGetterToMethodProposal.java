@@ -11,7 +11,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Getter;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -19,16 +19,22 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 
 public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
 
-    public static void addConvertGetterToMethodProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, Node node) {
-        Getter getter = null;
+    public static void addConvertGetterToMethodProposal(Collection<ICompletionProposal> proposals, 
+            CeylonEditor editor, Node node) {
+        Value getter = null;
 
         if (node instanceof Tree.AttributeGetterDefinition) {
             getter = ((Tree.AttributeGetterDefinition) node).getDeclarationModel();
         }
-        if (node instanceof Tree.MemberOrTypeExpression) {
+        else if (node instanceof Tree.AttributeDeclaration && 
+                ((Tree.AttributeDeclaration) node).getSpecifierOrInitializerExpression() 
+                instanceof Tree.LazySpecifierExpression) {
+            getter = ((Tree.AttributeDeclaration) node).getDeclarationModel();
+        }
+        else if (node instanceof Tree.MemberOrTypeExpression) {
             Declaration decl = ((Tree.MemberOrTypeExpression) node).getDeclaration();
-            if (decl instanceof Getter) {
-                getter = (Getter) decl;
+            if (decl instanceof Value) {
+                getter = (Value) decl;
             }
         }
 
@@ -37,7 +43,8 @@ public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static void addConvertGetterToMethodProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, Getter getter) {
+    private static void addConvertGetterToMethodProposal(Collection<ICompletionProposal> proposals, 
+            CeylonEditor editor, Value getter) {
         try {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
@@ -66,7 +73,7 @@ public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private ConvertGetterToMethodProposal(Change change, Getter getter) {
+    private ConvertGetterToMethodProposal(Change change, Value getter) {
         super("Convert getter '" + getter.getName() + "' to method", change, 10, CHANGE);
     }
 
