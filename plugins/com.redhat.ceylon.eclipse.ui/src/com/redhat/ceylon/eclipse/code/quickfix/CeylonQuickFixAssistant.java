@@ -39,7 +39,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -1324,8 +1323,8 @@ public class CeylonQuickFixAssistant {
               //TODO: would it be better to just sort by dist, and
               //      then select the 3 closest possibilities?
               if (dist<=brokenName.length()/3+1) {
-                  RenameProposal.addRenameProposal(problem, proposals, file, brokenName, dwp,
-                        dist);
+                  RenameProposal.addRenameProposal(problem, proposals, file, 
+                          brokenName, dwp, dist, cu);
               }
           }
     }
@@ -1337,14 +1336,15 @@ public class CeylonQuickFixAssistant {
             Node id = getIdentifyingNode(node);
             String brokenName = id.getText();
             Module module = cu.getUnit().getPackage().getModule();
-            for (Declaration decl: findImportCandidates(module, brokenName)) {
-                ICompletionProposal ip = createImportProposal(cu, file, decl, id);
+            for (Declaration decl: findImportCandidates(module, brokenName, cu)) {
+                ICompletionProposal ip = createImportProposal(cu, file, decl);
                 if (ip!=null) proposals.add(ip);
             }
         }
     }
     
-    private static Set<Declaration> findImportCandidates(Module module, String name) {
+    private static Set<Declaration> findImportCandidates(Module module, 
+            String name, Tree.CompilationUnit cu) {
         Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
             Declaration member = pkg.getMember(name, null, false);
@@ -1352,34 +1352,36 @@ public class CeylonQuickFixAssistant {
                 result.add(member);
             }
         }
-        if (result.isEmpty()) {
+        /*if (result.isEmpty()) {
             for (Package pkg: module.getAllPackages()) {
                 for (Declaration member: pkg.getMembers()) {
-                    int dist = getLevenshteinDistance(name, member.getName());
-                    //TODO: would it be better to just sort by dist, and
-                    //      then select the 3 closest possibilities?
-                    if (dist<=name.length()/3+1) {
-                        result.add(member);
+                    if (!isImported(member, cu)) {
+                        int dist = getLevenshteinDistance(name, member.getName());
+                        //TODO: would it be better to just sort by dist, and
+                        //      then select the 3 closest possibilities?
+                        if (dist<=name.length()/3+1) {
+                            result.add(member);
+                        }
                     }
                 }
             }
-        }
+        }*/
         return result;
     }
     
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
-    		IFile file, Declaration declaration, Node id) {
+    		IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
         List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), null);
         if (ies.isEmpty()) return null;
 		change.setEdit(new MultiTextEdit());
 		for (InsertEdit ie: ies) change.addEdit(ie);
-		String brokenName = id.getText();
         String proposedName = declaration.getName();
+		/*String brokenName = id.getText();
         if (!brokenName.equals(proposedName)) {
 		    change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
 		            proposedName));
-		}
+		}*/
         return new ChangeCorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
                 change, 50, CeylonLabelProvider.IMPORT);
@@ -1572,17 +1574,20 @@ public class CeylonQuickFixAssistant {
 			!p.equals(rootNode.getUnit().getPackage()) &&
 			!p.getModule().getNameAsString()
 			        .equals("ceylon.language")) {
-			boolean imported = false;
-			for (Import i: rootNode.getUnit().getImports()) {
-				if (i.getDeclaration().equals(declaration)) {
-					imported = true;
-					break;
-				}
-			}
-			if (!imported) {
+			if (!isImported(declaration, rootNode)) {
 				declarations.add(declaration);
 			}
 		}
 	}
+
+    public static boolean isImported(Declaration declaration,
+            Tree.CompilationUnit rootNode) {
+        for (Import i: rootNode.getUnit().getImports()) {
+        	if (i.getDeclaration().equals(declaration)) {
+        		return true;
+        	}
+        }
+        return false;
+    }
 
 }
