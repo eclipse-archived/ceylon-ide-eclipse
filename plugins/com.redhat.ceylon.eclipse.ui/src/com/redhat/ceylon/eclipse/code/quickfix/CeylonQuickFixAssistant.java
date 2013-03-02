@@ -235,7 +235,17 @@ public class CeylonQuickFixAssistant {
                     		proposals, file, attDecNode);
                 }
                 AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
-                		attDecNode, editor);
+                		attDecNode, sie, editor);
+            }
+            if (decNode instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
+                Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
+                if (sie!=null) {
+                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, 
+                            proposals, file, methDecNode);
+                }
+                AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
+                        methDecNode, sie, editor);
             }
             
             if (node instanceof Tree.MethodArgument) {

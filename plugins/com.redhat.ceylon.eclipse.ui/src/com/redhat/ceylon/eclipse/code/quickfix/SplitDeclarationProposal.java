@@ -8,8 +8,10 @@ import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferT
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -20,8 +22,9 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -44,15 +47,34 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
 
     static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.AttributeDeclaration decNode) {
-        Value dec = decNode.getDeclarationModel();
+            Tree.TypedDeclaration decNode) {
+        TypedDeclaration dec = decNode.getDeclarationModel();
         if (dec==null) return;
         Tree.Identifier id = decNode.getIdentifier();
         if (id==null || id.getToken()==null) return;
+        String params = "";
+        if (decNode instanceof Tree.MethodDeclaration) {
+            List<ParameterList> pls = ((Tree.MethodDeclaration) decNode).getParameterLists();
+            if (pls.isEmpty()) {
+                return;
+            } 
+            else {
+                Integer start = pls.get(0).getStartIndex();
+                Integer end = pls.get(pls.size()-1).getStopIndex();
+                try {
+                    params = doc.get(start, end-start+1);
+                } 
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        }
         TextChange change = new DocumentChange("Split Declaration", doc);
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
-        change.addEdit(new InsertEdit(offset, ";\n" + getIndent(decNode, doc) + dec.getName()));
+        change.addEdit(new InsertEdit(offset, params+";\n" + 
+                getIndent(decNode, doc) + dec.getName()));
         Type type = decNode.getType();
 		int il;
         if (type instanceof Tree.LocalModifier) {

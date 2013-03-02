@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferT
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -20,11 +21,10 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
@@ -50,10 +50,30 @@ class AddParameterProposal extends ChangeCorrectionProposal {
 
     static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.AttributeDeclaration decNode, CeylonEditor editor) {
-        Value dec = decNode.getDeclarationModel();
+            Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie,
+            CeylonEditor editor) {
+        MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
+            //TODO: copy/pasted from SplitDeclarationProposal 
+            String params = null;
+            if (decNode instanceof Tree.MethodDeclaration) {
+                List<ParameterList> pls = ((Tree.MethodDeclaration) decNode).getParameterLists();
+                if (pls.isEmpty()) {
+                    return;
+                } 
+                else {
+                    Integer start = pls.get(0).getStartIndex();
+                    Integer end = pls.get(pls.size()-1).getStopIndex();
+                    try {
+                        params = doc.get(start, end-start+1);
+                    } 
+                    catch (BadLocationException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
+            }
             TextChange change = new DocumentChange("Add Parameter", doc);
             change.setEdit(new MultiTextEdit());
             FindContainerVisitor fcv = new FindContainerVisitor(decNode);
@@ -61,7 +81,6 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             Tree.Declaration container = fcv.getDeclaration();
             if (container instanceof Tree.ClassDefinition) {
                 ParameterList pl = ((Tree.ClassDefinition) container).getParameterList();
-                SpecifierOrInitializerExpression sie = decNode.getSpecifierOrInitializerExpression();
                 String def;
                 if (sie==null) {
                     def = " = nothing";
@@ -79,6 +98,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                     catch (BadLocationException e) {
                         e.printStackTrace();
                     }
+                    if (params!=null) def = " = " + params + def;
                     change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
                 }
                 String param = (pl.getParameters().isEmpty() ? "" : ", ") + dec.getName() + def;
