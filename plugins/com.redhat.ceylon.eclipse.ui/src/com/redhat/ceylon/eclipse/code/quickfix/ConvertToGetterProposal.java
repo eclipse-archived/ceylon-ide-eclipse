@@ -39,7 +39,7 @@ class ConvertToGetterProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.AttributeDeclaration decNode) {
         Value dec = decNode.getDeclarationModel();
-        if (dec==null) return;
+        if (dec==null || decNode.getSpecifierOrInitializerExpression()==null) return;
         if (!dec.isVariable()) { //TODO: temp restriction, autocreate setter!
             TextChange change = new DocumentChange("Convert To Getter", doc);
             change.setEdit(new MultiTextEdit());
