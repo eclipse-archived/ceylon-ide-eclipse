@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -68,16 +69,13 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
-        String indentAfter;
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(body, doc);
-            indent = indentAfter + getDefaultIndent();
+            indent = "\n" + getIndent(body, doc) + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
             indent = "\n" + getIndent(statement, doc);
-            indentAfter = "";
             offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
@@ -89,9 +87,17 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
             	ProducedReference pr = getRefinedProducedReference(node, d);
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, false, indent))
-                    .append(indentAfter);
+                    .append(indent);
                 importSignatureTypes(d, cu, already);
             }
+        }
+        try {
+            if (doc.getChar(offset)=='}' && result.length()>0) {
+                result.append("\n");
+            }
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
         }
         applyImports(change, already, cu);
         change.addEdit(new InsertEdit(offset, result.toString()));

@@ -18,6 +18,7 @@ import java.util.Set;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -126,16 +127,13 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
-        String indentAfter;
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(body, document);
-            indent = indentAfter + getDefaultIndent();
+            indent = "\n" + getIndent(body, document) + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
             Statement statement = statements.get(statements.size()-1);
             indent = "\n" + getIndent(statement, document);
-            indentAfter = "";
             if (offset<0) offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
@@ -147,9 +145,17 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             	ProducedReference pr = getRefinedProducedReference(node, d);
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, isInterface, indent))
-                    .append(indentAfter);
+                    .append(indent);
                 importSignatureTypes(d, cu, already);
             }
+        }
+        try {
+            if (document.getChar(offset)=='}' && result.length()>0) {
+                result.append("\n");
+            }
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
         }
         applyImports(change, already, cu);
         change.addEdit(new InsertEdit(offset, result.toString()));
