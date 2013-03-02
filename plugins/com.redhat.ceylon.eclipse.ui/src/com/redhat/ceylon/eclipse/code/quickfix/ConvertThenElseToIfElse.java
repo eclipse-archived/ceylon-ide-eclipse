@@ -81,6 +81,9 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     			operation = specifierStmt.getSpecifierExpression().getExpression();
     		} else if (statement instanceof CustomTree.AttributeDeclaration) {
     			CustomTree.AttributeDeclaration attrDecl = (CustomTree.AttributeDeclaration) statement;
+    			if (attrDecl.getIdentifier()==null) {
+    			    return;
+    			}
     			String identifier = getTerm(doc, attrDecl.getIdentifier());
 				String annotations = "";
 				if (!attrDecl.getAnnotationList().getAnnotations().isEmpty()) {
