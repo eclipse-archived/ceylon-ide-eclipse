@@ -25,7 +25,9 @@ public class EditedPhasedUnit extends IdePhasedUnit {
             TypeChecker typeChecker, List<CommonToken> tokenStream, ProjectPhasedUnit savedPhasedUnit) {
         super(unitFile, srcDir, cu, p, moduleManager, typeChecker, tokenStream);
         savedPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(savedPhasedUnit);
-        savedPhasedUnit.addWorkingCopy(this);
+        if (savedPhasedUnit!=null) {
+            savedPhasedUnit.addWorkingCopy(this);
+        }
     }
     
     public EditedPhasedUnit(PhasedUnit other) {
