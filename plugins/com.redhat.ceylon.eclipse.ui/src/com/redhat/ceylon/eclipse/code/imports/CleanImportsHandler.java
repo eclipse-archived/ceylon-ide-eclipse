@@ -22,7 +22,9 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
@@ -55,7 +57,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 	length = il.getStopIndex()-il.getStartIndex()+1;
                 	extra="";
                 }
-                if (!imports.trim().isEmpty()) {
+//                if (!imports.trim().isEmpty()) {
                 	tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
                 	tfc.initializeValidationData(null);
                 	try {
@@ -65,7 +67,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 	catch (CoreException ce) {
                 		throw new ExecutionException("Error cleaning imports", ce);
                 	}
-                }
+//                }
             }
         }
         return null;
@@ -212,34 +214,45 @@ public class CleanImportsHandler extends AbstractHandler {
 		}
 	}
 
+	private static boolean hasRealErrors(Node node) {
+	    for (Message m: node.getErrors()) {
+	        if (m instanceof AnalysisError) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
 	private static List<Tree.ImportMemberOrType> getUsedImportElements(
 			List<Tree.Import> imports, List<Declaration> unused, boolean hasWildcard) {
 		List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
 		for (Tree.Import ti: imports) {
 			for (Tree.ImportMemberOrType imt: ti.getImportMemberOrTypeList()
 					.getImportMemberOrTypes()) {
-				if (imt.getDeclarationModel()!=null && 
-						imt.getIdentifier().getErrors().isEmpty() && 
-						imt.getErrors().isEmpty()) {
-					if (!unused.contains(imt.getDeclarationModel())) {
-						if (!hasWildcard || imt.getAlias()!=null || 
-								imt.getImportMemberOrTypeList()!=null) {
-							list.add(imt);
-						}
-					}
-					else {
+				Declaration dm = imt.getDeclarationModel();
+                if (dm!=null && 
+				        !hasRealErrors(imt.getIdentifier()) && 
+				        !hasRealErrors(imt)) {
+					if (unused.contains(dm)) {
 						if (imt.getImportMemberOrTypeList()!=null) {
 							for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
 									.getImportMemberOrTypes()) {
-								if (nimt.getDeclarationModel()!=null && 
-										nimt.getIdentifier().getErrors().isEmpty() && 
-										nimt.getErrors().isEmpty()) {
-									if (!unused.contains(nimt.getDeclarationModel())) {
+								Declaration ndm = nimt.getDeclarationModel();
+                                if (ndm!=null && 
+                                        !hasRealErrors(nimt.getIdentifier()) && 
+										!hasRealErrors(nimt)) {
+									if (!unused.contains(ndm)) {
 										list.add(imt);
 										break;
 									}
 								}
 							}
+						}
+					} 
+					else {
+						if (!hasWildcard || imt.getAlias()!=null || 
+								imt.getImportMemberOrTypeList()!=null) {
+							list.add(imt);
 						}
 					}
 				}
