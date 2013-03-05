@@ -8,7 +8,6 @@ import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
@@ -25,12 +24,7 @@ abstract class AbstractRefactoringAction extends TextEditorAction {
         refactoring = createRefactoring();
         this.editor = editor;
         setEnabled(refactoring.isEnabled());
-        if (editor instanceof CeylonEditor) {
-            IDocumentProvider dp = ((CeylonEditor)editor).getDocumentProvider();
-            refactoring.document = dp.getDocument(editor.getEditorInput());
-            refactoring.editor = (CeylonEditor) editor;
-        }
-}
+    }
 
     public void run() {
         for (IEditorPart ed: Util.getActivePage().getDirtyEditors()) {
