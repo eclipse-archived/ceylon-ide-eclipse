@@ -4,15 +4,18 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 
 import java.util.Collection;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -22,28 +25,29 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 
 public class ConvertMethodToGetterProposal extends ChangeCorrectionProposal {
 
-    public static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, Node node) {
+    public static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, IFile file, Node node) {
         Method method = null;
+        Tree.Type type = null;
 
-        if (node instanceof Tree.AnyMethod) {
-            method = ((Tree.AnyMethod) node).getDeclarationModel();
+        if (node instanceof Tree.MethodDefinition) {
+            method = ((Tree.MethodDefinition) node).getDeclarationModel();
+            type = ((Tree.MethodDefinition) node).getType();
         }
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Declaration decl = ((Tree.MemberOrTypeExpression) node).getDeclaration();
-            if (decl instanceof Method) {
-                method = (Method) decl;
-            }
+        else if (node instanceof Tree.MethodDeclaration && 
+                ((Tree.MethodDeclaration) node).getSpecifierExpression() instanceof Tree.LazySpecifierExpression) {
+            method = ((Tree.MethodDeclaration) node).getDeclarationModel();
+            type = ((Tree.MethodDeclaration) node).getType();
         }
 
         if (method != null 
                 && !method.isDeclaredVoid()
                 && method.getParameterLists().size() == 1 
                 && method.getParameterLists().get(0).getParameters().size() == 0 ) {
-            addConvertMethodToGetterProposal(proposals, editor, method);
+            addConvertMethodToGetterProposal(proposals, editor, file, method, type);
         }
     }
 
-    private static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, Method method) {
+    private static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, CeylonEditor editor, IFile file, Method method, Tree.Type type) {
         try {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
@@ -55,8 +59,8 @@ public class ConvertMethodToGetterProposal extends ChangeCorrectionProposal {
                     Integer startIndex = null;
                     Integer stopIndex = null;
                     
-                    if (node instanceof Tree.MethodDefinition) {
-                        ParameterList parameterList = ((Tree.MethodDefinition) node).getParameterLists().get(0);
+                    if (node instanceof Tree.AnyMethod) {
+                        ParameterList parameterList = ((Tree.AnyMethod) node).getParameterLists().get(0);
                         startIndex = parameterList.getStartIndex();
                         stopIndex = parameterList.getStopIndex();
                     } else {
@@ -81,7 +85,17 @@ public class ConvertMethodToGetterProposal extends ChangeCorrectionProposal {
                 return;
             }
 
-            Change change = refactoring.createChange(new NullProgressMonitor());
+            CompositeChange change = (CompositeChange)refactoring.createChange(new NullProgressMonitor());
+            if (change.getChildren().length == 0) {
+                return;
+            }
+            
+            if (type instanceof Tree.FunctionModifier) {
+                TextFileChange tfc = new TextFileChange("Convert method to getter", file);
+                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), type.getStopIndex() - type.getStartIndex() + 1, "value"));
+                change.add(tfc);
+            }
+            
             ConvertMethodToGetterProposal proposal = new ConvertMethodToGetterProposal(change, method);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
