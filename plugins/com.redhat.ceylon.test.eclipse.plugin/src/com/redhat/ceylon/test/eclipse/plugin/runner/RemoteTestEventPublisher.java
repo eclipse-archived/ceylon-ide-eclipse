@@ -70,7 +70,7 @@ public class RemoteTestEventPublisher implements TestListener {
         List<TestElement> testElements = new ArrayList<TestElement>();
 
         ceylon.language.List<?> testUnits = testRunner.getTests();
-        ceylon.language.Iterator<?> testUnitsIterator = testUnits.getIterator();
+        ceylon.language.Iterator<?> testUnitsIterator = testUnits.iterator();
 
         Object next;
         do {
