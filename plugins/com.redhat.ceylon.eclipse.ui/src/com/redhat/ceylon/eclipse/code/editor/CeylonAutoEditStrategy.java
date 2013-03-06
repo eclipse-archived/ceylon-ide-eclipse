@@ -408,10 +408,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
         int stringIndent = getStringIndent(c.offset);
-        if (stringIndent>=0 && getIndentWithSpaces()) {
+        int start = getStartOfCurrentLine(d, c);
+        if (stringIndent>=0) {
             StringBuilder sb = new StringBuilder();
             for (int i=0; i<stringIndent; i++) {
-                sb.append(' ');
+                char ws = d.getChar(start+i)=='\t' ? 
+                        '\t' : ' ';
+                sb.append(ws);
             }
             c.text = c.text + sb.toString();
         }
@@ -423,7 +426,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             //let's attempt to account for line ending comments in determining if it is a
             //continuation, but only by looking at the previous line
             //TODO: make this handle line ending comments further back
-            char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, getStartOfCurrentLine(d, c), c.offset);
+            char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, start, c.offset);
             if (lastNonWhitespaceCharAccountingForComments!='\n') {
                 lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
                 endOfLastLineChar = lastNonWhitespaceCharAccountingForComments;
@@ -431,7 +434,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             
             StringBuilder buf = new StringBuilder(c.text);
             boolean closeBrace = count("{")>count("}");
-            appendIndent(d, getStartOfCurrentLine(d, c), getEndOfCurrentLine(d, c), 
+            appendIndent(d, start, getEndOfCurrentLine(d, c), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
                     false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
