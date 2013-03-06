@@ -7,9 +7,13 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IClasspathContainer;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonRuntimeContainer;
 
 public class CeylonNature extends ProjectNatureBase {
     
@@ -56,8 +60,21 @@ public class CeylonNature extends ProjectNatureBase {
         return BUILDER_ID;
     }
     
+    
     public void addToProject(final IProject project) {
         super.addToProject(project);
+        IJavaProject javaProject = JavaCore.create(project);
+        CeylonRuntimeContainer runtimeContainer = new CeylonRuntimeContainer(javaProject);
+        try {
+            javaProject.setRawClasspath(runtimeContainer.constructModifiedClasspath(), null);
+            JavaCore.setClasspathContainer(runtimeContainer.getPath(), 
+                    new IJavaProject[] { javaProject }, 
+                    new IClasspathContainer[] { runtimeContainer }, null);
+        } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        //add libs to project class path
         new CeylonClasspathContainer(project).runReconfigure();
     }
     

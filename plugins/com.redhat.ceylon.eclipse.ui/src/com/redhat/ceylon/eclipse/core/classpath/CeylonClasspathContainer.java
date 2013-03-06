@@ -370,7 +370,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			if (name.equals(Module.DEFAULT_MODULE_NAME) ||
 					JDKUtils.isJDKModule(name) ||
 					JDKUtils.isOracleJDKModule(name) ||
-					isProjectModule(javaProject, module)) {
+					isProjectModule(javaProject, module) ||
+					module.equals(module.getLanguageModule())) {
 				continue;
 			}
 			IPath modulePath = getModuleArchive(provider, module);
