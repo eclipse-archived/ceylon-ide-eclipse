@@ -1423,6 +1423,16 @@
     </extension>
     
     <extension
+        id="com.redhat.ceylon.eclipse.ui.cpcontainer.RuntimeContainer"
+        name="Ceylon Runtime Container"
+        point="org.eclipse.jdt.core.classpathContainerInitializer">
+        <classpathContainerInitializer
+            class="com.redhat.ceylon.eclipse.core.classpath.CeylonRuntimeContainerInitializer"
+            id="com.redhat.ceylon.eclipse.ui.cpcontainer.RUNTIME_CONTAINER">
+        </classpathContainerInitializer>
+    </extension>
+    
+    <extension
         id="com.redhat.ceylon.eclipse.ui.cpcontainer.Container"
         name="Ceylon Classpath Container"
         point="org.eclipse.jdt.core.classpathContainerInitializer">
@@ -1431,7 +1441,7 @@
             id="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
         </classpathContainerInitializer>
     </extension>
-    
+
     <extension
           point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
           <hyperlinkDetector
