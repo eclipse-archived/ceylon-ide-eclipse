@@ -352,14 +352,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	                type==STRING_MID ||
 	                type==STRING_START ||
 	                type==STRING_END ||
-	                type==ASTRING_LITERAL) &&
+	                type==ASTRING_LITERAL ||
+	                type==VERBATIM_STRING ||
+                    type==AVERBATIM_STRING) &&
 	                token.getStartIndex()<offset) {
-	                return token.getCharPositionInLine()+1;
+                    int quote = type==VERBATIM_STRING ||
+                            type==AVERBATIM_STRING ? 3 : 1;
+	                return token.getCharPositionInLine()+quote;
 	            }
-                if (type==VERBATIM_STRING ||
-                    type==AVERBATIM_STRING) {
-                    return 0;
-                }
     	    }
     	}
     	return -1;
