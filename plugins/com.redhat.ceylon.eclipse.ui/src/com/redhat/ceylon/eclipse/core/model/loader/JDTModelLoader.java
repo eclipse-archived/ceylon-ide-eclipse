@@ -330,6 +330,19 @@ public class JDTModelLoader extends AbstractModelLoader {
                             return true;
                         }else{
                             try {
+                                // we have a few virtual types in java.lang that we need to load but they are not listed from class files
+                                if(packageName.equals("java.lang")){
+                                    convertToDeclaration(JAVA_LANG_ARRAYS, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_BOOLEAN_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_BYTE_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_SHORT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_INT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_LONG_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_FLOAT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_DOUBLE_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_CHAR_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(JAVA_LANG_OBJECT_ARRAY, DeclarationType.TYPE);
+                                }
                                 for (IClassFile classFile : packageFragment.getClassFiles()) {
                                     // skip removed class files
                                     if(!classFile.exists())
