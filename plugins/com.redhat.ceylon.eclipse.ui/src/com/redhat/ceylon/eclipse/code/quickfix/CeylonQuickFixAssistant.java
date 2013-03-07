@@ -134,6 +134,7 @@ public class CeylonQuickFixAssistant {
     
     public void addProposals(IQuickAssistInvocationContext context, 
     		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
+        if (editor==null) return;
         
         RenameRefactoringProposal.add(proposals, editor);
         InlineRefactoringProposal.add(proposals, editor);
