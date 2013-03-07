@@ -532,12 +532,17 @@ public class CeylonQuickFixAssistant {
         else if (node instanceof Tree.MemberOrTypeExpression) {
             term = (Tree.MemberOrTypeExpression) node;
         }
+        else if (node instanceof Tree.SpecifierStatement) {
+            term = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
+        }
         else {
             return;
         }
-        Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-        addAddAnnotationProposal(node, "variable", "Make Variable", 
-                dec, proposals, project);
+        if (term instanceof Tree.MemberOrTypeExpression) {
+            Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
+            addAddAnnotationProposal(node, "variable", "Make Variable", 
+                    dec, proposals, project);
+        }
     }
     
     private void addMakeVariableDecProposal(Tree.CompilationUnit cu,
