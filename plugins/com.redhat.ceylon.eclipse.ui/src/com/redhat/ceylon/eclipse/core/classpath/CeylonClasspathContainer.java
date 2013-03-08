@@ -417,18 +417,33 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 	public static IPath getSourceArchive(RepositoryManager provider,
 			Module module) {
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion());
-		ctx.setSuffix(ArtifactContext.SRC);
-		File srcArtifact = provider.getArtifact(ctx);
+        File srcArtifact = getSourceArtifact(provider, module);
 		if (srcArtifact!=null) {
 			return new Path(srcArtifact.getPath());
 		}
 		return null;
 	}
 
+    public static File getSourceArtifact(RepositoryManager provider,
+            Module module) {
+        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        		module.getVersion());
+		ctx.setSuffix(ArtifactContext.SRC);
+		File srcArtifact = provider.getArtifact(ctx);
+        return srcArtifact;
+    }
+
 	public static IPath getModuleArchive(RepositoryManager provider,
 			Module module) {
+        File moduleArtifact = getModuleArtifact(provider, module);
+		if (moduleArtifact!=null) {
+			return new Path(moduleArtifact.getPath());
+		}
+		return null;
+	}
+
+    public static File getModuleArtifact(RepositoryManager provider,
+            Module module) {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
         		module.getVersion());
 		// try first with .car
@@ -439,11 +454,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			ctx.setSuffix(ArtifactContext.JAR);
 			moduleArtifact = provider.getArtifact(ctx);
 		}
-		if (moduleArtifact!=null) {
-			return new Path(moduleArtifact.getPath());
-		}
-		return null;
-	}
+        return moduleArtifact;
+    }
 
 	public static boolean isProjectModule(IJavaProject javaProject, Module module)
 			throws JavaModelException {
