@@ -287,6 +287,12 @@ public class JDTModelLoader extends AbstractModelLoader {
          * We start by loading java.lang because we will need it no matter what.
          */
         loadPackage("java.lang", false);
+        
+        
+        if (getModuleManager().isLoadDepsFromModelLoader() && !isBootstrap) {
+            loadPackage(CEYLON_LANGUAGE, true);
+            loadPackage("ceylon.language.descriptor", true);
+        }        
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
