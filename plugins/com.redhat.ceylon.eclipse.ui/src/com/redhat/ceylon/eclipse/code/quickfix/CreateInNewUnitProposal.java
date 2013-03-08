@@ -16,7 +16,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
@@ -72,17 +75,48 @@ class CreateInNewUnitProposal implements ICompletionProposal,
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
     		String def, String desc, Image image, IFile file, String unitName, 
             ProducedType returnType, List<ProducedType> paramTypes) {
-    	//TODO: this implementation does not handle 
-    	//      unions/intersections/type args/etc
+        
     	List<Declaration> imports = new ArrayList<Declaration>();
-    	if (returnType!=null) imports.add(returnType.getDeclaration());
-    	if (paramTypes!=null) {
-    		for (ProducedType pt: paramTypes) {
-    			imports.add(pt.getDeclaration());
-    		}
-    	}
+    	resolveImports(imports, returnType);
+    	resolveImports(imports, paramTypes);
+    	
     	def = imports(imports) + "\n\n" + def;
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
+    }
+    
+    private static void resolveImports(List<Declaration> imports, List<ProducedType> pts) {
+        if (pts != null) {
+            for (ProducedType pt : pts) {
+                resolveImports(imports, pt);
+            }
+        }
+    }
+
+    private static void resolveImports(List<Declaration> imports, ProducedType pt) {
+        if (pt != null) {
+            if (pt.getDeclaration() instanceof UnionType) {
+                resolveImports(imports, pt.getCaseTypes());
+            }
+            else if (pt.getDeclaration() instanceof IntersectionType) {
+                resolveImports(imports, pt.getSatisfiedTypes());
+            }
+            else if (pt.getDeclaration() instanceof TypeParameter) {
+                TypeParameter typeParam = (TypeParameter) pt.getDeclaration();
+                if (typeParam.isConstrained()) {
+                    resolveImports(imports, typeParam.getCaseTypes());
+                    resolveImports(imports, typeParam.getSatisfiedTypes());
+                }
+                if (typeParam.isDefaulted()) {
+                    resolveImports(imports, typeParam.getDefaultTypeArgument());
+                }
+            } else {
+                resolveImports(imports, pt.getTypeArgumentList());
+                
+                if (!imports.contains(pt.getDeclaration())) {
+                    imports.add(pt.getDeclaration());
+                }
+            }
+        }
     }
 
 	@Override
