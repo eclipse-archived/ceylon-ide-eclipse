@@ -82,6 +82,7 @@ public class JDTModuleManager extends LazyModuleManager {
     private Set<String> sourceModules;
     private Set<File> classpath;
     private TypeChecker typeChecker;
+    private boolean loadDepsFromModelLoader;
 
     public Set<File> getClasspath() {
         return classpath;
@@ -98,8 +99,11 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
+        loadDepsFromModelLoader = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
         sourceModules = new HashSet<String>();
-        sourceModules.add("ceylon.language");
+        if (! loadDepsFromModelLoader) {
+            sourceModules.add("ceylon.language");
+        }
         classpath = new HashSet<File>();
     }
     /*
@@ -154,6 +158,17 @@ public class JDTModuleManager extends LazyModuleManager {
         return modelLoader;
     }
 
+    public void setModelLoader(AbstractModelLoader modelLoader) {
+        this.modelLoader = modelLoader;
+    }
+
+    public boolean isExternalModuleLoadedFromSource(String moduleName){
+        if (sourceModules.contains(moduleName)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Return true if this module should be loaded from source we are compiling
      * and not from its compiled artifact at all. Returns false by default, so
@@ -161,7 +176,7 @@ public class JDTModuleManager extends LazyModuleManager {
      */
     @Override
     protected boolean isModuleLoadedFromSource(String moduleName){
-        if (sourceModules.contains(moduleName)) {
+        if (isExternalModuleLoadedFromSource(moduleName)) {
             return true;
         }
         if (isModuleLoadedFromCompiledSource(moduleName)) {
@@ -244,6 +259,7 @@ public class JDTModuleManager extends LazyModuleManager {
                             }
                         }
                     }else if (! (root instanceof JarPackageFragmentRoot)) {
+                        // Case of source roots
                         String packageToSearch = moduleNameString;
                         if (root.getPackageFragment(packageToSearch).exists()) {
                             roots.add(root);
@@ -283,7 +299,12 @@ public class JDTModuleManager extends LazyModuleManager {
     
     @Override
     public Iterable<String> getSearchedArtifactExtensions() {
-        return Arrays.asList("src", "car", "jar");
+        if (loadDepsFromModelLoader) {
+            return Arrays.asList("car", "src", "jar");
+        }
+        else {
+            return Arrays.asList("src", "car", "jar");
+        }
     }
     
     public void visitModuleFile() {
@@ -420,6 +441,10 @@ public class JDTModuleManager extends LazyModuleManager {
 
     public void setTypeChecker(TypeChecker typeChecker) {
         this.typeChecker = typeChecker;
+    }
+
+    public boolean isLoadDepsFromModelLoader() {
+        return loadDepsFromModelLoader;
     }
 
 }
