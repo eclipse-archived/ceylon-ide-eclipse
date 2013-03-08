@@ -119,7 +119,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     private Map<String, Declaration> languageModuledeclarations;
     
-    public JDTModelLoader(final ModuleManager moduleManager, final Modules modules){
+    public JDTModelLoader(final JDTModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
         this.modules = modules;
         javaProject = ((JDTModuleManager)moduleManager).getJavaProject();
@@ -134,6 +134,10 @@ public class JDTModelLoader extends AbstractModelLoader {
         internalCreate();
     }
 
+    public JDTModuleManager getModuleManager() {
+        return (JDTModuleManager) moduleManager;
+    }
+    
     private void internalCreate() {
         this.languageModuledeclarations = new HashMap<String, Declaration>();
         this.typeFactory = new TypeFactory(moduleManager.getContext()) {
