@@ -1697,7 +1697,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	}
 
     public static boolean reuseEclipseModelInCompilation(IProject project) {
-        return loadDependenciesFromModelLoaderFirst(project);
+        return loadDependenciesFromModelLoaderFirst(project) && false;
     }
 
     public static boolean loadDependenciesFromModelLoaderFirst(IProject project) {
