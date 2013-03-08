@@ -9,6 +9,7 @@ import java.util.List;
 
 import ceylon.test.AssertComparisonException;
 import ceylon.test.TestListener;
+import ceylon.test.TestListener$impl;
 import ceylon.test.TestResult;
 import ceylon.test.TestRunner;
 import ceylon.test.TestState;
@@ -19,6 +20,7 @@ import ceylon.test.running_;
 import ceylon.test.success_;
 import ceylon.test.undefined_;
 
+import com.redhat.ceylon.compiler.java.metadata.Ignore;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
@@ -133,5 +135,11 @@ public class RemoteTestEventPublisher implements TestListener {
             throw new RuntimeException(e);
         }
     }
+
+	@Override
+	@Ignore
+	public TestListener$impl $ceylon$test$TestListener$impl() {
+		return null;
+	}
 
 }
