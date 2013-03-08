@@ -108,6 +108,7 @@ public class CleanImportsHandler extends AbstractHandler {
         }
         for (Declaration d: proposed) {
         	String pn = d.getUnit().getPackage().getNameAsString();
+        	// TODO shouldn't we filter ceylon.language packages ?
         	if (!packages.containsKey(pn)) {
         		packages.put(pn, Collections.<Tree.Import>emptyList());
         	}

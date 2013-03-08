@@ -773,6 +773,19 @@ public class CeylonQuickFixAssistant {
                     params.setLength(params.length()-2);
                 }
                 params.append(")");
+                
+                List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
+                StringBuilder typeParamDef = new StringBuilder("<");
+                StringBuilder typeParamConstDef = new StringBuilder();
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, returnType);
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, paramTypes);
+                if (typeParamDef.length() > 1) {
+                    typeParamDef.setLength(typeParamDef.length() - 1);
+                    typeParamDef.append(">");
+                } else {
+                    typeParamDef.setLength(0);
+                }
+                
                 if (isUpperCase) {
                     String supertype = "";
                     if (!isVoid) {
@@ -785,7 +798,7 @@ public class CeylonQuickFixAssistant {
                             }
                         }
                     }
-                    def = "class " + brokenName + params + supertype + " {\n";
+                    def = "class " + brokenName + typeParamDef + params + supertype + typeParamConstDef + " {\n";
                     if (!isVoid) {
                         for (DeclarationWithProximity dwp: et.getDeclaration()
                         		.getMatchingMemberDeclarations("", 0).values()) {
@@ -804,7 +817,7 @@ public class CeylonQuickFixAssistant {
                     String type = isVoid ? "void" : 
                         stn.equals("unknown") ? "function" : stn;
                     String impl = isVoid ? " {}" : " { return nothing; }";
-                    def = type + " " + brokenName + params + impl;
+                    def = type + " " + brokenName + typeParamDef + params + typeParamConstDef + impl;
                     desc = "function '" + brokenName + params + "'";
                     image = METHOD;
                 }
@@ -866,6 +879,102 @@ public class CeylonQuickFixAssistant {
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
                     CLASS, file, brokenName, null, null);
         }
+    }
+
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, List<ProducedType> pts) {
+        if (pts != null) {
+            for (ProducedType pt : pts) {
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, pt);
+            }
+        }
+    }
+    
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, ProducedType pt) {
+        if (pt != null) {
+            if (pt.getDeclaration() instanceof UnionType) {
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, ((UnionType) pt.getDeclaration()).getCaseTypes());
+            }
+            else if (pt.getDeclaration() instanceof IntersectionType) {
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, ((IntersectionType) pt.getDeclaration()).getSatisfiedTypes());
+            }
+            else if (pt.getDeclaration() instanceof TypeParameter) {
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, (TypeParameter) pt.getDeclaration());
+            }
+        }
+    }
+
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, TypeParameter typeParam) {
+        if (typeParams.contains(typeParam)) {
+            return;
+        } else {
+            typeParams.add(typeParam);
+        }
+        
+        if (typeParam.isContravariant()) {
+            typeParamDef.append("in ");
+        }
+        if (typeParam.isCovariant()) {
+            typeParamDef.append("out ");
+        }
+        typeParamDef.append(typeParam.getName());
+        if (typeParam.isDefaulted() && typeParam.getDefaultTypeArgument() != null) {
+            typeParamDef.append("=");
+            typeParamDef.append(typeParam.getDefaultTypeArgument().getProducedTypeName());
+        }
+        typeParamDef.append(",");
+        
+        if (typeParam.isConstrained()) {
+            typeParamConstDef.append(" given ");
+            typeParamConstDef.append(typeParam.getName());
+
+            List<ProducedType> satisfiedTypes = typeParam.getSatisfiedTypes();
+            if (satisfiedTypes != null && !satisfiedTypes.isEmpty()) {
+                typeParamConstDef.append(" satisfies ");
+                boolean firstSatisfiedType = true;
+                for (ProducedType satisfiedType : satisfiedTypes) {
+                    if (firstSatisfiedType) {
+                        firstSatisfiedType = false;
+                    } else {
+                        typeParamConstDef.append("&");
+                    }
+                    typeParamConstDef.append(satisfiedType.getProducedTypeName());
+                }
+            }
+
+            List<ProducedType> caseTypes = typeParam.getCaseTypes();
+            if (caseTypes != null && !caseTypes.isEmpty()) {
+                typeParamConstDef.append(" of ");
+                boolean firstCaseType = true;
+                for (ProducedType caseType : caseTypes) {
+                    if (firstCaseType) {
+                        firstCaseType = false;
+                    } else {
+                        typeParamConstDef.append("|");
+                    }
+                    typeParamConstDef.append(caseType.getProducedTypeName());
+                }
+            }
+            
+            if (typeParam.getParameterLists() != null) {
+                for (ParameterList paramList : typeParam.getParameterLists()) {
+                    if (paramList != null && paramList.getParameters() != null) {
+                        typeParamConstDef.append("(");
+                        boolean firstParam = true;
+                        for (Parameter param : paramList.getParameters()) {
+                            if (firstParam) {
+                                firstParam = false;
+                            } else {
+                                typeParamConstDef.append(",");
+                            }
+                            typeParamConstDef.append(param.getType().getProducedTypeName());
+                            typeParamConstDef.append(" ");
+                            typeParamConstDef.append(param.getName());
+                        }
+                        typeParamConstDef.append(")");
+                    }
+                }
+            }
+        }        
     }
 
     private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node node){
