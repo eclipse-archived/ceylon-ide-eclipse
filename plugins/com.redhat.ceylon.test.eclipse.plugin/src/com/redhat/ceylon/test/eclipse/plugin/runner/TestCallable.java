@@ -43,7 +43,10 @@ public class TestCallable implements Callable<Object> {
                 method.invoke(instance, new Object[] {});                
             }
         } catch (InvocationTargetException e) {
-            throw (ceylon.language.Exception) e.getTargetException();
+            if(e.getTargetException() instanceof RuntimeException)
+            	throw (RuntimeException)e.getTargetException();
+            else
+            	throw new RuntimeException(e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
