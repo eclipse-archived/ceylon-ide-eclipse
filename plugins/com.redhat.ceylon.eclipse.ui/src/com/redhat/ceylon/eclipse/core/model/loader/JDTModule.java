@@ -26,7 +26,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IParent;
@@ -36,10 +38,14 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonRuntimeContainer;
 
 public class JDTModule extends LazyModule {
 
@@ -53,16 +59,53 @@ public class JDTModule extends LazyModule {
     }
 
     public synchronized List<IPackageFragmentRoot> getPackageFragmentRoots() {
-        if (packageFragmentRoots.isEmpty() && jarPath != null) {
-        	IPackageFragmentRoot root = moduleManager.getJavaProject().getPackageFragmentRoot(jarPath.toString());
-            if (root instanceof JarPackageFragmentRoot) {
-                JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+        if (packageFragmentRoots.isEmpty() && 
+                ! moduleManager.isExternalModuleLoadedFromSource(getNameAsString())) {
+            IJavaProject javaProject = moduleManager.getJavaProject();
+            if (this.equals(getLanguageModule())) {
+                IClasspathEntry runtimeClasspathEntry = null;
+                
                 try {
-                    if (jarRoot.getJar().getName().equals(jarPath.getPath())) {
-                        packageFragmentRoots.add(root);
+                    for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+                        if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER &&
+                                entry.getPath().segment(0).equals(CeylonRuntimeContainer.CONTAINER_ID)) {
+                            runtimeClasspathEntry = entry;
+                            break;
+                        }
+                    }
+                    
+                    if (runtimeClasspathEntry != null) {
+                        for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                                if (root.getRawClasspathEntry().equals(runtimeClasspathEntry)) {
+                                    packageFragmentRoots.add(root);
+                                }
+                        }
+                    }
+                } catch (JavaModelException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            else {
+                try {
+                    File jarToSearch = jarPath;
+                    if (jarToSearch == null) {
+                        RepositoryManager repoMgr = CeylonBuilder.getProjectRepositoryManager(javaProject.getProject());
+                        if (repoMgr != null) {
+                            jarToSearch = CeylonClasspathContainer.getModuleArtifact(repoMgr, this);
+                        }
+                    }
+                    
+                    if (jarToSearch != null) {
+                        IPackageFragmentRoot root = moduleManager.getJavaProject().getPackageFragmentRoot(jarToSearch.toString());
+                        if (root instanceof JarPackageFragmentRoot) {
+                            JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+                            if (jarRoot.getJar().getName().equals(jarToSearch.getPath())) {
+                                packageFragmentRoots.add(root);
+                            }
+                        }
                     }
                 } catch (CoreException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
