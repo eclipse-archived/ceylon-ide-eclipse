@@ -127,8 +127,9 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
+        String bodyIndent=getIndent(body, document);
         if (statements.isEmpty()) {
-            indent = "\n" + getIndent(body, document) + getDefaultIndent();
+            indent = "\n" + bodyIndent + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
@@ -151,7 +152,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
         try {
             if (document.getChar(offset)=='}' && result.length()>0) {
-                result.append("\n");
+                result.append("\n").append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
@@ -170,7 +171,12 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     }
 
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-    	if (RefineFormalMembersProposal.canRefine(editor)) {
+    	if (canRefine(editor)) {
+    	    for (ICompletionProposal cp: proposals) {
+    	        if (cp instanceof ImplementFormalMembersProposal) {
+    	            return;
+    	        }
+    	    }
     		proposals.add(new RefineFormalMembersProposal(editor));
     	}
     }

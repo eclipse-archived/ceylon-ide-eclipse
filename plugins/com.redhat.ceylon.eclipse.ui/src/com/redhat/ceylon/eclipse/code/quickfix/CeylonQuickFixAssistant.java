@@ -13,6 +13,14 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddParenthesesProposal.addAddParenthesesProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.AssignToLocalProposal.addAssignToLocalProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ChangeDeclarationProposal.addChangeDeclarationProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalMembersProposal.addImplementFormalMembersProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -334,7 +342,7 @@ public class CeylonQuickFixAssistant {
         	break;
         case 300:
         	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-        		ImplementFormalMembersProposal.addImplementFormalMembersProposal(cu, node, proposals, file,
+        		addImplementFormalMembersProposal(cu, node, proposals, file,
         				context.getSourceViewer().getDocument());
         	}
         	addMakeAbstractProposal(proposals, project, node);
@@ -381,8 +389,8 @@ public class CeylonQuickFixAssistant {
         	addRemoveAnnotationDecProposal(proposals, "formal", project, node);
         	break;
         case 1000:
-        	AddParenthesesProposal.addAddParenthesesProposal(problem, file, proposals, node);
-        	ChangeDeclarationProposal.addChangeDeclarationProposal(problem, file, proposals, node);
+        	addAddParenthesesProposal(problem, file, proposals, node);
+        	addChangeDeclarationProposal(problem, file, proposals, node);
         	break;
         case 1200:
         case 1201:
@@ -418,26 +426,26 @@ public class CeylonQuickFixAssistant {
         case 2100:
         case 2102:
         	addChangeTypeProposals(cu, node, problem, proposals, project);
-        	AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals(cu, node, proposals, project);
+        	addConstraintSatisfiesProposals(cu, node, proposals, project);
         	break;
         case 2101:
-            AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
+            addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
         	if (context.getSourceViewer()!=null) {
-        		AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+        		addAssignToLocalProposal(context.getSourceViewer().getDocument(),
         				file, cu, proposals, node);
         	}
         	break;
         case 3100:
         	if (context.getSourceViewer()!=null) {
-        		ShadowReferenceProposal.addShadowReferenceProposal(context.getSourceViewer().getDocument(),
+        		addShadowReferenceProposal(context.getSourceViewer().getDocument(),
         				file, cu, proposals, node);
         	}
         	break;
         case 5001:
         case 5002:
-            ChangeInitialCaseOfIdentifierInDeclaration.addProposal(node, proposals, file);
+            addChangeIdentifierCaseProposal(node, proposals, file);
             break;
         }
     }
