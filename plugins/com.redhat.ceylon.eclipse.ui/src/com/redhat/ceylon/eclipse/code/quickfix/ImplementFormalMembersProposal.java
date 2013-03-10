@@ -69,8 +69,9 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
+        String bodyIndent=getIndent(body, doc);
         if (statements.isEmpty()) {
-            indent = "\n" + getIndent(body, doc) + getDefaultIndent();
+            indent = "\n" + bodyIndent + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
@@ -93,7 +94,7 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         }
         try {
             if (doc.getChar(offset)=='}' && result.length()>0) {
-                result.append("\n");
+                result.append("\n").append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
