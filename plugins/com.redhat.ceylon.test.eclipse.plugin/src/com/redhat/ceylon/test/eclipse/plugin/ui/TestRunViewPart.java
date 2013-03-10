@@ -83,7 +83,7 @@ public class TestRunViewPart extends ViewPart {
             if (page != null) {
                 TestRunViewPart view = (TestRunViewPart) page.findView(NAME);
                 if (view == null) {
-                    page.showView(NAME, null, IWorkbenchPage.VIEW_VISIBLE);
+                    page.showView(NAME);
                 }
             }
         } catch (PartInitException e) {
@@ -121,13 +121,14 @@ public class TestRunViewPart extends ViewPart {
 
             public void partVisible(IWorkbenchPartReference ref) {
                 if (getSite().getId().equals(ref.getId())) {
-                    isVisible= true;
+                    isVisible = true;
+                    updateView();
                 }
             }
 
             public void partHidden(IWorkbenchPartReference ref) {
                 if (getSite().getId().equals(ref.getId())) {
-                    isVisible= false;
+                    isVisible = false;
                 }
             }
         };
