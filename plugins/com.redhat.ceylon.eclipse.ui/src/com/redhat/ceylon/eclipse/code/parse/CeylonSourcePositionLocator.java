@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 
 import java.util.Collections;
@@ -16,15 +19,18 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
@@ -138,6 +144,32 @@ public class CeylonSourcePositionLocator {
 	        return node;
 	    }
 	}
+    
+    public static void gotoDeclaration(Declaration d, IProject project) {
+        gotoDeclaration(d, project, Util.getCurrentEditor());
+    }
+    
+    public static void gotoDeclaration(Declaration d, IProject project, IEditorPart editor) {
+        if (editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor) editor;
+            IProject ep = ce.getParseController().getProject();
+            if (ep != null && ep.equals(project)) {
+                CeylonParseController cpc = ce.getParseController();
+                Node node = getReferencedNode(d, getCompilationUnit(cpc, d));
+                if (node != null) {
+                    gotoNode(node, project, cpc.getTypeChecker());
+                    return;
+                }
+            }
+        }
+        if (d.getUnit() instanceof CeylonUnit) {
+            CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
+            Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
+            if (node != null) {
+                gotoNode(node, project, getProjectTypeChecker(project));
+            }
+        }
+    }
 	
 	public static void gotoNode(Node node, IProject project, TypeChecker tc) {
         gotoLocation(getNodePath(node, project, tc), 
