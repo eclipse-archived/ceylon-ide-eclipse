@@ -267,6 +267,21 @@ public class JDTClass implements ClassMirror {
         return (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
     }
     
+    public String getJavaModelPath() {
+        ReferenceBinding sourceOrClass = klass;
+        if (! klass.isBinaryBinding()) {
+            sourceOrClass = klass.outermostEnclosingType();
+        }
+        char[] classFullName = new char[0];
+        for (char[] part : klass.compoundName) {
+            classFullName = CharOperation.concat(classFullName, part, '/');
+        }
+        char[][] temp = CharOperation.splitOn('.', klass.getFileName());
+        String extension = temp.length > 1 ? "." + new String(temp[temp.length-1]) : "";
+        String result = new String(classFullName) + extension;
+        return result;
+    }
+
     public String getFullPath() {
         char[] fileName = klass.getFileName();
         int jarFileEntrySeparatorIndex = CharOperation.indexOf(IDependent.JAR_FILE_ENTRY_SEPARATOR, fileName);
