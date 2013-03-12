@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -62,11 +63,13 @@ public class ModelLoaderTests extends ModelLoaderTest {
             }
 	        try {
         		projectDeclarations.build(IncrementalProjectBuilder.FULL_BUILD, null);
-                Assert.assertNotNull("declarations Project should compile", 
-                        projectDeclarations.exists(new Path("/modules/declarations/1.0.0/declarations-1.0.0.car")));
+        		IFile carFile = projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.car");
+        		carFile.refreshLocal(0, null);
+                Assert.assertTrue("declarations Project should compile",
+                        carFile.exists());
                 
-                projectDeclarations.getFile("/modules/declarations/1.0.0/declarations-1.0.0.src").getLocation().toFile().delete();
-                projectDeclarations.getFile("/modules/declarations/1.0.0/declarations-1.0.0.src.sha1").getLocation().toFile().delete();
+                projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src").getLocation().toFile().delete();
+                projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src.sha1").getLocation().toFile().delete();
 	        }
             catch(Exception e) {
                 Assert.fail("Build of the declarations project failed with the exception : \n" + e.toString());
@@ -85,8 +88,10 @@ public class ModelLoaderTests extends ModelLoaderTest {
             
             try {
                 projectReferences.build(IncrementalProjectBuilder.FULL_BUILD, null);
-                Assert.assertNotNull("references Project should compile", 
-                        projectReferences.exists(new Path("/modules/references/1.0.0/references-1.0.0.car")));
+                IFile carFile = projectReferences.getFile("modules/references/1.0.0/references-1.0.0.car");
+                carFile.refreshLocal(0, null);
+                Assert.assertTrue("references Project should compile", 
+                        carFile.exists());
             }
             catch(Exception e) {
                 Assert.fail("Build of the references project failed with the exception : \n" + e.toString());
@@ -128,7 +133,9 @@ public class ModelLoaderTests extends ModelLoaderTest {
     @Override
     protected void compareDeclarations(Declaration validDeclaration,
             Declaration modelDeclaration) {
-        if (modelDeclaration.getUnit() != null && modelDeclaration.getUnit().getFilename().endsWith(".ceylon")) {
+        if (modelDeclaration.getUnit() != null && 
+                modelDeclaration.getUnit().getFilename() != null && 
+                modelDeclaration.getUnit().getFilename().endsWith(".ceylon")) {
             return;
         }
         super.compareDeclarations(validDeclaration, modelDeclaration);
