@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -48,13 +49,18 @@ import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
+import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
+import org.eclipse.jdt.internal.compiler.env.IBinaryMethod;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.ISourceType;
+import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.impl.ITypeRequestor;
+import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReasons;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
@@ -204,7 +210,39 @@ public class JDTModelLoader extends AbstractModelLoader {
                 @Override
                 public void accept(IBinaryType binaryType, PackageBinding packageBinding,
                         AccessRestriction accessRestriction) {
-                    lookupEnvironment.createBinaryTypeFrom(binaryType, packageBinding, accessRestriction);
+                    BinaryTypeBinding btb = lookupEnvironment.createBinaryTypeFrom(binaryType, packageBinding, accessRestriction);
+
+                    if (btb.isNestedType() && !btb.isStatic()) {
+                        for (MethodBinding method : btb.methods()) {
+                            if (method.isConstructor() && method.parameters.length > 0) {
+                                char[] signature = method.signature();
+                                for (IBinaryMethod methodInfo : binaryType.getMethods()) {
+                                    if (methodInfo.isConstructor()) {
+                                        char[] methodInfoSignature = methodInfo.getMethodDescriptor();
+                                        if (new String(signature).equals(new String(methodInfoSignature))) {
+                                            IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
+                                            if (binaryAnnotation == null) {
+                                                AnnotationBinding[][] wrongParameterAnnotations = method.getParameterAnnotations();
+                                                for (int i=0; i<method.parameters.length; i++) {
+                                                    IBinaryAnnotation[] goodAnnotations = null;
+                                                    try {
+                                                         goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                    }
+                                                    catch(IndexOutOfBoundsException e) {
+                                                        break;
+                                                    }
+                                                    if (goodAnnotations != null) {
+                                                        wrongParameterAnnotations[i] = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
+                                                    }
+                                                }
+                                                
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 @Override
@@ -401,14 +439,35 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     private ClassMirror buildClassMirror(String name) {
         try {
-            IType type = javaProject.findType(name);
-            if (type == null) {
+            NameEnvironmentAnswer answer = null;
+            LookupEnvironment theLookupEnvironment = getLookupEnvironment();
+            char[][] uncertainCompoundName = CharOperation.splitOn('.', name.toCharArray());
+            int numberOfParts = uncertainCompoundName.length;
+            char[][] compoundName = null;
+
+            for (int i=numberOfParts-1; i>0; i--) {
+                char[][] triedName = new char[0][];
+                for (int j=0; j<i; j++) {
+                    triedName = CharOperation.arrayConcat(triedName, uncertainCompoundName[j]);
+                }
+                char[] triedClassName = new char[0];
+                for (int k=i; k<numberOfParts; k++) {
+                    triedClassName = CharOperation.concat(triedClassName, uncertainCompoundName[k], '$');
+                }
+                triedName = CharOperation.arrayConcat(triedName, triedClassName);
+                answer = theLookupEnvironment.nameEnvironment.findType(triedName);
+                if (answer != null) {
+                    compoundName = triedName;
+                    break;
+                }
+            }
+            if (answer == null) {
                 return null;
             }
             
-            LookupEnvironment theLookupEnvironment = getLookupEnvironment();
-            if (type.isBinary()) {
-                ClassFile classFile = (ClassFile) type.getClassFile();
+            if (answer.isBinaryType()) {
+                String className = CharOperation.charToString(answer.getBinaryType().getName()) + ".class";
+                ClassFile classFile = (ClassFile) javaProject.findElement(new Path(className));
                 
                 if (classFile != null) {
                     IPackageFragmentRoot fragmentRoot = classFile.getPackageFragmentRoot();
@@ -426,7 +485,6 @@ public class JDTModelLoader extends AbstractModelLoader {
 					}
                     BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
                     if (binaryTypeBinding == null) {
-                        char[][] compoundName = CharOperation.splitOn('/', binaryType.getName());
                         ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
                         if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
                             return null;
@@ -436,7 +494,6 @@ public class JDTModelLoader extends AbstractModelLoader {
                     return new JDTClass(binaryTypeBinding, theLookupEnvironment);
                 }
             } else {
-                char[][] compoundName = CharOperation.splitOn('.', type.getFullyQualifiedName().toCharArray());
                 ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
                 if (referenceBinding != null) {
                     if (referenceBinding instanceof ProblemReferenceBinding) {
@@ -497,10 +554,7 @@ public class JDTModelLoader extends AbstractModelLoader {
 
         ITypeRoot typeRoot = null;
         try {
-            IType javaType = javaProject.findType(jdtClass.getQualifiedName());
-            if (javaType != null) {
-                typeRoot = javaType.getTypeRoot();
-            }
+            typeRoot = (ITypeRoot) javaProject.findElement(new Path(jdtClass.getJavaModelPath()));
             
         } catch (JavaModelException e) {
             e.printStackTrace();
