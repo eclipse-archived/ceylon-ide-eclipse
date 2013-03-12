@@ -239,6 +239,37 @@ function $init$Basic(){
 }
 exports.$init$Basic=$init$Basic;
 $init$Basic();
+function Exception(description$1, cause$2, $$exception){
+    $init$Exception();
+    if ($$exception===undefined)$$exception=new Exception.$$;
+    if(description$1===undefined){description$1=null;}
+    if(cause$2===undefined){cause$2=null;}
+    $$exception.cause$3_=cause$2;
+    $$exception.description$4_=description$1;
+    return $$exception;
+}
+exports.Exception=Exception;
+function $init$Exception(){
+    if (Exception.$$===undefined){
+        initTypeProto(Exception,'ceylon.language::Exception',Basic);
+        (function($$exception){
+            defineAttr($$exception,'cause',function(){return this.cause$3_;});
+            defineAttr($$exception,'description$4',function(){return this.description$4_;});
+            defineAttr($$exception,'message',function(){
+                var $$exception=this;
+                return (opt$5=(opt$6=$$exception.description$4,opt$6!==null?opt$6:(opt$7=$$exception.cause,opt$7!==null?opt$7.message:null)),opt$5!==null?opt$5:String$("",0));
+            });
+            defineAttr($$exception,'string',function(){
+                var $$exception=this;
+                return className($$exception).plus(StringBuilder().appendAll([String$(" \"",2),$$exception.message.string,String$("\"",1)]).string);
+            });
+        })(Exception.$$.prototype);
+    }
+    return Exception;
+}
+exports.$init$Exception=$init$Exception;
+$init$Exception();
+var opt$5,opt$6,opt$7;
 function Iterable($$iterable){
     Container($$iterable);
 }
@@ -253,14 +284,14 @@ function $init$Iterable(){
             });
             defineAttr($$iterable,'size',function(){
                 var $$iterable=this;
-                return $$iterable.count(function (e$1){
+                return $$iterable.count(function (e$8){
                     var $$iterable=this;
                     return true;
                 });
             });
-            $$iterable.contains=function (element$2){
+            $$iterable.contains=function (element$9){
                 var $$iterable=this;
-                return $$iterable.any(ifExists((opt$3=element$2,JsCallable(opt$3,opt$3!==null?opt$3.equals:null))));
+                return $$iterable.any(ifExists((opt$10=element$9,JsCallable(opt$10,opt$10!==null?opt$10.equals:null))));
             };
             defineAttr($$iterable,'first',function(){
                 var $$iterable=this;
@@ -268,13 +299,13 @@ function $init$Iterable(){
             });
             defineAttr($$iterable,'last',function(){
                 var $$iterable=this;
-                var e$4=$$iterable.first;
-                var setE$4=function(e$5){return e$4=e$5;};
-                var it$6 = $$iterable.iterator();
-                var x$7;while ((x$7=it$6.next())!==getFinished()){
-                    e$4=x$7;
+                var e$11=$$iterable.first;
+                var setE$11=function(e$12){return e$11=e$12;};
+                var it$13 = $$iterable.iterator();
+                var x$14;while ((x$14=it$13.next())!==getFinished()){
+                    e$11=x$14;
                 }
-                return e$4;
+                return e$11;
             });defineAttr($$iterable,'rest',function(){
                 var $$iterable=this;
                 return $$iterable.skipping((1));
@@ -282,344 +313,344 @@ function $init$Iterable(){
             defineAttr($$iterable,'sequence',function(){
                 var $$iterable=this;
                 return Comprehension(function(){
-                    var it$8=$$iterable.iterator();
-                    var x$9=getFinished();
-                    var next$x$9=function(){return x$9=it$8.next();}
-                    next$x$9();
+                    var it$15=$$iterable.iterator();
+                    var x$16=getFinished();
+                    var next$x$16=function(){return x$16=it$15.next();}
+                    next$x$16();
                     return function(){
-                        if(x$9!==getFinished()){
-                            var x$9$10=x$9;
-                            var tmpvar$11=x$9$10;
-                            next$x$9();
-                            return tmpvar$11;
+                        if(x$16!==getFinished()){
+                            var x$16$17=x$16;
+                            var tmpvar$18=x$16$17;
+                            next$x$16();
+                            return tmpvar$18;
                         }
                         return getFinished();
                     }
                 },{Absent:{t:Anything},Element:$$iterable.$$targs$$.Element}).sequence;
             });
-            $$iterable.$map=function (collecting$12,$$$mptypes){
+            $$iterable.$map=function (collecting$19,$$$mptypes){
                 var $$iterable=this;
                 return Comprehension(function(){
-                    var it$13=$$iterable.iterator();
-                    var elem$14=getFinished();
-                    var next$elem$14=function(){return elem$14=it$13.next();}
-                    next$elem$14();
+                    var it$20=$$iterable.iterator();
+                    var elem$21=getFinished();
+                    var next$elem$21=function(){return elem$21=it$20.next();}
+                    next$elem$21();
                     return function(){
-                        if(elem$14!==getFinished()){
-                            var elem$14$15=elem$14;
-                            var tmpvar$16=collecting$12(elem$14$15);
-                            next$elem$14();
-                            return tmpvar$16;
+                        if(elem$21!==getFinished()){
+                            var elem$21$22=elem$21;
+                            var tmpvar$23=collecting$19(elem$21$22);
+                            next$elem$21();
+                            return tmpvar$23;
                         }
                         return getFinished();
                     }
                 },{Absent:{t:Anything},Element:$$$mptypes.Result});
             };
-            $$iterable.$filter=function (selecting$17){
+            $$iterable.$filter=function (selecting$24){
                 var $$iterable=this;
                 return Comprehension(function(){
-                    var it$18=$$iterable.iterator();
-                    var elem$19=getFinished();
-                    var next$elem$19=function(){
-                        while((elem$19=it$18.next())!==getFinished()){
-                            if(selecting$17(elem$19)){
-                                return elem$19;
+                    var it$25=$$iterable.iterator();
+                    var elem$26=getFinished();
+                    var next$elem$26=function(){
+                        while((elem$26=it$25.next())!==getFinished()){
+                            if(selecting$24(elem$26)){
+                                return elem$26;
                             }
                         }
                         return getFinished();
                     }
-                    next$elem$19();
+                    next$elem$26();
                     return function(){
-                        if(elem$19!==getFinished()){
-                            var elem$19$20=elem$19;
-                            var tmpvar$21=elem$19$20;
-                            next$elem$19();
-                            return tmpvar$21;
+                        if(elem$26!==getFinished()){
+                            var elem$26$27=elem$26;
+                            var tmpvar$28=elem$26$27;
+                            next$elem$26();
+                            return tmpvar$28;
                         }
                         return getFinished();
                     }
                 },{Absent:{t:Anything},Element:$$iterable.$$targs$$.Element});
             };
-            $$iterable.fold=function fold(initial$22,accumulating$23,$$$mptypes){
+            $$iterable.fold=function fold(initial$29,accumulating$30,$$$mptypes){
                 var $$iterable=this;
-                var r$24=initial$22;
-                var setR$24=function(r$25){return r$24=r$25;};
-                var it$26 = $$iterable.iterator();
-                var e$27;while ((e$27=it$26.next())!==getFinished()){
-                    r$24=accumulating$23(r$24,e$27);
+                var r$31=initial$29;
+                var setR$31=function(r$32){return r$31=r$32;};
+                var it$33 = $$iterable.iterator();
+                var e$34;while ((e$34=it$33.next())!==getFinished()){
+                    r$31=accumulating$30(r$31,e$34);
                 }
-                return r$24;
-            };$$iterable.find=function find(selecting$28){
+                return r$31;
+            };$$iterable.find=function find(selecting$35){
                 var $$iterable=this;
-                var it$29 = $$iterable.iterator();
-                var e$30;while ((e$30=it$29.next())!==getFinished()){
-                    if(selecting$28(e$30)){
-                        return e$30;
+                var it$36 = $$iterable.iterator();
+                var e$37;while ((e$37=it$36.next())!==getFinished()){
+                    if(selecting$35(e$37)){
+                        return e$37;
                     }
                 }
                 return null;
-            };$$iterable.findLast=function findLast(selecting$31){
+            };$$iterable.findLast=function findLast(selecting$38){
                 var $$iterable=this;
-                var last$32=null;
-                var setLast$32=function(last$33){return last$32=last$33;};
-                var it$34 = $$iterable.iterator();
-                var e$35;while ((e$35=it$34.next())!==getFinished()){
-                    if(selecting$31(e$35)){
-                        last$32=e$35;
+                var last$39=null;
+                var setLast$39=function(last$40){return last$39=last$40;};
+                var it$41 = $$iterable.iterator();
+                var e$42;while ((e$42=it$41.next())!==getFinished()){
+                    if(selecting$38(e$42)){
+                        last$39=e$42;
                     }
                 }
-                return last$32;
-            };$$iterable.$sort=function (comparing$36){
+                return last$39;
+            };$$iterable.$sort=function (comparing$43){
                 var $$iterable=this;
-                return internalSort(comparing$36,$$iterable,{Element:$$iterable.$$targs$$.Element});
+                return internalSort(comparing$43,$$iterable,{Element:$$iterable.$$targs$$.Element});
             };
-            $$iterable.collect=function (collecting$37,$$$mptypes){
+            $$iterable.collect=function (collecting$44,$$$mptypes){
                 var $$iterable=this;
-                return $$iterable.$map(collecting$37,{Result:$$$mptypes.Result}).sequence;
+                return $$iterable.$map(collecting$44,{Result:$$$mptypes.Result}).sequence;
             };
-            $$iterable.select=function (selecting$38){
+            $$iterable.select=function (selecting$45){
                 var $$iterable=this;
-                return $$iterable.$filter(selecting$38).sequence;
+                return $$iterable.$filter(selecting$45).sequence;
             };
-            $$iterable.any=function any(selecting$39){
+            $$iterable.any=function any(selecting$46){
                 var $$iterable=this;
-                var it$40 = $$iterable.iterator();
-                var e$41;while ((e$41=it$40.next())!==getFinished()){
-                    if(selecting$39(e$41)){
+                var it$47 = $$iterable.iterator();
+                var e$48;while ((e$48=it$47.next())!==getFinished()){
+                    if(selecting$46(e$48)){
                         return true;
                     }
                 }
                 return false;
-            };$$iterable.$every=function $every(selecting$42){
+            };$$iterable.$every=function $every(selecting$49){
                 var $$iterable=this;
-                var it$43 = $$iterable.iterator();
-                var e$44;while ((e$44=it$43.next())!==getFinished()){
-                    if((!selecting$42(e$44))){
+                var it$50 = $$iterable.iterator();
+                var e$51;while ((e$51=it$50.next())!==getFinished()){
+                    if((!selecting$49(e$51))){
                         return false;
                     }
                 }
                 return true;
-            };$$iterable.skipping=function skipping(skip$45){
+            };$$iterable.skipping=function skipping(skip$52){
                 var $$iterable=this;
-                if((skip$45.compare((0))!==getLarger())){
+                if((skip$52.compare((0))!==getLarger())){
                     return $$iterable;
                 }else {
-                    var cntvar$46=false;
-                    var brkvar$48=false;
-                    var retvar$47=(function(){
-                        function iterable$49($$targs$$){
-                            var $$iterable$49=new iterable$49.$$;
-                            $$iterable$49.$$targs$$=$$targs$$;
-                            Iterable($$iterable$49);
-                            add_type_arg($$iterable$49,'Absent',{t:Null});
-                            return $$iterable$49;
+                    var cntvar$53=false;
+                    var brkvar$55=false;
+                    var retvar$54=(function(){
+                        function iterable$56($$targs$$){
+                            var $$iterable$56=new iterable$56.$$;
+                            $$iterable$56.$$targs$$=$$targs$$;
+                            Iterable($$iterable$56);
+                            add_type_arg($$iterable$56,'Absent',{t:Null});
+                            return $$iterable$56;
                         }
-                        function $init$iterable$49(){
-                            if (iterable$49.$$===undefined){
-                                initTypeProto(iterable$49,'ceylon.language::Iterable.skipping.iterable',Basic,$init$Iterable());
+                        function $init$iterable$56(){
+                            if (iterable$56.$$===undefined){
+                                initTypeProto(iterable$56,'ceylon.language::Iterable.skipping.iterable',Basic,$init$Iterable());
                             }
-                            return iterable$49;
+                            return iterable$56;
                         }
-                        $init$iterable$49();
-                        (function($$iterable$49){
-                            $$iterable$49.iterator=function iterator(){
-                                var $$iterable$49=this;
-                                var iter$50=$$iterable.iterator();
-                                var i$51=(0);
-                                var setI$51=function(i$52){return i$51=i$52;};
-                                while(((oldi$53=i$51,i$51=oldi$53.successor,oldi$53).compare(skip$45).equals(getSmaller())&&(!isOfType(iter$50.next(),{t:Finished})))){}
-                                var oldi$53;
-                                return iter$50;
-                            };defineAttr($$iterable$49,'first',function(){
-                                var $$iterable$49=this;
-                                var first$54;
-                                if(!isOfType((first$54=$$iterable$49.iterator().next()),{t:Finished})){
-                                    return first$54;
+                        $init$iterable$56();
+                        (function($$iterable$56){
+                            $$iterable$56.iterator=function iterator(){
+                                var $$iterable$56=this;
+                                var iter$57=$$iterable.iterator();
+                                var i$58=(0);
+                                var setI$58=function(i$59){return i$58=i$59;};
+                                while(((oldi$60=i$58,i$58=oldi$60.successor,oldi$60).compare(skip$52).equals(getSmaller())&&(!isOfType(iter$57.next(),{t:Finished})))){}
+                                var oldi$60;
+                                return iter$57;
+                            };defineAttr($$iterable$56,'first',function(){
+                                var $$iterable$56=this;
+                                var first$61;
+                                if(!isOfType((first$61=$$iterable$56.iterator().next()),{t:Finished})){
+                                    return first$61;
                                 }else {
                                     return null;
                                 }
-                            });defineAttr($$iterable$49,'last',function(){
-                                var $$iterable$49=this;
+                            });defineAttr($$iterable$56,'last',function(){
+                                var $$iterable$56=this;
                                 return $$iterable.last;
                             });
-                        })(iterable$49.$$.prototype);
-                        var iterable$55=iterable$49({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
-                        var getIterable$55=function(){
-                            return iterable$55;
+                        })(iterable$56.$$.prototype);
+                        var iterable$62=iterable$56({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
+                        var getIterable$62=function(){
+                            return iterable$62;
                         }
-                        return getIterable$55();
-                    }());if(retvar$47!==undefined){return retvar$47;}
+                        return getIterable$62();
+                    }());if(retvar$54!==undefined){return retvar$54;}
                 }
-            };$$iterable.taking=function taking(take$56){
+            };$$iterable.taking=function taking(take$63){
                 var $$iterable=this;
-                if((take$56.compare((0))!==getLarger())){
+                if((take$63.compare((0))!==getLarger())){
                     return getEmpty();
                 }else {
-                    var cntvar$57=false;
-                    var brkvar$59=false;
-                    var retvar$58=(function(){
-                        function iterable$60($$targs$$){
-                            var $$iterable$60=new iterable$60.$$;
-                            $$iterable$60.$$targs$$=$$targs$$;
-                            Iterable($$iterable$60);
-                            add_type_arg($$iterable$60,'Absent',{t:Null});
-                            return $$iterable$60;
+                    var cntvar$64=false;
+                    var brkvar$66=false;
+                    var retvar$65=(function(){
+                        function iterable$67($$targs$$){
+                            var $$iterable$67=new iterable$67.$$;
+                            $$iterable$67.$$targs$$=$$targs$$;
+                            Iterable($$iterable$67);
+                            add_type_arg($$iterable$67,'Absent',{t:Null});
+                            return $$iterable$67;
                         }
-                        function $init$iterable$60(){
-                            if (iterable$60.$$===undefined){
-                                initTypeProto(iterable$60,'ceylon.language::Iterable.taking.iterable',Basic,$init$Iterable());
+                        function $init$iterable$67(){
+                            if (iterable$67.$$===undefined){
+                                initTypeProto(iterable$67,'ceylon.language::Iterable.taking.iterable',Basic,$init$Iterable());
                             }
-                            return iterable$60;
-                        }
-                        $init$iterable$60();
-                        (function($$iterable$60){
-                            $$iterable$60.iterator=function iterator(){
-                                var $$iterable$60=this;
-                                var iter$61=$$iterable.iterator();
-                                function iterator$62($$targs$$){
-                                    var $$iterator$62=new iterator$62.$$;
-                                    $$iterator$62.$$targs$$=$$targs$$;
-                                    Iterator($$iterator$62);
-                                    $$iterator$62.i$63_=(0);
-                                    return $$iterator$62;
-                                }
-                                function $init$iterator$62(){
-                                    if (iterator$62.$$===undefined){
-                                        initTypeProto(iterator$62,'ceylon.language::Iterable.taking.iterable.iterator.iterator',Basic,$init$Iterator());
-                                    }
-                                    return iterator$62;
-                                }
-                                $init$iterator$62();
-                                (function($$iterator$62){
-                                    defineAttr($$iterator$62,'i$63',function(){return this.i$63_;},function(i$64){return this.i$63_=i$64;});
-                                    $$iterator$62.next=function next(){
-                                        var $$iterator$62=this;
-                                        return (opt$65=(($$iterator$62.i$63=$$iterator$62.i$63.successor).compare(take$56).equals(getLarger())?getFinished():null),opt$65!==null?opt$65:iter$61.next());
-                                        var opt$65;
-                                    };
-                                })(iterator$62.$$.prototype);
-                                var iterator$66=iterator$62({Element:$$iterable.$$targs$$.Element});
-                                var getIterator$66=function(){
-                                    return iterator$66;
-                                }
-                                return getIterator$66();
-                            };defineAttr($$iterable$60,'first',function(){
-                                var $$iterable$60=this;
-                                return $$iterable.first;
-                            });
-                            defineAttr($$iterable$60,'last',function(){
-                                var $$iterable$60=this;
-                                return $$iterable.last;
-                            });
-                        })(iterable$60.$$.prototype);
-                        var iterable$67=iterable$60({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
-                        var getIterable$67=function(){
                             return iterable$67;
                         }
-                        return getIterable$67();
-                    }());if(retvar$58!==undefined){return retvar$58;}
+                        $init$iterable$67();
+                        (function($$iterable$67){
+                            $$iterable$67.iterator=function iterator(){
+                                var $$iterable$67=this;
+                                var iter$68=$$iterable.iterator();
+                                function iterator$69($$targs$$){
+                                    var $$iterator$69=new iterator$69.$$;
+                                    $$iterator$69.$$targs$$=$$targs$$;
+                                    Iterator($$iterator$69);
+                                    $$iterator$69.i$70_=(0);
+                                    return $$iterator$69;
+                                }
+                                function $init$iterator$69(){
+                                    if (iterator$69.$$===undefined){
+                                        initTypeProto(iterator$69,'ceylon.language::Iterable.taking.iterable.iterator.iterator',Basic,$init$Iterator());
+                                    }
+                                    return iterator$69;
+                                }
+                                $init$iterator$69();
+                                (function($$iterator$69){
+                                    defineAttr($$iterator$69,'i$70',function(){return this.i$70_;},function(i$71){return this.i$70_=i$71;});
+                                    $$iterator$69.next=function next(){
+                                        var $$iterator$69=this;
+                                        return (opt$72=(($$iterator$69.i$70=$$iterator$69.i$70.successor).compare(take$63).equals(getLarger())?getFinished():null),opt$72!==null?opt$72:iter$68.next());
+                                        var opt$72;
+                                    };
+                                })(iterator$69.$$.prototype);
+                                var iterator$73=iterator$69({Element:$$iterable.$$targs$$.Element});
+                                var getIterator$73=function(){
+                                    return iterator$73;
+                                }
+                                return getIterator$73();
+                            };defineAttr($$iterable$67,'first',function(){
+                                var $$iterable$67=this;
+                                return $$iterable.first;
+                            });
+                            defineAttr($$iterable$67,'last',function(){
+                                var $$iterable$67=this;
+                                return $$iterable.last;
+                            });
+                        })(iterable$67.$$.prototype);
+                        var iterable$74=iterable$67({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});
+                        var getIterable$74=function(){
+                            return iterable$74;
+                        }
+                        return getIterable$74();
+                    }());if(retvar$65!==undefined){return retvar$65;}
                 }
-            };$$iterable.by=function by(step$68){
+            };$$iterable.by=function by(step$75){
                 var $$iterable=this;
                 //assert at Iterable.ceylon (319:8-320:25)
-                if (!(step$68.compare((0)).equals(getLarger()))) { throw AssertionException('step size must be greater than zero: \'step > 0\' at Iterable.ceylon (320:15-320:24)'); }
-                if(step$68.equals((1))){
+                if (!(step$75.compare((0)).equals(getLarger()))) { throw AssertionException('step size must be greater than zero: \'step > 0\' at Iterable.ceylon (320:15-320:24)'); }
+                if(step$75.equals((1))){
                     return $$iterable;
                 }else {
-                    var cntvar$69=false;
-                    var brkvar$71=false;
-                    var retvar$70=(function(){
-                        function iterable$72($$targs$$){
-                            var $$iterable$72=new iterable$72.$$;
-                            $$iterable$72.$$targs$$=$$targs$$;
-                            Iterable($$iterable$72);
-                            return $$iterable$72;
+                    var cntvar$76=false;
+                    var brkvar$78=false;
+                    var retvar$77=(function(){
+                        function iterable$79($$targs$$){
+                            var $$iterable$79=new iterable$79.$$;
+                            $$iterable$79.$$targs$$=$$targs$$;
+                            Iterable($$iterable$79);
+                            return $$iterable$79;
                         }
-                        function $init$iterable$72(){
-                            if (iterable$72.$$===undefined){
-                                initTypeProto(iterable$72,'ceylon.language::Iterable.by.iterable',Basic,$init$Iterable());
+                        function $init$iterable$79(){
+                            if (iterable$79.$$===undefined){
+                                initTypeProto(iterable$79,'ceylon.language::Iterable.by.iterable',Basic,$init$Iterable());
                             }
-                            return iterable$72;
-                        }
-                        $init$iterable$72();
-                        (function($$iterable$72){
-                            $$iterable$72.iterator=function iterator(){
-                                var $$iterable$72=this;
-                                var iter$73=$$iterable.iterator();
-                                function iterator$74($$targs$$){
-                                    var $$iterator$74=new iterator$74.$$;
-                                    $$iterator$74.$$targs$$=$$targs$$;
-                                    Iterator($$iterator$74);
-                                    return $$iterator$74;
-                                }
-                                function $init$iterator$74(){
-                                    if (iterator$74.$$===undefined){
-                                        initTypeProto(iterator$74,'ceylon.language::Iterable.by.iterable.iterator.iterator',Basic,$init$Iterator());
-                                    }
-                                    return iterator$74;
-                                }
-                                $init$iterator$74();
-                                (function($$iterator$74){
-                                    $$iterator$74.next=function next(){
-                                        var $$iterator$74=this;
-                                        var next$75=iter$73.next();
-                                        var i$76=(0);
-                                        var setI$76=function(i$77){return i$76=i$77;};
-                                        while(((i$76=i$76.successor).compare(step$68).equals(getSmaller())&&(!isOfType(iter$73.next(),{t:Finished})))){}
-                                        return next$75;
-                                    };
-                                })(iterator$74.$$.prototype);
-                                var iterator$78=iterator$74({Element:$$iterable.$$targs$$.Element});
-                                var getIterator$78=function(){
-                                    return iterator$78;
-                                }
-                                return getIterator$78();
-                            };
-                        })(iterable$72.$$.prototype);
-                        var iterable$79=iterable$72({Absent:$$iterable.$$targs$$.Absent,Element:$$iterable.$$targs$$.Element});
-                        var getIterable$79=function(){
                             return iterable$79;
                         }
-                        return getIterable$79();
-                    }());if(retvar$70!==undefined){return retvar$70;}
+                        $init$iterable$79();
+                        (function($$iterable$79){
+                            $$iterable$79.iterator=function iterator(){
+                                var $$iterable$79=this;
+                                var iter$80=$$iterable.iterator();
+                                function iterator$81($$targs$$){
+                                    var $$iterator$81=new iterator$81.$$;
+                                    $$iterator$81.$$targs$$=$$targs$$;
+                                    Iterator($$iterator$81);
+                                    return $$iterator$81;
+                                }
+                                function $init$iterator$81(){
+                                    if (iterator$81.$$===undefined){
+                                        initTypeProto(iterator$81,'ceylon.language::Iterable.by.iterable.iterator.iterator',Basic,$init$Iterator());
+                                    }
+                                    return iterator$81;
+                                }
+                                $init$iterator$81();
+                                (function($$iterator$81){
+                                    $$iterator$81.next=function next(){
+                                        var $$iterator$81=this;
+                                        var next$82=iter$80.next();
+                                        var i$83=(0);
+                                        var setI$83=function(i$84){return i$83=i$84;};
+                                        while(((i$83=i$83.successor).compare(step$75).equals(getSmaller())&&(!isOfType(iter$80.next(),{t:Finished})))){}
+                                        return next$82;
+                                    };
+                                })(iterator$81.$$.prototype);
+                                var iterator$85=iterator$81({Element:$$iterable.$$targs$$.Element});
+                                var getIterator$85=function(){
+                                    return iterator$85;
+                                }
+                                return getIterator$85();
+                            };
+                        })(iterable$79.$$.prototype);
+                        var iterable$86=iterable$79({Absent:$$iterable.$$targs$$.Absent,Element:$$iterable.$$targs$$.Element});
+                        var getIterable$86=function(){
+                            return iterable$86;
+                        }
+                        return getIterable$86();
+                    }());if(retvar$77!==undefined){return retvar$77;}
                 }
-            };$$iterable.count=function count(selecting$80){
+            };$$iterable.count=function count(selecting$87){
                 var $$iterable=this;
-                var count$81=(0);
-                var setCount$81=function(count$82){return count$81=count$82;};
-                var it$83 = $$iterable.iterator();
-                var elem$84;while ((elem$84=it$83.next())!==getFinished()){
-                    var elem$85;
-                    if((elem$85=elem$84)!==null){
-                        if(selecting$80(elem$85)){
-                            (oldcount$86=count$81,count$81=oldcount$86.successor,oldcount$86);
-                            var oldcount$86;
+                var count$88=(0);
+                var setCount$88=function(count$89){return count$88=count$89;};
+                var it$90 = $$iterable.iterator();
+                var elem$91;while ((elem$91=it$90.next())!==getFinished()){
+                    var elem$92;
+                    if((elem$92=elem$91)!==null){
+                        if(selecting$87(elem$92)){
+                            (oldcount$93=count$88,count$88=oldcount$93.successor,oldcount$93);
+                            var oldcount$93;
                         }
                     }
                 }
-                return count$81;
+                return count$88;
             };defineAttr($$iterable,'coalesced',function(){
                 var $$iterable=this;
                 return Comprehension(function(){
-                    var e$89;
-                    var it$87=$$iterable.iterator();
-                    var e$88=getFinished();
-                    var e$89;
-                    var next$e$88=function(){
-                        while((e$88=it$87.next())!==getFinished()){
-                            if((e$89=e$88)!==null){
-                                return e$88;
+                    var e$96;
+                    var it$94=$$iterable.iterator();
+                    var e$95=getFinished();
+                    var e$96;
+                    var next$e$95=function(){
+                        while((e$95=it$94.next())!==getFinished()){
+                            if((e$96=e$95)!==null){
+                                return e$95;
                             }
                         }
                         return getFinished();
                     }
-                    next$e$88();
+                    next$e$95();
                     return function(){
-                        if(e$88!==getFinished()){
-                            var e$88$90=e$88;
-                            var tmpvar$91=e$89;
-                            next$e$88();
-                            return tmpvar$91;
+                        if(e$95!==getFinished()){
+                            var e$95$97=e$95;
+                            var tmpvar$98=e$96;
+                            next$e$95();
+                            return tmpvar$98;
                         }
                         return getFinished();
                     }
@@ -627,173 +658,173 @@ function $init$Iterable(){
             });
             defineAttr($$iterable,'indexed',function(){
                 var $$iterable=this;
-                function indexes$92($$targs$$){
-                    var $$indexes$92=new indexes$92.$$;
-                    $$indexes$92.$$targs$$=$$targs$$;
-                    Iterable($$indexes$92);
-                    add_type_arg($$indexes$92,'Absent',{t:Null});
-                    add_type_arg($$indexes$92,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
-                    $$indexes$92.orig$93_=$$iterable;
-                    return $$indexes$92;
+                function indexes$99($$targs$$){
+                    var $$indexes$99=new indexes$99.$$;
+                    $$indexes$99.$$targs$$=$$targs$$;
+                    Iterable($$indexes$99);
+                    add_type_arg($$indexes$99,'Absent',{t:Null});
+                    add_type_arg($$indexes$99,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
+                    $$indexes$99.orig$100_=$$iterable;
+                    return $$indexes$99;
                 }
-                function $init$indexes$92(){
-                    if (indexes$92.$$===undefined){
-                        initTypeProto(indexes$92,'ceylon.language::Iterable.indexed.indexes',Basic,$init$Iterable());
+                function $init$indexes$99(){
+                    if (indexes$99.$$===undefined){
+                        initTypeProto(indexes$99,'ceylon.language::Iterable.indexed.indexes',Basic,$init$Iterable());
                     }
-                    return indexes$92;
+                    return indexes$99;
                 }
-                $init$indexes$92();
-                (function($$indexes$92){
-                    defineAttr($$indexes$92,'orig$93',function(){return this.orig$93_;});
-                    $$indexes$92.iterator=function iterator(){
-                        var $$indexes$92=this;
-                        function iterator$94($$targs$$){
-                            var $$iterator$94=new iterator$94.$$;
-                            $$iterator$94.$$targs$$=$$targs$$;
-                            Iterator($$iterator$94);
-                            add_type_arg($$iterator$94,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
-                            $$iterator$94.iter$95_=$$indexes$92.orig$93.iterator();
-                            $$iterator$94.i$96_=(0);
-                            return $$iterator$94;
+                $init$indexes$99();
+                (function($$indexes$99){
+                    defineAttr($$indexes$99,'orig$100',function(){return this.orig$100_;});
+                    $$indexes$99.iterator=function iterator(){
+                        var $$indexes$99=this;
+                        function iterator$101($$targs$$){
+                            var $$iterator$101=new iterator$101.$$;
+                            $$iterator$101.$$targs$$=$$targs$$;
+                            Iterator($$iterator$101);
+                            add_type_arg($$iterator$101,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
+                            $$iterator$101.iter$102_=$$indexes$99.orig$100.iterator();
+                            $$iterator$101.i$103_=(0);
+                            return $$iterator$101;
                         }
-                        function $init$iterator$94(){
-                            if (iterator$94.$$===undefined){
-                                initTypeProto(iterator$94,'ceylon.language::Iterable.indexed.indexes.iterator.iterator',Basic,$init$Iterator());
+                        function $init$iterator$101(){
+                            if (iterator$101.$$===undefined){
+                                initTypeProto(iterator$101,'ceylon.language::Iterable.indexed.indexes.iterator.iterator',Basic,$init$Iterator());
                             }
-                            return iterator$94;
+                            return iterator$101;
                         }
-                        $init$iterator$94();
-                        (function($$iterator$94){
-                            defineAttr($$iterator$94,'iter$95',function(){return this.iter$95_;});
-                            defineAttr($$iterator$94,'i$96',function(){return this.i$96_;},function(i$97){return this.i$96_=i$97;});
-                            $$iterator$94.next=function next(){
-                                var $$iterator$94=this;
-                                var next$98=$$iterator$94.iter$95.next();
-                                var setNext$98=function(next$99){return next$98=next$99;};
-                                while((!exists(next$98))){
-                                    (oldi$100=$$iterator$94.i$96,$$iterator$94.i$96=oldi$100.successor,oldi$100);
-                                    var oldi$100;
-                                    next$98=$$iterator$94.iter$95.next();
+                        $init$iterator$101();
+                        (function($$iterator$101){
+                            defineAttr($$iterator$101,'iter$102',function(){return this.iter$102_;});
+                            defineAttr($$iterator$101,'i$103',function(){return this.i$103_;},function(i$104){return this.i$103_=i$104;});
+                            $$iterator$101.next=function next(){
+                                var $$iterator$101=this;
+                                var next$105=$$iterator$101.iter$102.next();
+                                var setNext$105=function(next$106){return next$105=next$106;};
+                                while((!exists(next$105))){
+                                    (oldi$107=$$iterator$101.i$103,$$iterator$101.i$103=oldi$107.successor,oldi$107);
+                                    var oldi$107;
+                                    next$105=$$iterator$101.iter$102.next();
                                 }
-                                var n$101;
-                                var n$102;
-                                if(!isOfType((n$101=next$98),{t:Finished})&&(n$102=n$101)!==null){
-                                    return Entry((oldi$103=$$iterator$94.i$96,$$iterator$94.i$96=oldi$103.successor,oldi$103),n$102,{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
-                                    var oldi$103;
+                                var n$108;
+                                var n$109;
+                                if(!isOfType((n$108=next$105),{t:Finished})&&(n$109=n$108)!==null){
+                                    return Entry((oldi$110=$$iterator$101.i$103,$$iterator$101.i$103=oldi$110.successor,oldi$110),n$109,{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
+                                    var oldi$110;
                                 }else {
                                     return getFinished();
                                 }
                             };
-                        })(iterator$94.$$.prototype);
-                        var iterator$104=iterator$94({Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});
-                        var getIterator$104=function(){
-                            return iterator$104;
+                        })(iterator$101.$$.prototype);
+                        var iterator$111=iterator$101({Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});
+                        var getIterator$111=function(){
+                            return iterator$111;
                         }
-                        return getIterator$104();
+                        return getIterator$111();
                     };
-                })(indexes$92.$$.prototype);
-                var indexes$105=indexes$92({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});
-                var getIndexes$105=function(){
-                    return indexes$105;
+                })(indexes$99.$$.prototype);
+                var indexes$112=indexes$99({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});
+                var getIndexes$112=function(){
+                    return indexes$112;
                 }
-                return getIndexes$105();
-            });$$iterable.following=function following(head$106,$$$mptypes){
+                return getIndexes$112();
+            });$$iterable.following=function following(head$113,$$$mptypes){
                 var $$iterable=this;
-                function cons$107($$targs$$){
-                    var $$cons$107=new cons$107.$$;
-                    $$cons$107.$$targs$$=$$targs$$;
-                    Iterable($$cons$107);
-                    return $$cons$107;
+                function cons$114($$targs$$){
+                    var $$cons$114=new cons$114.$$;
+                    $$cons$114.$$targs$$=$$targs$$;
+                    Iterable($$cons$114);
+                    return $$cons$114;
                 }
-                function $init$cons$107(){
-                    if (cons$107.$$===undefined){
-                        initTypeProto(cons$107,'ceylon.language::Iterable.following.cons',Basic,$init$Iterable());
+                function $init$cons$114(){
+                    if (cons$114.$$===undefined){
+                        initTypeProto(cons$114,'ceylon.language::Iterable.following.cons',Basic,$init$Iterable());
                     }
-                    return cons$107;
+                    return cons$114;
                 }
-                $init$cons$107();
-                (function($$cons$107){
-                    $$cons$107.iterator=function iterator(){
-                        var $$cons$107=this;
-                        var iter$108=$$iterable.iterator();
-                        function iterator$109($$targs$$){
-                            var $$iterator$109=new iterator$109.$$;
-                            $$iterator$109.$$targs$$=$$targs$$;
-                            Iterator($$iterator$109);
-                            $$iterator$109.first$110_=true;
-                            return $$iterator$109;
+                $init$cons$114();
+                (function($$cons$114){
+                    $$cons$114.iterator=function iterator(){
+                        var $$cons$114=this;
+                        var iter$115=$$iterable.iterator();
+                        function iterator$116($$targs$$){
+                            var $$iterator$116=new iterator$116.$$;
+                            $$iterator$116.$$targs$$=$$targs$$;
+                            Iterator($$iterator$116);
+                            $$iterator$116.first$117_=true;
+                            return $$iterator$116;
                         }
-                        function $init$iterator$109(){
-                            if (iterator$109.$$===undefined){
-                                initTypeProto(iterator$109,'ceylon.language::Iterable.following.cons.iterator.iterator',Basic,$init$Iterator());
+                        function $init$iterator$116(){
+                            if (iterator$116.$$===undefined){
+                                initTypeProto(iterator$116,'ceylon.language::Iterable.following.cons.iterator.iterator',Basic,$init$Iterator());
                             }
-                            return iterator$109;
+                            return iterator$116;
                         }
-                        $init$iterator$109();
-                        (function($$iterator$109){
-                            defineAttr($$iterator$109,'first$110',function(){return this.first$110_;},function(first$111){return this.first$110_=first$111;});
-                            $$iterator$109.next=function next(){
-                                var $$iterator$109=this;
-                                if($$iterator$109.first$110){
-                                    $$iterator$109.first$110=false;
-                                    return head$106;
+                        $init$iterator$116();
+                        (function($$iterator$116){
+                            defineAttr($$iterator$116,'first$117',function(){return this.first$117_;},function(first$118){return this.first$117_=first$118;});
+                            $$iterator$116.next=function next(){
+                                var $$iterator$116=this;
+                                if($$iterator$116.first$117){
+                                    $$iterator$116.first$117=false;
+                                    return head$113;
                                 }else {
-                                    return iter$108.next();
+                                    return iter$115.next();
                                 }
                             };
-                        })(iterator$109.$$.prototype);
-                        var iterator$112=iterator$109({Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
-                        var getIterator$112=function(){
-                            return iterator$112;
+                        })(iterator$116.$$.prototype);
+                        var iterator$119=iterator$116({Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
+                        var getIterator$119=function(){
+                            return iterator$119;
                         }
-                        return getIterator$112();
+                        return getIterator$119();
                     };
-                })(cons$107.$$.prototype);
-                var cons$113=cons$107({Absent:{t:Nothing},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
-                var getCons$113=function(){
-                    return cons$113;
+                })(cons$114.$$.prototype);
+                var cons$120=cons$114({Absent:{t:Nothing},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
+                var getCons$120=function(){
+                    return cons$120;
                 }
-                return getCons$113();
-            };$$iterable.chain=function chain(other$114,$$$mptypes){
+                return getCons$120();
+            };$$iterable.chain=function chain(other$121,$$$mptypes){
                 var $$iterable=this;
-                function chained$115($$targs$$){
-                    var $$chained$115=new chained$115.$$;
-                    $$chained$115.$$targs$$=$$targs$$;
-                    Iterable($$chained$115);
-                    add_type_arg($$chained$115,'Absent',{t:Null});
-                    return $$chained$115;
+                function chained$122($$targs$$){
+                    var $$chained$122=new chained$122.$$;
+                    $$chained$122.$$targs$$=$$targs$$;
+                    Iterable($$chained$122);
+                    add_type_arg($$chained$122,'Absent',{t:Null});
+                    return $$chained$122;
                 }
-                function $init$chained$115(){
-                    if (chained$115.$$===undefined){
-                        initTypeProto(chained$115,'ceylon.language::Iterable.chain.chained',Basic,$init$Iterable());
+                function $init$chained$122(){
+                    if (chained$122.$$===undefined){
+                        initTypeProto(chained$122,'ceylon.language::Iterable.chain.chained',Basic,$init$Iterable());
                     }
-                    return chained$115;
+                    return chained$122;
                 }
-                $init$chained$115();
-                (function($$chained$115){
-                    $$chained$115.iterator=function (){
-                        var $$chained$115=this;
-                        return ChainedIterator($$iterable,other$114,{Other:$$$mptypes.Other,Element:$$iterable.$$targs$$.Element});
+                $init$chained$122();
+                (function($$chained$122){
+                    $$chained$122.iterator=function (){
+                        var $$chained$122=this;
+                        return ChainedIterator($$iterable,other$121,{Other:$$$mptypes.Other,Element:$$iterable.$$targs$$.Element});
                     };
-                })(chained$115.$$.prototype);
-                var chained$116=chained$115({Absent:{t:Null},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
-                var getChained$116=function(){
-                    return chained$116;
+                })(chained$122.$$.prototype);
+                var chained$123=chained$122({Absent:{t:Null},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});
+                var getChained$123=function(){
+                    return chained$123;
                 }
-                return getChained$116();
-            };$$iterable.defaultNullElements=function (defaultValue$117,$$$mptypes){
+                return getChained$123();
+            };$$iterable.defaultNullElements=function (defaultValue$124,$$$mptypes){
                 var $$iterable=this;
                 return Comprehension(function(){
-                    var it$118=$$iterable.iterator();
-                    var elem$119=getFinished();
-                    var next$elem$119=function(){return elem$119=it$118.next();}
-                    next$elem$119();
+                    var it$125=$$iterable.iterator();
+                    var elem$126=getFinished();
+                    var next$elem$126=function(){return elem$126=it$125.next();}
+                    next$elem$126();
                     return function(){
-                        if(elem$119!==getFinished()){
-                            var elem$119$120=elem$119;
-                            var tmpvar$121=(opt$122=elem$119$120,opt$122!==null?opt$122:defaultValue$117);
-                            next$elem$119();
-                            return tmpvar$121;
+                        if(elem$126!==getFinished()){
+                            var elem$126$127=elem$126;
+                            var tmpvar$128=(opt$129=elem$126$127,opt$129!==null?opt$129:defaultValue$124);
+                            next$elem$126();
+                            return tmpvar$128;
                         }
                         return getFinished();
                     }
@@ -804,9 +835,9 @@ function $init$Iterable(){
                 if($$iterable.empty){
                     return String$("{}",2);
                 }else {
-                    var list$123=commaList($$iterable.taking((30)));
-                    return StringBuilder().appendAll([String$("{ ",2),(opt$124=(sizeExceeds($$iterable,(30))?list$123.plus(String$(", ...",5)):null),opt$124!==null?opt$124:list$123).string,String$(" }",2)]).string;
-                    var opt$124;
+                    var list$130=commaList($$iterable.taking((30)));
+                    return StringBuilder().appendAll([String$("{ ",2),(opt$131=(sizeExceeds($$iterable,(30))?list$130.plus(String$(", ...",5)):null),opt$131!==null?opt$131:list$130).string,String$(" }",2)]).string;
+                    var opt$131;
                 }
             });
         })(Iterable.$$.prototype);
@@ -815,44 +846,44 @@ function $init$Iterable(){
 }
 exports.$init$Iterable=$init$Iterable;
 $init$Iterable();
-var opt$3,opt$122;
-function sizeExceeds(iterable$125,size$126){
-    var count$127=(0);
-    var setCount$127=function(count$128){return count$127=count$128;};
-    var it$129 = iterable$125.iterator();
-    var x$130;while ((x$130=it$129.next())!==getFinished()){
-        if(size$126.compare((oldcount$131=count$127,count$127=oldcount$131.successor,oldcount$131)).equals(getSmaller())){
+var opt$10,opt$129;
+function sizeExceeds(iterable$132,size$133){
+    var count$134=(0);
+    var setCount$134=function(count$135){return count$134=count$135;};
+    var it$136 = iterable$132.iterator();
+    var x$137;while ((x$137=it$136.next())!==getFinished()){
+        if(size$133.compare((oldcount$138=count$134,count$134=oldcount$138.successor,oldcount$138)).equals(getSmaller())){
             return true;
         }
-        var oldcount$131;
+        var oldcount$138;
     }
-    if (getFinished() === x$130){
+    if (getFinished() === x$137){
         return false;
     }
 };
-var commaList=function (elements$132){
-    return (strings$133=Comprehension(function(){
-        var it$134=elements$132.iterator();
-        var element$135=getFinished();
-        var next$element$135=function(){return element$135=it$134.next();}
-        next$element$135();
+var commaList=function (elements$139){
+    return (strings$140=Comprehension(function(){
+        var it$141=elements$139.iterator();
+        var element$142=getFinished();
+        var next$element$142=function(){return element$142=it$141.next();}
+        next$element$142();
         return function(){
-            if(element$135!==getFinished()){
-                var element$135$136=element$135;
-                var tmpvar$137=(opt$138=(opt$139=element$135$136,opt$139!==null?opt$139.string:null),opt$138!==null?opt$138:String$("null",4));
-                next$element$135();
-                return tmpvar$137;
+            if(element$142!==getFinished()){
+                var element$142$143=element$142;
+                var tmpvar$144=(opt$145=(opt$146=element$142$143,opt$146!==null?opt$146.string:null),opt$145!==null?opt$145:String$("null",4));
+                next$element$142();
+                return tmpvar$144;
             }
             return getFinished();
         }
-    },{Absent:{t:Anything},Element:{t:String$}}),(opt$140=String$(", ",2),JsCallable(opt$140,opt$140!==null?opt$140.join:null))(strings$133));
+    },{Absent:{t:Anything},Element:{t:String$}}),(opt$147=String$(", ",2),JsCallable(opt$147,opt$147!==null?opt$147.join:null))(strings$140));
 };
-var strings$133,opt$138,opt$139,opt$140;
-function ifExists(predicate$141){
-    return function(val$142){
-        var val$143;
-        if((val$143=val$142)!==null){
-            return predicate$141(val$143);
+var strings$140,opt$145,opt$146,opt$147;
+function ifExists(predicate$148){
+    return function(val$149){
+        var val$150;
+        if((val$150=val$149)!==null){
+            return predicate$148(val$150);
         }else {
             return false;
         }
@@ -877,20 +908,20 @@ function $init$Sequence(){
                 var $$sequence=this;
                 return $$sequence;
             });
-            $$sequence.$sort=function $sort(comparing$144){
+            $$sequence.$sort=function $sort(comparing$151){
                 var $$sequence=this;
-                var s$145=internalSort(comparing$144,$$sequence,{Element:$$sequence.$$targs$$.Element});
+                var s$152=internalSort(comparing$151,$$sequence,{Element:$$sequence.$$targs$$.Element});
                 //assert at Sequence.ceylon (63:8-63:27)
-                var s$146;
-                if (!(nonempty((s$146=s$145)))) { throw AssertionException('Assertion failed: \'nonempty s\' at Sequence.ceylon (63:15-63:26)'); }
-                return s$146;
-            };$$sequence.collect=function collect(collecting$147,$$$mptypes){
+                var s$153;
+                if (!(nonempty((s$153=s$152)))) { throw AssertionException('Assertion failed: \'nonempty s\' at Sequence.ceylon (63:15-63:26)'); }
+                return s$153;
+            };$$sequence.collect=function collect(collecting$154,$$$mptypes){
                 var $$sequence=this;
-                var s$148=$$sequence.$map(collecting$147,{Result:$$$mptypes.Result}).sequence;
+                var s$155=$$sequence.$map(collecting$154,{Result:$$$mptypes.Result}).sequence;
                 //assert at Sequence.ceylon (74:8-74:27)
-                var s$149;
-                if (!(nonempty((s$149=s$148)))) { throw AssertionException('Assertion failed: \'nonempty s\' at Sequence.ceylon (74:15-74:26)'); }
-                return s$149;
+                var s$156;
+                if (!(nonempty((s$156=s$155)))) { throw AssertionException('Assertion failed: \'nonempty s\' at Sequence.ceylon (74:15-74:26)'); }
+                return s$156;
             };defineAttr($$sequence,'clone',function(){
                 var $$sequence=this;
                 return $$sequence;
@@ -928,7 +959,7 @@ function $init$Sequential(){
             });
             defineAttr($$sequential,'string',function(){
                 var $$sequential=this;
-                return (opt$150=($$sequential.empty?String$("[]",2):null),opt$150!==null?opt$150:StringBuilder().appendAll([String$("[",1),commaList($$sequential).string,String$("]",1)]).string);
+                return (opt$157=($$sequential.empty?String$("[]",2):null),opt$157!==null?opt$157:StringBuilder().appendAll([String$("[",1),commaList($$sequential).string,String$("]",1)]).string);
             });
         })(Sequential.$$.prototype);
     }
@@ -936,7 +967,7 @@ function $init$Sequential(){
 }
 exports.$init$Sequential=$init$Sequential;
 $init$Sequential();
-var opt$150;
+var opt$157;
 function Empty($$empty){
     Sequential($$empty);
     Ranged($$empty);
@@ -954,23 +985,23 @@ function $init$Empty(){
                 var $$empty=this;
                 return getEmptyIterator();
             };
-            $$empty.get=function (index$151){
+            $$empty.get=function (index$158){
                 var $$empty=this;
                 return null;
             };
-            $$empty.segment=function (from$152,length$153){
+            $$empty.segment=function (from$159,length$160){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.span=function (from$154,to$155){
+            $$empty.span=function (from$161,to$162){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.spanTo=function (to$156){
+            $$empty.spanTo=function (to$163){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.spanFrom=function (from$157){
+            $$empty.spanFrom=function (from$164){
                 var $$empty=this;
                 return $$empty;
             };
@@ -1022,81 +1053,81 @@ function $init$Empty(){
                 var $$empty=this;
                 return $$empty;
             });
-            $$empty.chain=function (other$158,$$$mptypes){
+            $$empty.chain=function (other$165,$$$mptypes){
                 var $$empty=this;
-                return other$158;
+                return other$165;
             };
-            $$empty.contains=function (element$159){
+            $$empty.contains=function (element$166){
                 var $$empty=this;
                 return false;
             };
-            $$empty.count=function (selecting$160){
+            $$empty.count=function (selecting$167){
                 var $$empty=this;
                 return (0);
             };
-            $$empty.defines=function (index$161){
+            $$empty.defines=function (index$168){
                 var $$empty=this;
                 return false;
             };
-            $$empty.$map=function (collecting$162,$$$mptypes){
+            $$empty.$map=function (collecting$169,$$$mptypes){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.$filter=function (selecting$163){
+            $$empty.$filter=function (selecting$170){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.fold=function (initial$164,accumulating$165,$$$mptypes){
+            $$empty.fold=function (initial$171,accumulating$172,$$$mptypes){
                 var $$empty=this;
-                return initial$164;
+                return initial$171;
             };
-            $$empty.find=function (selecting$166){
+            $$empty.find=function (selecting$173){
                 var $$empty=this;
                 return null;
             };
-            $$empty.$sort=function (comparing$167){
+            $$empty.$sort=function (comparing$174){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.collect=function (collecting$168,$$$mptypes){
+            $$empty.collect=function (collecting$175,$$$mptypes){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.select=function (selecting$169){
+            $$empty.select=function (selecting$176){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.any=function (selecting$170){
+            $$empty.any=function (selecting$177){
                 var $$empty=this;
                 return false;
             };
-            $$empty.$every=function (selecting$171){
+            $$empty.$every=function (selecting$178){
                 var $$empty=this;
                 return false;
             };
-            $$empty.skipping=function (skip$172){
+            $$empty.skipping=function (skip$179){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.taking=function (take$173){
+            $$empty.taking=function (take$180){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.by=function (step$174){
+            $$empty.by=function (step$181){
                 var $$empty=this;
                 return $$empty;
             };
-            $$empty.withLeading=function (element$175,$$$mptypes){
+            $$empty.withLeading=function (element$182,$$$mptypes){
                 var $$empty=this;
-                return Tuple(element$175,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
+                return Tuple(element$182,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
             };
-            $$empty.withTrailing=function (element$176,$$$mptypes){
+            $$empty.withTrailing=function (element$183,$$$mptypes){
                 var $$empty=this;
-                return Tuple(element$176,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
+                return Tuple(element$183,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
             };
-            $$empty.following=function (head$177,$$$mptypes){
+            $$empty.following=function (head$184,$$$mptypes){
                 var $$empty=this;
-                return Singleton(head$177,{Element:$$$mptypes.Other});
+                return Singleton(head$184,{Element:$$$mptypes.Other});
             };
         })(Empty.$$.prototype);
     }
@@ -1104,48 +1135,48 @@ function $init$Empty(){
 }
 exports.$init$Empty=$init$Empty;
 $init$Empty();
-function empty$178(){
-    var $$empty=new empty$178.$$;
+function empty$185(){
+    var $$empty=new empty$185.$$;
     Object$($$empty);
     Empty($$empty);
     return $$empty;
 }
-function $init$empty$178(){
-    if (empty$178.$$===undefined){
-        initTypeProto(empty$178,'ceylon.language::empty',Object$,$init$Empty());
+function $init$empty$185(){
+    if (empty$185.$$===undefined){
+        initTypeProto(empty$185,'ceylon.language::empty',Object$,$init$Empty());
     }
-    return empty$178;
+    return empty$185;
 }
-exports.$init$empty$178=$init$empty$178;
-$init$empty$178();
-var empty$179=empty$178();
+exports.$init$empty$185=$init$empty$185;
+$init$empty$185();
+var empty$186=empty$185();
 var getEmpty=function(){
-    return empty$179;
+    return empty$186;
 }
 exports.getEmpty=getEmpty;
-function emptyIterator$180($$targs$$){
-    var $$emptyIterator=new emptyIterator$180.$$;
+function emptyIterator$187($$targs$$){
+    var $$emptyIterator=new emptyIterator$187.$$;
     $$emptyIterator.$$targs$$=$$targs$$;
     Iterator($$emptyIterator);
     return $$emptyIterator;
 }
-function $init$emptyIterator$180(){
-    if (emptyIterator$180.$$===undefined){
-        initTypeProto(emptyIterator$180,'ceylon.language::emptyIterator',Basic,$init$Iterator());
+function $init$emptyIterator$187(){
+    if (emptyIterator$187.$$===undefined){
+        initTypeProto(emptyIterator$187,'ceylon.language::emptyIterator',Basic,$init$Iterator());
     }
-    return emptyIterator$180;
+    return emptyIterator$187;
 }
-exports.$init$emptyIterator$180=$init$emptyIterator$180;
-$init$emptyIterator$180();
+exports.$init$emptyIterator$187=$init$emptyIterator$187;
+$init$emptyIterator$187();
 (function($$emptyIterator){
     $$emptyIterator.next=function (){
         var $$emptyIterator=this;
         return getFinished();
     };
-})(emptyIterator$180.$$.prototype);
-var emptyIterator$181=emptyIterator$180({Element:{t:Nothing}});
+})(emptyIterator$187.$$.prototype);
+var emptyIterator$188=emptyIterator$187({Element:{t:Nothing}});
 var getEmptyIterator=function(){
-    return emptyIterator$181;
+    return emptyIterator$188;
 }
 exports.getEmptyIterator=getEmptyIterator;
 function Correspondence($$correspondence){
@@ -1155,49 +1186,49 @@ function $init$Correspondence(){
     if (Correspondence.$$===undefined){
         initTypeProto(Correspondence,'ceylon.language::Correspondence');
         (function($$correspondence){
-            $$correspondence.defines=function (key$182){
+            $$correspondence.defines=function (key$189){
                 var $$correspondence=this;
-                return exists($$correspondence.get(key$182));
+                return exists($$correspondence.get(key$189));
             };
             defineAttr($$correspondence,'keys',function(){
                 var $$correspondence=this;
                 return Keys($$correspondence,{Key:$$correspondence.$$targs$$.Key,Item:$$correspondence.$$targs$$.Item});
             });
-            $$correspondence.definesEvery=function definesEvery(keys$183){
+            $$correspondence.definesEvery=function definesEvery(keys$190){
                 var $$correspondence=this;
-                var it$184 = keys$183.iterator();
-                var key$185;while ((key$185=it$184.next())!==getFinished()){
-                    if((!$$correspondence.defines(key$185))){
+                var it$191 = keys$190.iterator();
+                var key$192;while ((key$192=it$191.next())!==getFinished()){
+                    if((!$$correspondence.defines(key$192))){
                         return false;
                     }
                 }
-                if (getFinished() === key$185){
+                if (getFinished() === key$192){
                     return true;
                 }
-            };$$correspondence.definesAny=function definesAny(keys$186){
+            };$$correspondence.definesAny=function definesAny(keys$193){
                 var $$correspondence=this;
-                var it$187 = keys$186.iterator();
-                var key$188;while ((key$188=it$187.next())!==getFinished()){
-                    if($$correspondence.defines(key$188)){
+                var it$194 = keys$193.iterator();
+                var key$195;while ((key$195=it$194.next())!==getFinished()){
+                    if($$correspondence.defines(key$195)){
                         return true;
                     }
                 }
-                if (getFinished() === key$188){
+                if (getFinished() === key$195){
                     return false;
                 }
-            };$$correspondence.items=function (keys$189){
+            };$$correspondence.items=function (keys$196){
                 var $$correspondence=this;
                 return Comprehension(function(){
-                    var it$190=keys$189.iterator();
-                    var key$191=getFinished();
-                    var next$key$191=function(){return key$191=it$190.next();}
-                    next$key$191();
+                    var it$197=keys$196.iterator();
+                    var key$198=getFinished();
+                    var next$key$198=function(){return key$198=it$197.next();}
+                    next$key$198();
                     return function(){
-                        if(key$191!==getFinished()){
-                            var key$191$192=key$191;
-                            var tmpvar$193=$$correspondence.get(key$191$192);
-                            next$key$191();
-                            return tmpvar$193;
+                        if(key$198!==getFinished()){
+                            var key$198$199=key$198;
+                            var tmpvar$200=$$correspondence.get(key$198$199);
+                            next$key$198();
+                            return tmpvar$200;
                         }
                         return getFinished();
                     }
@@ -1223,35 +1254,35 @@ function $init$Finished(){
 }
 exports.$init$Finished=$init$Finished;
 $init$Finished();
-function finished$194(){
-    var $$finished=new finished$194.$$;
+function finished$201(){
+    var $$finished=new finished$201.$$;
     Finished($$finished);
     return $$finished;
 }
-function $init$finished$194(){
-    if (finished$194.$$===undefined){
-        initTypeProto(finished$194,'ceylon.language::finished',Finished);
+function $init$finished$201(){
+    if (finished$201.$$===undefined){
+        initTypeProto(finished$201,'ceylon.language::finished',Finished);
     }
-    return finished$194;
+    return finished$201;
 }
-exports.$init$finished$194=$init$finished$194;
-$init$finished$194();
+exports.$init$finished$201=$init$finished$201;
+$init$finished$201();
 (function($$finished){
     defineAttr($$finished,'string',function(){
         var $$finished=this;
         return String$("finished",8);
     });
-})(finished$194.$$.prototype);
-var finished$195=finished$194();
+})(finished$201.$$.prototype);
+var finished$202=finished$201();
 var getFinished=function(){
-    return finished$195;
+    return finished$202;
 }
 exports.getFinished=getFinished;
-function Keys(correspondence$196, $$targs$$,$$keys){
+function Keys(correspondence$203, $$targs$$,$$keys){
     $init$Keys();
     if ($$keys===undefined)$$keys=new Keys.$$;
     set_type_args($$keys,$$targs$$);
-    $$keys.correspondence$196=correspondence$196;
+    $$keys.correspondence$203=correspondence$203;
     Category($$keys);
     return $$keys;
 }
@@ -1259,11 +1290,11 @@ function $init$Keys(){
     if (Keys.$$===undefined){
         initTypeProto(Keys,'ceylon.language::Keys',Basic,$init$Category());
         (function($$keys){
-            $$keys.contains=function contains(key$197){
+            $$keys.contains=function contains(key$204){
                 var $$keys=this;
-                var key$198;
-                if(isOfType((key$198=key$197),$$keys.$$targs$$.Key)){
-                    return $$keys.correspondence$196.defines(key$198);
+                var key$205;
+                if(isOfType((key$205=key$204),$$keys.$$targs$$.Key)){
+                    return $$keys.correspondence$203.defines(key$205);
                 }else {
                     return false;
                 }
@@ -1290,21 +1321,21 @@ function $init$Collection(){
                 var $$collection=this;
                 return $$collection.size.equals((0));
             });
-            $$collection.contains=function contains(element$199){
+            $$collection.contains=function contains(element$206){
                 var $$collection=this;
-                var it$200 = $$collection.iterator();
-                var elem$201;while ((elem$201=it$200.next())!==getFinished()){
-                    var elem$202;
-                    if((elem$202=elem$201)!==null&&elem$202.equals(element$199)){
+                var it$207 = $$collection.iterator();
+                var elem$208;while ((elem$208=it$207.next())!==getFinished()){
+                    var elem$209;
+                    if((elem$209=elem$208)!==null&&elem$209.equals(element$206)){
                         return true;
                     }
                 }
-                if (getFinished() === elem$201){
+                if (getFinished() === elem$208){
                     return false;
                 }
             };defineAttr($$collection,'string',function(){
                 var $$collection=this;
-                return (opt$203=($$collection.empty?String$("{}",2):null),opt$203!==null?opt$203:StringBuilder().appendAll([String$("{ ",2),commaList($$collection).string,String$(" }",2)]).string);
+                return (opt$210=($$collection.empty?String$("{}",2):null),opt$210!==null?opt$210:StringBuilder().appendAll([String$("{ ",2),commaList($$collection).string,String$(" }",2)]).string);
             });
         })(Collection.$$.prototype);
     }
@@ -1312,7 +1343,7 @@ function $init$Collection(){
 }
 exports.$init$Collection=$init$Collection;
 $init$Collection();
-var opt$203;
+var opt$210;
 function Ranged($$ranged){
 }
 exports.Ranged=Ranged;
@@ -1333,26 +1364,26 @@ function $init$Category(){
     if (Category.$$===undefined){
         initTypeProto(Category,'ceylon.language::Category');
         (function($$category){
-            $$category.containsEvery=function containsEvery(elements$204){
+            $$category.containsEvery=function containsEvery(elements$211){
                 var $$category=this;
-                var it$205 = elements$204.iterator();
-                var element$206;while ((element$206=it$205.next())!==getFinished()){
-                    if((!$$category.contains(element$206))){
+                var it$212 = elements$211.iterator();
+                var element$213;while ((element$213=it$212.next())!==getFinished()){
+                    if((!$$category.contains(element$213))){
                         return false;
                     }
                 }
-                if (getFinished() === element$206){
+                if (getFinished() === element$213){
                     return true;
                 }
-            };$$category.containsAny=function containsAny(elements$207){
+            };$$category.containsAny=function containsAny(elements$214){
                 var $$category=this;
-                var it$208 = elements$207.iterator();
-                var element$209;while ((element$209=it$208.next())!==getFinished()){
-                    if($$category.contains(element$209)){
+                var it$215 = elements$214.iterator();
+                var element$216;while ((element$216=it$215.next())!==getFinished()){
+                    if($$category.contains(element$216)){
                         return true;
                     }
                 }
-                if (getFinished() === element$209){
+                if (getFinished() === element$216){
                     return false;
                 }
             };
@@ -1382,9 +1413,9 @@ function $init$Binary(){
     if (Binary.$$===undefined){
         initTypeProto(Binary,'ceylon.language::Binary');
         (function($$binary){
-            $$binary.clear=function clear(index$210){
+            $$binary.clear=function clear(index$217){
                 var $$binary=this;
-                return $$binary.set(index$210,false);
+                return $$binary.set(index$217,false);
             };
         })(Binary.$$.prototype);
     }
@@ -1432,7 +1463,7 @@ function $init$Iterator(){
 }
 exports.$init$Iterator=$init$Iterator;
 $init$Iterator();
-function Tuple(first$211, rest$212, $$targs$$,$$tuple){
+function Tuple(first$218, rest$219, $$targs$$,$$tuple){
     $init$Tuple();
     if ($$tuple===undefined)$$tuple=new Tuple.$$;
     set_type_args($$tuple,$$targs$$);
@@ -1440,8 +1471,8 @@ function Tuple(first$211, rest$212, $$targs$$,$$tuple){
     Sequence($$tuple);
     Cloneable($$tuple);
     add_type_arg($$tuple,'Clone',{t:Tuple,a:{Rest:$$tuple.$$targs$$.Rest,First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.Element}});
-    $$tuple.first$213_=first$211;
-    $$tuple.rest$214_=rest$212;
+    $$tuple.first$220_=first$218;
+    $$tuple.rest$221_=rest$219;
     return $$tuple;
 }
 exports.Tuple=Tuple;
@@ -1449,36 +1480,36 @@ function $init$Tuple(){
     if (Tuple.$$===undefined){
         initTypeProto(Tuple,'ceylon.language::Tuple',Object$,$init$Sequence(),$init$Cloneable());
         (function($$tuple){
-            defineAttr($$tuple,'first',function(){return this.first$213_;});
-            defineAttr($$tuple,'rest',function(){return this.rest$214_;});
+            defineAttr($$tuple,'first',function(){return this.first$220_;});
+            defineAttr($$tuple,'rest',function(){return this.rest$221_;});
             defineAttr($$tuple,'size',function(){
                 var $$tuple=this;
                 return (1).plus($$tuple.rest.size);
             });
-            $$tuple.get=function get(index$215){
+            $$tuple.get=function get(index$222){
                 var $$tuple=this;
                 
-                var case$216=index$215.compare((0));
-                if (case$216===getSmaller()) {
+                var case$223=index$222.compare((0));
+                if (case$223===getSmaller()) {
                     return null;
-                }else if (case$216===getEqual()) {
+                }else if (case$223===getEqual()) {
                     return $$tuple.first;
-                }else if (case$216===getLarger()) {
-                    return $$tuple.rest.get(index$215.minus((1)));
+                }else if (case$223===getLarger()) {
+                    return $$tuple.rest.get(index$222.minus((1)));
                 }
             };defineAttr($$tuple,'lastIndex',function(){
                 var $$tuple=this;
-                var restLastIndex$217;
-                if((restLastIndex$217=$$tuple.rest.lastIndex)!==null){
-                    return restLastIndex$217.plus((1));
+                var restLastIndex$224;
+                if((restLastIndex$224=$$tuple.rest.lastIndex)!==null){
+                    return restLastIndex$224.plus((1));
                 }else {
                     return (0);
                 }
             });defineAttr($$tuple,'last',function(){
                 var $$tuple=this;
-                var rest$218;
-                if(nonempty((rest$218=$$tuple.rest))){
-                    return rest$218.last;
+                var rest$225;
+                if(nonempty((rest$225=$$tuple.rest))){
+                    return rest$225.last;
                 }else {
                     return $$tuple.first;
                 }
@@ -1486,36 +1517,36 @@ function $init$Tuple(){
                 var $$tuple=this;
                 return $$tuple.rest.reversed.withTrailing($$tuple.first,{Other:$$tuple.$$targs$$.First});
             });
-            $$tuple.segment=function segment(from$219,length$220){
+            $$tuple.segment=function segment(from$226,length$227){
                 var $$tuple=this;
-                if(length$220.compare((0)).equals(getSmaller())){
+                if(length$227.compare((0)).equals(getSmaller())){
                     return getEmpty();
                 }
-                var realFrom$221=(opt$222=(from$219.compare((0)).equals(getSmaller())?(0):null),opt$222!==null?opt$222:from$219);
-                var opt$222;
-                if(realFrom$221.equals((0))){
-                    return (opt$223=(length$220.equals((1))?Tuple($$tuple.first,getEmpty(),{Rest:{t:Empty},First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.First}):null),opt$223!==null?opt$223:$$tuple.rest.segment((0),length$220.plus(realFrom$221).minus((1))).withLeading($$tuple.first,{Other:$$tuple.$$targs$$.First}));
-                    var opt$223;
-                }
-                return $$tuple.rest.segment(realFrom$221.minus((1)),length$220);
-            };$$tuple.span=function span(from$224,end$225){
-                var $$tuple=this;
-                if((from$224.compare((0)).equals(getSmaller())&&end$225.compare((0)).equals(getSmaller()))){
-                    return getEmpty();
-                }
-                var realFrom$226=(opt$227=(from$224.compare((0)).equals(getSmaller())?(0):null),opt$227!==null?opt$227:from$224);
-                var opt$227;
-                var realEnd$228=(opt$229=(end$225.compare((0)).equals(getSmaller())?(0):null),opt$229!==null?opt$229:end$225);
+                var realFrom$228=(opt$229=(from$226.compare((0)).equals(getSmaller())?(0):null),opt$229!==null?opt$229:from$226);
                 var opt$229;
-                return (opt$230=((realFrom$226.compare(realEnd$228)!==getLarger())?$$tuple.segment(from$224,realEnd$228.minus(realFrom$226).plus((1))):null),opt$230!==null?opt$230:$$tuple.segment(realEnd$228,realFrom$226.minus(realEnd$228).plus((1))).reversed.sequence);
-                var opt$230;
-            };$$tuple.spanTo=function (to$231){
+                if(realFrom$228.equals((0))){
+                    return (opt$230=(length$227.equals((1))?Tuple($$tuple.first,getEmpty(),{Rest:{t:Empty},First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.First}):null),opt$230!==null?opt$230:$$tuple.rest.segment((0),length$227.plus(realFrom$228).minus((1))).withLeading($$tuple.first,{Other:$$tuple.$$targs$$.First}));
+                    var opt$230;
+                }
+                return $$tuple.rest.segment(realFrom$228.minus((1)),length$227);
+            };$$tuple.span=function span(from$231,end$232){
                 var $$tuple=this;
-                return (opt$232=(to$231.compare((0)).equals(getSmaller())?getEmpty():null),opt$232!==null?opt$232:$$tuple.span((0),to$231));
+                if((from$231.compare((0)).equals(getSmaller())&&end$232.compare((0)).equals(getSmaller()))){
+                    return getEmpty();
+                }
+                var realFrom$233=(opt$234=(from$231.compare((0)).equals(getSmaller())?(0):null),opt$234!==null?opt$234:from$231);
+                var opt$234;
+                var realEnd$235=(opt$236=(end$232.compare((0)).equals(getSmaller())?(0):null),opt$236!==null?opt$236:end$232);
+                var opt$236;
+                return (opt$237=((realFrom$233.compare(realEnd$235)!==getLarger())?$$tuple.segment(from$231,realEnd$235.minus(realFrom$233).plus((1))):null),opt$237!==null?opt$237:$$tuple.segment(realEnd$235,realFrom$233.minus(realEnd$235).plus((1))).reversed.sequence);
+                var opt$237;
+            };$$tuple.spanTo=function (to$238){
+                var $$tuple=this;
+                return (opt$239=(to$238.compare((0)).equals(getSmaller())?getEmpty():null),opt$239!==null?opt$239:$$tuple.span((0),to$238));
             };
-            $$tuple.spanFrom=function (from$233){
+            $$tuple.spanFrom=function (from$240){
                 var $$tuple=this;
-                return $$tuple.span(from$233,$$tuple.size);
+                return $$tuple.span(from$240,$$tuple.size);
             };
             defineAttr($$tuple,'clone',function(){
                 var $$tuple=this;
@@ -1523,45 +1554,45 @@ function $init$Tuple(){
             });
             $$tuple.iterator=function iterator(){
                 var $$tuple=this;
-                function iterator$234($$targs$$){
-                    var $$iterator$234=new iterator$234.$$;
-                    $$iterator$234.$$targs$$=$$targs$$;
-                    Iterator($$iterator$234);
-                    $$iterator$234.current$235_=$$tuple;
-                    return $$iterator$234;
+                function iterator$241($$targs$$){
+                    var $$iterator$241=new iterator$241.$$;
+                    $$iterator$241.$$targs$$=$$targs$$;
+                    Iterator($$iterator$241);
+                    $$iterator$241.current$242_=$$tuple;
+                    return $$iterator$241;
                 }
-                function $init$iterator$234(){
-                    if (iterator$234.$$===undefined){
-                        initTypeProto(iterator$234,'ceylon.language::Tuple.iterator.iterator',Basic,$init$Iterator());
+                function $init$iterator$241(){
+                    if (iterator$241.$$===undefined){
+                        initTypeProto(iterator$241,'ceylon.language::Tuple.iterator.iterator',Basic,$init$Iterator());
                     }
-                    return iterator$234;
+                    return iterator$241;
                 }
-                $init$iterator$234();
-                (function($$iterator$234){
-                    defineAttr($$iterator$234,'current$235',function(){return this.current$235_;},function(current$236){return this.current$235_=current$236;});
-                    $$iterator$234.next=function next(){
-                        var $$iterator$234=this;
-                        var c$237;
-                        if(nonempty((c$237=$$iterator$234.current$235))){
-                            $$iterator$234.current$235=c$237.rest;
-                            return c$237.first;
+                $init$iterator$241();
+                (function($$iterator$241){
+                    defineAttr($$iterator$241,'current$242',function(){return this.current$242_;},function(current$243){return this.current$242_=current$243;});
+                    $$iterator$241.next=function next(){
+                        var $$iterator$241=this;
+                        var c$244;
+                        if(nonempty((c$244=$$iterator$241.current$242))){
+                            $$iterator$241.current$242=c$244.rest;
+                            return c$244.first;
                         }else {
                             return getFinished();
                         }
                     };
-                })(iterator$234.$$.prototype);
-                var iterator$238=iterator$234({Element:$$tuple.$$targs$$.Element});
-                var getIterator$238=function(){
-                    return iterator$238;
+                })(iterator$241.$$.prototype);
+                var iterator$245=iterator$241({Element:$$tuple.$$targs$$.Element});
+                var getIterator$245=function(){
+                    return iterator$245;
                 }
-                return getIterator$238();
-            };$$tuple.contains=function contains(element$239){
+                return getIterator$245();
+            };$$tuple.contains=function contains(element$246){
                 var $$tuple=this;
-                var first$240;
-                if((first$240=$$tuple.first)!==null&&first$240.equals(element$239)){
+                var first$247;
+                if((first$247=$$tuple.first)!==null&&first$247.equals(element$246)){
                     return true;
                 }else {
-                    return $$tuple.rest.contains(element$239);
+                    return $$tuple.rest.contains(element$246);
                 }
             };
         })(Tuple.$$.prototype);
@@ -1570,7 +1601,7 @@ function $init$Tuple(){
 }
 exports.$init$Tuple=$init$Tuple;
 $init$Tuple();
-var opt$232;
+var opt$239;
 function List($$list){
     Collection($$list);
     Correspondence($$list);
@@ -1588,76 +1619,76 @@ function $init$List(){
         (function($$list){
             defineAttr($$list,'size',function(){
                 var $$list=this;
-                return (opt$241=$$list.lastIndex,opt$241!==null?opt$241:(-(1))).plus((1));
+                return (opt$248=$$list.lastIndex,opt$248!==null?opt$248:(-(1))).plus((1));
             });
-            $$list.defines=function (index$242){
+            $$list.defines=function (index$249){
                 var $$list=this;
-                return (index$242.compare((opt$243=$$list.lastIndex,opt$243!==null?opt$243:(-(1))))!==getLarger());
+                return (index$249.compare((opt$250=$$list.lastIndex,opt$250!==null?opt$250:(-(1))))!==getLarger());
             };
             $$list.iterator=function iterator(){
                 var $$list=this;
-                function listIterator$244($$targs$$){
-                    var $$listIterator$244=new listIterator$244.$$;
-                    $$listIterator$244.$$targs$$=$$targs$$;
-                    Iterator($$listIterator$244);
-                    $$listIterator$244.index$245_=(0);
-                    return $$listIterator$244;
+                function listIterator$251($$targs$$){
+                    var $$listIterator$251=new listIterator$251.$$;
+                    $$listIterator$251.$$targs$$=$$targs$$;
+                    Iterator($$listIterator$251);
+                    $$listIterator$251.index$252_=(0);
+                    return $$listIterator$251;
                 }
-                function $init$listIterator$244(){
-                    if (listIterator$244.$$===undefined){
-                        initTypeProto(listIterator$244,'ceylon.language::List.iterator.listIterator',Basic,$init$Iterator());
+                function $init$listIterator$251(){
+                    if (listIterator$251.$$===undefined){
+                        initTypeProto(listIterator$251,'ceylon.language::List.iterator.listIterator',Basic,$init$Iterator());
                     }
-                    return listIterator$244;
+                    return listIterator$251;
                 }
-                $init$listIterator$244();
-                (function($$listIterator$244){
-                    defineAttr($$listIterator$244,'index$245',function(){return this.index$245_;},function(index$246){return this.index$245_=index$246;});
-                    $$listIterator$244.next=function next(){
-                        var $$listIterator$244=this;
-                        if(($$listIterator$244.index$245.compare((opt$247=$$list.lastIndex,opt$247!==null?opt$247:(-(1))))!==getLarger())){
+                $init$listIterator$251();
+                (function($$listIterator$251){
+                    defineAttr($$listIterator$251,'index$252',function(){return this.index$252_;},function(index$253){return this.index$252_=index$253;});
+                    $$listIterator$251.next=function next(){
+                        var $$listIterator$251=this;
+                        if(($$listIterator$251.index$252.compare((opt$254=$$list.lastIndex,opt$254!==null?opt$254:(-(1))))!==getLarger())){
                             //assert at List.ceylon (61:20-61:65)
-                            var elem$248;
-                            if (!(isOfType((elem$248=$$list.get((oldindex$249=$$listIterator$244.index$245,$$listIterator$244.index$245=oldindex$249.successor,oldindex$249))),$$list.$$targs$$.Element))) { throw AssertionException('Assertion failed: \'is Element elem = outer.get(index++)\' at List.ceylon (61:27-61:64)'); }
-                            var oldindex$249;
-                            return elem$248;
+                            var elem$255;
+                            if (!(isOfType((elem$255=$$list.get((oldindex$256=$$listIterator$251.index$252,$$listIterator$251.index$252=oldindex$256.successor,oldindex$256))),$$list.$$targs$$.Element))) { throw AssertionException('Assertion failed: \'is Element elem = outer.get(index++)\' at List.ceylon (61:27-61:64)'); }
+                            var oldindex$256;
+                            return elem$255;
                         }else {
                             return getFinished();
                         }
-                        var opt$247;
+                        var opt$254;
                     };
-                })(listIterator$244.$$.prototype);
-                var listIterator$250=listIterator$244({Element:$$list.$$targs$$.Element});
-                var getListIterator$250=function(){
-                    return listIterator$250;
+                })(listIterator$251.$$.prototype);
+                var listIterator$257=listIterator$251({Element:$$list.$$targs$$.Element});
+                var getListIterator$257=function(){
+                    return listIterator$257;
                 }
-                return getListIterator$250();
-            };$$list.equals=function equals(that$251){
+                return getListIterator$257();
+            };$$list.equals=function equals(that$258){
                 var $$list=this;
-                var that$252;
-                if(isOfType((that$252=that$251),{t:List,a:{Element:{t:Anything}}})){
-                    if(that$252.size.equals($$list.size)){
-                        var it$253 = Range((0),$$list.size.minus((1)),{Element:{t:Integer}}).iterator();
-                        var i$254;while ((i$254=it$253.next())!==getFinished()){
-                            var x$255=$$list.get(i$254);
-                            var y$256=that$252.get(i$254);
-                            var x$257;
-                            if((x$257=x$255)!==null){
-                                var y$258;
-                                if((y$258=y$256)!==null){
-                                    if((!x$257.equals(y$258))){
+                var that$259;
+                if(isOfType((that$259=that$258),{t:List,a:{Element:{t:Anything}}})){
+                    if(that$259.size.equals($$list.size)){
+                        var it$260 = Range((0),$$list.size.minus((1)),{Element:{t:Integer}}).iterator();
+                        var i$261;while ((i$261=it$260.next())!==getFinished()){
+                            var x$262=$$list.get(i$261);
+                            var y$263=that$259.get(i$261);
+                            var x$264;
+                            if((x$264=x$262)!==null){
+                                var y$265;
+                                if((y$265=y$263)!==null){
+                                    if((!x$264.equals(y$265))){
                                         return false;
                                     }
                                 }else {
                                     return false;
                                 }
                             }else {
-                                var y$259;
-                                if((y$259=y$256)!==null){
+                                var y$266;
+                                if((y$266=y$263)!==null){
                                     return false;
                                 }
                             }
                         }
-                        if (getFinished() === i$254){
+                        if (getFinished() === i$261){
                             return true;
                         }
                     }
@@ -1665,50 +1696,50 @@ function $init$List(){
                 return false;
             };defineAttr($$list,'hash',function(){
                 var $$list=this;
-                var hash$260=(1);
-                var setHash$260=function(hash$261){return hash$260=hash$261;};
-                var it$262 = $$list.iterator();
-                var elem$263;while ((elem$263=it$262.next())!==getFinished()){
-                    (hash$260=hash$260.times((31)));
-                    var elem$264;
-                    if((elem$264=elem$263)!==null){
-                        (hash$260=hash$260.plus(elem$264.hash));
+                var hash$267=(1);
+                var setHash$267=function(hash$268){return hash$267=hash$268;};
+                var it$269 = $$list.iterator();
+                var elem$270;while ((elem$270=it$269.next())!==getFinished()){
+                    (hash$267=hash$267.times((31)));
+                    var elem$271;
+                    if((elem$271=elem$270)!==null){
+                        (hash$267=hash$267.plus(elem$271.hash));
                     }
                 }
-                return hash$260;
+                return hash$267;
             });defineAttr($$list,'first',function(){
                 var $$list=this;
                 return $$list.get((0));
             });
             defineAttr($$list,'last',function(){
                 var $$list=this;
-                var i$265;
-                if((i$265=$$list.lastIndex)!==null){
-                    return $$list.get(i$265);
+                var i$272;
+                if((i$272=$$list.lastIndex)!==null){
+                    return $$list.get(i$272);
                 }
                 return null;
-            });$$list.withLeading=function withLeading(element$266,$$$mptypes){
+            });$$list.withLeading=function withLeading(element$273,$$$mptypes){
                 var $$list=this;
-                var sb$267=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
-                sb$267.append(element$266);
+                var sb$274=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
+                sb$274.append(element$273);
                 if((!$$list.empty)){
-                    sb$267.appendAll($$list);
+                    sb$274.appendAll($$list);
                 }
                 //assert at List.ceylon (163:8-163:41)
-                var seq$268;
-                if (!(nonempty((seq$268=sb$267.sequence)))) { throw AssertionException('Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (163:15-163:40)'); }
-                return seq$268;
-            };$$list.withTrailing=function withTrailing(element$269,$$$mptypes){
+                var seq$275;
+                if (!(nonempty((seq$275=sb$274.sequence)))) { throw AssertionException('Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (163:15-163:40)'); }
+                return seq$275;
+            };$$list.withTrailing=function withTrailing(element$276,$$$mptypes){
                 var $$list=this;
-                var sb$270=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
+                var sb$277=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
                 if((!$$list.empty)){
-                    sb$270.appendAll($$list);
+                    sb$277.appendAll($$list);
                 }
-                sb$270.append(element$269);
+                sb$277.append(element$276);
                 //assert at List.ceylon (178:8-178:41)
-                var seq$271;
-                if (!(nonempty((seq$271=sb$270.sequence)))) { throw AssertionException('Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (178:15-178:40)'); }
-                return seq$271;
+                var seq$278;
+                if (!(nonempty((seq$278=sb$277.sequence)))) { throw AssertionException('Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (178:15-178:40)'); }
+                return seq$278;
             };
         })(List.$$.prototype);
     }
@@ -1716,36 +1747,36 @@ function $init$List(){
 }
 exports.$init$List=$init$List;
 $init$List();
-var opt$241,opt$243;
-function ChainedIterator(first$272, second$273, $$targs$$,$$chainedIterator){
+var opt$248,opt$250;
+function ChainedIterator(first$279, second$280, $$targs$$,$$chainedIterator){
     $init$ChainedIterator();
     if ($$chainedIterator===undefined)$$chainedIterator=new ChainedIterator.$$;
     set_type_args($$chainedIterator,$$targs$$);
-    $$chainedIterator.second$273=second$273;
+    $$chainedIterator.second$280=second$280;
     Iterator($$chainedIterator);
-    $$chainedIterator.iter$274_=first$272.iterator();
-    $$chainedIterator.more$275_=true;
+    $$chainedIterator.iter$281_=first$279.iterator();
+    $$chainedIterator.more$282_=true;
     return $$chainedIterator;
 }
 function $init$ChainedIterator(){
     if (ChainedIterator.$$===undefined){
         initTypeProto(ChainedIterator,'ceylon.language::ChainedIterator',Basic,$init$Iterator());
         (function($$chainedIterator){
-            defineAttr($$chainedIterator,'iter$274',function(){return this.iter$274_;},function(iter$276){return this.iter$274_=iter$276;});
-            defineAttr($$chainedIterator,'more$275',function(){return this.more$275_;},function(more$277){return this.more$275_=more$277;});
+            defineAttr($$chainedIterator,'iter$281',function(){return this.iter$281_;},function(iter$283){return this.iter$281_=iter$283;});
+            defineAttr($$chainedIterator,'more$282',function(){return this.more$282_;},function(more$284){return this.more$282_=more$284;});
             $$chainedIterator.next=function next(){
                 var $$chainedIterator=this;
-                var e$278=$$chainedIterator.iter$274.next();
-                var setE$278=function(e$279){return e$278=e$279;};
-                var f$280;
-                if(isOfType((f$280=e$278),{t:Finished})){
-                    if($$chainedIterator.more$275){
-                        $$chainedIterator.iter$274=$$chainedIterator.second$273.iterator();
-                        $$chainedIterator.more$275=false;
-                        e$278=$$chainedIterator.iter$274.next();
+                var e$285=$$chainedIterator.iter$281.next();
+                var setE$285=function(e$286){return e$285=e$286;};
+                var f$287;
+                if(isOfType((f$287=e$285),{t:Finished})){
+                    if($$chainedIterator.more$282){
+                        $$chainedIterator.iter$281=$$chainedIterator.second$280.iterator();
+                        $$chainedIterator.more$282=false;
+                        e$285=$$chainedIterator.iter$281.next();
                     }
                 }
-                return e$278;
+                return e$285;
             };
         })(ChainedIterator.$$.prototype);
     }
@@ -1753,13 +1784,13 @@ function $init$ChainedIterator(){
 }
 exports.$init$ChainedIterator=$init$ChainedIterator;
 $init$ChainedIterator();
-function Entry(key$281, item$282, $$targs$$,$$entry){
+function Entry(key$288, item$289, $$targs$$,$$entry){
     $init$Entry();
     if ($$entry===undefined)$$entry=new Entry.$$;
     set_type_args($$entry,$$targs$$);
     Object$($$entry);
-    $$entry.key$283_=key$281;
-    $$entry.item$284_=item$282;
+    $$entry.key$290_=key$288;
+    $$entry.item$291_=item$289;
     return $$entry;
 }
 exports.Entry=Entry;
@@ -1767,13 +1798,13 @@ function $init$Entry(){
     if (Entry.$$===undefined){
         initTypeProto(Entry,'ceylon.language::Entry',Object$);
         (function($$entry){
-            defineAttr($$entry,'key',function(){return this.key$283_;});
-            defineAttr($$entry,'item',function(){return this.item$284_;});
-            $$entry.equals=function equals(that$285){
+            defineAttr($$entry,'key',function(){return this.key$290_;});
+            defineAttr($$entry,'item',function(){return this.item$291_;});
+            $$entry.equals=function equals(that$292){
                 var $$entry=this;
-                var that$286;
-                if(isOfType((that$286=that$285),{t:Entry,a:{Key:{t:Object$},Item:{t:Object$}}})){
-                    return ($$entry.key.equals(that$286.key)&&$$entry.item.equals(that$286.item));
+                var that$293;
+                if(isOfType((that$293=that$292),{t:Entry,a:{Key:{t:Object$},Item:{t:Object$}}})){
+                    return ($$entry.key.equals(that$293.key)&&$$entry.item.equals(that$293.item));
                 }else {
                     return false;
                 }
@@ -1917,37 +1948,6 @@ function $init$Summable(){
 }
 exports.$init$Summable=$init$Summable;
 $init$Summable();
-function Exception(description$287, cause$288, $$exception){
-    $init$Exception();
-    if ($$exception===undefined)$$exception=new Exception.$$;
-    if(description$287===undefined){description$287=null;}
-    if(cause$288===undefined){cause$288=null;}
-    $$exception.cause$289_=cause$288;
-    $$exception.description$290_=description$287;
-    return $$exception;
-}
-exports.Exception=Exception;
-function $init$Exception(){
-    if (Exception.$$===undefined){
-        initTypeProto(Exception,'ceylon.language::Exception',Basic);
-        (function($$exception){
-            defineAttr($$exception,'cause',function(){return this.cause$289_;});
-            defineAttr($$exception,'description$290',function(){return this.description$290_;});
-            defineAttr($$exception,'message',function(){
-                var $$exception=this;
-                return (opt$291=(opt$292=$$exception.description$290,opt$292!==null?opt$292:(opt$293=$$exception.cause,opt$293!==null?opt$293.message:null)),opt$291!==null?opt$291:String$("",0));
-            });
-            defineAttr($$exception,'string',function(){
-                var $$exception=this;
-                return className($$exception).plus(StringBuilder().appendAll([String$(" \"",2),$$exception.message.string,String$("\"",1)]).string);
-            });
-        })(Exception.$$.prototype);
-    }
-    return Exception;
-}
-exports.$init$Exception=$init$Exception;
-$init$Exception();
-var opt$291,opt$292,opt$293;
 function NegativeNumberException($$negativeNumberException){
     $init$NegativeNumberException();
     if ($$negativeNumberException===undefined)$$negativeNumberException=new NegativeNumberException.$$;
@@ -4225,9 +4225,11 @@ defineAttr(Character$proto, 'titlecased', function() {
 var tc = $toTitlecase[this.value];
 return tc===undefined ? this.uppercased : Character(tc);
 });
-var $WS={0x9:true, 0xa:true, 0xb:true, 0xc:true, 0xd:true, 0x20:true, 0x85:true, 0xa0:true,
-0x1680:true, 0x180e:true, 0x2028:true, 0x2029:true, 0x202f:true, 0x205f:true, 0x3000:true}
-for (var i=0x2000; i<=0x200a; i++) { $WS[i]=true }
+var $WS={0x9:true, 0xa:true, 0xb:true, 0xc:true, 0xd:true, 0x20:true, 0x85:true,
+0x1680:true, 0x180e:true, 0x2028:true, 0x2029:true, 0x205f:true, 0x3000:true,
+0x1c:true, 0x1d:true, 0x1e:true, 0x1f:true};
+for (var i=0x2000; i<0x2007; i++) { $WS[i]=true; }
+for (var i=0x2008; i<=0x200a; i++) { $WS[i]=true; }
 var $digit={0x30:true, 0x660:true, 0x6f0:true, 0x7c0:true, 0x966:true, 0x9e6:true, 0xa66:true,
 0xae6:true, 0xb66:true, 0xbe6:true, 0xc66:true, 0xce6:true, 0xd66:true, 0xe50:true,
 0xed0:true, 0xf20:true, 0x1040:true, 0x1090:true, 0x17e0:true, 0x1810:true, 0x1946:true,
@@ -4311,9 +4313,8 @@ this.value = this.value + s;
 return this;
 }
 StringBuilder$proto.appendAll = function(strings) {
-if (strings === null || strings === undefined) { return this; }
-for (var i = 0; i < strings.length; i++) {
-var _s = strings[i];
+var iter = strings.iterator();
+var _s; while ((_s = iter.next()) !== getFinished()) {
 this.value += _s?_s:"null";
 }
 return this;
@@ -4344,6 +4345,16 @@ this.value = content + this.value;
 this.value = this.value + content;
 } else {
 this.value = this.value.slice(0, pos) + content + this.value.slice(pos);
+}
+return this;
+}
+StringBuilder$proto.insertCharacter = function(pos, c) {
+if (pos <= 0) {
+this.value = c.string + this.value;
+} else if (pos >= this.size) {
+this.value = this.value + c.string;
+} else {
+this.value = this.value.slice(0, pos) + c.string + this.value.slice(pos);
 }
 return this;
 }
@@ -4684,7 +4695,7 @@ value.$$targs$$=$$targs$$;
 this.$$targs$$=$$targs$$;
 return value;
 }
-initTypeProto(ArraySequence, 'ceylon.language::ArraySequence', $init$Basic(), Sequence);
+initTypeProto(ArraySequence, 'ceylon.language::ArraySequence', $init$Basic(), $init$Sequence());
 Array$proto.getT$name = function() {
 return (this.$seq ? ArraySequence : (this.length>0?ArrayList:EmptyArray)).$$.T$name;
 }
@@ -4693,7 +4704,10 @@ return (this.$seq ? ArraySequence : (this.length>0?ArrayList:EmptyArray)).$$.T$a
 }
 exports.EmptyArray=EmptyArray;
 defineAttr(Array$proto, 'size', function(){ return this.length; });
-Array$proto.setItem = function(idx,elem) {
+defineAttr(Array$proto,'string',function(){
+return (opt$181=(this.empty?String$("[]",2):null),opt$181!==null?opt$181:StringBuilder().appendAll([String$("[",1),commaList(this).string,String$("]",1)]).string);
+});
+Array$proto.set = function(idx,elem) {
 if (idx >= 0 && idx < this.length) {
 this[idx] = elem;
 }
@@ -4764,7 +4778,18 @@ var $$$arr$$$ = this;
 return new ComprehensionIterator(function() {
 return ($$$index$$$ === $$$arr$$$.length) ? getFinished() : $$$arr$$$[$$$index$$$++];
 }, this.$$targs$$);
-};
+}
+Array$proto.copyTo = function(other, srcpos, dstpos, length) {
+if (length === undefined) length = this.size;
+if (srcpos === undefined) srcpos = 0;
+if (dstpos === undefined) dstpos = 0;
+var endpos = srcpos+length;
+//TODO validate range?
+for (var i=srcpos; i<endpos; i++) {
+other[dstpos]=this[i];
+dstpos++;
+}
+}
 exports.ArrayList=ArrayList;
 exports.array=function(elems, $$$ptypes) {
 var e=[];
@@ -4844,7 +4869,7 @@ return String$("0.5",3);
 defineAttr(lang$proto, 'majorVersion', function(){ return 0; });
 defineAttr(lang$proto, 'minorVersion', function(){ return 5; });
 defineAttr(lang$proto, 'releaseVersion', function(){ return 0; });
-defineAttr(lang$proto, 'versionName', function(){ return String$("Zaphod Beeblebrox",11); });
+defineAttr(lang$proto, 'versionName', function(){ return String$("Nesa Pong",11); });
 defineAttr(lang$proto, 'majorVersionBinary', function(){ return 4; });
 defineAttr(lang$proto, 'minorVersionBinary', function(){ return 0; });
 var languageString = String$("language", 7);
