@@ -657,7 +657,7 @@ public class CeylonContentProposer {
     }
     
     private static boolean isModuleDescriptor(CeylonParseController cpc) {
-        return cpc.getPath().toString().endsWith("module.ceylon"); 
+        return cpc.getRootNode().getUnit().getFilename().equals("module.ceylon"); 
     }
 
     private static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
@@ -682,7 +682,7 @@ public class CeylonContentProposer {
     }
     
     private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getPath().toString().endsWith("package.ceylon") && 
+        return cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
                 cpc.getRootNode() != null && 
                 cpc.getRootNode().getPackageDescriptor() == null;
     }
