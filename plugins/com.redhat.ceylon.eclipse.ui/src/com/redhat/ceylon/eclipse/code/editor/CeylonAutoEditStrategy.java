@@ -25,7 +25,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
-import com.googlecode.sardine.ant.Command;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
