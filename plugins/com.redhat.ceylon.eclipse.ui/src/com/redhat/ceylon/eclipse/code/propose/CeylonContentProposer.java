@@ -4,10 +4,13 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
@@ -159,12 +162,29 @@ public class CeylonContentProposer {
         int tokenIndex = getTokenIndexAtCharacter(tokens, result.start);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
+        int tt = adjustedToken.getType();
+        
+        if (offset<=adjustedToken.getStopIndex() && 
+            offset>=adjustedToken.getStartIndex()) {
+            if (tt==MULTI_COMMENT||tt==LINE_COMMENT) {
+                return null;
+            }
+            if (tt==CeylonLexer.STRING_LITERAL ||
+                tt==CeylonLexer.STRING_END ||
+                tt==CeylonLexer.STRING_MID ||
+                tt==CeylonLexer.STRING_START ||
+                tt==CeylonLexer.CHAR_LITERAL ||
+                tt==CeylonLexer.FLOAT_LITERAL ||
+                tt==CeylonLexer.NATURAL_LITERAL) {
+                return null;
+            }
+        }
 
         //find the node at the token
         Node node = getTokenNode(adjustedToken.getStartIndex(), 
                 adjustedToken.getStopIndex()+1, 
-                adjustedToken.getType(), rn);
-        
+                tt, rn);
+                
         //find the type that is expected in the current
         //location so we can prioritize proposals of that
         //type
@@ -341,12 +361,12 @@ public class CeylonContentProposer {
     private static CommonToken adjust(int tokenIndex, int offset, List<CommonToken> tokens) {
         CommonToken adjustedToken = tokens.get(tokenIndex); 
         while (--tokenIndex>=0 && 
-                (adjustedToken.getChannel()==CommonToken.HIDDEN_CHANNEL //ignore whitespace and comments
+                (adjustedToken.getType()==WS //ignore whitespace
                 || adjustedToken.getType()==EOF
                 || adjustedToken.getStartIndex()==offset)) { //don't consider the token to the right of the caret
             adjustedToken = tokens.get(tokenIndex);
-            if (adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL &&
-                    adjustedToken.getType()!=EOF) { //don't adjust to a ws/comment token
+            if (adjustedToken.getChannel()!=WS &&
+                    adjustedToken.getType()!=EOF) { //don't adjust to a ws token
                 break;
             }
         }
@@ -540,7 +560,7 @@ public class CeylonContentProposer {
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
             Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
             CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
-    	if (node instanceof Tree.Literal) return null;
+    	
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
         if (isEmptyModuleDescriptor(cpc)) {
