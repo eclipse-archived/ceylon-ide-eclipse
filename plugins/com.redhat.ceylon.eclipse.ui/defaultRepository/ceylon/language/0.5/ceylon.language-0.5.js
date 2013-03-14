@@ -4508,6 +4508,12 @@ return _ints ? inters||unions : unions;
 }
 for (t in t1.t.$$.T$all) {
 if (t === t2.t.$$.T$name || t === 'ceylon.language::Nothing') {
+if (t1.a && t2.a) {
+//Compare type arguments
+for (ta in t1.a) {
+if (!extendsType(t1.a[ta], t2.a[ta])) return false;
+}
+}
 return true;
 }
 }
