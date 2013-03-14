@@ -27,7 +27,6 @@ import org.eclipse.jface.text.TextUtilities;
 
 import com.googlecode.sardine.ant.Command;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.sun.tools.doclets.formats.html.markup.Comment;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
