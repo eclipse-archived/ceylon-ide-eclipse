@@ -1,14 +1,21 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.FLOAT_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.NATURAL_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.PIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.RBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.SEMICOLON;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
@@ -169,13 +176,13 @@ public class CeylonContentProposer {
             if (tt==MULTI_COMMENT||tt==LINE_COMMENT) {
                 return null;
             }
-            if (tt==CeylonLexer.STRING_LITERAL ||
-                tt==CeylonLexer.STRING_END ||
-                tt==CeylonLexer.STRING_MID ||
-                tt==CeylonLexer.STRING_START ||
-                tt==CeylonLexer.CHAR_LITERAL ||
-                tt==CeylonLexer.FLOAT_LITERAL ||
-                tt==CeylonLexer.NATURAL_LITERAL) {
+            if (tt==STRING_LITERAL ||
+                tt==STRING_END ||
+                tt==STRING_MID ||
+                tt==STRING_START ||
+                tt==CHAR_LITERAL ||
+                tt==FLOAT_LITERAL ||
+                tt==NATURAL_LITERAL) {
                 return null;
             }
         }
