@@ -25,7 +25,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
+import com.googlecode.sardine.ant.Command;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.sun.tools.doclets.formats.html.markup.Comment;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
@@ -148,6 +150,20 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				                    doc.get(cmd.offset-1,1).equals("`") &&
 				                    !doc.get(cmd.offset-2,1).equals("`")) {
 				                cmd.text += "``";
+				            }
+				        } 
+				        catch (BadLocationException e) {}
+				    }
+				    else if (opening.equals("\"")) {
+				        try {
+				            if (cmd.offset<=1 ||
+				                    !doc.get(cmd.offset-2,1).equals("\"")) {
+                                cmd.text += closing;
+                            }
+				            else if (cmd.offset>1 &&
+				                    doc.get(cmd.offset-2,2).equals("\"\"") &&
+				                    !(cmd.offset>2 && doc.get(cmd.offset-3,1).equals("\""))) {
+				                cmd.text += "\"\"\"";
 				            }
 				        } 
 				        catch (BadLocationException e) {}
