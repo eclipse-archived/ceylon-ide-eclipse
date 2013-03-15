@@ -14,13 +14,28 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getPr
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddDocAnnotationProposal.addDocAnnotationProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParenthesesProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertIfElseToThenElse.addConvertToThenElseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertThenElseToIfElse.addConvertToIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToBlockProposal.addConvertToBlockProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.addConvertToGetterProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalMembersProposal.addImplementFormalMembersProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElse.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -158,7 +173,7 @@ public class CeylonQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
-            AssignToLocalProposal.addAssignToLocalProposal(context.getSourceViewer().getDocument(),
+            addAssignToLocalProposal(context.getSourceViewer().getDocument(),
                     file, cu, proposals, node);
             
             Tree.Declaration decNode = findDeclaration(cu, node);
@@ -185,116 +200,106 @@ public class CeylonQuickFixAssistant {
                     !(decNode instanceof Tree.Parameter)) {
                 Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
                 if (type instanceof Tree.LocalModifier) {
-                    SpecifyTypeProposal.addSpecifyTypeProposal(cu, type, proposals, file);
+                    addSpecifyTypeProposal(cu, type, proposals, file);
                 }
             }
-            if (node instanceof Tree.LocalModifier) {
-                SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
+            else if (node instanceof Tree.LocalModifier) {
+                addSpecifyTypeProposal(cu, node, proposals, file);
             }
             if (decNode instanceof Tree.AttributeDeclaration) {
                 AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
                 Tree.SpecifierOrInitializerExpression se = attDecNode.getSpecifierOrInitializerExpression(); 
                 if (se instanceof Tree.LazySpecifierExpression) {
-                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                    addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, decNode);
                 }
                 else {
-                    ConvertToGetterProposal.addConvertToGetterProposal(doc, proposals, 
-                            file, attDecNode);
+                    addConvertToGetterProposal(doc, proposals, file, attDecNode);
                 }
             }
             if (decNode instanceof Tree.MethodDeclaration) {
                 Tree.SpecifierOrInitializerExpression se = ((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
                 if (se instanceof Tree.LazySpecifierExpression) {
-                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                    addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, decNode);
                 }
             }
             if (decNode instanceof Tree.AttributeSetterDefinition) {
                 Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
                 if (se instanceof Tree.LazySpecifierExpression) {
-                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                    addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, decNode);
                 }
                 Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
                 if (b!=null) {
-                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b);
+                    addConvertToSpecifierProposal(doc, proposals, file, b);
                 }
             }
             if (decNode instanceof Tree.AttributeGetterDefinition) {
                 Tree.Block b = ((Tree.AttributeGetterDefinition) decNode).getBlock(); 
                 if (b!=null) {
-                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b);
+                    addConvertToSpecifierProposal(doc, proposals, file, b);
                 }
             }
             if (decNode instanceof Tree.MethodDefinition) {
                 Tree.Block b = ((Tree.MethodDefinition) decNode).getBlock(); 
                 if (b!=null) {
-                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b);
+                    addConvertToSpecifierProposal(doc, proposals, file, b);
                 }
             }
             if (decNode instanceof Tree.AttributeDeclaration) {
                 Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
                 Tree.SpecifierOrInitializerExpression sie = attDecNode.getSpecifierOrInitializerExpression();
                 if (sie!=null) {
-                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, 
-                    		proposals, file, attDecNode);
+                    addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
                 }
-                AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
-                		attDecNode, sie, editor);
+                addParameterProposal(doc, cu, proposals, file, attDecNode, sie, editor);
             }
             if (decNode instanceof Tree.MethodDeclaration) {
                 Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
                 Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
                 if (sie!=null) {
-                    SplitDeclarationProposal.addSplitDeclarationProposal(doc, cu, 
-                            proposals, file, methDecNode);
+                    addSplitDeclarationProposal(doc, cu, proposals, file, methDecNode);
                 }
-                AddParameterProposal.addParameterProposal(doc, cu, proposals, file, 
-                        methDecNode, sie, editor);
+                addParameterProposal(doc, cu, proposals, file, methDecNode, sie, editor);
             }
             
             if (node instanceof Tree.MethodArgument) {
                 Tree.SpecifierOrInitializerExpression se = ((Tree.MethodArgument) node).getSpecifierExpression(); 
                 if (se instanceof Tree.LazySpecifierExpression) {
-                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                    addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, node);
                 }
                 Tree.Block b = ((Tree.MethodArgument) node).getBlock(); 
                 if (b!=null) {
-                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b);
+                    addConvertToSpecifierProposal(doc, proposals, file, b);
                 }
             }
             if (node instanceof Tree.AttributeArgument) {
                 Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeArgument) node).getSpecifierExpression(); 
                 if (se instanceof Tree.LazySpecifierExpression) {
-                    ConvertToBlockProposal.addConvertToBlockProposal(doc, proposals, file, 
+                    addConvertToBlockProposal(doc, proposals, file, 
                             (Tree.LazySpecifierExpression) se, node);
                 }
                 Tree.Block b = ((Tree.AttributeArgument) node).getBlock(); 
                 if (b!=null) {
-                    ConvertToSpecifierProposal.addConvertToSpecifierProposal(doc, proposals, 
-                            file, b);
+                    addConvertToSpecifierProposal(doc, proposals, file, b);
                 }
             }
             
-            CreateObjectProposal.addCreateObjectProposal(doc, cu, proposals, file, node);
-            CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
+            addCreateObjectProposal(doc, cu, proposals, file, node);
+            addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
             
             Tree.Statement statement = findStatement(cu, node);
-            ConvertThenElseToIfElse.addConvertToIfElseProposal(doc, proposals, file, statement);
-            ConvertIfElseToThenElse.addConvertToThenElseProposal(cu, doc, proposals, file, statement);
-            InvertIfElse.addReverseIfElseProposal(doc, proposals, file, statement);
+            addConvertToIfElseProposal(doc, proposals, file, statement);
+            addConvertToThenElseProposal(cu, doc, proposals, file, statement);
+            addReverseIfElseProposal(doc, proposals, file, statement);
             
-            ConvertGetterToMethodProposal.addConvertGetterToMethodProposal(proposals, editor, file, node);
-            ConvertMethodToGetterProposal.addConvertMethodToGetterProposal(proposals, editor, file, node);
+            addConvertGetterToMethodProposal(proposals, editor, file, node);
+            addConvertMethodToGetterProposal(proposals, editor, file, node);
             
-            AddDocAnnotationProposal.addDocAnnotationProposal(proposals, node, cu, file, doc);
-            AddThrowsAnnotationProposal.addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
+            addDocAnnotationProposal(proposals, node, cu, file, doc);
+            addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
         }
 
         CreateSubtypeProposal.add(proposals, editor);
