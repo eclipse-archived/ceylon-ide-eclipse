@@ -20,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class SpecifyTypeProposal extends ChangeCorrectionProposal {
+public class SpecifyTypeProposal extends ChangeCorrectionProposal {
 
     final int offset;
     final int length;
@@ -41,7 +41,12 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
     
     static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IFile file) {
-        final Tree.Type type = (Tree.Type) node;
+        proposals.add(create(cu, node, file));
+    }
+
+	public static SpecifyTypeProposal create(Tree.CompilationUnit cu,
+			Node node, IFile file) {
+		final Tree.Type type = (Tree.Type) node;
         TextFileChange change =  new TextFileChange("Specify Type", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = node.getStartIndex();
@@ -60,8 +65,9 @@ class SpecifyTypeProposal extends ChangeCorrectionProposal {
         }
         change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new SpecifyTypeProposal(offset+il, file, explicitType, change));
-    }
+        SpecifyTypeProposal stp = new SpecifyTypeProposal(offset+il, file, explicitType, change);
+		return stp;
+	}
 
     static ProducedType inferType(Tree.CompilationUnit cu,
             final Tree.Type type) {

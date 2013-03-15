@@ -111,8 +111,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
@@ -463,6 +466,13 @@ public class DocHover
 					close(control);
 					new FindAssignmentsAction(editor, (Declaration) target).run();
 				}
+				else if (location.startsWith("stp:")) {
+					close(control);
+					CompilationUnit rn = editor.getParseController().getRootNode();
+					Node node = findNode(rn, Integer.parseInt(location.substring(4)));
+					SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
+					        .apply(editor.getParseController().getDocument());
+				}
 				/*else if (location.startsWith("javadoc:")) {
 					final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
 					int beginIndex = input.getHtml().indexOf("javadoc:")+8;
@@ -573,11 +583,31 @@ public class DocHover
 					return getHoverInfo(r, null, node);
 				}
 			}
+			else if (node instanceof Tree.LocalModifier) {
+				return getInferredTypeHoverInfo(node);
+			}
 			else {
 				return getHoverInfo(getReferencedDeclaration(node), null, node);
 			}
 		}
 		return null;
+	}
+
+	private DocBrowserInformationControlInput getInferredTypeHoverInfo(Node node) {
+		ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
+		if (t==null) return null;
+		StringBuffer buffer= new StringBuffer();
+		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
+				16, 16, HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()), 
+				20, 4);
+		buffer.append("</b><hr/>");
+		addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
+				16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
+				20, 4);
+		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
+		HTMLPrinter.addPageEpilog(buffer);
+		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 0);
 	}
 	
 	private static String getIcon(Object obj) {
