@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.FLOAT_LITERAL;
@@ -17,6 +19,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
@@ -180,6 +183,9 @@ public class CeylonContentProposer {
                 tt==STRING_END ||
                 tt==STRING_MID ||
                 tt==STRING_START ||
+                tt==VERBATIM_STRING ||
+                tt==AVERBATIM_STRING ||
+                tt==ASTRING_LITERAL ||
                 tt==CHAR_LITERAL ||
                 tt==FLOAT_LITERAL ||
                 tt==NATURAL_LITERAL) {
