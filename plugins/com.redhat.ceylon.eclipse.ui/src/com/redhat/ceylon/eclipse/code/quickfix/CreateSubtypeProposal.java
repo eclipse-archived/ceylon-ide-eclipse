@@ -186,7 +186,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
         	appendInterface(type, td, def, true);
         }
         def.append(" {\n");
-        for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations("", 0).values()) {
+        for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations(null, "", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
         		if (d instanceof ClassOrInterface) {

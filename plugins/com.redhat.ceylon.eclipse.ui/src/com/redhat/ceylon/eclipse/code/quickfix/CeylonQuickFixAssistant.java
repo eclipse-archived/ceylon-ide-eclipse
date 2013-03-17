@@ -814,7 +814,7 @@ public class CeylonQuickFixAssistant {
                     def = "class " + brokenName + typeParamDef + params + supertype + typeParamConstDef + " {\n";
                     if (!isVoid) {
                         for (DeclarationWithProximity dwp: et.getDeclaration()
-                        		.getMatchingMemberDeclarations("", 0).values()) {
+                        		.getMatchingMemberDeclarations(null, "", 0).values()) {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                                 ProducedReference pr = getRefinedProducedReference(et, d);
