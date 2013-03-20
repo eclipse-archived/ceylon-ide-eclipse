@@ -343,7 +343,7 @@ public class CeylonQuickFixAssistant {
         	}
         	break;
         case 200:
-        	SpecifyTypeProposal.addSpecifyTypeProposal(cu, node, proposals, file);
+        	addSpecifyTypeProposal(cu, node, proposals, file);
         	break;
         case 300:
         	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
