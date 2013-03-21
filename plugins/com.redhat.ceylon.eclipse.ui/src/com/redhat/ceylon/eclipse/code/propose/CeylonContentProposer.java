@@ -1248,7 +1248,15 @@ public class CeylonContentProposer {
                                 isLowerCase(yName.charAt(0))) {
                             return 1;
                         }
-                        return xName.compareTo(yName);
+                    	int nc = xName.compareTo(yName);
+                        if (nc==0) {
+                        	String xqn = x.getDeclaration().getQualifiedNameString();
+                        	String yqn = y.getDeclaration().getQualifiedNameString();
+							return xqn.compareTo(yqn);
+                        }
+                        else {
+							return nc;
+                        }
                     }
                 });
         set.addAll(proposals.values());
