@@ -599,9 +599,9 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-				16, 16, HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()), 
+				16, 16, "<b>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</b>", 
 				20, 4);
-		buffer.append("</b><hr/>");
+		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
 				16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
 				20, 4);
