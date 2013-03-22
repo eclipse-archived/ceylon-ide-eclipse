@@ -58,7 +58,9 @@ import org.eclipse.jface.internal.text.html.BrowserInput;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInputChangedListener;
@@ -66,7 +68,11 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
@@ -133,9 +139,16 @@ public class DocHover
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
+	private ITextSelection selection;
 	
 	public DocHover(CeylonEditor editor) {
 		this.editor = editor;
+		editor.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				selection = (ITextSelection) event.getSelection();
+			}
+		});
 	}
 
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
@@ -576,7 +589,19 @@ public class DocHover
 	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Tree.CompilationUnit rn = editor.getParseController().getRootNode();
 		if (rn!=null) {
-			Node node = findNode(rn, hoverRegion.getOffset());
+			int hoffset = hoverRegion.getOffset();
+			if (selection.getOffset()<=hoffset &&
+				selection.getOffset()+selection.getLength()>=hoffset) {
+				Node node = findNode(rn, selection.getOffset(),
+						selection.getOffset()+selection.getLength()-1);
+				if (node instanceof Tree.Expression) {
+					node = ((Tree.Expression) node).getTerm();
+				}
+				if (node instanceof Tree.Term) {
+					return getTermTypeHoverInfo(node, textViewer.getDocument());
+				}
+			}
+			Node node = findNode(rn, hoffset);
 			if (node instanceof Tree.ImportPath) {
 				Referenceable r = ((Tree.ImportPath) node).getModel();
 				if (r!=null) {
@@ -606,6 +631,27 @@ public class DocHover
 				16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
 				20, 4);
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
+		HTMLPrinter.addPageEpilog(buffer);
+		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 0);
+	}
+	
+	private DocBrowserInformationControlInput getTermTypeHoverInfo(Node node, IDocument doc) {
+		ProducedType t = ((Tree.Term) node).getTypeModel();
+		if (t==null) return null;
+		String expr = "";
+		try {
+			expr = doc.get(node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1);
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		StringBuffer buffer= new StringBuffer();
+		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
+				16, 16, "<b>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
+				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</b>", 
+				20, 4);
+		buffer.append( "<hr/>");
 		HTMLPrinter.addPageEpilog(buffer);
 		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 0);
 	}
