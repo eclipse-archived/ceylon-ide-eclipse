@@ -431,13 +431,14 @@ public class BrowserInformationControl extends AbstractInformationControl
 	public Point computeSizeHint() {
 		Point sizeConstraints= getSizeConstraints();
 		Rectangle trim= computeTrim();
-		int height= trim.height;
+		int trimHeight= trim.height;
+		int trimWidth = trim.width;
 
 		//FIXME: The HTML2TextReader does not render <p> like a browser.
 		// Instead of inserting an empty line, it just adds a single line break.
 		// Furthermore, the indentation of <dl><dd> elements is too small (e.g with a long @see line)
 		TextPresentation presentation= new TextPresentation();
-		HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml()), presentation);
+		HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml().replace("div", "p").replace("<hr/>", "<br/>")), presentation);
 		String text;
 		try {
 			text= reader.getString();
@@ -446,46 +447,47 @@ public class BrowserInformationControl extends AbstractInformationControl
 		}
 
 		fTextLayout.setText(text);
-		fTextLayout.setWidth(sizeConstraints == null ? SWT.DEFAULT : sizeConstraints.x - trim.width);
+		fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
 		Iterator iter= presentation.getAllStyleRangeIterator();
 		while (iter.hasNext()) {
 			StyleRange sr= (StyleRange)iter.next();
 			if (sr.fontStyle == SWT.BOLD)
-				fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length - 1);
+				fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length);
 		}
 
 		Rectangle bounds= fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
 		int lineCount= fTextLayout.getLineCount();
 		int textWidth= 0;
-		for (int i= 0; i < lineCount; i++) {
+		int[] offsets = fTextLayout.getLineOffsets();
+		for (int i=0; i<lineCount; i++) {
 			Rectangle rect= fTextLayout.getLineBounds(i);
 			int lineWidth= rect.x + rect.width;
-			if (i == 0)
+			if (i==0) {
+				lineWidth*=1.25; //to accommodate it is not only bold but also monospace
 				lineWidth+= fInput.getLeadingImageWidth();
+			}
 			textWidth= Math.max(textWidth, lineWidth);
 		}
 		bounds.width= textWidth;
-		fTextLayout.setText(""); //$NON-NLS-1$
 
-		int minWidth= bounds.width;
-		height= height + bounds.height;
+		int minWidth= textWidth;
+		int minHeight= trimHeight + bounds.height;
 
 		// Add some air to accommodate for different browser renderings
 		minWidth+= 15;
-		height+= 15;
-
+		//minHeight+= 15;
 
 		// Apply max size constraints
-		if (sizeConstraints != null) {
-			if (sizeConstraints.x != SWT.DEFAULT)
-				minWidth= Math.min(sizeConstraints.x, minWidth + trim.width);
-			if (sizeConstraints.y != SWT.DEFAULT)
-				height= Math.min(sizeConstraints.y, height);
+		if (sizeConstraints!=null) {
+			if (sizeConstraints.x!=SWT.DEFAULT)
+				minWidth= Math.min(sizeConstraints.x, minWidth + trimWidth);
+			if (sizeConstraints.y!=SWT.DEFAULT)
+				minHeight= Math.min(sizeConstraints.y, minHeight);
 		}
 
 		// Ensure minimal size
 		int width= Math.max(MIN_WIDTH, minWidth);
-		height= Math.max(MIN_HEIGHT, height);
+		int height= Math.max(MIN_HEIGHT, minHeight);
 
 		return new Point(width, height);
 	}
