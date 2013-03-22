@@ -12,7 +12,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
 
-class ExtractValueProposal implements ICompletionProposal {
+public class ExtractValueProposal implements ICompletionProposal {
 
     private ExtractValueRefactoringAction action;
     

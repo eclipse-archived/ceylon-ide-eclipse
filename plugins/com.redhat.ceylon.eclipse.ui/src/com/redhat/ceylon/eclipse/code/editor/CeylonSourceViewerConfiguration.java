@@ -186,13 +186,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
                 try{
                     return new BrowserInformationControl(parent, 
                             APPEARANCE_JAVADOC_FONT, (String)null, null
-                            /*CeylonTokenColorer.getCurrentThemeColor("docHover")*/) {
+                            /*CeylonTokenColorer.getCurrentThemeColor("docHover")*/); /*{
                         @Override
                         public Point computeSizeHint() {
                             Point sh = super.computeSizeHint();
                             return new Point(sh.x+20, sh.y*3/2);
                         }
-                    };
+                    };*/
                 }catch(org.eclipse.swt.SWTError x){
                     return new DefaultInformationControl(parent, "Press 'F2' for focus", 
                             new HTMLTextPresenter(true));

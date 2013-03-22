@@ -70,7 +70,6 @@ import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -78,7 +77,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.osgi.framework.Bundle;
@@ -121,6 +119,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.quickfix.ExtractFunctionProposal;
+import com.redhat.ceylon.eclipse.code.quickfix.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
@@ -381,11 +381,6 @@ public class DocHover
 					public IInformationControlCreator getInformationPresenterControlCreator() {
 						return fInformationPresenterControlCreator;
 					}
-					@Override
-					public Point computeSizeHint() {
-						Point sh = super.computeSizeHint();
-						return new Point(sh.x, sh.y*4);
-					}
 				};
 				addLinkListener(control);
 				return control;
@@ -485,6 +480,14 @@ public class DocHover
 					Node node = findNode(rn, Integer.parseInt(location.substring(4)));
 					SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
 					        .apply(editor.getParseController().getDocument());
+				}
+				else if (location.startsWith("exv:")) {
+					close(control);
+					new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
+				}
+				else if (location.startsWith("exf:")) {
+					close(control);
+					new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
 				}
 				/*else if (location.startsWith("javadoc:")) {
 					final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
@@ -590,7 +593,8 @@ public class DocHover
 		Tree.CompilationUnit rn = editor.getParseController().getRootNode();
 		if (rn!=null) {
 			int hoffset = hoverRegion.getOffset();
-			if (selection.getOffset()<=hoffset &&
+			if (selection!=null && 
+				selection.getOffset()<=hoffset &&
 				selection.getOffset()+selection.getLength()>=hoffset) {
 				Node node = findNode(rn, selection.getOffset(),
 						selection.getOffset()+selection.getLength()-1);
@@ -624,7 +628,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-				16, 16, "<b>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</b>", 
+				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</tt></b>", 
 				20, 4);
 		buffer.append("<hr/>");
 		addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
@@ -632,7 +636,7 @@ public class DocHover
 				20, 4);
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
 		HTMLPrinter.addPageEpilog(buffer);
-		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 0);
+		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
 	
 	private DocBrowserInformationControlInput getTermTypeHoverInfo(Node node, IDocument doc) {
@@ -648,12 +652,18 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-				16, 16, "<b>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
-				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</b>", 
+				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
+				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</tt></b>", 
 				20, 4);
 		buffer.append( "<hr/>");
+		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+				16, 16, "<a href=\"exv:\">Extract value</a>", 
+				20, 4);
+		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+				16, 16, "<a href=\"exf:\">Extract function</a>", 
+				20, 4);
 		HTMLPrinter.addPageEpilog(buffer);
-		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 0);
+		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
 	
 	private static String getIcon(Object obj) {
