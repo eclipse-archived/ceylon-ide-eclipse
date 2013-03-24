@@ -16,6 +16,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -135,17 +136,15 @@ public abstract class AbstractAnnotationHover
 		private Composite fParent;
 
 		public AnnotationInformationControl(Shell parentShell, 
-				String statusFieldText, Color color) {
-			super(parentShell, statusFieldText, color);
-
+				String statusFieldText) {
+			super(parentShell, statusFieldText);
 			fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
 			create();
 		}
 
 		public AnnotationInformationControl(Shell parentShell, 
-				ToolBarManager toolBarManager, Color color) {
-			super(parentShell, toolBarManager, color);
-
+				ToolBarManager toolBarManager) {
+			super(parentShell, toolBarManager);
 			fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
 			create();
 		}
@@ -494,8 +493,7 @@ public abstract class AbstractAnnotationHover
 	 */
 	private static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT), null
-					/*CeylonTokenColorer.getCurrentThemeColor("messageHover")*/);
+			return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT));
 		}
 	}
 
@@ -513,8 +511,7 @@ public abstract class AbstractAnnotationHover
 		}
 
 		public IInformationControl doCreateInformationControl(Shell parent) {
-			return new AnnotationInformationControl(parent, "F2 for focus", null
-					/*CeylonTokenColorer.getCurrentThemeColor("messageHover")*/) {
+			return new AnnotationInformationControl(parent, "F2 for focus") {
 				public IInformationControlCreator getInformationPresenterControlCreator() {
 					return fPresenterControlCreator;
 				}
