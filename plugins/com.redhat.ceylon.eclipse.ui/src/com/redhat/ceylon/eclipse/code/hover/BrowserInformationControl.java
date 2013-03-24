@@ -472,7 +472,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 
 		// Add some air to accommodate for different browser renderings
 		minWidth+= 15;
-		//minHeight+= 15;
+		minHeight+= 10;
 
 		// Apply max size constraints
 		if (sizeConstraints!=null) {
