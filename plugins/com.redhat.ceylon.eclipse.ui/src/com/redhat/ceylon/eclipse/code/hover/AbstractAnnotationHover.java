@@ -71,8 +71,6 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-
 
 /**
  * Abstract super class for annotation hovers.
@@ -618,7 +616,7 @@ public abstract class AbstractAnnotationHover
 			Iterator parent;
 			if (model instanceof IAnnotationModelExtension2)
 				parent= ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), 
-						hoverRegion.getLength(), true, true);
+						hoverRegion.getLength()+1, true, true);
 			else
 				parent= model.getAnnotationIterator();
 			Iterator e= new AnnotationIterator(parent, fAllAnnotations);
