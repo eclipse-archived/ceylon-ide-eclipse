@@ -631,6 +631,7 @@ public class DocHover
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</tt></b>", 
 				20, 4);
 		buffer.append("<hr/>");
+		buffer.append("One quick assist available:<br/>");
 		addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
 				16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
 				20, 4);
@@ -656,6 +657,7 @@ public class DocHover
 				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</tt></b>", 
 				20, 4);
 		buffer.append( "<hr/>");
+		buffer.append("Two quick assists available:<br/>");
 		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
 				16, 16, "<a href=\"exv:\">Extract value</a>", 
 				20, 4);
