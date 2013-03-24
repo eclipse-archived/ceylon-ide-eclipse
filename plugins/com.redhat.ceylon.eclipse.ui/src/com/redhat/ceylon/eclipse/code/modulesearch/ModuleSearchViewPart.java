@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -214,7 +215,7 @@ public class ModuleSearchViewPart extends ViewPart {
             super("Add Module Import...");
             setToolTipText("Add Module Import...");
             setEnabled(false);
-            
+            setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CEYLON_ADD));
             moduleTreeViewer.addSelectionChangedListener(this);
         }
 
@@ -274,7 +275,8 @@ public class ModuleSearchViewPart extends ViewPart {
                     }
                     
                     if( containsImport ) {
-                        MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + target.getNameAsString() + "' contains it already.");
+                        MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + 
+                        		target.getNameAsString() + "' contains it already.");
                     } else {
                         AddModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
                     }
