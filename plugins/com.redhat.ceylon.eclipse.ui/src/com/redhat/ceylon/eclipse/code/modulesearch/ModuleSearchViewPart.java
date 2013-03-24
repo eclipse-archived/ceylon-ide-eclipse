@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +22,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -41,9 +45,6 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -63,14 +64,19 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
 import com.redhat.ceylon.eclipse.code.hover.DocHover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -203,16 +209,12 @@ public class ModuleSearchViewPart extends ViewPart {
 
     }
     
-    private class CopyImportModuleAction extends Action implements ISelectionChangedListener {
+    private class AddModuleImportAction extends Action implements ISelectionChangedListener {
 
-        public CopyImportModuleAction() {
-            super("Copy Import Module");
-            setToolTipText("Copy Import Module");
+        public AddModuleImportAction() {
+            super("Add Module Import...");
+            setToolTipText("Add Module Import...");
             setEnabled(false);
-            
-            ISharedImages workbenchImages = PlatformUI.getWorkbench().getSharedImages();
-            setImageDescriptor(workbenchImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
-            setHoverImageDescriptor(workbenchImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
             
             moduleTreeViewer.addSelectionChangedListener(this);
         }
@@ -229,16 +231,62 @@ public class ModuleSearchViewPart extends ViewPart {
             }
 
             if (versionNode != null) {
-                String importStatement = "import " + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "';";
-                Clipboard clipboard = new Clipboard(parent.getDisplay());
-                clipboard.setContents(new String[] { importStatement }, new Transfer[] { TextTransfer.getInstance() });
-                clipboard.dispose();
+                addModuleImport(versionNode.getModule().getName(), versionNode.getVersion());
+            }
+        }
+        
+        private void addModuleImport(String moduleName, String moduleVersion) {
+            Map<Module, IProject> moduleMap = new HashMap<Module, IProject>();
+            for (IProject project : getProjects()) {
+                for (Module module : getModulesInProject(project)) {
+                    moduleMap.put(module, project);
+                }
+            }
+            
+            List<Module> targets = new ArrayList<Module>();
+            if (moduleMap.isEmpty()) {
+                MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because there are no ceylon modules in workspace.");
+            } else if (moduleMap.size() == 1) {
+                targets.addAll(moduleMap.keySet());
+            } else {
+                ElementListSelectionDialog dlg = new ElementListSelectionDialog(parent.getShell(), new CeylonLabelProvider());
+                dlg.setTitle("Select Module");
+                dlg.setMessage("Select module, where to add module import.");
+                dlg.setMultipleSelection(true);
+                dlg.setHelpAvailable(false);
+                dlg.setElements(moduleMap.keySet().toArray(new Module[] {}));
+                if (dlg.open() == Dialog.OK) {
+                    Object[] results = dlg.getResult();
+                    for (Object result : results) {
+                        targets.add((Module) result);
+                    }
+                }
+            }
+
+            if (!targets.isEmpty()) {
+                for (Module target : targets) {
+                    boolean containsImport = false;
+                    
+                    for (ModuleImport moduleImport : target.getImports()) {
+                        if (moduleName.equals(moduleImport.getModule().getNameAsString())) {
+                            containsImport = true;
+                            break;
+                        }
+                    }
+                    
+                    if( containsImport ) {
+                        MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + target.getNameAsString() + "' contains it already.");
+                    } else {
+                        AddModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
+                    }
+                }
             }
         }
 
         @Override
         public void selectionChanged(SelectionChangedEvent e) {
-            setEnabled(!e.getSelection().isEmpty());
+            int selectionSize = ((IStructuredSelection) e.getSelection()).size();
+            setEnabled(selectionSize == 1);
         }
         
     }
@@ -366,7 +414,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private ExpandAllAction expandAllAction;
     private CollapseAllAction collapseAllAction;
     private FetchNextAction fetchNextAction;
-    private CopyImportModuleAction copyImportModuleAction;
+    private AddModuleImportAction addModuleImportAction;
     private ShowDocAction showDocAction;
     private ShowRepositoriesAction showRepositoriesAction;
     
@@ -553,7 +601,7 @@ public class ModuleSearchViewPart extends ViewPart {
         expandAllAction = new ExpandAllAction();
         collapseAllAction = new CollapseAllAction(moduleTreeViewer);
         fetchNextAction = new FetchNextAction();
-        copyImportModuleAction = new CopyImportModuleAction();
+        addModuleImportAction = new AddModuleImportAction();
         showDocAction = new ShowDocAction();
         showRepositoriesAction = new ShowRepositoriesAction();
 
@@ -570,7 +618,7 @@ public class ModuleSearchViewPart extends ViewPart {
         toolBarManager.add(showRepositoriesAction);
 
         MenuManager menuManager = new MenuManager();
-        menuManager.add(copyImportModuleAction);
+        menuManager.add(addModuleImportAction);
         menuManager.add(new Separator());
         menuManager.add(removeSelectedAction);
         menuManager.add(removeAllAction);
@@ -773,6 +821,6 @@ public class ModuleSearchViewPart extends ViewPart {
                 build();
         
         return Processor.process(text, config);
-    }    
+    }
     
 }

@@ -1,15 +1,15 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.Dialog;
@@ -263,23 +263,14 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 	private void updateModuleList() {
 		if (project!=null) {
 			modules.removeAll();
-			for (Module m: getProjectModules(project.getProject()).getListOfModules()) {
-				if (!m.isDefault() && !m.isJava()) {
-					try {
-						for (IPackageFragment pkg: project.getPackageFragments()) {
-							if (!pkg.isReadOnly() &&
-									pkg.getElementName().equals(m.getNameAsString())) {
-								TableItem item = new TableItem(modules, SWT.NONE);
-								item.setText(m.getNameAsString() + "/" + m.getVersion());
-								item.setImage(CeylonLabelProvider.ARCHIVE);
-							}
-						}
-					} 
-					catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			
+            List<Module> moduleList = getModulesInProject(project.getProject());
+            for (Module module : moduleList) {
+                TableItem item = new TableItem(modules, SWT.NONE);
+                item.setText(module.getNameAsString() + "/" + module.getVersion());
+                item.setImage(CeylonLabelProvider.ARCHIVE);
+            }
+			
 			modules.selectAll();
 		}
 	}

@@ -67,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
@@ -291,7 +292,7 @@ public class TestsPanel extends Composite {
 
         IProject project = CeylonTestUtil.getProject(projectName);
         if (project != null) {
-            List<Module> modules = CeylonTestUtil.getModules(project);
+            List<Module> modules = CeylonBuilder.getModulesInProject(project);
             for (Module module : modules) {
                 Package pkg = module.getDirectPackage(testElement.getPackageName());
                 if (pkg != null) {
