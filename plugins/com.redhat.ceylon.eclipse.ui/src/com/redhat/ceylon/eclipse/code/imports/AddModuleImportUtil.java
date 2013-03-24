@@ -19,12 +19,11 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 public class AddModuleImportUtil {
 
     public static void addModuleImport(IProject project, Module target, String moduleName, String moduleVersion) {
-        PhasedUnit unit = determineUnit(project, target);
-        String changeText = determineChangeText(moduleName, moduleVersion);
-        int changeOffset = determineChangeOffset(unit);
+        PhasedUnit unit = findPhasedUnit(project, target);
+        InsertEdit edit = createEdit(unit, moduleName, moduleVersion);
 
         TextFileChange textFileChange = new TextFileChange("Add module import", CeylonBuilder.getFile(unit));
-        textFileChange.setEdit(new InsertEdit(changeOffset, changeText));
+        textFileChange.setEdit(edit);
         try {
             textFileChange.perform(new NullProgressMonitor());
         } catch (CoreException e) {
@@ -32,7 +31,7 @@ public class AddModuleImportUtil {
         }
     }
 
-    private static PhasedUnit determineUnit(IProject project, Module module) {
+    private static PhasedUnit findPhasedUnit(IProject project, Module module) {
         String moduleFullPath = module.getUnit().getFullPath();
         List<PhasedUnit> phasedUnits = CeylonBuilder.getUnits(project);
         for (PhasedUnit phasedUnit : phasedUnits) {
@@ -43,18 +42,18 @@ public class AddModuleImportUtil {
         return null;
     }
 
-    private static int determineChangeOffset(PhasedUnit unit) {
+    private static InsertEdit createEdit(PhasedUnit unit, String moduleName, String moduleVersion) {
         CompilationUnit cu = unit.getCompilationUnit();
         ModuleDescriptor md = cu.getModuleDescriptor();
         ImportModuleList iml = md.getImportModuleList();
+        
+        int offset;
         if (iml.getImportModules().isEmpty()) {
-            return iml.getStartIndex() + 1;
+            offset = iml.getStartIndex() + 1;
         } else {
-            return iml.getImportModules().get(iml.getImportModules().size() - 1).getStopIndex() + 1;
+            offset = iml.getImportModules().get(iml.getImportModules().size() - 1).getStopIndex() + 1;
         }
-    }
-
-    private static String determineChangeText(String moduleName, String moduleVersion) {
+        
         StringBuilder importModule = new StringBuilder();
         importModule.append(System.getProperty("line.separator"));
         importModule.append(CeylonAutoEditStrategy.getDefaultIndent());
@@ -63,7 +62,11 @@ public class AddModuleImportUtil {
         importModule.append(" '");
         importModule.append(moduleVersion);
         importModule.append("';");
-        return importModule.toString();
+        if( iml.getImportModules().isEmpty() && iml.getMainToken().getLine() == iml.getEndToken().getLine() ) {
+            importModule.append(System.getProperty("line.separator"));
+        }
+        
+        return new InsertEdit(offset, importModule.toString());
     }
 
 }
