@@ -10,13 +10,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.core.internal.events.ILifecycleListener;
-import org.eclipse.core.internal.events.LifecycleEvent;
-import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -430,7 +429,8 @@ public class ModuleSearchViewPart extends ViewPart {
     private RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
     private RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
-    private Map<String, IProject> projectMap = new HashMap<String, IProject>();
+    private Map<String, IProject> projectMap = new ConcurrentHashMap<String, IProject>();
+    private IResourceChangeListener updateProjectComboListener;
     
     @Override
     public void setFocus() {
@@ -484,42 +484,6 @@ public class ModuleSearchViewPart extends ViewPart {
     }
 
     private void initProjectCombo() {
-        Workspace workspace = (Workspace) ResourcesPlugin.getWorkspace();
-        
-        IProject[] projects = workspace.getRoot().getProjects();
-        if (projects != null) {
-            for (IProject project : projects) {
-                if (project.isOpen() && CeylonNature.isEnabled(project)) {
-                    projectMap.put(project.getName(), project);
-                }
-            }
-        }
-        
-        workspace.addLifecycleListener(new ILifecycleListener() {
-            @Override
-            public void handleEvent(LifecycleEvent event) throws CoreException {
-                if (event.resource instanceof IProject) {
-                    IProject project = (IProject) event.resource;
-                    boolean isCeylonNatuteEnabled = project.isOpen() && CeylonNature.isEnabled(project);
-
-                    if (event.kind == LifecycleEvent.PRE_PROJECT_CLOSE) {
-                        projectMap.remove(project.getName());
-                        updateProjectComboAsync();
-                    }
-                    if (event.kind == LifecycleEvent.PRE_PROJECT_OPEN && isCeylonNatuteEnabled) {
-                        projectMap.put(project.getName(), project);
-                        updateProjectComboAsync();
-                    }
-                    if (event.kind == LifecycleEvent.PRE_PROJECT_MOVE && isCeylonNatuteEnabled) {
-                        IProject newProject = (IProject) event.newResource;
-                        projectMap.remove(project.getName());
-                        projectMap.put(newProject.getName(), newProject);
-                        updateProjectComboAsync();
-                    }
-                }
-            }
-        });
-        
         Label projectLabel = new Label(parent, SWT.RIGHT | SWT.WRAP);
         projectLabel.setText("Search in repositories of project");
         GridData gd = GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).create();
@@ -529,6 +493,16 @@ public class ModuleSearchViewPart extends ViewPart {
         projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
         
         updateProjectCombo();
+        
+        updateProjectComboListener = new IResourceChangeListener() {
+            @Override
+            public void resourceChanged(IResourceChangeEvent event) {
+                if (event.getResource() == null || event.getResource() instanceof IProject) {
+                    updateProjectComboAsync();
+                }
+            }
+        };
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(updateProjectComboListener);
     }
     
     private void initSearchInfo() {
@@ -776,12 +750,24 @@ public class ModuleSearchViewPart extends ViewPart {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                updateProjectCombo();
+                if (!projectCombo.isDisposed()) {
+                    updateProjectCombo();
+                }
             }
         });
     }
 
     private void updateProjectCombo() {
+        projectMap.clear();
+        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        if (projects != null) {
+            for (IProject project : projects) {
+                if (project.isOpen() && CeylonNature.isEnabled(project)) {
+                    projectMap.put(project.getName(), project);
+                }
+            }
+        }
+        
         List<String> projectNames = new ArrayList<String>(projectMap.keySet());
         projectNames.add("");
         Collections.sort(projectNames);
@@ -821,6 +807,11 @@ public class ModuleSearchViewPart extends ViewPart {
                 build();
         
         return Processor.process(text, config);
+    }
+
+    @Override
+    public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(updateProjectComboListener);
     }
     
 }
