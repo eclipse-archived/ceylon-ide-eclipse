@@ -1126,7 +1126,7 @@ public class DocHover
 							Tree.Term term = sie.getExpression().getTerm();
 							if (term instanceof Tree.Literal) {
 								result += " = ";
-								result += term.getText();
+								result += term.getToken().getText();
 							}
 						}
 					}
