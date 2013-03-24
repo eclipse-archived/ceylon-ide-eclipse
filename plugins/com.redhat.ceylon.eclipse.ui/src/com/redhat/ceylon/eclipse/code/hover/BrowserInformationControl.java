@@ -471,8 +471,8 @@ public class BrowserInformationControl extends AbstractInformationControl
 		int minHeight= trimHeight + bounds.height;
 
 		// Add some air to accommodate for different browser renderings
-		minWidth+= 15;
-		minHeight+= 10;
+		minWidth+= 30;
+		minHeight+= 15;
 
 		// Apply max size constraints
 		if (sizeConstraints!=null) {

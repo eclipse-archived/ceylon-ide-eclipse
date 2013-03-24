@@ -310,6 +310,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 textWidget.setBackground(null);
         }
         super.configure(configuration);
+        getTextHoveringController().setSizeConstraints(80, 30, false, true);
         if (configuration instanceof CeylonSourceViewerConfiguration) {
             CeylonSourceViewerConfiguration svc= (CeylonSourceViewerConfiguration) configuration;
 
