@@ -30,7 +30,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                 throws InvocationTargetException, InterruptedException {
             FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
                     page.getPackageFragment(), page.getUnitName(), 
-                    page.isIncludePreamble(), "doc \"Run the module `" +
+                    page.isIncludePreamble(), "\"Run the module `" +
                             page.getPackageFragment().getElementName() +
                             "`.\"\nvoid run() {\n    \n}", getShell());
             op.run(monitor);
