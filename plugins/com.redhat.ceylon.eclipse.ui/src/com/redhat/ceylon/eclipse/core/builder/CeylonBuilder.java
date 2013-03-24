@@ -63,6 +63,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -1976,6 +1977,30 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return null;
         }
         return typeChecker.getContext().getModules();
+    }
+    
+    public static List<Module> getModulesInProject(IProject project) {
+        List<Module> moduleList = new ArrayList<Module>();
+
+        Modules modules = getProjectModules(project);
+        if (modules != null) {
+            IJavaProject javaProject = JavaCore.create(project);
+            for (Module module : modules.getListOfModules()) {
+                if (!module.isDefault() && !module.isJava()) {
+                    try {
+                        for (IPackageFragment pkg : javaProject.getPackageFragments()) {
+                            if (!pkg.isReadOnly() && pkg.getElementName().equals(module.getNameAsString())) {
+                                moduleList.add(module);
+                            }
+                        }
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        return moduleList;
     }
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {

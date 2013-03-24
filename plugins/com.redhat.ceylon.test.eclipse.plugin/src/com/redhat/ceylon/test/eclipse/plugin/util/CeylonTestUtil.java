@@ -1,6 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.util;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
@@ -8,7 +8,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
-import static java.util.Collections.emptyList;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -18,10 +17,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -33,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -107,31 +101,8 @@ public class CeylonTestUtil {
         return null;
     }
 
-    public static List<Module> getModules(IProject project) {
-        List<Module> modules = new ArrayList<Module>();
-        IJavaProject javaProject = JavaCore.create(project);
-        Modules projectModules = getProjectModules(project);
-        if (projectModules==null) {
-            return emptyList();
-        }
-        for (Module module : projectModules.getListOfModules()) {
-            if (!module.isDefault() && !module.isJava()) {
-                try {
-                    for (IPackageFragment pkg : javaProject.getPackageFragments()) {
-                        if (!pkg.isReadOnly() && pkg.getElementName().equals(module.getNameAsString())) {
-                            modules.add(module);
-                        }
-                    }
-                } catch (JavaModelException e) {
-                    CeylonTestPlugin.logError("", e);
-                }
-            }
-        }
-        return modules;
-    }
-
     public static Module getModule(IProject project, String moduleName) {
-        List<Module> modules = getModules(project);
+        List<Module> modules = getModulesInProject(project);
         for (Module module : modules) {
             if (module.getNameAsString().equals(moduleName)) {
                 return module;
@@ -141,7 +112,7 @@ public class CeylonTestUtil {
     }
 
     public static Package getPackage(IProject project, String pkgName) {
-        List<Module> modules = getModules(project);
+        List<Module> modules = getModulesInProject(project);
         for (Module module : modules) {
             Package pkg = module.getDirectPackage(pkgName);
             if (pkg != null) {
