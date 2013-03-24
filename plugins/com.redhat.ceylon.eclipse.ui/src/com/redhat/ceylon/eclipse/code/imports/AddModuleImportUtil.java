@@ -33,7 +33,7 @@ public class AddModuleImportUtil {
             throw new RuntimeException(e);
         }
         gotoLocation(CeylonSourcePositionLocator.getNodePath(unit.getCompilationUnit(), project, 
-        		getProjectTypeChecker(project)), edit.getOffset(), edit.getLength());
+                getProjectTypeChecker(project)), edit.getOffset(), edit.getLength());
     }
 
     private static PhasedUnit findPhasedUnit(IProject project, Module module) {
@@ -57,21 +57,21 @@ public class AddModuleImportUtil {
         }
         String newline = System.getProperty("line.separator");
         StringBuilder importModule = new StringBuilder();
-		importModule.append(newline);
+        importModule.append(newline);
         importModule.append(CeylonAutoEditStrategy.getDefaultIndent());
         importModule.append("import ");
         importModule.append(moduleName);
         importModule.append(" '");
         importModule.append(moduleVersion);
         importModule.append("';");
-		if (iml.getEndToken().getLine()==iml.getToken().getLine()) {
-			importModule.append(newline);
-		}
+        if (iml.getEndToken().getLine()==iml.getToken().getLine()) {
+            importModule.append(newline);
+        }
         return new InsertEdit(offset, importModule.toString());
     }
 
-	private static ImportModuleList getImportList(PhasedUnit unit) {
-		return unit.getCompilationUnit().getModuleDescriptor().getImportModuleList();
-	}
+    private static ImportModuleList getImportList(PhasedUnit unit) {
+        return unit.getCompilationUnit().getModuleDescriptor().getImportModuleList();
+    }
 
 }
