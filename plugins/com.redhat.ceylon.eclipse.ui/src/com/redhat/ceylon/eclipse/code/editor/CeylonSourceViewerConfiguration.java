@@ -35,7 +35,6 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
@@ -185,15 +184,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             public IInformationControl createInformationControl(Shell parent) {
                 try{
                     return new BrowserInformationControl(parent, 
-                            APPEARANCE_JAVADOC_FONT, (String)null, null
-                            /*CeylonTokenColorer.getCurrentThemeColor("docHover")*/); /*{
-                        @Override
-                        public Point computeSizeHint() {
-                            Point sh = super.computeSizeHint();
-                            return new Point(sh.x+20, sh.y*3/2);
-                        }
-                    };*/
-                }catch(org.eclipse.swt.SWTError x){
+                            APPEARANCE_JAVADOC_FONT, (String)null);
+                }
+                catch(org.eclipse.swt.SWTError x){
                     return new DefaultInformationControl(parent, "Press 'F2' for focus", 
                             new HTMLTextPresenter(true));
                 }

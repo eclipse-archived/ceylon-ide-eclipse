@@ -21,6 +21,7 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.internal.text.html.HTML2TextReader;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDelayedInputChangeProvider;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInputChangedListener;
@@ -141,8 +142,6 @@ public class BrowserInformationControl extends AbstractInformationControl
 	private TextStyle fBoldStyle;
 
 	private BrowserInformationControlInput fInput;
-	
-	private final Color color;
 
 	/**
 	 * <code>true</code> iff the browser has completed loading of the last
@@ -179,10 +178,9 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 * @since 3.4
 	 */
 	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			boolean resizable, Color color) {
-		super(parent, resizable, color);
+			boolean resizable) {
+		super(parent, resizable);
 		fSymbolicFontName= symbolicFontName;
-		this.color=color;
 		create();
 	}
 
@@ -196,10 +194,9 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 * @since 3.4
 	 */
 	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			String statusFieldText, Color color) {
-		super(parent, statusFieldText, color);
+			String statusFieldText) {
+		super(parent, statusFieldText);
 		fSymbolicFontName= symbolicFontName;
-		this.color=color;
 		create();
 	}
 
@@ -212,10 +209,9 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 * @since 3.4
 	 */
 	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			ToolBarManager toolBarManager, Color color) {
-		super(parent, toolBarManager, color);
+			ToolBarManager toolBarManager) {
+		super(parent, toolBarManager);
 		fSymbolicFontName= symbolicFontName;
-		this.color=color;
 		create();
 	}
 
@@ -228,7 +224,8 @@ public class BrowserInformationControl extends AbstractInformationControl
 
 		Display display= getShell().getDisplay();
 		fBrowser.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-		fBrowser.setBackground(color);
+		fBrowser.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+		//fBrowser.setBackground(color);
 
 		fBrowser.addProgressListener(new ProgressAdapter() {
 			public void completed(ProgressEvent event) {
