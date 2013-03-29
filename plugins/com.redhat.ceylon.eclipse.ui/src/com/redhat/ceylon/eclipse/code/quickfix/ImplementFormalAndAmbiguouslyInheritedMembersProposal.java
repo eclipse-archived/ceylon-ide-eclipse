@@ -26,21 +26,22 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
+class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrectionProposal {
 
     final int offset;
     final IFile file;
+    final Set<String> refinementsNames;
 
-    ImplementFormalMembersProposal(int offset, IFile file, 
-            TextFileChange change) {
-        super("Refine formal members", 
-                change, 10, FORMAL_REFINEMENT);
+    ImplementFormalAndAmbiguouslyInheritedMembersProposal(String name, Set<String> refinementsNames, int offset, IFile file, TextFileChange change) {
+        super(name, change, 10, FORMAL_REFINEMENT);
         this.offset = offset;
         this.file = file;
+        this.refinementsNames = refinementsNames;
     }
     
     @Override
@@ -49,23 +50,39 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset);
     }
     
-    static void addImplementFormalMembersProposal(Tree.CompilationUnit cu, Node node, 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {
+            return refinementsNames.equals(((ImplementFormalAndAmbiguouslyInheritedMembersProposal) obj).refinementsNames);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return refinementsNames.hashCode();
+    }
+    
+    static void addImplementFormalAndAmbiguouslyInheritedMembersProposal(Tree.CompilationUnit cu, Node node, 
             Collection<ICompletionProposal> proposals, IFile file, IDocument doc) {
-        TextFileChange change = new TextFileChange("Refine Formal Members", file);
-        change.setEdit(new MultiTextEdit());
-        Tree.ClassBody body;
+        Tree.ClassBody body = null;
+        TypeDeclaration td = null;
+        
         if (node instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition def = (Tree.ClassDefinition) node;
             body = def.getClassBody();
+            td = def.getDeclarationModel();
         }
         else if (node instanceof Tree.ObjectDefinition) {
             Tree.ObjectDefinition def = (Tree.ObjectDefinition) node;
             body = def.getClassBody();
+            td = def.getAnonymousClass();
         }
-        else {
+
+        if (body == null || td == null) {
             return;
         }
-        if (body==null) return;
+        
         List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
@@ -79,12 +96,15 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
             indent = "\n" + getIndent(statement, doc);
             offset = statement.getStopIndex()+1;
         }
-        StringBuilder result = new StringBuilder();
+        
+        StringBuilder result = new StringBuilder("\n");
         Set<Declaration> already = new HashSet<Declaration>();
+        
+        Set<String> formalDeclNames = new HashSet<String>();
         for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
             Declaration d = dwp.getDeclaration();
-            if (d.isFormal() && 
-                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+            if (d.isFormal() && ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                formalDeclNames.add(d.getName());
             	ProducedReference pr = getRefinedProducedReference(node, d);
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, false, indent))
@@ -92,6 +112,22 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
                 importSignatureTypes(d, cu, already);
             }
         }
+        
+        Set<String> ambiguouslyDeclNames = new HashSet<String>();
+        for (TypeDeclaration superType : td.getSuperTypeDeclarations()) {
+            for (Declaration m : superType.getMembers()) {
+                Declaration r = td.getMember(m.getName(), null, false);
+                if (r == null || !r.refines(m) && !r.getContainer().equals(td) && !ambiguouslyDeclNames.contains(m.getName())) {
+                    ambiguouslyDeclNames.add(m.getName());
+                    ProducedReference pr = getRefinedProducedReference(node, m);
+                    result.append(indent)
+                            .append(getRefinementTextFor(m, pr, false, indent))
+                            .append(indent);
+                    importSignatureTypes(m, cu, already);
+                }
+            }
+        }
+        
         try {
             if (doc.getChar(offset)=='}' && result.length()>0) {
                 result.append("\n").append(bodyIndent);
@@ -100,8 +136,32 @@ class ImplementFormalMembersProposal extends ChangeCorrectionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
+        
+        String name;
+        if (!formalDeclNames.isEmpty() && !ambiguouslyDeclNames.isEmpty()) {
+            name = "Refine Formal And Ambiguously Inherited Members";
+        }
+        else if (formalDeclNames.isEmpty() && !ambiguouslyDeclNames.isEmpty()) {
+            name = "Refine Ambiguously Inherited Members";
+        }
+        else if (!formalDeclNames.isEmpty() && ambiguouslyDeclNames.isEmpty()) {
+            name = "Refine Formal Members";
+        } else {
+            return;
+        }
+        
+        Set<String> refinementsNames = new HashSet<String>();
+        refinementsNames.addAll(formalDeclNames);
+        refinementsNames.addAll(ambiguouslyDeclNames);
+        
+        TextFileChange change = new TextFileChange(name, file);
+        change.setEdit(new MultiTextEdit());
         applyImports(change, already, cu);
         change.addEdit(new InsertEdit(offset, result.toString()));
-        proposals.add(new ImplementFormalMembersProposal(offset, file, change));
+        ImplementFormalAndAmbiguouslyInheritedMembersProposal proposal = new ImplementFormalAndAmbiguouslyInheritedMembersProposal(name, refinementsNames, offset, file, change);
+        if (!proposals.contains(proposal)) {
+            proposals.add(proposal);
+        }
     }
+    
 }

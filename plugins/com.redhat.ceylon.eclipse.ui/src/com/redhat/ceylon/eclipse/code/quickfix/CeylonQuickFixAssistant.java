@@ -31,7 +31,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.ad
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalMembersProposal.addImplementFormalMembersProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElse.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
@@ -346,8 +346,9 @@ public class CeylonQuickFixAssistant {
         	addSpecifyTypeProposal(cu, node, proposals, file);
         	break;
         case 300:
+        case 350:
         	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-        		addImplementFormalMembersProposal(cu, node, proposals, file,
+        		addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, proposals, file,
         				context.getSourceViewer().getDocument());
         	}
         	addMakeAbstractProposal(proposals, project, node);

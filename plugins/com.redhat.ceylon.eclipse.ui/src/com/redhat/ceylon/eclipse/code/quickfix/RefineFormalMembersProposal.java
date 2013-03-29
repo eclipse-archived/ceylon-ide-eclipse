@@ -173,7 +173,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
     	if (canRefine(editor)) {
     	    for (ICompletionProposal cp: proposals) {
-    	        if (cp instanceof ImplementFormalMembersProposal) {
+    	        if (cp instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {
     	            return;
     	        }
     	    }
