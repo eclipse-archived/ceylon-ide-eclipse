@@ -325,6 +325,7 @@ final class TerminateStatementAction extends Action {
 							that instanceof Tree.MethodDeclaration ||
 							that instanceof Tree.ClassDeclaration ||
 							that instanceof Tree.InterfaceDeclaration ||
+							that instanceof Tree.TypeAliasDeclaration ||
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
 					}
