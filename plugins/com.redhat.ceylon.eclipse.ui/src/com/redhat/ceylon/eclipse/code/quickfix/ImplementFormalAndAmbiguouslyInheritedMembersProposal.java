@@ -105,7 +105,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
             Declaration d = dwp.getDeclaration();
             if (d.isFormal() && ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
                 formalDeclNames.add(d.getName());
-            	ProducedReference pr = getRefinedProducedReference(node, d);
+                ProducedReference pr = getRefinedProducedReference(node, d);
                 result.append(indent)
                     .append(getRefinementTextFor(d, pr, false, indent))
                     .append(indent);
@@ -116,14 +116,19 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         Set<String> ambiguouslyDeclNames = new HashSet<String>();
         for (TypeDeclaration superType : td.getSuperTypeDeclarations()) {
             for (Declaration m : superType.getMembers()) {
-                Declaration r = td.getMember(m.getName(), null, false);
-                if (r == null || !r.refines(m) && !r.getContainer().equals(td) && !ambiguouslyDeclNames.contains(m.getName())) {
-                    ambiguouslyDeclNames.add(m.getName());
-                    ProducedReference pr = getRefinedProducedReference(node, m);
-                    result.append(indent)
+                if (m.isShared()) {
+                    Declaration r = td.getMember(m.getName(), null, false);
+                    if (r==null || 
+                            !r.refines(m) && 
+                            !r.getContainer().equals(td) && 
+                            !ambiguouslyDeclNames.contains(m.getName())) {
+                        ambiguouslyDeclNames.add(m.getName());
+                        ProducedReference pr = getRefinedProducedReference(node, m);
+                        result.append(indent)
                             .append(getRefinementTextFor(m, pr, false, indent))
                             .append(indent);
-                    importSignatureTypes(m, cu, already);
+                        importSignatureTypes(m, cu, already);
+                    }
                 }
             }
         }
@@ -139,13 +144,13 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         
         String name;
         if (!formalDeclNames.isEmpty() && !ambiguouslyDeclNames.isEmpty()) {
-            name = "Refine Formal And Ambiguously Inherited Members";
+            name = "Refine formal and ambiguously inherited members";
         }
         else if (formalDeclNames.isEmpty() && !ambiguouslyDeclNames.isEmpty()) {
-            name = "Refine Ambiguously Inherited Members";
+            name = "Refine ambiguously inherited members";
         }
         else if (!formalDeclNames.isEmpty() && ambiguouslyDeclNames.isEmpty()) {
-            name = "Refine Formal Members";
+            name = "Refine formal members";
         } else {
             return;
         }
