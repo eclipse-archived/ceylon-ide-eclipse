@@ -61,6 +61,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -191,6 +192,18 @@ public class CeylonContentProposer {
                 tt==NATURAL_LITERAL) {
                 return null;
             }
+        }
+        int line=-1;
+		try {
+			line = viewer.getDocument().getLineOfOffset(offset);
+		}
+		catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+        if (tt==LINE_COMMENT &&
+        	offset>=adjustedToken.getStartIndex() && 
+        	adjustedToken.getLine()==line+1) {
+        	return null;
         }
 
         //find the node at the token
