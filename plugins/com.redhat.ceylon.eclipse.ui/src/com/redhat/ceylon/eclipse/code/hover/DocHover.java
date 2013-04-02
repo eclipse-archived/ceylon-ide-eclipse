@@ -760,9 +760,10 @@ public class DocHover
 		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 				16, 16, "<b><tt>package " + getLabel(pack) +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
-		addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
-				16, 16, "in module&nbsp;&nbsp;<tt><a " + link(pack.getModule()) + ">" + 
-					getLabel(pack.getModule()) +"</a></tt>", 20, 2);
+		Module mod = pack.getModule();
+		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
+				16, 16, "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
+					getLabel(mod) +"</a></tt>", 20, 2);
 
 		PhasedUnit pu = cpc.getTypeChecker()
 				.getPhasedUnitFromRelativePath(pack.getNameAsString().replace('.', '/') + "/package.ceylon");
@@ -775,10 +776,10 @@ public class DocHover
 			}
 		}
 		
-		if (pack.getModule().isJava()) {
+		if (mod.isJava()) {
 			buffer.append("<p>This package is implemented in Java.</p>");
 		}
-		if (JDKUtils.isJDKModule(pack.getModule().getNameAsString())) {
+		if (JDKUtils.isJDKModule(mod.getNameAsString())) {
 			buffer.append("<p>This package forms part of the Java SDK.</p>");			
 		}
 		
@@ -932,8 +933,9 @@ public class DocHover
 				}
 				addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 						16, 16, label, 20, 2);
-				addImageAndLabel(buffer, null, fileUrl(getIcon(pack.getModule())).toExternalForm(), 
-						16, 16, "in module&nbsp;&nbsp;<tt><a " + link(pack.getModule()) + ">" + 
+				Module mod = pack.getModule();
+				addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
+						16, 16, "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
 							getModuleLabel(dec) +"</a></tt>", 20, 2);
 			}
 		}
