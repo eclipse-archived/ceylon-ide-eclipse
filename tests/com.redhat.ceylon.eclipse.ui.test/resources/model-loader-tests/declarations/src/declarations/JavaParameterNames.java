@@ -17,12 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-interface NonSharedInterface {}
-class NonSharedKlass() {}
-shared interface Interface {
+package com.redhat.ceylon.compiler.java.test.model;
+
+public class JavaParameterNames {
+    void m(long[] bytes){}
 }
-shared class Klass() {
-}
-shared class KlassWithConstructor(Integer param, Integer* varargs) {
-}
-final class FinalKlass(){}
