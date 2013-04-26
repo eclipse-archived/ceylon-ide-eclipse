@@ -74,4 +74,9 @@ public class TestCallable implements Callable<Object> {
         return $call();
     }
 
+	@Override
+	public short $getVariadicParameterIndex() {
+		return -1;
+	}
+
 }
