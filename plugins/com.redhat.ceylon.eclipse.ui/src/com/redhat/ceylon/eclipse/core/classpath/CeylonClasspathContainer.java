@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,6 +85,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     private IPath path;
     //private String jdtVersion;
     private IJavaProject javaProject;
+    
+    private Set<String> modulesWithSourcesAlreadySearched = Collections.synchronizedSet(new HashSet<String>());
 
     public IJavaProject getJavaProject() {
         return javaProject;
@@ -182,8 +186,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				job.setRule(p.getWorkspace().getRoot());
     				job.setPriority(Job.BUILD);
     				job.schedule(3000);
-    				
-    	    		boolean changed = container.resolveClasspath(monitor, true);
+    				    	    		
+    				boolean changed = container.resolveClasspath(monitor, true);
     	        	if(changed) {
     	        		container.refreshClasspathContainer(monitor, javaProject);
     	        	}
@@ -205,6 +209,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     }
 
     public void runReconfigure() {
+        modulesWithSourcesAlreadySearched.clear();
     	Job job = new Job("Resolving Ceylon dependencies for project " + 
                 getJavaProject().getElementName()) {
     	    @Override 
@@ -314,7 +319,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
 		IJavaProject javaProject = getJavaProject();
 		IProject project = javaProject.getProject();
-		
+
 		try {
 
 			TypeChecker typeChecker = null;
@@ -356,7 +361,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}.schedule();
 	}
 
-	private static Collection<IClasspathEntry> findModuleArchivePaths(
+	private Collection<IClasspathEntry> findModuleArchivePaths(
 			IJavaProject javaProject, IProject project, TypeChecker typeChecker) 
 					throws JavaModelException, CoreException {
 		final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
@@ -375,8 +380,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			}
 			IPath modulePath = getModuleArchive(provider, module);
 			if (modulePath!=null) {
-				//if (!project.getLocation().isPrefixOf(modulePath)) {
 				IPath srcPath = null;
+                
 				for (IProject p: project.getReferencedProjects()) {
 					if (p.isAccessible()
 							&& p.getLocation().isPrefixOf(modulePath)) {
@@ -386,10 +391,21 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 						break;
 					}
 				}
-				if (srcPath==null) {
+                
+                if (srcPath==null) {
+                    for (IClasspathEntry entry : classpathEntries) {
+                        if (entry.getPath().equals(modulePath)) {
+                            srcPath = entry.getSourceAttachmentPath();
+                            break;
+                        }
+                    }
+                }
+
+				if (srcPath==null && !modulesWithSourcesAlreadySearched.contains(module.toString())) {
 					//otherwise, use the src archive
 					srcPath = getSourceArchive(provider, module);
 				}
+                modulesWithSourcesAlreadySearched.add(module.toString());
 				paths.add(newLibraryEntry(modulePath, srcPath, null));
 				//}
 
@@ -421,8 +437,15 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		ctx.setSuffix(ArtifactContext.SRC);
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
-			return new Path(srcArtifact.getPath());
+		    if (srcArtifact.getPath().endsWith(".src")) {
+	            return new Path(srcArtifact.getPath());
+		    }
 		}
+        ctx.setSuffix("-sources.jar");
+        srcArtifact = provider.getArtifact(ctx);
+        if (srcArtifact!=null) {
+            return new Path(srcArtifact.getPath());
+        }
 		return null;
 	}
 
