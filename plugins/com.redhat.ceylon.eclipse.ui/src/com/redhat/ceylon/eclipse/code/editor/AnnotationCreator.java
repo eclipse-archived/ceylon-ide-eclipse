@@ -32,8 +32,12 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassBody;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 /**
@@ -72,6 +76,7 @@ public class AnnotationCreator extends ErrorVisitor {
     private final CeylonEditor editor;
     private final List<PositionedMessage> messages= new LinkedList<PositionedMessage>();
     private final List<Annotation> annotations= new LinkedList<Annotation>();
+    private final List<CeylonInitializerAnnotation> initializerAnnotations = new LinkedList<CeylonInitializerAnnotation>();
 
     public AnnotationCreator(CeylonEditor textEditor) {
         editor= textEditor;
@@ -87,8 +92,40 @@ public class AnnotationCreator extends ErrorVisitor {
         		error.getLine()));
     }
     
+    @Override
+    public void visit(Tree.ClassDefinition classDefinition) {
+        String name = "class " + classDefinition.getDeclarationModel().getName();
+        ClassBody body = classDefinition.getClassBody();
+        createInitializerAnnotation(name, body);
+        super.visit(classDefinition);
+    }
+
+    @Override
+    public void visit(Tree.ObjectDefinition objectDefinition) {
+        String name = "object " + objectDefinition.getDeclarationModel().getName();
+        ClassBody body = objectDefinition.getClassBody();
+        createInitializerAnnotation(name, body);
+        super.visit(objectDefinition);
+    }
+    
+    private void createInitializerAnnotation(String name, ClassBody body) {
+        if (name != null && body != null) {
+            Tree.Statement les = getLastExecutableStatement(body);
+            if (les != null) {
+                int startIndex = body.getStartIndex() + 2;
+                int stopIndex = les.getStopIndex();
+
+                Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
+                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition);
+
+                initializerAnnotations.add(initializerAnnotation);
+            }
+        }
+    }
+    
     public void clearMessages() {
     	messages.clear();
+    	initializerAnnotations.clear();
     }
 
     public void updateAnnotations() {
@@ -106,6 +143,10 @@ public class AnnotationCreator extends ErrorVisitor {
                 		annotations.add(a);
                 	}
                 }
+                for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
+                    newAnnotations.put(initializerAnnotation, initializerAnnotation.getPosition());
+                    annotations.add(initializerAnnotation);
+                }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
@@ -122,9 +163,14 @@ public class AnnotationCreator extends ErrorVisitor {
                 		annotations.add(a);
                 	}
                 }
+                for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
+                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getPosition());
+                    annotations.add(initializerAnnotation);
+                }
             }
         }
         messages.clear();
+        initializerAnnotations.clear();
     }
 
 	public boolean suppressAnnotation(PositionedMessage pm) {
@@ -185,5 +231,52 @@ public class AnnotationCreator extends ErrorVisitor {
         }
         fAnnotations.clear();
     }*/
+    
+    
+    // TODO copied from com.redhat.ceylon.compiler.typechecker.analyzer.Util, we should make it public ?
+    private static Tree.Statement getLastExecutableStatement(Tree.ClassBody that) {
+        List<Tree.Statement> statements = that.getStatements();
+        for (int i=statements.size()-1; i>=0; i--) {
+            Tree.Statement s = statements.get(i);
+            if (s instanceof Tree.SpecifierStatement) {
+                //shortcut refinement statements with => aren't really "executable"
+                Tree.SpecifierStatement ss = (Tree.SpecifierStatement) s;
+                if (!(ss.getSpecifierExpression() instanceof Tree.LazySpecifierExpression) || 
+                        !ss.getRefinement()) {
+                    return s;
+                }
+            }
+            else if (s instanceof Tree.ExecutableStatement) {
+                return s;
+            }
+            else {
+                if (s instanceof Tree.AttributeDeclaration) {
+                    Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) s).getSpecifierOrInitializerExpression();
+                    if (sie!=null && !(sie instanceof Tree.LazySpecifierExpression)) {
+                        return s;
+                    }
+                }
+                if (s instanceof Tree.ObjectDefinition) {
+                    Tree.ObjectDefinition o = (Tree.ObjectDefinition) s;
+                    if (o.getExtendedType()!=null) {
+                        ProducedType et = o.getExtendedType().getType().getTypeModel();
+                        Unit unit = that.getUnit();
+                        if (et!=null 
+                                && !et.getDeclaration().equals(unit.getObjectDeclaration())
+                                && !et.getDeclaration().equals(unit.getBasicDeclaration())) {
+                            return s;
+                        }
+                    }
+                    if (o.getClassBody()!=null) {
+                        if (getLastExecutableStatement(o.getClassBody())!=null) {
+                            return s;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
 }
 
