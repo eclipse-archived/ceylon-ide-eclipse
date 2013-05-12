@@ -32,6 +32,7 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.hover.DocHover;
@@ -121,7 +122,7 @@ public class AnnotationUtils {
         final IDocument document= viewer.getDocument();
         IPositionPredicate posPred= new IPositionPredicate() {
             public boolean matchPosition(Position p) {
-                return AnnotationUtils.offsetIsAtLine(p, document, line);
+                return AnnotationUtils.positionIsAtLine(p, document, line);
             }
         };
         return getAnnotations(viewer, posPred);
@@ -142,7 +143,7 @@ public class AnnotationUtils {
     /**
      * @return true, if the given Position resides at the given line of the given IDocument
      */
-    public static boolean offsetIsAtLine(Position position, IDocument document, int line) {
+    public static boolean positionIsAtLine(Position position, IDocument document, int line) {
         if (position.getOffset() > -1 && position.getLength() > -1) {
             try {
             	// RMF 11/10/2006 - This used to add 1 to the line computed by the document,
@@ -150,8 +151,9 @@ public class AnnotationUtils {
                 // never appeared); second, the line passed in comes from the Eclipse
                 // framework, so it should be consistent (wrt the index base) with what the
                 // IDocument API provides.
-                int posLine= document.getLineOfOffset(position.getOffset());
-                return line == posLine;
+                int startLine= document.getLineOfOffset(position.getOffset());
+                int endLine = document.getLineOfOffset(position.getOffset()+position.getLength());
+                return line >= startLine && line <= endLine;
             } 
             catch (BadLocationException x) {}
         }
@@ -252,6 +254,10 @@ public class AnnotationUtils {
 	    	text = HTMLPrinter.convertToHTMLContent(message.getText());
 	    	icon = getProblemIcon(((CeylonAnnotation) message).getSeverity());
 	    }
+	    else if (message instanceof CeylonInitializerAnnotation) {
+            text = message.getText();
+            icon = DocHover.fileUrl("information.gif");
+        }
 	    else if (message instanceof RefinementAnnotation) {
 	    	Declaration dec = ((RefinementAnnotation) message).getDeclaration();
 	    	icon = dec.isFormal() ? DocHover.fileUrl("implm_co.gif") : DocHover.fileUrl("over_co.gif");
