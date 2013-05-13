@@ -1419,6 +1419,24 @@
             Font for displaying code in the Ceylon editor
         </description>
     </fontDefinition>
+    <colorDefinition
+          categoryId="com.redhat.ceylon.eclipse.ui.theme"
+          id="com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation"
+          label="Initializer annotation"
+          value="173, 216, 230">
+       <description>
+          Color for highlighting initializer section.
+       </description>
+    </colorDefinition>
+    <colorDefinition
+          categoryId="com.redhat.ceylon.eclipse.ui.theme"
+          id="com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+          label="Range indicator annotation"
+          value="COLOR_LIST_SELECTION">
+       <description>
+          Color for highlighting a particular range of text lines.
+       </description>
+    </colorDefinition>
 
     </extension>
     
