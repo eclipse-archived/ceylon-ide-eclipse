@@ -217,6 +217,7 @@ public class CeylonEditor extends TextEditor {
         // preferences
         // setPreferenceStore(CeylonPlugin.getInstance().getPreferenceStore());
         setSourceViewerConfiguration(createSourceViewerConfiguration());
+        setRangeIndicator(new CeylonRangeIndicator());
         configureInsertMode(SMART_INSERT, true);
         setInsertMode(SMART_INSERT);
         problemMarkerManager= new ProblemMarkerManager();
