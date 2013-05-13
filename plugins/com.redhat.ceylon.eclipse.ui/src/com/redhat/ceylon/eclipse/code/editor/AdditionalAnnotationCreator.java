@@ -43,7 +43,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     public AdditionalAnnotationCreator(CeylonEditor editor) {
     	this.editor = editor;
         ((IPostSelectionProvider) editor.getSelectionProvider())
-            .addPostSelectionChangedListener(new SelectionListener());
+                .addPostSelectionChangedListener(new SelectionListener());
 	}
 
 	@Override
@@ -81,7 +81,9 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         }.visit(cpc.getRootNode());
         
         for (CommonToken token : (List<CommonToken>) cpc.getTokens()) {
-            if (token.getType() == CeylonLexer.LINE_COMMENT || token.getType() == CeylonLexer.MULTI_COMMENT) {
+            int type = token.getType();
+			if (type == CeylonLexer.LINE_COMMENT || 
+            	type == CeylonLexer.MULTI_COMMENT) {
                 CeylonTaskUtil.addTaskAnnotation(token, model);
             }
         }
@@ -148,21 +150,24 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         }
     }
     
+    /**
+     * Updates the highlighted range in the vertical ruler
+     * (the blue bar indicating the current containing
+     * declaration).
+     */
     class SelectionListener implements ISelectionChangedListener {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-            if(!(editor instanceof CeylonEditor))
-                return;
-            final CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-            if (cpc.getRootNode()==null) return;
-            Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
-            if (node!=null) {
-                editor.setHighlightRange(node.getStartIndex(), 
-                        node.getStopIndex()-node.getStartIndex()+1, false);
-            }
-            else {
-                editor.resetHighlightRange();
-            }
+        	final CeylonParseController cpc = editor.getParseController();
+        	if (cpc.getRootNode()==null) return;
+        	Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
+        	if (node!=null) {
+        		editor.setHighlightRange(node.getStartIndex(), 
+        				node.getStopIndex()-node.getStartIndex()+1, false);
+        	}
+        	else {
+        		editor.resetHighlightRange();
+        	}
         }
     }
     
