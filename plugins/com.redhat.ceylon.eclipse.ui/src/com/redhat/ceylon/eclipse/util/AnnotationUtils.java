@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
+import static org.eclipse.search.internal.ui.SearchPlugin.SEARCH_ANNOTATION_TYPE;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.search.internal.ui.SearchPlugin;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -276,6 +278,10 @@ public class AnnotationUtils {
 	    	catch (CoreException e) {
 				e.printStackTrace();
 			}
+	    }
+	    else if (message.getType().equals(SEARCH_ANNOTATION_TYPE)) {
+	    	text = "<b>Search result</b>";
+	    	icon = DocHover.fileUrl("find_obj.gif");
 	    }
 	    if (icon!=null) {
 	    	DocHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
