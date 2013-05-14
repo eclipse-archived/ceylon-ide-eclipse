@@ -295,4 +295,10 @@ public class JDTClass implements ClassMirror {
         String result = new String(fileName);
         return result;
     }
+
+    @Override
+    public boolean isAnnotationType() {
+        return klass.isAnnotationType();
+    }
+    
 }
