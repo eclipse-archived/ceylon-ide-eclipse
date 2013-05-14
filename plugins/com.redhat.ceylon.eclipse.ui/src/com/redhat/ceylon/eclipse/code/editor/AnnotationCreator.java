@@ -11,6 +11,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
+import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
@@ -32,8 +33,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -232,51 +231,4 @@ public class AnnotationCreator extends ErrorVisitor {
         fAnnotations.clear();
     }*/
     
-    
-    // TODO copied from com.redhat.ceylon.compiler.typechecker.analyzer.Util, we should make it public ?
-    private static Tree.Statement getLastExecutableStatement(Tree.ClassBody that) {
-        List<Tree.Statement> statements = that.getStatements();
-        for (int i=statements.size()-1; i>=0; i--) {
-            Tree.Statement s = statements.get(i);
-            if (s instanceof Tree.SpecifierStatement) {
-                //shortcut refinement statements with => aren't really "executable"
-                Tree.SpecifierStatement ss = (Tree.SpecifierStatement) s;
-                if (!(ss.getSpecifierExpression() instanceof Tree.LazySpecifierExpression) || 
-                        !ss.getRefinement()) {
-                    return s;
-                }
-            }
-            else if (s instanceof Tree.ExecutableStatement) {
-                return s;
-            }
-            else {
-                if (s instanceof Tree.AttributeDeclaration) {
-                    Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) s).getSpecifierOrInitializerExpression();
-                    if (sie!=null && !(sie instanceof Tree.LazySpecifierExpression)) {
-                        return s;
-                    }
-                }
-                if (s instanceof Tree.ObjectDefinition) {
-                    Tree.ObjectDefinition o = (Tree.ObjectDefinition) s;
-                    if (o.getExtendedType()!=null) {
-                        ProducedType et = o.getExtendedType().getType().getTypeModel();
-                        Unit unit = that.getUnit();
-                        if (et!=null 
-                                && !et.getDeclaration().equals(unit.getObjectDeclaration())
-                                && !et.getDeclaration().equals(unit.getBasicDeclaration())) {
-                            return s;
-                        }
-                    }
-                    if (o.getClassBody()!=null) {
-                        if (getLastExecutableStatement(o.getClassBody())!=null) {
-                            return s;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    
 }
-
