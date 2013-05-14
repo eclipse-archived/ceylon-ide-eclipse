@@ -220,4 +220,10 @@ public class JDTMethod implements MethodMirror {
     public boolean isVariadic() {
         return method.isVarargs();
     }
+
+    @Override
+    public boolean isDefault() {
+        return method.isDefault();
+    }
+    
 }

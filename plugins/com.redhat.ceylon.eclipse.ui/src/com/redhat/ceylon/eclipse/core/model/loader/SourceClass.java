@@ -194,4 +194,10 @@ public class SourceClass implements ClassMirror {
     public boolean isJavaSource() {
         return false;
     }
+
+    @Override
+    public boolean isAnnotationType() {
+        return false; // TODO : is it really right ?
+    }
+    
 }
