@@ -76,6 +76,7 @@ public class AnnotationCreator extends ErrorVisitor {
     private final List<PositionedMessage> messages= new LinkedList<PositionedMessage>();
     private final List<Annotation> annotations= new LinkedList<Annotation>();
     private final List<CeylonInitializerAnnotation> initializerAnnotations = new LinkedList<CeylonInitializerAnnotation>();
+    private int initializerDepth = 0;
 
     public AnnotationCreator(CeylonEditor textEditor) {
         editor= textEditor;
@@ -91,20 +92,29 @@ public class AnnotationCreator extends ErrorVisitor {
         		error.getLine()));
     }
     
+    public void visit(Tree.CompilationUnit cu) {
+        initializerDepth = 0;
+        super.visit(cu);
+    }
+    
     @Override
     public void visit(Tree.ClassDefinition classDefinition) {
+        initializerDepth++;
         String name = "class " + classDefinition.getDeclarationModel().getName();
         ClassBody body = classDefinition.getClassBody();
         createInitializerAnnotation(name, body);
         super.visit(classDefinition);
+        initializerDepth--;
     }
 
     @Override
     public void visit(Tree.ObjectDefinition objectDefinition) {
+        initializerDepth++;
         String name = "object " + objectDefinition.getDeclarationModel().getName();
         ClassBody body = objectDefinition.getClassBody();
         createInitializerAnnotation(name, body);
         super.visit(objectDefinition);
+        initializerDepth--;
     }
     
     private void createInitializerAnnotation(String name, ClassBody body) {
@@ -115,7 +125,7 @@ public class AnnotationCreator extends ErrorVisitor {
                 int stopIndex = les.getStopIndex();
 
                 Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
-                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition);
+                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, initializerDepth);
 
                 initializerAnnotations.add(initializerAnnotation);
             }

@@ -17,22 +17,24 @@ public class CeylonAnnotationHover implements IAnnotationHover {
     @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
         List<Annotation> annotations = getAnnotationsForLine(sourceViewer, lineNumber);
-        removeInitializerAnnotationIfThereAreOthers(annotations);
-        return formatAnnotationList(annotations);
-    }
 
-    private void removeInitializerAnnotationIfThereAreOthers(List<Annotation> annotations) {
-        if (annotations != null && annotations.size() > 1) {
-            ListIterator<Annotation> annotationIterator = annotations.listIterator();
-            while (annotationIterator.hasNext()) {
-                Annotation annotation = annotationIterator.next();
-                if (annotation instanceof CeylonInitializerAnnotation) {
-                    if (annotations.size() > 1) {
-                        annotationIterator.remove();
-                    }
+        CeylonInitializerAnnotation deepestInitializerAnnotation = null;
+        ListIterator<Annotation> annotationIterator = annotations.listIterator();
+        while (annotationIterator.hasNext()) {
+            Annotation annotation = annotationIterator.next();
+            if (annotation instanceof CeylonInitializerAnnotation) {
+                annotationIterator.remove();
+                CeylonInitializerAnnotation initializerAnnotation = (CeylonInitializerAnnotation) annotation;
+                if (deepestInitializerAnnotation == null || deepestInitializerAnnotation.getDepth() < initializerAnnotation.getDepth()) {
+                    deepestInitializerAnnotation = initializerAnnotation;
                 }
             }
         }
+        if (annotations.isEmpty()) {
+            annotations.add(deepestInitializerAnnotation);
+        }
+
+        return formatAnnotationList(annotations);
     }
 
 }
