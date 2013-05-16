@@ -14,9 +14,11 @@ import org.eclipse.swt.widgets.Canvas;
 public class CeylonInitializerAnnotation extends Annotation implements IAnnotationPresentation {
 
     private final Position position;
+    private final int depth;
 
-    public CeylonInitializerAnnotation(String name, Position position) {
+    public CeylonInitializerAnnotation(String name, Position position, int depth) {
         this.position = position;
+        this.depth = depth;
 
         setText("<b>Initializer section of " + name + "</b>" +
                 "<p>" +
@@ -31,6 +33,10 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
 
     public Position getPosition() {
         return position;
+    }
+    
+    public int getDepth() {
+        return depth;
     }
 
     @Override
