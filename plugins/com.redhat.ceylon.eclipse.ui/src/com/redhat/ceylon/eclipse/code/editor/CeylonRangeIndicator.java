@@ -48,12 +48,12 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
         
         gc.setAlpha(85);
         Image patternImage = getPatternImage(canvas, color);
-        gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
+        gc.drawImage(patternImage, 0, 0, w/2, h, x, y, w/2, h);
         patternImage.dispose();
         
         gc.setAlpha(255);
-        gc.fillRectangle(x, bounds.y, w, 1);
-        gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
+        gc.fillRectangle(x, bounds.y, w/2, 1);
+        gc.fillRectangle(x, bounds.y + bounds.height - 1, w/2, 1);
     }
 
     public static Image getPatternImage(Control control, Color color) {

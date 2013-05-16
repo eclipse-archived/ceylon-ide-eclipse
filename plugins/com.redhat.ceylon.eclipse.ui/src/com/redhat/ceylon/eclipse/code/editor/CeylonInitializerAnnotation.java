@@ -70,15 +70,15 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
 
         gc.setAlpha(85);
         Image patternImage = getPatternImage(canvas, color);
-        gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
+        gc.drawImage(patternImage, 0, 0, w/2, h, x+w-w/2, y, w/2, h);
         patternImage.dispose();
         
         /*gc.setAlpha(85);
         gc.fillRectangle(x, y, w, h);*/
         
         gc.setAlpha(255);
-        gc.fillRectangle(x, bounds.y, w, 1);
-        gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
+        gc.fillRectangle(x+w-w/2, bounds.y, w/2, 1);
+        gc.fillRectangle(x+w-w/2, bounds.y + bounds.height - 1, w/2, 1);
     }
 
 }
