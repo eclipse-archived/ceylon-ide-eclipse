@@ -27,7 +27,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
-import org.eclipse.search.internal.ui.SearchPlugin;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
