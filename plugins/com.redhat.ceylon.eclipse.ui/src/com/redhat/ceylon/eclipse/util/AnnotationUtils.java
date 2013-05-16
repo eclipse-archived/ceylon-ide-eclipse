@@ -278,7 +278,7 @@ public class AnnotationUtils {
 				e.printStackTrace();
 			}
 	    }
-	    else if (message.getType()!=null && message.getType().equals(SEARCH_ANNOTATION_TYPE)) {
+	    else if (message!=null && SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
 	    	text = "<b>Search result</b>";
 	    	icon = DocHover.fileUrl("find_obj.gif");
 	    }
