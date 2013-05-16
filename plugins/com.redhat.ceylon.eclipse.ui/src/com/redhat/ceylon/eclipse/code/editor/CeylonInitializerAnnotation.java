@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonRangeIndicator.getPatternImage;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
 
 import org.eclipse.jface.text.Position;
@@ -7,6 +8,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
@@ -65,8 +67,15 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
 
         Color color = getCurrentThemeColor("initializerAnnotation");
         gc.setBackground(color);
-        gc.setAlpha(70);
-        gc.fillRectangle(x, y, w, h);
+
+        gc.setAlpha(85);
+        Image patternImage = getPatternImage(canvas, color);
+        gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
+        patternImage.dispose();
+        
+        /*gc.setAlpha(85);
+        gc.fillRectangle(x, y, w, h);*/
+        
         gc.setAlpha(255);
         gc.fillRectangle(x, bounds.y, w, 1);
         gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);

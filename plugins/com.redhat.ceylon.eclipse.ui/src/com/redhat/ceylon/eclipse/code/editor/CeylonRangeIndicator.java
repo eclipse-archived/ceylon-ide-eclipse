@@ -43,24 +43,27 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
             return;
         }
 
-        Image patternImage = getPatternImage(canvas);
+        Color color = getCurrentThemeColor("rangeIndicatorAnnotation");
+		gc.setBackground(color);
+        
+        gc.setAlpha(85);
+        Image patternImage = getPatternImage(canvas, color);
         gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
         patternImage.dispose();
-
-        gc.setBackground(getCurrentThemeColor("rangeIndicatorAnnotation"));
+        
+        gc.setAlpha(255);
         gc.fillRectangle(x, bounds.y, w, 1);
         gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
     }
 
-    private Image getPatternImage(Control control) {
+    public static Image getPatternImage(Control control, Color color) {
         Point size = control.getSize();
         Display display = control.getDisplay();
-        Color c1 = getCurrentThemeColor("rangeIndicatorAnnotation");
-        Color c2 = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        Color bgColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         RGB rgbs[] = new RGB[] {
-                new RGB(c1.getRed(), c1.getGreen(), c1.getBlue()),
-                new RGB(c2.getRed(), c2.getGreen(), c2.getBlue()) };
+                new RGB(color.getRed(), color.getGreen(), color.getBlue()),
+                new RGB(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue()) };
 
         ImageData imageData = new ImageData(size.x, size.y, 1, new PaletteData(rgbs));
 
