@@ -1423,7 +1423,7 @@
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
           id="com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation"
           label="Initializer annotation"
-          value="204,51,51">
+          value="102,153,204">
        <description>
           Color for highlighting initializer section.
        </description>
@@ -1432,7 +1432,7 @@
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
           id="com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation"
           label="Range indicator annotation"
-          value="102,153,204"> <!--value="COLOR_LIST_SELECTION"-->
+          value="51,153,102"> <!--value="COLOR_LIST_SELECTION"-->
        <description>
           Color for highlighting a particular range of text lines.
        </description>
