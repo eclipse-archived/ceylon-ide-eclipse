@@ -1423,7 +1423,7 @@
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
           id="com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation"
           label="Initializer annotation"
-          value="173, 216, 230">
+          value="101, 180, 242">
        <description>
           Color for highlighting initializer section.
        </description>

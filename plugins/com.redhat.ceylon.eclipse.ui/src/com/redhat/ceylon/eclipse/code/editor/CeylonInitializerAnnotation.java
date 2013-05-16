@@ -3,11 +3,15 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
 
 import org.eclipse.jface.text.Position;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationPresentation;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
 
-public class CeylonInitializerAnnotation extends AbstractAnnotationWithPatternPresentation {
+public class CeylonInitializerAnnotation extends Annotation implements IAnnotationPresentation {
 
     private final Position position;
 
@@ -33,15 +37,33 @@ public class CeylonInitializerAnnotation extends AbstractAnnotationWithPatternPr
     public int getLayer() {
         return 1;
     }
-
+    
     @Override
-    protected Color getPatternForegroundColor() {
-        return getCurrentThemeColor("initializerAnnotation");
-    }
+    public void paint(GC gc, Canvas canvas, Rectangle bounds) {
+        Point canvasSize = canvas.getSize();
+        int x = 0;
+        int y = bounds.y;
+        int w = canvasSize.x;
+        int h = bounds.height;
 
-    @Override
-    protected Color getPatternBackgroundColor() {
-        return Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        if (y + h > canvasSize.y) {
+            h = canvasSize.y - y;
+        }
+        if (y < 0) {
+            h = h + y;
+            y = 0;
+        }
+        if (h <= 0) {
+            return;
+        }
+
+        Color color = getCurrentThemeColor("initializerAnnotation");
+        gc.setBackground(color);
+        gc.setAlpha(70);
+        gc.fillRectangle(x, y, w, h);
+        gc.setAlpha(255);
+        gc.fillRectangle(x, bounds.y, w, 1);
+        gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
     }
 
 }
