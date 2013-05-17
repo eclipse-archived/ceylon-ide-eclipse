@@ -78,10 +78,10 @@ public class AnnotationCreator extends ErrorVisitor {
     private final List<CeylonInitializerAnnotation> initializerAnnotations = new LinkedList<CeylonInitializerAnnotation>();
     private int initializerDepth = 0;
 
-    public AnnotationCreator(CeylonEditor textEditor) {
-        editor= textEditor;
+    public AnnotationCreator(CeylonEditor editor) {
+        this.editor = editor;
     }
-
+    
     @Override
     public void handleMessage(int startOffset, int endOffset,
             int startCol, int startLine, Message error) {
@@ -123,9 +123,10 @@ public class AnnotationCreator extends ErrorVisitor {
             if (les != null) {
                 int startIndex = body.getStartIndex() + 2;
                 int stopIndex = les.getStopIndex();
-
+                
+                Position bodyPosition = new Position(body.getStartIndex(), body.getStopIndex() - body.getStartIndex() + 1);
                 Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
-                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, initializerDepth);
+                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(editor, name, bodyPosition, initializerPosition, initializerDepth);
 
                 initializerAnnotations.add(initializerAnnotation);
             }
@@ -153,7 +154,7 @@ public class AnnotationCreator extends ErrorVisitor {
                 	}
                 }
                 for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
-                    newAnnotations.put(initializerAnnotation, initializerAnnotation.getPosition());
+                    newAnnotations.put(initializerAnnotation, initializerAnnotation.getInitializerPosition());
                     annotations.add(initializerAnnotation);
                 }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
@@ -173,7 +174,7 @@ public class AnnotationCreator extends ErrorVisitor {
                 	}
                 }
                 for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
-                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getPosition());
+                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getInitializerPosition());
                     annotations.add(initializerAnnotation);
                 }
             }
