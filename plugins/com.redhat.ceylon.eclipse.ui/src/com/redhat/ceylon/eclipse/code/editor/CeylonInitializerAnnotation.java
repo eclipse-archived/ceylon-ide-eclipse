@@ -15,11 +15,15 @@ import org.eclipse.swt.widgets.Canvas;
 
 public class CeylonInitializerAnnotation extends Annotation implements IAnnotationPresentation {
 
-    private final Position position;
+    private final CeylonEditor editor;
+    private final Position bodyPosition;
+    private final Position initializerPosition;
     private final int depth;
 
-    public CeylonInitializerAnnotation(String name, Position position, int depth) {
-        this.position = position;
+    public CeylonInitializerAnnotation(CeylonEditor editor, String name, Position bodyPosition, Position initializerPosition, int depth) {
+        this.editor = editor;
+        this.bodyPosition = bodyPosition;
+        this.initializerPosition = initializerPosition;
         this.depth = depth;
 
         setText("<b>Initializer section of " + name + "</b>" +
@@ -33,8 +37,8 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
                 "</p>");
     }
 
-    public Position getPosition() {
-        return position;
+    public Position getInitializerPosition() {
+        return initializerPosition;
     }
     
     public int getDepth() {
@@ -48,6 +52,10 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
     
     @Override
     public void paint(GC gc, Canvas canvas, Rectangle bounds) {
+        if( !isCursorInBody() ) {
+            return;
+        }
+        
         Point canvasSize = canvas.getSize();
         int x = 0;
         int y = bounds.y;
@@ -79,6 +87,14 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
         gc.setAlpha(255);
         gc.fillRectangle(x+w-w/2, bounds.y, w/2, 1);
         gc.fillRectangle(x+w-w/2, bounds.y + bounds.height - 1, w/2, 1);
+    }
+
+    private boolean isCursorInBody() {
+        int caretOffset = editor.getCeylonSourceViewer().getTextWidget().getCaretOffset();
+        if (caretOffset > bodyPosition.getOffset() && caretOffset < bodyPosition.getOffset() + bodyPosition.getLength()) {
+            return true;
+        }
+        return false;
     }
 
 }

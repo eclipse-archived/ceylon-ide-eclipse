@@ -89,18 +89,22 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelListener;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
@@ -1278,6 +1282,17 @@ extends PreviousSubWordAction implements IUpdate {
         /*if (fLanguageServiceManager != null && fLanguageServiceManager.getParseController() != null) {
         	IMPHelp.setHelp(fLanguageServiceManager, this, viewer.getTextWidget(), IMP_EDITOR_CONTEXT);
         }*/
+        
+        viewer.getTextWidget().addCaretListener(new CaretListener() {
+            @Override
+            public void caretMoved(CaretEvent event) {
+                Object adapter = getAdapter(IVerticalRulerInfo.class);
+                if (adapter instanceof CompositeRuler) {
+                    // redraw initializer annotations according to cursor position
+                    ((CompositeRuler) adapter).update();
+                }
+            }
+        });
 	
         return viewer;
     }
