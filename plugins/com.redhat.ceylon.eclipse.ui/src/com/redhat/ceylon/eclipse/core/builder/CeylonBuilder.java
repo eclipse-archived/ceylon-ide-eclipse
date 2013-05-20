@@ -1388,6 +1388,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             });
 		
 		RepositoryManager repositoryManager = repoManager()
+		        .offline(CeylonProjectConfig.get(project).isOffline())
 		        .cwd(project.getLocation().toFile())
 		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
 		        .extraUserRepos(getReferencedProjectsOutputRepositories(project))
@@ -1511,7 +1512,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (compileToJs(project) && !sourceFiles.isEmpty()) {
                 Options jsopts = new Options(js_repos, js_srcdir, null/*sys repo*/, js_outRepo, null/*uname*/,
                         null/*pass*/, true, true, true, true, js_verbose, false, false, false,
-                        project.getDefaultCharset(), false/*offline*/);
+                        project.getDefaultCharset(),
+                        CeylonProjectConfig.get(project).isOffline());
                 JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
                 try {
                     jsc.generate();

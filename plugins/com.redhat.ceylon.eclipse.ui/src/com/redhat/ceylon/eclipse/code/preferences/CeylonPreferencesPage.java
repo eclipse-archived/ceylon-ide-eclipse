@@ -14,28 +14,33 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonPreferencesPage extends PropertyPage {
 
     private boolean explodeModules;
-    private boolean showCompilerWarnings=true;
+    private boolean showCompilerWarnings = true;
     private boolean builderEnabled = false;
     private boolean backendJs = false;
     private boolean backendJava = false;
+    private Boolean offlineOption = null;
 
     private Button showWarnings;
     private Button compileToJs;
     private Button compileToJava;
     private Button enableExplodeModules;
-
+    private Button offlineButton;
+    
     @Override
     public boolean performOk() {
     	store();
@@ -52,6 +57,8 @@ public class CeylonPreferencesPage extends PropertyPage {
         backendJava = true;
         compileToJs.setSelection(false);
         compileToJava.setSelection(true);
+        offlineOption = null;
+        updateOfflineButton();
         super.performDefaults();
     }
     
@@ -60,6 +67,10 @@ public class CeylonPreferencesPage extends PropertyPage {
         String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
         new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
                 backendJava, backendJs).addToProject(project);
+        
+        CeylonProjectConfig config = CeylonProjectConfig.get(project);
+        config.setProjectOffline(offlineOption);
+        config.save();
     }
 
     private IProject getSelectedProject() {
@@ -94,26 +105,42 @@ public class CeylonPreferencesPage extends PropertyPage {
         layout.numColumns = 1;
         composite.setLayout(layout); 
         
-        enableExplodeModules = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        compileToJava = new Button(composite, SWT.CHECK);
+        compileToJava.setText("Compile project for JVM");
+        compileToJava.setSelection(backendJava);
+        compileToJava.setEnabled(builderEnabled);
+        
+        compileToJs = new Button(composite, SWT.CHECK);
+        compileToJs.setText("Compile project to JavaScript");
+        compileToJs.setSelection(backendJs);
+        compileToJs.setEnabled(builderEnabled);
+        
+        enableExplodeModules = new Button(composite, SWT.CHECK);
         enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
         enableExplodeModules.setSelection(explodeModules);
         enableExplodeModules.setEnabled(builderEnabled);
-
-        showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        
+        showWarnings = new Button(composite, SWT.CHECK);
         showWarnings.setText("Show compiler warnings (for unused declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(builderEnabled);
 
-        compileToJava = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        compileToJava.setText("Compile project for JVM");
-        compileToJava.setSelection(backendJava);
-        compileToJava.setEnabled(builderEnabled);
-
-        compileToJs = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        compileToJs.setText("Compile project to JavaScript");
-        compileToJs.setSelection(backendJs);
-        compileToJs.setEnabled(builderEnabled);
-
+        offlineButton = new Button(composite, SWT.CHECK);
+        offlineButton.setEnabled(builderEnabled);
+        offlineButton.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event e) {
+                if (offlineOption == null) {
+                    offlineOption = true;
+                } else if (offlineOption) {
+                    offlineOption = false;
+                } else {
+                    offlineOption = null;
+                }
+                updateOfflineButton();
+            }
+        });
+        updateOfflineButton();
+        
         enableBuilder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -123,6 +150,7 @@ public class CeylonPreferencesPage extends PropertyPage {
                 showWarnings.setEnabled(true);
                 compileToJs.setEnabled(true);
                 compileToJava.setEnabled(true);
+                offlineButton.setEnabled(true);
                 builderEnabled=true;
             }
         });
@@ -166,11 +194,29 @@ public class CeylonPreferencesPage extends PropertyPage {
                 showCompilerWarnings = showWarnings(project);
                 backendJs = compileToJs(project);
                 backendJava = compileToJava(project);
+                offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
             }
         }
 
         addControls(composite);
         return composite;
+    }
+    
+    private void updateOfflineButton() {
+        if (offlineOption == null) {
+            offlineButton.setGrayed(true);
+            offlineButton.setSelection(true);
+            offlineButton.setText("Offline (will use default configuration)");
+        } else if (offlineOption == true) {
+            offlineButton.setGrayed(false);
+            offlineButton.setSelection(true);
+            offlineButton.setText("Offline (will prevent connecting to remote repositories)");
+        } else {
+            offlineButton.setGrayed(false);
+            offlineButton.setSelection(false);
+            offlineButton.setText("Offline");
+        }
+        offlineButton.pack();
     }
 
 }
