@@ -50,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
@@ -394,6 +395,7 @@ public class CeylonParseController {
 		}
         
         RepositoryManager repositoryManager = repoManager()
+                .offline(CeylonProjectConfig.get(project).isOffline())
                 .cwd(cwd)
                 .systemRepo(systemRepo)
                 .extraUserRepos(getReferencedProjectsOutputRepositories(project))

@@ -19,6 +19,7 @@ import org.eclipse.ui.PlatformUI;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.ConfigParser;
 import com.redhat.ceylon.common.config.ConfigWriter;
+import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 
@@ -41,26 +42,30 @@ public class CeylonProjectConfig {
 
     private final IProject project;
     
+    private CeylonConfig mergedConfig;
+    private CeylonConfig projectConfig;
     private Repositories mergedRepositories;
     private Repositories projectRepositories;
-    private CeylonConfig projectConfig;
     
     private String transientOutputRepo;
     private List<String> transientProjectLocalRepos;
     private List<String> transientProjectRemoteRepos;
+    
+    private boolean isOfflineChanged = false;
+    private Boolean transientOffline;
 
     private CeylonProjectConfig(IProject project) {
         this.project = project;
-        initMergedRepositories();
-        initProjectRepositories();
+        initMergedConfig();
+        initProjectConfig();
     }
 
-    private void initMergedRepositories() {
-        CeylonConfig mergedConfig = CeylonConfig.createFromLocalDir(project.getLocation().toFile());
+    private void initMergedConfig() {
+        mergedConfig = CeylonConfig.createFromLocalDir(project.getLocation().toFile());
         mergedRepositories = Repositories.withConfig(mergedConfig);
     }
 
-    private void initProjectRepositories() {
+    private void initProjectConfig() {
         projectConfig = new CeylonConfig();
         File projectConfigFile = getProjectConfigFile();
         if (projectConfigFile.exists() && projectConfigFile.isFile()) {
@@ -124,8 +129,21 @@ public class CeylonProjectConfig {
         transientProjectRemoteRepos = projectRemoteRepos;
     }
     
+    public boolean isOffline() {
+        return mergedConfig.getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, false);
+    }
+
+    public Boolean isProjectOffline() {
+        return projectConfig.getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE);
+    }
+
+    public void setProjectOffline(Boolean offline) {
+        this.isOfflineChanged = true;
+        this.transientOffline = offline;
+    }
+    
     public void save() {
-        initProjectRepositories();
+        initProjectConfig();
         
         String oldOutputRepo = getOutputRepo();
         List<String> oldProjectLocalRepos = getProjectLocalRepos();
@@ -138,7 +156,7 @@ public class CeylonProjectConfig {
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
-        } else {
+        } else if (transientOutputRepo != null) {
             // fix #422: output folder must be create for new projects
             IFolder newOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
             if (!newOutputRepoFolder.exists()) {
@@ -146,7 +164,7 @@ public class CeylonProjectConfig {
             }
         }
         
-        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged) {
+        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || isOfflineChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -160,9 +178,17 @@ public class CeylonProjectConfig {
                     Repository[] newRemoteRepos = toRepositoriesArray(transientProjectRemoteRepos);
                     projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_REMOTE_LOOKUP, newRemoteRepos);
                 }
+                if (isOfflineChanged) {
+                    isOfflineChanged = false;
+                    if (transientOffline != null) {
+                        projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, transientOffline);
+                    } else {
+                        projectConfig.removeOption(DefaultToolOptions.DEFAULTS_OFFLINE);
+                    }
+                }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
-                initMergedRepositories();
+                initMergedConfig();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

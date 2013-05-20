@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -21,9 +23,8 @@ import org.eclipse.ui.console.MessageConsole;
 import com.redhat.ceylon.compiler.js.CeylonRunJsException;
 import com.redhat.ceylon.compiler.js.CeylonRunJsTool;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-
-import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 
 public class JsLaunchDelegate extends LaunchConfigurationDelegate {
 
@@ -77,6 +78,7 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             runner.setRun(methname);
             runner.setModuleVersion(modname);
             runner.setOutput(pout);
+            runner.setOffline(CeylonProjectConfig.get(proj).isOffline());
             runner.setDebug(true);
             runner.setNodeExe(configuration.getAttribute(
                     ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, (String)null));
