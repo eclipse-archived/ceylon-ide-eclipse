@@ -551,6 +551,12 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Convert selected anonymous class to a class"
             name="Convert to Class"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Reveal inferred types"
+             id="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
+             name="Reveal inferred types">
+       </command>
    </extension>
    
    <extension
@@ -603,6 +609,10 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ConvertToClassHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType">
+      </handler>
    </extension>
    
    <extension
@@ -701,6 +711,12 @@
            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+       <key
+             commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
+             contextId="com.redhat.ceylon.eclipse.ui.context"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M3+T">
+       </key>
    </extension>
    
    <extension

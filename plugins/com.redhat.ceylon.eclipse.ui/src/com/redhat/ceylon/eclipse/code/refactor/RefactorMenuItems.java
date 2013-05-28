@@ -63,7 +63,11 @@ public class RefactorMenuItems extends CompoundContributionItem {
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
                         "Clean Imports", new CleanImportsHandler().isEnabled(), 
-                        AbstractRefactoring.DELETE_IMPORT)
+                        AbstractRefactoring.DELETE_IMPORT),
+                new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
+                        "Reveal Inferred Types",
+                        editor!=null && new RevealInferredTypeHandler().isEnabled(),
+                        AbstractRefactoring.CHANGE)
             };
     }
     
