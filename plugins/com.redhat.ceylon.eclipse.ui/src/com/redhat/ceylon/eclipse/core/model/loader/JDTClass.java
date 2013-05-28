@@ -124,7 +124,8 @@ public class JDTClass implements ClassMirror {
             directMethods = klass.methods();
             methods = new ArrayList<MethodMirror>(directMethods.length);
             for(MethodBinding method : directMethods) {
-                methods.add(new JDTMethod(method, lookupEnvironment));
+                if(!method.isBridge() && !method.isSynthetic())
+                    methods.add(new JDTMethod(method, lookupEnvironment));
             }
         }
         return methods;
@@ -198,8 +199,11 @@ public class JDTClass implements ClassMirror {
         if (fields == null) {
             FieldBinding[] directFields = klass.fields();
             fields = new ArrayList<FieldMirror>(directFields.length);
-            for(FieldBinding field : directFields)
-                fields.add(new JDTField(field, lookupEnvironment));
+            for(FieldBinding field : directFields){
+                if(!field.isSynthetic()){
+                    fields.add(new JDTField(field, lookupEnvironment));
+                }
+            }
         }
         return fields;
     }
