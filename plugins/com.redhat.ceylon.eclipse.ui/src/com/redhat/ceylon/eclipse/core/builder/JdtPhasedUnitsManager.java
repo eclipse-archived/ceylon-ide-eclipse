@@ -73,7 +73,7 @@ final class JdtPhasedUnitsManager implements PhasedUnitsManager {
 	    allPhasedUnits.addAll(dependencies);
 	    allPhasedUnits.addAll(sourceUnits);
 	    
-	    ClassMirror objectMirror = modelLoader.lookupClassMirror("ceylon.language.Object");
+	    ClassMirror objectMirror = modelLoader.lookupClassMirror(modelLoader.getLanguageModule(), "ceylon.language.Object");
 	    if (objectMirror instanceof SourceClass) {
 	        Declaration objectClass = ((SourceClass) objectMirror).getModelDeclaration();
 	        if (objectClass != null) {

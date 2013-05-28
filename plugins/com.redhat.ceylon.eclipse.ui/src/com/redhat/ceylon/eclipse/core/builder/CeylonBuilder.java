@@ -1216,9 +1216,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
 
-        loader.loadPackage("com.redhat.ceylon.compiler.java.metadata", true);
-        loader.loadPackage("ceylon.language", true);
-        loader.loadPackage("ceylon.language.descriptor", true);
+        Module languageModule = loader.getLanguageModule();
+        loader.loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", true);
+        loader.loadPackage(languageModule, "ceylon.language", true);
+        loader.loadPackage(languageModule, "ceylon.language.descriptor", true);
         loader.loadPackageDescriptors();
         
         

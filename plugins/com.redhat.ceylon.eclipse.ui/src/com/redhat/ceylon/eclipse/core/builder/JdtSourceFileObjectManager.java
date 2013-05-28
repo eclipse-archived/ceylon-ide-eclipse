@@ -49,7 +49,8 @@ final class JdtSourceFileObjectManager implements
 							// this happens when we have already registered a source 
 							// file for this decl, so let's print out a helpful message
 							// see https://github.com/ceylon/ceylon-compiler/issues/250
-							ClassMirror previousClass = modelLoader.lookupClassMirror(fqn);
+						    // we can pass null here because the module is not currently used
+							ClassMirror previousClass = modelLoader.lookupClassMirror(null, fqn);
 							CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
 									fqn + " is declared twice: once in " + tree.getSourceFile() + 
 									" and again in: " + CeylonBuilder.fileName(previousClass));

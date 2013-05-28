@@ -315,12 +315,13 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public void loadStandardModules() {
-        // do not load the jdk modules unless imported explicitely
+        // do not load the other jdk modules unless imported explicitely, but the base one is required
         
         /*
          * We start by loading java.lang because we will need it no matter what.
          */
-        loadPackage("java.lang", false);
+        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME);
+        loadPackage(jdkModule, "java.lang", false);
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
@@ -333,12 +334,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public synchronized boolean loadPackage(String packageName, boolean loadDeclarations) {
+    public synchronized boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
         if(loadDeclarations && !loadedPackages.add(packageName)){
             return true;
         }
-        Module module = lookupModuleInternal(packageName);
         
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
@@ -370,16 +370,17 @@ public class JDTModelLoader extends AbstractModelLoader {
                             try {
                                 // we have a few virtual types in java.lang that we need to load but they are not listed from class files
                                 if(packageName.equals("java.lang")){
-                                    convertToDeclaration(JAVA_LANG_ARRAYS, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_BOOLEAN_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_BYTE_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_SHORT_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_INT_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_LONG_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_FLOAT_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_DOUBLE_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_CHAR_ARRAY, DeclarationType.TYPE);
-                                    convertToDeclaration(JAVA_LANG_OBJECT_ARRAY, DeclarationType.TYPE);
+                                    Module jdkBaseModule = getJDKBaseModule();
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_ARRAYS, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_BOOLEAN_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_BYTE_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_SHORT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_INT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_LONG_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_FLOAT_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_DOUBLE_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_CHAR_ARRAY, DeclarationType.TYPE);
+                                    convertToDeclaration(jdkBaseModule, JAVA_LANG_OBJECT_ARRAY, DeclarationType.TYPE);
                                 }
                                 for (IClassFile classFile : packageFragment.getClassFiles()) {
                                     // skip removed class files
@@ -387,7 +388,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     IType type = classFile.getType();
                                     if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) { // only top-levels ar added in source declarations 
-                                        convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                        convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
                                 for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
@@ -396,7 +397,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     for (IType type : compilationUnit.getTypes()) {
                                         if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
-                                            convertToDeclaration(type.getFullyQualifiedName(), DeclarationType.VALUE);
+                                            convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
                                         }
                                     }
                                 }
@@ -422,7 +423,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public synchronized ClassMirror lookupNewClassMirror(String name) {
+    public synchronized ClassMirror lookupNewClassMirror(Module module, String name) {
         if (sourceDeclarations.containsKey(name)) {
             return new SourceClass(sourceDeclarations.get(name));
         }
@@ -516,13 +517,13 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     
     @Override
-    public synchronized Declaration convertToDeclaration(String typeName,
+    public synchronized Declaration convertToDeclaration(Module module, String typeName,
             DeclarationType declarationType) {
         if (sourceDeclarations.containsKey(typeName)) {
             return sourceDeclarations.get(typeName).getModelDeclaration();
         }
         try {
-            return super.convertToDeclaration(typeName, declarationType);
+            return super.convertToDeclaration(module, typeName, declarationType);
         } catch(RuntimeException e) {
             return null;
         }
@@ -750,7 +751,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                 if (classMirror == null) {
                     continue;
                 }
-                final Declaration binaryDeclaration = getOrCreateDeclaration(classMirror,
+                Module module = findModuleForClassMirror(classMirror);
+                final Declaration binaryDeclaration = getOrCreateDeclaration(module, classMirror,
                         DeclarationType.TYPE,
                         new ArrayList<Declaration>(), new boolean[1]);
 
@@ -836,5 +838,20 @@ public class JDTModelLoader extends AbstractModelLoader {
     private boolean mustCompleteFromClasses(SourceDeclarationHolder d) {
         return !d.isSourceToCompile() && d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString().startsWith("ceylon.language");
     }
- 
+
+    public synchronized Package findPackage(String quotedPkgName) {
+        String pkgName = quotedPkgName.replace("$", "");
+        // in theory we only have one package with the same name per module in eclipse
+        for(Package pkg : packagesByName.values()){
+            if(pkg.getNameAsString().equals(pkgName))
+                return pkg;
+        }
+        return null;
+    }
+
+    @Override
+    protected Module findModuleForClassMirror(ClassMirror classMirror) {
+        String pkgName = getPackageNameForQualifiedClassName(classMirror);
+        return lookupModuleInternal(pkgName);
+    }
 }
