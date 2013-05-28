@@ -103,7 +103,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                 editor.getSelectionProvider() != null && 
                 editor.getSelectionProvider().getSelection() != null) {
 
-            ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+            final ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
             final int selectionStart = selection.getOffset();
             final int selectionStop = selection.getOffset() + selection.getLength();
 
@@ -136,14 +136,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     Integer startIndex = node.getStartIndex();
                     Integer stopIndex = node.getStopIndex();
                     if (startIndex != null && stopIndex != null) {
-                        if (selectionStart == selectionStop) {
-                            if (startIndex <= selectionStart && stopIndex >= selectionStart) {
-                                return true;
-                            }
-                        } else {
-                            if (startIndex >= selectionStart && stopIndex <= selectionStop) {
-                                return true;
-                            }
+                        if (selection.getLength() == 0 /* if selection is empty, process whole file */ ||
+                           (startIndex >= selectionStart && stopIndex <= selectionStop) ) {
+                            return true;
                         }
                     }
                     return false;
