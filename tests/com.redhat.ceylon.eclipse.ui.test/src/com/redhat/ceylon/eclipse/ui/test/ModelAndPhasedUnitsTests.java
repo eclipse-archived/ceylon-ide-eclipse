@@ -25,9 +25,11 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.junit.Test;
 
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
@@ -54,12 +56,12 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
     }
     
     @SuppressWarnings("unchecked")
-    private <T extends Unit> T checkDeclarationUnit(String declarationName, 
+    private <T extends Unit> T checkDeclarationUnit(Module module, String declarationName, 
             Class<T> unitClass, 
             String fullPath, 
             String relativePath, 
             String fileName) {
-        Declaration declaration = modelLoader.getDeclaration(declarationName, DeclarationType.VALUE);
+        Declaration declaration = modelLoader.getDeclaration(module, declarationName, DeclarationType.VALUE);
         Assert.assertNotNull("No declaration for name = " + declarationName, declaration);
         Unit unit = declaration.getUnit();
         Assert.assertNotNull("Null Unit for declaration : " + declarationName, unit);
@@ -119,20 +121,22 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
         CeylonUnit unit;
         CeylonUnit unit2;
         
-        unit = checkDeclarationUnit(moduleName + ".CeylonTopLevelClass_" + declarationSuffix, 
+        Module module = modelLoader.findModule(moduleName, "1.0.0");
+        
+        unit = checkDeclarationUnit(module, moduleName + ".CeylonTopLevelClass_" + declarationSuffix, 
                 unitClass, 
                 root + "/" + moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
                 moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
                 "CeylonDeclarations_" + declarationSuffix + ".ceylon");
 
-        unit2 = checkDeclarationUnit(moduleName + ".ceylonTopLevelObject_" + declarationSuffix, 
+        unit2 = checkDeclarationUnit(module, moduleName + ".ceylonTopLevelObject_" + declarationSuffix, 
                 unitClass, 
                 root + "/" + moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
                 moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
                 "CeylonDeclarations_" + declarationSuffix + ".ceylon");
         Assert.assertTrue("Different units " + Arrays.asList(unit, unit2) + " for declarations in the same Unit", unit == unit2);
 
-        unit2 = checkDeclarationUnit(moduleName + ".ceylonTopLevelMethod_" + declarationSuffix, 
+        unit2 = checkDeclarationUnit(module, moduleName + ".ceylonTopLevelMethod_" + declarationSuffix, 
                 unitClass, 
                 root + "/" + moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
                 moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon", 
@@ -227,7 +231,9 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
             }
         }
         
-        JavaClassFile javaClass = checkDeclarationUnit("java.util.logging.Logger", 
+        Module module = modelLoader.findModule(AbstractModelLoader.JAVA_BASE_MODULE_NAME, AbstractModelLoader.JDK_MODULE_VERSION);
+        
+        JavaClassFile javaClass = checkDeclarationUnit(module, "java.util.logging.Logger", 
                 JavaClassFile.class, 
                 jarName + "!/" + "java/util/logging/Logger.class", 
                 "java/util/logging/Logger.class", 
@@ -261,7 +267,8 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
             }
         }
         
-        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("mainModule.JavaCeylonTopLevelClass_Main_Ceylon_Project", 
+        Module module = modelLoader.findModule("mainModule", "1.0.0");
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit(module, "mainModule.JavaCeylonTopLevelClass_Main_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
                 "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
@@ -271,7 +278,7 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
         Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
 
-        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit("mainModule.javaCeylonTopLevelObject_Main_Ceylon_Project", 
+        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit(module, "mainModule.javaCeylonTopLevelObject_Main_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
                 "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
@@ -281,7 +288,7 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
         Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
 
-        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit("mainModule.javaCeylonTopLevelMethod_Main_Ceylon_Project_", 
+        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit(module, "mainModule.javaCeylonTopLevelMethod_Main_Ceylon_Project_", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
                 "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
@@ -311,7 +318,9 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
             }
         }
         
-        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("mainModule.JavaClassInCeylonModule_Main_Ceylon_Project", 
+        Module module = modelLoader.findModule("mainModule", "1.0.0");
+
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit(module, "mainModule.JavaClassInCeylonModule_Main_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
                 "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
@@ -344,8 +353,9 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
                 break;
             }
         }
-        
-        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("referencedCeylonProject.JavaCeylonTopLevelClass_Referenced_Ceylon_Project", 
+        Module module = modelLoader.findModule("referencedCeylonProject", "1.0.0");
+
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit(module, "referencedCeylonProject.JavaCeylonTopLevelClass_Referenced_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
                 "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
@@ -355,7 +365,7 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
         Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
 
-        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit("referencedCeylonProject.javaCeylonTopLevelObject_Referenced_Ceylon_Project", 
+        JavaCompilationUnit javaObjectCompilationUnit = checkDeclarationUnit(module, "referencedCeylonProject.javaCeylonTopLevelObject_Referenced_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
                 "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
@@ -365,7 +375,7 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
         Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
 
-        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit("referencedCeylonProject.javaCeylonTopLevelMethod_Referenced_Ceylon_Project_", 
+        JavaCompilationUnit javaMethodCompilationUnit = checkDeclarationUnit(module, "referencedCeylonProject.javaCeylonTopLevelMethod_Referenced_Ceylon_Project_", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
                 "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
@@ -395,7 +405,9 @@ public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
             }
         }
         
-        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit("referencedCeylonProject.JavaClassInCeylonModule_Referenced_Ceylon_Project", 
+        Module module = modelLoader.findModule("referencedCeylonProject", "1.0.0");
+
+        JavaCompilationUnit javaClassCompilationUnit = checkDeclarationUnit(module, "referencedCeylonProject.JavaClassInCeylonModule_Referenced_Ceylon_Project", 
                 JavaCompilationUnit.class, 
                 rootPath + "/" + "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
                 "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 

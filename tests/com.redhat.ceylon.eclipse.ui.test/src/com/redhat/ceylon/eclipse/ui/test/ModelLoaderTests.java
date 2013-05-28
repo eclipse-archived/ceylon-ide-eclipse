@@ -27,11 +27,13 @@ import org.eclipse.core.runtime.Path;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 
+import com.redhat.ceylon.compiler.java.codegen.Decl;
 import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTest;
 import com.redhat.ceylon.compiler.java.test.model.RunnableTest;
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
@@ -121,7 +123,8 @@ public class ModelLoaderTests extends ModelLoaderTest {
         
         for(Entry<String, Declaration> entry : decls.entrySet()){
             String quotedQualifiedName = entry.getKey().substring(1);
-            Declaration modelDeclaration = modelLoader.getDeclaration(quotedQualifiedName, 
+            Module module = Decl.getModuleContainer(entry.getValue().getContainer());
+            Declaration modelDeclaration = modelLoader.getDeclaration(module, quotedQualifiedName, 
                     entry.getValue() instanceof Value ? DeclarationType.VALUE : DeclarationType.TYPE);
             Assert.assertNotNull(modelDeclaration);
             // make sure we loaded them exactly the same
