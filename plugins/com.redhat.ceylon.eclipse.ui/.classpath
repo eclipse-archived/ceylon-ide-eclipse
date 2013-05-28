@@ -17,7 +17,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ceylon.language-0.6-ide.jar"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-0.6-ide.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.6-ide.jar"/>
+	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.6-ide.jar" sourcepath="/ceylon-compiler/src"/>
 	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.js-0.6-ide.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.6-ide.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.6-ide.jar" sourcepath="/ceylon-spec/src"/>
