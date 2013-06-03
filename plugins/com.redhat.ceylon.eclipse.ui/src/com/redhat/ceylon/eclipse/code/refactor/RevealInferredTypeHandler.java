@@ -15,6 +15,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
+import org.eclipse.ltk.core.refactoring.RefactoringCore;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -55,8 +57,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         findCandidatesForRevelation(editor, localModifiers, valueIterators);
 
         if( !localModifiers.isEmpty() || !valueIterators.isEmpty() ) {
-            TextFileChange tfc = new TextFileChange("Reveal Inferred Types", ((IFileEditorInput) editor.getEditorInput()).getFile());
+            TextChange tfc = new TextFileChange("Reveal Inferred Types", ((IFileEditorInput) editor.getEditorInput()).getFile());
             tfc.setEdit(new MultiTextEdit());
+            tfc.initializeValidationData(null);
 
             for (Tree.LocalModifier localModifier : localModifiers) {
                 if( localModifier.getStartIndex() != null && localModifier.getTypeModel() != null ) {
@@ -81,16 +84,17 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                             pt.getProducedTypeName() + " "));
                     CeylonQuickFixAssistant.importType(imports,  variable.getType().getTypeModel(), rootNode);
                 }
-            }            
+            }
 
             CeylonQuickFixAssistant.applyImports(tfc, imports, rootNode);
-
+            
             try {
-                tfc.initializeValidationData(null);
-                getWorkspace().run(new PerformChangeOperation(tfc), new NullProgressMonitor());
+                PerformChangeOperation changeOperation = new PerformChangeOperation(tfc);
+                changeOperation.setUndoManager(RefactoringCore.getUndoManager(), "Reveal Inferred Types");
+                getWorkspace().run(changeOperation, new NullProgressMonitor());
             } catch (CoreException ce) {
                 throw new ExecutionException("Error reveal inferred types", ce);
-            }            
+            }
         }
 
         return null;
