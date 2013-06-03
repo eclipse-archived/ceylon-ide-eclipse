@@ -48,6 +48,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+        "jboss-modules-1.1.3.GA.jar",
     };
 	
 	private FontRegistry fontRegistry;
