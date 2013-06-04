@@ -157,6 +157,18 @@ public class CeylonProjectConfig {
         this.transientOffline = offline;
     }
     
+    public void refresh() {
+        initMergedConfig();
+        initProjectConfig();
+        isOfflineChanged = false;
+        isEncodingChanged = false;
+        transientEncoding = null;
+        transientOffline = null;
+        transientOutputRepo = null;
+        transientProjectLocalRepos = null;
+        transientProjectRemoteRepos = null;
+    }
+
     public void save() {
         initProjectConfig();
         
@@ -194,7 +206,6 @@ public class CeylonProjectConfig {
                     projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_REMOTE_LOOKUP, newRemoteRepos);
                 }
                 if (isOfflineChanged) {
-                    isOfflineChanged = false;
                     if (transientOffline != null) {
                         projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, transientOffline);
                     } else {
@@ -202,7 +213,6 @@ public class CeylonProjectConfig {
                     }
                 }
                 if (isEncodingChanged) {
-                    isEncodingChanged = false;
                     if (transientEncoding != null) {
                         projectConfig.setOption(DefaultToolOptions.DEFAULTS_ENCODING, transientEncoding);
                     } else {
@@ -211,7 +221,7 @@ public class CeylonProjectConfig {
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
-                initMergedConfig();
+                refresh();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
