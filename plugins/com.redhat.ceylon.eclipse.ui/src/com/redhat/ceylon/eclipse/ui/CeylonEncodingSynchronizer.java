@@ -1,9 +1,10 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static java.lang.Boolean.TRUE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
 import static org.eclipse.core.resources.IResourceDelta.ENCODING;
 import static org.eclipse.core.resources.IResourceDelta.OPEN;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,7 +32,6 @@ public class CeylonEncodingSynchronizer {
 
     private static final CeylonEncodingSynchronizer instance = new CeylonEncodingSynchronizer();
     
-    private static final ThreadLocal<Boolean> isSuspended = new ThreadLocal<Boolean>();
 
     public static CeylonEncodingSynchronizer getInstance() {
         return instance;
@@ -39,6 +39,7 @@ public class CeylonEncodingSynchronizer {
 
     private final IResourceChangeListener resourceChangeListener = new InternalResourceChangeListener();
     private final IResourceDeltaVisitor resourceDeltaVisitor = new InternalResourceDeltaVisitor();
+    private final AtomicBoolean isSuspended = new AtomicBoolean(false);
 
     public void install() {
         ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener);
@@ -54,30 +55,18 @@ public class CeylonEncodingSynchronizer {
         }
         
         try {
-            String eclipseProjectEncoding = project.getDefaultCharset(false);
-            String eclipseInheritedEncoding = project.getDefaultCharset(true);
-
-            CeylonProjectConfig config = CeylonProjectConfig.get(project);
-            String configProjectEncoding = config.getProjectEncoding();
-            String configInheritedEncoding = config.getEncoding();
+            String eclipseEncoding = project.getDefaultCharset();
+            String configEncoding = CeylonProjectConfig.get(project).getProjectEncoding();
 
             if (forceEclipseEncoding) {
-                if (eclipseProjectEncoding != null) {
-                    updateEncoding(project, eclipseProjectEncoding);
-                } else {
-                    updateEncoding(project, eclipseInheritedEncoding);
-                }
+                updateEncoding(project, eclipseEncoding);
                 return;
             }
             
-            if (configProjectEncoding == null) {
-                if (configInheritedEncoding != null && !configInheritedEncoding.equalsIgnoreCase(eclipseInheritedEncoding)) {
-                    updateEncoding(project, eclipseInheritedEncoding);
-                }
-            } else {
-                if( !configProjectEncoding.equalsIgnoreCase(eclipseInheritedEncoding)) {
-                    showSynchronizationDialog(project, eclipseInheritedEncoding, configProjectEncoding);
-                }
+            if (configEncoding == null) {
+                updateEncoding(project, eclipseEncoding);
+            } else if (!configEncoding.equalsIgnoreCase(eclipseEncoding)) {
+                showSynchronizationDialog(project, eclipseEncoding, configEncoding);
             }
         } catch (CoreException e) {
             throw new RuntimeException(e);
@@ -120,7 +109,7 @@ public class CeylonEncodingSynchronizer {
 
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
-            if( isSuspended.get() != TRUE ) {
+            if( !isSuspended.get() ) {
                 try {
                     if (event.getDelta() != null) {
                         event.getDelta().accept(resourceDeltaVisitor);
@@ -143,12 +132,12 @@ public class CeylonEncodingSynchronizer {
             } else if (resource instanceof IFolder && resource.getName().equals(".ceylon")) {
                 return true;
             } else if (resource instanceof IProject) {
-                if (hasFlag(delta, ENCODING)) {
-                    synchronizeEncoding((IProject) resource, true);
-                    return false;
-                }
                 if (hasFlag(delta, OPEN)) {
                     synchronizeEncoding((IProject) resource, false);
+                    return false;
+                }
+                if (hasFlag(delta, ENCODING)) {
+                    synchronizeEncoding((IProject) resource, true);
                     return false;
                 }
                 return true;
@@ -185,7 +174,7 @@ public class CeylonEncodingSynchronizer {
         public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             try {
-                isSuspended.set(TRUE);
+                isSuspended.set(true);
                 
                 String originalEclipseEncoding = project.getDefaultCharset();
                 if (!isEquals(originalEclipseEncoding, encoding)) {
@@ -200,7 +189,7 @@ public class CeylonEncodingSynchronizer {
 
                 return Status.OK_STATUS;
             } finally {
-                isSuspended.remove();
+                isSuspended.set(false);
             }
         }        
     }
