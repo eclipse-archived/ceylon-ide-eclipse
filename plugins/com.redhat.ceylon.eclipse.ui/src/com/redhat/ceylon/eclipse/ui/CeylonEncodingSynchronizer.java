@@ -154,9 +154,14 @@ public class CeylonEncodingSynchronizer {
                 return true;
             } else if (resource instanceof IFile) {
                 if (hasFlag(delta, CONTENT)) {
+                    IProject project = resource.getProject();
                     String filePath = resource.getProjectRelativePath().toString();
-                    if (filePath.equals(".ceylon/config") || filePath.equals(".project")) {
-                        synchronizeEncoding(resource.getProject(), false);
+                    if (filePath.equals(".project") /* handle adding ceylon nature to existing project */) {
+                        synchronizeEncoding(project, false);
+                    }
+                    if (filePath.equals(".ceylon/config")) {
+                        CeylonProjectConfig.get(project).refresh();
+                        synchronizeEncoding(project, false);
                     }
                 }
             }
