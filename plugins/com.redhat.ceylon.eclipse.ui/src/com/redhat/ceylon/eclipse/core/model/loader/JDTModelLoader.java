@@ -320,7 +320,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         /*
          * We start by loading java.lang because we will need it no matter what.
          */
-        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME);
+        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
         loadPackage(jdkModule, "java.lang", false);
     }
     
