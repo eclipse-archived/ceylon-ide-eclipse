@@ -52,7 +52,9 @@ public class CeylonProjectConfig {
     private List<String> transientProjectRemoteRepos;
     
     private boolean isOfflineChanged = false;
+    private boolean isEncodingChanged = false;
     private Boolean transientOffline;
+    private String transientEncoding;
 
     private CeylonProjectConfig(IProject project) {
         this.project = project;
@@ -129,6 +131,19 @@ public class CeylonProjectConfig {
         transientProjectRemoteRepos = projectRemoteRepos;
     }
     
+    public String getEncoding() {
+        return mergedConfig.getOption(DefaultToolOptions.DEFAULTS_ENCODING);
+    }
+
+    public String getProjectEncoding() {
+        return projectConfig.getOption(DefaultToolOptions.DEFAULTS_ENCODING);
+    }
+    
+    public void setProjectEncoding(String encoding) {
+        this.isEncodingChanged = true;
+        this.transientEncoding = encoding;
+    }
+    
     public boolean isOffline() {
         return mergedConfig.getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, false);
     }
@@ -164,7 +179,7 @@ public class CeylonProjectConfig {
             }
         }
         
-        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || isOfflineChanged) {
+        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || isOfflineChanged || isEncodingChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -184,6 +199,14 @@ public class CeylonProjectConfig {
                         projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, transientOffline);
                     } else {
                         projectConfig.removeOption(DefaultToolOptions.DEFAULTS_OFFLINE);
+                    }
+                }
+                if (isEncodingChanged) {
+                    isEncodingChanged = false;
+                    if (transientEncoding != null) {
+                        projectConfig.setOption(DefaultToolOptions.DEFAULTS_ENCODING, transientEncoding);
+                    } else {
+                        projectConfig.removeOption(DefaultToolOptions.DEFAULTS_ENCODING);
                     }
                 }
 

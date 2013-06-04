@@ -103,12 +103,14 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         this.bundleContext = context;
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
+        CeylonEncodingSynchronizer.getInstance().install();
 	}
 	
 	@Override
 	public void stop(BundleContext context) throws Exception {
 	    super.stop(context);
 	    unregisterProjectOpenCloseListener();
+	    CeylonEncodingSynchronizer.getInstance().uninstall();
 	}
 
     private void addResourceFilterPreference() throws BackingStoreException {
