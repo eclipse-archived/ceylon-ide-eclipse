@@ -33,6 +33,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CleanImportsHandler extends AbstractHandler {
     
+    private static final String indent = "    ";
+    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
@@ -124,9 +126,9 @@ public class CleanImportsHandler extends AbstractHandler {
         	if (hasWildcard || !list.isEmpty() || 
         			imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
         		lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
-        		builder.append("import ").append(packageName).append(" { ");
+        		builder.append("import ").append(packageName).append(" {");
         		appendImportElements(packageName, list, unused, proposed, hasWildcard, builder);
-        		builder.append(" }\n");
+        		builder.append("\n}\n");
         	}
         }
         if (builder.length()!=0) {
@@ -163,6 +165,7 @@ public class CleanImportsHandler extends AbstractHandler {
 			if (i.getDeclarationModel()!=null && 
 					i.getIdentifier().getErrors().isEmpty() &&
 					i.getErrors().isEmpty()) {
+			    builder.append('\n').append(indent);
 				if ( !i.getImportModel().getAlias()
 						.equals(i.getDeclarationModel().getName()) ) {
 					builder.append(i.getImportModel().getAlias())
@@ -170,27 +173,29 @@ public class CleanImportsHandler extends AbstractHandler {
 				}
 				builder.append(i.getDeclarationModel().getName());
 				appendNestedImportElements(i, unused, builder);
-				builder.append(", ");
+				builder.append(",");
 			}
 		}
 		for (Declaration d: proposed) {
 			if (d.getUnit().getPackage().getNameAsString()
 					.equals(packageName)) {
-				builder.append(d.getName()).append(", ");
+			    builder.append('\n').append(indent);
+				builder.append(d.getName()).append(",");
 			}
 		}
 		if (hasWildcard) {
-			builder.append("...");
+		    builder.append('\n').append(indent).append("...");
 		}
 		else {
-			builder.setLength(builder.length()-2);
+		    // remove trailing ,
+			builder.setLength(builder.length()-1);
 		}
 	}
 
 	private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
 			List<Declaration> unused, StringBuilder builder) {
 		if (imt.getImportMemberOrTypeList()!=null) {
-			builder.append(" { ");
+			builder.append(" {");
 			boolean found=false;
 			for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
 					.getImportMemberOrTypes()) {
@@ -199,19 +204,25 @@ public class CleanImportsHandler extends AbstractHandler {
 						nimt.getErrors().isEmpty()) {
 					if (!unused.contains(nimt.getDeclarationModel())) {
 						found=true;
+						builder.append('\n').append(indent).append(indent);
 						if (!nimt.getImportModel().getAlias()
 								.equals(nimt.getDeclarationModel().getName())) {
 							builder.append(nimt.getImportModel().getAlias())
 									.append("=");
 						}
 						builder.append(nimt.getDeclarationModel().getName())
-								.append(", ");
+								.append(",");
 					}
 				}
 			}
-			if (found) builder.setLength(builder.length()-2);
-			builder.append(" }");
-			if (!found) builder.setLength(builder.length()-5);
+			if (found) {
+			    // remove trailing ","
+			    builder.setLength(builder.length()-1);
+			    builder.append('\n').append(indent).append('}');   
+			} else {
+			    // remove the " {" 
+			    builder.setLength(builder.length()-2);
+			}
 		}
 	}
 
