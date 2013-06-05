@@ -215,6 +215,11 @@ public class CleanImportsHandler extends AbstractHandler {
 					}
 				}
 			}
+			if (imt.getImportMemberOrTypeList().getImportWildcard() != null) {
+			    found=true;
+			    builder.append('\n').append(indent).append(indent).append("...,");
+			}
+			
 			if (found) {
 			    // remove trailing ","
 			    builder.setLength(builder.length()-1);
