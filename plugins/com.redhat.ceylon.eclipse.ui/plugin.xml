@@ -1453,6 +1453,15 @@
           Color for highlighting a particular range of text lines.
        </description>
     </colorDefinition>
+    <colorDefinition
+          categoryId="com.redhat.ceylon.eclipse.ui.theme"
+          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiteralDelimiters"
+          label="Type literal delimiters"
+          value="COLOR_DARK_MAGENTA">
+       <description>
+          Color for highlighting type literal delimiters
+       </description>
+    </colorDefinition>
 
     </extension>
     

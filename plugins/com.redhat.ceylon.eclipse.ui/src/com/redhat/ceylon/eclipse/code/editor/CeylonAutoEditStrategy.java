@@ -135,14 +135,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				catch (BadLocationException e) {}
 			}
 
-			if (!isQuotedOrCommented(cmd.offset, opening) && 
-					current.equals(opening)) {
+            if (current.equals(opening) && (!isQuotedOrCommented(cmd.offset) || isGraveAccentCharacterInStringLiteral(cmd.offset, opening))) {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
 					//add a closing fence
 				    cmd.shiftsCaret = false;
                     cmd.caretOffset = cmd.offset + 1;
-				    if (opening.equals("`")) {
+				    if (isGraveAccentCharacterInStringLiteral(cmd.offset, opening)) {
 				        try {
 				            if (cmd.offset>1 &&
 				                    doc.get(cmd.offset-1,1).equals("`") &&
@@ -287,21 +286,16 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 type==LINE_COMMENT ||
                 type==MULTI_COMMENT;
     }
-
-    private boolean isQuotedOrCommented(int offset, String fence) {
+    
+    private boolean isGraveAccentCharacterInStringLiteral(int offset, String fence) {
         if ("`".equals(fence)) {
             int type = tokenType(offset);
-            return type!=STRING_LITERAL &&
-                    type!=STRING_START &&
-                    type!=STRING_END &&
-                    type!=STRING_MID;
-            /*return type==ASTRING_LITERAL ||
-                    type==LINE_COMMENT ||
-                    type==MULTI_COMMENT;*/
+            return type == STRING_LITERAL ||
+                    type == STRING_START ||
+                    type == STRING_END ||
+                    type == STRING_MID;
         }
-        else {
-            return isQuotedOrCommented(offset);
-        }
+        return false;
     }
 
     private boolean isMultilineCommentStart(int offset, IDocument d) {
