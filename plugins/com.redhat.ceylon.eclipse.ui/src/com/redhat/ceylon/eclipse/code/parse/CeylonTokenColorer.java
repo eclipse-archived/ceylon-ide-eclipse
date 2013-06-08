@@ -25,6 +25,7 @@ public class CeylonTokenColorer  {
     
     public static String IDENTIFIERS = "identifiers";
     public static String TYPES = "types";
+    public static String TYPE_LITERAL_DELIMITERS = "typeLiteralDelimiters";
     public static String KEYWORDS = "keywords";
     public static String NUMBERS = "numbers";
     public static String STRINGS = "strings";
@@ -45,7 +46,7 @@ public class CeylonTokenColorer  {
             "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
             "dynamic"));
     
-    private static TextAttribute identifierAttribute, typeAttribute, keywordAttribute, numberAttribute, 
+    private static TextAttribute identifierAttribute, typeAttribute, typeLiteralDelimitersAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
     semiAttribute, braceAttribute, packageAttribute, interpAttribute, charAttribute;
     
@@ -81,6 +82,7 @@ public class CeylonTokenColorer  {
     private static void initColors(ColorRegistry colorRegistry) {
         identifierAttribute = text(colorRegistry, IDENTIFIERS, SWT.NORMAL);
         typeAttribute = text(colorRegistry, TYPES, SWT.NORMAL);
+        typeLiteralDelimitersAttribute = text(colorRegistry, TYPE_LITERAL_DELIMITERS, SWT.NORMAL);
         keywordAttribute = text(colorRegistry, KEYWORDS, SWT.BOLD);
         numberAttribute = text(colorRegistry, NUMBERS, SWT.NORMAL);
         commentAttribute = text(colorRegistry, COMMENTS, SWT.NORMAL);
@@ -109,6 +111,8 @@ public class CeylonTokenColorer  {
                 return typeAttribute;
             case CeylonParser.LIDENTIFIER:
                 return identifierAttribute;
+            case CeylonParser.TYPE_LITERAL_DELIMITER:
+                return typeLiteralDelimitersAttribute;
             case CeylonParser.FLOAT_LITERAL:
             case CeylonParser.NATURAL_LITERAL:
                 return numberAttribute;
