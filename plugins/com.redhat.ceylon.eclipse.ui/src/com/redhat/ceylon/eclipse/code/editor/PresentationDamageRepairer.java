@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.eclipse.swt.custom.StyleRange;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
@@ -123,15 +125,30 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		}
 		return true;
 	}
+	
+    public boolean isWithinTypeLiteral(CommonToken token, List<Tree.TypeLiteral> typeLiterals) {
+        for (Tree.TypeLiteral typeLiteral : typeLiterals) {
+            if (typeLiteral.getStartIndex() != null && typeLiteral.getEndToken() != null) {
+                int startIndex = typeLiteral.getStartIndex();
+                int stopIndex = ((CommonToken) typeLiteral.getEndToken()).getStopIndex();
+                if (startIndex <= token.getStartIndex() && stopIndex >= token.getStopIndex()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
+	    
+	    List<Tree.TypeLiteral> typeLiterals = new ArrayList<Tree.TypeLiteral>();
 		
 		//it sounds strange, but it's better to parse
 		//and cache here than in getDamageRegion(),
 		//because these methods get called in strange
 		//orders
-		tokens = parse();
+		tokens = parse(typeLiterals);
 		
 		//int prevStartOffset= -1;
 		//int prevEndOffset= -1;
@@ -142,8 +159,15 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				if (token.getType()==CeylonLexer.EOF) {
 					break;
 				}
+				
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
+				
+                if (isWithinTypeLiteral(token, typeLiterals)) {
+                    changeTokenPresentation(presentation, tokenColorer.getTypeLiteralColoring(), startOffset, endOffset);
+                    continue;
+                }
+				
                 switch (token.getType()) {
                 case CeylonParser.STRING_MID:
                     endOffset-=2; startOffset+=2; 
@@ -229,7 +253,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		}
 	}
 	
-	private List<CommonToken> parse() {
+	private List<CommonToken> parse(final List<Tree.TypeLiteral> typeLiterals) {
 		String text = sourceViewer.getDocument().get();
 		ANTLRStringStream input = new ANTLRStringStream(text);
         CeylonLexer lexer = new CeylonLexer(input);
@@ -242,6 +266,15 @@ class PresentationDamageRepairer implements IPresentationDamager,
         }
         catch (RecognitionException e) {
             throw new RuntimeException(e);
+        }
+        
+        if (cu != null) {
+            cu.visit(new Visitor() {
+                @Override
+                public void visit(Tree.TypeLiteral typeLiteral) {
+                    typeLiterals.add(typeLiteral);
+                }
+            });
         }
         
         return tokenStream.getTokens(); 

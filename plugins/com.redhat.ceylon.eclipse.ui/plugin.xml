@@ -1455,9 +1455,9 @@
     </colorDefinition>
     <colorDefinition
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
-          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiteralDelimiters"
-          label="Type literal delimiters"
-          value="COLOR_DARK_MAGENTA">
+          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
+          label="Type literals"
+          value="BLACK">
        <description>
           Color for highlighting type literal delimiters
        </description>
