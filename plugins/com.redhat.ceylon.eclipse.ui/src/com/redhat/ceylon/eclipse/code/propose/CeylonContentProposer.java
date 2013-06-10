@@ -492,6 +492,7 @@ public class CeylonContentProposer {
 		StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
             fullPath.append(Util.formatPath(path.getIdentifiers()));
+            fullPath.append('.');
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }
 		return fullPath.toString();
