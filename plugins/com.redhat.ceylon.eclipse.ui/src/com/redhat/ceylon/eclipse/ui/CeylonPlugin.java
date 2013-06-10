@@ -185,7 +185,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         URL eclipseUrl = FileLocator.find(bundle, path, null);
         try{
             URL fileURL = FileLocator.resolve(eclipseUrl);
-            File libDir = new File(fileURL.toURI());
+            File libDir = new File(fileURL.getPath());
             List<String> jars = new ArrayList<String>(RUNTIME_LIBRARIES.length);
             for(String jar : RUNTIME_LIBRARIES){
                 jars.add(new File(libDir, jar).getAbsolutePath());
