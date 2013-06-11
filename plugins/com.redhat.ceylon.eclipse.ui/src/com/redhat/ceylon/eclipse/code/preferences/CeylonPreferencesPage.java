@@ -121,7 +121,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         enableExplodeModules.setEnabled(builderEnabled);
         
         showWarnings = new Button(composite, SWT.CHECK);
-        showWarnings.setText("Show compiler warnings (for unused declarations)");
+        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(builderEnabled);
 
