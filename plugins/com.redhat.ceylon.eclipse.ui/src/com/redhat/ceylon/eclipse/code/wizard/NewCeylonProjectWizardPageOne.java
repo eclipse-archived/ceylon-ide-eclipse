@@ -1482,7 +1482,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         enableJdtClasses.setEnabled(true);
 
         final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        showWarnings.setText("Show compiler warnings (for unused declarations)");
+        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
 
