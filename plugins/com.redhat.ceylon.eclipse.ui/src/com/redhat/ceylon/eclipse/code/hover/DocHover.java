@@ -901,7 +901,9 @@ public class DocHover
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
-				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(description(dec, cpc)) + "</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + (dec.isDeprecated() ? "<s>":"") + 
+				HTMLPrinter.convertToHTMLContent(description(dec, cpc)) + 
+				(dec.isDeprecated() ? "</s>":"") + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
 		if (dec instanceof Parameter) {
