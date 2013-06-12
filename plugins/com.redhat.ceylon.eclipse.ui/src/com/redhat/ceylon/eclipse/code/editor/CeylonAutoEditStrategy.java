@@ -135,7 +135,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				catch (BadLocationException e) {}
 			}
 
-            if (current.equals(opening) && (!isQuotedOrCommented(cmd.offset) || isGraveAccentCharacterInStringLiteral(cmd.offset, opening))) {
+            if (current.equals(opening) && (!isQuotedOrCommented(cmd.offset) || 
+            		isGraveAccentCharacterInStringLiteral(cmd.offset, opening))) {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
 					//add a closing fence
