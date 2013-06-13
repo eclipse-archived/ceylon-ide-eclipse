@@ -367,6 +367,7 @@ public class ModuleSearchViewPart extends ViewPart {
             Collections.addAll(repositoryList, repositories.getLocalLookupRepositories());
             Collections.addAll(repositoryList, repositories.getGlobalLookupRepositories());
             Collections.addAll(repositoryList, repositories.getRemoteLookupRepositories());
+            Collections.addAll(repositoryList, repositories.getOtherLookupRepositories());
             
             parent.setLayout(new GridLayout(1, false));
 
