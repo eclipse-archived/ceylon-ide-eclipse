@@ -16,6 +16,8 @@ import static org.eclipse.core.runtime.Platform.getPreferencesService;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
+import java.util.List;
+
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.jface.text.BadLocationException;
@@ -275,34 +277,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
 
     private boolean isQuotedOrCommented(IDocument d, int offset) {
-    	if (d.getLength()==offset) { //at very end of file
-    		//check to see if previous token is
-    		//an unterminated string or comment
-    		int type = tokenType(offset-1);
-    		CommonToken token = token(offset-1);
-    		return (type==STRING_LITERAL ||
-    				type==STRING_END ||
-    				type==ASTRING_LITERAL) && 
-    					!token.getText().endsWith("\"") ||
-    				(type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
-    					!token.getText().endsWith("\"\"\"") ||
-        			(type==MULTI_COMMENT) && 
-    					!token.getText().endsWith("*/") ||
-    				type==LINE_COMMENT;
-    	}
-    	else {
-    		int type = tokenType(offset);
-    		return type==STRING_LITERAL ||
-    				type==CHAR_LITERAL || 
-    				type==STRING_MID ||
-    				type==STRING_START ||
-    				type==STRING_END ||
-    				type==VERBATIM_STRING ||
-    				type==ASTRING_LITERAL ||
-    				type==AVERBATIM_STRING ||
-    				type==LINE_COMMENT ||
-    				type==MULTI_COMMENT;
-    	}
+    	int type = tokenType(offset);
+    	return type==STRING_LITERAL ||
+    			type==CHAR_LITERAL || 
+    			type==STRING_MID ||
+    			type==STRING_START ||
+    			type==STRING_END ||
+    			type==VERBATIM_STRING ||
+    			type==ASTRING_LITERAL ||
+    			type==AVERBATIM_STRING ||
+    			type==LINE_COMMENT ||
+    			type==MULTI_COMMENT;
     }
     
     private boolean isGraveAccentCharacterInStringLiteral(int offset, String fence) {
@@ -337,14 +322,39 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	public CommonToken token(int offset) {
 		if (editor==null) return null;
         CeylonParseController pc = editor.getParseController();
-        if (pc.getTokens()!=null) {
-        	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
-        	if (tokenIndex>=0) {
-        		CommonToken token = pc.getTokens().get(tokenIndex);
-        		if (token.getStartIndex()<offset) {
-        			return token;
-        		}
-        	}
+        List<CommonToken> tokens = pc.getTokens();
+		if (tokens!=null) {
+    		if (tokens.size()>1) {
+    			if (pc.getDocument().getLength()==offset) { //at very end of file
+    				//check to see if last token is an
+    				//unterminated string or comment
+    				CommonToken token = tokens.get(tokens.size()-2);
+    				int type = token==null ? -1 : token.getType();
+    				if ((type==STRING_LITERAL ||
+    						type==STRING_END ||
+    						type==ASTRING_LITERAL) && 
+    						(!token.getText().endsWith("\"") ||
+    						token.getText().length()==1) ||
+    						(type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
+    						(!token.getText().endsWith("\"\"\"")||
+    						token.getText().length()==3) ||
+    						(type==MULTI_COMMENT) && 
+    						(!token.getText().endsWith("*/")||
+    						token.getText().length()==2) ||
+    						type==LINE_COMMENT) {
+    					return token;
+    				}
+    			}
+    			else {
+    				int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+    				if (tokenIndex>=0) {
+    					CommonToken token = tokens.get(tokenIndex);
+    					if (token.getStartIndex()<offset) {
+    						return token;
+    					}
+    				}
+    			}
+    		}
         }
 		return null;
 	}
@@ -365,31 +375,29 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return false;
     }*/
 
-    private int getStringIndent(int offset) {
-    	if (editor==null) return -1;
-    	CeylonParseController pc = editor.getParseController();
-    	if (pc.getTokens()==null) return -1;
-    	int tokenIndex = getTokenIndexAtCharacter(pc.getTokens(), offset);
-    	if (tokenIndex>=0) {
-    	    CommonToken token = pc.getTokens().get(tokenIndex);
-    	    if (token!=null) {
-    	        int type = token.getType();
-                if ((type==STRING_LITERAL || 
-	                type==STRING_MID ||
-	                type==STRING_START ||
-	                type==STRING_END ||
-	                type==ASTRING_LITERAL ||
-	                type==VERBATIM_STRING ||
-                    type==AVERBATIM_STRING) &&
-	                token.getStartIndex()<offset) {
-                    int quote = type==VERBATIM_STRING ||
-                            type==AVERBATIM_STRING ? 3 : 1;
-	                return token.getCharPositionInLine()+quote;
-	            }
-    	    }
-    	}
-    	return -1;
-    }
+	private int getStringIndent(IDocument d, int offset) {
+		CommonToken token = token(offset);
+		if (token!=null) {
+			int type = token.getType();
+			if ((type==STRING_LITERAL || 
+					type==STRING_MID ||
+					type==STRING_START ||
+					type==STRING_END ||
+					type==ASTRING_LITERAL ||
+					type==VERBATIM_STRING ||
+					type==AVERBATIM_STRING) &&
+					token.getStartIndex()<offset) {
+				return getStartOfQuotedText(token, type);
+			}
+		}
+		return -1;
+	}
+
+	private int getStartOfQuotedText(CommonToken token, int type) {
+		int quote = type==VERBATIM_STRING ||
+				type==AVERBATIM_STRING ? 3 : 1;
+		return token.getCharPositionInLine()+quote;
+	}
 
     private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
@@ -433,7 +441,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     
     private void indentNewLine(IDocument d, DocumentCommand c)
             throws BadLocationException {
-        int stringIndent = getStringIndent(c.offset);
+        int stringIndent = getStringIndent(d, c.offset);
         int start = getStartOfCurrentLine(d, c);
         if (stringIndent>=0) {
             StringBuilder sb = new StringBuilder();
