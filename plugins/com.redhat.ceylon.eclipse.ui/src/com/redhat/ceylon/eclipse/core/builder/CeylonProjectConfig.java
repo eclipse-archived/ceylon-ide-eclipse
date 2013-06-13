@@ -115,6 +115,10 @@ public class CeylonProjectConfig {
         return toRepositoriesUrlList(mergedRepositories.getGlobalLookupRepositories());
     }
 
+    public List<String> getOtherRemoteRepos() {
+        return toRepositoriesUrlList(mergedRepositories.getOtherLookupRepositories());
+    }
+
     public List<String> getProjectLocalRepos() {
         return toRepositoriesUrlList(projectRepositories.getRepositoriesByType(Repositories.REPO_TYPE_LOCAL_LOOKUP));
     }

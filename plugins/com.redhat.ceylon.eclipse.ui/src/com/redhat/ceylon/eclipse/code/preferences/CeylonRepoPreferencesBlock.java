@@ -68,9 +68,10 @@ public class CeylonRepoPreferencesBlock {
     private IProject project;
     private ValidationCallback validationCallback;
 
-    private List<String> globalLookupRepos;
     private List<String> projectLocalRepos;
+    private List<String> globalLookupRepos;
     private List<String> projectRemoteRepos;
+    private List<String> otherRemoteRepos;
 
     private Text systemRepoText;
     private Text outputRepoText;
@@ -113,6 +114,7 @@ public class CeylonRepoPreferencesBlock {
         projectRemoteRepos = new ArrayList<String>();
         lookupRepoTable.removeAll();
         addLookupRepos(globalLookupRepos, true);
+        addLookupRepos(otherRemoteRepos, true);
         
         validate();
     }
@@ -124,6 +126,7 @@ public class CeylonRepoPreferencesBlock {
             projectLocalRepos = CeylonProjectConfig.get(project).getProjectLocalRepos();
             projectRemoteRepos = CeylonProjectConfig.get(project).getProjectRemoteRepos();
             globalLookupRepos = CeylonProjectConfig.get(project).getGlobalLookupRepos();
+            otherRemoteRepos = CeylonProjectConfig.get(project).getOtherRemoteRepos();
         }
         
         systemRepoText.setText(CeylonBuilder.getCeylonSystemRepo(project));
@@ -139,6 +142,7 @@ public class CeylonRepoPreferencesBlock {
         addLookupRepos(projectLocalRepos, false);
         addLookupRepos(globalLookupRepos, true);
         addLookupRepos(projectRemoteRepos, false);
+        addLookupRepos(otherRemoteRepos, true);
         
         addRepoButton.setEnabled(isCeylonNatureEnabled);
         addExternalRepoButton.setEnabled(isCeylonNatureEnabled);
@@ -337,7 +341,7 @@ public class CeylonRepoPreferencesBlock {
             public void widgetSelected(SelectionEvent e) {
                 int[] selection = lookupRepoTable.getSelectionIndices();
                 for (int index : selection) {
-                    if (!isGlobalLookupRepoIndex(index)) {
+                    if (!isFixedRepoIndex(index)) {
                         String repo = lookupRepoTable.getItem(index).getText();
                         lookupRepoTable.remove(index);
                         projectLocalRepos.remove(repo);
@@ -415,7 +419,7 @@ public class CeylonRepoPreferencesBlock {
     private void updateRemoveRepoButtonState() {
         int[] selectionIndices = lookupRepoTable.getSelectionIndices();
         for (int index : selectionIndices) {
-            if (!isGlobalLookupRepoIndex(index)) {
+            if (!isFixedRepoIndex(index)) {
                 removeRepoButton.setEnabled(true);
                 return;
             }
@@ -430,10 +434,11 @@ public class CeylonRepoPreferencesBlock {
         int[] selectionIndices = lookupRepoTable.getSelectionIndices();
         if (selectionIndices.length == 1) {
             int index = selectionIndices[0];
-            if (index > 0 && !isGlobalLookupRepoIndex(index)) {
+            if (index > 0 && !isFixedRepoIndex(index)) {
                 isUpEnabled = true;
             }
-            if (index < lookupRepoTable.getItemCount() - 1 && !isGlobalLookupRepoIndex(index)) {
+            int maxIndex = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size() - 1;
+            if (index < maxIndex && !isFixedRepoIndex(index)) {
                 isDownEnabled = true;
             }
         }
@@ -452,10 +457,15 @@ public class CeylonRepoPreferencesBlock {
         }
     }
 
-    private boolean isGlobalLookupRepoIndex(int index) {
+    private boolean isFixedRepoIndex(int index) {
         if (!globalLookupRepos.isEmpty() 
                 && index >= projectLocalRepos.size()
                 && index < projectLocalRepos.size() + globalLookupRepos.size()) {
+            return true;
+        }
+        if (!otherRemoteRepos.isEmpty() 
+                && index >= projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size()
+                && index < projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size() + otherRemoteRepos.size()) {
             return true;
         }
         return false;
