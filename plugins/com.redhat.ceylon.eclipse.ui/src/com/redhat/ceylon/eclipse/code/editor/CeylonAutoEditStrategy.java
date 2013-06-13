@@ -135,7 +135,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				catch (BadLocationException e) {}
 			}
 
-            if (current.equals(opening) && (!isQuotedOrCommented(cmd.offset) || 
+            if (current.equals(opening) && (!isQuotedOrCommented(doc,cmd.offset) || 
             		isGraveAccentCharacterInStringLiteral(cmd.offset, opening))) {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
@@ -274,18 +274,35 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         		type==MULTI_COMMENT;
     }
 
-    private boolean isQuotedOrCommented(int offset) {
-        int type = tokenType(offset);
-        return type==STRING_LITERAL ||
-                type==CHAR_LITERAL || 
-                type==STRING_MID ||
-                type==STRING_START ||
-                type==STRING_END ||
-                type==VERBATIM_STRING ||
-                type==ASTRING_LITERAL ||
-                type==AVERBATIM_STRING ||
-                type==LINE_COMMENT ||
-                type==MULTI_COMMENT;
+    private boolean isQuotedOrCommented(IDocument d, int offset) {
+    	if (d.getLength()==offset) { //at very end of file
+    		//check to see if previous token is
+    		//an unterminated string or comment
+    		int type = tokenType(offset-1);
+    		CommonToken token = token(offset-1);
+    		return (type==STRING_LITERAL ||
+    				type==STRING_END ||
+    				type==ASTRING_LITERAL) && 
+    					!token.getText().endsWith("\"") ||
+    				(type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
+    					!token.getText().endsWith("\"\"\"") ||
+        			(type==MULTI_COMMENT) && 
+    					!token.getText().endsWith("*/") ||
+    				type==LINE_COMMENT;
+    	}
+    	else {
+    		int type = tokenType(offset);
+    		return type==STRING_LITERAL ||
+    				type==CHAR_LITERAL || 
+    				type==STRING_MID ||
+    				type==STRING_START ||
+    				type==STRING_END ||
+    				type==VERBATIM_STRING ||
+    				type==ASTRING_LITERAL ||
+    				type==AVERBATIM_STRING ||
+    				type==LINE_COMMENT ||
+    				type==MULTI_COMMENT;
+    	}
     }
     
     private boolean isGraveAccentCharacterInStringLiteral(int offset, String fence) {
@@ -705,7 +722,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-            	!isQuotedOrCommented(offset)) {
+            	!isQuotedOrCommented(d,offset)) {
                 return ch.charAt(0);
             }
         }
@@ -718,7 +735,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         for (;offset>=0; offset--) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-            	!isQuotedOrCommented(offset) ||
+            	!isQuotedOrCommented(d,offset) ||
                     isLineEnding(d, ch)) {
                 return ch.charAt(0);
             }
@@ -731,7 +748,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         for (;offset<d.getLength(); offset++) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-                !isQuotedOrCommented(offset) ||
+                !isQuotedOrCommented(d,offset) ||
                     isLineEnding(d, ch)) {
                 return ch.charAt(0);
             }
@@ -744,7 +761,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         for (;offset<end; offset++) {
             String ch = d.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-                !isQuotedOrCommented(offset)) {
+                !isQuotedOrCommented(d,offset)) {
                 return ch.charAt(0);
             }
         }
