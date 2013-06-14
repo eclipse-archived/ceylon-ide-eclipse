@@ -284,7 +284,7 @@ public class CeylonRepoPreferencesBlock {
 
     private void initAddAetherRepoButton(final Composite buttons) {
         addAetherRepoButton = new Button(buttons, SWT.PUSH);
-        addAetherRepoButton.setText("Add Aether Repository...");
+        addAetherRepoButton.setText("Add Maven Repository...");
         addAetherRepoButton.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).create());
         addAetherRepoButton.addSelectionListener(new SelectionAdapter() {
             @Override
