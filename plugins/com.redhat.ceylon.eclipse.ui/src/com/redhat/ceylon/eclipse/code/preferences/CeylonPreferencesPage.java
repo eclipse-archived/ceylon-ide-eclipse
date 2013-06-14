@@ -188,7 +188,7 @@ public class CeylonPreferencesPage extends PropertyPage {
         
         Link openRepoPageLink = new Link(parent, 0);
         openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        openRepoPageLink.setText("<a>Configure Repositories</a>");
+        openRepoPageLink.setText("<a>Configure Project Module Repositories...</a>");
         openRepoPageLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
