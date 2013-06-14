@@ -14,6 +14,8 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
 public class CeylonRepoPreferencesPage extends PropertyPage {
+    
+    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.repos";
 
     private CeylonRepoPreferencesBlock block;
 

@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -17,8 +18,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -180,6 +183,17 @@ public class CeylonPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 backendJs = !backendJs;
+            }
+        });
+        
+        Link openRepoPageLink = new Link(parent, 0);
+        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        openRepoPageLink.setText("<a>Configure Repositories</a>");
+        openRepoPageLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IWorkbenchPreferenceContainer container = (IWorkbenchPreferenceContainer) getContainer();
+                container.openPage(CeylonRepoPreferencesPage.ID, null);
             }
         });
     }
