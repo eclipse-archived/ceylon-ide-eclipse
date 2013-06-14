@@ -292,11 +292,12 @@ public class CeylonRepoPreferencesBlock {
                 AetherRepositoryDialog dlg = new AetherRepositoryDialog(buttons.getShell());
                 int result = dlg.open();
                 if (result == InputDialog.OK) {
+                	int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
                     String value = dlg.getValue();
                     if (value.isEmpty()) {
-                        addProjectRepo("aether", lookupRepoTable.getItemCount(), false);
+                        addProjectRepo("aether", index, false);
                     } else {
-                        addProjectRepo("aether:" + dlg.getValue(), lookupRepoTable.getItemCount(), false);
+                        addProjectRepo("aether:" + dlg.getValue(), index, false);
                     }
                 }
             }
@@ -325,7 +326,8 @@ public class CeylonRepoPreferencesBlock {
                 InputDialog input = new InputDialog(buttons.getShell(), "Add Remote Repository", "Enter a remote repository URI", "http://", inputValidator);
                 int result = input.open();
                 if (result == InputDialog.OK) {
-                    addProjectRepo(input.getValue(), lookupRepoTable.getItemCount(), false);
+                	int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
+                    addProjectRepo(input.getValue(), index, false);
                 }
             }
         });
