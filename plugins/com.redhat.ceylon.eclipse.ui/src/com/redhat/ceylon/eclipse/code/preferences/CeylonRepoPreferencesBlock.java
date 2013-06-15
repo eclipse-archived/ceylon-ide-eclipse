@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
@@ -342,7 +343,9 @@ public class CeylonRepoPreferencesBlock {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int[] selection = lookupRepoTable.getSelectionIndices();
-                for (int index : selection) {
+                Arrays.sort(selection);
+                for (int i = selection.length - 1; i >= 0; i--) {
+                	int index = selection[i];
                     if (!isFixedRepoIndex(index)) {
                         String repo = lookupRepoTable.getItem(index).getText();
                         lookupRepoTable.remove(index);
