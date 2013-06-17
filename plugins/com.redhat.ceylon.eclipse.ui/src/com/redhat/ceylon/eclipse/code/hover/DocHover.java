@@ -952,41 +952,18 @@ public class DocHover
 		appendJavadoc(dec, cpc.getProject(), buffer, node);
 		
 		//boolean extraBreak = false;
-		if (dec instanceof Class) {
-			ProducedType sup = ((Class) dec).getExtendedType();
-			if (sup!=null) {
-				buffer.append("<p>");
-				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "extends <tt><a " + link(sup.getDeclaration()) + ">" + 
-				        HTMLPrinter.convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
-				buffer.append("</p>");
-				//extraBreak = true;
+		boolean obj=false;
+		if (dec instanceof TypedDeclaration) {
+			TypeDeclaration td = ((TypedDeclaration) dec).getTypeDeclaration();
+			if (td!=null && td.isAnonymous()) {
+				obj=true;
+				documentInheritance(td, buffer);	
 			}
 		}
-		if (dec instanceof TypeDeclaration) {
-			List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
-			if (!sts.isEmpty()) {
-				buffer.append("<p>");
-				for (ProducedType td: sts) {
-					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-							16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
-									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
-					//extraBreak = true;
-				}
-				buffer.append("</p>");
-			}
-			List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
-			if (cts!=null) {
-				buffer.append("<p>");
-				for (ProducedType td: cts) {
-					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
-							16, 16, "has case <tt><a " + link(td.getDeclaration()) + ">" + 
-									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
-					//extraBreak = true;
-				}
-				buffer.append("</p>");
-			}
+		else if (dec instanceof TypeDeclaration) {
+			documentInheritance((TypeDeclaration) dec, buffer);	
 		}
+		
 		if (dec!=dec.getRefinedDeclaration()) {
 			buffer.append("<p>");
 			Declaration rd = dec.getRefinedDeclaration();
@@ -997,7 +974,7 @@ public class DocHover
 			buffer.append("</p>");
 		}
 		
-		if (dec instanceof TypedDeclaration) {
+		if (dec instanceof TypedDeclaration && !obj) {
 			ProducedType ret = ((TypedDeclaration) dec).getType();
 			if (ret!=null) {
 				buffer.append("<p>");
@@ -1109,6 +1086,44 @@ public class DocHover
 		
 		HTMLPrinter.addPageEpilog(buffer);
 		return buffer.toString();
+	}
+
+	private static void documentInheritance(TypeDeclaration dec, StringBuffer buffer) {
+		if (dec instanceof Class) {
+			ProducedType sup = ((Class) dec).getExtendedType();
+			if (sup!=null) {
+				buffer.append("<p>");
+				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
+						16, 16, "extends <tt><a " + link(sup.getDeclaration()) + ">" + 
+				        HTMLPrinter.convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
+				buffer.append("</p>");
+				//extraBreak = true;
+			}
+		}
+//		if (dec instanceof TypeDeclaration) {
+			List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
+			if (!sts.isEmpty()) {
+				buffer.append("<p>");
+				for (ProducedType td: sts) {
+					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
+							16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
+									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+					//extraBreak = true;
+				}
+				buffer.append("</p>");
+			}
+			List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
+			if (cts!=null) {
+				buffer.append("<p>");
+				for (ProducedType td: cts) {
+					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
+							16, 16, "has case <tt><a " + link(td.getDeclaration()) + ">" + 
+									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+					//extraBreak = true;
+				}
+				buffer.append("</p>");
+			}
+//		}
 	}
 
 	private static String description(Declaration dec, CeylonParseController cpc) {
