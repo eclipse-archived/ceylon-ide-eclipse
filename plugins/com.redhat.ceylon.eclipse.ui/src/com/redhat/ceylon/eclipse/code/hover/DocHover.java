@@ -1117,7 +1117,8 @@ public class DocHover
 				buffer.append("<p>");
 				for (ProducedType td: cts) {
 					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
-							16, 16, "has case <tt><a " + link(td.getDeclaration()) + ">" + 
+							16, 16, (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
+									" <tt><a " + link(td.getDeclaration()) + ">" + 
 									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 					//extraBreak = true;
 				}
