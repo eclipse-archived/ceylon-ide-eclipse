@@ -228,8 +228,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
         StringBuilder imports = new StringBuilder();
         for (Package p: importedPackages) {
         	if (!p.getNameAsString().isEmpty() && !p.equals(pkg) &&
-        			!p.getModule().getNameAsString()
-        			        .equals("ceylon.language")) {
+        			!p.getNameAsString().equals("ceylon.language")) {
         		imports.append("import ")
         		    .append(p.getNameAsString())
         		    .append(" { ");
