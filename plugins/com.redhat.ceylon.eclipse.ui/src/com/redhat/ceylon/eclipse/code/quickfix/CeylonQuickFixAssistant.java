@@ -1108,22 +1108,24 @@ public class CeylonQuickFixAssistant {
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
-            if (td instanceof ValueParameter) {
-                ValueParameter vp = (ValueParameter)td;
-                if (vp.isHidden()) {
-                    td = (TypedDeclaration) vp.getDeclaration()
-                            .getMember(td.getName(), null, false);
-                }
+            if (td!=null) {
+            	if (td instanceof ValueParameter) {
+            		ValueParameter vp = (ValueParameter)td;
+            		if (vp.isHidden()) {
+            			td = (TypedDeclaration) vp.getDeclaration()
+            					.getMember(td.getName(), null, false);
+            		}
+            	}
+            	if (node instanceof Tree.BaseMemberExpression){
+            		addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
+            				(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);
+            	}
+            	if (node instanceof Tree.QualifiedMemberExpression){
+            		addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
+            				(TypedDeclaration) ((Tree.QualifiedMemberExpression) node).getDeclaration(), true);
+            	}
+            	addChangeTypeProposals(proposals, problem, project, node, type, td, false);
             }
-            if (node instanceof Tree.BaseMemberExpression){
-            	addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
-            			(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);
-            }
-            if (node instanceof Tree.QualifiedMemberExpression){
-            	addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
-            			(TypedDeclaration) ((Tree.QualifiedMemberExpression) node).getDeclaration(), true);
-            }
-            addChangeTypeProposals(proposals, problem, project, node, type, td, false);
         }
     }
     
