@@ -39,7 +39,7 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
             return;
         }
 
-        String throwsAnnotation = "throws(" + exceptionType.getProducedTypeName() + ", \"\")";
+        String throwsAnnotation = "throws (" + exceptionType.getProducedTypeName() + ", \"\")";
         InsertEdit throwsAnnotationInsertEdit = createInsertAnnotationEdit(throwsAnnotation, throwContainer, doc);
         TextFileChange throwsAnnotationChange = new TextFileChange("Add throws annotation", file);
         throwsAnnotationChange.setEdit(throwsAnnotationInsertEdit);
@@ -115,7 +115,7 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
     private int offset;
 
     private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset, String declName) {
-        super("Add 'throws("+exceptionType.getProducedTypeName()+")' annotation to '" + declName + "'", change, 10, CORRECTION);
+        super("Add 'throws ("+exceptionType.getProducedTypeName()+")' annotation to '" + declName + "'", change, 10, CORRECTION);
         this.file = file;
         this.offset = offset;
     }
