@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getPr
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
-import static com.redhat.ceylon.eclipse.code.quickfix.AddDocAnnotationProposal.addDocAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParenthesesProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
@@ -298,7 +297,6 @@ public class CeylonQuickFixAssistant {
             addConvertGetterToMethodProposal(proposals, editor, file, node);
             addConvertMethodToGetterProposal(proposals, editor, file, node);
             
-            addDocAnnotationProposal(proposals, node, cu, file, doc);
             addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
         }
 
