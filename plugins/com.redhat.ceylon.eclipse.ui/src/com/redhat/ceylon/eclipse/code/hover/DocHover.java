@@ -40,7 +40,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
@@ -48,9 +50,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.corext.javadoc.JavaDocLocations;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -79,6 +81,7 @@ import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
@@ -740,10 +743,11 @@ public class DocHover
 		if (elem instanceof IMember) {
 			try {
             	//TODO: Javadoc @ icon?
-				String jd = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+				IMember mem = (IMember) elem;
+				String jd = JavadocContentAccess2.getHTMLContent(mem, true);
 				if (jd!=null) {
 					sb.append("<br/>").append(jd);
-					String base = JavaDocLocations.getBaseURL((IMember) elem);
+					String base = getBaseURL(mem, mem.isBinary());
 					int endHeadIdx= sb.indexOf("</head>");
 					sb.insert(endHeadIdx, "\n<base href='" + base + "'>\n");
 				}
@@ -752,6 +756,39 @@ public class DocHover
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static String getBaseURL(IJavaElement element, boolean isBinary) throws JavaModelException {
+		if (isBinary) {
+			// Source attachment usually does not include Javadoc resources
+			// => Always use the Javadoc location as base:
+			URL baseURL= JavaUI.getJavadocLocation(element, false);
+			if (baseURL != null) {
+				if (baseURL.getProtocol().equals("jar")) {
+					// It's a JarURLConnection, which is not known to the browser widget.
+					// Let's start the help web server:
+					URL baseURL2= PlatformUI.getWorkbench().getHelpSystem().resolve(baseURL.toExternalForm(), true);
+					if (baseURL2 != null) { // can be null if org.eclipse.help.ui is not available
+						baseURL= baseURL2;
+					}
+				}
+				return baseURL.toExternalForm();
+			}
+		} else {
+			IResource resource= element.getResource();
+			if (resource != null) {
+				/*
+				 * Too bad: Browser widget knows nothing about EFS and custom URL handlers,
+				 * so IResource#getLocationURI() does not work in all cases.
+				 * We only support the local file system for now.
+				 * A solution could be https://bugs.eclipse.org/bugs/show_bug.cgi?id=149022 .
+				 */
+				IPath location= resource.getLocation();
+				if (location != null)
+					return location.toFile().toURI().toString();
+			}
+		}
+		return null;
 	}
 
 	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
