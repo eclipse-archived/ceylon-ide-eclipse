@@ -180,15 +180,13 @@ public class CeylonQuickFixAssistant {
                 Declaration d = decNode.getDeclarationModel();
                 if (d!=null) {
                 	if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
-                			!d.isShared() && 
-                			!(d instanceof Parameter)) {
+                			!d.isShared()) {
                 		addMakeSharedDecProposal(proposals, project, decNode);
                 	}
                 	if (d.isClassOrInterfaceMember() && 
                 			d.isShared() &&
                 			!d.isDefault() && !d.isFormal() &&
-                			!(d instanceof Interface) && 
-                			!(d instanceof Parameter)) {
+                			!(d instanceof Interface)) {
                 		addMakeDefaultDecProposal(proposals, project, decNode);
                 	}
                 }
