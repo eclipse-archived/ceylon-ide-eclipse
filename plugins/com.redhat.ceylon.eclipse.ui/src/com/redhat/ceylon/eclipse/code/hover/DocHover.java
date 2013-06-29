@@ -632,10 +632,12 @@ public class DocHover
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</tt></b>", 
 				20, 4);
 		buffer.append("<hr/>");
-		buffer.append("One quick assist available:<br/>");
-		addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
-				16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
-				20, 4);
+		if (!t.containsUnknowns()) {
+			buffer.append("One quick assist available:<br/>");
+			addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
+					16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
+					20, 4);
+		}
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
 		HTMLPrinter.addPageEpilog(buffer);
 		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);

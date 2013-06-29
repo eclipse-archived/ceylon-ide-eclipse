@@ -53,15 +53,15 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
         ProducedType infType = inferType(cu, type);
         String explicitType;
         int il;
-        if (infType!=null) {
+        if (infType==null || infType.containsUnknowns()) {
+            explicitType = "Object";
+            il = 0;
+        } 
+        else {
         	explicitType = infType.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
 			importType(decs, infType, cu);
 			il = applyImports(change, decs, cu);
-        }
-        else {
-            explicitType = "Object";
-            il = 0;
         }
         change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list
