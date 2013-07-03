@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.AddThrowsAnnotationProposa
 import static com.redhat.ceylon.eclipse.code.quickfix.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ChangeMultilineStringIndentionProposal.addFixMultilineStringIndention;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertIfElseToThenElse.addConvertToThenElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
@@ -448,6 +449,9 @@ public class CeylonQuickFixAssistant {
         case 5001:
         case 5002:
             addChangeIdentifierCaseProposal(node, proposals, file);
+            break;
+        case 6000:
+            addFixMultilineStringIndention(proposals, file, cu, (Tree.StringLiteral)node);            
             break;
         }
     }
