@@ -18,24 +18,24 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class ChangeMultilineStringIndentionProposal extends ChangeCorrectionProposal {
+class ChangeMultilineStringIndentationProposal extends ChangeCorrectionProposal {
 
-    public static void addFixMultilineStringIndention(Collection<ICompletionProposal> proposals, IFile file, Tree.CompilationUnit cu, Tree.StringLiteral literal) {
+    public static void addFixMultilineStringIndentation(Collection<ICompletionProposal> proposals, IFile file, Tree.CompilationUnit cu, Tree.StringLiteral literal) {
         int type = literal.getToken().getType();
         int startQuoteLength = getStartQuoteLength(type);
         int endQuoteLength = getEndQuoteLength(type);
         int offset = literal.getStartIndex() + startQuoteLength;
         int length = literal.getStopIndex() - literal.getStartIndex() - (startQuoteLength + endQuoteLength - 1);
         
-        FindIndentionVisitor fiv = new FindIndentionVisitor(literal);
+        FindIndentationVisitor fiv = new FindIndentationVisitor(literal);
         fiv.visit(cu);
         
-        if (fiv.getIndention() != -1 && offset != -1 && length != -1) {
-            String text = getIndentedText(literal.getText(), fiv.getIndention());
-            TextFileChange change = new TextFileChange("Fix multiline string indention", file);
+        if (fiv.getIndentation() != -1 && offset != -1 && length != -1) {
+            String text = getFixedText(literal.getText(), fiv.getIndentation());
+            TextFileChange change = new TextFileChange("Fix multiline string indentation", file);
             change.setEdit(new ReplaceEdit(offset, length, text));
 
-            ChangeMultilineStringIndentionProposal proposal = new ChangeMultilineStringIndentionProposal(change);
+            ChangeMultilineStringIndentationProposal proposal = new ChangeMultilineStringIndentationProposal(change);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
             }
@@ -66,7 +66,7 @@ class ChangeMultilineStringIndentionProposal extends ChangeCorrectionProposal {
         return endQuoteLength;
     }
     
-    private static String getIndentedText(String text, int indention) {
+    private static String getFixedText(String text, int indentation) {
         StringBuilder result = new StringBuilder();
     
         for (String line : text.split("\n|\r\n?")) {
@@ -78,8 +78,8 @@ class ChangeMultilineStringIndentionProposal extends ChangeCorrectionProposal {
                     if (Character.isWhitespace(c)) {
                         result.append(c);
                     } else {
-                        if (i < indention) {
-                            for (int ii = i; ii < indention; ii++) {
+                        if (i < indentation) {
+                            for (int ii = i; ii < indentation; ii++) {
                                 result.append(" ");
                             }
                         }
@@ -95,42 +95,42 @@ class ChangeMultilineStringIndentionProposal extends ChangeCorrectionProposal {
         return result.toString();
     }
 
-    private ChangeMultilineStringIndentionProposal(TextFileChange change) {
+    private ChangeMultilineStringIndentationProposal(TextFileChange change) {
         super(change.getName(), change, 10, CORRECTION);
     }
 
-    private static class FindIndentionVisitor extends Visitor {
+    private static class FindIndentationVisitor extends Visitor {
 
-        private int indention;
-        private int currentIndention;
+        private int indentation;
+        private int currentIndentation;
         private Tree.StringLiteral literal;
 
-        private FindIndentionVisitor(Tree.StringLiteral literal) {
+        private FindIndentationVisitor(Tree.StringLiteral literal) {
             this.literal = literal;
-            this.indention = -1;
+            this.indentation = -1;
         }
 
-        public int getIndention() {
-            return indention;
+        public int getIndentation() {
+            return indentation;
         }
 
         @Override
         public void visit(Tree.StringLiteral that) {
             int type = that.getToken().getType();
             if (type != STRING_MID && type != STRING_END) {
-                currentIndention = that.getToken().getCharPositionInLine() + getStartQuoteLength(type);
+                currentIndentation = that.getToken().getCharPositionInLine() + getStartQuoteLength(type);
             }
             if (that == literal) {
-                indention = currentIndention;
+                indentation = currentIndentation;
             }
         }
 
         @Override
         public void visit(Tree.StringTemplate that) {
-            int oldIndention = currentIndention;
-            currentIndention = 0;
+            int oldIndentation = currentIndentation;
+            currentIndentation = 0;
             super.visit(that);
-            currentIndention = oldIndention;
+            currentIndentation = oldIndentation;
         }
 
     }
