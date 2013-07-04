@@ -1057,7 +1057,8 @@ public class DocHover
 							doc.insert(0, ":");
 						}
 						addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
-								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + getDescriptionFor(p) + 
+								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + 
+								HTMLPrinter.convertToHTMLContent(getDescriptionFor(p)) + 
 								"</a></tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
