@@ -65,8 +65,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
         }
         change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list
-        SpecifyTypeProposal stp = new SpecifyTypeProposal(offset+il, file, explicitType, change);
-		return stp;
+        return new SpecifyTypeProposal(offset+il, file, explicitType, change);
 	}
 
     static ProducedType inferType(Tree.CompilationUnit cu,

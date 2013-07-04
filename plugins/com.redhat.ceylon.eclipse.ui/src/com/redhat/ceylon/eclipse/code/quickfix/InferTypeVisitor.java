@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -88,16 +89,31 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
+    private ProducedReference pr;
+    
+    @Override public void visit(Tree.InvocationExpression that) {
+        ProducedReference opr=null;
+        Tree.Primary primary = that.getPrimary();
+        if (primary!=null) {
+            if (primary instanceof Tree.MemberOrTypeExpression) {
+                pr = ((Tree.MemberOrTypeExpression) primary).getTarget();
+            }
+        }
+        super.visit(that);
+        pr = opr;
+    }
+    
     @Override public void visit(Tree.ListedArgument that) {
         super.visit(that);
-        Tree.Term bme = that.getExpression().getTerm();
-        if (bme instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+        Tree.Term t = that.getExpression().getTerm();
+        if (t instanceof Tree.BaseMemberExpression) {
+            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
+            if (bme.getDeclaration().equals(dec)) {
                 Parameter p = that.getParameter();
-                if (p!=null) {
-                	//TODO: is this correct for a sequenced parameter?
-                	//intersect(unit.getIterableType(p.getType()));
-                	intersect(p.getType());
+                if (p!=null && pr!=null) {
+                    ProducedType ft = pr.getTypedParameter(p)
+                            .getFullType();
+                	intersect(ft);
                 }
             }
         }
@@ -105,13 +121,16 @@ class InferTypeVisitor extends Visitor {
     
     @Override public void visit(Tree.SpreadArgument that) {
         super.visit(that);
-        Tree.Term bme = that.getExpression().getTerm();
-        if (bme instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+        Tree.Term t = that.getExpression().getTerm();
+        if (t instanceof Tree.BaseMemberExpression) {
+            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
+            if (bme.getDeclaration().equals(dec)) {
                 Parameter p = that.getParameter();
-                if (p!=null) {
+                if (p!=null && pr!=null) {
                 	//TODO: is this correct?
-                	intersect(p.getType());
+                    ProducedType ft = pr.getTypedParameter(p)
+                            .getFullType();
+                	intersect(unit.getIterableType(unit.getIteratedType(ft)));
                 }
             }
         }
@@ -119,12 +138,15 @@ class InferTypeVisitor extends Visitor {
     
     @Override public void visit(Tree.SpecifiedArgument that) {
         super.visit(that);
-        Tree.Term bme = that.getSpecifierExpression().getExpression().getTerm();
-        if (bme instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+        Tree.Term t = that.getSpecifierExpression().getExpression().getTerm();
+        if (t instanceof Tree.BaseMemberExpression) {
+            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
+            if (bme.getDeclaration().equals(dec)) {
                 Parameter p = that.getParameter();
-                if (p!=null) {
-                	intersect(p.getType());
+                if (p!=null && pr!=null) {
+                    ProducedType ft = pr.getTypedParameter(p)
+                            .getFullType();
+                	intersect(ft);
                 }
             }
         }
