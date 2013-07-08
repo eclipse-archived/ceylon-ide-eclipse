@@ -24,6 +24,8 @@ import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -122,7 +124,7 @@ public class CleanImportsHandler extends AbstractHandler {
         	String packageName = pack.getKey();
         	List<Tree.Import> imports = pack.getValue();
         	boolean hasWildcard = hasWildcard(imports);
-        	List<Tree.ImportMemberOrType> list = getUsedImportElements(imports, unused, hasWildcard);
+        	List<Tree.ImportMemberOrType> list = getUsedImportElements(imports, unused, hasWildcard, packages);
         	if (hasWildcard || !list.isEmpty() || 
         			imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
         		lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
@@ -241,7 +243,7 @@ public class CleanImportsHandler extends AbstractHandler {
 	}
 	
 	private static List<Tree.ImportMemberOrType> getUsedImportElements(
-			List<Tree.Import> imports, List<Declaration> unused, boolean hasWildcard) {
+			List<Tree.Import> imports, List<Declaration> unused, boolean hasWildcard, Map<String, List<Tree.Import>> packages) {
 		List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
 		for (Tree.Import ti: imports) {
 			for (Tree.ImportMemberOrType imt: ti.getImportMemberOrTypeList()
@@ -267,8 +269,10 @@ public class CleanImportsHandler extends AbstractHandler {
 						}
 					} 
 					else {
-						if (!hasWildcard || imt.getAlias()!=null || 
-								imt.getImportMemberOrTypeList()!=null) {
+						if (!hasWildcard || 
+						        imt.getAlias()!=null || 
+								imt.getImportMemberOrTypeList()!=null || 
+								preventAmbiguityDueWildcards(dm, packages)) {
 							list.add(imt);
 						}
 					}
@@ -278,6 +282,43 @@ public class CleanImportsHandler extends AbstractHandler {
 		return list;
 	}
     
+    private static boolean preventAmbiguityDueWildcards(Declaration d, Map<String, List<Tree.Import>> importsMap) {
+        Module module = d.getUnit().getPackage().getModule();
+        String containerName = d.getContainer().getQualifiedNameString();
+
+        for (Map.Entry<String, List<Tree.Import>> importEntry : importsMap.entrySet()) {
+            String packageName = importEntry.getKey();
+            List<Tree.Import> importList = importEntry.getValue();
+            if (packageName.equals(containerName)) {
+                continue;
+            }
+            if (!hasWildcard(importList)) {
+                continue;
+            }
+
+            Package p2 = module.getPackage(packageName);
+            if (p2 != null) {
+                Declaration d2 = p2.getMember(d.getName(), null, false);
+                if (d2 != null && d2.isToplevel() && d2.isShared() && !d2.isAnonymous() && !isImportedWithAlias(d2, importList) ) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    private static boolean isImportedWithAlias(Declaration d, List<Tree.Import> importList) {
+        for (Tree.Import i : importList) {
+            for (Tree.ImportMemberOrType imt : i.getImportMemberOrTypeList().getImportMemberOrTypes()) {
+                if (d.getName().equals(imt.getIdentifier().getText()) && imt.getAlias() != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static String packageName(Tree.Import i) {
         return i.getImportMemberOrTypeList()
                 .getImportList().getImportedScope()
