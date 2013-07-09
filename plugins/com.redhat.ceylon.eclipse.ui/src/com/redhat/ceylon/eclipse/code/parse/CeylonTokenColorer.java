@@ -101,7 +101,7 @@ public class CeylonTokenColorer  {
         return interpAttribute;
     }
     
-    public TextAttribute getTypeLiteralColoring() {
+    public TextAttribute getMetaLiteralColoring() {
         return typeLiteralAttribute;
     }
     

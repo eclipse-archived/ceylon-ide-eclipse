@@ -126,11 +126,11 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		return true;
 	}
 	
-    public boolean isWithinTypeLiteral(CommonToken token, List<Tree.TypeLiteral> typeLiterals) {
-        for (Tree.TypeLiteral typeLiteral : typeLiterals) {
-            if (typeLiteral.getStartIndex() != null && typeLiteral.getEndToken() != null) {
-                int startIndex = typeLiteral.getStartIndex();
-                int stopIndex = ((CommonToken) typeLiteral.getEndToken()).getStopIndex();
+    public boolean isWithinMetaLiteral(CommonToken token, List<Tree.MetaLiteral> metaLiterals) {
+        for (Tree.MetaLiteral metaLiteral : metaLiterals) {
+            if (metaLiteral.getStartIndex() != null && metaLiteral.getEndToken() != null) {
+                int startIndex = metaLiteral.getStartIndex();
+                int stopIndex = ((CommonToken) metaLiteral.getEndToken()).getStopIndex();
                 if (startIndex <= token.getStartIndex() && stopIndex >= token.getStopIndex()) {
                     return true;
                 }
@@ -142,13 +142,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
 	    
-	    List<Tree.TypeLiteral> typeLiterals = new ArrayList<Tree.TypeLiteral>();
+	    List<Tree.MetaLiteral> metaLiterals = new ArrayList<Tree.MetaLiteral>();
 		
 		//it sounds strange, but it's better to parse
 		//and cache here than in getDamageRegion(),
 		//because these methods get called in strange
 		//orders
-		tokens = parse(typeLiterals);
+		tokens = parse(metaLiterals);
 		
 		//int prevStartOffset= -1;
 		//int prevEndOffset= -1;
@@ -163,8 +163,16 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
 				
-                if (isWithinTypeLiteral(token, typeLiterals)) {
-                    changeTokenPresentation(presentation, tokenColorer.getTypeLiteralColoring(), startOffset, endOffset);
+				//TODO: I'm not happy with how this works
+				//      This approach is potentially very 
+				//      slow, since it involves running 
+				//      a Visitor over the parse tree and
+				//      then we iterate over all the 
+				//      metaliterals for every token
+                if (isWithinMetaLiteral(token, metaLiterals)) {
+                    changeTokenPresentation(presentation, 
+                            tokenColorer.getMetaLiteralColoring(), 
+                            startOffset, endOffset);
                     continue;
                 }
 				
@@ -253,7 +261,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		}
 	}
 	
-	private List<CommonToken> parse(final List<Tree.TypeLiteral> typeLiterals) {
+	private List<CommonToken> parse(final List<Tree.MetaLiteral> metaLiterals) {
 		String text = sourceViewer.getDocument().get();
 		ANTLRStringStream input = new ANTLRStringStream(text);
         CeylonLexer lexer = new CeylonLexer(input);
@@ -271,8 +279,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
         if (cu != null) {
             cu.visit(new Visitor() {
                 @Override
-                public void visit(Tree.TypeLiteral typeLiteral) {
-                    typeLiterals.add(typeLiteral);
+                public void visit(Tree.MetaLiteral metaLiteral) {
+                    metaLiterals.add(metaLiteral);
                 }
             });
         }
