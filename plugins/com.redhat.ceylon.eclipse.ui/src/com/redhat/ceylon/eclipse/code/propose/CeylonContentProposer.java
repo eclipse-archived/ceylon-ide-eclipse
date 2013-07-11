@@ -744,9 +744,13 @@ public class CeylonContentProposer {
     }    
 
     private static boolean noParametersFollow(CommonToken nextToken) {
-		return nextToken!=null &&
-				nextToken.getType()!=CeylonLexer.LPAREN && 
-				nextToken.getType()!=CeylonLexer.LBRACE;
+		return nextToken==null ||
+		        //should we disable this, since a statement
+		        //can in fact begin with an LPAREN??
+				nextToken.getType()!=CeylonLexer.LPAREN
+				//disabled now because a declaration can
+				//begin with an LBRACE (an Iterable type)
+				/*&& nextToken.getType()!=CeylonLexer.LBRACE*/;
 	}
 
 	private static CommonToken getNextToken(final CeylonParseController cpc,
