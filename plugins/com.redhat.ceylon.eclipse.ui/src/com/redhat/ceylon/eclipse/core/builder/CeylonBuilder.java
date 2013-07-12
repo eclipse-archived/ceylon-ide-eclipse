@@ -1599,6 +1599,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         catch (Exception e) {
             e.printStackTrace();
         }
+        if (!success) {
+            errorReporter.failed();
+        }
         monitor.done();
         return success;
     }
