@@ -949,9 +949,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             Package pkg) {
         ANTLRInputStream input;
         try {
-            input = new ANTLRInputStream(file.getInputStream());
+            input = new ANTLRInputStream(file.getInputStream(), 
+                    file.getResource().getProject().getDefaultCharset());
         }
-        catch (IOException e) {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
         CeylonLexer lexer = new CeylonLexer(input);

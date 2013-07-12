@@ -281,9 +281,10 @@ public class CeylonParseController {
 
 	private ANTLRInputStream createInputStream(VirtualFile file) {
         try {
-            return new ANTLRInputStream(file.getInputStream());
+            return new ANTLRInputStream(file.getInputStream(), 
+                    project.getDefaultCharset());
         } 
-        catch (IOException e) {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
 	}
