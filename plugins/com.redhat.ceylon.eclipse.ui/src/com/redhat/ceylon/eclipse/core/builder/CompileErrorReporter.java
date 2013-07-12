@@ -15,8 +15,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
-import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
-
 final class CompileErrorReporter implements
 		DiagnosticListener<JavaFileObject> {
     
@@ -29,7 +27,19 @@ final class CompileErrorReporter implements
     @Override
 	public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
 		JavaFileObject source = diagnostic.getSource();
-		if (source instanceof CeylonFileObject) {
+		if (source == null) {
+		    // no source file
+		    if (!diagnostic.toString().startsWith("Note: Created module")) {
+		        try {
+		            IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
+		            setupMarker(marker, diagnostic);
+		        } 
+		        catch (CoreException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		} 
+		else {
 			IFile file = getWorkspace().getRoot()
 					.getFileForLocation(new Path(source.getName()));
 			try {
@@ -44,18 +54,6 @@ final class CompileErrorReporter implements
 			} 
 			catch (CoreException e) {
 				e.printStackTrace();
-			}
-		}
-		else if (source == null) {
-		    // no source file
-			if (!diagnostic.toString().startsWith("Note: Created module")) {
-				try {
-					IMarker marker = project.createMarker(CeylonBuilder.PROBLEM_MARKER_ID+".backend");
-					setupMarker(marker, diagnostic);
-				} 
-				catch (CoreException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}
