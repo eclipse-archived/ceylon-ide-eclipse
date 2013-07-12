@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +31,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.config.CeylonConfig;
+import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -279,15 +280,19 @@ public class CeylonParseController {
         }
 	}
 
-	private ANTLRInputStream createInputStream(VirtualFile file) {
+    private ANTLRInputStream createInputStream(VirtualFile file) {
         try {
-            return new ANTLRInputStream(file.getInputStream(), 
-                    project.getDefaultCharset());
-        } 
-        catch (Exception e) {
+            String encoding;
+            if (project != null) {
+                encoding = project.getDefaultCharset();
+            } else {
+                encoding = ResourcesPlugin.getEncoding();
+            }
+            return new ANTLRInputStream(file.getInputStream(), encoding);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-	}
+    }
 
 	private VirtualFile inferSrcDir(IPath path) {
 		String pathString = path.toString();
@@ -381,6 +386,7 @@ public class CeylonParseController {
 		
 		File cwd;
 		String systemRepo;
+		boolean isOffline;
         if (project == null) {
 			//I believe this case can only happen
 			//in the structure compare editor, so
@@ -389,14 +395,16 @@ public class CeylonParseController {
 			//module
             cwd = null;
 		    systemRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+		    isOffline = CeylonConfig.get().getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, false);
 		}
 		else {
 		    cwd = project.getLocation().toFile();
 		    systemRepo = getInterpolatedCeylonSystemRepo(project);
+		    isOffline = CeylonProjectConfig.get(project).isOffline();
 		}
         
         RepositoryManager repositoryManager = repoManager()
-                .offline(CeylonProjectConfig.get(project).isOffline())
+                .offline(isOffline)
                 .cwd(cwd)
                 .systemRepo(systemRepo)
                 .extraUserRepos(getReferencedProjectsOutputRepositories(project))
