@@ -1738,7 +1738,12 @@ public class CeylonContentProposer {
                     result.append(typeName);
                 }
                 if (isSequenced) {
-                	result.append("*");
+                    if (((Parameter) d).isAtLeastOne()) {
+                        result.append("+");
+                    }
+                    else {
+                        result.append("*");
+                    }
                 }
             }
         }
