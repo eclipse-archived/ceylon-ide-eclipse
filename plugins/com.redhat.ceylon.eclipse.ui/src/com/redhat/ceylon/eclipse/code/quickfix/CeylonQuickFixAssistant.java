@@ -1195,6 +1195,7 @@ public class CeylonQuickFixAssistant {
             IProject project, TypeChecker tc, IFile file) {
         FindInvocationVisitor fav = new FindInvocationVisitor(node);
         fav.visit(cu);
+        if (fav.result==null) return;
         Tree.Primary prim = fav.result.getPrimary();
         if (prim instanceof Tree.MemberOrTypeExpression) {
             ProducedReference pr = ((Tree.MemberOrTypeExpression) prim).getTarget();
