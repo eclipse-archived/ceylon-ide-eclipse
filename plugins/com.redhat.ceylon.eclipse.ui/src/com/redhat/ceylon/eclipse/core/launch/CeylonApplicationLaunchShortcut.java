@@ -428,6 +428,9 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
     protected String canLaunch(Declaration declarationToRun, IFile fileToRun, String mode) {
+        if (!CeylonBuilder.compileToJava(fileToRun.getProject())) {
+            return "JVM compilation is not enabled for this project";
+        }
         return null;
     }
 
