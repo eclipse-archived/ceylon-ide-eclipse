@@ -67,7 +67,8 @@ public class MarkerCreator extends ErrorVisitor {
         //TODO: we need a MUCH better way to distinguish 
         //      compiler errors from typechecker errors
 		return msg.startsWith("cannot find module") || 
-				msg.startsWith("unable to read source artifact for");
+				msg.startsWith("unable to read source artifact for") ||
+				msg.startsWith("invalid JDK module");
 	}
 	
 }
