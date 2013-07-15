@@ -80,6 +80,7 @@ import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
+import com.redhat.ceylon.compiler.js.CompilerErrorException;
 import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
@@ -1512,13 +1513,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             boolean success = true;
             //Compile JS first
             if (compileToJs(project) && !sourceFiles.isEmpty()) {
-                Options jsopts = new Options(js_repos, js_srcdir, null/*sys repo*/, js_outRepo, null/*uname*/,
+                Options jsopts = new Options(js_repos, js_srcdir,
+                        CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(project)),
+                        js_outRepo, null/*uname*/,
                         null/*pass*/, true, true, true, true, js_verbose, false, false, false,
                         project.getDefaultCharset(),
                         CeylonProjectConfig.get(project).isOffline());
                 JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
                 try {
-                    jsc.generate();
+                    if (!jsc.generate()) {
+                        System.out.println("Ceylon-JS compiler failed for " + project.getName());
+                        //TODO report backend errors
+                        jsc.printErrors(System.out);
+                        return false;
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace(printWriter);
                 }
@@ -1711,7 +1719,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	}
 
 	public static boolean isExplodeModulesEnabled(IProject project) {
-        Map args = getBuilderArgs(project);
+        Map<String,String> args = getBuilderArgs(project);
 		return args.get("explodeModules")!=null ||
         		args.get("enableJdtClasses")!=null;
 	}
@@ -1765,7 +1773,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return repos;
     }
 
-	private static Map getBuilderArgs(IProject project) {
+	private static Map<String,String> getBuilderArgs(IProject project) {
 		if (project!=null) {
 			try {
 				for (ICommand c: project.getDescription().getBuildSpec()) {
@@ -1778,7 +1786,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 				e.printStackTrace();
 			}
 		}
-    	return Collections.EMPTY_MAP;
+    	return Collections.emptyMap();
 	}
 
     public static List<String> getCeylonRepositories(IProject project) {
