@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.compiler.java.Util.declClassName;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
@@ -35,7 +36,6 @@ import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -72,8 +72,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
-
-import static com.redhat.ceylon.compiler.java.Util.declClassName;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
