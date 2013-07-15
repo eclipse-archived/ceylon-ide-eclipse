@@ -84,7 +84,7 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
             runner.setOutput(pout);
             runner.setOffline(CeylonProjectConfig.get(proj).isOffline());
             runner.setDebug(true);
-            runner.setCwd(proj.getFullPath().toFile());
+            runner.setCwd(proj.getLocation().toFile());
             runner.setNodeExe(configuration.getAttribute(
                     ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, (String)null));
             runner.run();
