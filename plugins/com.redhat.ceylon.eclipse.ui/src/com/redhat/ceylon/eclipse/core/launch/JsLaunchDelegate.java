@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 
 import java.io.PrintStream;
@@ -64,22 +68,23 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         final String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
         final ArrayList<String> repos = new ArrayList<>();
         //Add output repo
-        repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
+        repos.add(getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         //Add referenced project repos
-        repos.addAll(CeylonBuilder.getReferencedProjectsOutputRepositories(proj));
+        repos.addAll(getReferencedProjectsOutputRepositories(proj));
         //Add project repos
-        repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
+        repos.addAll(getCeylonRepositories(proj));
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
             CeylonRunJsTool runner = new CeylonRunJsTool();
             //Set system repo
-            runner.setSysrep(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
+            runner.setSysrep(getInterpolatedCeylonSystemRepo(proj));
             runner.setRepositories(repos);
             runner.setRun(methname);
             runner.setModuleVersion(modname);
             runner.setOutput(pout);
             runner.setOffline(CeylonProjectConfig.get(proj).isOffline());
             runner.setDebug(true);
+            runner.setCwd(proj.getFullPath().toFile());
             runner.setNodeExe(configuration.getAttribute(
                     ICeylonLaunchConfigurationConstants.ATTR_JS_NODEPATH, (String)null));
             runner.run();
