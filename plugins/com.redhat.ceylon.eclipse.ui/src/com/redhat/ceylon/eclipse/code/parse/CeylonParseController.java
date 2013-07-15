@@ -17,7 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -178,14 +178,12 @@ public class CeylonParseController {
                 }
             }
         }
-
-        VirtualFile file = createSourceCodeVirtualFile(contents, path);
         
         if (isCanceling(monitor)) {
             return;
         }
         
-        CeylonLexer lexer = new CeylonLexer(createInputStream(file));
+        CeylonLexer lexer = new CeylonLexer(createInputStream(contents));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
         tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
@@ -259,6 +257,7 @@ public class CeylonParseController {
             return;
         }
 
+        VirtualFile file = createSourceCodeVirtualFile(contents, path);
         PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
         phasedUnit = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
         rootNode = phasedUnit.getCompilationUnit();
@@ -280,18 +279,8 @@ public class CeylonParseController {
         }
 	}
 
-    private ANTLRInputStream createInputStream(VirtualFile file) {
-        try {
-            String encoding;
-            if (project != null) {
-                encoding = project.getDefaultCharset();
-            } else {
-                encoding = ResourcesPlugin.getEncoding();
-            }
-            return new ANTLRInputStream(file.getInputStream(), encoding);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private ANTLRStringStream createInputStream(String contents) {
+        return new ANTLRStringStream(contents);
     }
 
 	private VirtualFile inferSrcDir(IPath path) {
