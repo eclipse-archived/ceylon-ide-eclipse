@@ -62,18 +62,18 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         final int tipple = qname.indexOf("::");
         final String methname = tipple >= 0 ? qname.substring(tipple+2) : qname;
         final String modname = configuration.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, "default");
-        final ArrayList<String> repos = new ArrayList<String>();
-        //Add system repo
-        repos.add(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
-        //Add project repos
-        repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
+        final ArrayList<String> repos = new ArrayList<>();
+        //Add output repo
+        repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
         //Add referenced project repos
         repos.addAll(CeylonBuilder.getReferencedProjectsOutputRepositories(proj));
-        //And finally the output repo
-        repos.add(CeylonBuilder.getCeylonModulesOutputDirectory(proj).getAbsolutePath());
+        //Add project repos
+        repos.addAll(CeylonBuilder.getCeylonRepositories(proj));
         PrintStream pout = new PrintStream(findConsole().newOutputStream());
         try {
             CeylonRunJsTool runner = new CeylonRunJsTool();
+            //Set system repo
+            runner.setSysrep(CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(proj)));
             runner.setRepositories(repos);
             runner.setRun(methname);
             runner.setModuleVersion(modname);
