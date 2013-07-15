@@ -35,6 +35,7 @@ import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -71,6 +72,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
+
 import static com.redhat.ceylon.compiler.java.Util.declClassName;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
@@ -541,6 +543,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             configurationName += declarationToRun.getName() + "() - ";
             String packageName = declarationToRun.getContainer().getQualifiedNameString();
             configurationName += packageName.isEmpty() ? "default package" : packageName;
+            configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
             
             wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
             wc.setAttribute(ATTR_MAIN_TYPE_NAME, getJavaClassName(declarationToRun));

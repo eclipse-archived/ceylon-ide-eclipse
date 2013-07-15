@@ -21,12 +21,14 @@ public class SourceCodeVirtualFile implements VirtualFile {
     private String name;
     
     public SourceCodeVirtualFile(String fileContent) {
+        //TODO: this is broken for non-ASCII encodings!
         stream = new ByteArrayInputStream(fileContent.getBytes());
         path = "unknown.ceylon";
         name = "unknown.ceylon";
     }
     
     public SourceCodeVirtualFile(String fileContent, IPath path) {
+        //TODO: this is broken for non-ASCII encodings!
         stream = new ByteArrayInputStream(fileContent.getBytes());
         this.path = path.toString();
         name = path.toFile().getName();

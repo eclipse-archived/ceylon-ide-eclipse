@@ -60,6 +60,7 @@ public class JsLaunchShortcut extends CeylonApplicationLaunchShortcut {
             configurationName += declarationToRun.getName() + "() - ";
             String packageName = declarationToRun.getContainer().getQualifiedNameString();
             configurationName += packageName.isEmpty() ? "default package" : packageName;
+            configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
             
             wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
             wc.setAttribute(ATTR_MAIN_TYPE_NAME, declarationToRun.getQualifiedNameString());
