@@ -9,6 +9,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
+import com.redhat.ceylon.compiler.typechecker.analyzer.FilenameWarning;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -25,8 +26,10 @@ public abstract class ErrorVisitor extends Visitor {
     protected boolean warnForErrors = false;
     
     protected int getSeverity(Message error, boolean expected) {
-        return expected || error instanceof UsageWarning ? 
-        		SEVERITY_WARNING : SEVERITY_ERROR;
+        return expected || 
+                error instanceof UsageWarning || 
+                error instanceof FilenameWarning ? 
+            SEVERITY_WARNING : SEVERITY_ERROR;
     }
     
     @Override
