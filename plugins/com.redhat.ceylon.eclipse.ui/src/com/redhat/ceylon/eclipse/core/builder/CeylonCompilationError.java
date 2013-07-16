@@ -41,8 +41,6 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
         this.project = proj;
         file = project.getFile(err.getTreeNode().getUnit().getFullPath());
         jf = new JavaFileObject() {
-            int spos = -1;
-            int epos = -1;
             @Override
             public URI toUri() {
                 try {
@@ -137,7 +135,6 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
             }
             spos += err.getTreeNode().getToken().getCharPositionInLine()+1;
             epos = spos + err.getTreeNode().getToken().getText().length();
-            System.out.println("spos:" + spos + " epos:" + epos);
         } catch (IOException|CoreException ex) {
             ex.printStackTrace();
         }
