@@ -101,9 +101,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
-import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
@@ -1527,11 +1527,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         CompileErrorReporter errorReporter = new CompileErrorReporter(project);
                         //Report backend errors
                         for (Message e : jsc.getErrors()) {
-                            if (e instanceof AnalysisMessage) {
-                                errorReporter.report(new CeylonCompilationError(project, (AnalysisMessage)e));
+                            if (e instanceof UnexpectedError) {
+                                errorReporter.report(new CeylonCompilationError(project, (UnexpectedError)e));
                             }
                         }
-                        jsc.printErrors(System.out);
                         errorReporter.failed();
                         return false;
                     } else {
