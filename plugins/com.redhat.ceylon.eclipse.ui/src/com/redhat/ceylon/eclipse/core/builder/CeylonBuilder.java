@@ -1696,7 +1696,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             //Compile JS first
             if (compileToJs(project) && !sourceFiles.isEmpty()) {
                 Options jsopts = new Options(js_repos, js_srcdir,
-                        CeylonBuilder.interpolateVariablesInRepositoryPath(CeylonBuilder.getCeylonSystemRepo(project)),
+                        getInterpolatedCeylonSystemRepo(project),
                         js_outRepo, null/*uname*/,
                         null/*pass*/, true, true, true, true, js_verbose, false, false, false,
                         project.getDefaultCharset(),
