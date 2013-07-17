@@ -106,6 +106,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -670,7 +671,9 @@ public class CeylonContentProposer {
             		}
             		CommonToken nextToken = getNextToken(cpc, token);
             		boolean noParamsFollow = noParametersFollow(nextToken);
-        			if (isInvocationProposable(dwp, ol)) {
+        			if (isInvocationProposable(dwp, ol) &&
+        			        !(node instanceof Tree.QualifiedMemberOrTypeExpression &&
+        			        ((Tree.QualifiedMemberOrTypeExpression) node).getStaticMethodReference())) {
         				if (noParamsFollow || ol==EXTENDS) {
             				for (Declaration d: overloads(dec)) {
             					ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
@@ -1310,7 +1313,11 @@ public class CeylonContentProposer {
     private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             boolean memberOp, Tree.CompilationUnit cu) {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
+            if (qmte.getStaticMethodReference()) {
+                type = node.getUnit().getCallableReturnType(type);
+            }
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
                 		.getMatchingMemberDeclarations(node.getScope(), prefix, 0);
