@@ -9,5 +9,6 @@ public enum OccurrenceLocation {
     EXPRESSION,
     PARAMETER_LIST,
     TYPE_PARAMETER_LIST,
-    TYPE_ARGUMENT_LIST
+    TYPE_ARGUMENT_LIST,
+    META
 }
