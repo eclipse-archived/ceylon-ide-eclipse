@@ -106,7 +106,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -1313,7 +1312,7 @@ public class CeylonContentProposer {
     private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             boolean memberOp, Tree.CompilationUnit cu) {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
+            Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (qmte.getStaticMethodReference()) {
                 type = node.getUnit().getCallableReturnType(type);
