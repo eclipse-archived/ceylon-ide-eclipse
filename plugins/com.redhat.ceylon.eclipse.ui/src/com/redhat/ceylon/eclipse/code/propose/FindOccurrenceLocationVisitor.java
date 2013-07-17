@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
@@ -162,6 +163,12 @@ class FindOccurrenceLocationVisitor extends Visitor
             occurrence=null;
         }
         super.visit(that);
+    }
+    
+    public void visit(Tree.MetaLiteral that) {
+        if (inBounds(that)) {
+            occurrence = META;
+        }
     }
     
     private boolean inBounds(Node that) {

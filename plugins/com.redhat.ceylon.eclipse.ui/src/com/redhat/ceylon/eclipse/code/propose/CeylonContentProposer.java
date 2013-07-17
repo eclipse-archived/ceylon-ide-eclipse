@@ -35,6 +35,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
@@ -644,7 +645,8 @@ public class CeylonContentProposer {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
             	if (//isKeywordProposable(ol) && 
             			!filter &&
-            			!(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+            			!(node instanceof Tree.QualifiedMemberOrTypeExpression) &&
+            			ol!=META) {
             		addKeywordProposals(cpc, offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
             	}
