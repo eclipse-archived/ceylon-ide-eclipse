@@ -7,15 +7,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class FindNodeVisitor extends Visitor
+public class FindNodeVisitor extends Visitor
         implements NaturalVisitor {
     
-    FindNodeVisitor(int fStartOffset, int fEndOffset) {
+    protected FindNodeVisitor(int fStartOffset, int fEndOffset) {
         this.startOffset = fStartOffset;
         this.endOffset = fEndOffset;
     }
     
-    private Node node;
+    protected Node node;
     private int startOffset;
     private int endOffset;
     
@@ -190,14 +190,14 @@ class FindNodeVisitor extends Visitor
         }
     }
     
-    private boolean inBounds(Node that) {
+    protected boolean inBounds(Node that) {
         if (that==null || that.getToken()==null) {
             return false;
         }
         return inBounds(that, that);
     }
     
-    private boolean inBounds(Node left, Node right) {
+    protected boolean inBounds(Node left, Node right) {
         if (left==null) return false;
         if (right==null) right=left;
         Integer tokenStartIndex = left.getStartIndex();
