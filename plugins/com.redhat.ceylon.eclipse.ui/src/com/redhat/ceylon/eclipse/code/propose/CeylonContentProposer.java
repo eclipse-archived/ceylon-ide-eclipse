@@ -29,7 +29,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYL
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
@@ -107,10 +106,12 @@ import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.FindNodeVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -436,7 +437,15 @@ public class CeylonContentProposer {
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rn) {
-        Node node = findNode(rn, adjustedStart, adjustedEnd);
+        FindNodeVisitor visitor = new FindNodeVisitor(adjustedStart, adjustedEnd) {
+            public void visit(Tree.MemberLiteral that) {
+                if (inBounds(that)) {
+                    node = that;
+                }
+            }
+        };
+        rn.visit(visitor);
+        Node node = visitor.getNode();
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
             //so the returned node is the previous
@@ -673,6 +682,7 @@ public class CeylonContentProposer {
             		CommonToken nextToken = getNextToken(cpc, token);
             		boolean noParamsFollow = noParametersFollow(nextToken);
         			if (isInvocationProposable(dwp, ol) &&
+        			        !(node instanceof Tree.QualifiedType) &&
         			        !(node instanceof Tree.QualifiedMemberOrTypeExpression &&
         			        ((Tree.QualifiedMemberOrTypeExpression) node).getStaticMethodReference())) {
         				if (noParamsFollow || ol==EXTENDS) {
@@ -1313,7 +1323,17 @@ public class CeylonContentProposer {
     
     private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             boolean memberOp, Tree.CompilationUnit cu) {
-        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+        if (node instanceof MemberLiteral) { //this case is very ugly! it's actually of form `Type.
+            ProducedType type = ((Tree.MemberLiteral) node).getType().getTypeModel();
+            if (type!=null) {
+                return type.resolveAliases().getDeclaration()
+                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+            }
+            else {
+                return Collections.emptyMap();
+            }
+        }
+        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (qmte.getStaticMethodReference()) {
@@ -1323,10 +1343,29 @@ public class CeylonContentProposer {
                 return type.resolveAliases().getDeclaration()
                 		.getMatchingMemberDeclarations(node.getScope(), prefix, 0);
             }
+            else if (qmte.getPrimary() instanceof Tree.MemberOrTypeExpression) {
+                //it might be a qualified type or even a static method reference
+                Declaration pmte = ((Tree.MemberOrTypeExpression) qmte.getPrimary()).getDeclaration();
+                if (pmte instanceof TypeDeclaration) {
+                    type = ((TypeDeclaration) pmte).getType();
+                    if (type!=null) {
+                        return type.resolveAliases().getDeclaration()
+                                .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                    }
+                }
+            }
+            return Collections.emptyMap();
+        } 
+        else if (node instanceof Tree.QualifiedType) {
+            ProducedType type = ((Tree.QualifiedType) node).getOuterType().getTypeModel();
+            if (type!=null) {
+                return type.resolveAliases().getDeclaration()
+                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+            }
             else {
                 return Collections.emptyMap();
             }
-        } 
+        }
         else if (memberOp && node instanceof Tree.Term) {
             ProducedType type = ((Tree.Term)node).getTypeModel();
             if (type!=null) {
