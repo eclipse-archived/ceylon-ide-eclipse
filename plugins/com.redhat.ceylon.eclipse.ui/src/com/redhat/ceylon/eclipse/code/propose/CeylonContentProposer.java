@@ -646,8 +646,10 @@ public class CeylonContentProposer {
                     && prefix.isEmpty() && !memberOp) {
                 addMemberNameProposal(offset, node, result);
             }
-            else if (node instanceof Tree.Declaration && !(node instanceof Tree.Variable && 
-            		((Tree.Variable)node).getType() instanceof Tree.SyntheticVariable)) {
+            else if (node instanceof Tree.Declaration && 
+                    !(node instanceof Tree.Variable && 
+                            ((Tree.Variable)node).getType() instanceof Tree.SyntheticVariable) &&
+                    !(node instanceof Tree.InitializerParameter)) {
             	addMemberNameProposal(offset, node, result);
             }
             else {
