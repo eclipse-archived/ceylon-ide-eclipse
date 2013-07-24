@@ -130,6 +130,14 @@ public class FindReferenceVisitor extends Visitor {
         super.visit(that);
     }
         
+    public void visit(Tree.MemberLiteral that) {
+        if (isReference(that.getDeclaration(), 
+                id(that.getIdentifier()))) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
 	@Override
 	public void visit(Tree.NamedArgument that) {
 		if (isReference(that.getParameter())) {
