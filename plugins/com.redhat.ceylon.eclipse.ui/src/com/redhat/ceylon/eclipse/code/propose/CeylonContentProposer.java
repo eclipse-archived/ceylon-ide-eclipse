@@ -29,6 +29,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYL
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
@@ -111,7 +112,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.FindNodeVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -437,15 +437,7 @@ public class CeylonContentProposer {
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rn) {
-        FindNodeVisitor visitor = new FindNodeVisitor(adjustedStart, adjustedEnd) {
-            public void visit(Tree.MemberLiteral that) {
-                if (inBounds(that)) {
-                    node = that;
-                }
-            }
-        };
-        rn.visit(visitor);
-        Node node = visitor.getNode();
+        Node node = findNode(rn, adjustedStart, adjustedEnd);
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
             //so the returned node is the previous

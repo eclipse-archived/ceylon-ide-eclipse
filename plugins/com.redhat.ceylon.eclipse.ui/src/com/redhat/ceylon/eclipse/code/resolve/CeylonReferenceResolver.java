@@ -142,6 +142,9 @@ public class CeylonReferenceResolver {
         else if (node instanceof Tree.NamedArgument) {
             return ((Tree.NamedArgument) node).getParameter();
         }
+        else if (node instanceof Tree.MetaLiteral) {
+            return ((Tree.MetaLiteral) node).getDeclaration();
+        }
         else {
             return null;
         }
