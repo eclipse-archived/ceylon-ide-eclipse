@@ -23,6 +23,14 @@ public class FindNodeVisitor extends Visitor
         return node;
     }
     
+    public void visit(Tree.MemberLiteral that) {
+        if (inBounds(that.getIdentifier())) {
+            node = that;
+        }
+        else {
+            super.visit(that);
+        }
+    }
     public void visit(Tree.ImportMemberOrTypeList that) {
         super.visit(that);
     }
