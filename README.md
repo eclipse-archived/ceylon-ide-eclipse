@@ -26,7 +26,18 @@
     to import the project from this root directory: 
     
         ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
+
+3. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
+    - Add the SWTBot Eclipse plugins, which is required to compile and run the Ceylon IDE 
+      interactive tests.
+      Install all the features available at the following update site :
+        
+        http://download.eclipse.org/technology/swtbot/releases/latest/
+    - Use `File > Import... > Existing Projects into Workspace` 
+      to import the project from this root directory: 
     
+            ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test
+
 3.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
