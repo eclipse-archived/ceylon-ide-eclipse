@@ -50,6 +50,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
         "jboss-modules-1.1.3.GA.jar",
     };
+    private static final String[] COMPILETIME_LIBRARIES = new String[]{
+        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+    };
 	
 	private FontRegistry fontRegistry;
 
@@ -180,14 +183,25 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      * Returns the list of jars bundled in this plugin that are required by the ceylon.language module at runtime
      */
     public static List<String> getRuntimeRequiredJars(){
+        return getRequiredJars(RUNTIME_LIBRARIES);
+    }
+
+    /**
+     * Returns the list of jars bundled in this plugin that are required by the ceylon.language module at compiletime
+     */
+    public static List<String> getCompiletimeRequiredJars(){
+        return getRequiredJars(COMPILETIME_LIBRARIES);
+    }
+
+    private static List<String> getRequiredJars(String[] libraries){
         Bundle bundle = Platform.getBundle(PLUGIN_ID);
         Path path = new Path("lib");
         URL eclipseUrl = FileLocator.find(bundle, path, null);
         try{
             URL fileURL = FileLocator.resolve(eclipseUrl);
             File libDir = new File(fileURL.getPath());
-            List<String> jars = new ArrayList<String>(RUNTIME_LIBRARIES.length);
-            for(String jar : RUNTIME_LIBRARIES){
+            List<String> jars = new ArrayList<String>(libraries.length);
+            for(String jar : libraries){
                 jars.add(new File(libDir, jar).getAbsolutePath());
             }
             return jars;
