@@ -1668,6 +1668,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		}
         
         options.add("-classpath");
+        // add the compiletime required jars (those used by the language module implicitely)
+        classpathElements.addAll(CeylonPlugin.getCompiletimeRequiredJars());
         String classpath = "";
         for (String cpElement : classpathElements) {
             if (! classpath.isEmpty()) {
