@@ -1317,17 +1317,20 @@ public class CeylonContentProposer {
     
     private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
             boolean memberOp, Tree.CompilationUnit cu) {
-        if (node instanceof MemberLiteral) { //this case is very ugly! it's actually of form `Type.
-            ProducedType type = ((Tree.MemberLiteral) node).getType().getTypeModel();
-            if (type!=null) {
-                return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
-            }
-            else {
-                return Collections.emptyMap();
+        if (node instanceof MemberLiteral) { //this case is rather ugly!
+            Tree.StaticType mlt = ((Tree.MemberLiteral) node).getType();
+            if (mlt!=null) {
+                ProducedType type = mlt.getTypeModel();
+                if (type!=null) {
+                    return type.resolveAliases().getDeclaration()
+                            .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                }
+                else {
+                    return Collections.emptyMap();
+                }
             }
         }
-        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) node;
             ProducedType type = getPrimaryType((Tree.QualifiedMemberOrTypeExpression) node);
             if (qmte.getStaticMethodReference()) {
