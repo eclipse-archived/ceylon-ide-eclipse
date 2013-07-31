@@ -180,7 +180,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     				Job job = new BuildProjectAndDependenciesJob("Initial build of project " + 
     						p.getName(), p) {
     					protected boolean reallyRun() {
-    						return !CeylonBuilder.isModelAvailable(p);
+    						return !CeylonBuilder.isModelTypeChecked(p);
     					}
     				};
     				job.setRule(p.getWorkspace().getRoot());

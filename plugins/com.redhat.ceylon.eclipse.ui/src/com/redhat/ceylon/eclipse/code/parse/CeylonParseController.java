@@ -9,7 +9,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectMod
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelAvailable;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
@@ -231,7 +231,7 @@ public class CeylonParseController {
         }
         
         if (project!=null) {
-            if (!isModelAvailable(project)) {
+            if (!isModelTypeChecked(project)) {
                 return; // TypeChecking has not been performed
             }
             typeChecker = getProjectTypeChecker(project);
