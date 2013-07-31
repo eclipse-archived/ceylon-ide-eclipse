@@ -216,13 +216,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return modelState;
     }
     
-    public static boolean isModelAvailable(IProject project) {
+    public static boolean isModelTypeChecked(IProject project) {
         ModelState modelState = getModelState(project);
         return modelState.ordinal() >= ModelState.TypeChecked.ordinal();
     }
     
+    public static boolean isModelParsed(IProject project) {
+        ModelState modelState = getModelState(project);
+        return modelState.ordinal() >= ModelState.Parsed.ordinal();
+    }
+
     public static List<PhasedUnit> getUnits(IProject project) {
-        if (! isModelAvailable(project)) {
+        if (! isModelParsed(project)) {
             return Collections.emptyList();
         }
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
@@ -238,7 +243,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<PhasedUnit> getUnits() {
         List<PhasedUnit> result = new ArrayList<PhasedUnit>();
         for (IProject project : typeCheckers.keySet()) {
-            if (isModelAvailable(project)) {
+            if (isModelParsed(project)) {
                 TypeChecker tc = typeCheckers.get(project);
                 for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
                     result.add(pu);
@@ -255,7 +260,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 for (String pname: projects) {
                     if (me.getKey().getName().equals(pname)) {
                         IProject project = me.getKey();
-                        if (isModelAvailable(project)) {
+                        if (isModelParsed(project)) {
                             result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
                         }
                     }
@@ -850,7 +855,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final BooleanHolder mustResolveClasspathContainer) {
     	
         mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || 
-        		!isModelAvailable(project);
+        		!isModelTypeChecked(project);
         mustResolveClasspathContainer.value = kind==FULL_BUILD; //false;
         final BooleanHolder sourceModified = new BooleanHolder();
         
