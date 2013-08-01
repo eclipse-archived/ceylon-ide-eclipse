@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -127,10 +128,12 @@ public class CeylonReferenceResolver {
             return ((Tree.Declaration) node).getDeclarationModel();
         } 
         else if (node instanceof Tree.NamedArgument) {
-            return ((Tree.NamedArgument) node).getParameter().getModel();
+            Parameter p = ((Tree.NamedArgument) node).getParameter();
+            return p==null ? null : p.getModel();
         }
         else if (node instanceof Tree.InitializerParameter) {
-            return ((Tree.InitializerParameter) node).getParameterModel().getModel();
+            Parameter p = ((Tree.InitializerParameter) node).getParameterModel();
+            return  p==null ? null : p.getModel();
         }
         else if (node instanceof Tree.MetaLiteral) {
             return ((Tree.MetaLiteral) node).getDeclaration();
