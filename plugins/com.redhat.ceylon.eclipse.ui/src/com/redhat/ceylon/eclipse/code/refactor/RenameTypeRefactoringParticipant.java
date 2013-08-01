@@ -9,7 +9,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -30,7 +29,7 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
 	private IMember javaDeclaration;
 
 	protected boolean initialize(Object element) {
-		javaDeclaration= (IType) element;
+		javaDeclaration= (IMember) element;
 		return true;
 	}
 
