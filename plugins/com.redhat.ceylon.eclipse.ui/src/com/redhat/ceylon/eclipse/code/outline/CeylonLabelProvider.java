@@ -565,7 +565,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                             .append(" ")
                             .append(name(td.getIdentifier()), ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
-                            Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
                             for (Tree.ParameterList ipl: ((Tree.MethodDeclaration) td).getParameterLists()) {
                                 parameters(ipl, label);
                             }
