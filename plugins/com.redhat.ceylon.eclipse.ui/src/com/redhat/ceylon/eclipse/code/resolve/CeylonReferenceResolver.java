@@ -3,9 +3,7 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
-import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -65,17 +63,6 @@ public class CeylonReferenceResolver {
         }
         else {
         	Declaration dec = getReferencedDeclaration((Node) node);
-            if (dec instanceof Parameter) {
-                Declaration pd = ((Parameter) dec).getDeclaration();
-                if (pd instanceof Setter) {
-                    dec = pd;
-                }
-                else if (dec.getName()!=null) {
-                    Declaration att = pd.getMemberOrParameter(dec.getUnit(), 
-                    		dec.getName(), null, false);
-                    if (att!=null) dec = att;
-                }
-            }
             if (dec instanceof MethodOrValue && 
                     ((MethodOrValue) dec).isShortcutRefinement()) {
                 dec = dec.getRefinedDeclaration();
@@ -140,7 +127,10 @@ public class CeylonReferenceResolver {
             return ((Tree.Declaration) node).getDeclarationModel();
         } 
         else if (node instanceof Tree.NamedArgument) {
-            return ((Tree.NamedArgument) node).getParameter();
+            return ((Tree.NamedArgument) node).getParameter().getModel();
+        }
+        else if (node instanceof Tree.InitializerParameter) {
+            return ((Tree.InitializerParameter) node).getParameterModel().getModel();
         }
         else if (node instanceof Tree.MetaLiteral) {
             return ((Tree.MetaLiteral) node).getDeclaration();

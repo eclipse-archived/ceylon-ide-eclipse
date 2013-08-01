@@ -38,7 +38,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -305,6 +304,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return LOCAL_INTERFACE;
             }
         }
+        else if (d.isParameter()) {
+            return PARAMETER;
+        }
         else if (d instanceof Method) {
             if (shared) {
                 return METHOD;
@@ -315,9 +317,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (d instanceof TypeAlias) {
             return ALIAS;
-        }
-        else if (d instanceof Parameter) {
-            return PARAMETER;
         }
         else {
             if (shared) {
@@ -560,14 +559,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             int len = pl.getParameters().size(), i=0;
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
-                    label.append(type(p.getType()), TYPE_STYLER)
-                        .append(" ")
-                        .append(name(p.getIdentifier()), ID_STYLER);
-                    if (p instanceof Tree.FunctionalParameterDeclaration) {
-                        Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
-                        for (Tree.ParameterList ipl: fp.getParameterLists()) {
-                            parameters(ipl, label);
+                    if (p instanceof Tree.ParameterDeclaration) {
+                        Tree.TypedDeclaration td = ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                        label.append(type(td.getType()), TYPE_STYLER)
+                            .append(" ")
+                            .append(name(td.getIdentifier()), ID_STYLER);
+                        if (p instanceof Tree.FunctionalParameterDeclaration) {
+                            Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
+                            for (Tree.ParameterList ipl: ((Tree.MethodDeclaration) td).getParameterLists()) {
+                                parameters(ipl, label);
+                            }
                         }
+                    }
+                    else if (p instanceof Tree.InitializerParameter) {
+                        label.append(name(((Tree.InitializerParameter) p).getIdentifier()), ID_STYLER);
                     }
                 }
                 if (++i<len) label.append(", ");

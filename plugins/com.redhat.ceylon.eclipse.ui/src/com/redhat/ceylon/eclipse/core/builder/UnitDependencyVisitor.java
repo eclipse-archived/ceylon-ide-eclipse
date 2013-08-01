@@ -8,6 +8,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -143,6 +144,12 @@ public class UnitDependencyVisitor extends Visitor {
         //TODO: is this really necessary?
         storeDependency(that.getParameter());
         super.visit(that);
+    }
+    
+    void storeDependency(Parameter p) {
+        if (p!=null) {
+            storeDependency(p.getModel());
+        }
     }
         
     @Override

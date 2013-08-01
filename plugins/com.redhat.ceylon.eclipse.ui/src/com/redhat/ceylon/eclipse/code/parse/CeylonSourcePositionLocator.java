@@ -140,6 +140,9 @@ public class CeylonSourcePositionLocator {
 	    else if (node instanceof Tree.ImportMemberOrType) {
 	        return ((Tree.ImportMemberOrType) node).getIdentifier();
 	    }
+        else if (node instanceof Tree.InitializerParameter) {
+            return ((Tree.InitializerParameter) node).getIdentifier();
+        }
         else if (node instanceof Tree.MemberLiteral) {
             return ((Tree.MemberLiteral) node).getIdentifier();
         }

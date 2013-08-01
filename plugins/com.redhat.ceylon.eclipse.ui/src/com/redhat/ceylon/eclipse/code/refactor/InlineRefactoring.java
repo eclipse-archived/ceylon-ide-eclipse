@@ -390,8 +390,8 @@ public class InlineRefactoring extends AbstractRefactoring {
         		            @Override
         		            public void visit(Tree.BaseMemberExpression it) {
         		                super.visit(it);
-        		                if (it.getDeclaration() instanceof Parameter) {
-        		                    Parameter param = (Parameter) it.getDeclaration();
+        		                if (it.getDeclaration().isParameter()) {
+        		                    Parameter param = ((MethodOrValue) it.getDeclaration()).getInitializerParameter();
         		                    if ( param.getDeclaration().equals(declaration) ) {
         		                        result.append(template.substring(start,it.getStartIndex()-templateStart));
         		                        start = it.getStopIndex()-templateStart+1;

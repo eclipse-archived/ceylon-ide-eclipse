@@ -189,6 +189,16 @@ public class FindNodeVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.InitializerParameter that) {
+        if (inBounds(that.getIdentifier())) {
+            node = that;
+        }
+        else {
+            super.visit(that);
+        }
+    }
+    
+    @Override
     public void visit(Tree.NamedArgument that) {
         if (inBounds(that.getIdentifier())) {
             node = that;

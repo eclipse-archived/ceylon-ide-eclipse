@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PostfixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
@@ -26,10 +26,6 @@ public class FindAssignmentsVisitor extends Visitor {
 	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public FindAssignmentsVisitor(Declaration declaration) {
-        if (declaration instanceof ValueParameter 
-                && ((ValueParameter) declaration).isHidden()) {
-            declaration = declaration.getContainer().getMember(declaration.getName(), null, false);
-        }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
 	        while (od!=null) {
@@ -48,11 +44,11 @@ public class FindAssignmentsVisitor extends Visitor {
 		return nodes;
 	}
 	
+    protected boolean isReference(Parameter p) {
+        return p!=null && isReference(p.getModel());
+    }
+    
 	protected boolean isReference(Declaration ref) {
-        if (ref instanceof ValueParameter 
-                && ((ValueParameter) ref).isHidden()) {
-            ref = ref.getContainer().getMember(ref.getName(), null, false);
-        }
 	    return ref!=null && declaration.refines(ref);
 	}
 	
@@ -70,12 +66,11 @@ public class FindAssignmentsVisitor extends Visitor {
         }
     }
 
-    @Override
-    public void visit(Parameter that) {
+    public void visit(InitializerParameter that) {
         super.visit(that);
-        if (that.getDefaultArgument()!=null) {
-            if (isReference(that.getDeclarationModel())) {
-                nodes.add(that.getDefaultArgument());
+        if (that.getSpecifierExpression()!=null) {
+            if (isReference(that.getParameterModel())) {
+                nodes.add(that.getSpecifierExpression());
             }
         }
     }
@@ -124,7 +119,7 @@ public class FindAssignmentsVisitor extends Visitor {
             nodes.add(that.getSpecifierExpression());
         }
     }
-        
+    
     @Override
     public void visit(Tree.NamedArgument that) {
         if (isReference(that.getParameter())) {

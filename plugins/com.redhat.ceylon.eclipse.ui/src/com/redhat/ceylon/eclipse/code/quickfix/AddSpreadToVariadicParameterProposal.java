@@ -11,9 +11,9 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -35,9 +35,9 @@ public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionPropos
         
         FindInvocationVisitor fiv = new FindInvocationVisitor(term);
         fiv.visit(cu);
-        if( fiv.parameter == null || 
-            !(fiv.parameter instanceof ValueParameter) ||
-            !((ValueParameter)fiv.parameter).isSequenced() ) {
+        if (fiv.parameter == null || 
+            !(fiv.parameter.isParameter()) ||
+            !((MethodOrValue) fiv.parameter).getInitializerParameter().isSequenced()) {
             return;
         }
         

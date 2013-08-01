@@ -4,7 +4,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DefaultArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
@@ -23,7 +22,7 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             result=current;
-            parameter=that.getParameter();
+            parameter=that.getParameter().getModel();
         }
         super.visit(that);
     }
@@ -32,7 +31,7 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             result=current;
-            parameter=that.getParameter();
+            parameter=that.getParameter().getModel();
         }
         super.visit(that);
     }
@@ -40,7 +39,7 @@ class FindInvocationVisitor extends Visitor {
     public void visit(Tree.NamedArgument that) {
         if (node==that) {
             result=current;
-            parameter=that.getParameter();
+            parameter=that.getParameter().getModel();
         }
         super.visit(that);
     }
@@ -95,13 +94,13 @@ class FindInvocationVisitor extends Visitor {
         super.visit(that);
     }
     @Override
-    public void visit(Tree.Parameter that) {
-        DefaultArgument da = that.getDefaultArgument();
-        if (da!=null) {
-            Expression e = da.getSpecifierExpression().getExpression();
+    public void visit(Tree.InitializerParameter that) {
+        Tree.SpecifierExpression se = that.getSpecifierExpression();
+        if (se!=null) {
+            Tree.Expression e = se.getExpression();
             if (e!=null && node==e.getTerm()) {
                 //result=current;
-                parameter = that.getDeclarationModel();
+                parameter = that.getParameterModel().getModel();
             }
         }
         super.visit(that);
