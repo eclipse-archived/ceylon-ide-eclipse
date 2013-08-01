@@ -53,8 +53,10 @@ public class CeylonOutlineBuilder {
 		
 		@Override
 		public void visitAny(Node that) {
-			if (that instanceof Tree.Declaration && 
-					!(that instanceof Tree.Parameter) &&
+		    if (that instanceof Tree.Parameter) {
+		        //don't make a node
+		    }
+		    else if (that instanceof Tree.Declaration && 
 					!(that instanceof Tree.TypeParameterDeclaration) &&
 					!(that instanceof Tree.TypeConstraint) &&
 					!(that instanceof Tree.Variable && 
