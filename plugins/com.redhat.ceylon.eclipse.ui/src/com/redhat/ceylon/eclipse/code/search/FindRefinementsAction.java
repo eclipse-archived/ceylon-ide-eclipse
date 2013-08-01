@@ -8,7 +8,6 @@ import java.util.Set;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -34,8 +33,7 @@ public class FindRefinementsAction extends AbstractFindAction {
         declaration = new FindReferenceVisitor(declaration).getDeclaration();
         return declaration!=null && 
                 declaration.isClassOrInterfaceMember() &&
-                !(declaration instanceof TypeParameter) &&
-                !(declaration instanceof Parameter);
+                !(declaration instanceof TypeParameter);
     }
 
     @Override

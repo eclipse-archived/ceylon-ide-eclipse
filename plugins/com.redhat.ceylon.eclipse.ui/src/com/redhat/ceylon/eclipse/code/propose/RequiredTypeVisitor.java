@@ -142,14 +142,6 @@ public class RequiredTypeVisitor extends Visitor
     }
     
     @Override
-    public void visit(Tree.ValueParameterDeclaration that) {
-        ProducedType ort = requiredType;
-        requiredType = that.getType().getTypeModel();
-        super.visit(that);
-        requiredType = ort;
-    }
-    
-    @Override
     public void visit(Tree.AssignOp that) {
         ProducedType ort = requiredType;
         requiredType = that.getLeftTerm().getTypeModel();

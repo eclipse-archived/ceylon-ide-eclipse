@@ -31,8 +31,7 @@ public class FindStatementVisitor extends Visitor
 	@Override
 	public void visit(Tree.Statement that) {
     	if (!toplevel || currentlyToplevel) {
-    		if (!(that instanceof Tree.Variable || 
-    				that instanceof Tree.Parameter ||
+    		if (!(that instanceof Tree.Variable ||
     				that instanceof Tree.TypeConstraint ||
     				that instanceof Tree.TypeParameterDeclaration)) {
     			currentStatement = that;

@@ -345,10 +345,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
 		List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
 		@Override
 		public void visit(Tree.Declaration that) {
-			if ( !(that instanceof Tree.Parameter) &&
-					!(that instanceof Tree.TypeParameterDeclaration) &&
-					!(that instanceof Tree.TypeConstraint) &&
-					!(that instanceof Tree.Variable && 
+			if (!(that instanceof Tree.TypeParameterDeclaration) &&
+				!(that instanceof Tree.TypeConstraint) &&
+				!(that instanceof Tree.Variable && 
 							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
 				if (inBounds(that)) {
 					Declaration dm = that.getDeclarationModel();

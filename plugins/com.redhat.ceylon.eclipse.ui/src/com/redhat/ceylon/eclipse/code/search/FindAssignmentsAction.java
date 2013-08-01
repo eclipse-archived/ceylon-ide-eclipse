@@ -8,7 +8,6 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Getter;
-import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -31,7 +30,6 @@ public class FindAssignmentsAction extends AbstractFindAction {
     @Override
     boolean isValidSelection() {
         return declaration instanceof Value ||
-                declaration instanceof Parameter ||
                 declaration instanceof Getter && 
                     ((Getter)declaration).isVariable();
     }

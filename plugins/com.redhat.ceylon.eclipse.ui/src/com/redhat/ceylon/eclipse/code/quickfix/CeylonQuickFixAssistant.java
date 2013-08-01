@@ -87,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
@@ -194,8 +193,7 @@ public class CeylonQuickFixAssistant {
             }
             if (decNode instanceof Tree.TypedDeclaration && 
                     !(decNode instanceof Tree.ObjectDefinition) &&
-                    !(decNode instanceof Tree.Variable) &&
-                    !(decNode instanceof Tree.Parameter)) {
+                    !(decNode instanceof Tree.Variable)) {
                 Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
                 if (type instanceof Tree.LocalModifier) {
                     addSpecifyTypeProposal(cu, type, proposals, file);
@@ -696,9 +694,17 @@ public class CeylonQuickFixAssistant {
             int len = pl.getParameters().size(), i=0;
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
-                    result.append(p.getType().getTypeModel().getProducedTypeName()) 
+                    if (p instanceof Tree.ParameterDeclaration) {
+                        Tree.TypedDeclaration td = ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                        result.append(td.getType().getTypeModel().getProducedTypeName()) 
+                                .append(" ")
+                                .append(td.getIdentifier().getText());
+                    }
+                    else if (p instanceof Tree.InitializerParameter) {
+                        result.append(p.getParameterModel().getType().getProducedTypeName()) 
                             .append(" ")
-                            .append(p.getIdentifier().getText());
+                            .append(((Tree.InitializerParameter) p).getIdentifier().getText());
+                    }
                     //TODO: easy to add back in:
                     /*if (p instanceof Tree.FunctionalParameterDeclaration) {
                         Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
@@ -740,7 +746,17 @@ public class CeylonQuickFixAssistant {
             int len = pl.getParameters().size(), i=0;
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
-                    result.append(p.getIdentifier().getText());
+                    Tree.Identifier id;
+                    if (p instanceof Tree.InitializerParameter) {
+                        id = ((Tree.InitializerParameter) p).getIdentifier();
+                    }
+                    else if (p instanceof Tree.ParameterDeclaration) {
+                        id = ((Tree.ParameterDeclaration) p).getTypedDeclaration().getIdentifier();
+                    }
+                    else {
+                        continue;
+                    }
+                    result.append(id.getText());
                     //TODO: easy to add back in:
                     /*if (p instanceof Tree.FunctionalParameterDeclaration) {
                         Tree.FunctionalParameterDeclaration fp = (Tree.FunctionalParameterDeclaration) p;
@@ -1109,13 +1125,6 @@ public class CeylonQuickFixAssistant {
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
             if (td!=null) {
-            	if (td instanceof ValueParameter) {
-            		ValueParameter vp = (ValueParameter)td;
-            		if (vp.isHidden()) {
-            			td = (TypedDeclaration) vp.getDeclaration()
-            					.getMember(td.getName(), null, false);
-            		}
-            	}
             	if (node instanceof Tree.BaseMemberExpression){
             		addChangeTypeProposals(proposals, problem, project, node, td.getType(), 
             				(TypedDeclaration) ((Tree.BaseMemberExpression) node).getDeclaration(), true);

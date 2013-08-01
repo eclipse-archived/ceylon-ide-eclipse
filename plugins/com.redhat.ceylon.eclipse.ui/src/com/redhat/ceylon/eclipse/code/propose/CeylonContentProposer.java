@@ -80,9 +80,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
-import com.redhat.ceylon.compiler.typechecker.model.FunctionalParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
-import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -103,7 +101,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -843,8 +840,8 @@ public class CeylonContentProposer {
     private static void addInlineFunctionProposal(int offset, String prefix, CeylonParseController cpc,
             Node node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
         //TODO: type argument substitution using the ProducedReference of the primary node
-        if (d instanceof Parameter) {
-            Parameter p = (Parameter) d;
+        if (d.isParameter()) {
+            Parameter p = ((MethodOrValue) d).getInitializerParameter();
             result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null),
                     getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)),
@@ -942,9 +939,7 @@ public class CeylonContentProposer {
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol) {
-        if (d instanceof Value || 
-                d instanceof Getter || 
-                d instanceof ValueParameter) {
+        if (d instanceof Value) {
             TypedDeclaration td = (TypedDeclaration) d;
             if (td.getType()!=null && 
                     d.getUnit().isIterableType(td.getType())) {
@@ -971,8 +966,7 @@ public class CeylonContentProposer {
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol) {
     	if (!dwp.isUnimported()) {
-    		if (d instanceof Value || 
-    				d instanceof ValueParameter) {
+    		if (d instanceof Value) {
     			TypedDeclaration v = (TypedDeclaration) d;
     			if (v.getType()!=null &&
     					d.getUnit().isOptionalType(v.getType()) && 
@@ -991,8 +985,7 @@ public class CeylonContentProposer {
             DeclarationWithProximity dwp, Declaration d, 
             OccurrenceLocation ol, Node node, IDocument doc) {
     	if (!dwp.isUnimported()) {
-    		if (d instanceof Value || 
-    				d instanceof ValueParameter) {
+    		if (d instanceof Value) {
     			TypedDeclaration v = (TypedDeclaration) d;
     			if (v.getType()!=null &&
     					v.getType().getCaseTypes()!=null && 
@@ -1557,9 +1550,9 @@ public class CeylonContentProposer {
             String indent) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
-        appendTypeParameters(p, result);
-        appendParameters(p, pr, result);
-        appendImpl(p, false, indent, result);
+        appendTypeParameters(p.getModel(), result);
+        appendParameters(p.getModel(), pr, result);
+        appendImpl(p.getModel(), false, indent, result);
         return result.toString();
     }
 
@@ -1590,8 +1583,8 @@ public class CeylonContentProposer {
     private static String getInlineFunctionDescriptionFor(Parameter p, ProducedReference pr) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
-        appendTypeParameters(p, result);
-        appendParameters(p, pr, result);
+        appendTypeParameters(p.getModel(), result);
+        appendParameters(p.getModel(), pr, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
@@ -1635,8 +1628,8 @@ public class CeylonContentProposer {
             else {
                 result.append("(");
                 for (Parameter p: params) {
-                    appendParameters(p, pr.getTypedParameter(p), result);
-                    if (p instanceof FunctionalParameter) {
+                    appendParameters(p.getModel(), pr.getTypedParameter(p), result);
+                    if (p.getModel() instanceof Functional) {
                         result.append(" => ");
                     }
                     result.append(p.getName()).append(", ");
@@ -1677,9 +1670,9 @@ public class CeylonContentProposer {
                 result.append(" { ");
                 for (Parameter p: params) {
                     if (!p.isSequenced()) {
-                        if (p instanceof FunctionalParameter) {
+                        if (p.getModel() instanceof Functional) {
                             result.append("function ").append(p.getName());
-                            appendParameters(p, pr.getTypedParameter(p), result);
+                            appendParameters(p.getModel(), pr.getTypedParameter(p), result);
                             if (descriptionOnly) {
                             	result.append("; ");
                             }
@@ -1756,8 +1749,8 @@ public class CeylonContentProposer {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
             if (type!=null) {
-                boolean isSequenced = (d instanceof Parameter) && 
-                		((Parameter) d).isSequenced();
+                boolean isSequenced = d.isParameter() && 
+                		((MethodOrValue) d).getInitializerParameter().isSequenced();
                 if (pr!=null) {
                     type = type.substitute(pr.getTypeArguments());
                 }
@@ -1769,8 +1762,7 @@ public class CeylonContentProposer {
                         td.getTypeDeclaration().isAnonymous()) {
                     result.append("object");
                 }
-                else if (d instanceof Method || 
-                        d instanceof FunctionalParameter) {
+                else if (d instanceof Method) {
                     if (((Functional) d).isDeclaredVoid()) {
                         result.append("void");
                     }
@@ -1782,7 +1774,7 @@ public class CeylonContentProposer {
                     result.append(typeName);
                 }
                 if (isSequenced) {
-                    if (((Parameter) d).isAtLeastOne()) {
+                    if (((MethodOrValue) d).getInitializerParameter().isAtLeastOne()) {
                         result.append("+");
                     }
                     else {
@@ -1796,8 +1788,8 @@ public class CeylonContentProposer {
     
     private static void appendNamedArgumentText(Parameter p, ProducedReference pr, 
             StringBuilder result) {
-        if (p instanceof FunctionalParameter) {
-        	FunctionalParameter fp = (FunctionalParameter) p;
+        if (p.getModel() instanceof Functional) {
+        	Functional fp = (Functional) p.getModel();
             result.append(fp.isDeclaredVoid() ? "void" : "function");
         }
         else {
@@ -1825,8 +1817,8 @@ public class CeylonContentProposer {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
 			if (type!=null) {
-                boolean isSequenced = (d instanceof Parameter) && 
-                		((Parameter) d).isSequenced();
+                boolean isSequenced = d.isParameter() && 
+                		((MethodOrValue) d).getInitializerParameter().isSequenced();
                 if (isSequenced) {
                 	type = d.getUnit().getIteratedType(type);
                 }
@@ -1835,8 +1827,7 @@ public class CeylonContentProposer {
                         td.getTypeDeclaration().isAnonymous()) {
                     result.append("object", KW_STYLER);
                 }
-                else if (d instanceof Method || 
-                        d instanceof FunctionalParameter) {
+                else if (d instanceof Method) {
                     if (((Functional)d).isDeclaredVoid()) {
                         result.append("void", KW_STYLER);
                     }
@@ -1875,9 +1866,12 @@ public class CeylonContentProposer {
     
     private static void appendImpl(Declaration d, boolean isInterface, 
     		String indent, StringBuilder result) {
-        if (d instanceof Method || d instanceof FunctionalParameter) {
+        if (d instanceof Method) {
             result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing;");
             result.append(" /* TODO auto-generated stub */");
+        }
+        else if (d.isParameter()) {
+            result.append(" => nothing;");
         }
         else if (d instanceof MethodOrValue) {
         	if (isInterface) {
@@ -1889,9 +1883,6 @@ public class CeylonContentProposer {
         	else {
         		result.append(" = nothing; /* TODO auto-generated stub */");
         	}
-        }
-        else if (d instanceof ValueParameter) {
-            result.append(" => nothing;");
         }
         else {
             //TODO: in the case of a class, formal member refinements!
@@ -1921,8 +1912,8 @@ public class CeylonContentProposer {
                         for (Parameter p: params.getParameters()) {
                             ProducedTypedReference ppr = pr==null ? 
                                     null : pr.getTypedParameter(p);
-                            appendDeclarationText(p, ppr, result);
-                            appendParameters(p, ppr, result);
+                            appendDeclarationText(p.getModel(), ppr, result);
+                            appendParameters(p.getModel(), ppr, result);
                             /*ProducedType type = p.getType();
                             if (pr!=null) {
                                 type = type.substitute(pr.getTypeArguments());
@@ -1963,8 +1954,8 @@ public class CeylonContentProposer {
                         result.append("(");
                         int len = params.getParameters().size(), i=0;
                         for (Parameter p: params.getParameters()) {
-                            appendDeclarationText(p, result);
-                            appendParameters(p, result);
+                            appendDeclarationText(p.getModel(), result);
+                            appendParameters(p.getModel(), result);
                             /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);
                             if (p instanceof FunctionalParameter) {

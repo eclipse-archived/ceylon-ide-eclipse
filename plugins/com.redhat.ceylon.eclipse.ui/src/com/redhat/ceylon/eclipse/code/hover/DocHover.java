@@ -97,7 +97,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Element;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
-import com.redhat.ceylon.compiler.typechecker.model.Getter;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -683,17 +682,17 @@ public class DocHover
 			if (dec instanceof Class) {
 				return dec.isShared() ? 
 						"class_obj.gif" : 
-						"innerinterface_private_obj.gif";
+						"innerclass_private_obj.gif";
 			}
 			else if (dec instanceof Interface) {
 				return dec.isShared() ? 
 						"int_obj.gif" : 
-						"innerclass_private_obj.gif";
+	                    "innerinterface_private_obj.gif";
 			}
 			else if (dec instanceof TypeAlias) {
 				return "types.gif";
 			}
-			else if (dec instanceof Parameter) {
+			else if (dec.isParameter()) {
 				return "methpro_obj.gif";
 			}
 			else if (dec instanceof MethodOrValue) {
@@ -945,8 +944,8 @@ public class DocHover
 				(dec.isDeprecated() ? "</s>":"") + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
-		if (dec instanceof Parameter) {
-			Declaration pd = ((Parameter) dec).getDeclaration();
+		if (dec.isParameter()) {
+			Declaration pd = ((MethodOrValue) dec).getInitializerParameter().getDeclaration();
 			addImageAndLabel(buffer, pd, fileUrl(getIcon(pd)).toExternalForm(),
 					16, 16, "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
 		}
@@ -1049,7 +1048,7 @@ public class DocHover
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
 						StringBuffer doc = new StringBuffer();
-						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p, cpc);
+						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
 						if (refNode!=null) {
 							appendDocAnnotationContent(refNode.getAnnotationList(), doc, resolveScope(dec));
 						}
@@ -1058,7 +1057,7 @@ public class DocHover
 						}
 						addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
 								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p) + ">" + 
-								HTMLPrinter.convertToHTMLContent(getDescriptionFor(p)) + 
+								HTMLPrinter.convertToHTMLContent(getDescriptionFor(p.getModel())) + 
 								"</a></tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
@@ -1111,9 +1110,7 @@ public class DocHover
 					16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
 							dec.getName() + "</tt>", 20, 2);
 		}
-		if (dec instanceof Value
-				|| dec instanceof Parameter
-				|| dec instanceof Getter && ((Getter)dec).isVariable()) {
+		if (dec instanceof Value) {
 			addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
 					16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
 							dec.getName() + "</tt>", 20, 2);

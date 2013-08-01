@@ -121,9 +121,9 @@ class FindOccurrenceLocationVisitor extends Visitor
         }
         super.visit(that);
     }
-
+    
     @Override
-    public void visit(Tree.DefaultArgument that) {
+    public void visit(Tree.SpecifierOrInitializerExpression that) {
         if (inBounds(that)) {
             occurrence = EXPRESSION;
         }
@@ -158,8 +158,7 @@ class FindOccurrenceLocationVisitor extends Visitor
         
     @Override
     public void visit(Tree.Declaration that) {
-        if (inBounds(that) && 
-                !(that instanceof Tree.Parameter)) {
+        if (inBounds(that)) {
             occurrence=null;
         }
         super.visit(that);

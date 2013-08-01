@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.ValueParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
@@ -18,10 +18,6 @@ public class FindReferenceVisitor extends Visitor {
 	private final Set<Node> nodes = new HashSet<Node>();
 	
 	public FindReferenceVisitor(Declaration declaration) {
-        if (declaration instanceof ValueParameter 
-                && ((ValueParameter) declaration).isHidden()) {
-            declaration = declaration.getContainer().getMember(declaration.getName(), null, false);
-        }
 	    if (declaration instanceof TypedDeclaration) {
 	        Declaration od = declaration;
 	        while (od!=null && od!=declaration) {
@@ -40,11 +36,11 @@ public class FindReferenceVisitor extends Visitor {
 		return nodes;
 	}
 	
+	protected boolean isReference(Parameter p) {
+	    return p!=null && isReference(p.getModel());
+	}
+	
 	protected boolean isReference(Declaration ref) {
-	    if (ref instanceof ValueParameter 
-	            && ((ValueParameter) ref).isHidden()) {
-	        ref = ref.getContainer().getMember(ref.getName(), null, false);
-	    }
 	    return ref!=null && declaration!=null && declaration.refines(ref);
 	}
 	
@@ -140,7 +136,7 @@ public class FindReferenceVisitor extends Visitor {
         
 	@Override
 	public void visit(Tree.NamedArgument that) {
-		if (isReference(that.getParameter())) {
+		if (isReference(that.getParameter().getModel())) {
 			nodes.add(that);
 		}
 		super.visit(that);
@@ -163,15 +159,15 @@ public class FindReferenceVisitor extends Visitor {
 		}
 		super.visit(that);
 	}
-	
+	    
     @Override
-    public void visit(Tree.ValueParameterDeclaration that) {
-        if(that.getType() instanceof Tree.LocalModifier) {
-            if (isReference(that.getDeclarationModel())) {
-                nodes.add(that);
-            }
+    public void visit(Tree.InitializerParameter that) {
+        if (isReference(that.getParameterModel())) {
+            nodes.add(that);
         }
-        super.visit(that);
+        else {
+            super.visit(that);
+        }
     }
     
 	private String id(Tree.Identifier that) {
