@@ -242,6 +242,11 @@ public class JDTClass implements ClassMirror {
     public boolean isFinal() {
         return klass.isFinal();
     }
+    
+    @Override
+    public boolean isEnum() {
+        return klass.isEnum();
+    }
 
     public String getFileName() {
         char[] fileName = klass.getFileName();
