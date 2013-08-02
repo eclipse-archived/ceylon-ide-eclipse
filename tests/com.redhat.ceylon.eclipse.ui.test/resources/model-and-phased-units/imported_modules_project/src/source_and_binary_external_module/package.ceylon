@@ -1,0 +1,1 @@
+shared package source_and_binary_external_module;

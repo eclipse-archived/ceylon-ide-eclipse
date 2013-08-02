@@ -1,0 +1,1 @@
+shared package source_only_external_module;
