@@ -55,6 +55,11 @@ public class SourceClass implements ClassMirror {
     public boolean isStatic() {
         return false;
     }
+    
+    @Override
+    public boolean isEnum() {
+        return false;
+    }
 
     @Override
     public boolean isFinal() {
