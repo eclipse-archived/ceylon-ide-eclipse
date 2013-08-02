@@ -1,3 +1,6 @@
 
 [repositories]
 lookup=../declarations/modules
+
+[defaults]
+encoding=UTF-8
