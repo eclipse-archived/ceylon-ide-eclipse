@@ -1,3 +1,6 @@
 
 [repositories]
 lookup=./imported_modules
+
+[defaults]
+encoding=UTF-8

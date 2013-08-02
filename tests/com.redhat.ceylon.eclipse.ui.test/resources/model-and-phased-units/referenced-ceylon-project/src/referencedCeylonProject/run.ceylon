@@ -1,4 +1,4 @@
-doc "Run the module `referencedCeylonProject`."
+doc ("Run the module `referencedCeylonProject`.")
 void run() {
     
 }
