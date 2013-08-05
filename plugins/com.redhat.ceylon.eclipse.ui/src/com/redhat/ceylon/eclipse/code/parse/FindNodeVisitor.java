@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.parse;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -31,16 +30,21 @@ public class FindNodeVisitor extends Visitor
             super.visit(that);
         }
     }
-    public void visit(Tree.ImportMemberOrTypeList that) {
-        super.visit(that);
-    }
     
     public void visit(Tree.ExtendedType that) {
-        super.visit(that);
+        if (that.getType()!=null) that.getType().visit(this);
+        if (that.getInvocationExpression()!=null &&
+                that.getInvocationExpression().getPositionalArgumentList()!=null) {
+            that.getInvocationExpression().getPositionalArgumentList().visit(this);
+        }
     }
     
-    public void visit(Tree.SatisfiedTypes that) {
-        super.visit(that);
+    public void visit(Tree.ClassSpecifier that) {
+        if (that.getType()!=null) that.getType().visit(this);
+        if (that.getInvocationExpression()!=null &&
+                that.getInvocationExpression().getPositionalArgumentList()!=null) {
+            that.getInvocationExpression().getPositionalArgumentList().visit(this);
+        }
     }
     
     @Override
@@ -124,7 +128,7 @@ public class FindNodeVisitor extends Visitor
     }
     
     @Override
-    public void visit(QualifiedMemberOrTypeExpression that) {
+    public void visit(Tree.QualifiedMemberOrTypeExpression that) {
         if (inBounds(that.getMemberOperator(), that.getIdentifier())) {
             node=that;
         }
