@@ -33,6 +33,7 @@ import org.eclipse.jface.text.IDocument;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
+import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
@@ -362,6 +363,8 @@ public class CeylonParseController {
             	phasedUnit.analyseUsage();
             }
             phasedUnit.analyseFlow();
+            UnknownTypeCollector utc = new UnknownTypeCollector();
+            phasedUnit.getCompilationUnit().visit(utc);
         }
         return phasedUnit;
 	}

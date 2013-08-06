@@ -72,6 +72,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.compiler.Options;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
@@ -1137,6 +1138,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             phasedUnit.analyseFlow();
         }
 
+        UnknownTypeCollector utc = new UnknownTypeCollector();
+        for (PhasedUnit pu : phasedUnitsToUpdate) { 
+            pu.getCompilationUnit().visit(utc);
+        }
+
         Iterator<Set<String>> itr = dependentsOfList.iterator();
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.getUnit().getDependentsOf().addAll(itr.next());
@@ -1279,6 +1285,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         for (PhasedUnit pu: listOfUnits) {
             pu.analyseFlow();
+        }
+
+        UnknownTypeCollector utc = new UnknownTypeCollector();
+        for (PhasedUnit pu : listOfUnits) { 
+            pu.getCompilationUnit().visit(utc);
         }
 
         if (monitor.isCanceled()) {
