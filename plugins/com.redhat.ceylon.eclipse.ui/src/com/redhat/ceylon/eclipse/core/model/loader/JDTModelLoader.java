@@ -526,6 +526,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         try {
             return super.convertToDeclaration(module, typeName, declarationType);
         } catch(RuntimeException e) {
+            // FIXME: pretty sure this is plain wrong as it ignores problems and especially ModelResolutionException and just plain hides them
             return null;
         }
     }
