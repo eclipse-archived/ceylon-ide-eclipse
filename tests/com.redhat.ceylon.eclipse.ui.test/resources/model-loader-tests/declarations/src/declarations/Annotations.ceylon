@@ -17,47 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-"Foo"
-shared interface DocAnnotationsInterface{
-    "Foo"
-    shared formal void m();
-}
+import ceylon.language.model { Annotation }
 
-"Bla bla doc"
-by("Stef", "FroMage")
-see(`DocAnnotations`)
-shared class DocAnnotations() satisfies DocAnnotationsInterface {
-    "Bla bla doc on field"
-    see(`DocAnnotations`)
-    shared Integer attr = 2;
+shared annotation final class FooAnnotation() satisfies Annotation<FooAnnotation> {}
 
-    "Foo"
-    shared Integer getter { return 1; }
-    assign getter {}
-
-    "Bla bla doc on method"
-    see(`DocAnnotations`)
-    throws(`Exception`, "when things go kaboom")
-    shared actual void m(){}
-
-    "Bla bla doc on inner class"
-    see(`InnerClass`)
-    by("Stef", "FroMage")
-    shared class InnerClass(){}
-}
-
-"Foo"
-shared Integer docAnnotationsAttr = 1;
-
-"Foo"
-shared Integer docAnnotationsGetter { return 1; }
-assign docAnnotationsGetter {}
-
-"Foo"
-shared void docAnnotationsMethod(){}
-
-"Foo"
-shared object docAnnotationsObject satisfies DocAnnotationsInterface{
-    "Bar"
-    shared actual void m() {}
-}
+shared annotation FooAnnotation fooAnnotation() => FooAnnotation();
