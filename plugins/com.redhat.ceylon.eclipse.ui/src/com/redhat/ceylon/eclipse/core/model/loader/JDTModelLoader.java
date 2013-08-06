@@ -284,6 +284,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     return this.basicParser;
                 }
             }, compilerOptions, problemReporter, ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null));
+            lookupEnvironment.mayTolerateMissingType = true;
         } catch (JavaModelException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
