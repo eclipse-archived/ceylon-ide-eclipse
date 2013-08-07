@@ -116,7 +116,17 @@ public class JDTClass implements ClassMirror {
     public boolean isAbstract() {
         return klass.isAbstract();
     }
-
+    
+    @Override
+    public boolean isProtected() {
+        return klass.isProtected();
+    }
+    
+    @Override
+    public boolean isDefaultAccess() {
+        return klass.isDefault();
+    }
+    
     @Override
     public List<MethodMirror> getDirectMethods() {
         if (methods == null) {

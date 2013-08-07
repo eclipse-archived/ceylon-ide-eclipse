@@ -52,6 +52,16 @@ public class SourceClass implements ClassMirror {
     }
 
     @Override
+    public boolean isProtected() {
+        return false;
+    }
+    
+    @Override
+    public boolean isDefaultAccess() {
+        return false;
+    }
+    
+    @Override
     public boolean isStatic() {
         return false;
     }
