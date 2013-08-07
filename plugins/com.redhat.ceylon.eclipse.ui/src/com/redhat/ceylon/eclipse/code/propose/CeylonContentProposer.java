@@ -571,7 +571,7 @@ public class CeylonContentProposer {
     }
 
     private static String getModuleString(final String name, final String version) {
-        return name + " '" + version + "'";
+        return name + " \"" + version + "\"";
     }
 
     private static boolean isIdentifierOrKeyword(Token token) {
@@ -722,7 +722,7 @@ public class CeylonContentProposer {
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = CeylonBuilder.getPackageName(file);
         String moduleDesc = "module " + moduleName;
-        String moduleText = "module " + moduleName + " 'version' {}";
+        String moduleText = "module " + moduleName + " \"version\" {}";
         final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
         final int selectionLength = 7;
         

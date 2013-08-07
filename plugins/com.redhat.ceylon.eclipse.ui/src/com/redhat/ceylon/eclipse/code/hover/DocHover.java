@@ -860,7 +860,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-				16, 16, "<b><tt>module " + name + " '" + version + "'" +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>module " + name + " \"" + version + "\"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
 		buffer.append(markdown('"'+doc+'"', null));
@@ -875,7 +875,7 @@ public class DocHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-				16, 16, "<b><tt>module " + getLabel(mod) + " '" + mod.getVersion() + "'" +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>module " + getLabel(mod) + " \"" + mod.getVersion() + "\"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
 		if (mod.isJava()) {
