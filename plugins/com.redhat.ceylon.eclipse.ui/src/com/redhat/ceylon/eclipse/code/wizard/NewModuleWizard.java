@@ -39,7 +39,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             new FileCreationOp(page.getSourceDir(), 
                     page.getPackageFragment(), "module", 
                     page.isIncludePreamble(), 
-                    "module " + page.getPackageFragment().getElementName() + " '" + version + "' {}\n", 
+                    "module " + page.getPackageFragment().getElementName() + " \"" + version + "\" {}\n", 
                     getShell())
                 .run(monitor);
 
