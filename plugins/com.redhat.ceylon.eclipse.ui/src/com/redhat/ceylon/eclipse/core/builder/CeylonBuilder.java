@@ -565,13 +565,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 monitor.worked(1);
             }
             
-            if (!binariesGenerationOK) {
-                // Add a problem marker if binary generation went wrong for ceylon files
-                addBinaryGenerationProblemMarker(project);
-                //findConsole().activate();
-                //TODO: show the Problems view??
-            }
-                        
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -653,16 +646,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		for (PhasedUnit pu : builtPhasedUnits) {
 		    new UnitDependencyVisitor(pu).visit(pu.getCompilationUnit());
 		}
-	}
-
-	private void addBinaryGenerationProblemMarker(final IProject project)
-			throws CoreException {
-		/*IMarker marker = project.createMarker(PROBLEM_MARKER_ID);
-		marker.setAttribute(IMarker.MESSAGE, "Bytecode generation has failed on some Ceylon source files in project " + 
-		        project.getName() + ". Look at the Ceylon console for more information.");
-		marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-		marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-		marker.setAttribute(IMarker.LOCATION, "Bytecode generation");*/
 	}
 
 	private void cleanRemovedSources(List<IFile> filesToRemove,
