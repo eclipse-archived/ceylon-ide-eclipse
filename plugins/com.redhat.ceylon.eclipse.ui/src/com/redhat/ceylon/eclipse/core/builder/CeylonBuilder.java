@@ -413,6 +413,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             boolean binariesGenerationOK;
             final TypeChecker typeChecker;
+            Collection<IFile> sourcesForBinaryGeneration = Collections.emptyList();
+
             if (mustDoFullBuild.value) {
                 monitor.subTask("Full Ceylon build of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Full build of model"));
@@ -457,29 +459,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
-                //we do this before the binary generation, in order to 
-                //display the errors quicker, but if the backend starts
-                //adding its own errors, we should do it afterwards
-                monitor.subTask("Collecting problems for project " 
-                        + project.getName());
-                addProblemAndTaskMarkers(typeChecker.getPhasedUnits().getPhasedUnits(), project);
-                monitor.worked(1);
-                
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                monitor.subTask("Generating binaries for project " + project.getName());
-                final List<IFile> allSources = getProjectSources(project);
-//                getConsoleStream().println(timedMessage("Full generation of class files..."));
-//                getConsoleStream().println("             ...compiling " + 
-//                        allSources.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, javaProject, 
-                		allSources, typeChecker, 
-                		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
-//                getConsoleStream().println(successMessage(binariesGenerationOK));
-                monitor.worked(1);
-                
+                sourcesForBinaryGeneration = getProjectSources(project);
             }
             else
             {
@@ -533,28 +513,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 monitor.worked(1);
                 
-                //we do this before the binary generation, in order to 
-                //display the errors quicker, but if the backend starts
-                //adding its own errors, we should do it afterwards
-                monitor.subTask("Collecting problems for project " 
-                        + project.getName());
-                addProblemAndTaskMarkers(builtPhasedUnits, project);
-                monitor.worked(1);
-                
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                monitor.subTask("Generating binaries for project " + project.getName());
-//                getConsoleStream().println(timedMessage("Incremental generation of class files..."));
-//                getConsoleStream().println("             ...compiling " + 
-//                        sourceToCompile.size() + " source files...");
-                binariesGenerationOK = generateBinaries(project, javaProject,
-                		sourceToCompile, typeChecker, 
-                		monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
-//                getConsoleStream().println(successMessage(binariesGenerationOK));
-                monitor.worked(1);
-                
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -563,8 +521,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
                 updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
+
+                sourcesForBinaryGeneration = sourceToCompile;
+            
             }
             
+            //we do this before the binary generation, in order to 
+            //display the errors quicker, but if the backend starts
+            //adding its own errors, we should do it afterwards
+            monitor.subTask("Collecting problems for project " 
+                    + project.getName());
+            addProblemAndTaskMarkers(builtPhasedUnits, project);
+            monitor.worked(1);
+
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -577,6 +546,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
+
+            monitor.subTask("Generating binaries for project " + project.getName());
+//          getConsoleStream().println(timedMessage("Incremental generation of class files..."));
+//          getConsoleStream().println("             ...compiling " + 
+//                  sourceToCompile.size() + " source files...");
+            binariesGenerationOK = generateBinaries(project, javaProject,
+                  sourcesForBinaryGeneration, typeChecker, 
+                  monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
+//          getConsoleStream().println(successMessage(binariesGenerationOK));
+            monitor.worked(1);
+          
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+
 
             if (isExplodeModulesEnabled(project)) {
                 monitor.subTask("Rebuilding using exploded modules directory of " + project.getName());
