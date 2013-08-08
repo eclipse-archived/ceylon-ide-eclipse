@@ -37,7 +37,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -364,7 +367,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	private Collection<IClasspathEntry> findModuleArchivePaths(
 			IJavaProject javaProject, IProject project, TypeChecker typeChecker) 
 					throws JavaModelException, CoreException {
-		final Collection<IClasspathEntry> paths = new LinkedHashSet<IClasspathEntry>();
+		final Map<String, IClasspathEntry> paths = new TreeMap<String, IClasspathEntry>();
 
 		Context context = typeChecker.getContext();
 		RepositoryManager provider = context.getRepositoryManager();
@@ -406,7 +409,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 					srcPath = getSourceArchive(provider, module);
 				}
                 modulesWithSourcesAlreadySearched.add(module.toString());
-				paths.add(newLibraryEntry(modulePath, srcPath, null));
+                IClasspathEntry newEntry = newLibraryEntry(modulePath, srcPath, null);
+				paths.put(newEntry.toString(), newEntry);
 				//}
 
 			}
@@ -423,11 +427,12 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		}
 
 		if (isExplodeModulesEnabled(project)) {
-			paths.add(newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
-					project.getFullPath(), null, true));
+		    IClasspathEntry newEntry = newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
+                    project.getFullPath(), null, true);
+			paths.put(newEntry.toString(), newEntry);
 		}
 		
-		return paths;
+		return Arrays.asList(paths.values().toArray(new IClasspathEntry[0]));
 	}
 
 	public static IPath getSourceArchive(RepositoryManager provider,
