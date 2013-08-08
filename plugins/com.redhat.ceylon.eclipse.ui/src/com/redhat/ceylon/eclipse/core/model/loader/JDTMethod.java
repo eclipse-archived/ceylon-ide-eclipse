@@ -223,7 +223,7 @@ public class JDTMethod implements MethodMirror {
 
     @Override
     public boolean isDefault() {
-        return method.isDefault();
+        return method.getDefaultValue()!=null;
     }
     
 }
