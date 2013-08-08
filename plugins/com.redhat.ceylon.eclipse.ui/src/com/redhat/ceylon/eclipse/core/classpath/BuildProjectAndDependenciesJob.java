@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
-import static org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.INCREMENTAL_BUILD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class BuildProjectAndDependenciesJob extends Job {
 					} 
 				}
 				project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
-						FULL_BUILD, false, monitor);    	            			
+						INCREMENTAL_BUILD, false, monitor);    	            			
 			}
 			catch (CoreException e) {
 				e.printStackTrace();
