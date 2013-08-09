@@ -81,9 +81,9 @@ final class DeltaScanner implements IResourceDeltaVisitor {
 	    
 	    else if (resource instanceof IProject) { 
 	    	if ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION)!=0) {
-	    		//some project setting changed
-	        	mustDoFullBuild.value = true;
-	        	mustResolveClasspathContainer.value = true;
+	    		//some project setting changed : don't do anything, 
+	    	    // since the possibly impacting changes have already been
+	    	    // checked by JavaProjectStateManager.hasClasspathChanges()
 	    	}
 	    	else if (!resource.equals(project)) {
 	    		//this is some kind of multi-project build,

@@ -66,6 +66,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -463,6 +464,44 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             else
             {
+                typeChecker = typeCheckers.get(project);
+                PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
+
+                if (!isModelTypeChecked(project)) {
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
+
+                    monitor.subTask("Clearing existing markers of project " + project.getName());
+                    clearProjectMarkers(project);
+                    clearMarkersOn(project);
+                    monitor.worked(1);
+
+                    monitor.subTask("Initial typechecking all source  files of project " + project.getName());
+                    modelStates.put(project, ModelState.TypeChecking);
+                    builtPhasedUnits = fullTypeCheck(project, typeChecker, 
+                            monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                    modelStates.put(project, ModelState.TypeChecked);
+                    monitor.worked(1);
+
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
+                    
+                    monitor.subTask("Collecting dependencies of project " + project.getName());
+//                  getConsoleStream().println(timedMessage("Collecting dependencies"));
+                    collectDependencies(project, typeChecker, builtPhasedUnits);
+                    monitor.worked(1);
+                    
+                    //we do this before the binary generation, in order to 
+                    //display the errors quicker, but if the backend starts
+                    //adding its own errors, we should do it afterwards
+                    monitor.subTask("Collecting problems for project " 
+                            + project.getName());
+                    addProblemAndTaskMarkers(builtPhasedUnits, project);
+                    monitor.worked(1);
+                }
+                
                 monitor.subTask("Incremental Ceylon build of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Incremental build of model"));
                 
@@ -478,8 +517,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throw new OperationCanceledException();
                 }
                 
-                typeChecker = typeCheckers.get(project);
-                PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
                 monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
                 final Collection<IFile> sourceToCompile= new HashSet<IFile>();
@@ -823,11 +860,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final BooleanHolder mustResolveClasspathContainer) {
     	
         mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || 
-        		!isModelTypeChecked(project);
+        		!isModelParsed(project);
         mustResolveClasspathContainer.value = kind==FULL_BUILD; //false;
         final BooleanHolder sourceModified = new BooleanHolder();
         
-        if (!mustDoFullBuild.value) {
+        if (JavaProjectStateMirror.hasClasspathChanged(project)) {
+            mustDoFullBuild.value = true;
+        }
+        if (!mustDoFullBuild.value || !mustResolveClasspathContainer.value) {
             for (IResourceDelta currentDelta: currentDeltas) {
                 if (currentDelta != null) {
                     try {
@@ -848,7 +888,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         return mustDoFullBuild.value || 
                 mustResolveClasspathContainer.value ||
-                sourceModified.value;
+                sourceModified.value ||
+                ! isModelTypeChecked(project);
     }
 
 //    private static String successMessage(boolean binariesGenerationOK) {
@@ -2035,6 +2076,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectSources.remove(project);
         modelStates.remove(project);
         CeylonProjectConfig.remove(project);
+        JavaProjectStateMirror.cleanup(project);
     }
     
     public static List<IPath> getSourceFolders(IProject project) {
