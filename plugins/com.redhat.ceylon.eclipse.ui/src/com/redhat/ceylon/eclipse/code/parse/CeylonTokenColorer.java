@@ -41,7 +41,7 @@ public class CeylonTokenColorer  {
     
     public static final Set<String> keywords = new LinkedHashSet<String>(Arrays.asList("import", "assert",
             "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
-            "module", "package", "of", "extends", "satisfies", "adapts", "abstracts", "in", "out", 
+            "assembly", "module", "package", "of", "extends", "satisfies", "abstracts", "in", "out", 
             "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
             "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
             "dynamic"));
