@@ -1890,5 +1890,17 @@
              type="java.lang.Object">
        </propertyTester>
     </extension>
-    
+    <extension
+          id="JavaProjectStateMirror"
+          name="Java Project State Mirror"
+          point="org.eclipse.jdt.core.compilationParticipant">
+       <compilationParticipant
+             class="com.redhat.ceylon.eclipse.core.builder.JavaProjectStateMirror"
+             id="JavaProjectStateMirror"
+             modifiesEnvironment="false"
+             createsProblems="false"
+             requiredSourceLevel="1.6">
+          <managedMarker markerType="org.eclipse.jdt.apt.core.compile.problem"/>
+       </compilationParticipant>
+    </extension>
 </plugin>
