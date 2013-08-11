@@ -367,7 +367,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
     		Unit unit = dec.getUnit();
     		return (dec instanceof ClassOrInterface ||
     					dec instanceof IntersectionType) &&
-    				dec.isExtendable() &&
+    				!dec.isFinal() &&
     				dec!=unit.getAnythingDeclaration() &&
     				dec!=unit.getObjectDeclaration() &&
     				dec!=unit.getBasicDeclaration() &&
