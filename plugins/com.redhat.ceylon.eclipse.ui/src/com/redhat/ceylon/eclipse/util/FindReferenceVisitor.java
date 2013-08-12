@@ -85,7 +85,9 @@ public class FindReferenceVisitor extends Visitor {
         			c.visit(this);
         			Declaration d = declaration;
         			declaration = var.getDeclarationModel();
-        			that.getBlock().visit(this);
+        			if (that.getBlock()!=null) {
+        			    that.getBlock().visit(this);
+        			}
         			declaration = d;
         			return;
         		}
