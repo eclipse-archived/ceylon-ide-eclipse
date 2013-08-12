@@ -113,6 +113,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -1055,9 +1056,11 @@ public class DocHover
 						if (doc.length()!=0) {
 							doc.insert(0, ":");
 						}
-						addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
-								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(p.getType().getDeclaration()) + ">" + 
-								HTMLPrinter.convertToHTMLContent(p.getType().getProducedTypeName()) + 
+						ProducedType type = p.getType();
+						if (type==null) type = new UnknownType(dec.getUnit()).getType();
+                        addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
+								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
+								HTMLPrinter.convertToHTMLContent(type.getProducedTypeName()) + 
 								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +"</a></tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
