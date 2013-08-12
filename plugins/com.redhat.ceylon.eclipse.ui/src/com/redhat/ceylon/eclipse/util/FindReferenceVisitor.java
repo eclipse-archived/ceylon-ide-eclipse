@@ -136,7 +136,7 @@ public class FindReferenceVisitor extends Visitor {
         
 	@Override
 	public void visit(Tree.NamedArgument that) {
-		if (isReference(that.getParameter().getModel())) {
+		if (isReference(that.getParameter())) {
 			nodes.add(that);
 		}
 		super.visit(that);
