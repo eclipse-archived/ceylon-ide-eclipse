@@ -100,6 +100,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -1749,38 +1750,37 @@ public class CeylonContentProposer {
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
-            if (type!=null) {
-                boolean isSequenced = d.isParameter() && 
-                		((MethodOrValue) d).getInitializerParameter().isSequenced();
-                if (pr!=null) {
-                    type = type.substitute(pr.getTypeArguments());
-                }
-                if (isSequenced) {
-                	type = d.getUnit().getIteratedType(type);
-                }
-                String typeName = type.getProducedTypeName();
-                if (td instanceof Value && 
-                        td.getTypeDeclaration().isAnonymous()) {
-                    result.append("object");
-                }
-                else if (d instanceof Method) {
-                    if (((Functional) d).isDeclaredVoid()) {
-                        result.append("void");
-                    }
-                    else {
-                        result.append(typeName);
-                    }
+            if (type==null) type = new UnknownType(d.getUnit()).getType();
+            boolean isSequenced = d.isParameter() && 
+                    ((MethodOrValue) d).getInitializerParameter().isSequenced();
+            if (pr!=null) {
+                type = type.substitute(pr.getTypeArguments());
+            }
+            if (isSequenced) {
+                type = d.getUnit().getIteratedType(type);
+            }
+            String typeName = type.getProducedTypeName();
+            if (td instanceof Value && 
+                    type.getDeclaration().isAnonymous()) {
+                result.append("object");
+            }
+            else if (d instanceof Method) {
+                if (((Functional) d).isDeclaredVoid()) {
+                    result.append("void");
                 }
                 else {
                     result.append(typeName);
                 }
-                if (isSequenced) {
-                    if (((MethodOrValue) d).getInitializerParameter().isAtLeastOne()) {
-                        result.append("+");
-                    }
-                    else {
-                        result.append("*");
-                    }
+            }
+            else {
+                result.append(typeName);
+            }
+            if (isSequenced) {
+                if (((MethodOrValue) d).getInitializerParameter().isAtLeastOne()) {
+                    result.append("+");
+                }
+                else {
+                    result.append("*");
                 }
             }
         }
