@@ -66,7 +66,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -1533,54 +1532,62 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 javaSourceFiles.add(file.getRawLocation().toFile());
         }
 
-        if (!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) {
-            PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
-            boolean success = true;
-            //Compile JS first
-            if (compileToJs(project) && !sourceFiles.isEmpty()) {
-                Options jsopts = new Options(js_repos, js_srcdir,
-                        getInterpolatedCeylonSystemRepo(project),
-                        js_outRepo, null/*uname*/,
-                        null/*pass*/, true, true, true, true, js_verbose, false, false, false,
-                        project.getDefaultCharset(),
-                        CeylonProjectConfig.get(project).isOffline());
-                JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
-                try {
-                    if (!jsc.generate()) {
-                        CompileErrorReporter errorReporter = null;
-                        //Report backend errors
-                        for (Message e : jsc.getErrors()) {
-                            if (e instanceof UnexpectedError) {
-                                if (errorReporter == null) {
-                                    errorReporter = new CompileErrorReporter(project);
-                                }
-                                errorReporter.report(new CeylonCompilationError(project, (UnexpectedError)e));
-                            }
-                        }
-                        if (errorReporter != null) {
-                            System.out.println("Ceylon-JS compiler failed for " + project.getName());
-                            errorReporter.failed();
-                        }
-                        return false;
-                    } else {
-                        System.out.println("compile ok to js");
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace(printWriter);
-                }
-            }
-            if (compileToJava(project)) {
-                // always add the java files, otherwise ceylon code won't see them and they won't end up in the archives (src/car)
-                sourceFiles.addAll(javaSourceFiles);
-                if(!sourceFiles.isEmpty()){
-                    success = compile(project, javaProject, options, sourceFiles, 
-                            typeChecker, printWriter, monitor);
-                }
-            }
-            return success;
+        PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
+        boolean success = true;
+        //Compile JS first
+        if (!sourceFiles.isEmpty() && compileToJs(project)) {
+            success = compileJs(project, typeChecker, js_srcdir, js_repos,
+                    js_verbose, js_outRepo, printWriter);
         }
-        else {
-            return true;
+        if ((!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) && 
+                compileToJava(project)) {
+            // always add the java files, otherwise ceylon code won't see them 
+            // and they won't end up in the archives (src/car)
+            sourceFiles.addAll(javaSourceFiles);
+            if (!sourceFiles.isEmpty()){
+                success = success & compile(project, javaProject, options, 
+                        sourceFiles, typeChecker, printWriter, monitor);
+            }
+        }
+        return success;
+    }
+
+    private boolean compileJs(IProject project, TypeChecker typeChecker,
+            List<String> js_srcdir, List<String> js_repos, boolean js_verbose,
+            String js_outRepo, PrintWriter printWriter) throws CoreException {
+        Options jsopts = new Options(js_repos, js_srcdir,
+                getInterpolatedCeylonSystemRepo(project),
+                js_outRepo, null/*uname*/,
+                null/*pass*/, true, true, true, true, js_verbose, false, false, false,
+                project.getDefaultCharset(),
+                CeylonProjectConfig.get(project).isOffline());
+        JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
+        try {
+            if (!jsc.generate()) {
+                CompileErrorReporter errorReporter = null;
+                //Report backend errors
+                for (Message e : jsc.getErrors()) {
+                    if (e instanceof UnexpectedError) {
+                        if (errorReporter == null) {
+                            errorReporter = new CompileErrorReporter(project);
+                        }
+                        errorReporter.report(new CeylonCompilationError(project, (UnexpectedError)e));
+                    }
+                }
+                if (errorReporter != null) {
+                    //System.out.println("Ceylon-JS compiler failed for " + project.getName());
+                    errorReporter.failed();
+                }
+                return false;
+            }
+            else {
+                //System.out.println("compile ok to js");
+                return true;
+            }
+        }
+        catch (IOException ex) {
+            ex.printStackTrace(printWriter);
+            return false;
         }
     }
 
@@ -1643,7 +1650,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             success = task.call();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(printWriter);
         }
         if (!success) {
             errorReporter.failed();
