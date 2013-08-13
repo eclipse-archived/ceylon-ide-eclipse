@@ -44,24 +44,26 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
     static void addShadowReferenceProposal(IDocument doc, IFile file,
             Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals, 
             Node node) {
-        Tree.Variable var = (Tree.Variable) node;
-        int offset = var.getIdentifier().getStartIndex();
-        TextChange change = new DocumentChange("Shadow Reference", doc);
-        change.setEdit(new MultiTextEdit());
-        String name = Character.toString(var.getIdentifier().getText().charAt(0));
-        change.addEdit(new InsertEdit(offset, name + " = "));
-        FindStatementVisitor fsv = new FindStatementVisitor(var/*.getSpecifierExpression().getExpression().getTerm()*/, false);
-        fsv.visit(cu);
-        FindReferenceVisitor frv = new FindReferenceVisitor(var.getDeclarationModel());
-        frv.visit(fsv.getStatement());
-        for (Node n: frv.getNodes()) {
-            Node identifyingNode = getIdentifyingNode(n);
-            Integer start = identifyingNode.getStartIndex();
-            if (start!=offset) {
-                change.addEdit(new ReplaceEdit(start, 
-                        identifyingNode.getText().length(), name));
+        if (node instanceof Tree.Variable) { //TODO: handle expressions!
+            Tree.Variable var = (Tree.Variable) node;
+            int offset = var.getIdentifier().getStartIndex();
+            TextChange change = new DocumentChange("Shadow Reference", doc);
+            change.setEdit(new MultiTextEdit());
+            String name = Character.toString(var.getIdentifier().getText().charAt(0));
+            change.addEdit(new InsertEdit(offset, name + " = "));
+            FindStatementVisitor fsv = new FindStatementVisitor(var/*.getSpecifierExpression().getExpression().getTerm()*/, false);
+            fsv.visit(cu);
+            FindReferenceVisitor frv = new FindReferenceVisitor(var.getDeclarationModel());
+            frv.visit(fsv.getStatement());
+            for (Node n: frv.getNodes()) {
+                Node identifyingNode = getIdentifyingNode(n);
+                Integer start = identifyingNode.getStartIndex();
+                if (start!=offset) {
+                    change.addEdit(new ReplaceEdit(start, 
+                            identifyingNode.getText().length(), name));
+                }
             }
+            proposals.add(new ShadowReferenceProposal(offset, 1, file, change));
         }
-        proposals.add(new ShadowReferenceProposal(offset, 1, file, change));
     }
 }
