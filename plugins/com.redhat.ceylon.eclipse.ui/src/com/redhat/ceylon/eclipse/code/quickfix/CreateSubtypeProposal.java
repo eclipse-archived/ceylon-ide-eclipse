@@ -349,7 +349,8 @@ class CreateSubtypeProposal implements ICompletionProposal,
             return ((Tree.ExtendedTypeExpression) node).getTypeModel();
         }*/
         else if (node instanceof Tree.ClassOrInterface) {
-            return ((Tree.ClassOrInterface) node).getDeclarationModel().getType();
+            ClassOrInterface ci = ((Tree.ClassOrInterface) node).getDeclarationModel();
+            return ci==null ? null : ci.getType();
         }
         else {
             RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
