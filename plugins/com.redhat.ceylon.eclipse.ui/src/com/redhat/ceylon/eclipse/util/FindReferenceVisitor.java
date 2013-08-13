@@ -63,13 +63,15 @@ public class FindReferenceVisitor extends Visitor {
         Tree.CaseItem ci = that.getCaseItem();
         if (ci instanceof Tree.IsCase) {
             Tree.Variable var = ((Tree.IsCase) ci).getVariable();
-            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
-			if (od!=null && od.equals(declaration)) {
-                Declaration d = declaration;
-                declaration = var.getDeclarationModel();
-                that.getBlock().visit(this);
-                declaration = d;
-                return;
+            if (var!=null) {
+                TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+                if (od!=null && od.equals(declaration)) {
+                    Declaration d = declaration;
+                    declaration = var.getDeclarationModel();
+                    that.getBlock().visit(this);
+                    declaration = d;
+                    return;
+                }
             }
         }
         super.visit(that);
