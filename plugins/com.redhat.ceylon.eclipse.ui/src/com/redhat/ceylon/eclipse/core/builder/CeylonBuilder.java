@@ -1547,15 +1547,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
                 try {
                     if (!jsc.generate()) {
-                        System.out.println("Ceylon-JS compiler failed for " + project.getName());
-                        CompileErrorReporter errorReporter = new CompileErrorReporter(project);
+                        CompileErrorReporter errorReporter = null;
                         //Report backend errors
                         for (Message e : jsc.getErrors()) {
                             if (e instanceof UnexpectedError) {
+                                if (errorReporter == null) {
+                                    errorReporter = new CompileErrorReporter(project);
+                                }
                                 errorReporter.report(new CeylonCompilationError(project, (UnexpectedError)e));
                             }
                         }
-                        errorReporter.failed();
+                        if (errorReporter != null) {
+                            System.out.println("Ceylon-JS compiler failed for " + project.getName());
+                            errorReporter.failed();
+                        }
                         return false;
                     } else {
                         System.out.println("compile ok to js");
