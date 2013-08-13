@@ -342,6 +342,10 @@ public class InlineRefactoring extends AbstractRefactoring {
         			return r.getExpression().getTerm();
         		}
         	}
+            else if (declarationNode instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration meth = (Tree.MethodDeclaration) declarationNode;
+                return meth.getSpecifierExpression().getExpression().getTerm();
+            }
         	else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
         		Tree.AttributeGetterDefinition att = (Tree.AttributeGetterDefinition) declarationNode;
         		if (att.getBlock().getStatements().size()!=1) {
@@ -368,7 +372,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         if (declarationNode instanceof Tree.AnyAttribute) {
         	inlineAttributeReferences(pu, template, tfc);
         }
-        else {
+        else if (declarationNode instanceof Tree.AnyMethod) {
         	inlineFunctionReferences(pu, tokens, term, template, templateStart, tfc);
         }
     }
@@ -457,7 +461,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
         for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
                 .getPositionalArguments()) {
-            if (it.getDeclaration().equals(arg.getParameter())) {
+            if (it.getDeclaration().equals(arg.getParameter().getModel())) {
                 if (arg.getParameter().isSequenced() &&
                 		(arg instanceof Tree.ListedArgument)) {
                     if (first) result.append(" ");
