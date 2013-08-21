@@ -193,8 +193,9 @@ public class JDTModuleManager extends LazyModuleManager {
     private static boolean moduleFileInProject(String moduleName, IJavaProject p) {
         try {
 			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
-				if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
-					!sourceFolder.isArchive() &&
+				if (!sourceFolder.isArchive() &&
+	                sourceFolder.exists() &&
+				    sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
 					sourceFolder.getPackageFragment(moduleName).exists()) {
 					return true;
 				}
