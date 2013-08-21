@@ -710,7 +710,8 @@ public class CeylonContentProposer {
     }
     
     private static boolean isModuleDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null &&
+        return cpc.getRootNode() != null && 
+                cpc.getRootNode().getUnit() != null &&
                 cpc.getRootNode().getUnit().getFilename().equals("module.ceylon"); 
     }
 
