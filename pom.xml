@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <platform-version-name>indigo</platform-version-name>
+    <platform-version-name>juno</platform-version-name>
     <tychoVersion>0.15.0</tychoVersion>
     <scmBranch>trunk</scmBranch>
     <BUILD_ALIAS>M5</BUILD_ALIAS>
@@ -28,20 +28,13 @@
     <repository>
       <id>eclipse</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/indigo</url>
+      <url>http://download.eclipse.org/releases/juno</url>
     </repository>
 
-    <repository>
-      <id>imp</id>
-      <layout>p2</layout>
-      <!-- Will have to use the xam.dk mirror until IMP publish an updatesite with p2 metadata -->
-      <!-- <url>http://download.eclipse.org/technology/imp/updates/</url> -->
-      <url>http://download.jboss.org/tools/extras/imp</url>
-    </repository>
    <repository>
      <id>swtbot</id>
      <layout>p2</layout>
-     <url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site</url>
+     <url>http://download.eclipse.org/technology/swtbot/releases/latest/</url>
    </repository>
 
   </repositories>
