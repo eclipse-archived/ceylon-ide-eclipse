@@ -76,6 +76,7 @@ import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
@@ -857,5 +858,12 @@ public class JDTModelLoader extends AbstractModelLoader {
     protected Module findModuleForClassMirror(ClassMirror classMirror) {
         String pkgName = getPackageNameForQualifiedClassName(classMirror);
         return lookupModuleInternal(pkgName);
+    }
+    
+    public void loadJDKModules() {
+        for(String jdkModule : JDKUtils.getJDKModuleNames())
+            findOrCreateModule(jdkModule, JDK_MODULE_VERSION);
+        for(String jdkOracleModule : JDKUtils.getOracleJDKModuleNames())
+            findOrCreateModule(jdkOracleModule, JDK_MODULE_VERSION);
     }
 }
