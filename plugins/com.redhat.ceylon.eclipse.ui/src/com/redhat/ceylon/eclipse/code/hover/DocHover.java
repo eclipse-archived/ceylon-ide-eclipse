@@ -1172,7 +1172,7 @@ public class DocHover
 		if (dec instanceof TypeDeclaration) {
 			TypeDeclaration td = (TypeDeclaration) dec;
 			if (td.isAlias() && td.getExtendedType()!=null) {
-				result += " = ";
+				result += " => ";
 				result += td.getExtendedType().getProducedTypeName();
 			}
 		}
