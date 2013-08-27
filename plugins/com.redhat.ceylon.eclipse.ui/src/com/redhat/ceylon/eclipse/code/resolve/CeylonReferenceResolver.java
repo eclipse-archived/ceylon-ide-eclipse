@@ -12,6 +12,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
@@ -173,6 +174,10 @@ public class CeylonReferenceResolver {
                 PhasedUnit pu = null; 
                 if (unit instanceof ProjectSourceFile) {
                     pu = ((ProjectSourceFile) unit).getPhasedUnit();
+                    // Here pu should never be null !
+                }
+                if (unit instanceof EditedSourceFile) {
+                    pu = ((EditedSourceFile) unit).getPhasedUnit();
                     // Here pu should never be null !
                 }
                 
