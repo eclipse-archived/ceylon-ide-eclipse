@@ -138,6 +138,8 @@ public class CeylonTokenColorer  {
                 else {
                     return commentAttribute;
                 }
+            case CeylonParser.BACKTICK:
+                return typeLiteralAttribute;
             case CeylonParser.SEMICOLON:
                 return semiAttribute;
             case CeylonParser.LBRACE:

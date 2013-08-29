@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -152,36 +151,40 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		
 		//int prevStartOffset= -1;
 		//int prevEndOffset= -1;
-		Iterator<CommonToken> iter= getTokenIterator(tokens, damage);
+		boolean inMetaLiteral=false;
+		int inInterpolated=0;
+		//start iterating tokens
+		Iterator<CommonToken> iter= tokens.iterator();
 		if (iter!=null) {
 			while (iter.hasNext()) {
 				CommonToken token= iter.next();
-				if (token.getType()==CeylonLexer.EOF) {
+				int tt = token.getType();
+                if (tt==CeylonLexer.EOF) {
 					break;
+				}
+                switch (tt) {
+                case CeylonParser.BACKTICK:
+				    inMetaLiteral = !inMetaLiteral;
+				    break;
+                case CeylonParser.STRING_START:
+                    inInterpolated++;
+                    break;
+                case CeylonParser.STRING_END:
+                    inInterpolated--;
+                    break;
 				}
 				
 				int startOffset= getStartOffset(token);
 				int endOffset= getEndOffset(token);
+				if (endOffset<damage.getOffset()) continue;
+				if (startOffset>damage.getOffset()+damage.getLength()) break;
 				
-				//TODO: I'm not happy with how this works
-				//      This approach is potentially very 
-				//      slow, since it involves running 
-				//      a Visitor over the parse tree and
-				//      then we iterate over all the 
-				//      metaliterals for every token
-                if (isWithinMetaLiteral(token, metaLiterals)) {
-                    changeTokenPresentation(presentation, 
-                            tokenColorer.getMetaLiteralColoring(), 
-                            startOffset, endOffset);
-                    continue;
-                }
-				
-                switch (token.getType()) {
+                switch (tt) {
                 case CeylonParser.STRING_MID:
                     endOffset-=2; startOffset+=2; 
                     break;
                 case CeylonParser.STRING_START:
-                    endOffset-=2; 
+                    endOffset-=2;
                     break;
                 case CeylonParser.STRING_END:
                     startOffset+=2; 
@@ -194,20 +197,28 @@ class PresentationDamageRepairer implements IPresentationDamager,
 					//from SWT if we let it through
 					continue;
 				}*/
-				if (token.getType()==CeylonParser.STRING_MID ||
-				    token.getType()==CeylonParser.STRING_END) {
+				if (tt==CeylonParser.STRING_MID ||
+				    tt==CeylonParser.STRING_END) {
                     changeTokenPresentation(presentation, 
                             tokenColorer.getInterpolationColoring(),
-                            startOffset-2,startOffset-1);
+                            startOffset-2,startOffset-1,
+                            inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
 				}
 				changeTokenPresentation(presentation, 
 						tokenColorer.getColoring(token), 
-						startOffset, endOffset);
-                if (token.getType()==CeylonParser.STRING_MID ||
-                        token.getType()==CeylonParser.STRING_START) {
+						startOffset, endOffset,
+						inMetaLiteral || inInterpolated>1 ||
+						    inInterpolated>0
+						        && tt!=CeylonParser.STRING_START
+						        && tt!=CeylonParser.STRING_MID
+						        && tt!=CeylonParser.STRING_END? 
+						            SWT.ITALIC : SWT.NORMAL);
+                if (tt==CeylonParser.STRING_MID ||
+                    tt==CeylonParser.STRING_START) {
                     changeTokenPresentation(presentation, 
                             tokenColorer.getInterpolationColoring(),
-                            endOffset+1,endOffset+2);
+                            endOffset+1,endOffset+2,
+                            inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
                 }
 				//prevStartOffset= startOffset;
 				//prevEndOffset= endOffset;
@@ -230,13 +241,14 @@ class PresentationDamageRepairer implements IPresentationDamager,
 	}
 	
     private void changeTokenPresentation(TextPresentation presentation, 
-    		TextAttribute attribute, int startOffset, int endOffset) {
+    		TextAttribute attribute, int startOffset, int endOffset,
+    		int extraStyle) {
     	
 		StyleRange styleRange= new StyleRange(startOffset, 
         		endOffset-startOffset+1,
                 attribute==null ? null : attribute.getForeground(),
                 attribute==null ? null : attribute.getBackground(),
-                attribute==null ? SWT.NORMAL : attribute.getStyle());
+                attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
 
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)

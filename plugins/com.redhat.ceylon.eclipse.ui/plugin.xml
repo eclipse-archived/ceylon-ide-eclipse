@@ -1263,11 +1263,19 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation" label="String interpolation"
-        value="COLOR_BLACK">
+        id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation" label="String interpolation delimiters"
+        value="COLOR_BLUE">
         <description>
-            Color for string interpolation delimiters
+            Color for highlighting string interpolation delimiters
         </description>
+    </colorDefinition>
+    <colorDefinition
+          categoryId="com.redhat.ceylon.eclipse.ui.theme"
+          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals" label="Metamodel expression delimiters"
+          value="BLACK">
+       <description>
+          Color for highlighting metamodel expression delimiters
+       </description>
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
@@ -1451,15 +1459,6 @@
           value="51,153,102"> <!--value="COLOR_LIST_SELECTION"-->
        <description>
           Color for highlighting a particular range of text lines.
-       </description>
-    </colorDefinition>
-    <colorDefinition
-          categoryId="com.redhat.ceylon.eclipse.ui.theme"
-          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
-          label="Type literals"
-          value="BLACK">
-       <description>
-          Color for highlighting type literal delimiters
        </description>
     </colorDefinition>
 
