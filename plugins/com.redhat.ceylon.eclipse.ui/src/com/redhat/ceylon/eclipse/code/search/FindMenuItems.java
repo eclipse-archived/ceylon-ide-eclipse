@@ -10,6 +10,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
 
 public class FindMenuItems extends CompoundContributionItem {
@@ -21,10 +22,11 @@ public class FindMenuItems extends CompoundContributionItem {
     }
     
     @Override
-    protected IContributionItem[] getContributionItems() {
+    public IContributionItem[] getContributionItems() {
         IContributionItem[] items = getItems(getCurrentEditor());
         if (collapseMenuItems(getParent())) {
             MenuManager submenu = new MenuManager("Find");
+            submenu.setActionDefinitionId(CeylonEditor.FIND_MENU_ID);
             for (IContributionItem item: items) {
                 submenu.add(item);
             }

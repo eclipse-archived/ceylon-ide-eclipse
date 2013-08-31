@@ -555,8 +555,17 @@
              categoryId="com.redhat.ceylon.eclipse.ui"
              description="Reveal inferred types"
              id="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
-             name="Reveal inferred types">
-       </command>
+             name="Reveal Inferred Types"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Open refactor quick menu"
+             id="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
+             name="Refactor Menu"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Open find quick menu"
+             id="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
+             name="Find Menu"/>
    </extension>
    
    <extension
@@ -715,8 +724,15 @@
              commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
              contextId="com.redhat.ceylon.eclipse.ui.context"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M3+T">
-       </key>
+             sequence="M3+T"/>
+       <key commandId="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
+             contextId="com.redhat.ceylon.eclipse.ui.context"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+R"/>
+       <key commandId="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
+             contextId="com.redhat.ceylon.eclipse.ui.context"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+G"/>
    </extension>
    
    <extension
