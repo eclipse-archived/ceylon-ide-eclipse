@@ -40,7 +40,6 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WO
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
-import static org.eclipse.ui.texteditor.spelling.SpellingService.PREFERENCE_SPELLING_ENABLED;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -118,14 +117,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.ide.actions.QuickMenuAction;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IEditorStatusLine;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
+import org.eclipse.ui.texteditor.MarkerAnnotationPreferences;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
@@ -210,6 +210,7 @@ public class CeylonEditor extends TextEditor {
     private CeylonOutlinePage outlinePage;
     private boolean backgroundParsingPaused;
     private CeylonParseController parseController;
+    private ProjectionSupport projectionSupport;
         
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
@@ -266,9 +267,6 @@ public class CeylonEditor extends TextEditor {
         if (IToggleBreakpointsTarget.class.equals(required)) {
             return getToggleBreakpointAdapter();
         }
-        /*if (IContextProvider.class.equals(required)) {
-            return IMPHelp.getHelpContextProvider(this, fLanguageServiceManager, IMP_EDITOR_CONTEXT);
-        }*/
         return super.getAdapter(required);
     }
 
@@ -902,7 +900,7 @@ public class CeylonEditor extends TextEditor {
         // Not sure why the "run the spell checker" pref would 
         // get set, but it does seem to, which gives lots of 
         // annoying squigglies all over the place...
-        getPreferenceStore().setValue(PREFERENCE_SPELLING_ENABLED, false);
+        //getPreferenceStore().setValue(SpellingService.PREFERENCE_SPELLING_ENABLED, false);
 
         super.createPartControl(parent);
 
@@ -1046,25 +1044,42 @@ public class CeylonEditor extends TextEditor {
 					annotationCreator);
             
             addModelListener(new AdditionalAnnotationCreator(this));
-
+            
             // The source viewer configuration has already been asked for its ITextHover,
             // but before we actually instantiated the relevant controller class. So update
             // the source viewer, now that we actually have the hover provider.
             //HoverHelpController hover = new HoverHelpController(this);
 			//sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
             //addModelListener(hover);
-
-            new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors()).install();
+            
+            projectionSupport = new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors());
+            MarkerAnnotationPreferences markerAnnotationPreferences = (MarkerAnnotationPreferences) getAdapter(MarkerAnnotationPreferences.class);
+            if (markerAnnotationPreferences != null) {
+                List<AnnotationPreference> annPrefs = markerAnnotationPreferences.getAnnotationPreferences();
+                for (Iterator<AnnotationPreference> e = annPrefs.iterator(); e.hasNext();) {
+                    Object annotationType = e.next().getAnnotationType();
+                    if (annotationType instanceof String) {
+                        projectionSupport.addSummarizableAnnotationType((String) annotationType);
+                    }
+                }
+            } 
+            /*else {
+                projectionSupport.addSummarizableAnnotationType(PARSE_ANNOTATION_TYPE_ERROR);
+                projectionSupport.addSummarizableAnnotationType(PARSE_ANNOTATION_TYPE_WARNING);
+                projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error");
+                projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
+            }*/
+            projectionSupport.install();
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
             ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
             if (projectionAnnotationModel!=null) {
             	addModelListener(new FoldingController(projectionAnnotationModel));
             }
-
+            
             if (isEditable()) {
                 addModelListener(new MarkerAnnotationUpdater());
             }
-
+            
             watchDocument();
             watchForSourceMove();
             watchForSourceBuild();
@@ -1159,6 +1174,11 @@ public class CeylonEditor extends TextEditor {
         
         toggleBreakpointAction.dispose(); // this holds onto the IDocument
         foldingActionGroup.dispose();
+        
+        if (projectionSupport!=null) {
+            projectionSupport.dispose();
+            projectionSupport = null;
+        }
 
         if (parserScheduler!=null) {
         	parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
@@ -1213,23 +1233,16 @@ public class CeylonEditor extends TextEditor {
     private final ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
     
         
-    /**
-     * Override creation of the normal source viewer with one that supports source folding.
-     */
     protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
-        //	if (fFoldingUpdater == null)
-        //	    return super.createSourceViewer(parent, ruler, styles);
-
-        fAnnotationAccess= createAnnotationAccess();
+        
+        fAnnotationAccess= getAnnotationAccess();
         fOverviewRuler= createOverviewRuler(getSharedColors());
 
         ISourceViewer viewer= new CeylonSourceViewer(parent, ruler, 
         		getOverviewRuler(), isOverviewRulerVisible(), styles);
+        
         // ensure decoration support has been created and configured.
         getSourceViewerDecorationSupport(viewer);
-        /*if (fLanguageServiceManager != null && fLanguageServiceManager.getParseController() != null) {
-        	IMPHelp.setHelp(fLanguageServiceManager, this, viewer.getTextWidget(), IMP_EDITOR_CONTEXT);
-        }*/
         
         viewer.getTextWidget().addCaretListener(new CaretListener() {
             @Override
