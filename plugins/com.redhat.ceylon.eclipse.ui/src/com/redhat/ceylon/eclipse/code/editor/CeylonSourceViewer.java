@@ -130,6 +130,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             addBlockComment();
             return;
         case REMOVE_BLOCK_COMMENT:
+            removeBlockComment();
             return;
         case CORRECT_INDENTATION:
             doCorrectIndentation();
@@ -164,6 +165,47 @@ public class CeylonSourceViewer extends ProjectionViewer {
             restoreSelection();
         }
     }
+    
+    private void removeBlockComment() {
+        IDocument doc= this.getDocument();
+        DocumentRewriteSession rewriteSession= null;
+        Point p= this.getSelectedRange();
+
+        if (doc instanceof IDocumentExtension4) {
+            IDocumentExtension4 extension= (IDocumentExtension4) doc;
+            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+        }
+
+        try {
+            final int selStart= p.x;
+            final int selLen= p.y;
+            final int selEnd= selStart + selLen;
+            String text = doc.get();
+            int open = text.indexOf("/*", selStart);
+            if (open>selEnd) open = -1;
+            if (open<0) {
+                open = text.lastIndexOf("/*", selStart);
+            }
+            int close=-1;
+            if (open>=0) {
+                close = text.indexOf("*/", open);
+            }
+            if (close+2<selStart) close = -1;
+            if (open>=0&&close>=0) {
+                doc.replace(open, 2, "");
+                doc.replace(close-2, 2, "");
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        } finally {
+            if (doc instanceof IDocumentExtension4) {
+                IDocumentExtension4 extension= (IDocumentExtension4) doc;
+                extension.stopRewriteSession(rewriteSession);
+            }
+            restoreSelection();
+        }
+    }
+    
     private void doToggleComment() {
         IDocument doc= this.getDocument();
         DocumentRewriteSession rewriteSession= null;
