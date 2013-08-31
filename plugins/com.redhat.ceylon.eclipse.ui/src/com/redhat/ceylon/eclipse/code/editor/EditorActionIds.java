@@ -31,7 +31,7 @@ public interface EditorActionIds {
     /**
      * Source menu: id of standard Format global action
      */
-    public static final String FORMAT= PLUGIN_ID + ".editor.formatSource";
+    //public static final String FORMAT= PLUGIN_ID + ".editor.formatSource";
 
     /**
      * Action definition ID of the edit -> Go to Matching Fence action
@@ -70,6 +70,10 @@ public interface EditorActionIds {
      */
     public static final String TOGGLE_COMMENT= PLUGIN_ID + ".editor.toggleComment";
 
+    public static final String ADD_BLOCK_COMMENT= PLUGIN_ID + ".editor.addBlockComment";
+    
+    public static final String REMOVE_BLOCK_COMMENT= PLUGIN_ID + ".editor.removeBlockComment";
+    
     public static final String SHOW_CEYLON_CODE = PLUGIN_ID + ".editor.code";
 
     public static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".editor.hierarchy";
