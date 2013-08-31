@@ -10,6 +10,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 
@@ -22,10 +23,11 @@ public class RefactorMenuItems extends CompoundContributionItem {
     }
     
     @Override
-    protected IContributionItem[] getContributionItems() {
+    public IContributionItem[] getContributionItems() {
         IContributionItem[] items = getItems(getCurrentEditor());
         if (collapseMenuItems(getParent())) {
             MenuManager submenu = new MenuManager("Refactor");
+            submenu.setActionDefinitionId(CeylonEditor.REFACTOR_MENU_ID);
             for (IContributionItem item: items) {
                 submenu.add(item);
             }

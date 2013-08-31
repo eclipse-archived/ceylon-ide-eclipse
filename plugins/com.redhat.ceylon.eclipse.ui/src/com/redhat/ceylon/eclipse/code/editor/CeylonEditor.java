@@ -70,8 +70,10 @@ import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
 import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -114,6 +116,9 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.ide.actions.QuickMenuAction;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -135,6 +140,8 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
+import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -390,6 +397,8 @@ public class CeylonEditor extends TextEditor {
         qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
     		    .getDescriptor(CeylonResources.QUICK_ASSIST));
         qaa.setText("Quick Fix/Assist");
+        
+        installQuickAccessAction();
         
     }
     
@@ -743,30 +752,55 @@ public class CeylonEditor extends TextEditor {
         setKeyBindingScopes(new String[] { PLUGIN_ID + ".context" });
     }
 
-    //private QuickMenuAction fQuickAccessAction;
-    //private IHandlerActivation fQuickAccessHandlerActivation;
-    //private IHandlerService fHandlerService;
+    private IHandlerActivation fFindQuickAccessHandlerActivation;
+    private IHandlerActivation fRefactorQuickAccessHandlerActivation;
+    private IHandlerService fHandlerService;
 
-    //private static final String QUICK_MENU_ID= "org.eclipse.imp.runtime.editor.refactor.quickMenu";
-
-    /*private class RefactorQuickAccessAction extends QuickMenuAction {
+    public static final String REFACTOR_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu";
+    public static final String FIND_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.findQuickMenu";
+    
+    private class RefactorQuickAccessAction extends QuickMenuAction {
         public RefactorQuickAccessAction() {
-            super(QUICK_MENU_ID);
+            super(REFACTOR_MENU_ID);
         }
         protected void fillMenu(IMenuManager menu) {
-            //contributeRefactoringActions(menu);
+            IContributionItem[] cis = new RefactorMenuItems().getContributionItems();
+            for (IContributionItem ci: cis) {
+                menu.add(ci);
+            }
         }
-    }*/
-
-    /*private void installQuickAccessAction() {
+    }
+    
+    private class FindQuickAccessAction extends QuickMenuAction {
+        public FindQuickAccessAction() {
+            super(FIND_MENU_ID);
+        }
+        protected void fillMenu(IMenuManager menu) {
+            IContributionItem[] cis = new FindMenuItems().getContributionItems();
+            for (IContributionItem ci: cis) {
+                menu.add(ci);
+            }
+        }
+    }
+    
+    private void installQuickAccessAction() {
         fHandlerService= (IHandlerService) getSite().getService(IHandlerService.class);
         if (fHandlerService != null) {
-            fQuickAccessAction= new RefactorQuickAccessAction();
-            fQuickAccessHandlerActivation= fHandlerService.activateHandler(fQuickAccessAction.getActionDefinitionId(), 
-            		new ActionHandler(fQuickAccessAction));
+            QuickMenuAction refactorQuickAccessAction= new RefactorQuickAccessAction();
+            fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
+            		new ActionHandler(refactorQuickAccessAction));
+            QuickMenuAction findQuickAccessAction= new FindQuickAccessAction();
+            fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
+                    new ActionHandler(findQuickAccessAction));
         }
-    }*/
-
+    }
+    
+    private void uninstallQuickAccessAction() {
+        if (fHandlerService != null) {
+            fHandlerService.deactivateHandler(fRefactorQuickAccessHandlerActivation); 
+            fHandlerService.deactivateHandler(fFindQuickAccessHandlerActivation); 
+        }
+    }
 
     protected boolean isOverviewRulerVisible() {
         return true;
@@ -876,7 +910,6 @@ public class CeylonEditor extends TextEditor {
 
         setTitleImageFromLanguageIcon();
         //setSourceFontFromPreference();
-        setupBracketCloser();
         
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
@@ -926,104 +959,6 @@ public class CeylonEditor extends TextEditor {
 				}
             }
         });
-    }
-
-    /*private class BracketInserter implements VerifyKeyListener {
-        private final Map<String,String> fFencePairs= new HashMap<String, String>();
-        private final String fOpenFences;
-        private final Map<Character,Boolean> fCloseFenceMap= new HashMap<Character, Boolean>();
-//      private final String CATEGORY= toString();
-//      private IPositionUpdater fUpdater= new ExclusivePositionUpdater(CATEGORY);
-
-        public BracketInserter() {
-            String[][] pairs= fLanguageServiceManager.getParseController().getSyntaxProperties().getFences();
-            StringBuilder sb= new StringBuilder();
-            for(int i= 0; i < pairs.length; i++) {
-                sb.append(pairs[i][0]);
-                fFencePairs.put(pairs[i][0], pairs[i][1]);
-            }
-            fOpenFences= sb.toString();
-        }
-
-        public void setCloseFenceEnabled(char openingFence, boolean enabled) {
-            fCloseFenceMap.put(openingFence, enabled);
-        }
-
-        public void setCloseFencesEnabled(boolean enabled) {
-            for(int i= 0; i < fOpenFences.length(); i++) {
-                fCloseFenceMap.put(fOpenFences.charAt(i), enabled);
-            }
-        }
-
-        public void verifyKey(VerifyEvent event) {
-            // early pruning to slow down normal typing as little as possible
-            if (!event.doit || getInsertMode() != SMART_INSERT)
-                return;
-
-            if (fOpenFences.indexOf(event.character) < 0) {
-                return;
-            }
-
-            final ISourceViewer sourceViewer= getSourceViewer();
-            IDocument document= sourceViewer.getDocument();
-
-            final Point selection= sourceViewer.getSelectedRange();
-            final int offset= selection.x;
-            final int length= selection.y;
-
-            try {
-//              IRegion startLine= document.getLineInformationOfOffset(offset);
-//              IRegion endLine= document.getLineInformationOfOffset(offset + length);
-
-                // TODO Ask the parser/scanner whether the close fence is valid here
-                // (i.e. whether it would recover by inserting the matching close fence character)
-                // Right now, naively insert the closing fence regardless.
-
-                ITypedRegion partition= TextUtilities.getPartition(document, getSourceViewerConfiguration().getConfiguredDocumentPartitioning(sourceViewer), offset, true);
-                if (!IDocument.DEFAULT_CONTENT_TYPE.equals(partition.getType()))
-                    return;
-
-                if (!validateEditorInputState())
-                    return;
-
-                final String inputStr= new String(new char[] { event.character });
-                final String closingFence= fFencePairs.get(inputStr);
-                final StringBuffer buffer= new StringBuffer();
-                buffer.append(inputStr);
-                buffer.append(closingFence);
-
-                document.replace(offset, length, buffer.toString());
-                sourceViewer.setSelectedRange(offset + inputStr.length(), 0);
-
-                event.doit= false;
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-    }*/
-
-    //private BracketInserter fBracketInserter;
-    //private final String CLOSE_FENCES= PreferenceConstants.EDITOR_CLOSE_FENCES;
-
-    private void setupBracketCloser() {
-        // Bug #536: Disable for now, until we can be more intelligent 
-        //about when to overwrite an existing (subsequent) close-fence char.
-        /*IParseController parseController = fLanguageServiceManager.getParseController();
-        if (parseController == null || parseController.getSyntaxProperties() == null || 
-        		parseController.getSyntaxProperties().getFences() == null) {
-            return;
-        }
-
-        //Preference key for automatically closing brackets and parenthesis 
-        boolean closeFences= fLangSpecificPrefs.getBooleanPreference(CLOSE_FENCES); // false if no lang-specific setting
-
-        fBracketInserter= new BracketInserter();
-        fBracketInserter.setCloseFencesEnabled(closeFences);
-
-        ISourceViewer sourceViewer= getSourceViewer();
-        if (sourceViewer instanceof ITextViewerExtension)
-            ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(fBracketInserter);*/
     }
 
     /**
@@ -1230,6 +1165,8 @@ public class CeylonEditor extends TextEditor {
         }
         parserScheduler= null;
         parseController = null;
+        
+        uninstallQuickAccessAction();
 
         super.dispose();
 
@@ -1686,38 +1623,4 @@ public class CeylonEditor extends TextEditor {
     }
 }
 
-/*class GotoAnnotationAction extends TextEditorAction {
-    public static final String PREFIX= RuntimePlugin.IMP_RUNTIME + '.';
-
-    private static final String nextAnnotationContextID= PREFIX + "goto_next_error_action";
-
-    private static final String prevAnnotationContextID= PREFIX + "goto_previous_error_action";
-
-    private boolean fForward;
-
-    public GotoAnnotationAction(String prefix, boolean forward) {
-        super(CeylonEditor.fgBundleForConstructedKeys, prefix, null);
-        fForward= forward;
-        if (forward)
-            PlatformUI.getWorkbench().getHelpSystem().setHelp(this, nextAnnotationContextID);
-        else
-            PlatformUI.getWorkbench().getHelpSystem().setHelp(this, prevAnnotationContextID);
-    }
-
-    public void run() {
-    	CeylonEditor e= (CeylonEditor) getTextEditor();
-
-        e.gotoAnnotation(fForward);
-    }
-
-    public void setEditor(ITextEditor editor) {
-        if (editor instanceof CeylonEditor)
-            super.setEditor(editor);
-        update();
-    }
-
-    public void update() {
-        setEnabled(getTextEditor() instanceof CeylonEditor);
-    }
-}*/
 
