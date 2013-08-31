@@ -611,122 +611,122 @@ public class CeylonEditor extends TextEditor {
     	protected abstract void setCaretPosition(int position);
     }
 
-protected class SelectNextSubWordAction 
-extends NextSubWordAction {
-	public SelectNextSubWordAction() {
-		super(ST.SELECT_WORD_NEXT);
-		setActionDefinitionId(SELECT_WORD_NEXT);
-	}
-	@Override
-	protected void setCaretPosition(final int position) {
-		final ISourceViewer viewer= getSourceViewer();
-
-		final StyledText text= viewer.getTextWidget();
-		if (text != null && !text.isDisposed()) {
-
-			final Point selection= text.getSelection();
-			final int caret= text.getCaretOffset();
-			final int offset= modelOffset2WidgetOffset(viewer, position);
-
-			if (caret == selection.x)
-				text.setSelectionRange(selection.y, offset - selection.y);
-			else
-				text.setSelectionRange(selection.x, offset - selection.x);
-		}
-	}
-}
-
-protected class SelectPreviousSubWordAction 
-extends PreviousSubWordAction {
-	public SelectPreviousSubWordAction() {
-		super(ST.SELECT_WORD_PREVIOUS);
-		setActionDefinitionId(SELECT_WORD_PREVIOUS);
-	}
-	@Override
-	protected void setCaretPosition(final int position) {
-		final ISourceViewer viewer= getSourceViewer();
-
-		final StyledText text= viewer.getTextWidget();
-		if (text != null && !text.isDisposed()) {
-
-			final Point selection= text.getSelection();
-			final int caret= text.getCaretOffset();
-			final int offset= modelOffset2WidgetOffset(viewer, position);
-
-			if (caret == selection.x)
-				text.setSelectionRange(selection.y, offset - selection.y);
-			else
-				text.setSelectionRange(selection.x, offset - selection.x);
-		}
-	}
-}
-
-protected class DeleteNextSubWordAction 
-extends NextSubWordAction implements IUpdate {
-	public DeleteNextSubWordAction() {
-		super(ST.DELETE_WORD_NEXT);
-		setActionDefinitionId(DELETE_NEXT_WORD);
-	}
-	@Override
-	protected void setCaretPosition(final int position) {
-		if (!validateEditorInputState())
-			return;
-
-		final ISourceViewer viewer= getSourceViewer();
-		StyledText text= viewer.getTextWidget();
-		Point selection= viewer.getSelectedRange();
-		final int caret, length;
-		if (selection.y != 0) {
-			caret= selection.x;
-			length= selection.y;
-		} else {
-			caret= widgetOffset2ModelOffset(viewer, text.getCaretOffset());
-			length= position - caret;
-		}
-
-		try {
-			viewer.getDocument().replace(caret, length, "");
-		} catch (BadLocationException exception) {
-			// Should not happen
-		}
-	}
-	public void update() {
-		setEnabled(isEditorInputModifiable());
-	}
-}
-
-protected class DeletePreviousSubWordAction 
-extends PreviousSubWordAction implements IUpdate {
-	public DeletePreviousSubWordAction() {
-		super(ST.DELETE_WORD_PREVIOUS);
-		setActionDefinitionId(DELETE_PREVIOUS_WORD);
-	}
-	@Override
-	protected void setCaretPosition(int position) {
-		if (!validateEditorInputState())
-			return;
-
-		final int length;
-		final ISourceViewer viewer= getSourceViewer();
-		StyledText text= viewer.getTextWidget();
-		Point selection= viewer.getSelectedRange();
-		if (selection.y != 0) {
-			position= selection.x;
-			length= selection.y;
-		} else {
-			length= widgetOffset2ModelOffset(viewer, text.getCaretOffset()) - position;
-		}
-
-		try {
-			viewer.getDocument().replace(position, length, "");
-		} catch (BadLocationException exception) {
-			// Should not happen
-		}
-	}
-	public void update() {
-		setEnabled(isEditorInputModifiable());
-	}
-}
+    protected class SelectNextSubWordAction 
+    extends NextSubWordAction {
+    	public SelectNextSubWordAction() {
+    		super(ST.SELECT_WORD_NEXT);
+    		setActionDefinitionId(SELECT_WORD_NEXT);
+    	}
+    	@Override
+    	protected void setCaretPosition(final int position) {
+    		final ISourceViewer viewer= getSourceViewer();
+    
+    		final StyledText text= viewer.getTextWidget();
+    		if (text != null && !text.isDisposed()) {
+    
+    			final Point selection= text.getSelection();
+    			final int caret= text.getCaretOffset();
+    			final int offset= modelOffset2WidgetOffset(viewer, position);
+    
+    			if (caret == selection.x)
+    				text.setSelectionRange(selection.y, offset - selection.y);
+    			else
+    				text.setSelectionRange(selection.x, offset - selection.x);
+    		}
+    	}
+    }
+    
+    protected class SelectPreviousSubWordAction 
+    extends PreviousSubWordAction {
+    	public SelectPreviousSubWordAction() {
+    		super(ST.SELECT_WORD_PREVIOUS);
+    		setActionDefinitionId(SELECT_WORD_PREVIOUS);
+    	}
+    	@Override
+    	protected void setCaretPosition(final int position) {
+    		final ISourceViewer viewer= getSourceViewer();
+    
+    		final StyledText text= viewer.getTextWidget();
+    		if (text != null && !text.isDisposed()) {
+    
+    			final Point selection= text.getSelection();
+    			final int caret= text.getCaretOffset();
+    			final int offset= modelOffset2WidgetOffset(viewer, position);
+    
+    			if (caret == selection.x)
+    				text.setSelectionRange(selection.y, offset - selection.y);
+    			else
+    				text.setSelectionRange(selection.x, offset - selection.x);
+    		}
+    	}
+    }
+    
+    protected class DeleteNextSubWordAction 
+    extends NextSubWordAction implements IUpdate {
+    	public DeleteNextSubWordAction() {
+    		super(ST.DELETE_WORD_NEXT);
+    		setActionDefinitionId(DELETE_NEXT_WORD);
+    	}
+    	@Override
+    	protected void setCaretPosition(final int position) {
+    		if (!validateEditorInputState())
+    			return;
+    
+    		final ISourceViewer viewer= getSourceViewer();
+    		StyledText text= viewer.getTextWidget();
+    		Point selection= viewer.getSelectedRange();
+    		final int caret, length;
+    		if (selection.y != 0) {
+    			caret= selection.x;
+    			length= selection.y;
+    		} else {
+    			caret= widgetOffset2ModelOffset(viewer, text.getCaretOffset());
+    			length= position - caret;
+    		}
+    
+    		try {
+    			viewer.getDocument().replace(caret, length, "");
+    		} catch (BadLocationException exception) {
+    			// Should not happen
+    		}
+    	}
+    	public void update() {
+    		setEnabled(isEditorInputModifiable());
+    	}
+    }
+    
+    protected class DeletePreviousSubWordAction 
+    extends PreviousSubWordAction implements IUpdate {
+    	public DeletePreviousSubWordAction() {
+    		super(ST.DELETE_WORD_PREVIOUS);
+    		setActionDefinitionId(DELETE_PREVIOUS_WORD);
+    	}
+    	@Override
+    	protected void setCaretPosition(int position) {
+    		if (!validateEditorInputState())
+    			return;
+    
+    		final int length;
+    		final ISourceViewer viewer= getSourceViewer();
+    		StyledText text= viewer.getTextWidget();
+    		Point selection= viewer.getSelectedRange();
+    		if (selection.y != 0) {
+    			position= selection.x;
+    			length= selection.y;
+    		} else {
+    			length= widgetOffset2ModelOffset(viewer, text.getCaretOffset()) - position;
+    		}
+    
+    		try {
+    			viewer.getDocument().replace(position, length, "");
+    		} catch (BadLocationException exception) {
+    			// Should not happen
+    		}
+    	}
+    	public void update() {
+    		setEnabled(isEditorInputModifiable());
+    	}
+    }
 
     protected void initializeKeyBindingScopes() {
         setKeyBindingScopes(new String[] { PLUGIN_ID + ".context" });
