@@ -11,11 +11,12 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_NEXT_TARGET;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_PREVIOUS_TARGET;
+import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.REMOVE_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
@@ -31,7 +32,6 @@ import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -67,7 +67,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
-import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.viewsupport.IProblemChangedListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -303,25 +302,41 @@ public class CeylonEditor extends TextEditor {
         		getVerticalRuler());
         setAction("ToggleBreakpoint", action);
 
-        action= new TextOperationAction(bundle, "Format.", this, 
-        		CeylonSourceViewer.FORMAT);
-        action.setActionDefinitionId(FORMAT);
-        setAction("Format", action);
-        markAsStateDependentAction("Format", true);
-        markAsSelectionDependentAction("Format", true);
-        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
+//        action= new TextOperationAction(bundle, "Format.", this, 
+//        		CeylonSourceViewer.FORMAT);
+//        action.setActionDefinitionId(FORMAT);
+//        setAction("Format", action);
+//        markAsStateDependentAction("Format", true);
+//        markAsSelectionDependentAction("Format", true);
+        //getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.FORMAT_ACTION);
 
+        action= new TextOperationAction(bundle, "AddBlockComment.", this,
+                CeylonSourceViewer.ADD_BLOCK_COMMENT);
+        action.setActionDefinitionId(ADD_BLOCK_COMMENT);
+        setAction(ADD_BLOCK_COMMENT, action); 
+        markAsStateDependentAction(ADD_BLOCK_COMMENT, true); 
+        markAsSelectionDependentAction(ADD_BLOCK_COMMENT, true); 
+        //PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.ADD_BLOCK_COMMENT_ACTION);
+
+        action= new TextOperationAction(bundle, "RemoveBlockComment.", this,
+                CeylonSourceViewer.REMOVE_BLOCK_COMMENT);
+        action.setActionDefinitionId(REMOVE_BLOCK_COMMENT);
+        setAction(REMOVE_BLOCK_COMMENT, action); 
+        markAsStateDependentAction(REMOVE_BLOCK_COMMENT, true); 
+        markAsSelectionDependentAction(REMOVE_BLOCK_COMMENT, true); 
+        //PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.REMOVE_BLOCK_COMMENT_ACTION);
+        
         action= new TextOperationAction(bundle, "ShowOutline.", this, 
         		CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */);
         action.setActionDefinitionId(SHOW_OUTLINE);
         setAction(SHOW_OUTLINE, action);
-        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
+        //getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
 
         action= new TextOperationAction(bundle, "ToggleComment.", this, 
         		CeylonSourceViewer.TOGGLE_COMMENT);
         action.setActionDefinitionId(TOGGLE_COMMENT);
         setAction(TOGGLE_COMMENT, action);
-        getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
+        //getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
 
         action= new TextOperationAction(bundle, "CorrectIndentation.", this, 
         		CeylonSourceViewer.CORRECT_INDENTATION);

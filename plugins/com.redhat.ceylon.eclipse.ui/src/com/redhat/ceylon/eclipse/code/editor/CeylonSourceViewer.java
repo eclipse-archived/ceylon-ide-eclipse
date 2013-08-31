@@ -56,6 +56,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
      * Text operation code for toggling the commenting of a selected range of text, or the current line.
      */
     public static final int TOGGLE_COMMENT= 54;
+    
+    public static final int ADD_BLOCK_COMMENT= 57;
+
+    public static final int REMOVE_BLOCK_COMMENT= 58;
 
     /**
      * Text operation code for toggling the display of "occurrences" of the
@@ -89,6 +93,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return hierarchyPresenter!=null;
         case SHOW_CODE:
         	return codePresenter!=null;
+        case ADD_BLOCK_COMMENT: //TODO: check if something is selected! 
+        case REMOVE_BLOCK_COMMENT: //TODO: check if there is a block comment in the selection!
         case TOGGLE_COMMENT:
             return true;
         case CORRECT_INDENTATION:
@@ -120,6 +126,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case TOGGLE_COMMENT:
             doToggleComment();
             return;
+        case ADD_BLOCK_COMMENT:
+            addBlockComment();
+            return;
+        case REMOVE_BLOCK_COMMENT:
+            return;
         case CORRECT_INDENTATION:
             doCorrectIndentation();
             return;
@@ -127,6 +138,32 @@ public class CeylonSourceViewer extends ProjectionViewer {
         super.doOperation(operation);
     }
     
+    private void addBlockComment() {
+        IDocument doc= this.getDocument();
+        DocumentRewriteSession rewriteSession= null;
+        Point p= this.getSelectedRange();
+
+        if (doc instanceof IDocumentExtension4) {
+            IDocumentExtension4 extension= (IDocumentExtension4) doc;
+            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+        }
+
+        try {
+            final int selStart= p.x;
+            final int selLen= p.y;
+            final int selEnd= selStart + selLen;
+            doc.replace(selStart, 0, "/*");
+            doc.replace(selEnd+2, 0, "*/");
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        } finally {
+            if (doc instanceof IDocumentExtension4) {
+                IDocumentExtension4 extension= (IDocumentExtension4) doc;
+                extension.stopRewriteSession(rewriteSession);
+            }
+            restoreSelection();
+        }
+    }
     private void doToggleComment() {
         IDocument doc= this.getDocument();
         DocumentRewriteSession rewriteSession= null;
