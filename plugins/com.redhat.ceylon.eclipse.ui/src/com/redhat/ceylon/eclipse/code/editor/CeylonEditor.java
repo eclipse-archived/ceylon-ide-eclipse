@@ -74,9 +74,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.jface.resource.FontRegistry;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -118,7 +115,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -864,7 +860,7 @@ public class CeylonEditor extends TextEditor {
         initiateServiceControllers();
 
         setTitleImageFromLanguageIcon();
-        setSourceFontFromPreference();
+        //setSourceFontFromPreference();
         setupBracketCloser();
         
         /*((IContextService) getSite().getService(IContextService.class))
@@ -1064,7 +1060,7 @@ public class CeylonEditor extends TextEditor {
         });
     }
 
-    private void setSourceFontFromPreference() {
+    /*private void setSourceFontFromPreference() {
         String fontName = WorkbenchPlugin.getDefault().getPreferenceStore()
         		.getString(JFaceResources.TEXT_FONT);
         FontRegistry fontRegistry= CeylonPlugin.getInstance().getFontRegistry();
@@ -1075,7 +1071,7 @@ public class CeylonEditor extends TextEditor {
         if (sourceFont!=null) {
             getSourceViewer().getTextWidget().setFont(sourceFont);
         }
-    }
+    }*/
 
     private void initiateServiceControllers() {
         try {
