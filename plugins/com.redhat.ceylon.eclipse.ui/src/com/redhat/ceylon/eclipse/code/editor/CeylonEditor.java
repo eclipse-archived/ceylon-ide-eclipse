@@ -111,7 +111,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -1624,8 +1623,7 @@ public class CeylonEditor extends TextEditor {
 
     public String getSelectionText() {
         IRegion sel= getSelection();
-        IFileEditorInput fileEditorInput= (IFileEditorInput) getEditorInput();
-        IDocument document= getDocumentProvider().getDocument(fileEditorInput);
+        IDocument document= getDocumentProvider().getDocument(getEditorInput());
         try {
             return document.get(sel.getOffset(), sel.getLength());
         } 
