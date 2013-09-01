@@ -41,7 +41,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 
@@ -477,33 +476,39 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     void copyImports() {
-        CompilationUnit cu = editor.getParseController().getRootNode();
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         final IRegion selection = editor.getSelection();
-        CeylonEditor.text = editor.getSelectionText();
         class SelectedImportsVisitor extends Visitor {
             List<Declaration> results = new ArrayList<Declaration>();
             boolean inSelection(Node node) {
                 return node.getStartIndex()>=selection.getOffset() &&
                         node.getStopIndex()<selection.getOffset()+selection.getLength();
             }
+            void addDeclaration(Declaration d) {
+                if (d.isToplevel() && 
+                        !d.getUnit().getPackage().getNameAsString()
+                                .equals("ceylon.language")) {
+                    results.add(d);
+                }
+            }
             @Override
             public void visit(Tree.BaseMemberExpression that) {
                 if (inSelection(that)) {
-                    results.add(that.getDeclaration());
+                    addDeclaration(that.getDeclaration());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.BaseTypeExpression that) {
                 if (inSelection(that)) {
-                    results.add(that.getDeclaration());
+                    addDeclaration(that.getDeclaration());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.BaseType that) {
                 if (inSelection(that)) {
-                    results.add(that.getDeclarationModel());
+                    addDeclaration(that.getDeclarationModel());
                 }
                 super.visit(that);
             }
@@ -515,25 +520,23 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     void pasteImports() {
-//        final IRegion selection = editor.getSelection();
-        CompilationUnit cu = editor.getParseController().getRootNode();
-        Tree.ImportList il = cu.getImportList();
-        String newImports = CleanImportsHandler.reorganizeImports(il, 
-                Collections.<Declaration>emptyList(), 
-                CeylonEditor.imports);
-        try {
-            MultiTextEdit edit = new MultiTextEdit();
-            ReplaceEdit importEdit = new ReplaceEdit(il.getStartIndex()==null ? 0 : il.getStartIndex(), 
-                    il.getStartIndex()==null ? 0 : il.getStopIndex()-il.getStartIndex()+1, 
-                            newImports);
-            edit.addChild(importEdit);
-//            ReplaceEdit copiedEdit = new ReplaceEdit(selection.getOffset(), 
-//                    selection.getLength(), CeylonEditor.text);
-//            edit.addChild(copiedEdit);
-            edit.apply(editor.getCeylonSourceViewer().getDocument());
-        }
-        catch (BadLocationException e) {
-            e.printStackTrace();
+        if (!CeylonEditor.imports.isEmpty()) {
+            Tree.CompilationUnit cu = editor.getParseController().getRootNode();
+            Tree.ImportList il = cu.getImportList();
+            String newImports = CleanImportsHandler.reorganizeImports(il, 
+                    Collections.<Declaration>emptyList(), 
+                    CeylonEditor.imports);
+            try {
+                MultiTextEdit edit = new MultiTextEdit();
+                ReplaceEdit importEdit = new ReplaceEdit(il.getStartIndex()==null ? 0 : il.getStartIndex(), 
+                        il.getStartIndex()==null ? 0 : il.getStopIndex()-il.getStartIndex()+1, 
+                                newImports);
+                edit.addChild(importEdit);
+                edit.apply(editor.getCeylonSourceViewer().getDocument());
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
         }
     }
     
