@@ -131,6 +131,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public void doOperation(int operation) {
         StyledText textWidget= getTextWidget();
         if (textWidget == null) return;
+        String selectedText = editor.getSelectionText(); //or textWidget.getSelectionText()
         
         switch (operation) {
         case SHOW_OUTLINE:
@@ -168,7 +169,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         switch (operation) {
         case CUT:
         case COPY:
-            afterCopyCut(textWidget);
+            afterCopyCut(textWidget, selectedText);
             break;
         /*case PASTE:
             afterPaste(textWidget);
@@ -176,12 +177,12 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    private void afterCopyCut(StyledText textWidget) {
+    private void afterCopyCut(StyledText textWidget, String selection) {
         Clipboard clipboard= new Clipboard(textWidget.getDisplay());
         try {
             Object text = clipboard.getContents(TextTransfer.getInstance());
             try {
-                Object[] data = new Object[] { text, copyImports(), editor.getSelectionText() };
+                Object[] data = new Object[] { text, copyImports(), selection };
                 Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
                 clipboard.setContents(data, dataTypes);
             } 
