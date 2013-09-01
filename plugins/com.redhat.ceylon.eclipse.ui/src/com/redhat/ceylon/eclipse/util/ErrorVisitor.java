@@ -11,6 +11,7 @@ import org.antlr.runtime.Token;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
 import com.redhat.ceylon.compiler.typechecker.analyzer.FilenameWarning;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
@@ -68,7 +69,7 @@ public abstract class ErrorVisitor extends Visitor {
             if (error instanceof AnalysisMessage) {
                 if (error instanceof AnalysisWarning &&
                             node.getUnit().getPackage().getQualifiedNameString()
-                                    .startsWith("ceylon.language")) {
+                                    .startsWith(Module.LANGUAGE_MODULE_NAME)) {
                     continue;
                 }
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;

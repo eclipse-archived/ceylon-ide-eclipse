@@ -99,7 +99,7 @@ public class JDTModuleManager extends LazyModuleManager {
         super(context);
         this.javaProject = javaProject;
         sourceModules = new HashSet<String>();
-        sourceModules.add("ceylon.language");
+        sourceModules.add(Module.LANGUAGE_MODULE_NAME);
         classpath = new HashSet<File>();
     }
     /*

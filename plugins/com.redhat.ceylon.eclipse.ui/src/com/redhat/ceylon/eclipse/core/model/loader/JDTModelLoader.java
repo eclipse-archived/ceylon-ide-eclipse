@@ -147,7 +147,8 @@ public class JDTModelLoader extends AbstractModelLoader {
             public Package getPackage() {
                 synchronized (JDTModelLoader.this) {
                     if(super.getPackage() == null){
-                        super.setPackage(modules.getLanguageModule().getDirectPackage("ceylon.language"));
+                        super.setPackage(modules.getLanguageModule()
+                                .getDirectPackage(Module.LANGUAGE_MODULE_NAME));
                     }
                     return super.getPackage();
                 }
@@ -838,7 +839,8 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private boolean mustCompleteFromClasses(SourceDeclarationHolder d) {
-        return !d.isSourceToCompile() && d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString().startsWith("ceylon.language");
+        return !d.isSourceToCompile() && d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString()
+                .startsWith(Module.LANGUAGE_MODULE_NAME);
     }
 
     public synchronized Package findPackage(String quotedPkgName) {

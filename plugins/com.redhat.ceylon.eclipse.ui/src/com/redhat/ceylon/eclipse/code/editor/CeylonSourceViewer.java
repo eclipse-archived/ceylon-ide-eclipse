@@ -12,10 +12,10 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -35,14 +35,14 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -487,7 +487,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             void addDeclaration(Declaration d) {
                 if (d.isToplevel() && 
                         !d.getUnit().getPackage().getNameAsString()
-                                .equals("ceylon.language")) {
+                                .equals(Module.LANGUAGE_MODULE_NAME)) {
                     results.add(d);
                 }
             }
@@ -522,16 +522,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
     void pasteImports() {
         if (!CeylonEditor.imports.isEmpty()) {
             Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-            Tree.ImportList il = cu.getImportList();
-            String newImports = CleanImportsHandler.reorganizeImports(il, 
-                    Collections.<Declaration>emptyList(), 
-                    CeylonEditor.imports);
             try {
                 MultiTextEdit edit = new MultiTextEdit();
-                ReplaceEdit importEdit = new ReplaceEdit(il.getStartIndex()==null ? 0 : il.getStartIndex(), 
-                        il.getStartIndex()==null ? 0 : il.getStopIndex()-il.getStartIndex()+1, 
-                                newImports);
-                edit.addChild(importEdit);
+                for (InsertEdit importEdit: importEdit(cu, CeylonEditor.imports, null)) {
+                    edit.addChild(importEdit);                    
+                }
                 edit.apply(editor.getCeylonSourceViewer().getDocument());
             }
             catch (BadLocationException e) {
