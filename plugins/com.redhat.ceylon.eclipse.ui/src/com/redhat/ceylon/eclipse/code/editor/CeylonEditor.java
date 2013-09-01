@@ -134,7 +134,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -1652,8 +1651,6 @@ public class CeylonEditor extends TextEditor {
     public String toString() {
         return "Ceylon Editor for " + getEditorInput().getName();
     }
-    
-    static List<Declaration> imports;
     
 }
 
