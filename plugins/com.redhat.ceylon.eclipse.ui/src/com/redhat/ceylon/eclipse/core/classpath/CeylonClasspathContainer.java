@@ -20,6 +20,7 @@ package com.redhat.ceylon.eclipse.core.classpath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -35,12 +36,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -75,12 +74,82 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
  */
 public class CeylonClasspathContainer implements IClasspathContainer {
+
+    private static final class InitDependenciesJob extends Job {
+        
+        private final IPath containerPath;
+        private final IJavaProject javaProject;
+
+        private InitDependenciesJob(String name, IPath containerPath,
+                IJavaProject javaProject) {
+            super(name);
+            this.containerPath = containerPath;
+            this.javaProject = javaProject;
+        }
+
+        @Override 
+        protected IStatus run(IProgressMonitor monitor) {			
+        	try {
+        		
+        		IClasspathContainer c = getClasspathContainer(containerPath, javaProject);
+        		CeylonClasspathContainer container;
+        		if (c instanceof CeylonClasspathContainer) {
+        			container = (CeylonClasspathContainer) c;
+        		} 
+        		else {
+        			IClasspathEntry entry = getCeylonClasspathEntry(containerPath, javaProject);
+        			IClasspathAttribute[] attributes = entry == null ? 
+        					new IClasspathAttribute[0] : entry.getExtraAttributes();
+        			if (c == null) {
+        				container = new CeylonClasspathContainer(javaProject, containerPath,
+        						new IClasspathEntry[0], attributes);
+        			} 
+        			else {
+        				// this might be the persisted one: reuse the persisted entries
+        				container = new CeylonClasspathContainer(javaProject, containerPath, 
+        						c.getClasspathEntries(), attributes);
+        			}                    
+        		}
+
+        		final IProject p = javaProject.getProject();
+        		Job job = new BuildItJob("Initial build of project " + 
+        				p.getName(), p, p);
+        		job.setRule(p.getWorkspace().getRoot());
+        		job.setPriority(Job.BUILD);
+        		job.schedule(3000);
+        		    	    		
+        		boolean changed = container.resolveClasspath(monitor, true);
+            	if(changed) {
+            		container.refreshClasspathContainer(monitor, javaProject);
+            	}
+
+        		return Status.OK_STATUS;
+        		
+        	} 
+        	catch (JavaModelException ex) {
+        		// unless there are issues with the JDT, this should never happen
+        		return new Status(IStatus.ERROR, PLUGIN_ID,
+        				"could not get container", ex);
+        	}
+        }
+        
+    }
+
+    private static final class BuildItJob extends BuildProjectAndDependenciesJob {
+        private final IProject p;
+        private BuildItJob(String name, IProject project, IProject p) {
+            super(name, project);
+            this.p = p;
+        }
+        protected boolean reallyRun() {
+        	return !isModelTypeChecked(p);
+        }
+    }
 
     public static final String CONTAINER_ID = PLUGIN_ID + ".cpcontainer.CEYLON_CONTAINER";
 
@@ -153,58 +222,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     };*/
 
     public static void runInitialize(final IPath containerPath, final IJavaProject javaProject) {
-    	Job job = new Job("Initializing Ceylon dependencies for project " + 
-    			javaProject.getElementName()) {
-    		@Override 
-    		protected IStatus run(IProgressMonitor monitor) {			
-    			try {
-    				
-        			IClasspathContainer c = getClasspathContainer(containerPath, javaProject);
-    				CeylonClasspathContainer container;
-    				if (c instanceof CeylonClasspathContainer) {
-    					container = (CeylonClasspathContainer) c;
-    				} 
-    				else {
-    					IClasspathEntry entry = getCeylonClasspathEntry(containerPath, javaProject);
-    					IClasspathAttribute[] attributes = entry == null ? 
-    							new IClasspathAttribute[0] : entry.getExtraAttributes();
-						if (c == null) {
-							container = new CeylonClasspathContainer(javaProject, containerPath,
-									new IClasspathEntry[0], attributes);
-						} 
-						else {
-							// this might be the persisted one: reuse the persisted entries
-							container = new CeylonClasspathContainer(javaProject, containerPath, 
-									c.getClasspathEntries(), attributes);
-						}                    
-    				}
-
-    				final IProject p = javaProject.getProject();
-    				Job job = new BuildProjectAndDependenciesJob("Initial build of project " + 
-    						p.getName(), p) {
-    					protected boolean reallyRun() {
-    						return !CeylonBuilder.isModelTypeChecked(p);
-    					}
-    				};
-    				job.setRule(p.getWorkspace().getRoot());
-    				job.setPriority(Job.BUILD);
-    				job.schedule(3000);
-    				    	    		
-    				boolean changed = container.resolveClasspath(monitor, true);
-    	        	if(changed) {
-    	        		container.refreshClasspathContainer(monitor, javaProject);
-    	        	}
-
-    				return Status.OK_STATUS;
-    				
-    			} 
-    			catch (JavaModelException ex) {
-    				// unless there are issues with the JDT, this should never happen
-    				return new Status(IStatus.ERROR, PLUGIN_ID,
-    						"could not get container", ex);
-    			}
-    		}    		
-    	};
+    	Job job = new InitDependenciesJob("Initializing Ceylon dependencies for project " + 
+    			javaProject.getElementName(), containerPath, javaProject);
     	job.setUser(false);
     	job.setPriority(Job.BUILD);
     	job.setRule(getWorkspace().getRoot());
