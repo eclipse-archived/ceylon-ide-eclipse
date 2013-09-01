@@ -1129,6 +1129,15 @@
          </enabledWhen>
        </page>
    </extension>
+   <extension point="org.eclipse.ui.preferencePages">
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.editor"
+           name="Ceylon Editor"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage"
+           category="org.eclipse.ui.preferencePages.Editors">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       </page>
+   </extension>
    
    <extension point="org.eclipse.ui.intro.configExtension">
        <configExtension
