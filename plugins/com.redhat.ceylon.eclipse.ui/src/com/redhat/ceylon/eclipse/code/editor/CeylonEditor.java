@@ -134,6 +134,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -1251,7 +1252,7 @@ public class CeylonEditor extends TextEditor {
         fAnnotationAccess= getAnnotationAccess();
         fOverviewRuler= createOverviewRuler(getSharedColors());
 
-        ISourceViewer viewer= new CeylonSourceViewer(parent, ruler, 
+        ISourceViewer viewer= new CeylonSourceViewer(this, parent, ruler, 
         		getOverviewRuler(), isOverviewRulerVisible(), styles);
         
         // ensure decoration support has been created and configured.
@@ -1651,6 +1652,12 @@ public class CeylonEditor extends TextEditor {
     public String toString() {
         return "Ceylon Editor for " + getEditorInput().getName();
     }
+    
+    static List<Declaration> imports;
+    static String text;
+    
 }
+
+
 
 
