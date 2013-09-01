@@ -1654,7 +1654,6 @@ public class CeylonEditor extends TextEditor {
     }
     
     static List<Declaration> imports;
-    static String text;
     
 }
 
