@@ -14,6 +14,10 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -21,6 +25,7 @@ import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -30,6 +35,15 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
+
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -77,10 +91,12 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private IInformationPresenter hierarchyPresenter;
     private IInformationPresenter codePresenter;
     private IAutoEditStrategy autoEditStrategy;
+    private CeylonEditor editor;
 
-    public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
+    public CeylonSourceViewer(CeylonEditor ceylonEditor, Composite parent, IVerticalRuler verticalRuler, 
     		IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
         super(parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
+        this.editor = ceylonEditor;
     }
 
     public boolean canDoOperation(int operation) {
@@ -135,8 +151,18 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case CORRECT_INDENTATION:
             doCorrectIndentation();
             return;
+            
         }
         super.doOperation(operation);
+        switch (operation) {
+        case CUT:
+        case COPY:
+            copyImports();
+            break;
+        case PASTE:
+            pasteImports();
+            break;
+        }
     }
     
     private void addBlockComment() {
@@ -448,6 +474,67 @@ public class CeylonSourceViewer extends ProjectionViewer {
         //	if (fPreferenceStore != null)
         //	    fPreferenceStore.removePropertyChangeListener(this);
         super.unconfigure();
+    }
+    
+    void copyImports() {
+        CompilationUnit cu = editor.getParseController().getRootNode();
+        final IRegion selection = editor.getSelection();
+        CeylonEditor.text = editor.getSelectionText();
+        class SelectedImportsVisitor extends Visitor {
+            List<Declaration> results = new ArrayList<Declaration>();
+            boolean inSelection(Node node) {
+                return node.getStartIndex()>=selection.getOffset() &&
+                        node.getStopIndex()<selection.getOffset()+selection.getLength();
+            }
+            @Override
+            public void visit(Tree.BaseMemberExpression that) {
+                if (inSelection(that)) {
+                    results.add(that.getDeclaration());
+                }
+                super.visit(that);
+            }
+            @Override
+            public void visit(Tree.BaseTypeExpression that) {
+                if (inSelection(that)) {
+                    results.add(that.getDeclaration());
+                }
+                super.visit(that);
+            }
+            @Override
+            public void visit(Tree.BaseType that) {
+                if (inSelection(that)) {
+                    results.add(that.getDeclarationModel());
+                }
+                super.visit(that);
+            }
+        }
+        SelectedImportsVisitor v = new SelectedImportsVisitor();
+        cu.visit(v);
+        CeylonEditor.imports = v.results;
+
+    }
+    
+    void pasteImports() {
+//        final IRegion selection = editor.getSelection();
+        CompilationUnit cu = editor.getParseController().getRootNode();
+        Tree.ImportList il = cu.getImportList();
+        String newImports = CleanImportsHandler.reorganizeImports(il, 
+                Collections.<Declaration>emptyList(), 
+                CeylonEditor.imports);
+        try {
+            MultiTextEdit edit = new MultiTextEdit();
+            ReplaceEdit importEdit = new ReplaceEdit(il.getStartIndex()==null ? 0 : il.getStartIndex(), 
+                    il.getStartIndex()==null ? 0 : il.getStopIndex()-il.getStartIndex()+1, 
+                            newImports);
+            edit.addChild(importEdit);
+//            ReplaceEdit copiedEdit = new ReplaceEdit(selection.getOffset(), 
+//                    selection.getLength(), CeylonEditor.text);
+//            edit.addChild(copiedEdit);
+            edit.apply(editor.getCeylonSourceViewer().getDocument());
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
     
 }

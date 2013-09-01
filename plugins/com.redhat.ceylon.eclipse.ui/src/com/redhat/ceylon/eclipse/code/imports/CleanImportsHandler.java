@@ -97,7 +97,7 @@ public class CleanImportsHandler extends AbstractHandler {
     	return reorganizeImports(null, Collections.<Declaration>emptyList(), proposed);
     }
     
-    private static String reorganizeImports(ImportList til, List<Declaration> unused, 
+    public static String reorganizeImports(ImportList til, List<Declaration> unused, 
     		List<Declaration> proposed) {
         Map<String,List<Tree.Import>> packages = new TreeMap<String,List<Tree.Import>>();
         if (til!=null) {
