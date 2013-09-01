@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -228,7 +229,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
         StringBuilder imports = new StringBuilder();
         for (Package p: importedPackages) {
         	if (!p.getNameAsString().isEmpty() && !p.equals(pkg) &&
-        			!p.getNameAsString().equals("ceylon.language")) {
+        			!p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
         		imports.append("import ")
         		    .append(p.getNameAsString())
         		    .append(" { ");

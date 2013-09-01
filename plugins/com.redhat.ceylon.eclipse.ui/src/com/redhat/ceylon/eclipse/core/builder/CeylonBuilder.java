@@ -4,6 +4,7 @@ import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
+import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
@@ -1239,7 +1240,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         Module languageModule = loader.getLanguageModule();
         loader.loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", true);
-        loader.loadPackage(languageModule, "ceylon.language", true);
+        loader.loadPackage(languageModule, LANGUAGE_MODULE_NAME, true);
         loader.loadPackage(languageModule, "ceylon.language.descriptor", true);
         loader.loadPackageDescriptors();
         
@@ -1672,7 +1673,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //            		languageModule.getVersion());
 //        } 
 //        else {
-//            ctx = new ArtifactContext("ceylon.language", 
+//            ctx = new ArtifactContext(LANGUAGE_MODULE_NAME, 
 //            		TypeChecker.LANGUAGE_MODULE_VERSION);
 //        }
 //        

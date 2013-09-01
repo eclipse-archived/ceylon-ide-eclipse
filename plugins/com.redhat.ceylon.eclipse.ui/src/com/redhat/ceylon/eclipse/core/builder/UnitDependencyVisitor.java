@@ -8,6 +8,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -65,7 +66,7 @@ public class UnitDependencyVisitor extends Visitor {
             Unit declarationUnit = d.getUnit();
             if (declarationUnit != null) {
             	String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
-            	if (!moduleName.equals("ceylon.language") && 
+            	if (!moduleName.equals(Module.LANGUAGE_MODULE_NAME) && 
             			!JDKUtils.isJDKModule(moduleName)
             			&& !JDKUtils.isOracleJDKModule(moduleName)) { 
             		Unit currentUnit = phasedUnit.getUnit();
