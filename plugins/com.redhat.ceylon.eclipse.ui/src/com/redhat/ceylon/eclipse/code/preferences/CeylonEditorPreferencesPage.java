@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -38,7 +37,7 @@ public class CeylonEditorPreferencesPage
         autoInsert.store();
         autoActivation.store();
         autoActivationDelay.store();;
-    	return true;
+        return true;
     }
     
     @Override

@@ -1278,19 +1278,20 @@ public class CeylonEditor extends TextEditor {
 		            .get(PLUGIN_ID + ".theme.matchingBracketsColor");
 		store.setDefault(MATCHING_BRACKETS_COLOR, 
 		        color.getRed() +"," + color.getGreen() + "," + color.getBlue());
-        store.setDefault(ENCLOSING_BRACKETS, false);
         store.setDefault(MATCHING_BRACKET, true);
-        store.setDefault(SELECTED_BRACKET, true);
+        store.setDefault(ENCLOSING_BRACKETS, false);
+        store.setDefault(SELECTED_BRACKET, false);
         String[][] fences= getFences();
         if (fences != null) {
         	StringBuilder sb= new StringBuilder();
-        	for (int i= 0; i < fences.length; i++) {
+        	for (int i=0; i<fences.length; i++) {
         		sb.append(fences[i][0]);
         		sb.append(fences[i][1]);
         	}
         	bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
         	support.setCharacterPairMatcher(bracketMatcher);
-        	support.setMatchingCharacterPainterPreferenceKeys(MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
+        	support.setMatchingCharacterPainterPreferenceKeys(
+        	        MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
         	        SELECTED_BRACKET, ENCLOSING_BRACKETS);
         }
         super.configureSourceViewerDecorationSupport(support);

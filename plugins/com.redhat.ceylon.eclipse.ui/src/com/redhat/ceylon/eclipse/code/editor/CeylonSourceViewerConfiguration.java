@@ -138,7 +138,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			}
 		});
         prefStore.setDefault(AUTO_INSERT, true);
-        prefStore.setDefault(AUTO_ACTIVATION, true);
+        prefStore.setDefault(AUTO_ACTIVATION, false);
         prefStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
 		configCompletionPopup(ca);
 		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
