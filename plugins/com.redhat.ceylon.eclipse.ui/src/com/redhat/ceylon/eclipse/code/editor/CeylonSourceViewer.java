@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -32,6 +33,7 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
@@ -43,6 +45,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
@@ -158,6 +161,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case CORRECT_INDENTATION:
             doCorrectIndentation();
             return;
+        case PASTE:
+            if (localPaste(textWidget)) return;
         }
         super.doOperation(operation);
         switch (operation) {
@@ -165,9 +170,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case COPY:
             afterCopyCut(textWidget);
             break;
-        case PASTE:
+        /*case PASTE:
             afterPaste(textWidget);
-            break;
+            break;*/
         }
     }
 
@@ -176,8 +181,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         try {
             Object text = clipboard.getContents(TextTransfer.getInstance());
             try {
-                clipboard.setContents(new Object[] {text,copyImports()}, 
-                        new Transfer[] {TextTransfer.getInstance(), ImportsTransfer.INSTANCE});
+                Object[] data = new Object[] { text, copyImports(), editor.getSelectionText() };
+                Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
+                clipboard.setContents(data, dataTypes);
             } 
             catch (SWTError e) {
                 if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
@@ -190,19 +196,60 @@ public class CeylonSourceViewer extends ProjectionViewer {
             clipboard.dispose();
         }
     }
-
-    private void afterPaste(StyledText textWidget) {
+    
+    private boolean localPaste(StyledText textWidget) {
         Clipboard clipboard= new Clipboard(textWidget.getDisplay());
         try {
-            List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
-            if (imports!=null) {
-                pasteImports(imports);
+            String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+            if (text==null) {
+                return false;
+            }
+            else {
+                List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
+                IRegion selection = editor.getSelection();
+                try {
+                    MultiTextEdit edit = new MultiTextEdit();
+                    DocumentChange c = new DocumentChange("paste", getDocument());
+                    c.setEdit(edit);
+                    if (imports!=null) {
+                        pasteImports(imports, edit);
+                    }
+                    c.addEdit(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
+                    c.perform(new NullProgressMonitor());
+                    return true;
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
             }
         }
         finally {
             clipboard.dispose();
         }
     }
+
+    /*private void afterPaste(StyledText textWidget) {
+        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+        try {
+            List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
+            if (imports!=null) {
+                MultiTextEdit edit = new MultiTextEdit();
+                pasteImports(imports, edit);
+                if (edit.hasChildren()) {
+                    try {
+                        edit.apply(getDocument());
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        finally {
+            clipboard.dispose();
+        }
+    }*/
     
     private void addBlockComment() {
         IDocument doc= this.getDocument();
@@ -558,7 +605,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return v.results;
     }
     
-    void pasteImports(List<Declaration> list) {
+    void pasteImports(List<Declaration> list, MultiTextEdit edit) {
         if (!list.isEmpty()) {
             Tree.CompilationUnit cu = editor.getParseController().getRootNode();
             List<Declaration> imports = new ArrayList<Declaration>(); 
@@ -578,15 +625,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
             }
             if (!imports.isEmpty()) {
-                try {
-                    MultiTextEdit edit = new MultiTextEdit();
-                    for (InsertEdit importEdit: importEdit(cu, imports, null)) {
-                        edit.addChild(importEdit);                    
-                    }
-                    edit.apply(editor.getCeylonSourceViewer().getDocument());
-                }
-                catch (BadLocationException e) {
-                    e.printStackTrace();
+                for (InsertEdit importEdit: importEdit(cu, imports, null)) {
+                    edit.addChild(importEdit);                    
                 }
             }
         }
