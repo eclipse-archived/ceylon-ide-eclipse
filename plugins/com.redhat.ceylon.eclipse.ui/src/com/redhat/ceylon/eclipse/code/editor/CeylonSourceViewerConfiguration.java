@@ -34,6 +34,8 @@ import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -61,12 +63,14 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	
     protected final CeylonEditor editor;
     private final CompletionProcessor processor;
+    private final IPreferenceStore prefStore;
 
     public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, 
     		CeylonEditor editor) {
         super(prefStore);
         this.editor = editor;
         processor = new CompletionProcessor(editor);
+        this.prefStore = prefStore;
     }
     
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -101,8 +105,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		}
 	}*/
     
+    public static final String AUTO_INSERT = "autoInsert";
+    public static final String AUTO_ACTIVATION = "autoActivation";
+    public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
+    
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        ContentAssistant ca = new ContentAssistant() {
+        final ContentAssistant ca = new ContentAssistant() {
         	protected void install() {
                 setInformationControlCreator(new DocHover(editor)
                         .getHoverControlCreator("Click for focus"));
@@ -129,10 +137,16 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 				editor.scheduleParsing();
 			}
 		});
-		ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
-        ca.enableAutoInsert(true);
-        ca.enableAutoActivation(true);
-        ca.setAutoActivationDelay(500);
+        prefStore.setDefault(AUTO_INSERT, true);
+        prefStore.setDefault(AUTO_ACTIVATION, true);
+        prefStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
+		configCompletionPopup(ca);
+		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                configCompletionPopup(ca);
+            }
+        });
         ca.enableColoredLabels(true);
         ca.setRepeatedInvocationMode(true);
         KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
@@ -141,6 +155,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         ca.setStatusLineVisible(true);
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return ca;
+    }
+
+    private void configCompletionPopup(ContentAssistant ca) {
+        ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
+        ca.enableAutoInsert(prefStore.getBoolean(AUTO_INSERT));
+        ca.enableAutoActivation(prefStore.getBoolean(AUTO_ACTIVATION));
+        ca.setAutoActivationDelay(prefStore.getInt(AUTO_ACTIVATION_DELAY));
     }
 
     @Override
