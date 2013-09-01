@@ -32,7 +32,12 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -121,8 +126,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     public void doOperation(int operation) {
-        if (getTextWidget() == null)
-            return;
+        StyledText textWidget= getTextWidget();
+        if (textWidget == null) return;
+        
         switch (operation) {
         case SHOW_OUTLINE:
             if (outlinePresenter!=null)
@@ -152,17 +158,49 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case CORRECT_INDENTATION:
             doCorrectIndentation();
             return;
-            
         }
         super.doOperation(operation);
         switch (operation) {
         case CUT:
         case COPY:
-            copyImports();
+            afterCopyCut(textWidget);
             break;
         case PASTE:
-            pasteImports();
+            afterPaste(textWidget);
             break;
+        }
+    }
+
+    private void afterCopyCut(StyledText textWidget) {
+        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+        try {
+            Object text = clipboard.getContents(TextTransfer.getInstance());
+            try {
+                clipboard.setContents(new Object[] {text,copyImports()}, 
+                        new Transfer[] {TextTransfer.getInstance(), ImportsTransfer.INSTANCE});
+            } 
+            catch (SWTError e) {
+                if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
+                    throw e;
+                }
+                e.printStackTrace();
+            }       
+        }
+        finally {
+            clipboard.dispose();
+        }
+    }
+
+    private void afterPaste(StyledText textWidget) {
+        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+        try {
+            List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
+            if (imports!=null) {
+                pasteImports(imports);
+            }
+        }
+        finally {
+            clipboard.dispose();
         }
     }
     
@@ -477,7 +515,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         super.unconfigure();
     }
     
-    void copyImports() {
+    List<Declaration> copyImports() {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         final IRegion selection = editor.getSelection();
         class SelectedImportsVisitor extends Visitor {
@@ -517,15 +555,14 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
         SelectedImportsVisitor v = new SelectedImportsVisitor();
         cu.visit(v);
-        CeylonEditor.imports = v.results;
-
+        return v.results;
     }
     
-    void pasteImports() {
-        if (!CeylonEditor.imports.isEmpty()) {
+    void pasteImports(List<Declaration> list) {
+        if (!list.isEmpty()) {
             Tree.CompilationUnit cu = editor.getParseController().getRootNode();
             List<Declaration> imports = new ArrayList<Declaration>(); 
-            imports.addAll(CeylonEditor.imports);
+            imports.addAll(list);
             for (Iterator<Declaration> i=imports.iterator(); i.hasNext();) {
                 Declaration d = i.next();
                 if (cu.getUnit().getPackage().equals(d.getUnit().getPackage())) {
@@ -554,5 +591,5 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
         }
     }
-    
+
 }
