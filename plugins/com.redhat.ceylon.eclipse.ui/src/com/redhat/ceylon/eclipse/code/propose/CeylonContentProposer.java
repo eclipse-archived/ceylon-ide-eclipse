@@ -1466,18 +1466,28 @@ public class CeylonContentProposer {
     private static String getPositionalInvocationTextFor(DeclarationWithProximity d,
             OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
-        if (forceExplicitTypeArgs(d.getDeclaration(), ol))
-            appendTypeParameters(d.getDeclaration(), result);
-        appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
+        Declaration dd = d.getDeclaration();
+        if (forceExplicitTypeArgs(dd, ol))
+            appendTypeParameters(dd, result);
+        appendPositionalArgs(dd, pr, result, includeDefaulted);
+        if ((dd instanceof Method) && ((Method) dd).isDeclaredVoid() && 
+                ((Method) dd).getParameterLists().size()==1) {
+            result.append(';');
+        }
         return result.toString();
     }
     
     private static String getNamedInvocationTextFor(DeclarationWithProximity d, 
             ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
-        if (forceExplicitTypeArgs(d.getDeclaration(), null))
-            appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted, false);
+        Declaration dd = d.getDeclaration();
+        if (forceExplicitTypeArgs(dd, null))
+            appendTypeParameters(dd, result);
+        appendNamedArgs(dd, pr, result, includeDefaulted, false);
+        if ((dd instanceof Method) && ((Method) dd).isDeclaredVoid() && 
+                ((Method) dd).getParameterLists().size()==1) {
+            result.append(';');
+        }
         return result.toString();
     }
     
