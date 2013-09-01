@@ -30,8 +30,8 @@ public class BuildProjectAndDependenciesJob extends Job {
 				for (IProject p: project.getReferencingProjects()) {
 					if (p.isOpen()) {
 						configs.add(p.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
-						//    	            					project.getWorkspace().build(FULL_BUILD, monitor);
-						//    	            					break;
+						//project.getWorkspace().build(FULL_BUILD, monitor);
+						//break;
 					} 
 				}
 				project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
