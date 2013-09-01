@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.im
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -39,6 +40,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -522,15 +524,33 @@ public class CeylonSourceViewer extends ProjectionViewer {
     void pasteImports() {
         if (!CeylonEditor.imports.isEmpty()) {
             Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-            try {
-                MultiTextEdit edit = new MultiTextEdit();
-                for (InsertEdit importEdit: importEdit(cu, CeylonEditor.imports, null)) {
-                    edit.addChild(importEdit);                    
+            List<Declaration> imports = new ArrayList<Declaration>(); 
+            imports.addAll(CeylonEditor.imports);
+            for (Iterator<Declaration> i=imports.iterator(); i.hasNext();) {
+                Declaration d = i.next();
+                if (cu.getUnit().getPackage().equals(d.getUnit().getPackage())) {
+                    i.remove();
                 }
-                edit.apply(editor.getCeylonSourceViewer().getDocument());
+                else {
+                    for (Import ip: cu.getUnit().getImports()) {
+                        if (ip.getDeclaration().equals(d)) {
+                            i.remove();
+                            break;
+                        }
+                    }
+                }
             }
-            catch (BadLocationException e) {
-                e.printStackTrace();
+            if (!imports.isEmpty()) {
+                try {
+                    MultiTextEdit edit = new MultiTextEdit();
+                    for (InsertEdit importEdit: importEdit(cu, imports, null)) {
+                        edit.addChild(importEdit);                    
+                    }
+                    edit.apply(editor.getCeylonSourceViewer().getDocument());
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
