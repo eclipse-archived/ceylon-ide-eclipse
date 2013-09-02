@@ -786,15 +786,13 @@ public class CeylonContentProposer {
                 type==CeylonLexer.SAFE_MEMBER_OP;
     }
 
-    private static List<Declaration> overloads(Declaration dec) {
-        List<Declaration> decs;
+    public static List<Declaration> overloads(Declaration dec) {
         if (dec instanceof Functional && ((Functional)dec).isAbstraction()) {
-            decs = ((Functional)dec).getOverloads();
+            return ((Functional)dec).getOverloads();
         }
         else {
-            decs = Collections.singletonList(dec);
+            return Collections.singletonList(dec);
         }
-        return decs;
     }
 
     /*private static boolean isKeywordProposable(OccurrenceLocation ol) {
