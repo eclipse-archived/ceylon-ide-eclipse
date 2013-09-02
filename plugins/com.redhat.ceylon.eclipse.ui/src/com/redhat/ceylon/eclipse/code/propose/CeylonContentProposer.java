@@ -138,25 +138,19 @@ public class CeylonContentProposer {
      * @return        An array of completion proposals applicable relative to the AST of the given
      *             parse controller at the given position
      */
-    public ICompletionProposal[] getContentProposals(CeylonParseController controller,
+    public ICompletionProposal[] getContentProposals(CeylonParseController cpc,
             final int offset, ITextViewer viewer, boolean filter) {
         
-        if (controller==null || viewer==null) {
+        if (cpc==null || viewer==null || 
+                cpc.getRootNode()==null || 
+                cpc.getTokens()==null) {
             return null;
         }
         
-        CeylonParseController cpc = (CeylonParseController) controller;
         cpc.parse(viewer.getDocument(), new NullProgressMonitor(), null);
         cpc.getHandler().updateAnnotations();
         List<CommonToken> tokens = cpc.getTokens(); 
-        if (tokens==null) {
-            return null;
-        }
-        
         Tree.CompilationUnit rn = cpc.getRootNode();
-        if (rn==null) {
-            return null;
-        }
         
         //compensate for the fact that we get sent an old
         //tree that doesn't contain the characters the user
