@@ -15,20 +15,6 @@ public class SourceTransfer extends ByteArrayTransfer {
     public static String text;
     
     @Override
-    public TransferData[] getSupportedTypes() {
-        return null;
-    }
-
-    public boolean isSupportedType(TransferData transferData){
-        if (transferData == null) return false;
-        int[] types = getTypeIds();
-        for (int i = 0; i < types.length; i++) {
-            if (transferData.type == types[i]) return true;
-        }
-        return false;
-    }
-
-    @Override
     protected int[] getTypeIds() {
         return new int[] { TYPEID };
     }
