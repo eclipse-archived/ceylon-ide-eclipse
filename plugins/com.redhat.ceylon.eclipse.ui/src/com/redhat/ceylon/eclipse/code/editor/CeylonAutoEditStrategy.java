@@ -671,6 +671,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 start=start1;
             }
         }
+        while (isStringOrCommentContinuation(start)) {
+            end = getEndOfPreviousLine(d, start);
+            start = getStartOfPreviousLine(d, start);
+        }
         int endOfWs = firstEndOfWhitespace(d, start, end);
         return d.get(start, endOfWs-start);
     }
