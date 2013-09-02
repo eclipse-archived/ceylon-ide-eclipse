@@ -53,6 +53,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -182,7 +183,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         try {
             Object text = clipboard.getContents(TextTransfer.getInstance());
             try {
-                Object[] data = new Object[] { text, copyImports(), selection };
+                List<Declaration> imports = copyImports();
+                if (imports==null) return;
+                Object[] data = new Object[] { text, imports, selection };
                 Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
                 clipboard.setContents(data, dataTypes);
             } 
@@ -564,7 +567,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     List<Declaration> copyImports() {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
+        CeylonParseController pc = editor.getParseController();
+        if (pc==null) return null;
+        Tree.CompilationUnit cu = pc.getRootNode();
         final IRegion selection = editor.getSelection();
         class SelectedImportsVisitor extends Visitor {
             List<Declaration> results = new ArrayList<Declaration>();

@@ -27,7 +27,7 @@ public class SourceTransfer extends ByteArrayTransfer {
     @Override
     protected void javaToNative(Object object, TransferData transferData) {
         text = (String) object;
-        super.javaToNative(new byte[0], transferData);
+        super.javaToNative(new byte[1], transferData);
     }
 
     @Override
