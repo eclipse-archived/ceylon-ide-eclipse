@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import org.eclipse.swt.dnd.ByteArrayTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
-import org.eclipse.swt.internal.cocoa.NSString;
 
 public class SourceTransfer extends ByteArrayTransfer {
     
