@@ -2,13 +2,12 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import java.util.List;
 
-import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.TransferData;
-import org.eclipse.swt.internal.cocoa.NSString;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
-public class ImportsTransfer extends Transfer {
+public class ImportsTransfer extends ByteArrayTransfer {
     
     public static final ImportsTransfer INSTANCE = new ImportsTransfer();
 
@@ -45,15 +44,22 @@ public class ImportsTransfer extends Transfer {
 
     @Override
     protected void javaToNative(Object object, TransferData transferData) {
-        //TODO: serialize qualified names to NSStrings
-        imports = (List<Declaration>) object;
-        transferData.data = NSString.stringWith("");
+        if (isSupportedType(transferData)) {
+            //TODO: serialize qualified names to NSStrings
+            imports = (List<Declaration>) object;
+            super.javaToNative(new byte[0], transferData);
+        }
     }
 
     @Override
     protected List<Declaration> nativeToJava(TransferData transferData) {
-        //TODO: unserialize qualified names from NSStrings
-        return imports;
+        if (isSupportedType(transferData)) {
+            //TODO: unserialize qualified names from NSStrings
+            return imports;
+        }
+        else {
+            return null;
+        }
     }
 
 }
