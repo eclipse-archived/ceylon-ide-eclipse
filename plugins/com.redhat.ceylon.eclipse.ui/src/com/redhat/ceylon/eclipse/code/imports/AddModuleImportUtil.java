@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -21,7 +22,8 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class AddModuleImportUtil {
 
-    public static void addModuleImport(IProject project, Module target, String moduleName, String moduleVersion) {
+    public static void addModuleImport(IProject project, Module target, 
+            String moduleName, String moduleVersion) {
         PhasedUnit unit = findPhasedUnit(project, target);
         InsertEdit edit = createEdit(unit, moduleName, moduleVersion);
 
@@ -33,7 +35,9 @@ public class AddModuleImportUtil {
             throw new RuntimeException(e);
         }
         gotoLocation(CeylonSourcePositionLocator.getNodePath(unit.getCompilationUnit(), project, 
-                getProjectTypeChecker(project)), edit.getOffset(), edit.getLength());
+                getProjectTypeChecker(project)), 
+                edit.getOffset() + moduleName.length() + getDefaultIndent().length() + 10, 
+                moduleVersion.length());
     }
 
     private static PhasedUnit findPhasedUnit(IProject project, Module module) {
@@ -58,7 +62,7 @@ public class AddModuleImportUtil {
         String newline = System.getProperty("line.separator");
         StringBuilder importModule = new StringBuilder();
         importModule.append(newline);
-        importModule.append(CeylonAutoEditStrategy.getDefaultIndent());
+        importModule.append(getDefaultIndent());
         importModule.append("import ");
         importModule.append(moduleName);
         importModule.append(" '");
