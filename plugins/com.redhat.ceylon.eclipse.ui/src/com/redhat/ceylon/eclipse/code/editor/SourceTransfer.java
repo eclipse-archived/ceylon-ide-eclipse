@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.internal.cocoa.NSString;
 
 public class SourceTransfer extends Transfer {
     
@@ -41,6 +42,7 @@ public class SourceTransfer extends Transfer {
     @Override
     protected void javaToNative(Object object, TransferData transferData) {
         text = (String) object;
+        transferData.data = NSString.stringWith("");
     }
 
     @Override

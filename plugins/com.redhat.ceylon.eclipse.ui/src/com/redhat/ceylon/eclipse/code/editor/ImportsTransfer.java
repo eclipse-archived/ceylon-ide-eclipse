@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.internal.cocoa.NSString;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
@@ -46,6 +47,7 @@ public class ImportsTransfer extends Transfer {
     protected void javaToNative(Object object, TransferData transferData) {
         //TODO: serialize qualified names to NSStrings
         imports = (List<Declaration>) object;
+        transferData.data = NSString.stringWith("");
     }
 
     @Override
