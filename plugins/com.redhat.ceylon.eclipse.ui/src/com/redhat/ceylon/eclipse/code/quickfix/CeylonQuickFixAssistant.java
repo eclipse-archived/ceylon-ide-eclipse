@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
@@ -65,6 +66,9 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import com.redhat.ceylon.cmr.api.ModuleQuery;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -90,6 +94,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -451,6 +457,25 @@ public class CeylonQuickFixAssistant {
         case 6000:
             addFixMultilineStringIndentation(proposals, file, cu, (Tree.StringLiteral)node);            
             break;
+        case 7000:
+            addModuleImportProposals(cu, proposals, project, tc, node);
+        }
+    }
+
+    private void addModuleImportProposals(Tree.CompilationUnit cu,
+            Collection<ICompletionProposal> proposals, IProject project,
+            TypeChecker tc, Node node) {
+        List<Identifier> ids = ((ImportPath) node).getIdentifiers();
+        for (int i=ids.size(); i>0; i--) {
+            String pn = formatPath(ids.subList(0, i));
+            ModuleQuery q = new ModuleQuery(pn, ModuleQuery.Type.JVM); //TODO: Type.JS if JS compilation enabled!
+            q.setCount(2l);
+            ModuleSearchResult msr = tc.getContext().getRepositoryManager().searchModules(q);
+            ModuleDetails md = msr.getResult(pn);
+            if (md!=null) {
+                proposals.add(new AddModuleImportProposal(project, cu.getUnit(), md));
+            }
+            if (!msr.getResults().isEmpty()) break;
         }
     }
 
