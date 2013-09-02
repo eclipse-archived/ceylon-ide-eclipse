@@ -58,30 +58,6 @@
    </extension>
    
    <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.jdt.core.IJavaProject"
-            adaptable="true"
-            nameFilter="*"
-            id="com.redhat.ceylon.eclipse.ui.projectContextMenu">
-         <action
-               class="com.redhat.ceylon.eclipse.core.builder.EnableCeylonNature"
-               id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"
-               label="Enable Ceylon Builder"
-               menubarPath="org.eclipse.ui.projectConfigure/additions"
-               tooltip="Enable the ceylon builder for this project"/>
-         <visibility>
-           <and>
-             <objectState name="open" value="true"/>
-             <not>
-               <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
-             </not>
-           </and>
-         </visibility>
-      </objectContribution>
-   </extension>
-   
-   <extension
          id="ceylonProblem"
          name="Ceylon Error"
          point="org.eclipse.core.resources.markers">
@@ -566,6 +542,76 @@
              description="Open find quick menu"
              id="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
              name="Find Menu"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show the quick outline for the editor input"
+            id="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+            name="Show Outline"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            name="Collapse Members"
+            description="Collapses all members in the current source file"
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            name="Collapse Comments"
+            description="Collapses all multi-line comments in the current source file"
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Comments/uncomments the current selection or the current source line"
+            id="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+            name="Toggle Comment"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Comments the current selection"
+            id="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
+            name="Add Block Comment"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Uncomments the current selection"
+            id="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
+            name="Remove Block Comment"/>
+      <!--command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Format the source code"
+            id="com.redhat.ceylon.eclipse.ui.editor.formatSource"
+            name="Format"/-->
+      <command
+            name="Go to Matching Fence"
+            description="Moves the cursor to the matching fence character, if any"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
+      <!--command
+            name="Go to Previous Navigation Target"
+            description="Go to Previous Navigation Target"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"/>
+      <command
+            name="Go to Next Navigation Target"
+            description="Go to Next Navigation Target"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            id="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"/-->
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Re-indent the selected text"
+            id="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+            name="Correct Indentation"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Terminate the statement at the current line and close brackets"
+            id="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+            name="Terminate Statement"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Select the innermost enclosing construct"
+            id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            name="Select Enclosing"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Restore the previous selection"
+            id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            name="Restore Previous Selection"/>
    </extension>
    
    <extension
@@ -640,99 +686,206 @@
             
    <extension
          point="org.eclipse.ui.bindings">
-       <key
-           sequence="M1+M2+O"
-           commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
-       <key
-           sequence="M1+M2+T"
-           commandId="com.redhat.ceylon.eclipse.ui.action.openType"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
-       <key
-           sequence="F3"
-           commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
+         
+      <!-- Open Ceylon Declaration + Open Type popups -->
+      <key
+            sequence="M1+M2+O"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
+      <key
+            sequence="M1+M2+T"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openType"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
+      <key
+            sequence="F3"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+            
+      <!-- Ouline, Heirarchy, and Code popups -->
       <key
             sequence="M1+O"
             commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M1+T"
-           commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M1+P"
-           commandId="com.redhat.ceylon.eclipse.ui.editor.code"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+G"
-           commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+W"
-           commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+O"
-           commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+S"
-           commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+C"
-           commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+K"
-           commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+R"
-           commandId="com.redhat.ceylon.eclipse.ui.action.rename"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+L"
-           commandId="com.redhat.ceylon.eclipse.ui.action.inline"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+V"
-           commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-           sequence="M3+F"
-           commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           contextId="com.redhat.ceylon.eclipse.ui.context"/>
-       <key
-             commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
-             contextId="com.redhat.ceylon.eclipse.ui.context"
-             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M3+T"/>
-       <key commandId="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
-             contextId="com.redhat.ceylon.eclipse.ui.context"
-             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+R"/>
-       <key commandId="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
-             contextId="com.redhat.ceylon.eclipse.ui.context"
-             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+G"/>
+      <key
+            sequence="M1+T"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M1+P"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.code"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+            
+      <!-- Find -->
+      <key
+            sequence="M3+G"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+W"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+O"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+S"
+            commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+            
+      <!-- Refactorings -->
+      <key
+            sequence="M3+C"
+            commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+K"
+            commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+R"
+            commandId="com.redhat.ceylon.eclipse.ui.action.rename"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+L"
+            commandId="com.redhat.ceylon.eclipse.ui.action.inline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+V"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+F"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+T"/>
+            
+      <!-- Quick menus -->
+      <key 
+            commandId="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+R"/>
+      <key 
+            commandId="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+F"/>
+            
+      <!-- Edit actions -->
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
+      <key
+            platforms="cocoa,carbon"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M4+/"/>
+      <key
+            platforms="cocoa,carbon"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M4+\"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I"/>
+      <key
+            sequence="M1+;"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <!--key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+F"/-->
+            
+      <!-- Navigation actions -->
+      <key
+            sequence="M1+M2+P"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M2+M3+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M2+M3+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="cocoa,carbon"
+            sequence="M2+M4+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="cocoa,carbon"
+            sequence="M2+M4+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <!--key
+            sequence="M1+M2+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+M2+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="cocoa,carbon"
+            sequence="M3+M4+ARROW_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="cocoa,carbon"
+            sequence="M3+M4+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
    </extension>
    
    <extension
@@ -853,11 +1006,13 @@
             <command
                   id="addBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-                  label="Add Block Comment"/>
+                  label="Add Block Comment"
+                  icon="icons/comment_edit.gif"/>
             <command
                   id="removeBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-                  label="Remove Block Comment"/>
+                  label="Remove Block Comment"
+                  icon="icons/remove_comment_edit.gif"/>
             <command 
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
@@ -889,11 +1044,13 @@
             <command
                   id="addBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-                  label="Add Block Comment"/>
+                  label="Add Block Comment"
+                  icon="icons/comment_edit.gif"/>
             <command
                   id="removeBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-                  label="Remove Block Comment"/>
+                  label="Remove Block Comment"
+                  icon="icons/remove_comment_edit.gif"/>
             <command 
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
@@ -1581,167 +1738,26 @@
                id="findReferences"
                menubarPath="find"/>
      </objectContribution>
-   </extension>
-   
-      <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+/"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+/"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+\"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            platforms="cocoa,carbon"
-            sequence="M1+M4+/"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            platforms="cocoa,carbon"
-            sequence="M1+M4+\"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+I"/>
-      <!--key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+F"/-->
-      <key
-            sequence="M1+M3+P"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M2+M3+ARROW_UP"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platform="carbon"
-            sequence="M3+M4+ARROW_UP"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M2+M3+ARROW_DOWN"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platform="carbon"
-            sequence="M3+M4+ARROW_DOWN"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M1+2"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M1+M2+P"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="CTRL+SHIFT+ARROW_UP"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="CTRL+SHIFT+ARROW_DOWN"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Show the quick outline for the editor input"
-            id="com.redhat.ceylon.eclipse.ui.editor.showOutline"
-            name="Show Outline"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            name="Collapse Members"
-            description="Collapses all members in the current source file"
-            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            name="Collapse Comments"
-            description="Collapses all multi-line comments in the current source file"
-            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Comments/uncomments the current selection or the current source line"
-            id="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
-            name="Toggle Comment"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Comments the current selection"
-            id="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            name="Add Block Comment"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Uncomments the current selection"
-            id="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            name="Remove Block Comment"/>
-      <!--command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Format the source code"
-            id="com.redhat.ceylon.eclipse.ui.editor.formatSource"
-            name="Format"/-->
-      <command
-            name="Go to Matching Fence"
-            description="Moves the cursor to the matching fence character, if any"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            id="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
-      <command
-            name="Go to Previous Navigation Target"
-            description="Go to Previous Navigation Target"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            id="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"/>
-      <command
-            name="Go to Next Navigation Target"
-            description="Go to Next Navigation Target"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            id="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Re-indent the selected text according to current formatting settings"
-            id="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-            name="Correct Indentation"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Terminate the statement at the current line and close brackets"
-            id="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
-            name="Terminate Statement"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Select the innermost enclosing construct"
-            id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-            name="Select Enclosing"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Restore the previous selection"
-            id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            name="Restore Previous Selection"/>
+     <objectContribution
+           objectClass="org.eclipse.jdt.core.IJavaProject"
+           adaptable="true"
+           nameFilter="*"
+           id="com.redhat.ceylon.eclipse.ui.projectContextMenu">
+        <action
+              class="com.redhat.ceylon.eclipse.core.builder.EnableCeylonNature"
+              id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"
+              label="Enable Ceylon Builder"
+              menubarPath="org.eclipse.ui.projectConfigure/additions"
+               tooltip="Enable the ceylon builder for this project"/>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <not>
+              <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
+            </not>
+          </and>
+        </visibility>
+     </objectContribution>
    </extension>
    
    <extension
