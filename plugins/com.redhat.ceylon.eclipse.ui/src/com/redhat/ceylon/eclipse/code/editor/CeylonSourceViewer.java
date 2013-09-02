@@ -16,8 +16,10 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.im
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -572,7 +574,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         Tree.CompilationUnit cu = pc.getRootNode();
         final IRegion selection = editor.getSelection();
         class SelectedImportsVisitor extends Visitor {
-            List<Declaration> results = new ArrayList<Declaration>();
+            Set<Declaration> results = new HashSet<Declaration>();
             boolean inSelection(Node node) {
                 return node.getStartIndex()>=selection.getOffset() &&
                         node.getStopIndex()<selection.getOffset()+selection.getLength();
@@ -608,7 +610,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
         SelectedImportsVisitor v = new SelectedImportsVisitor();
         cu.visit(v);
-        return v.results;
+        return new ArrayList<Declaration>(v.results);
     }
     
     void pasteImports(List<Declaration> list, MultiTextEdit edit) {
