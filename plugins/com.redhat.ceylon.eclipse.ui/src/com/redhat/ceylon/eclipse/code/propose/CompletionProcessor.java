@@ -38,7 +38,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
     	try {
-			if (lastOffset>=0 && offset>0 && 
+			if (lastOffset>=0 && offset>0 && offset!=lastOffset &&
 					!isIdentifierCharacter(viewer, offset)) {
 				//user typed a whitespace char with an open
 				//completions window, so close the window
@@ -52,6 +52,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		if (offset==lastOffset) {
 			filter = !filter;
 		}
+		System.out.println(lastOffset);
 		lastOffset = offset;
     	try {
     		return contentProposer.getContentProposals(editor.getParseController(), 
