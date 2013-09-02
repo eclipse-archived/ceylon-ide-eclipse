@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static java.lang.Math.max;
 
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Set;
 
@@ -28,15 +29,20 @@ final class WarmupJob extends Job {
 		Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
 				.getContext().getModules().getListOfModules();
 		monitor.worked(10000);
-		for (Module m: modules) {
-			List<Package> packages = m.getAllPackages();
-			for (Package p: packages) {
-				p.getMembers();
-			}
-			monitor.worked(90000/max(modules.size(),1));
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
+		try {
+		    for (Module m: modules) {
+		        List<Package> packages = m.getAllPackages();
+		        for (Package p: packages) {
+		            p.getMembers();
+		        }
+		        monitor.worked(90000/max(modules.size(),1));
+		        if (monitor.isCanceled()) {
+		            return Status.CANCEL_STATUS;
+		        }
+		    }
+		}
+		catch (ConcurrentModificationException cme) {
+		    //expected, if a build starts during warmup
 		}
 		monitor.done();
 		return Status.OK_STATUS;
