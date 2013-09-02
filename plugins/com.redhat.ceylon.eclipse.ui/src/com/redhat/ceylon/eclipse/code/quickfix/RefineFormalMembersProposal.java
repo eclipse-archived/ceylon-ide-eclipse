@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
@@ -140,14 +141,16 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         StringBuilder result = new StringBuilder();
         Set<Declaration> already = new HashSet<Declaration>();
         for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
-            Declaration d = dwp.getDeclaration();
-            if (d.isFormal() && 
-                    ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-            	ProducedReference pr = getRefinedProducedReference(node, d);
-                result.append(indent)
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() && 
+                        ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                    ProducedReference pr = getRefinedProducedReference(node, d);
+                    result.append(indent)
                     .append(getRefinementTextFor(d, pr, isInterface, indent))
                     .append(indent);
-                importSignatureTypes(d, cu, already);
+                    importSignatureTypes(d, cu, already);
+                }
             }
         }
         try {

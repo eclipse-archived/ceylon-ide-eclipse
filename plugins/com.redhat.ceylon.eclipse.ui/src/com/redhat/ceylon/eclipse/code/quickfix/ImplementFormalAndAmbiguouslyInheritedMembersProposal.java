@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importSignatureTypes;
@@ -101,15 +101,19 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         Set<Declaration> already = new HashSet<Declaration>();
         
         Set<String> formalDeclNames = new HashSet<String>();
-        for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
-            Declaration d = dwp.getDeclaration();
-            if (d.isFormal() && ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                formalDeclNames.add(d.getName());
-                ProducedReference pr = getRefinedProducedReference(node, d);
-                result.append(indent)
+        Collection<DeclarationWithProximity> members = td
+                .getMatchingMemberDeclarations((ClassOrInterface) node.getScope(), "", 0).values();
+        for (DeclarationWithProximity dwp: members) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() && ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
+                    formalDeclNames.add(d.getName());
+                    ProducedReference pr = getRefinedProducedReference(node, d);
+                    result.append(indent)
                     .append(getRefinementTextFor(d, pr, false, indent))
                     .append(indent);
-                importSignatureTypes(d, cu, already);
+                    importSignatureTypes(d, cu, already);
+                }
             }
         }
         
