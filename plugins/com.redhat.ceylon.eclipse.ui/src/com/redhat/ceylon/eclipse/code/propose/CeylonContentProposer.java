@@ -1046,15 +1046,15 @@ public class CeylonContentProposer {
             }
             if (!isAbstractClass && ol!=EXTENDS && 
                     !fd.isOverloaded()) {
-                //if there is more than one parameter, 
+                //if there is at least one parameter, 
                 //suggest a named argument invocation 
-                if (defaulted>0 && ps.size()-defaulted>1) {
+                if (defaulted>0 && ps.size()>defaulted) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, false), 
                             getNamedInvocationTextFor(dwp, pr, false), true,
                             cpc, d, dwp.isUnimported()));
                 }
-                if (ps.size()>1) {
+                if (!ps.isEmpty()) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, true), 
                             getNamedInvocationTextFor(dwp, pr, true), true,
@@ -1462,13 +1462,10 @@ public class CeylonContentProposer {
         if (forceExplicitTypeArgs(dd, ol))
             appendTypeParameters(dd, result);
         appendPositionalArgs(dd, pr, result, includeDefaulted);
-        if ((dd instanceof Method) && ((Method) dd).isDeclaredVoid() && 
-                ((Method) dd).getParameterLists().size()==1) {
-            result.append(';');
-        }
+        appendSemiToVoidInvocation(result, dd);
         return result.toString();
     }
-    
+
     private static String getNamedInvocationTextFor(DeclarationWithProximity d, 
             ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
@@ -1476,11 +1473,16 @@ public class CeylonContentProposer {
         if (forceExplicitTypeArgs(dd, null))
             appendTypeParameters(dd, result);
         appendNamedArgs(dd, pr, result, includeDefaulted, false);
+        appendSemiToVoidInvocation(result, dd);
+        return result.toString();
+    }
+    
+    private static void appendSemiToVoidInvocation(StringBuilder result,
+            Declaration dd) {
         if ((dd instanceof Method) && ((Method) dd).isDeclaredVoid() && 
                 ((Method) dd).getParameterLists().size()==1) {
             result.append(';');
         }
-        return result.toString();
     }
     
     private static String getDescriptionFor(DeclarationWithProximity d, 
