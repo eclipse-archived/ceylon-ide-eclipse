@@ -355,13 +355,13 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(GOTO_MATCHING_FENCE);
         setAction(GOTO_MATCHING_FENCE, action);
 
-        action= new GotoPreviousTargetAction(this);
-        action.setActionDefinitionId(GOTO_PREVIOUS_TARGET);
-        setAction(GOTO_PREVIOUS_TARGET, action);
-
-        action= new GotoNextTargetAction(this);
-        action.setActionDefinitionId(GOTO_NEXT_TARGET);
-        setAction(GOTO_NEXT_TARGET, action);
+//        action= new GotoPreviousTargetAction(this);
+//        action.setActionDefinitionId(GOTO_PREVIOUS_TARGET);
+//        setAction(GOTO_PREVIOUS_TARGET, action);
+//
+//        action= new GotoNextTargetAction(this);
+//        action.setActionDefinitionId(GOTO_NEXT_TARGET);
+//        setAction(GOTO_NEXT_TARGET, action);
 
         action= new SelectEnclosingAction(this);
         action.setActionDefinitionId(SELECT_ENCLOSING);
