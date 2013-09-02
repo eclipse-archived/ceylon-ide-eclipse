@@ -575,7 +575,7 @@ public class DocHover
 			else {
 				return null;
 			}
-			target = scope.getDirectMemberOrParameter(bits[i], null, false);
+			target = scope.getDirectMember(bits[i], null, false);
 		}
 		return target;
 	}
