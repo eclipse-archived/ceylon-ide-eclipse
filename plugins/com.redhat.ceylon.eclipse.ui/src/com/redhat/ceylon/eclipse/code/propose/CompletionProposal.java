@@ -146,6 +146,9 @@ public class CompletionProposal implements ICompletionProposal,
 				if (CeylonTokenColorer.keywords.contains(token)) {
 					result.append(token, KW_STYLER);
 				}
+				else if (token.contains(".")) {
+				    result.append(token, VERSION_STYLER);
+				}
 				else {
 					result.append(token, ID_STYLER);
 				}
