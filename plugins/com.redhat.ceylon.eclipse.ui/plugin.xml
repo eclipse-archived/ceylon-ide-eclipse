@@ -853,13 +853,13 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            platform="cocoa,carbon"
+            platforms="cocoa,carbon"
             sequence="M2+M4+ARROW_UP"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            platform="cocoa,carbon"
+            platforms="cocoa,carbon"
             sequence="M2+M4+ARROW_DOWN"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
@@ -875,13 +875,13 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            platform="cocoa,carbon"
+            platforms="cocoa,carbon"
             sequence="M3+M4+ARROW_UP"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            platform="cocoa,carbon"
+            platforms="cocoa,carbon"
             sequence="M3+M4+ARROW_DOWN"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
