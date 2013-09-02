@@ -568,7 +568,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     
     List<Declaration> copyImports() {
         CeylonParseController pc = editor.getParseController();
-        if (pc==null) return null;
+        if (pc==null || pc.getRootNode()==null) return null;
         Tree.CompilationUnit cu = pc.getRootNode();
         final IRegion selection = editor.getSelection();
         class SelectedImportsVisitor extends Visitor {
@@ -613,7 +613,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
     
     void pasteImports(List<Declaration> list, MultiTextEdit edit) {
         if (!list.isEmpty()) {
-            Tree.CompilationUnit cu = editor.getParseController().getRootNode();
+            CeylonParseController pc = editor.getParseController();
+            if (pc==null || pc.getRootNode()==null) return;
+            Tree.CompilationUnit cu = pc.getRootNode();
             List<Declaration> imports = new ArrayList<Declaration>(); 
             imports.addAll(list);
             for (Iterator<Declaration> i=imports.iterator(); i.hasNext();) {
