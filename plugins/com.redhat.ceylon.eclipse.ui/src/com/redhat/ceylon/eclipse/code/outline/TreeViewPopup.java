@@ -227,6 +227,8 @@ public abstract class TreeViewPopup extends PopupDialog
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		fTreeViewer= createTreeViewer(parent, fTreeStyle);
+		fTreeViewer.setAutoExpandLevel(getDefaultLevel());
+		//fTreeViewer.setUseHashlookup(true);
 
 		//fCustomFiltersActionGroup= new CustomFiltersActionGroup(getId(), fTreeViewer);
 
@@ -402,12 +404,18 @@ public abstract class TreeViewPopup extends PopupDialog
 		// refresh viewer to re-filter
 		fTreeViewer.getControl().setRedraw(false);
 		fTreeViewer.refresh();
-		fTreeViewer.expandAll();
+		fTreeViewer.expandToLevel(getDefaultLevel());
+//		fTreeViewer.expandAll();
 		selectFirstMatch();
 		fTreeViewer.getControl().setRedraw(true);
 	}
 
-	/**
+	protected int getDefaultLevel() {
+//        return ALL_LEVELS;
+	    return 4;
+    }
+
+    /**
 	 * Sets the patterns to filter out for the receiver.
 	 *
 	 * @param pattern the pattern
@@ -520,7 +528,7 @@ public abstract class TreeViewPopup extends PopupDialog
 		return false;
 	}
 
-	private TreeItem[] selectItems(TreeItem[] items, TreeItem[] toBeSkipped) {
+	/*private TreeItem[] selectItems(TreeItem[] items, TreeItem[] toBeSkipped) {
 		if (toBeSkipped == null || toBeSkipped.length == 0)
 			return items;
 
@@ -536,19 +544,13 @@ public abstract class TreeViewPopup extends PopupDialog
 		TreeItem[] result= new TreeItem[j];
 		System.arraycopy(items, 0, result, 0, j);
 		return result;
-	}
+	}*/
 
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public void setInformation(String information) {
 		// this method is ignored, see IInformationControlExtension2
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public abstract void setInput(Object information);
 
 	/**

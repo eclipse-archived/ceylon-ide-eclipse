@@ -14,7 +14,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
-import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -169,7 +168,7 @@ public class OutlinePopup extends TreeViewPopup {
         treeViewer.setContentProvider(outlineContentProvider);
         outlineSorter= new OutlineSorter();
         treeViewer.setSorter(outlineSorter);
-        treeViewer.setAutoExpandLevel(ALL_LEVELS);
+        treeViewer.setAutoExpandLevel(getDefaultLevel());
         //treeViewer.getTree().addKeyListener(getKeyAdapter());
         return treeViewer;
     }
