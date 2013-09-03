@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
@@ -23,6 +24,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
@@ -70,6 +72,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
@@ -544,24 +547,44 @@ public class CeylonContentProposer {
     private static void addModuleCompletions(int offset, String prefix,
     		Node node, List<ICompletionProposal> result, int len, String pfp,
     		final CeylonParseController cpc) {
-    	final TypeChecker tc = cpc.getTypeChecker();
-    	if (tc!=null) {
-    		ModuleSearchResult results = tc.getContext().getRepositoryManager()
-    				.completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
-    		for (final ModuleDetails module: results.getResults()) {
-    		    if (!module.getName().equals(Module.DEFAULT_MODULE_NAME)) {
-    		        for (final String version : module.getVersions().descendingSet()) {
-    		            String versioned = getModuleString(module.getName(), version);
-    		            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-    		                                              versioned, versioned.substring(len), false) {
-    		                @Override
-    		                public String getAdditionalProposalInfo() {
-    		                    return getDocumentationFor(module, version);
-    		                }
-    		            });
-    		        }
-    		    }
-    		}
+        if (pfp.startsWith("java.")) {
+            for (final String mod: JDKUtils.getJDKModuleNames()) {
+                if (mod.startsWith(pfp)) {
+                    String versioned = getModuleString(mod, JDK_MODULE_VERSION);
+                    result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+                                      versioned, versioned.substring(len), false) {
+                        @Override
+                        public String getAdditionalProposalInfo() {
+                            return getDocumentationForModule(mod, JDK_MODULE_VERSION, 
+                                    "This module forms part of the Java SDK.");
+                        }
+                    });
+                }
+            }
+        }
+        else {
+            final TypeChecker tc = cpc.getTypeChecker();
+            if (tc!=null) {
+                ModuleSearchResult results = tc.getContext().getRepositoryManager()
+                        .completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
+                for (final ModuleDetails module: results.getResults()) {
+                    final String name = module.getName();
+                    if (!name.equals(Module.DEFAULT_MODULE_NAME)) {
+                        for (final String version : module.getVersions().descendingSet()) {
+                            String versioned = getModuleString(name, version);
+                            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
+                                    versioned, versioned.substring(len), false) {
+                                @Override
+                                public String getAdditionalProposalInfo() {
+                                    return JDKUtils.isJDKModule(name) ?
+                                            "This module forms part of the Java SDK." :
+                                            getDocumentationFor(module, version);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
     	}
     }
 
