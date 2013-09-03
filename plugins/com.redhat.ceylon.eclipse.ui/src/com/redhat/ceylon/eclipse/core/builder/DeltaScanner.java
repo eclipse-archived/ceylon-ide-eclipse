@@ -55,7 +55,8 @@ final class DeltaScanner implements IResourceDeltaVisitor {
 	            mustResolveClasspathContainer.value = true;
 	            mustDoFullBuild.value = true;
 	        }
-	        else if (resource.getName().equals(".classpath")) {
+	        else if (resource.getName().equals(".classpath") ||
+	                resource.getName().equals("config")) {
 	            //the classpath changed
 	        	mustDoFullBuild.value = true;
 	        	mustResolveClasspathContainer.value = true;
