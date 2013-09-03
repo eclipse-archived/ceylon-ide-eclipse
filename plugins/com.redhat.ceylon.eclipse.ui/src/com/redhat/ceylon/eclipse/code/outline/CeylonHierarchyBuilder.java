@@ -208,7 +208,7 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	                                    throw e;
 	                                }
 	                            }
-	                            monitor.worked(70000/ps/ms);
+	                            monitor.worked(70000/ams/ps/ms);
 	                            if (monitor.isCanceled()) return;
 	                        }
 	                    }
