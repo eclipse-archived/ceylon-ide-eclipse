@@ -162,7 +162,7 @@ public class OutlinePopup extends TreeViewPopup {
         outlineContentProvider= new CeylonOutlineContentProvider();
         labelProvider= new CeylonLabelProvider();
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.addFilter(new NamePatternFilter());
+        treeViewer.addFilter(new OutlineNamePatternFilter(filterText));
         //	fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
         //	fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
         treeViewer.setContentProvider(outlineContentProvider);

@@ -25,11 +25,8 @@ import org.eclipse.jface.text.IInformationControlExtension;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -60,9 +57,6 @@ import org.eclipse.ui.commands.ActionHandler;
 import org.eclipse.ui.commands.HandlerSubmission;
 import org.eclipse.ui.commands.Priority;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -88,66 +82,10 @@ public abstract class TreeViewPopup extends PopupDialog
 	
 	protected CeylonEditor editor;
 	
-	/**
-	 * The NamePatternFilter selects the elements which
-	 * match the given string patterns.
-	 *
-	 * @since 2.0
-	 */
-	protected class NamePatternFilter extends ViewerFilter {
-
-		@Override
-		public boolean select(Viewer viewer, Object parentElement, Object element) {
-			/*JavaElementPrefixPatternMatcher matcher= getMatcher();
-			if (matcher == null || !(viewer instanceof TreeViewer))
-				return true;
-			TreeViewer treeViewer= (TreeViewer) viewer;
-
-			String matchName= ((ILabelProvider) treeViewer.getLabelProvider()).getText(element);
-			matchName= TextProcessor.deprocess(matchName);
-			if (matchName != null && matcher.matches(matchName))
-				return true;
-
-			return hasUnfilteredChild(treeViewer, element);*/
-			//TODO: refactor down to OutlinePopup
-			TreeViewer treeViewer= (TreeViewer) viewer;
-			if (element instanceof CeylonOutlineNode) {
-				Node node = ((CeylonOutlineNode)element).getTreeNode();
-				if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
-					com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration dec = (com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node;
-					Identifier id = dec.getIdentifier();
-					return id!=null && id.getText().toLowerCase()
-							.startsWith(fFilterText.getText().toLowerCase()) ||
-							hasUnfilteredChild(treeViewer, element);
-				}
-				else {
-					return false;
-				}
-			}
-			//TODO: refactor down to HierarchyPopup
-			else if (element instanceof CeylonHierarchyNode) {
-				Declaration dec = ((CeylonHierarchyNode) element).getDeclaration();
-				String name = dec==null ? null : dec.getName();
-				return name!=null && name.toLowerCase()
-						.startsWith(fFilterText.getText().toLowerCase()) ||
-						hasUnfilteredChild(treeViewer, element);
-			}
-			return true;
-		}
-
-		private boolean hasUnfilteredChild(TreeViewer viewer, Object element) {
-			Object[] children=  ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
-			for (int i= 0; i < children.length; i++)
-				if (select(viewer, element, children[i]))
-					return true;
-			return false;
-		}
-	}
-
 	/** The control's text widget */
-	protected Text fFilterText;
+	protected Text filterText;
 	/** The control's tree widget */
-	private TreeViewer fTreeViewer;
+	private TreeViewer treeViewer;
 	/** The current string matcher */
 	//protected JavaElementPrefixPatternMatcher fPatternMatcher;
 	//private ICommand fInvokingCommand;
@@ -158,19 +96,19 @@ public abstract class TreeViewPopup extends PopupDialog
 	 * @since 3.0
 	 * @since 3.2 - now appended to framework menu
 	 */
-	private Composite fViewMenuButtonComposite;
+	private Composite viewMenuButtonComposite;
 
 	//private CustomFiltersActionGroup fCustomFiltersActionGroup;
 
-	private IAction fShowViewMenuAction;
-	private HandlerSubmission fShowViewMenuHandlerSubmission;
+	private IAction showViewMenuAction;
+	private HandlerSubmission showViewMenuHandlerSubmission;
 
 	/**
 	 * Field for tree style since it must be remembered by the instance.
 	 *
 	 * @since 3.2
 	 */
-	private int fTreeStyle;
+	private int treeStyle;
 
 	/**
 	 * The initially selected type.
@@ -201,11 +139,11 @@ public abstract class TreeViewPopup extends PopupDialog
 				// Pre-fetch key sequence - do not change because scope will change later.
 				getInvokingCommandKeySequences();
 		}*/
-		fTreeStyle= treeStyle;
+		this.treeStyle= treeStyle;
 		// Title and status text must be set to get the title label created, so force empty values here.
 		if (hasHeader())
-			setTitleText(""); //$NON-NLS-1$
-		setInfoText(""); //  //$NON-NLS-1$
+			setTitleText("");
+		setInfoText("");
 
 		// Create all controls early to preserve the life cycle of the original implementation.
 		create();
@@ -226,13 +164,13 @@ public abstract class TreeViewPopup extends PopupDialog
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		fTreeViewer= createTreeViewer(parent, fTreeStyle);
-		fTreeViewer.setAutoExpandLevel(getDefaultLevel());
+		treeViewer= createTreeViewer(parent, treeStyle);
+		treeViewer.setAutoExpandLevel(getDefaultLevel());
 		//fTreeViewer.setUseHashlookup(true);
 
 		//fCustomFiltersActionGroup= new CustomFiltersActionGroup(getId(), fTreeViewer);
 
-		final Tree tree= fTreeViewer.getTree();
+		final Tree tree= treeViewer.getTree();
 		tree.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e)  {
 				if (e.character == 0x1B) // ESC
@@ -269,7 +207,7 @@ public abstract class TreeViewPopup extends PopupDialog
 						} else if (e.y - clientArea.y < tree.getItemHeight() / 4) {
 							// Scroll up
 							Point p= tree.toDisplay(e.x, e.y);
-							Item item= fTreeViewer.scrollUp(p.x, p.y);
+							Item item= treeViewer.scrollUp(p.x, p.y);
 							if (item instanceof TreeItem) {
 								fLastItem= (TreeItem)item;
 								tree.setSelection(new TreeItem[] { fLastItem });
@@ -277,7 +215,7 @@ public abstract class TreeViewPopup extends PopupDialog
 						} else if (clientArea.y + clientArea.height - e.y < tree.getItemHeight() / 4) {
 							// Scroll down
 							Point p= tree.toDisplay(e.x, e.y);
-							Item item= fTreeViewer.scrollDown(p.x, p.y);
+							Item item= treeViewer.scrollDown(p.x, p.y);
 							if (item instanceof TreeItem) {
 								fLastItem= (TreeItem)item;
 								tree.setSelection(new TreeItem[] { fLastItem });
@@ -312,7 +250,7 @@ public abstract class TreeViewPopup extends PopupDialog
 		installFilter();
 
 		addDisposeListener(this);
-		return fTreeViewer.getControl();
+		return treeViewer.getControl();
 	}
 
 	protected abstract TreeViewer createTreeViewer(Composite parent, int style);
@@ -325,7 +263,7 @@ public abstract class TreeViewPopup extends PopupDialog
 	protected abstract String getId();
 
 	protected TreeViewer getTreeViewer() {
-		return fTreeViewer;
+		return treeViewer;
 	}
 
 	/**
@@ -342,26 +280,26 @@ public abstract class TreeViewPopup extends PopupDialog
 	}
 
 	protected Text getFilterText() {
-		return fFilterText;
+		return filterText;
 	}
 
 	protected Text createFilterText(Composite parent) {
-		fFilterText= new Text(parent, SWT.NONE);
-		Dialog.applyDialogFont(fFilterText);
+		filterText= new Text(parent, SWT.NONE);
+		Dialog.applyDialogFont(filterText);
 
 		GridData data= new GridData(GridData.FILL_HORIZONTAL);
 		data.horizontalAlignment= GridData.FILL;
 		data.verticalAlignment= GridData.CENTER;
-		fFilterText.setLayoutData(data);
+		filterText.setLayoutData(data);
 
-		fFilterText.addKeyListener(new KeyListener() {
+		filterText.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
 					gotoSelectedElement();
 				if (e.keyCode == SWT.ARROW_DOWN)
-					fTreeViewer.getTree().setFocus();
+					treeViewer.getTree().setFocus();
 				if (e.keyCode == SWT.ARROW_UP)
-					fTreeViewer.getTree().setFocus();
+					treeViewer.getTree().setFocus();
 				if (e.character == 0x1B) // ESC
 					dispose();
 			}
@@ -370,7 +308,7 @@ public abstract class TreeViewPopup extends PopupDialog
 			}
 		});
 
-		return fFilterText;
+		return filterText;
 	}
 
 	protected void createHorizontalSeparator(Composite parent) {
@@ -387,8 +325,8 @@ public abstract class TreeViewPopup extends PopupDialog
 	}
 
 	private void installFilter() {
-		fFilterText.setText("");
-		fFilterText.addModifyListener(new ModifyListener() {
+		filterText.setText("");
+		filterText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				String text= ((Text) e.widget).getText();
 				setMatcherString(text, true);
@@ -396,19 +334,9 @@ public abstract class TreeViewPopup extends PopupDialog
 		});
 	}
 
-	/**
-	 * The string matcher has been modified. The default implementation
-	 * refreshes the view and selects the first matched element
-	 */
-	protected void stringMatcherUpdated() {
-		// refresh viewer to re-filter
-		fTreeViewer.getControl().setRedraw(false);
-		fTreeViewer.refresh();
-		fTreeViewer.expandToLevel(getDefaultLevel());
-//		fTreeViewer.expandAll();
-		selectFirstMatch();
-		fTreeViewer.getControl().setRedraw(true);
-	}
+	protected void reveal() {
+        treeViewer.expandToLevel(getDefaultLevel());
+    }
 
 	protected int getDefaultLevel() {
 //        return ALL_LEVELS;
@@ -429,25 +357,32 @@ public abstract class TreeViewPopup extends PopupDialog
 			fPatternMatcher= new JavaElementPrefixPatternMatcher(pattern);
 		}*/
 
-		if (update)
-			stringMatcherUpdated();
+		if (update) {
+		    update();
+        }
 	}
 
-	/*protected JavaElementPrefixPatternMatcher getMatcher() {
-		return fPatternMatcher;
-	}*/
-
+    protected void update() {
+        treeViewer.getControl().setRedraw(false);
+        // refresh viewer to re-filter
+        treeViewer.refresh();
+        reveal();
+        //fTreeViewer.expandAll();
+        selectFirstMatch(); //TODO select the main declaration instead!
+        treeViewer.getControl().setRedraw(true);
+    }
+	
 	/**
 	 * Implementers can modify
 	 *
 	 * @return the selected element
 	 */
 	protected Object getSelectedElement() {
-		if (fTreeViewer == null) {
+		if (treeViewer == null) {
 			return null;
 		}
 		else {
-			return ((IStructuredSelection) fTreeViewer.getSelection()).getFirstElement();
+			return ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
 		}
 	}
 	
@@ -460,7 +395,7 @@ public abstract class TreeViewPopup extends PopupDialog
 	protected void selectFirstMatch() {
 		//Object selectedElement= fTreeViewer.testFindItem(fInitiallySelectedType);
 		TreeItem element;
-		final Tree tree= fTreeViewer.getTree();
+		final Tree tree= treeViewer.getTree();
 		/*if (selectedElement instanceof TreeItem)
 			element= findElement(new TreeItem[] { (TreeItem)selectedElement });
 		else*/
@@ -470,7 +405,7 @@ public abstract class TreeViewPopup extends PopupDialog
 			tree.setSelection(element);
 			tree.showItem(element);
 		} else
-			fTreeViewer.setSelection(StructuredSelection.EMPTY);
+			treeViewer.setSelection(StructuredSelection.EMPTY);
 	}
 
 	private TreeItem findElement(TreeItem[] items) {
@@ -517,7 +452,7 @@ public abstract class TreeViewPopup extends PopupDialog
 		return findElement(selectItems(items[0].getParent().getItems(), items), null, false);*/
 	}
 	
-	private boolean canSkip(TreeItem item, TreeItem[] toBeSkipped) {
+	/*private boolean canSkip(TreeItem item, TreeItem[] toBeSkipped) {
 		if (toBeSkipped == null)
 			return false;
 		
@@ -526,7 +461,7 @@ public abstract class TreeViewPopup extends PopupDialog
 				return true;
 		}
 		return false;
-	}
+	}*/
 
 	/*private TreeItem[] selectItems(TreeItem[] items, TreeItem[] toBeSkipped) {
 		if (toBeSkipped == null || toBeSkipped.length == 0)
@@ -577,11 +512,11 @@ public abstract class TreeViewPopup extends PopupDialog
 	}
 
 	protected void inputChanged(Object newInput, Object newSelection) {
-		fTreeViewer.setInput(newInput);
+		treeViewer.setInput(newInput);
 		if (newSelection!=null) {
-			fTreeViewer.setSelection(new StructuredSelection(newSelection));
+			treeViewer.setSelection(new StructuredSelection(newSelection));
 		}
-		fFilterText.setText("");
+		filterText.setText("");
 	}
 
 	public void setVisible(boolean visible) {
@@ -606,31 +541,31 @@ public abstract class TreeViewPopup extends PopupDialog
 
 	public void widgetDisposed(DisposeEvent event) {
 		removeHandlerAndKeyBindingSupport();
-		fTreeViewer= null;
-		fFilterText= null;
+		treeViewer= null;
+		filterText= null;
 	}
 
 	protected void addHandlerAndKeyBindingSupport() {
 		// Register action with command support
-		if (fShowViewMenuHandlerSubmission == null) {
-			fShowViewMenuHandlerSubmission= new HandlerSubmission(null, getShell(),
-					null, fShowViewMenuAction.getActionDefinitionId(), 
-					new ActionHandler(fShowViewMenuAction), Priority.MEDIUM);
+		if (showViewMenuHandlerSubmission == null) {
+			showViewMenuHandlerSubmission= new HandlerSubmission(null, getShell(),
+					null, showViewMenuAction.getActionDefinitionId(), 
+					new ActionHandler(showViewMenuAction), Priority.MEDIUM);
 			PlatformUI.getWorkbench().getCommandSupport()
-			    .addHandlerSubmission(fShowViewMenuHandlerSubmission);
+			    .addHandlerSubmission(showViewMenuHandlerSubmission);
 		}
 	}
 
 	protected void removeHandlerAndKeyBindingSupport() {
 		// Remove handler submission
-		if (fShowViewMenuHandlerSubmission != null)
+		if (showViewMenuHandlerSubmission != null)
 			PlatformUI.getWorkbench().getCommandSupport()
-			    .removeHandlerSubmission(fShowViewMenuHandlerSubmission);
+			    .removeHandlerSubmission(showViewMenuHandlerSubmission);
 
 	}
 
 	public boolean hasContents() {
-		return fTreeViewer != null && fTreeViewer.getInput() != null;
+		return treeViewer != null && treeViewer.getInput() != null;
 	}
 
 	public void setSizeConstraints(int maxWidth, int maxHeight) {
@@ -685,7 +620,7 @@ public abstract class TreeViewPopup extends PopupDialog
 
 	public void setFocus() {
 		getShell().forceFocus();
-		fFilterText.setFocus();
+		filterText.setFocus();
 	}
 
 	public void addFocusListener(FocusListener listener) {
@@ -734,17 +669,17 @@ public abstract class TreeViewPopup extends PopupDialog
 	 */
 	@Override
 	protected Control createTitleMenuArea(Composite parent) {
-		fViewMenuButtonComposite= (Composite) super.createTitleMenuArea(parent);
+		viewMenuButtonComposite= (Composite) super.createTitleMenuArea(parent);
 
 		// If there is a header, then the filter text must be created
 		// underneath the title and menu area.
 
 		if (hasHeader()) {
-			fFilterText= createFilterText(parent);
+			filterText= createFilterText(parent);
 		}
 
 		// Create show view menu action
-		fShowViewMenuAction= new Action("showViewMenu") { //$NON-NLS-1$
+		showViewMenuAction= new Action("showViewMenu") { //$NON-NLS-1$
 			/*
 			 * @see org.eclipse.jface.action.Action#run()
 			 */
@@ -753,10 +688,10 @@ public abstract class TreeViewPopup extends PopupDialog
 				showDialogMenu();
 			}
 		};
-		fShowViewMenuAction.setEnabled(true);
-		fShowViewMenuAction.setActionDefinitionId(WINDOW_SHOW_VIEW_MENU);
+		showViewMenuAction.setEnabled(true);
+		showViewMenuAction.setActionDefinitionId(WINDOW_SHOW_VIEW_MENU);
 
-		return fViewMenuButtonComposite;
+		return viewMenuButtonComposite;
 	}
 
 	/*
@@ -769,17 +704,17 @@ public abstract class TreeViewPopup extends PopupDialog
 		if (hasHeader()) {
 			return super.createTitleControl(parent);
 		}
-		fFilterText= createFilterText(parent);
-		return fFilterText;
+		filterText= createFilterText(parent);
+		return filterText;
 	}
 
 	@Override
 	protected void setTabOrder(Composite composite) {
 		if (hasHeader()) {
-			composite.setTabList(new Control[] { fFilterText, fTreeViewer.getTree() });
+			composite.setTabList(new Control[] { filterText, treeViewer.getTree() });
 		} else {
-			fViewMenuButtonComposite.setTabList(new Control[] { fFilterText });
-			composite.setTabList(new Control[] { fViewMenuButtonComposite, fTreeViewer.getTree() });
+			viewMenuButtonComposite.setTabList(new Control[] { filterText });
+			composite.setTabList(new Control[] { viewMenuButtonComposite, treeViewer.getTree() });
 		}
 	}
 	

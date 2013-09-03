@@ -21,7 +21,7 @@ public final class CeylonHierarchyContentProvider
 		}
 	}
 	
-	HierarachyMode mode = HierarachyMode.HIERARCHY;
+	HierarchyMode mode = HierarchyMode.HIERARCHY;
 	
 	Declaration declaration;
 	
@@ -33,7 +33,7 @@ public final class CeylonHierarchyContentProvider
 
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		if (newInput!=null) {
+		if (newInput!=null && newInput!=oldInput) {
 			declaration = ((RootNode) newInput).declaration;
 			try {
 				builder = new CeylonHierarchyBuilder(this, declaration);
