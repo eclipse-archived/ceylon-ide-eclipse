@@ -222,6 +222,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     }
                     c.addEdit(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
                     c.perform(new NullProgressMonitor());
+                    getTextWidget().setSelection(selection.getOffset()+text.length());
                     return true;
                 } 
                 catch (Exception e) {
