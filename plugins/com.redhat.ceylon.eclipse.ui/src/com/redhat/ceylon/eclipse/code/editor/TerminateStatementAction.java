@@ -300,6 +300,24 @@ final class TerminateStatementAction extends Action {
 					}
 				}
 			}
+            @Override
+            public void visit(Tree.AnyClass that) {
+                super.visit(that);
+                if (that.getParameterList()==null) {
+                    if (!change.getEdit().hasChildren()) {
+                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                    }
+                }
+            }
+            @Override
+            public void visit(Tree.AnyMethod that) {
+                super.visit(that);
+                if (that.getParameterLists().isEmpty()) {
+                    if (!change.getEdit().hasChildren()) {
+                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                    }
+                }
+            }
 		}.visit(rootNode);
 		if (change.getEdit().hasChildren()) {
 			change.perform(new NullProgressMonitor());
@@ -333,12 +351,12 @@ final class TerminateStatementAction extends Action {
 					if (that instanceof Tree.ExecutableStatement && 
 							!(that instanceof Tree.ControlStatement) ||
 							that instanceof Tree.AttributeDeclaration ||
-							that instanceof Tree.MethodDeclaration ||
 							that instanceof Tree.TypeAliasDeclaration ||
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
 					}
 					if (that instanceof Tree.ClassDeclaration ||
+                        that instanceof Tree.MethodDeclaration ||
                         that instanceof Tree.InterfaceDeclaration) {
 					    terminateWithBaces(that);
 					}
