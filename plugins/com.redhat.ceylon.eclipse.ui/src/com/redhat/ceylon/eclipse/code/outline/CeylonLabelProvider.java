@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.color;
@@ -134,6 +135,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, STRINGS);
+        }
+    };
+    
+    public static final Styler PACKAGE_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(colorRegistry, PACKAGES);
         }
     };
     
