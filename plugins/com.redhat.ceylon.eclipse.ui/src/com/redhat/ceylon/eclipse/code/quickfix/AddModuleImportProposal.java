@@ -19,19 +19,28 @@ public class AddModuleImportProposal implements ICompletionProposal,
     
     private IProject project;
     private Unit unit; 
-    private ModuleDetails details;
+    String name; 
+    String version;
     
     AddModuleImportProposal(IProject project, Unit unit, ModuleDetails details) {
         this.project = project;
         this.unit = unit;
-        this.details = details;
+        this.name = details.getName();
+        this.version = details.getLastVersion();
+    }
+    
+    AddModuleImportProposal(IProject project, Unit unit, String name, String version) {
+        this.project = project;
+        this.unit = unit;
+        this.name = name;
+        this.version = version;
     }
     
     @Override
     public void apply(IDocument document) {
         AddModuleImportUtil.addModuleImport(project, 
                 unit.getPackage().getModule(), 
-                details.getName(), details.getLastVersion());
+                name, version);
     }
 
     @Override
@@ -46,7 +55,7 @@ public class AddModuleImportProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Add 'import " + details.getName() + "' to module descriptor";
+        return "Add 'import " + name + "' to module descriptor";
     }
 
     @Override
