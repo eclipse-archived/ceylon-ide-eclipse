@@ -219,12 +219,16 @@ public class CeylonContentProposer {
         rtv.visit(rn);
 		ProducedType requiredType = rtv.getType();
         
-        //finally, construct and sort proposals
-        Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
-        filterProposals(filter, rn, requiredType, proposals);
-		Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, requiredType, proposals);
-		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, sortedProposals,
-                    cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
+        //construct completions when outside ordinary code
+		ICompletionProposal[] completions = constructCompletions(offset, result.prefix, cpc, node, adjustedToken);
+		if (completions==null) {
+		    //finally, construct and sort proposals
+		    Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
+		    filterProposals(filter, rn, requiredType, proposals);
+		    Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, requiredType, proposals);
+		    completions = constructCompletions(offset, result.prefix, sortedProposals,
+		                     cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
+		}
 		return completions;
         
     }
@@ -602,17 +606,9 @@ public class CeylonContentProposer {
     }
     
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
-            Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
-            CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
+            final CeylonParseController cpc, final Node node, CommonToken token) {
     	
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        
-        if (isEmptyModuleDescriptor(cpc)) {
-            addModuleDescriptorCompletion(cpc, offset, prefix, result);
-        }
-        else if (isEmptyPackageDescriptor(cpc)) {
-            addPackageDescriptorCompletion(cpc, offset, prefix, result);
-        }
         
         if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
@@ -638,7 +634,27 @@ public class CeylonContentProposer {
         		}
 			}.visit(cpc.getRootNode());
         }
-        else if (node instanceof Tree.TypeConstraint) {
+        else if (isEmptyModuleDescriptor(cpc)) {
+            addModuleDescriptorCompletion(cpc, offset, prefix, result);
+            addKeywordProposals(cpc, offset, prefix, result, node);
+        }
+        else if (isEmptyPackageDescriptor(cpc)) {
+            addPackageDescriptorCompletion(cpc, offset, prefix, result);
+            addKeywordProposals(cpc, offset, prefix, result, node);
+        }
+        else {
+            return null;
+        }
+        return result.toArray(new ICompletionProposal[result.size()]);
+    }
+    
+    private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
+            Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
+            CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
+        
+        final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+        
+        if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
@@ -739,12 +755,13 @@ public class CeylonContentProposer {
     }
 
     private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+        if (!"module".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = CeylonBuilder.getPackageName(file);
         String moduleDesc = "module " + moduleName;
-        String moduleText = "module " + moduleName + " \"version\" {}";
+        String moduleText = "module " + moduleName + " \"1.0.0\" {}";
         final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
-        final int selectionLength = 7;
+        final int selectionLength = 5;
         
         result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
             @Override
@@ -760,6 +777,7 @@ public class CeylonContentProposer {
     }
 
     private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+        if (!"package".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String packageName = CeylonBuilder.getPackageName(file);
         String packageDesc = "package " + packageName;
