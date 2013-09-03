@@ -243,14 +243,33 @@ final class TerminateStatementAction extends Action {
 				super.visit(that);
 				terminate(that, CeylonLexer.RBRACE, " }");
 			}
+            @Override 
+            public void visit(Tree.Import that) {
+                if (that.getImportMemberOrTypeList()==null||
+                        that.getImportMemberOrTypeList()
+                                .getMainToken().getText().startsWith("<missing ")) {
+                    if (!change.getEdit().hasChildren()) {
+                        if (that.getImportPath()!=null &&
+                                that.getImportPath().getStopIndex()<=endOfCodeInLine) {
+                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, 
+                                    " { ... }"));
+                        }
+                    }
+                }
+                super.visit(that);
+            }
 			@Override 
 			public void visit(Tree.ImportModule that) {
 				super.visit(that);
-				terminate(that, CeylonLexer.SEMICOLON, ";");
+				if (that.getImportPath()!=null) {
+				    terminate(that, CeylonLexer.SEMICOLON, ";");
+				}
 				if (that.getVersion()==null) {
                     if (!change.getEdit().hasChildren()) {
-                        if (that.getImportPath()!=null) {
-                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, " \"1.0.0\""));
+                        if (that.getImportPath()!=null &&
+                                that.getImportPath().getStopIndex()<=endOfCodeInLine) {
+                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, 
+                                    " \"1.0.0\""));
                         }
                     }
 				}
