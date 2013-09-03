@@ -499,8 +499,8 @@ public class CeylonContentProposer {
 		return fullPath.toString();
 	}
 
-    private static void addPackageCompletions(int offset, String prefix,
-            Node node, List<ICompletionProposal> result, int len, String pfp,
+    private static void addPackageCompletions(final int offset, final String prefix,
+            Node node, List<ICompletionProposal> result, final int len, String pfp,
             final CeylonParseController cpc) {
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
@@ -515,7 +515,7 @@ public class CeylonContentProposer {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {
-                    String pkg = p.getQualifiedNameString();
+                    final String pkg = p.getQualifiedNameString();
                     if (!pkg.isEmpty() && pkg.startsWith(pfp)) {
                         boolean already = false;
                         if (!pfp.equals(pkg)) {
@@ -530,7 +530,11 @@ public class CeylonContentProposer {
                         }
                         if (!already) {
                             result.add(new CompletionProposal(offset, prefix, PACKAGE, 
-                                    pkg, pkg.substring(len), false) {
+                                    pkg, pkg.substring(len) + " { ... }", false) {
+                                @Override
+                                public Point getSelection(IDocument document) {
+                                    return new Point(offset+pkg.length()-prefix.length()-len+3, 3);
+                                }
                             	@Override
                             	public String getAdditionalProposalInfo() {
                             		return getDocumentationFor(cpc, p);
@@ -556,7 +560,7 @@ public class CeylonContentProposer {
                 if (mod.startsWith(pfp)) {
                     String versioned = getModuleString(mod, JDK_MODULE_VERSION);
                     result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                      versioned, versioned.substring(len), false) {
+                                      versioned, versioned.substring(len) + ";", false) {
                         @Override
                         public String getAdditionalProposalInfo() {
                             return getDocumentationForModule(mod, JDK_MODULE_VERSION, 
@@ -577,7 +581,7 @@ public class CeylonContentProposer {
                         for (final String version : module.getVersions().descendingSet()) {
                             String versioned = getModuleString(name, version);
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                    versioned, versioned.substring(len), false) {
+                                    versioned, versioned.substring(len) + ";", false) {
                                 @Override
                                 public String getAdditionalProposalInfo() {
                                     return JDKUtils.isJDKModule(name) ?
