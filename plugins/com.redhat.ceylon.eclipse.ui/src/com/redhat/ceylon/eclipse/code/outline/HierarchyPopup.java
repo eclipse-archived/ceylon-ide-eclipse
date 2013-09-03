@@ -43,7 +43,7 @@ public class HierarchyPopup extends TreeViewPopup {
 				updateStatusFieldText();
 				updateTitle();
 				updateIcon();
-				stringMatcherUpdated();
+				update();
 				e.doit=false;
 			}
 		}
@@ -83,9 +83,10 @@ public class HierarchyPopup extends TreeViewPopup {
         labelProvider = new CeylonHierarchyLabelProvider(contentProvider);
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.addFilter(new NamePatternFilter());
+        treeViewer.addFilter(new HierarchyNamePatternFilter(filterText));
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         tree.addKeyListener(new ChangeViewListener());
+//        treeViewer.setUseHashlookup(false);
  		return treeViewer;
 	}
 
@@ -205,5 +206,30 @@ public class HierarchyPopup extends TreeViewPopup {
 	        }
     	}
     }
+	
+	@Override
+	protected void reveal() {
+	    int depth;
+	    if (contentProvider.mode==HierarchyMode.HIERARCHY) {
+	        depth = contentProvider.builder.getDepthInHierarchy();
+	    }
+	    else {
+	        depth = 1;
+	    }
+        String name = contentProvider.builder.getDeclaration().getQualifiedNameString();
+        if (name.equals("ceylon.language::Object")||name.equals("ceylon.language::Anything")||
+                name.equals("ceylon.language::Basic")||name.equals("ceylon.language::Identifiable")) {
+            depth+=1;
+        }
+        else {
+            depth+=3;
+        }
+        getTreeViewer().expandToLevel(depth);
+	}
+	
+	@Override
+	protected int getDefaultLevel() {
+	    return 1;
+	}
 
 }

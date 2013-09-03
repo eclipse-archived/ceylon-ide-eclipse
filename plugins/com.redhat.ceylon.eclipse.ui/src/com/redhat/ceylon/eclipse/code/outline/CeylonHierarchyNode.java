@@ -49,6 +49,9 @@ public class CeylonHierarchyNode {
 		if (this==obj) {
 			return true;
 		}
+        else if (obj==null) {
+            return false;
+        }
 		else if (declaration==null) {
 			return false;
 		}
@@ -64,5 +67,10 @@ public class CeylonHierarchyNode {
 	public int hashCode() {
 		return declaration==null ? 
 				0 : declaration.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+	    return declaration==null ? "null" : declaration.toString();
 	}
 }

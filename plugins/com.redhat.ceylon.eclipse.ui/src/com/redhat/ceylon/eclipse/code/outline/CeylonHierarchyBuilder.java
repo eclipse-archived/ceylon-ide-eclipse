@@ -32,6 +32,8 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
     private CeylonHierarchyNode supertypesRoot;
     private CeylonHierarchyNode subtypesRoot;
     
+    private int depthInHierarchy;
+    
     private final Map<Declaration, CeylonHierarchyNode> subtypesOfSupertypes = new HashMap<Declaration, CeylonHierarchyNode>();
     private final Map<Declaration, CeylonHierarchyNode> subtypesOfAllTypes = new HashMap<Declaration, CeylonHierarchyNode>();
     private final Map<Declaration, CeylonHierarchyNode> supertypesOfAllTypes = new HashMap<Declaration, CeylonHierarchyNode>();
@@ -86,12 +88,20 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	CeylonHierarchyNode getSupertypesRoot() {
         return supertypesRoot;
     }
+	
+	int getDepthInHierarchy() {
+        return depthInHierarchy;
+    }
+	
+	public Declaration getDeclaration() {
+        return declaration;
+    }
 
 	@Override
 	public void run(IProgressMonitor monitor) throws InvocationTargetException,
 			InterruptedException {
 		
-		monitor.beginTask("Building type hierarchy", 100000);
+		monitor.beginTask("Building hierarchy", 100000);
 		
 		Modules modules = ceylonHierarchyContentProvider.editor
 		        .getParseController().getTypeChecker()
@@ -118,6 +128,7 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	    Declaration dec = declaration;
 	    Declaration superDec;
 	    do {
+	        depthInHierarchy++;
 	        if (declaration instanceof TypeDeclaration) {
 	            TypeDeclaration td = (TypeDeclaration) dec;
 				superDec = td.getExtendedTypeDeclaration();
@@ -163,13 +174,15 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	            int ps = packages.size();
 	            for (Package p: packages) { //workaround CME
                     int ms = p.getMembers().size();
+                    monitor.subTask("Building hierarchy - scanning " + 
+                            p.getNameAsString());
 	                for (Unit u: p.getUnits()) {
 	                    try {
 	                        for (Declaration d: u.getDeclarations()) {
 	                            if (d instanceof ClassOrInterface) {
-	                                if (declaration instanceof TypeDeclaration) {
-                                        TypeDeclaration td = (TypeDeclaration) d;
-	                                    try {
+	                                try {
+	                                    if (declaration instanceof TypeDeclaration) {
+	                                        TypeDeclaration td = (TypeDeclaration) d;
 	                                        ClassOrInterface etd = td.getExtendedTypeDeclaration();
 	                                        if (etd!=null) {
 	                                            add(td, etd);
@@ -178,21 +191,21 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	                                            add(td, std);
 	                                        }
 	                                    }
-	                                    catch (Exception e) {
-	                                        System.err.print(td.getQualifiedNameString());
-	                                        throw e;
+	                                    else if (declaration instanceof TypedDeclaration) {
+	                                        TypeDeclaration td = (TypeDeclaration) d;
+	                                        //TODO: keep the directly refined declarations in the model
+	                                        //      (get the typechecker to set this up)
+	                                        Declaration mem = td.getDirectMember(declaration.getName(), null, false);
+	                                        if (mem!=null) {
+	                                            for (Declaration id: td.getInheritedMembers(declaration.getName())) {
+	                                                add(mem, id);
+	                                            }
+	                                        }                        		
 	                                    }
 	                                }
-	                                else if (declaration instanceof TypedDeclaration) {
-	                                    TypeDeclaration td = (TypeDeclaration) d;
-	                                    //TODO: keep the directly refined declarations in the model
-	                                    //      (get the typechecker to set this up)
-	                                    Declaration mem = td.getDirectMember(declaration.getName(), null, false);
-	                                    if (mem!=null) {
-	                                        for (Declaration id: td.getInheritedMembers(declaration.getName())) {
-	                                            add(mem, id);
-	                                        }
-	                                    }                        		
+	                                catch (Exception e) {
+	                                    System.err.println(d.getQualifiedNameString());
+	                                    throw e;
 	                                }
 	                            }
 	                            monitor.worked(70000/ps/ms);

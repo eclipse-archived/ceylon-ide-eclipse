@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-public enum HierarachyMode implements CeylonResources { 
+public enum HierarchyMode implements CeylonResources { 
 	HIERARCHY, SUPERTYPES, SUBTYPES; 
-	HierarachyMode next() {
+	HierarchyMode next() {
 		switch (this) {
 		case HIERARCHY:
 			return SUPERTYPES;
