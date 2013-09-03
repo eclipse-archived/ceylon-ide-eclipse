@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
@@ -66,6 +67,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
@@ -466,6 +468,16 @@ public class CeylonQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IProject project,
             TypeChecker tc, Node node) {
         List<Identifier> ids = ((ImportPath) node).getIdentifiers();
+        String pkg = formatPath(ids);
+        if (JDKUtils.isJDKAnyPackage(pkg)) {
+            for (String mod: JDKUtils.getJDKModuleNames()) {
+                if (JDKUtils.isJDKPackage(mod, pkg)) {
+                    proposals.add(new AddModuleImportProposal(project, cu.getUnit(), mod, 
+                            JDK_MODULE_VERSION));
+                    return;
+                }
+            }
+        }
         for (int i=ids.size(); i>0; i--) {
             String pn = formatPath(ids.subList(0, i));
             ModuleQuery q = new ModuleQuery(pn, ModuleQuery.Type.JVM); //TODO: Type.JS if JS compilation enabled!
