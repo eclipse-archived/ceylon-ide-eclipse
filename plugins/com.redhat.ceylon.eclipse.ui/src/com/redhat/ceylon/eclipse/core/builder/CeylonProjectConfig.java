@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
@@ -22,6 +21,7 @@ import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
+import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
 
 public class CeylonProjectConfig {
 
@@ -162,6 +162,7 @@ public class CeylonProjectConfig {
     }
     
     public void refresh() {
+        
         initMergedConfig();
         initProjectConfig();
         isOfflineChanged = false;
@@ -296,11 +297,7 @@ public class CeylonProjectConfig {
                 e.printStackTrace();
             }
         }
-        try {
-            project.refreshLocal(IResource.DEPTH_INFINITE, null);
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
+        CeylonEncodingSynchronizer.getInstance().refresh(project, null);
     }
 
     private String removeCurrentDirPrefix(String url) {

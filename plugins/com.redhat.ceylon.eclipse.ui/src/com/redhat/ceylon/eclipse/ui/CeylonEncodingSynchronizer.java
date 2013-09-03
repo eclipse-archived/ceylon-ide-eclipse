@@ -32,7 +32,6 @@ public class CeylonEncodingSynchronizer {
 
     private static final CeylonEncodingSynchronizer instance = new CeylonEncodingSynchronizer();
     
-
     public static CeylonEncodingSynchronizer getInstance() {
         return instance;
     }
@@ -40,6 +39,27 @@ public class CeylonEncodingSynchronizer {
     private final IResourceChangeListener resourceChangeListener = new InternalResourceChangeListener();
     private final IResourceDeltaVisitor resourceDeltaVisitor = new InternalResourceDeltaVisitor();
     private final AtomicBoolean isSuspended = new AtomicBoolean(false);
+    
+    public boolean suspend() {
+        return isSuspended.getAndSet(true);
+    }
+    
+    public void unsuspend(boolean old) {
+        isSuspended.set(old);
+    }
+    
+    public void refresh(IResource resource, IProgressMonitor monitor) {
+        boolean old = suspend();
+        try {
+            resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        finally {
+            unsuspend(old);;
+        }
+    }
 
     public void install() {
         ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener);
