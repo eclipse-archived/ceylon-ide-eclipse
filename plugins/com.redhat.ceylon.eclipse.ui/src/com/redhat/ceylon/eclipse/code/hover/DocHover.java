@@ -863,8 +863,10 @@ public class DocHover
 		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
 				16, 16, "<b><tt>module " + name + " \"" + version + "\"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
-
-		buffer.append(markdown('"'+doc+'"', null));
+		
+		if (doc!=null) {
+		    buffer.append(markdown(doc, null));
+		}
 				
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		HTMLPrinter.addPageEpilog(buffer);
