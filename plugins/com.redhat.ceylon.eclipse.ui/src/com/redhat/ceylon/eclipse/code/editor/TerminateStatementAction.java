@@ -334,13 +334,32 @@ final class TerminateStatementAction extends Action {
 							!(that instanceof Tree.ControlStatement) ||
 							that instanceof Tree.AttributeDeclaration ||
 							that instanceof Tree.MethodDeclaration ||
-							that instanceof Tree.ClassDeclaration ||
-							that instanceof Tree.InterfaceDeclaration ||
 							that instanceof Tree.TypeAliasDeclaration ||
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
 					}
+					if (that instanceof Tree.ClassDeclaration ||
+                        that instanceof Tree.InterfaceDeclaration) {
+					    terminateWithBaces(that);
+					}
 				}
+                private void terminateWithBaces(Node that) {
+                    try {
+                        if (that.getStartIndex()<=endOfCodeInLine &&
+                                that.getStopIndex()>=endOfCodeInLine) {
+                            Token et = that.getEndToken();
+                            if (et==null || et.getType()!=CeylonLexer.SEMICOLON ||
+                                    that.getStopIndex()>endOfCodeInLine) {
+                                if (!change.getEdit().hasChildren()) {
+                                    change.addEdit(new InsertEdit(endOfCodeInLine+1, " {}"));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 				private void terminateWithSemicolon(Node that) {
 				    try {
 				        if (that.getStartIndex()<=endOfCodeInLine &&
