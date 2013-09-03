@@ -169,58 +169,52 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 		
 		if (monitor.isCanceled()) return;
 		
-	    for (Module m: allModules) {
-	        if (m.getVersion()!=null || isFromUnversionedModule) {
-	            int ps = packages.size();
-	            for (Package p: packages) { //workaround CME
-                    int ms = p.getMembers().size();
-                    monitor.subTask("Building hierarchy - scanning " + 
-                            p.getNameAsString());
-	                for (Unit u: p.getUnits()) {
-	                    try {
-	                        for (Declaration d: u.getDeclarations()) {
-	                            if (d instanceof ClassOrInterface) {
-	                                try {
-	                                    if (declaration instanceof TypeDeclaration) {
-	                                        TypeDeclaration td = (TypeDeclaration) d;
-	                                        ClassOrInterface etd = td.getExtendedTypeDeclaration();
-	                                        if (etd!=null) {
-	                                            add(td, etd);
-	                                        }
-	                                        for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-	                                            add(td, std);
-	                                        }
-	                                    }
-	                                    else if (declaration instanceof TypedDeclaration) {
-	                                        TypeDeclaration td = (TypeDeclaration) d;
-	                                        //TODO: keep the directly refined declarations in the model
-	                                        //      (get the typechecker to set this up)
-	                                        Declaration mem = td.getDirectMember(declaration.getName(), null, false);
-	                                        if (mem!=null) {
-	                                            for (Declaration id: td.getInheritedMembers(declaration.getName())) {
-	                                                add(mem, id);
-	                                            }
-	                                        }                        		
-	                                    }
-	                                }
-	                                catch (Exception e) {
-	                                    System.err.println(d.getQualifiedNameString());
-	                                    throw e;
-	                                }
-	                            }
-	                            monitor.worked(70000/ams/ps/ms);
-	                            if (monitor.isCanceled()) return;
-	                        }
-	                    }
-	                    catch (Exception e) {
-	                        e.printStackTrace();
-	                    }
-	                }
-//	                monitor.worked(70000/ps);
-	                if (monitor.isCanceled()) return;
-	            }
-	        }
-	    }
+        int ps = packages.size();
+        for (Package p: packages) { //workaround CME
+            int ms = p.getMembers().size();
+            monitor.subTask("Building hierarchy - scanning " + p.getNameAsString());
+            for (Unit u: p.getUnits()) {
+                try {
+                    for (Declaration d: u.getDeclarations()) {
+                        if (d instanceof ClassOrInterface) {
+                            try {
+                                if (declaration instanceof TypeDeclaration) {
+                                    TypeDeclaration td = (TypeDeclaration) d;
+                                    ClassOrInterface etd = td.getExtendedTypeDeclaration();
+                                    if (etd!=null) {
+                                        add(td, etd);
+                                    }
+                                    for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+                                        add(td, std);
+                                    }
+                                }
+                                else if (declaration instanceof TypedDeclaration) {
+                                    TypeDeclaration td = (TypeDeclaration) d;
+                                    //TODO: keep the directly refined declarations in the model
+                                    //      (get the typechecker to set this up)
+                                    Declaration mem = td.getDirectMember(declaration.getName(), null, false);
+                                    if (mem!=null) {
+                                        for (Declaration id: td.getInheritedMembers(declaration.getName())) {
+                                            add(mem, id);
+                                        }
+                                    }                        		
+                                }
+                            }
+                            catch (Exception e) {
+                                System.err.println(d.getQualifiedNameString());
+                                throw e;
+                            }
+                        }
+                        monitor.worked(70000/ps/ms);
+                        if (monitor.isCanceled()) return;
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (monitor.isCanceled()) return;
+        }
 	    monitor.done();
 	}
 }

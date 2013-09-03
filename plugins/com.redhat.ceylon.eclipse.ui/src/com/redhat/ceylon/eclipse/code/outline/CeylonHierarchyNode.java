@@ -5,7 +5,8 @@ import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
-public class CeylonHierarchyNode {
+public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
+    
 	private final Declaration declaration;
 	private boolean nonUnique;
 	//private final CeylonHierarchyNode parent;
@@ -73,4 +74,23 @@ public class CeylonHierarchyNode {
 	public String toString() {
 	    return declaration==null ? "null" : declaration.toString();
 	}
+
+    @Override
+    public int compareTo(CeylonHierarchyNode node) {
+        if (node.declaration==declaration) {
+            return 0;
+        }
+        else if (node.declaration==null) {
+            return 1;
+        } 
+        else if (declaration==null) {
+            return -1;
+        }
+        else {
+            int ct = declaration.getName().compareTo( node.declaration.getName());
+            if (ct!=0) return ct;
+            return declaration.getQualifiedNameString()
+                    .compareTo( node.declaration.getQualifiedNameString());
+        }
+    }
 }

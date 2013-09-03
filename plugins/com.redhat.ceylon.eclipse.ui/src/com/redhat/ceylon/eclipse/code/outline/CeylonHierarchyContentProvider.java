@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -83,7 +84,9 @@ public final class CeylonHierarchyContentProvider
 	    }
 	    else if (parentElement instanceof CeylonHierarchyNode) {
 	    	List<CeylonHierarchyNode> children = ((CeylonHierarchyNode) parentElement).getChildren();
-			return children.toArray(new CeylonHierarchyNode[children.size()]);
+			CeylonHierarchyNode[] array = children.toArray(new CeylonHierarchyNode[children.size()]);
+			Arrays.sort(array);
+            return array;
 	    }
 	    else {
 	    	return null;
