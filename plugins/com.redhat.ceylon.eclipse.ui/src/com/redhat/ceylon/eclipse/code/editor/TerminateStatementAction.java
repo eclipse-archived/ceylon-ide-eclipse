@@ -247,6 +247,13 @@ final class TerminateStatementAction extends Action {
 			public void visit(Tree.ImportModule that) {
 				super.visit(that);
 				terminate(that, CeylonLexer.SEMICOLON, ";");
+				if (that.getVersion()==null) {
+                    if (!change.getEdit().hasChildren()) {
+                        if (that.getImportPath()!=null) {
+                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, " \"1.0.0\""));
+                        }
+                    }
+				}
 			}
 			@Override 
 			public void visit(Tree.ImportModuleList that) {
@@ -351,6 +358,7 @@ final class TerminateStatementAction extends Action {
 					if (that instanceof Tree.ExecutableStatement && 
 							!(that instanceof Tree.ControlStatement) ||
 							that instanceof Tree.AttributeDeclaration ||
+							that instanceof Tree.ImportModule ||
 							that instanceof Tree.TypeAliasDeclaration ||
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
