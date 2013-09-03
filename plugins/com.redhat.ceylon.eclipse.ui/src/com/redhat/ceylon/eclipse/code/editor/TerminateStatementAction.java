@@ -48,6 +48,7 @@ final class TerminateStatementAction extends Action {
 	@Override
 	public void run() {
 		ITextSelection ts = (ITextSelection) editor.getSelectionProvider().getSelection();
+		String before = editor.getSelectionText();
 		line = ts.getEndLine();
 		try {
 			terminateWithSemicolon();
@@ -58,6 +59,15 @@ final class TerminateStatementAction extends Action {
 				count++;
 			} 
 			while (changed&&count<5);
+//			IRegion li = editor.getCeylonSourceViewer().getDocument().getLineInformation(line);
+//			editor.getCeylonSourceViewer().getTextWidget().setSelection(li.getOffset()+li.getLength());
+			if (!editor.getSelectionText().equals(before)) {
+	            //if the caret was at the end of the line, 
+			    //and a semi was added, it winds up selected
+			    //so move the caret after the semi
+			    IRegion selection = editor.getSelection();
+			    editor.getCeylonSourceViewer().setSelectedRange(selection.getOffset()+1,0);
+			}
 			
 //			change = new DocumentChange("Terminate Statement", doc);
 //			change.setEdit(new MultiTextEdit());
