@@ -1765,7 +1765,10 @@ public class CeylonContentProposer {
                 type = d.getUnit().getIteratedType(type);
             }
             String typeName = type.getProducedTypeName();
-            if (td instanceof Value && 
+            if (td.isDynamicallyTyped()) {
+                result.append("dynamic");
+            }
+            else if (td instanceof Value && 
                     type.getDeclaration().isAnonymous()) {
                 result.append("object");
             }
@@ -1822,7 +1825,10 @@ public class CeylonContentProposer {
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
-			if (type!=null) {
+            if (td.isDynamicallyTyped()) {
+                result.append("dynamic", KW_STYLER);
+            }
+            else if (type!=null) {
                 boolean isSequenced = d.isParameter() && 
                 		((MethodOrValue) d).getInitializerParameter().isSequenced();
                 if (isSequenced) {

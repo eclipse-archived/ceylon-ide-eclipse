@@ -430,12 +430,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
             String type;
             Styler styler;
-            if (td.getType() instanceof Tree.VoidModifier) {
+            Tree.Type tt = td.getType();
+            if (tt instanceof Tree.VoidModifier) {
                 type = "void";
                 styler = KW_STYLER;
             }
+            else if (tt instanceof Tree.DynamicModifier) {
+                type = "dynamic";
+                styler = KW_STYLER;
+            }
             else {
-                type = type(td.getType());
+                type = type(tt);
                 styler = TYPE_STYLER;
             }
             StyledString label = new StyledString(type, styler);
@@ -562,9 +567,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 if (p!=null) {
                     if (p instanceof Tree.ParameterDeclaration) {
                         Tree.TypedDeclaration td = ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                        label.append(type(td.getType()), TYPE_STYLER)
-                            .append(" ")
-                            .append(name(td.getIdentifier()), ID_STYLER);
+                        if (td.getType() instanceof Tree.DynamicModifier) {
+                            label.append("dynamic", KW_STYLER);
+                        }
+                        else if (td.getType() instanceof Tree.VoidModifier) {
+                            label.append("void", KW_STYLER);
+                        }
+                        else {
+                            label.append(type(td.getType()), TYPE_STYLER);
+                        }
+                        label.append(" ").append(name(td.getIdentifier()), ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
                             for (Tree.ParameterList ipl: ((Tree.MethodDeclaration) td).getParameterLists()) {
                                 parameters(ipl, label);
