@@ -16,7 +16,6 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
-import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
@@ -65,9 +64,9 @@ public class AddModuleImportUtil {
         importModule.append(getDefaultIndent());
         importModule.append("import ");
         importModule.append(moduleName);
-        importModule.append(" '");
+        importModule.append(" \"");
         importModule.append(moduleVersion);
-        importModule.append("';");
+        importModule.append("\";");
         if (iml.getEndToken().getLine()==iml.getToken().getLine()) {
             importModule.append(newline);
         }
