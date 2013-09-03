@@ -45,14 +45,13 @@ public class CompletionProcessor implements IContentAssistProcessor {
 				return NO_COMPLETIONS;
 			}
 		} 
-    	catch (BadLocationException e1) {
-			e1.printStackTrace();
+    	catch (BadLocationException ble) {
+			ble.printStackTrace();
     		return NO_COMPLETIONS;
 		}
 		if (offset==lastOffset) {
 			filter = !filter;
 		}
-		System.out.println(lastOffset);
 		lastOffset = offset;
     	try {
     		return contentProposer.getContentProposals(editor.getParseController(), 
