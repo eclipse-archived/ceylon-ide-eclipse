@@ -168,13 +168,19 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	                        for (Declaration d: u.getDeclarations()) {
 	                            if (d instanceof ClassOrInterface) {
 	                                if (declaration instanceof TypeDeclaration) {
-	                                    TypeDeclaration td = (TypeDeclaration) d;
-	                                    ClassOrInterface etd = td.getExtendedTypeDeclaration();
-	                                    if (etd!=null) {
-	                                        add(td, etd);
+                                        TypeDeclaration td = (TypeDeclaration) d;
+	                                    try {
+	                                        ClassOrInterface etd = td.getExtendedTypeDeclaration();
+	                                        if (etd!=null) {
+	                                            add(td, etd);
+	                                        }
+	                                        for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+	                                            add(td, std);
+	                                        }
 	                                    }
-	                                    for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
-	                                        add(td, std);
+	                                    catch (Exception e) {
+	                                        System.err.print(td.getQualifiedNameString());
+	                                        throw e;
 	                                    }
 	                                }
 	                                else if (declaration instanceof TypedDeclaration) {
