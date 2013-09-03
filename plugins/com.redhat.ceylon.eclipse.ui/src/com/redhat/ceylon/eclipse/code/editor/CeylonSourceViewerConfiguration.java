@@ -33,6 +33,7 @@ import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -381,6 +382,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setSizeConstraints(40, 10, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"hierarchy_presenter_bounds"), true, true);
         return presenter;
+    }
+    
+    @Override
+    public IReconciler getReconciler(ISourceViewer sourceViewer) {
+        //don't spell-check!
+        return null;
     }
 
 }
