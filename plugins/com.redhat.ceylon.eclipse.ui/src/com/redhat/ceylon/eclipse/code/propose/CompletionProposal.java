@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
 import static java.lang.Character.isLowerCase;
@@ -147,13 +148,13 @@ public class CompletionProposal implements ICompletionProposal,
 					result.append(token, KW_STYLER);
 				}
 				else if (token.contains(".")) {
-				    result.append(token, VERSION_STYLER);
+				    result.append(token, PACKAGE_STYLER);
 				}
 				else {
 					result.append(token, ID_STYLER);
 				}
 			}
-			else if (token.charAt(0)=='\'') {
+			else if (token.charAt(0)=='\"') {
 				result.append(token, VERSION_STYLER);
 			}
 			else {
