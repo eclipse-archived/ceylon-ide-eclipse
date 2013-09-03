@@ -289,6 +289,11 @@ final class TerminateStatementAction extends Action {
 				super.visit(that);
 				terminate(that, CeylonLexer.RBRACE, " }");
 			}
+            @Override 
+            public void visit(Tree.MetaLiteral that) {
+                super.visit(that);
+                terminate(that, CeylonLexer.BACKTICK, "`");
+            }
 			@Override 
 			public void visit(Tree.StatementOrArgument that) {
 				super.visit(that);
