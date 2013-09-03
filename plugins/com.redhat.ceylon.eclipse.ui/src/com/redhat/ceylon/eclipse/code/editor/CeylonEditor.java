@@ -14,8 +14,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_NEXT_TARGET;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_PREVIOUS_TARGET;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.REMOVE_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
@@ -217,15 +215,7 @@ public class CeylonEditor extends TextEditor {
         
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
-    //public static final String IMP_CODING_ACTION_SET = RuntimePlugin.IMP_RUNTIME + ".codingActionSet";
-    //public static final String IMP_OPEN_ACTION_SET = RuntimePlugin.IMP_RUNTIME + ".openActionSet";
-
     public CeylonEditor() {
-        // SMS 4 Apr 2007
-        // Do not set preference store with store obtained from plugin; one is
-        // already defined for the parent text editor and populated with relevant
-        // preferences
-        // setPreferenceStore(CeylonPlugin.getInstance().getPreferenceStore());
         setSourceViewerConfiguration(createSourceViewerConfiguration());
         setRangeIndicator(new CeylonRangeIndicator());
         configureInsertMode(SMART_INSERT, true);
@@ -908,12 +898,7 @@ public class CeylonEditor extends TextEditor {
     	// initialization of other things (like the context 
     	// help support) might depend on it.
         initializeParseController();
-
-        // Not sure why the "run the spell checker" pref would 
-        // get set, but it does seem to, which gives lots of 
-        // annoying squigglies all over the place...
-        //getPreferenceStore().setValue(SpellingService.PREFERENCE_SPELLING_ENABLED, false);
-
+        
         super.createPartControl(parent);
 
         initiateServiceControllers();
@@ -924,7 +909,6 @@ public class CeylonEditor extends TextEditor {
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
         
-        //CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(colorChangeListener);
         currentTheme.getColorRegistry().addListener(colorChangeListener);
         updateFontAndCaret();
         currentTheme.getFontRegistry().addListener(fontChangeListener);
@@ -1205,7 +1189,6 @@ public class CeylonEditor extends TextEditor {
         /*if (fResourceListener != null) {
         	ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
-        //CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(colorChangeListener);
         currentTheme.getColorRegistry().removeListener(colorChangeListener);
         currentTheme.getFontRegistry().removeListener(fontChangeListener);
     }
