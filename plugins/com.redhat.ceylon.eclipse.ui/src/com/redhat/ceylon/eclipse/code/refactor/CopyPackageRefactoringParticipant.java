@@ -125,9 +125,4 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
         
     }
 
-    private IFile getMovedFile(final String newName, IFile file) {
-        return file.getProject()
-                .getFile(file.getProjectRelativePath().toString()
-                        .replace(javaPackageFragment.getElementName().replace('.', '/'), newName.replace('.', '/')));
-    }
 }
