@@ -11,7 +11,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
-import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
@@ -35,8 +34,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassBody;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 /**
@@ -71,13 +68,11 @@ public class AnnotationCreator extends ErrorVisitor {
         	return pos.toString() + " - "+ message;
         }
     }
-
+    
     private final CeylonEditor editor;
     private final List<PositionedMessage> messages= new LinkedList<PositionedMessage>();
     private final List<Annotation> annotations= new LinkedList<Annotation>();
-    private final List<CeylonInitializerAnnotation> initializerAnnotations = new LinkedList<CeylonInitializerAnnotation>();
-    private int initializerDepth = 0;
-
+    
     public AnnotationCreator(CeylonEditor editor) {
         this.editor = editor;
     }
@@ -91,51 +86,9 @@ public class AnnotationCreator extends ErrorVisitor {
         		error.getCode(), error instanceof RecognitionError,
         		error.getLine()));
     }
-    
-    public void visit(Tree.CompilationUnit cu) {
-        initializerDepth = 0;
-        super.visit(cu);
-    }
-    
-    @Override
-    public void visit(Tree.ClassDefinition classDefinition) {
-        initializerDepth++;
-        String name = "class " + classDefinition.getDeclarationModel().getName();
-        ClassBody body = classDefinition.getClassBody();
-        createInitializerAnnotation(name, body);
-        super.visit(classDefinition);
-        initializerDepth--;
-    }
-
-    @Override
-    public void visit(Tree.ObjectDefinition objectDefinition) {
-        initializerDepth++;
-        String name = "object " + objectDefinition.getDeclarationModel().getName();
-        ClassBody body = objectDefinition.getClassBody();
-        createInitializerAnnotation(name, body);
-        super.visit(objectDefinition);
-        initializerDepth--;
-    }
-    
-    private void createInitializerAnnotation(String name, ClassBody body) {
-        if (name != null && body != null) {
-            Tree.Statement les = getLastExecutableStatement(body);
-            if (les != null) {
-                int startIndex = body.getStartIndex() + 2;
-                int stopIndex = les.getStopIndex();
-                
-                Position bodyPosition = new Position(body.getStartIndex(), body.getStopIndex() - body.getStartIndex() + 1);
-                Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
-                CeylonInitializerAnnotation initializerAnnotation = new CeylonInitializerAnnotation(editor, name, bodyPosition, initializerPosition, initializerDepth);
-
-                initializerAnnotations.add(initializerAnnotation);
-            }
-        }
-    }
-    
+        
     public void clearMessages() {
     	messages.clear();
-    	initializerAnnotations.clear();
     }
 
     public void updateAnnotations() {
@@ -153,10 +106,6 @@ public class AnnotationCreator extends ErrorVisitor {
                 		annotations.add(a);
                 	}
                 }
-                for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
-                    newAnnotations.put(initializerAnnotation, initializerAnnotation.getInitializerPosition());
-                    annotations.add(initializerAnnotation);
-                }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
@@ -173,14 +122,9 @@ public class AnnotationCreator extends ErrorVisitor {
                 		annotations.add(a);
                 	}
                 }
-                for (CeylonInitializerAnnotation initializerAnnotation : initializerAnnotations) {
-                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getInitializerPosition());
-                    annotations.add(initializerAnnotation);
-                }
             }
         }
         messages.clear();
-        initializerAnnotations.clear();
     }
 
 	public boolean suppressAnnotation(PositionedMessage pm) {

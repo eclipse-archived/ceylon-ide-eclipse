@@ -222,7 +222,7 @@ public class CeylonEditor extends TextEditor {
         setInsertMode(SMART_INSERT);
         problemMarkerManager= new ProblemMarkerManager();
 	}
-
+    
 	static String[][] getFences() {
 		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
 	}

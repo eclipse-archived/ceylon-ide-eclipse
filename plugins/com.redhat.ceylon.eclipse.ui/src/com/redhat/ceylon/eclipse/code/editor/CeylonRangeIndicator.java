@@ -18,6 +18,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 public class CeylonRangeIndicator extends Annotation implements IAnnotationPresentation {
+    
+    CeylonRangeIndicator() {
+        setText("<b>Current declaration</b>");
+    }
 
     @Override
     public int getLayer() {
@@ -46,17 +50,16 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
         Color color = getCurrentThemeColor("rangeIndicatorAnnotation");
 		gc.setBackground(color);
         
-        /*gc.setAlpha(85);
         Image patternImage = getPatternImage(canvas, color);
-        gc.drawImage(patternImage, 0, 0, w/2, h, x, y, w/2, h);
-        patternImage.dispose();*/
+        gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
+        patternImage.dispose();
         
-        gc.setAlpha(85);
-        gc.fillRectangle(x, y, w/2, h);
+//        gc.setAlpha(85);
+//        gc.fillRectangle(x, y, w, h);
         
         gc.setAlpha(255);
-        gc.fillRectangle(x, bounds.y, w/2, 1);
-        gc.fillRectangle(x, bounds.y + bounds.height - 1, w/2, 1);
+        gc.fillRectangle(x, bounds.y, w, 1);
+        gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
     }
 
     public static Image getPatternImage(Control control, Color color) {

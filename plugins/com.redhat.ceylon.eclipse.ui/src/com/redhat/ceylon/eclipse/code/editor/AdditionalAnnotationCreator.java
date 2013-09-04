@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
@@ -39,6 +40,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
 
     private CeylonEditor editor;
+    CeylonInitializerAnnotation initializerAnnotation;
     
     public AdditionalAnnotationCreator(CeylonEditor editor) {
     	this.editor = editor;
@@ -168,6 +170,43 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         	else {
         		editor.resetHighlightRange();
         	}
+            IAnnotationModel model= editor.getDocumentProvider()
+                    .getAnnotationModel(editor.getEditorInput());
+            if (model!=null) {
+                model.removeAnnotation(initializerAnnotation);
+            }
+            initializerAnnotation = null;
+            if (node!=null) {
+                node.visit(new InitializerVisitor());
+                if (initializerAnnotation!=null) {
+                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getInitializerPosition());
+                }
+            }
+        }
+    }
+    
+    class InitializerVisitor extends Visitor {
+        @Override
+        public void visit(Tree.ClassDefinition that) {
+            if (that.getClassBody()==null||that.getIdentifier()==null) return;
+            createAnnotation(that, that.getClassBody(), that.getIdentifier().getText());
+        }
+        @Override
+        public void visit(Tree.ObjectDefinition that) {
+            if (that.getClassBody()==null||that.getIdentifier()==null) return;
+            createAnnotation(that, that.getClassBody(), that.getIdentifier().getText());
+        }
+        private void createAnnotation(Node that, Tree.ClassBody body, String name) {
+//            int offset = editor.getSelection().getOffset();
+//            if (offset>that.getStartIndex()&&offset<that.getStopIndex()) {
+                Tree.Statement les = getLastExecutableStatement(body);
+                if (les != null) {
+                    int startIndex = body.getStartIndex() + 2;
+                    int stopIndex = les.getStopIndex();
+                    Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
+                    initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, 1);
+                }
+//            }
         }
     }
     

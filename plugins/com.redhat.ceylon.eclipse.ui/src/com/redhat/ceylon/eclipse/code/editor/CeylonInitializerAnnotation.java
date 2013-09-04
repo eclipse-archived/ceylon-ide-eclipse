@@ -5,34 +5,32 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrent
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 
 public class CeylonInitializerAnnotation extends Annotation implements IAnnotationPresentation {
 
-    private final CeylonEditor editor;
-    private final Position bodyPosition;
     private final Position initializerPosition;
     private final int depth;
 
-    public CeylonInitializerAnnotation(CeylonEditor editor, String name, Position bodyPosition, Position initializerPosition, int depth) {
-        this.editor = editor;
-        this.bodyPosition = bodyPosition;
+    public CeylonInitializerAnnotation(String name, Position initializerPosition, int depth) {
         this.initializerPosition = initializerPosition;
         this.depth = depth;
 
         setText("<b>Initializer section of " + name + "</b>" +
-                "<p>" +
-                "The initial part of the body of a class is called the initializer of the class and contains a mix of declarations, " +
-                "statements and control structures. The initializer is executed every time the class is instantiated." +
-                "</p>" +
-                "<p>" +
-                "Some rules are applied to prevent \"leaking\" uninitialized reference to a new instance, " +
-                "for more information please check documentation." +
-                "</p>");
+                "<p>The initial part of the body of a class is called the initializer "
+                + "of the class and contains executable code that initializes references. "
+                + "The initializer is executed every time the class is instantiated.</p>");
     }
 
     public Position getInitializerPosition() {
@@ -50,9 +48,9 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
     
     @Override
     public void paint(GC gc, Canvas canvas, Rectangle bounds) {
-        if( !isCursorInBody() ) {
+        /*if( !isCursorInBody() ) {
             return;
-        }
+        }*/
         
         Point canvasSize = canvas.getSize();
         int x = 0;
@@ -74,25 +72,45 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
         Color color = getCurrentThemeColor("initializerAnnotation");
         gc.setBackground(color);
 
-        /*gc.setAlpha(85);
         Image patternImage = getPatternImage(canvas, color);
-        gc.drawImage(patternImage, 0, 0, w/2, h, x+w-w/2, y, w/2, h);
-        patternImage.dispose();*/
+        gc.setAlpha(90);
+        gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);
+        patternImage.dispose();
         
-        gc.setAlpha(85);
-        gc.fillRectangle(x+w-w/2, y, w/2, h);
+//        gc.setAlpha(50);
+//        gc.fillRectangle(x, y, w, h);
         
         gc.setAlpha(255);
-        gc.fillRectangle(x+w-w/2, bounds.y, w/2, 1);
-        gc.fillRectangle(x+w-w/2, bounds.y + bounds.height - 1, w/2, 1);
+        gc.fillRectangle(x, bounds.y, w, 1);
+        gc.fillRectangle(x, bounds.y + bounds.height - 1, w, 1);
     }
 
-    private boolean isCursorInBody() {
+    public static Image getPatternImage(Control control, Color color) {
+        Point size = control.getSize();
+        Display display = control.getDisplay();
+        Color bgColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+
+        RGB rgbs[] = new RGB[] {
+                new RGB(color.getRed(), color.getGreen(), color.getBlue()),
+                new RGB(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue()) };
+
+        ImageData imageData = new ImageData(size.x, size.y, 1, new PaletteData(rgbs));
+
+        for (int y = 0; y < size.y; y++) {
+            for (int x = 0; x < size.x; x++) {
+                imageData.setPixel(x, y, (x + y+1) % 2);
+            }
+        }
+
+        return new Image(display, imageData);
+    }
+
+    /*private boolean isCursorInBody() {
         int caretOffset = editor.getCeylonSourceViewer().getTextWidget().getCaretOffset();
         if (caretOffset > bodyPosition.getOffset() && caretOffset < bodyPosition.getOffset() + bodyPosition.getLength()) {
             return true;
         }
         return false;
-    }
+    }*/
 
 }
