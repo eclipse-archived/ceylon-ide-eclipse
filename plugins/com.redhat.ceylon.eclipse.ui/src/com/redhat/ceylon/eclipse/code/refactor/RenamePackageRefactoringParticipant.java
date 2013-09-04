@@ -21,6 +21,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
+import org.eclipse.ltk.core.refactoring.participants.RenameArguments;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.search.core.text.TextSearchEngine;
 import org.eclipse.search.core.text.TextSearchMatchAccess;
@@ -49,7 +50,6 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
-		final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		final String newName= getArguments().getNewName();
 		
 		//TODO: this just does a text search/replace - of 
@@ -59,8 +59,9 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 		String[] fileNamePatterns= { "*.ceylon" }; // all files with file suffix '.ceylon'
 		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
 		final String oldName = javaPackageFragment.getElementName();
-        Pattern pattern= Pattern.compile("(package|module|import)\\s+"+oldName.replace(".", "\\."));
+        Pattern pattern= Pattern.compile("\\b(package|module|import)\\s+"+oldName.replace(".", "\\.")+"\\b[^.]");
 		
+        final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		TextSearchRequestor collector= new TextSearchRequestor() {
 			public boolean acceptPatternMatch(TextSearchMatchAccess matchAccess) throws CoreException {
 				IFile file= matchAccess.getFile();
@@ -74,7 +75,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 					change.setEdit(new MultiTextEdit());
 					changes.put(file, change);
 				}
-				ReplaceEdit edit= new ReplaceEdit(matchAccess.getMatchOffset()+matchAccess.getMatchLength()-oldName.length(), 
+				ReplaceEdit edit= new ReplaceEdit(matchAccess.getMatchOffset()+matchAccess.getMatchLength()-1-oldName.length(), 
 				        oldName.length(), newName);
 				change.addEdit(edit);
 				change.addTextEditGroup(new TextEditGroup("Rename package reference to '" + newName + "'", edit));
@@ -99,7 +100,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         List<IResource> list = new ArrayList<IResource>();
 		for (int i=0; i<paths.length; i++) {
 		    if (paths[i].getKind()==IPackageFragmentRoot.K_SOURCE) {
-		        list.add(paths[i].getResource());
+		        IResource r = paths[i].getResource();
+		        if (r.exists()) list.add(r);
 		    }
 		}
 		return list.toArray(new IResource[0]);
