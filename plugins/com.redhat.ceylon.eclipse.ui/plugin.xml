@@ -929,11 +929,11 @@
             <command 
                   id="selectEnclosing"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-                  label="&amp;Select Enclosing"/>
+                  label="Select &amp;Enclosing"/>
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="&amp;Restore Previous Selection"/>
+                  label="Restore &amp;Previous Selection"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:navigate?after=additions">
@@ -945,7 +945,7 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
-                label="Source"
+                label="So&amp;urce"
                 id="com.redhat.ceylon.eclipse.ui.menu.source">
             <!--dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
