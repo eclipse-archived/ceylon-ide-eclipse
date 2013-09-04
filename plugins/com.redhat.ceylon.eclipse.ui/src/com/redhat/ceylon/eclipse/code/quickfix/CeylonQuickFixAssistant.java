@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
@@ -508,7 +509,7 @@ public class CeylonQuickFixAssistant {
                 }
                 @Override
                 public Image getImage() {
-                    return CHANGE; //TODO!!!!!
+                    return CORRECTION; //TODO!!!!!
                 }
                 @Override
                 public String getDisplayString() {
