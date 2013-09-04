@@ -10,9 +10,11 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -315,7 +317,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
             for (Module m: tc.getContext().getModules().getListOfModules()) {
                 if (!m.isJava() || includeJava() ) {
-                    for (Package p: m.getPackages()) {
+                    List<Package> packages = new ArrayList<Package>(m.getPackages());
+                    for (Package p: packages) {
                         for (Declaration dec: p.getMembers()) {
                             if (isPresentable(dec)) {
                                 boolean isUnversionedModule = m.getVersion()==null;
