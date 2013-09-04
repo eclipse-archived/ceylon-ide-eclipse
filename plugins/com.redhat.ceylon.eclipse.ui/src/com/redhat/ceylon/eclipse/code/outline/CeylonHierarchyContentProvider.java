@@ -36,12 +36,17 @@ public final class CeylonHierarchyContentProvider
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (newInput!=null && newInput!=oldInput) {
 			declaration = ((RootNode) newInput).declaration;
-			try {
-				builder = new CeylonHierarchyBuilder(this, declaration);
-                editor.getSite().getWorkbenchWindow().run(true, true, builder);
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
+			if (declaration==null) {
+			    builder = null;
+			}
+			else {
+			    try {
+			        builder = new CeylonHierarchyBuilder(this, declaration);
+			        editor.getSite().getWorkbenchWindow().run(true, true, builder);
+			    } 
+			    catch (Exception e) {
+			        e.printStackTrace();
+			    }
 			}
 		}
 	}
