@@ -54,14 +54,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
+import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter;
+import org.eclipse.jdt.internal.ui.refactoring.reorg.RenamePackageWizard;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -72,8 +71,10 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -477,13 +478,15 @@ public class CeylonQuickFixAssistant {
             break;
         case 8000:
             addRenameDescriptorProposal(cu, context, problem, proposals);
-            addMoveDirProposal(file, cu, project, proposals);
+            addMoveDirProposal(file, cu, project, proposals, 
+                    context.getSourceViewer().getTextWidget().getShell());
             break;
         }
     }
 
     protected void addMoveDirProposal(final IFile file, final Tree.CompilationUnit cu,
-            final IProject project, Collection<ICompletionProposal> proposals) {
+            final IProject project, Collection<ICompletionProposal> proposals, 
+            final Shell shell) {
         Tree.ImportPath importPath;
         if (cu.getPackageDescriptor()!=null) {
             importPath = cu.getPackageDescriptor().getImportPath();
@@ -494,14 +497,13 @@ public class CeylonQuickFixAssistant {
         else {
             return;
         }
-        String pn = formatPath(importPath.getIdentifiers());
-        String cpn = cu.getUnit().getPackage().getNameAsString();
-        if (pn.startsWith(cpn)) return;
-        final IPath relPath = file.getProjectRelativePath()
-                .removeLastSegments(file.getProjectRelativePath().segmentCount()-1)
-                .append(pn.replace('.', '/'));
-        final IPath newPath = project.getFullPath().append(relPath);
-        if (!project.exists(newPath)) {
+        final String pn = formatPath(importPath.getIdentifiers());
+        final String cpn = cu.getUnit().getPackage().getNameAsString();
+        final IPath sourceDir = file.getProjectRelativePath()
+              .removeLastSegments(file.getProjectRelativePath().segmentCount()-1);
+//        final IPath relPath = sourceDir.append(pn.replace('.', '/'));
+//        final IPath newPath = project.getFullPath().append(relPath);
+//        if (!project.exists(newPath)) {
             proposals.add(new ICompletionProposal() {
                 @Override
                 public Point getSelection(IDocument document) {
@@ -513,7 +515,7 @@ public class CeylonQuickFixAssistant {
                 }
                 @Override
                 public String getDisplayString() {
-                    return "Move resources to '" + relPath.toPortableString() + "'";
+                    return "Rename and move '" +  cpn + "' to '" + pn + "'";
                 }
 
                 @Override
@@ -527,26 +529,14 @@ public class CeylonQuickFixAssistant {
                 }
                 @Override
                 public void apply(IDocument document) {
-                    try {
-                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-                            @Override
-                            public void run(IProgressMonitor monitor) throws CoreException {
-                                for (int i = relPath.segmentCount()-1; i>0; i--) {
-                                    IFolder fol = project.getFolder(relPath.removeLastSegments(i));
-                                    if (!fol.exists()) {
-                                        fol.create(false, true, monitor);
-                                    }
-                                }
-                                file.getParent().move(newPath, false, monitor);
-                            }
-                        }, new NullProgressMonitor());
-                    } 
-                    catch (CoreException e) {
-                        e.printStackTrace();
-                    }
+                    IPackageFragment pfr = (IPackageFragment) JavaCore.create(project.getFolder(sourceDir.append(cpn.replace('.', '/'))));
+                    RenamePackageProcessor processor = new RenamePackageProcessor(pfr);
+                    processor.setNewElementName(pn);
+                    new RefactoringStarter().activate(new RenamePackageWizard(new RenameRefactoring(processor)),
+                            shell, "Rename Package", 4);
                 }
             });
-        }
+//        }
     }
 
     private void addRenameDescriptorProposal(Tree.CompilationUnit cu,
