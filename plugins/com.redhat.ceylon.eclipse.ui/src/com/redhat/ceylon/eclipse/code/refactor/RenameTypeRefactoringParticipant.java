@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.refactor.RenamePackageRefactoringParticipant.getSourceDirs;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -49,10 +51,10 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
 		//TODO: this just does a text search/replace - of 
 		//      course it should use the model instead!
 		
-		IResource[] roots= { javaDeclaration.getJavaProject().getProject() };  // limit to the current project
+		IResource[] roots= getSourceDirs(javaDeclaration);  // limit to source dirs in the current project
 		String[] fileNamePatterns= { "*.ceylon" }; // all files with file suffix '.ceylon'
-		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
-		Pattern pattern= Pattern.compile(javaDeclaration.getElementName()); // only find the simple name of the type
+		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots, fileNamePatterns, false);
+		Pattern pattern= Pattern.compile("\\b"+javaDeclaration.getElementName()+"\\b"); // only find the simple name of the type
 		
 		TextSearchRequestor collector= new TextSearchRequestor() {
 			public boolean acceptPatternMatch(TextSearchMatchAccess matchAccess) throws CoreException {
