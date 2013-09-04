@@ -24,6 +24,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor autoInsert;
     BooleanFieldEditor autoActivation;
     ScaleFieldEditor autoActivationDelay;
+    BooleanFieldEditor smartCaret;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -36,7 +37,8 @@ public class CeylonEditorPreferencesPage
         currentBracket.store();
         autoInsert.store();
         autoActivation.store();
-        autoActivationDelay.store();;
+        autoActivationDelay.store();
+        smartCaret.store();
         return true;
     }
     
@@ -49,6 +51,7 @@ public class CeylonEditorPreferencesPage
         autoActivation.loadDefault();
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
+        smartCaret.loadDefault();
     }
     
     @Override
@@ -99,6 +102,14 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
+        addField(new SpacerFieldEditor(getFieldEditorParent()));
+        addField(new LabelFieldEditor("Other:",
+                getFieldEditorParent()));
+        smartCaret = new BooleanFieldEditor(CeylonEditor.EDITOR_SUB_WORD_NAVIGATION, 
+                "Smart caret positioning inside Ceylon identifiers", 
+                getFieldEditorParent());
+        smartCaret.load();
+        addField(smartCaret);
     }
 
 }
