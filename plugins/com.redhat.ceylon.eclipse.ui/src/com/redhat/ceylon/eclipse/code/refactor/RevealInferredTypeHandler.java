@@ -21,6 +21,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -36,7 +37,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
 
     @Override
     public boolean isEnabled() {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+        IEditorPart ce = getCurrentEditor();
+        if (!(ce instanceof CeylonEditor)) return false;
+        CeylonEditor editor = (CeylonEditor) ce;
         List<Tree.LocalModifier> localModifiers = new ArrayList<Tree.LocalModifier>();
         List<Tree.ValueIterator> valueIterators = new ArrayList<Tree.ValueIterator>();
 
