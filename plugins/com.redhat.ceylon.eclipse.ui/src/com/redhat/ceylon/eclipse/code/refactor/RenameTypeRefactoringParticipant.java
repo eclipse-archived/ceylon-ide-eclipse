@@ -45,7 +45,6 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
-		final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		final String newName= getArguments().getNewName();
 		
 		//TODO: this just does a text search/replace - of 
@@ -56,6 +55,7 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
 		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots, fileNamePatterns, false);
 		Pattern pattern= Pattern.compile("\\b"+javaDeclaration.getElementName()+"\\b"); // only find the simple name of the type
 		
+        final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		TextSearchRequestor collector= new TextSearchRequestor() {
 			public boolean acceptPatternMatch(TextSearchMatchAccess matchAccess) throws CoreException {
 				IFile file= matchAccess.getFile();
