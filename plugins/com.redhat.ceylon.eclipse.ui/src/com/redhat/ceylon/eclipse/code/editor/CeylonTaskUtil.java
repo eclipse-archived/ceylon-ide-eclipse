@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +23,7 @@ public class CeylonTaskUtil {
         List<Task> tasks = getTasks(token);
         if (tasks != null) {
             for (Task task : tasks) {
-                Annotation annotation = new Annotation(AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE, false, task.text);
+                Annotation annotation = new Annotation(TODO_ANNOTATION_TYPE, false, task.text);
                 Position position = new Position(task.startIndex, task.text.length());
                 model.addAnnotation(annotation, position);
             }

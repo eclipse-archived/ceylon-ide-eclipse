@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
@@ -32,6 +33,7 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
@@ -282,6 +284,10 @@ public class AnnotationUtils {
 	    	text = "<b>Search result</b>";
 	    	icon = DocHover.fileUrl("find_obj.gif");
 	    }
+        else if (message!=null && TODO_ANNOTATION_TYPE.equals(message.getType())) {
+            text = "<b>Task</b><p>" + message.getText() + "</p>";
+            icon = DocHover.fileUrl("tasks_tsk.gif");
+        }
 	    if (icon!=null) {
 	    	DocHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
 	    }
