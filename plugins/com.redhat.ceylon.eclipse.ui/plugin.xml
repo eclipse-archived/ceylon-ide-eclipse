@@ -1969,6 +1969,26 @@
       </renameParticipant>
     </extension>
     <extension
+          point="org.eclipse.ltk.core.refactoring.copyParticipants">
+      <copyParticipant
+            id="com.redhat.ceylon.eclipse.code.refactor.CopyPackageRefactoringParticipant"
+            name="Copy package participant for Ceylon source"
+            class="com.redhat.ceylon.eclipse.code.refactor.CopyPackageRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+          </with>
+        </enablement>
+      </copyParticipant>
+    </extension>
+    
+    
+    <extension
           point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
              class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"

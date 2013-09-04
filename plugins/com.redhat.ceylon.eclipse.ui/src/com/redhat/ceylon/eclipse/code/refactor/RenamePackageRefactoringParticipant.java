@@ -21,7 +21,6 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
-import org.eclipse.ltk.core.refactoring.participants.RenameArguments;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.search.core.text.TextSearchEngine;
 import org.eclipse.search.core.text.TextSearchMatchAccess;
@@ -35,19 +34,23 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
 	private IPackageFragment javaPackageFragment;
 
+    @Override
 	protected boolean initialize(Object element) {
 		javaPackageFragment= (IPackageFragment) element;
 		return true;
 	}
 
+    @Override
 	public String getName() {
 		return "Rename participant for Ceylon source";
 	}
 	
+    @Override
 	public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context) {
 		return new RefactoringStatus();
 	}
 
+	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
 		final String newName= getArguments().getNewName();
