@@ -1,14 +1,21 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.ScaleFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -59,10 +66,39 @@ public class CeylonEditorPreferencesPage
         setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
 //        setDescription("Preferences for the Ceylon editor");
     }
+    
+    
+    @Override
+    protected Control createContents(Composite parent) {
+        Link textEditorsLink = new Link(parent, 0);
+        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        textEditorsLink.setText("Ceylon preferences. See '<a>Text Editors</a>' for general editor preferences.");
+        textEditorsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                        "org.eclipse.ui.preferencePages.GeneralTextEditor", null, null);
+            }
+        });
+        Link colorsAndFontsLink = new Link(parent, 0);
+        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
+        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
+                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
+            }
+        });
+        Control control = super.createContents(parent);
+        return control;
+    }
 
     @Override
     protected void createFieldEditors() {
 //        super.createDescriptionLabel(getFieldEditorParent()).setText("Bracket highlighting");
+        addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Bracket highlighting:",
                 getFieldEditorParent()));
         matchingBracket = new BooleanFieldEditor(CeylonEditor.MATCHING_BRACKET, 
