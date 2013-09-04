@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.propose;
 
 import java.util.List;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -157,4 +158,13 @@ public class RequiredTypeVisitor extends Visitor
         requiredType = ort;
     }
     
+    @Override
+    public void visit(Tree.StringLiteral that) {
+        ProducedType ort = requiredType;
+        if (that.getScope() instanceof Declaration) {
+            requiredType = CeylonContentProposer.type((Declaration) that.getScope());
+        }
+        super.visit(that);
+        requiredType = ort;
+    }
 }
