@@ -26,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider.RootNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -172,12 +173,18 @@ public class HierarchyPopup extends TreeViewPopup {
 
 	@Override
 	public void setInput(Object information) {
-        if (information == null || information instanceof String) {
+        if (!(information instanceof RootNode)) {
             inputChanged(null, null);
         }
         else {
-        	inputChanged(information, information);
-        	updateTitle();
+            RootNode rn = (RootNode) information;
+            if (rn.declaration==null) {
+                inputChanged(null, null);
+            }
+            else {
+                inputChanged(information, information);
+                updateTitle();
+            }
         }
 	}
 	
@@ -209,6 +216,7 @@ public class HierarchyPopup extends TreeViewPopup {
 	
 	@Override
 	protected void reveal() {
+	    if (contentProvider.builder==null) return;
 	    int depth;
 	    if (contentProvider.mode==HierarchyMode.HIERARCHY) {
 	        depth = contentProvider.builder.getDepthInHierarchy();
