@@ -933,7 +933,7 @@
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="Restore &amp;Previous Selection"/>
+                  label="Restore Pre&amp;vious Selection"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:navigate?after=additions">
