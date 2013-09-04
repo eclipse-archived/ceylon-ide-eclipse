@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -118,10 +119,19 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             IProject project = getCreatedElement().getProject();
             
             CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
-            projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
-            projectConfig.setProjectLocalRepos(thirdPage.getBlock().getProjectLocalRepos());
-            projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
-            projectConfig.save();            
+            
+            if (thirdPage.getBlock().getProject() != null) {
+                projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
+                projectConfig.setProjectLocalRepos(thirdPage.getBlock().getProjectLocalRepos());
+                projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
+                projectConfig.save();
+            }
+            
+            try {
+                project.setDefaultCharset(projectConfig.getEncoding(), new NullProgressMonitor());
+            } catch (CoreException e) {
+                throw new RuntimeException(e);
+            }
 
             new CeylonNature(thirdPage.getBlock().getSystemRepo(),
     				firstPage.isEnableJdtClassesDir(), 
