@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
@@ -59,11 +60,13 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -461,7 +464,20 @@ public class CeylonQuickFixAssistant {
             break;
         case 7000:
             addModuleImportProposals(cu, proposals, project, tc, node);
+            break;
+        case 8000:
+            addRenameDescriptorProposal(cu, context, problem, proposals);
+            break;
         }
+    }
+
+    private void addRenameDescriptorProposal(Tree.CompilationUnit cu,
+            IQuickAssistInvocationContext context, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals) {
+        String pn = cu.getUnit().getPackage().getNameAsString();
+        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
+        change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
+        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, 10, CHANGE));
     }
 
     private void addModuleImportProposals(Tree.CompilationUnit cu,
