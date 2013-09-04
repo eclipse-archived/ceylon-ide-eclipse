@@ -9,8 +9,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
@@ -24,6 +26,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
 public class CeylonEditorPreferencesPage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
+    
+    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.editor";
     
     BooleanFieldEditor enclosingBrackets;
     BooleanFieldEditor matchingBracket;
@@ -91,14 +95,21 @@ public class CeylonEditorPreferencesPage
                         "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
             }
         });
-        Control control = super.createContents(parent);
-        return control;
+        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        //composite.setText("Ceylon editor settings");
+        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        composite.setLayout(layout); 
+        return super.createContents(composite);
     }
 
     @Override
     protected void createFieldEditors() {
 //        super.createDescriptionLabel(getFieldEditorParent()).setText("Bracket highlighting");
-        addField(new SpacerFieldEditor(getFieldEditorParent()));
+//        addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Bracket highlighting:",
                 getFieldEditorParent()));
         matchingBracket = new BooleanFieldEditor(CeylonEditor.MATCHING_BRACKET, 
@@ -186,12 +197,9 @@ class LabelFieldEditor extends FieldEditor {
     }
 
     // Labels do not persist any preferences, so these methods are empty.
-    protected void doLoad() {
-    }
-    protected void doLoadDefault() {
-    }
-    protected void doStore() {
-    }
+    protected void doLoad() {}
+    protected void doLoadDefault() {}
+    protected void doStore() {}
 }
 
 class SpacerFieldEditor extends LabelFieldEditor {
