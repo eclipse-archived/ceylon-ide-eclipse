@@ -20,7 +20,8 @@ public class CeylonStartup implements IStartup {
 		public void updateContext(IPerspectiveDescriptor perspective) {
 			IContextService service = (IContextService) getWorkbench().getActiveWorkbenchWindow()
 					.getService(IContextService.class);
-			if (perspective.getId().equals("com.redhat.ceylon.eclipse.ui.perspective")) {
+			// in case of previous crash, perspective may be null
+			if (perspective != null && perspective.getId() != null && perspective.getId().equals("com.redhat.ceylon.eclipse.ui.perspective")) {
 				contextActivation = service.activateContext("com.redhat.ceylon.eclipse.ui.perspectiveContext");
 			}
 			else if (contextActivation!=null) {
