@@ -1253,6 +1253,17 @@ public class CeylonContentProposer {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
                 new Comparator<DeclarationWithProximity>() {
                     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
+                        boolean xbt = x.getDeclaration() instanceof NothingType;
+                        boolean ybt = y.getDeclaration() instanceof NothingType;
+                        if (xbt&&ybt) {
+                            return 0;
+                        }
+                        if (xbt&&!ybt) {
+                            return 1;
+                        }
+                        if (ybt&&!xbt) {
+                            return -1;
+                        }
                         ProducedType xtype = type(x.getDeclaration());
                         ProducedType ytype = type(y.getDeclaration());
                         boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof NothingType;
