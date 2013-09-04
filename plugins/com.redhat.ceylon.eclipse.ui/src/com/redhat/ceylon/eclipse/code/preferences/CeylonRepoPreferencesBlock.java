@@ -90,6 +90,10 @@ public class CeylonRepoPreferencesBlock {
     public CeylonRepoPreferencesBlock(ValidationCallback validationCallback) {
         this.validationCallback = validationCallback;
     }
+    
+    public IProject getProject() {
+        return project;
+    }
 
     public String getSystemRepo() {
         return systemRepoText.getText();
