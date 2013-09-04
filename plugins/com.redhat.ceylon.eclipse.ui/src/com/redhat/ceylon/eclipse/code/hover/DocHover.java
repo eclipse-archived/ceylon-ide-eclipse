@@ -102,6 +102,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -690,7 +691,8 @@ public class DocHover
 						"int_obj.gif" : 
 	                    "innerinterface_private_obj.gif";
 			}
-			else if (dec instanceof TypeAlias) {
+			else if (dec instanceof TypeAlias||
+			        dec instanceof NothingType) {
 				return "types.gif";
 			}
 			else if (dec.isParameter()) {
@@ -965,7 +967,8 @@ public class DocHover
 								HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 			}
 
-			if (dec.isShared() || dec.isToplevel()) {
+			if ((dec.isShared() || dec.isToplevel()) &&
+			        !(dec instanceof NothingType)) {
 				String label;
 				if (pack.getNameAsString().isEmpty()) {
 					label = "in default package";
@@ -1099,31 +1102,41 @@ public class DocHover
 			}
 		}
 		
-		//if (dec.getUnit().getFilename().endsWith(".ceylon")) {
-			//if (extraBreak) 
-			buffer.append("<hr/>");
-			addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-					16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-							dec.getUnit().getFilename() + "</tt>", 20, 2);
-		//}
-		buffer.append("<hr/>");
-		addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-				16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
-		            dec.getName() + "</tt>", 20, 2);
-		if (dec instanceof ClassOrInterface) {
-			addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-					16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
-							dec.getName() + "</tt>", 20, 2);
+		if (dec instanceof NothingType) {
+		    buffer.append("Special bottom type defined by the language. "
+		            + "<code>Nothing</code> is assignable to all types, but has no value. "
+		            + "A function or value of type <code>Nothing</code> either throws "
+		            + "an exception, or never returns.");
 		}
-		if (dec instanceof Value) {
-			addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-					16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
-							dec.getName() + "</tt>", 20, 2);
-		}
-		if (dec.isFormal()||dec.isDefault()) {
-			addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-					16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
-							dec.getName() + "</tt>", 20, 2);
+		else {
+
+		    //if (dec.getUnit().getFilename().endsWith(".ceylon")) {
+		    //if (extraBreak) 
+		    buffer.append("<hr/>");
+		    addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
+		            16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+		                    dec.getUnit().getFilename() + "</tt>", 20, 2);
+		    //}
+		    buffer.append("<hr/>");
+		    addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+		            16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
+		                    dec.getName() + "</tt>", 20, 2);
+		    if (dec instanceof ClassOrInterface) {
+		        addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+		                16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
+		                        dec.getName() + "</tt>", 20, 2);
+		    }
+		    if (dec instanceof Value) {
+		        addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+		                16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
+		                        dec.getName() + "</tt>", 20, 2);
+		    }
+		    if (dec.isFormal()||dec.isDefault()) {
+		        addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+		                16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
+		                        dec.getName() + "</tt>", 20, 2);
+		    }
+
 		}
 		
 		HTMLPrinter.addPageEpilog(buffer);
