@@ -1531,7 +1531,10 @@ public class DocHover
                     if (href != null) {
                         out.append("<a ").append(href).append(">");
                     }
-                    out.append(linkName);
+                    out.append("<code>");
+                    int sep = linkName.indexOf("::");
+                    out.append(sep<0?linkName:linkName.substring(sep+2));
+                    out.append("</code>");
                     if (href != null) {
                         out.append("</a>");
                     }
