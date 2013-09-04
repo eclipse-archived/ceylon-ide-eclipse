@@ -65,26 +65,30 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                 String[] fileNamePatterns= { "*.ceylon" }; // all files with file suffix '.ceylon'
                 FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
                 final String oldName = javaPackageFragment.getElementName();
-                Pattern pattern= Pattern.compile("\\b(package|module|import)\\s+"+oldName.replace(".", "\\.")+"\\b[^.]");
+                Pattern pattern= Pattern.compile("\\b(package|module|import)\\s+"+oldName.replace(".", "\\.")+"\\b");
                 
                 final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
                 TextSearchRequestor collector= new TextSearchRequestor() {
                     public boolean acceptPatternMatch(TextSearchMatchAccess matchAccess) throws CoreException {
-                        IFile file= matchAccess.getFile();
-                        TextFileChange change= (TextFileChange) changes.get(file);
-                        if (change == null) {
-                            TextChange textChange= getTextChange(file);
-                            if (textChange != null) {
-                                return false; // don't try to merge changes
+                        int matchOffset = matchAccess.getMatchOffset()+matchAccess.getMatchLength()-oldName.length();
+                        if (newName.length()<oldName.length() ||
+                            matchAccess.getFileContentLength()<matchOffset+newName.length() ||
+                            !matchAccess.getFileContent(matchOffset, newName.length()).equals(newName)) {
+                            IFile file= matchAccess.getFile();
+                            TextFileChange change= (TextFileChange) changes.get(file);
+                            if (change == null) {
+                                TextChange textChange= getTextChange(file);
+                                if (textChange != null) {
+                                    return false; // don't try to merge changes
+                                }
+                                change= new TextFileChange(file.getName(), file);
+                                change.setEdit(new MultiTextEdit());
+                                changes.put(file, change);
                             }
-                            change= new TextFileChange(file.getName(), file);
-                            change.setEdit(new MultiTextEdit());
-                            changes.put(file, change);
+                            ReplaceEdit edit= new ReplaceEdit(matchOffset, oldName.length(), newName);
+                            change.addEdit(edit);
+                            change.addTextEditGroup(new TextEditGroup("Rename package reference to '" + newName + "'", edit));
                         }
-                        ReplaceEdit edit= new ReplaceEdit(matchAccess.getMatchOffset()+matchAccess.getMatchLength()-1-oldName.length(), 
-                                oldName.length(), newName);
-                        change.addEdit(edit);
-                        change.addTextEditGroup(new TextEditGroup("Rename package reference to '" + newName + "'", edit));
                         return true;
                     }
                 };

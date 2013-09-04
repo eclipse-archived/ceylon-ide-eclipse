@@ -515,7 +515,7 @@ public class CeylonQuickFixAssistant {
                 }
                 @Override
                 public String getDisplayString() {
-                    return "Rename and move '" +  cpn + "' to '" + pn + "'";
+                    return "Rename and move to '" + pn + "'";
                 }
 
                 @Override
