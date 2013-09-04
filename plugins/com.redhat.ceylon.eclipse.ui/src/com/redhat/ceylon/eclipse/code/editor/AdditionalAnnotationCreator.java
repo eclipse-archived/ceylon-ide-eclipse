@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
@@ -86,7 +87,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             int type = token.getType();
 			if (type == CeylonLexer.LINE_COMMENT || 
             	type == CeylonLexer.MULTI_COMMENT) {
-                CeylonTaskUtil.addTaskAnnotation(token, model);
+                addTaskAnnotation(token, model);
             }
         }
     }
