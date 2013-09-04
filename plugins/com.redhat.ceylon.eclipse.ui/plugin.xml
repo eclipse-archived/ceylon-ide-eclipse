@@ -984,12 +984,12 @@
                   id="shiftRight"
                   commandId="org.eclipse.ui.edit.text.shiftRight"
                   icon="icons/shift_r_edit.gif"
-                  label="Shift &amp;Right"/>
+                  label="Shift Right"/>
             <command
                   id="shiftLeft"
                   commandId="org.eclipse.ui.edit.text.shiftLeft"
                   icon="icons/shift_l_edit.gif"
-                  label="Shift &amp;Left"/>
+                  label="Shift Left"/>
             <separator 
                   name="sep4" 
                   visible="true"/>
@@ -1696,14 +1696,14 @@
          </menu-->
          <!--      menubarPath="findMenu/findGroup" -->
          <action
-               label="Move To New Unit..."
+               label="Move To &amp;New Unit..."
                class="com.redhat.ceylon.eclipse.code.refactor.MoveDeclarationHandler"
                enablesFor="1"
                icon="icons/file_change.png"
                id="moveToNewUnit"
                menubarPath="refactor"/>
          <action
-               label="Rename..."
+               label="&amp;Rename..."
                class="com.redhat.ceylon.eclipse.code.refactor.RenameAction"
                enablesFor="1"
                icon="icons/correction_rename.png"
@@ -1731,7 +1731,7 @@
                id="findAssignments"
                menubarPath="find"/>
          <action
-               label="Find References"
+               label="&amp;Find References"
                class="com.redhat.ceylon.eclipse.code.search.FindReferencesAction"
                enablesFor="1"
                icon="icons/search_ref_obj.png"
