@@ -896,12 +896,12 @@
                   visible="true"
                   name="aboveOpen"/>
             <command
-                  label="Open Ceylon Declaration..." 
+                  label="Open &amp;Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
-                  label="Open Type..." 
+                  label="Open &amp;Type..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openType"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openType"/>
@@ -917,7 +917,7 @@
                   label="Ceylon"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
             <command
-                  label="Open Ceylon Declaration..." 
+                  label="Open &amp;Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   tooltip="Open Ceylon Declaration"
@@ -929,17 +929,17 @@
             <command 
                   id="selectEnclosing"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-                  label="Select Enclosing"/>
+                  label="&amp;Select Enclosing"/>
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="Restore Previous Selection"/>
+                  label="&amp;Restore Previous Selection"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:navigate?after=additions">
             <command
                   id="gotoMatchingFence"
-                  label="Go To Matching Bracket"
+                  label="Go To &amp;Matching Bracket"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
       </menuContribution>
       <menuContribution
@@ -958,7 +958,7 @@
                   id="quickAssist"
                   commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
                   icon="icons/quickassist_obj.gif"
-                  label="Quick Fix/Assist"/>
+                  label="&amp;Quick Fix/Assist"/>
             <separator
                   visible="true"
                   name="sep25"/>
@@ -966,12 +966,12 @@
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
-                  label="Show Outline"/>
+                  label="Show &amp;Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
-                  label="Show Hierarchy"/>
+                  label="Show &amp;Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
@@ -984,12 +984,12 @@
                   id="shiftRight"
                   commandId="org.eclipse.ui.edit.text.shiftRight"
                   icon="icons/shift_r_edit.gif"
-                  label="Shift Right"/>
+                  label="Shift &amp;Right"/>
             <command
                   id="shiftLeft"
                   commandId="org.eclipse.ui.edit.text.shiftLeft"
                   icon="icons/shift_l_edit.gif"
-                  label="Shift Left"/>
+                  label="Shift &amp;Left"/>
             <separator 
                   name="sep4" 
                   visible="true"/>
@@ -997,12 +997,12 @@
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/glyph2.gif"
-                  label="Correct Indentation"/>
+                  label="Correct &amp;Indentation"/>
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
-                  label="Toggle Comment"/>
+                  label="&amp;Toggle Comment"/>
             <command
                   id="addBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
@@ -1017,7 +1017,7 @@
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
                   icon="icons/correction_cast.gif"
-                  label="Terminate Statement"/>
+                  label="&amp;Terminate Statement"/>
           </menu>
       </menuContribution>
       <menuContribution
@@ -1035,12 +1035,12 @@
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/glyph2.gif"
-                  label="Correct Indentation"/>
+                  label="Correct &amp;Indentation"/>
             <command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
-                  label="Toggle Comment"/>
+                  label="&amp;Toggle Comment"/>
             <command
                   id="addBlockComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
@@ -1055,7 +1055,7 @@
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
                   icon="icons/correction_cast.gif"
-                  label="Terminate Statement"/>
+                  label="&amp;Terminate Statement"/>
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
@@ -1081,12 +1081,12 @@
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
-                  label="Show Outline"/>
+                  label="Show &amp;Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
-                  label="Show Hierarchy"/>
+                  label="Show &amp;Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
@@ -1102,7 +1102,7 @@
              <command
                    id="ceylonSearch"
                    commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
-                   label="Ceylon..."
+                   label="&amp;Ceylon..."
                    icon="icons/find_obj.gif"/>
              <separator name="dialogGroup"/>
              <separator
@@ -1122,7 +1122,7 @@
              <command
                    id="ceylonWelcome"
                    commandId="com.redhat.ceylon.eclipse.ui.action.welcome"
-                   label="Welcome to Ceylon"
+                   label="Welcome to &amp;Ceylon"
                    icon="icons/ceylon_icon_16px.png"/>
       </menuContribution>
    </extension>
