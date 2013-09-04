@@ -53,17 +53,26 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -467,7 +476,75 @@ public class CeylonQuickFixAssistant {
             break;
         case 8000:
             addRenameDescriptorProposal(cu, context, problem, proposals);
+            addMoveDirProposal(file, cu, project, proposals);
             break;
+        }
+    }
+
+    protected void addMoveDirProposal(final IFile file, final Tree.CompilationUnit cu,
+            final IProject project, Collection<ICompletionProposal> proposals) {
+        Tree.ImportPath importPath;
+        if (cu.getPackageDescriptor()!=null) {
+            importPath = cu.getPackageDescriptor().getImportPath();
+        }
+        else if (cu.getModuleDescriptor()!=null) {
+            importPath = cu.getModuleDescriptor().getImportPath();
+        }
+        else {
+            return;
+        }
+        String pn = formatPath(importPath.getIdentifiers());
+        String cpn = cu.getUnit().getPackage().getNameAsString();
+        if (pn.startsWith(cpn)) return;
+        final IPath relPath = file.getProjectRelativePath()
+                .removeLastSegments(file.getProjectRelativePath().segmentCount()-1)
+                .append(pn.replace('.', '/'));
+        final IPath newPath = project.getFullPath().append(relPath);
+        if (!project.exists(newPath)) {
+            proposals.add(new ICompletionProposal() {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return null;
+                }
+                @Override
+                public Image getImage() {
+                    return CHANGE; //TODO!!!!!
+                }
+                @Override
+                public String getDisplayString() {
+                    return "Move resources to '" + relPath.toPortableString() + "'";
+                }
+
+                @Override
+                public IContextInformation getContextInformation() {
+                    return null;
+                }
+
+                @Override
+                public String getAdditionalProposalInfo() {
+                    return null;
+                }
+                @Override
+                public void apply(IDocument document) {
+                    try {
+                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                            @Override
+                            public void run(IProgressMonitor monitor) throws CoreException {
+                                for (int i = relPath.segmentCount()-1; i>0; i--) {
+                                    IFolder fol = project.getFolder(relPath.removeLastSegments(i));
+                                    if (!fol.exists()) {
+                                        fol.create(false, true, monitor);
+                                    }
+                                }
+                                file.getParent().move(newPath, false, monitor);
+                            }
+                        }, new NullProgressMonitor());
+                    } 
+                    catch (CoreException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
     }
 
