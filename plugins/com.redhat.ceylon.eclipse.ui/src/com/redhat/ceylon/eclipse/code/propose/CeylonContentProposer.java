@@ -57,6 +57,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -180,7 +182,6 @@ public class CeylonContentProposer {
                 tt==STRING_START ||
                 tt==VERBATIM_STRING ||
                 tt==AVERBATIM_STRING ||
-                tt==ASTRING_LITERAL ||
                 tt==CHAR_LITERAL ||
                 tt==FLOAT_LITERAL ||
                 tt==NATURAL_LITERAL) {
@@ -200,6 +201,14 @@ public class CeylonContentProposer {
         	return null;
         }
 
+        // overrrides above. TODO separate block for all non-typechecker proposals
+        if (tt==ASTRING_LITERAL) {
+        	result = getDocReferencePosition(offset, viewer, tokens);
+        	if (result == null) {
+        		return null;
+        	}
+        }
+        
         //find the node at the token
         Node node = getTokenNode(adjustedToken.getStartIndex(), 
                 adjustedToken.getStopIndex()+1, 
@@ -250,6 +259,39 @@ public class CeylonContentProposer {
         return visitor.getOccurrenceLocation();
     }
 
+    private static PositionedPrefix getDocReferencePosition(final int offset,
+            ITextViewer viewer, List<CommonToken> tokens) {
+    	
+    	CommonToken token = getTokenAtCaret(offset, viewer, tokens);
+
+    	String text = viewer.getDocument().get().substring(
+    			token.getStartIndex(), token.getStopIndex() + 1);
+    	Matcher wikiRef = Pattern.compile("\\[\\[(.+?)\\]\\]").matcher(text);
+    	if (token==null || offset==0 || !wikiRef.find()) {
+            return null;
+        }
+
+        int offsetInToken = offset-token.getStartIndex();
+        String prefix = null;
+        wikiRef.reset();
+    	while (wikiRef.find()) {
+	        for (int i = 1; i <= wikiRef.groupCount(); i++) { // loop for safety
+	    		if (offsetInToken >= wikiRef.start(i) && 
+	    				offsetInToken <= wikiRef.end(i)) {
+	    			prefix = wikiRef.group(i).substring(0, 
+	    					offsetInToken - wikiRef.start(i));
+	    			break;
+	    		}
+			}
+    	}
+    	
+    	if (prefix == null) { // it will be empty string if we are in a wiki ref
+    		return null;
+    	}
+    	
+    	return new PositionedPrefix(prefix, token.getStartIndex());
+    }
+    
     private static PositionedPrefix compensateForMissingCharacter(final int offset,
             ITextViewer viewer, List<CommonToken> tokens) {
 
@@ -731,8 +773,9 @@ public class CeylonContentProposer {
     }
     
     private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
-                cpc.getRootNode() != null && 
+        return cpc.getRootNode() != null &&
+        		cpc.getRootNode().getUnit() != null &&
+                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
                 cpc.getRootNode().getPackageDescriptor() == null;
     }
 

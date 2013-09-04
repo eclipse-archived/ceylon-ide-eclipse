@@ -170,6 +170,12 @@ class FindOccurrenceLocationVisitor extends Visitor
         }
     }
     
+    public void visit(Tree.StringLiteral that) {
+        if (inBounds(that)) {
+            occurrence = EXPRESSION;
+        }
+    }
+    
     private boolean inBounds(Node that) {
         return inBounds(that, that);
     }
