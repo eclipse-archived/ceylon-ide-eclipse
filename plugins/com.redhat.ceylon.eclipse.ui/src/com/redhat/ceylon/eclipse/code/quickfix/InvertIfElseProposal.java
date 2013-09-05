@@ -33,12 +33,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class InvertIfElse extends ChangeCorrectionProposal {
+class InvertIfElseProposal extends ChangeCorrectionProposal {
     
     final int offset; 
     final IFile file;
     
-    InvertIfElse(int offset, IFile file, TextChange change) {
+    InvertIfElseProposal(int offset, IFile file, TextChange change) {
         super("Invert if-else", change, 10, CHANGE);
         this.offset=offset;
         this.file=file;
@@ -115,7 +115,7 @@ class InvertIfElse extends ChangeCorrectionProposal {
 
 			TextChange change = new DocumentChange("Invert if-else", doc);
 			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
-			proposals.add(new InvertIfElse(statement.getStartIndex(), file, change));
+			proposals.add(new InvertIfElseProposal(statement.getStartIndex(), file, change));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
