@@ -104,7 +104,6 @@ public class CeylonQuickFixController extends QuickAssistAssistant
     		return editor.getParseController().getRootNode();
     	}
     	else if (model!=null) {
-    		//TODO: this is really slow ... get the tree from CeylonBuilder
     		return (Tree.CompilationUnit) model;
     	}
     	else {
