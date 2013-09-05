@@ -60,10 +60,10 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
-		final String newName= getArguments().getNewName();
+		final String newName = getArguments().getNewName();
 		IResource[] roots = getSourceDirs(javaPackageFragment);  // limit to source dirs in the current project
-		String[] fileNamePatterns= { "*.ceylon" }; // all files with file suffix '.ceylon'
-		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
+		String[] fileNamePatterns = { "*.ceylon" }; // all files with file suffix '.ceylon'
+		FileTextSearchScope scope = FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
 		final String oldName = javaPackageFragment.getElementName();
         final IProject project = javaPackageFragment.getJavaProject().getProject();
 		
@@ -77,8 +77,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 			        public void visit(ImportPath that) {
 			            super.visit(that);
 			            if (formatPath(that.getIdentifiers()).equals(oldName)) {
-		                    IFile file= matchAccess.getFile();
-		                    TextFileChange change= (TextFileChange) changes.get(file);
+		                    IFile file = matchAccess.getFile();
+		                    TextFileChange change = (TextFileChange) changes.get(file);
 		                    if (change == null) {
 		                        TextChange textChange= getTextChange(file);
 		                        if (textChange != null) {
