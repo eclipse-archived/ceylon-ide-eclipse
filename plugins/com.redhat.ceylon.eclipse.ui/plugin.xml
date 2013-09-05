@@ -1470,7 +1470,7 @@
     <colorDefinition
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
           id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals" label="Metamodel expression delimiters"
-          value="BLACK">
+          value="COLOR_BLACK">
        <description>
           Color for highlighting metamodel expression delimiters
        </description>
@@ -1558,7 +1558,7 @@
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.semis" label="Semicolons"
-        value="BLACK">
+        value="COLOR_BLACK">
         <description>
             Color for highlighting semicolons.
         </description>
@@ -1566,7 +1566,7 @@
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.braces" label="Braces"
-        value="BLACK">
+        value="COLOR_BLACK">
         <description>
             Color for highlighting braces.
         </description>
@@ -1586,9 +1586,9 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.outline" 
         label="Outline popup background"
-        value="206,246,236"> <!--224,248,224  206,206,246-->
+        value="COLOR_INFO_BACKGROUND">
         <description>
-            Background color for outline and hierarchy popup controls. (Takes effect after closing Ceylon editor.)
+            Background color for outline popup control. (Takes effect after closing Ceylon editor.)
         </description>
     </colorDefinition>
 
@@ -1596,9 +1596,9 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.hierarchy" 
         label="Hierarchy popup background"
-        value="246,227,206"> <!--245,236,206-->
+        value="COLOR_INFO_BACKGROUND">
         <description>
-            Background color for outline and hierarchy popup controls. (Takes effect after closing Ceylon editor.)
+            Background color for hierarchy popup control. (Takes effect after closing Ceylon editor.)
         </description>
     </colorDefinition>
 
@@ -1606,7 +1606,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.code" 
         label="Code popup background"
-        value="206,227,246">
+        value="COLOR_INFO_BACKGROUND">
         <description>
             Background color for code popup control. (Takes effect after closing Ceylon editor.)
         </description>
