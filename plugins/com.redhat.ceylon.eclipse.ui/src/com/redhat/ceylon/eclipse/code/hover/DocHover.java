@@ -123,6 +123,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.quickfix.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.quickfix.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal;
@@ -1636,25 +1637,16 @@ public class DocHover
                 out.append("<pre class=\"brush: ").append(meta).append("\">");
             }
 
-            for (final String s : lines) {
-                for (int i = 0; i < s.length(); i++) {
-                    final char c = s.charAt(i);
-                    switch (c) {
-                    case '&':
-                        out.append("&amp;");
-                        break;
-                    case '<':
-                        out.append("&lt;");
-                        break;
-                    case '>':
-                        out.append("&gt;");
-                        break;
-                    default:
-                        out.append(c);
-                        break;
-                    }
+            for (String s : lines) {
+                HTMLPrinter.convertToHTMLContent(s);
+                s = HTMLPrinter.convertToHTMLContent(s);
+                s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", "<span style='color:#0000FF'>$0</span>");
+                for (String kw: CeylonTokenColorer.keywords) {
+                    s = s.replaceAll("\\b"+kw+"\\b", "<b style='color:#8B008B'>"+kw+"</b>");
                 }
-                out.append('\n');
+                s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", "<span style='color:#0000FF'>&quot;$1&quot;</span>");
+                s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", "<span style='color:#000080'>$0</span>");
+                out.append(s).append('\n');
             }
             out.append("</pre>\n");
         }
