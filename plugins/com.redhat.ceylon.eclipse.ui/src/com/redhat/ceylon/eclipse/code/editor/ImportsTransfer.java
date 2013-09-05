@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.TransferData;
@@ -16,7 +16,7 @@ public class ImportsTransfer extends ByteArrayTransfer {
     
     private static final int TYPEID = registerType(TYPE_NAME);
     
-    public static List<Declaration> imports;
+    public static Map<Declaration,String> imports;
     
     @Override
     protected int[] getTypeIds() {
@@ -32,13 +32,13 @@ public class ImportsTransfer extends ByteArrayTransfer {
     protected void javaToNative(Object object, TransferData transferData) {
         if (isSupportedType(transferData)) {
             //TODO: serialize qualified names to NSStrings
-            imports = (List<Declaration>) object;
+            imports = (Map<Declaration,String>) object;
             super.javaToNative(new byte[1], transferData);
         }
     }
 
     @Override
-    protected List<Declaration> nativeToJava(TransferData transferData) {
+    protected Map<Declaration,String> nativeToJava(TransferData transferData) {
         if (isSupportedType(transferData)) {
             //TODO: unserialize qualified names from NSStrings
             return imports;
