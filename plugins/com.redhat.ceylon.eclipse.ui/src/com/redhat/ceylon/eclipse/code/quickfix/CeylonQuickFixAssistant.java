@@ -569,6 +569,9 @@ public class CeylonQuickFixAssistant {
     private void addModuleImportProposals(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IProject project,
             TypeChecker tc, Node node) {
+        if (node instanceof Tree.Import) {
+            node = ((Tree.Import) node).getImportPath();
+        }
         List<Identifier> ids = ((ImportPath) node).getIdentifiers();
         String pkg = formatPath(ids);
         if (JDKUtils.isJDKAnyPackage(pkg)) {
