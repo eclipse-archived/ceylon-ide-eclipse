@@ -11,7 +11,6 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
@@ -33,7 +32,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
@@ -92,7 +92,7 @@ public class EnterAliasLinkedMode {
     }
 
     private final CeylonEditor fEditor;
-    private final Node node;
+    private final Tree.ImportMemberOrType node;
     Declaration dec;
 
     private RenameInformationPopup fInfoPopup;
@@ -111,10 +111,11 @@ public class EnterAliasLinkedMode {
      * 
      * @since 3.5
      */
-    private IUndoableOperation fStartingUndoOperation;
+//    private IUndoableOperation fStartingUndoOperation;
 
 
-    public EnterAliasLinkedMode(Node element, Declaration dec, CeylonEditor editor) {
+    public EnterAliasLinkedMode(Tree.ImportMemberOrType element, 
+            Declaration dec, CeylonEditor editor) {
         fEditor= editor;
         node= element;
         fFocusEditingSupport= new FocusEditingSupport();
@@ -122,18 +123,32 @@ public class EnterAliasLinkedMode {
     }
     
     public void start() {
-        fOriginalName = dec.getName();
         ISourceViewer viewer= fEditor.getCeylonSourceViewer();
         final IDocument document= viewer.getDocument();
         fOriginalSelection= viewer.getSelectedRange();
         int offset= fOriginalSelection.x;
-        try {
-            document.set(document.get(0,node.getStartIndex())+ dec.getName() + "=" + 
-                    document.get(node.getStartIndex(), document.getLength()-node.getStartIndex()));
+        int start = node.getStartIndex();
+        String alias;
+        final int adjust;
+        if (node.getAlias()==null) {
+            alias = dec.getName();
+            //TODO: is this really the right way to insert the text?
+            try {
+                document.set(document.get(0,start) + alias + "=" + 
+                        document.get(start, document.getLength()-start));
+                adjust = alias.length()+1;
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                return;
+            }
         }
-        catch (BadLocationException e) {
-            e.printStackTrace();
+        else {
+            alias = node.getAlias().getIdentifier().getText();
+            adjust = 0;
         }
+        fOriginalName = alias;
+                
         
         try {
 
@@ -149,7 +164,7 @@ public class EnterAliasLinkedMode {
 //                }
 //            }
             
-            fNamePosition = new LinkedPosition(document, node.getStartIndex(), fOriginalName.length(), 0);
+            fNamePosition = new LinkedPosition(document, start, alias.length(), 0);
             fLinkedPositionGroup.addPosition(fNamePosition);
             
             fEditor.getParseController().getRootNode().visit(new Visitor() {
@@ -157,28 +172,21 @@ public class EnterAliasLinkedMode {
                 @Override
                 public void visit(BaseMemberOrTypeExpression that) {
                     super.visit(that);
-                    Identifier id = that.getIdentifier();
-                    if (id!=null && that.getDeclaration()!=null && 
-                            dec.equals(that.getDeclaration())) {
-                        try {
-                            fLinkedPositionGroup.addPosition(new LinkedPosition(document, 
-                                    id.getStartIndex()+fOriginalName.length()+1, 
-                                    id.getText().length(), i++));
-                        }
-                        catch (BadLocationException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    addLinkedPosition(document, that.getIdentifier(), 
+                            that.getDeclaration());
                 }
                 @Override
                 public void visit(BaseType that) {
                     super.visit(that);
-                    Identifier id = that.getIdentifier();
-                    if (id!=null && that.getDeclarationModel()!=null && 
-                            dec.equals(that.getDeclarationModel())) {
+                    addLinkedPosition(document, that.getIdentifier(), 
+                            that.getDeclarationModel());
+                }
+                protected void addLinkedPosition(final IDocument document,
+                        Identifier id, Declaration d) {
+                    if (id!=null && d!=null && dec.equals(d)) {
                         try {
                             fLinkedPositionGroup.addPosition(new LinkedPosition(document, 
-                                    id.getStartIndex()+fOriginalName.length()+1, 
+                                    id.getStartIndex()+adjust, 
                                     id.getText().length(), i++));
                         }
                         catch (BadLocationException e) {

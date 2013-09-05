@@ -37,6 +37,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
@@ -307,9 +308,14 @@ public class CeylonQuickFixAssistant {
             }
             if (node instanceof Tree.ImportMemberOrType) {
                 Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
-                if (imt.getAlias()==null && imt.getDeclarationModel()!=null) {
-                    addUseAliasProposal(node, proposals, imt.getDeclarationModel(), 
-                            file, cu, editor);
+                Declaration dec = imt.getDeclarationModel();
+                if (dec!=null) {
+                    if (imt.getAlias()==null) {
+                        addUseAliasProposal(imt, proposals, dec, file, cu, editor);
+                    }
+                    else {
+                        addRenameAliasProposal(imt, proposals, dec, file, cu, editor);
+                    }
                 }
             }
             
