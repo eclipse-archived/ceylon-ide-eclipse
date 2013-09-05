@@ -14,12 +14,12 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
 
-class RenameRefactoringProposal implements ICompletionProposal,
+class RenameDeclarationProposal implements ICompletionProposal,
 		ICompletionProposalExtension6 {
 
     private RenameRefactoringAction action;
     
-    public RenameRefactoringProposal(CeylonEditor editor) {
+    public RenameDeclarationProposal(CeylonEditor editor) {
         action = new RenameRefactoringAction(editor);
     }
     
@@ -58,7 +58,7 @@ class RenameRefactoringProposal implements ICompletionProposal,
     }
     
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-        RenameRefactoringProposal prop = new RenameRefactoringProposal(editor);
+        RenameDeclarationProposal prop = new RenameDeclarationProposal(editor);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

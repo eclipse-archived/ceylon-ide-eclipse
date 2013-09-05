@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getOccurrenceLocation;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.isImported;
 
@@ -9,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
@@ -23,13 +25,13 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
-class RenameProposal extends ChangeCorrectionProposal implements ICompletionProposalExtension {
+class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompletionProposalExtension {
     
     final int offset;
     final int length;
     final IFile file;
     
-    RenameProposal(ProblemLocation problem, IFile file, String name, 
+    ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, change, dist+10, 
                 CORRECTION/*CeylonLabelProvider.getImage(dec)*/);
@@ -54,14 +56,16 @@ class RenameProposal extends ChangeCorrectionProposal implements ICompletionProp
         String pkg = "";
         if (dec.isToplevel() && !isImported(dec, cu)) {
             pkg = " in '" + dec.getContainer().getQualifiedNameString() + "'";
-            List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
-            for (InsertEdit ie: ies) {
-                change.addEdit(ie);
+            if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
+                List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
+                for (InsertEdit ie: ies) {
+                    change.addEdit(ie);
+                }
             }
         }
         change.addEdit(new ReplaceEdit(problem.getOffset(), 
                 brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new RenameProposal(problem, file, dwp.getName(), 
+        proposals.add(new ChangeReferenceProposal(problem, file, dwp.getName(), 
                 pkg, dec, dist, change));
     }
 

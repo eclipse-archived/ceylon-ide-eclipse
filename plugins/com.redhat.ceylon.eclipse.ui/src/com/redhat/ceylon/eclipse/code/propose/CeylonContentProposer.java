@@ -259,7 +259,7 @@ public class CeylonContentProposer {
         }
 	}
 
-    private static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
+    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
         if (node.getToken()==null) return null;
         FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
         cu.visit(visitor);
