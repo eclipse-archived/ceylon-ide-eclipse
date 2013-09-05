@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -1638,7 +1639,7 @@ public class CeylonQuickFixAssistant {
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
     		IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
-        List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), null);
+        List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), null, null);
         if (ies.isEmpty()) return null;
 		change.setEdit(new MultiTextEdit());
 		for (InsertEdit ie: ies) change.addEdit(ie);
@@ -1654,7 +1655,7 @@ public class CeylonQuickFixAssistant {
     }
 
 	public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,
-			Iterable<Declaration> declarations,
+			Iterable<Declaration> declarations, Iterable<String> aliases,
 			Declaration declarationBeingDeleted) {
 		List<InsertEdit> result = new ArrayList<InsertEdit>();
 		Set<Package> packages = new HashSet<Package>();
@@ -1663,10 +1664,25 @@ public class CeylonQuickFixAssistant {
 		}
 		for (Package p: packages) {
 			StringBuilder text = new StringBuilder();
-			for (Declaration d: declarations) {
-				if (d.getUnit().getPackage().equals(p)) {
-					text.append(", ").append(d.getName());
-				}
+			if (aliases==null) {
+			    for (Declaration d: declarations) {
+			        if (d.getUnit().getPackage().equals(p)) {
+			            text.append(", ").append(d.getName());
+			        }
+			    }
+			}
+			else {
+		        Iterator<String> aliasIter = aliases.iterator();
+                for (Declaration d: declarations) {
+                    String alias = aliasIter.next();
+                    if (d.getUnit().getPackage().equals(p)) {
+                        text.append(", ");
+                        if (alias!=null && !alias.equals(d.getName())) {
+                            text.append(alias).append('=');
+                        }
+                        text.append(d.getName());
+                    }
+                }
 			}
 			Tree.Import importNode = findImportNode(cu, p.getNameAsString());
 			if (importNode!=null) {
@@ -1777,7 +1793,7 @@ public class CeylonQuickFixAssistant {
 			Declaration declarationBeingDeleted,
 			Tree.CompilationUnit cu) {
 		int il=0;
-		for (InsertEdit ie: importEdit(cu, alreadyImported, declarationBeingDeleted)) {
+		for (InsertEdit ie: importEdit(cu, alreadyImported, null, declarationBeingDeleted)) {
 			il+=ie.getText().length();
 			change.addEdit(ie);
 		}

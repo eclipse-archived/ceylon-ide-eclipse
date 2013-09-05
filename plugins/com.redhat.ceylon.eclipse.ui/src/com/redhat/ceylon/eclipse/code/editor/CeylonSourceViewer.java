@@ -15,11 +15,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -185,7 +185,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         try {
             Object text = clipboard.getContents(TextTransfer.getInstance());
             try {
-                List<Declaration> imports = copyImports();
+                Map<Declaration,String> imports = copyImports();
                 if (imports==null) return;
                 Object[] data = new Object[] { text, imports, selection };
                 Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
@@ -211,7 +211,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 return false;
             }
             else {
-                List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
+                Map<Declaration,String> imports = (Map<Declaration,String>) clipboard.getContents(ImportsTransfer.INSTANCE);
                 IRegion selection = editor.getSelection();
                 try {
                     MultiTextEdit edit = new MultiTextEdit();
@@ -569,66 +569,68 @@ public class CeylonSourceViewer extends ProjectionViewer {
         super.unconfigure();
     }
     
-    List<Declaration> copyImports() {
+    Map<Declaration,String> copyImports() {
         CeylonParseController pc = editor.getParseController();
         if (pc==null || pc.getRootNode()==null) return null;
         Tree.CompilationUnit cu = pc.getRootNode();
         final IRegion selection = editor.getSelection();
         class SelectedImportsVisitor extends Visitor {
-            Set<Declaration> results = new HashSet<Declaration>();
+            Map<Declaration,String> results = new HashMap<Declaration,String>();
             boolean inSelection(Node node) {
                 return node.getStartIndex()>=selection.getOffset() &&
                         node.getStopIndex()<selection.getOffset()+selection.getLength();
             }
-            void addDeclaration(Declaration d) {
-                if (d.isToplevel() && 
+            void addDeclaration(Declaration d, Tree.Identifier id) {
+                if (d!=null && id!=null && d.isToplevel() && 
                         !d.getUnit().getPackage().getNameAsString()
                                 .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    results.add(d);
+                    results.put(d, id.getText());
                 }
             }
             @Override
             public void visit(Tree.BaseMemberExpression that) {
                 if (inSelection(that)) {
-                    addDeclaration(that.getDeclaration());
+                    addDeclaration(that.getDeclaration(), that.getIdentifier());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.BaseTypeExpression that) {
                 if (inSelection(that)) {
-                    addDeclaration(that.getDeclaration());
+                    addDeclaration(that.getDeclaration(), that.getIdentifier());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.BaseType that) {
                 if (inSelection(that)) {
-                    addDeclaration(that.getDeclarationModel());
+                    addDeclaration(that.getDeclarationModel(), that.getIdentifier());
                 }
                 super.visit(that);
             }
         }
         SelectedImportsVisitor v = new SelectedImportsVisitor();
         cu.visit(v);
-        return new ArrayList<Declaration>(v.results);
+        return v.results;
     }
     
-    void pasteImports(List<Declaration> list, MultiTextEdit edit) {
-        if (!list.isEmpty()) {
+    void pasteImports(Map<Declaration,String> map, MultiTextEdit edit) {
+        if (!map.isEmpty()) {
             CeylonParseController pc = editor.getParseController();
             if (pc==null || pc.getRootNode()==null) return;
             Tree.CompilationUnit cu = pc.getRootNode();
-            List<Declaration> imports = new ArrayList<Declaration>(); 
-            imports.addAll(list);
-            for (Iterator<Declaration> i=imports.iterator(); i.hasNext();) {
-                Declaration d = i.next();
-                if (cu.getUnit().getPackage().equals(d.getUnit().getPackage())) {
+            //copy them, so as to not affect the clipboard
+            Map<Declaration,String> imports = new LinkedHashMap<Declaration,String>(); 
+            imports.putAll(map);
+            for (Iterator<Map.Entry<Declaration,String>> i=imports.entrySet().iterator(); 
+                    i.hasNext();) {
+                Map.Entry<Declaration,String> e = i.next();
+                if (cu.getUnit().getPackage().equals(e.getKey().getUnit().getPackage())) {
                     i.remove();
                 }
                 else {
                     for (Import ip: cu.getUnit().getImports()) {
-                        if (ip.getDeclaration().equals(d)) {
+                        if (ip.getDeclaration().equals(e.getKey())) {
                             i.remove();
                             break;
                         }
@@ -636,7 +638,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
             }
             if (!imports.isEmpty()) {
-                for (InsertEdit importEdit: importEdit(cu, imports, null)) {
+                List<InsertEdit> edits = importEdit(cu, imports.keySet(), imports.values(), null);
+                for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    
                 }
             }

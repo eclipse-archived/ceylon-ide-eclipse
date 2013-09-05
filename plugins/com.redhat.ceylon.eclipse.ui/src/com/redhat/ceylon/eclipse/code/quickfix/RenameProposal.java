@@ -54,7 +54,7 @@ class RenameProposal extends ChangeCorrectionProposal implements ICompletionProp
         String pkg = "";
         if (dec.isToplevel() && !isImported(dec, cu)) {
             pkg = " in '" + dec.getContainer().getQualifiedNameString() + "'";
-            List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null);
+            List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
             for (InsertEdit ie: ies) {
                 change.addEdit(ie);
             }
