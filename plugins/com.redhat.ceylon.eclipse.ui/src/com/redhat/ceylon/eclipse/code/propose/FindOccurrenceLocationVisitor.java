@@ -159,14 +159,19 @@ class FindOccurrenceLocationVisitor extends Visitor
     @Override
     public void visit(Tree.Declaration that) {
         if (inBounds(that)) {
-            occurrence=null;
+            if (occurrence!=PARAMETER_LIST) {
+                occurrence=null;
+            }
         }
         super.visit(that);
     }
     
     public void visit(Tree.MetaLiteral that) {
+        super.visit(that);
         if (inBounds(that)) {
-            occurrence = META;
+            if (occurrence!=TYPE_ARGUMENT_LIST) {
+                occurrence = META;
+            }
         }
     }
     
