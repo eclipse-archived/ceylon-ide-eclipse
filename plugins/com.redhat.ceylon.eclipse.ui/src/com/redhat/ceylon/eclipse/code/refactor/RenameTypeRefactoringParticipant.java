@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.refactor.RenamePackageRefactoringParticipant.getSourceDirs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.search.ui.text.FileTextSearchScope.newSearchScope;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,9 +62,8 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
 		
 		final String newName = getArguments().getNewName();
 		IResource[] roots= getSourceDirs(javaDeclaration);  // limit to source dirs in the current project
-		String[] fileNamePatterns = { "*.ceylon" }; // all files with file suffix '.ceylon'
-		FileTextSearchScope scope = FileTextSearchScope.newSearchScope(roots, fileNamePatterns, false);
-		Pattern pattern = Pattern.compile("\\b"+javaDeclaration.getElementName()+"\\b"); // only find the simple name of the type
+		String[] fileNamePatterns = { "*.ceylon" };
+		FileTextSearchScope scope = newSearchScope(roots, fileNamePatterns, false);
         final String oldName = javaDeclaration.getElementName();
         final IProject project = javaDeclaration.getJavaProject().getProject();
 		
@@ -136,6 +136,7 @@ public class RenameTypeRefactoringParticipant extends RenameParticipant {
                 return true;
 			}
 		};
+        Pattern pattern = Pattern.compile("\\b"+javaDeclaration.getElementName()+"\\b");
 		TextSearchEngine.create().search(scope, collector, pattern, pm);
 		
 		if (changes.isEmpty())
