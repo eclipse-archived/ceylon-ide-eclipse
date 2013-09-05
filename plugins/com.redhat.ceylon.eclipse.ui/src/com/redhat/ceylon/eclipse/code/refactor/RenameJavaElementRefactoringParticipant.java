@@ -60,12 +60,12 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
+        final IProject project = javaDeclaration.getJavaProject().getProject();
 		final String newName = getArguments().getNewName();
-		IResource[] roots= getSourceDirs(javaDeclaration);  // limit to source dirs in the current project
+		IResource[] roots= getSourceDirs(project);  // limit to source dirs in the current project
 		String[] fileNamePatterns = { "*.ceylon" };
 		FileTextSearchScope scope = newSearchScope(roots, fileNamePatterns, false);
         final String oldName = javaDeclaration.getElementName();
-        final IProject project = javaDeclaration.getJavaProject().getProject();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		TextSearchRequestor collector= new TextSearchRequestor() {

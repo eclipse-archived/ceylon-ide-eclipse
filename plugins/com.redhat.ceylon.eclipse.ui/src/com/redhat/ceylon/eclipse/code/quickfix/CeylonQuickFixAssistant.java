@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_V
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
@@ -78,9 +79,11 @@ import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -1732,6 +1735,93 @@ public class CeylonQuickFixAssistant {
 		}
 		return result;
 	}
+    
+    public static List<TextEdit> importEditForMove(Tree.CompilationUnit cu,
+            Iterable<Declaration> declarations, Iterable<String> aliases,
+            String newPackageName, String oldPackageName) {
+        List<TextEdit> result = new ArrayList<TextEdit>();
+        Set<Declaration> set = new HashSet<Declaration>();
+        for (Declaration d: declarations) {
+            set.add(d);
+        }
+        StringBuilder text = new StringBuilder();
+        if (aliases==null) {
+            for (Declaration d: declarations) {
+                text.append(", ").append(d.getName());
+            }
+        }
+        else {
+            Iterator<String> aliasIter = aliases.iterator();
+            for (Declaration d: declarations) {
+                String alias = aliasIter.next();
+                text.append(", ");
+                if (alias!=null && !alias.equals(d.getName())) {
+                    text.append(alias).append('=');
+                }
+                text.append(d.getName());
+            }
+        }
+        Tree.Import oldImportNode = findImportNode(cu, oldPackageName);
+        if (oldImportNode!=null) {
+            Tree.ImportMemberOrTypeList imtl = oldImportNode.getImportMemberOrTypeList();
+            if (imtl!=null) {
+                int remaining = 0;
+                for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
+                    if (!set.contains(imt.getDeclarationModel())) {
+                        remaining++;
+                    }
+                }
+                if (remaining==0) {
+                    result.add(new DeleteEdit(oldImportNode.getStartIndex(), 
+                            oldImportNode.getStopIndex()-oldImportNode.getStartIndex()+1));
+                }
+                else {
+                    //TODO: format it better!!!!
+                    StringBuilder sb = new StringBuilder("{\n");
+                    for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
+                        if (!set.contains(imt.getDeclarationModel())) {
+                            sb.append(getDefaultIndent());
+                            if (imt.getAlias()!=null) {
+                                sb.append(imt.getAlias().getIdentifier().getText()).append('=');
+                            }
+                            sb.append(imt.getIdentifier().getText()).append(",\n");
+                        }
+                    }
+                    sb.setLength(sb.length()-2);
+                    sb.append("\n}");
+                    result.add(new ReplaceEdit(imtl.getStartIndex(), 
+                            imtl.getStopIndex()-imtl.getStartIndex()+1, 
+                            sb.toString()));
+                }
+            }
+        }
+        if (!cu.getUnit().getPackage().getQualifiedNameString().equals(newPackageName)) {
+            Tree.Import importNode = findImportNode(cu, newPackageName);
+            if (importNode!=null) {
+                Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+                if (imtl.getImportWildcard()!=null) {
+                    //Do nothing
+                }
+                else {
+                    int insertPosition = getBestImportMemberInsertPosition(importNode);
+                    result.add(new InsertEdit(insertPosition, text.toString()));
+                }
+            } 
+            else {
+                int insertPosition = getBestImportInsertPosition(cu);
+                text.delete(0, 2);
+                text.insert(0, "import " + newPackageName + " { ").append(" }"); 
+                if (insertPosition==0) {
+                    text.append("\n");
+                }
+                else {
+                    text.insert(0, "\n");
+                }
+                result.add(new InsertEdit(insertPosition, text.toString()));
+            }
+        }
+        return result;
+    }
     
     private static int getBestImportInsertPosition(Tree.CompilationUnit cu) {
         Integer stopIndex = cu.getImportList().getStopIndex();

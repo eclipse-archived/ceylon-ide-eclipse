@@ -14,7 +14,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -61,12 +60,12 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
-		final String newName = getArguments().getNewName();
-		IResource[] roots = getSourceDirs(javaPackageFragment);  // limit to source dirs in the current project
-		String[] fileNamePatterns = { "*.ceylon" };
-		FileTextSearchScope scope = newSearchScope(roots , fileNamePatterns, false);
-		final String oldName = javaPackageFragment.getElementName();
         final IProject project = javaPackageFragment.getJavaProject().getProject();
+		final String newName = getArguments().getNewName();
+		IResource[] roots = getSourceDirs(project);  // limit to source dirs in the current project
+		String[] fileNamePatterns = { "*.ceylon" };
+		FileTextSearchScope scope = newSearchScope(roots, fileNamePatterns, false);
+		final String oldName = javaPackageFragment.getElementName();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		TextSearchRequestor collector= new TextSearchRequestor() {
@@ -113,10 +112,10 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 		}
 		return result;
 	}
-
-    static IResource[] getSourceDirs(IJavaElement java) throws JavaModelException {
-        IProject project = java.getJavaProject().getProject();
-		IPackageFragmentRoot[] paths = JavaCore.create(project).getAllPackageFragmentRoots();
+	
+    static IResource[] getSourceDirs(IProject project)
+            throws JavaModelException {
+        IPackageFragmentRoot[] paths = JavaCore.create(project).getAllPackageFragmentRoots();
         List<IResource> list = new ArrayList<IResource>();
 		for (int i=0; i<paths.length; i++) {
 		    if (paths[i].getKind()==IPackageFragmentRoot.K_SOURCE) {
@@ -127,7 +126,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 		return list.toArray(new IResource[0]);
     }
 
-	private IFile getMovedFile(final String newName, IFile file) {
+	IFile getMovedFile(final String newName, IFile file) {
 		String oldPath = javaPackageFragment.getElementName().replace('.', '/');
         String newPath = newName.replace('.', '/');
         String replaced = file.getProjectRelativePath().toString()

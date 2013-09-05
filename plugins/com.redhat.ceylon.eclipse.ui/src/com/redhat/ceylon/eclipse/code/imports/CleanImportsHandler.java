@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -35,7 +36,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CleanImportsHandler extends AbstractHandler {
     
-    private static final String indent = "    ";
+    private static final String indent = getDefaultIndent();
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
