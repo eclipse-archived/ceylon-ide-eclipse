@@ -1938,9 +1938,9 @@
     
     <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
       <renameParticipant
-        id="com.redhat.ceylon.eclipse.code.refactor.RenameTypeRefactoringParticipant"
+        id="com.redhat.ceylon.eclipse.code.refactor.RenameJavaElementRefactoringParticipant"
         name="Rename participant for Ceylon source"
-        class="com.redhat.ceylon.eclipse.code.refactor.RenameTypeRefactoringParticipant">
+        class="com.redhat.ceylon.eclipse.code.refactor.RenameJavaElementRefactoringParticipant">
         <enablement>
           <with variable="affectedNatures">
             <iterate operator="or">
