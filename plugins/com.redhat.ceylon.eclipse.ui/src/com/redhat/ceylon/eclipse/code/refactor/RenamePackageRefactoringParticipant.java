@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import java.io.ObjectInputStream.GetField;
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,10 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEditGroup;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
 	private IPackageFragment javaPackageFragment;
@@ -55,41 +61,46 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 	public Change createChange(IProgressMonitor pm) throws CoreException {
 		
 		final String newName= getArguments().getNewName();
-		
-		//TODO: this just does a text search/replace - of 
-		//      course it should use the lexer instead!
-		
 		IResource[] roots = getSourceDirs(javaPackageFragment);  // limit to source dirs in the current project
 		String[] fileNamePatterns= { "*.ceylon" }; // all files with file suffix '.ceylon'
 		FileTextSearchScope scope= FileTextSearchScope.newSearchScope(roots , fileNamePatterns, false);
 		final String oldName = javaPackageFragment.getElementName();
-        Pattern pattern= Pattern.compile("\\b(package|module|import)\\s+"+oldName.replace(".", "\\.")+"\\b");
+        final IProject project = javaPackageFragment.getJavaProject().getProject();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
 		TextSearchRequestor collector= new TextSearchRequestor() {
-			public boolean acceptPatternMatch(TextSearchMatchAccess matchAccess) throws CoreException {
-				int matchOffset = matchAccess.getMatchOffset()+matchAccess.getMatchLength()-oldName.length();
-                if (newName.length()<oldName.length() ||
-                    matchAccess.getFileContentLength()<matchOffset+newName.length() ||
-                    !matchAccess.getFileContent(matchOffset, newName.length()).equals(newName)) {
-                    IFile file= matchAccess.getFile();
-                    TextFileChange change= (TextFileChange) changes.get(file);
-                    if (change == null) {
-                        TextChange textChange= getTextChange(file);
-                        if (textChange != null) {
-                            return false; // don't try to merge changes
-                        }
-                        change= new TextFileChange(file.getName(), getMovedFile(newName, file));
-                        change.setEdit(new MultiTextEdit());
-                        changes.put(file, change);
-                    }
-                    ReplaceEdit edit= new ReplaceEdit(matchOffset, oldName.length(), newName);
-                    change.addEdit(edit);
-                    change.addTextEditGroup(new TextEditGroup("Rename package reference to '" + newName + "'", edit));
-                }
+			public boolean acceptPatternMatch(final TextSearchMatchAccess matchAccess) throws CoreException {
+			    String relPath = matchAccess.getFile().getProjectRelativePath().removeFirstSegments(1).toPortableString();
+                PhasedUnit phasedUnit= getProjectTypeChecker(project).getPhasedUnitFromRelativePath(relPath);
+			    phasedUnit.getCompilationUnit().visit(new Visitor() {
+			        @Override
+			        public void visit(ImportPath that) {
+			            super.visit(that);
+			            if (formatPath(that.getIdentifiers()).equals(oldName)) {
+		                    IFile file= matchAccess.getFile();
+		                    TextFileChange change= (TextFileChange) changes.get(file);
+		                    if (change == null) {
+		                        TextChange textChange= getTextChange(file);
+		                        if (textChange != null) {
+		                            return;
+		                            //return false; // don't try to merge changes
+		                        }
+		                        change= new TextFileChange(file.getName(), getMovedFile(newName, file));
+		                        change.setEdit(new MultiTextEdit());
+		                        changes.put(file, change);
+		                    }
+		                    ReplaceEdit edit = new ReplaceEdit(that.getStartIndex(), oldName.length(), newName);
+		                    change.addEdit(edit);
+		                    //display the change in the UI
+		                    change.addTextEditGroup(new TextEditGroup("Rename package reference '" + 
+		                            oldName + "' to '" + newName + "' in " + file.getName(), edit));
+			            }
+			        }
+                });
 				return true;
 			}
 		};
+        Pattern pattern= Pattern.compile("\\b(package|module|import)\\s+"+oldName.replace(".", "\\.")+"\\b");
 		TextSearchEngine.create().search(scope, collector, pattern, pm);
 		
 		if (changes.isEmpty())
@@ -116,8 +127,10 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     }
 
 	private IFile getMovedFile(final String newName, IFile file) {
-		return file.getProject()
-				.getFile(file.getProjectRelativePath().toString()
-						.replace(javaPackageFragment.getElementName().replace('.', '/'), newName.replace('.', '/')));
+		String oldPath = javaPackageFragment.getElementName().replace('.', '/');
+        String newPath = newName.replace('.', '/');
+        String replaced = file.getProjectRelativePath().toString()
+        		.replace(oldPath, newPath);
+        return file.getProject().getFile(replaced);
 	}
 }
