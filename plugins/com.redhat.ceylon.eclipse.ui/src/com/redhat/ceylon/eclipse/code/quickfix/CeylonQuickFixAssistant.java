@@ -40,6 +40,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addRe
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -302,6 +303,13 @@ public class CeylonQuickFixAssistant {
                 Tree.Block b = ((Tree.AttributeArgument) node).getBlock(); 
                 if (b!=null) {
                     addConvertToSpecifierProposal(doc, proposals, file, b);
+                }
+            }
+            if (node instanceof Tree.ImportMemberOrType) {
+                Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
+                if (imt.getAlias()!=null && imt.getDeclarationModel()!=null) {
+                    addUseAliasProposal(node, proposals, imt.getDeclarationModel(), 
+                            imt.getAlias().getIdentifier().getText(), file, cu);
                 }
             }
             
