@@ -25,7 +25,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
@@ -47,7 +47,8 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 		return "Rename participant for Ceylon source";
 	}
 	
-	public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context) {
+	public RefactoringStatus checkConditions(IProgressMonitor pm, 
+	        CheckConditionsContext context) {
 		return new RefactoringStatus();
 	}
 
@@ -58,7 +59,8 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
         final String oldName = javaDeclaration.getElementName();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project).getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
+                .getPhasedUnits().getPhasedUnits()) {
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
@@ -86,19 +88,23 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     super.visit(that);
                     visitIt(that.getIdentifier(), that.getDeclarationModel());
                 }
-                protected void visitIt(Node node, Declaration dec) {
+                protected void visitIt(Tree.Identifier id, Declaration dec) {
                     if (dec!=null && dec.getQualifiedNameString()
-                            .equals(getQualifiedName(javaDeclaration))) {
-                        edits.add(new ReplaceEdit(node.getStartIndex(), oldName.length(), newName));
+                            .equals(getQualifiedName(javaDeclaration)) &&
+                            id.getText().equals(javaDeclaration.getElementName())) {
+                        edits.add(new ReplaceEdit(id.getStartIndex(), 
+                                oldName.length(), newName));
                     }
                 }
                 protected String getQualifiedName(IMember dec) {
                     IJavaElement parent = dec.getParent();
                     if (parent instanceof ICompilationUnit) {
-                        return parent.getParent().getElementName() + "::" + dec.getElementName();
+                        return parent.getParent().getElementName() + "::" + 
+                                dec.getElementName();
                     }
                     else if (dec.getDeclaringType()!=null) {
-                        return getQualifiedName(dec.getDeclaringType()) + "." + dec.getElementName();
+                        return getQualifiedName(dec.getDeclaringType()) + "." + 
+                                dec.getElementName();
                     }
                     else {
                         return "@";
