@@ -62,7 +62,8 @@ class RenameAliasProposal implements ICompletionProposal, ICompletionProposalExt
 
     @Override
     public String getDisplayString() {
-        return "Rename alias for '" + dec.getName() + "'";
+        return "Rename alias '" + node.getAlias().getIdentifier().getText() + 
+                "' of '" + dec.getName() + "'";
     }
 
     @Override

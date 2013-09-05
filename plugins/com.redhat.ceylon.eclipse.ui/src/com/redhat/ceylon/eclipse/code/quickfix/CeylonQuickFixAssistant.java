@@ -37,6 +37,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
@@ -315,6 +316,7 @@ public class CeylonQuickFixAssistant {
                     }
                     else {
                         addRenameAliasProposal(imt, proposals, dec, file, cu, editor);
+                        addRemoveAliasProposal(imt, proposals, dec, file, cu, editor);
                     }
                 }
             }
