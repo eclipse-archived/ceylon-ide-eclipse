@@ -1565,6 +1565,10 @@ public class DocHover
             }
         }
         
+        if (declName == null || "".equals(declName)) {
+            return null; // no point in continuing. Required for non-token auto-complete.
+        }
+        
         String[] declNames = declName.split("\\.");
         Declaration decl = scope.getMemberOrParameter(unit, declNames[0], null, false);
         for (int i=1; i<declNames.length; i++) {

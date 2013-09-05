@@ -273,7 +273,7 @@ public class CeylonContentProposer {
 
     	String text = viewer.getDocument().get().substring(
     			token.getStartIndex(), token.getStopIndex() + 1);
-    	Matcher wikiRef = Pattern.compile("\\[\\[(.+?)\\]\\]").matcher(text);
+    	Matcher wikiRef = Pattern.compile("\\[\\[(.*?)\\]\\]").matcher(text);
     	if (token==null || offset==0 || !wikiRef.find()) {
             return null;
         }
