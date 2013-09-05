@@ -62,7 +62,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public String getDisplayString() {
-        return "Use alias for '" + dec.getName() + "'";
+        return "Enter alias for '" + dec.getName() + "'";
     }
 
     @Override
