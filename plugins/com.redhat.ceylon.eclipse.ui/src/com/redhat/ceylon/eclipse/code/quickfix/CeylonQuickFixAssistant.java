@@ -307,9 +307,9 @@ public class CeylonQuickFixAssistant {
             }
             if (node instanceof Tree.ImportMemberOrType) {
                 Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
-                if (imt.getAlias()!=null && imt.getDeclarationModel()!=null) {
+                if (imt.getAlias()==null && imt.getDeclarationModel()!=null) {
                     addUseAliasProposal(node, proposals, imt.getDeclarationModel(), 
-                            imt.getAlias().getIdentifier().getText(), file, cu);
+                            file, cu, editor);
                 }
             }
             
