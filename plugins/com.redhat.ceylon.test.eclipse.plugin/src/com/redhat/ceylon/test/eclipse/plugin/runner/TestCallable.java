@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import ceylon.language.Callable;
+import ceylon.language.Sequential;
 
 public class TestCallable implements Callable<Object> {
 
@@ -37,20 +38,20 @@ public class TestCallable implements Callable<Object> {
             if (methodSeparatorIndex == -1) {
                 method.invoke(null, new Object[] {});
             } else {
-                Constructor<?> constructor = testClazz.getDeclaredConstructor(new Class<?>[]{});
+                Constructor<?> constructor = testClazz.getDeclaredConstructor(new Class<?>[] {});
                 constructor.setAccessible(true);
-                Object instance = constructor.newInstance((Object[])null);
-                method.invoke(instance, new Object[] {});                
+                Object instance = constructor.newInstance((Object[]) null);
+                method.invoke(instance, new Object[] {});
             }
         } catch (InvocationTargetException e) {
-            if(e.getTargetException() instanceof RuntimeException)
-            	throw (RuntimeException)e.getTargetException();
+            if (e.getTargetException() instanceof RuntimeException)
+                throw (RuntimeException) e.getTargetException();
             else
-            	throw new RuntimeException(e.getTargetException());
+                throw new RuntimeException(e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         return null;
     }
 
@@ -74,9 +75,54 @@ public class TestCallable implements Callable<Object> {
         return $call();
     }
 
-	@Override
-	public short $getVariadicParameterIndex() {
-		return -1;
-	}
+    @Override
+    public short $getVariadicParameterIndex() {
+        return -1;
+    }
+
+    @Override
+    public Object $call$variadic() {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Sequential<?> arg0) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object... arg0) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0, Sequential<?> arg1) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0, Object arg1) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0, Object arg1, Sequential<?> arg2) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0, Object arg1, Object arg2) {
+        return $call();
+    }
+
+    @Override
+    public Object $call$variadic(Object arg0, Object arg1, Object arg2, Sequential<?> arg3) {
+        return $call();
+    }
 
 }
