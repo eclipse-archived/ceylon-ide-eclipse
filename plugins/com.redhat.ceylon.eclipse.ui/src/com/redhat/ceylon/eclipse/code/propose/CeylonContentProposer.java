@@ -434,8 +434,9 @@ public class CeylonContentProposer {
                 || adjustedToken.getType()==EOF
                 || adjustedToken.getStartIndex()==offset)) { //don't consider the token to the right of the caret
             adjustedToken = tokens.get(tokenIndex);
-            if (adjustedToken.getChannel()!=WS &&
-                    adjustedToken.getType()!=EOF) { //don't adjust to a ws token
+            if (adjustedToken.getType()!=WS &&
+                    adjustedToken.getType()!=EOF &&
+                    adjustedToken.getChannel()!=CommonToken.HIDDEN_CHANNEL) { //don't adjust to a ws token
                 break;
             }
         }
@@ -723,10 +724,7 @@ public class CeylonContentProposer {
             }
             else {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            	if (//isKeywordProposable(ol) && 
-            			!filter &&
-            			!(node instanceof Tree.QualifiedMemberOrTypeExpression) &&
-            			ol!=META) {
+            	if (!filter && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
             		addKeywordProposals(cpc, offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
             	}
@@ -895,8 +893,15 @@ public class CeylonContentProposer {
         Declaration dec = dwp.getDeclaration();
         return dec instanceof Functional && 
                 //!((Functional) dec).getParameterLists().isEmpty() &&
-                (ol==null || ol==EXPRESSION || ol==EXTENDS && dec instanceof Class) &&
-                dwp.getNamedArgumentList()==null;
+                (ol==null || 
+                 ol==EXPRESSION || 
+                 ol==EXTENDS && dec instanceof Class ||
+                 ol==PARAMETER_LIST && dec instanceof Method && 
+                         dec.isAnnotation()) &&
+                dwp.getNamedArgumentList()==null &&
+                (!dec.isAnnotation() || !(dec instanceof Method) || 
+                        !((Method)dec).getParameterLists().isEmpty() &&
+                        !((Method)dec).getParameterLists().get(0).getParameters().isEmpty());
     }
 
     private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol, Scope scope) {
@@ -906,8 +911,8 @@ public class CeylonContentProposer {
                 (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration() != null && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || 
-                        dec instanceof Method && dec.isToplevel() || //i.e. an annotation 
-                        dec instanceof Value && dec.getContainer().equals(scope) ||
+                        dec instanceof Method && dec.isAnnotation() || //i.e. an annotation 
+                        dec instanceof Value && dec.getContainer().equals(scope) || //a parameter ref
                         ol!=PARAMETER_LIST) &&
                 (ol!=IMPORT || !dwp.isUnimported()) &&
                 ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
