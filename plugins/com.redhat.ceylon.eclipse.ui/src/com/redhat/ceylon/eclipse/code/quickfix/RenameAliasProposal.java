@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
 
 import java.util.Collection;
 
@@ -68,7 +68,7 @@ class RenameAliasProposal implements ICompletionProposal, ICompletionProposalExt
 
     @Override
     public Image getImage() {
-        return CORRECTION;
+        return RENAME;
     }
 
     @Override

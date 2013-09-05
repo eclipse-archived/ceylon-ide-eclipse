@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD_CORR;
 
 import java.util.Collection;
 
@@ -67,7 +67,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public Image getImage() {
-        return CORRECTION;
+        return ADD_CORR;
     }
 
     @Override

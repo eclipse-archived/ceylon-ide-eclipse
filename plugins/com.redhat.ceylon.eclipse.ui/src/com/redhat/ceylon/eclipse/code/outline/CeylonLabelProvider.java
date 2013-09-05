@@ -99,6 +99,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image RENAME = imageRegistry.get(CEYLON_RENAME);
     public static Image MOVE = imageRegistry.get(CEYLON_MOVE);
     public static Image ADD = imageRegistry.get(CEYLON_ADD);
+    public static Image ADD_CORR = imageRegistry.get(CEYLON_ADD_CORRECTION);
+    public static Image REMOVE_CORR = imageRegistry.get(CEYLON_REMOVE_CORRECTION);
     
     private static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
             .getThemeManager().getCurrentTheme().getColorRegistry();
