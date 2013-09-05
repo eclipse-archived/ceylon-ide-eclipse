@@ -12,11 +12,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.InlineRefactoringAction;
 
-class InlineRefactoringProposal implements ICompletionProposal {
+class InlineDeclarationProposal implements ICompletionProposal {
 
     private InlineRefactoringAction action;
     
-    public InlineRefactoringProposal(CeylonEditor editor) {
+    public InlineDeclarationProposal(CeylonEditor editor) {
         action = new InlineRefactoringAction(editor);
     }
     
@@ -55,7 +55,7 @@ class InlineRefactoringProposal implements ICompletionProposal {
     }
     
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-        InlineRefactoringProposal prop = new InlineRefactoringProposal(editor);
+        InlineDeclarationProposal prop = new InlineDeclarationProposal(editor);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

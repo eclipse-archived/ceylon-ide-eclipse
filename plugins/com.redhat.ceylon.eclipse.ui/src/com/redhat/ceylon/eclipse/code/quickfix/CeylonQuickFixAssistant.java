@@ -181,8 +181,8 @@ public class CeylonQuickFixAssistant {
     		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
-        RenameRefactoringProposal.add(proposals, editor);
-        InlineRefactoringProposal.add(proposals, editor);
+        RenameDeclarationProposal.add(proposals, editor);
+        InlineDeclarationProposal.add(proposals, editor);
         ExtractValueProposal.add(proposals, editor);
         ExtractFunctionProposal.add(proposals, editor);
         ConvertToClassProposal.add(proposals, editor);
@@ -1590,7 +1590,7 @@ public class CeylonQuickFixAssistant {
               //TODO: would it be better to just sort by dist, and
               //      then select the 3 closest possibilities?
               if (dist<=brokenName.length()/3+1) {
-                  RenameProposal.addRenameProposal(problem, proposals, file, 
+                  ChangeReferenceProposal.addRenameProposal(problem, proposals, file, 
                           brokenName, dwp, dist, cu);
               }
           }
