@@ -101,6 +101,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -543,6 +544,7 @@ public class CeylonQuickFixAssistant {
             IQuickAssistInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals) {
         String pn = cu.getUnit().getPackage().getNameAsString();
+        //TODO: DocumentChange doesn't work for Problems View
         DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
         proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, 10, CHANGE));
@@ -645,7 +647,13 @@ public class CeylonQuickFixAssistant {
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
-            dec = (Declaration) ((Tree.Declaration) node).getDeclarationModel().getContainer();
+            Scope container = ((Tree.Declaration) node).getDeclarationModel().getContainer();
+            if (container instanceof Declaration) {
+                dec = (Declaration) container;
+            }
+            else {
+                return;
+            }
         }
         else {
             dec = (Declaration) node.getScope();
