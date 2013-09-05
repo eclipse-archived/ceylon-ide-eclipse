@@ -138,7 +138,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			}
 
             if (current.equals(opening) && (!isQuotedOrCommented(doc,cmd.offset) || 
-            		isGraveAccentCharacterInStringLiteral(cmd.offset, opening))) {
+            		isGraveAccentCharacterInStringLiteral(cmd.offset, opening) ||
+            		isWikiRefInAnnotatedStringLiteral(cmd.offset, opening))) {
 				//typed character is an opening fence
 				if (closeOpeningFence(doc, cmd, opening, closing)) {
 					//add a closing fence
@@ -301,6 +302,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return false;
     }
 
+    private boolean isWikiRefInAnnotatedStringLiteral(int offset, String fence) {
+       return ("[".equals(fence) && tokenType(offset) == ASTRING_LITERAL); 
+    }
+    
     private boolean isMultilineCommentStart(int offset, IDocument d) {
     	CommonToken token = token(offset);
     	if (token==null) return false;
