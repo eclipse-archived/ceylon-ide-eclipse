@@ -6,12 +6,10 @@ import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessN
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -40,27 +38,20 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addAssignToLocalProposal(IDocument doc, IFile file,
-            Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals, 
-            Node node) {
+    static void addAssignToLocalProposal(IFile file, Tree.CompilationUnit cu, 
+            Collection<ICompletionProposal> proposals, Node node) {
         //if (node instanceof Tree.Term) {
             FindStatementVisitor fsv = new FindStatementVisitor(node, false);
             fsv.visit(cu);
             Tree.Statement st = fsv.getStatement();
             if (st instanceof Tree.ExpressionStatement) {
                 int offset = st.getStartIndex();
-                TextChange change = new DocumentChange("Assign To Local", doc);
+                TextChange change = new TextFileChange("Assign To Local", file);
+//                TextChange change = new DocumentChange("Assign To Local", doc);
                 change.setEdit(new MultiTextEdit());
                 String name = guessName(((Tree.ExpressionStatement) st).getExpression());
                 change.addEdit(new InsertEdit(offset, "value " + name + " = "));
-                String terminal;
-                try {
-                    terminal = doc.get(st.getStopIndex(), 1);
-                }
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                String terminal = st.getEndToken().getText();
                 if (!terminal.equals(";")) {
                     change.addEdit(new InsertEdit(st.getStopIndex()+1, ";"));
                 }

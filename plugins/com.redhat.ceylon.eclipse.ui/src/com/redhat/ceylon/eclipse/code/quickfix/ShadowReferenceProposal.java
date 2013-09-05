@@ -6,11 +6,10 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -41,13 +40,13 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
         Util.gotoLocation(file, offset, length);
     }
     
-    static void addShadowReferenceProposal(IDocument doc, IFile file,
-            Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals, 
-            Node node) {
+    static void addShadowReferenceProposal(IFile file, Tree.CompilationUnit cu, 
+            Collection<ICompletionProposal> proposals, Node node) {
         if (node instanceof Tree.Variable) { //TODO: handle expressions!
             Tree.Variable var = (Tree.Variable) node;
             int offset = var.getIdentifier().getStartIndex();
-            TextChange change = new DocumentChange("Shadow Reference", doc);
+            TextChange change = new TextFileChange("Shadow Reference", file);
+//            TextChange change = new DocumentChange("Shadow Reference", doc);
             change.setEdit(new MultiTextEdit());
             String name = Character.toString(var.getIdentifier().getText().charAt(0));
             change.addEdit(new InsertEdit(offset, name + " = "));
