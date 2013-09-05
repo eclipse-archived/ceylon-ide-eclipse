@@ -15,9 +15,9 @@
 
   <properties>
     <platform-version-name>juno</platform-version-name>
-    <tychoVersion>0.15.0</tychoVersion>
+    <tychoVersion>0.18.0</tychoVersion>
     <scmBranch>trunk</scmBranch>
-    <BUILD_ALIAS>M5</BUILD_ALIAS>
+    <BUILD_ALIAS>M6</BUILD_ALIAS>
     <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
     <memoryOptions2>-XX:MaxPermSize=512m</memoryOptions2>
     <systemProperties></systemProperties>
@@ -147,58 +147,6 @@
 	  <encoding>UTF-8</encoding>
 	</configuration>
       </plugin>
-
-      <!-- to skip running tests (compile only) use commandline flag: -Dmaven.test.skip 
-	   To allow all tests in a pom to pass/fail, use commandline flag: -fae (fail 
-	   at end) -->
-      <plugin>
-	<groupId>org.eclipse.tycho</groupId>
-	<artifactId>tycho-surefire-plugin</artifactId>
-	<version>${tychoVersion}</version>
-	<configuration>
-	  <useUIHarness>true</useUIHarness>
-	  <useUIThread>true</useUIThread>
-	  <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
-	  <argLine>${platformSystemProperties}</argLine>
-	  <!-- https://docs.sonatype.org/display/TYCHO/How+to+run+SWTBot+tests+with+Tycho -->
-	  <!-- set useUIThread=true for regular ui tests -->
-	  <!-- set useUIThread=false for swtbot tests -->
-
-	  <product>org.eclipse.platform.ide</product>
-	  <application>org.eclipse.ui.ide.workbench</application>
-	  <dependencies>
-	    <dependency>
-	      <type>p2-installable-unit</type>
-	      <artifactId>org.eclipse.platform.ide</artifactId>
-	      <version>0.0.0</version>
-	    </dependency>
-	    <dependency>
-	      <type>p2-installable-unit</type>
-	      <artifactId>org.eclipse.jdt.feature.group</artifactId>
-	      <version>0.0.0</version>
-	    </dependency>
-	    <!-- http://www.jmock.org/maven.html -->
-	    <dependency>
-	      <groupId>org.jmock</groupId>
-	      <artifactId>jmock-legacy</artifactId>
-	      <version>2.5.1</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.jmock</groupId>
-	      <artifactId>jmock-junit4</artifactId>
-	      <version>2.5.1</version>
-	    </dependency>
-	  </dependencies>
-	  <!--	<includes>
-	      <include>**/AllTests.class</include>
-	      <include>**/*AllTests*.class</include>
-	      <include>**/*AllBotTests*.class</include>
-	      <include>**/*TestSuite*.class</include>
-	      </includes>-->
-	  <parallel>true</parallel>
-	</configuration>
-      </plugin>
-      
     </plugins>
   </build>
   
