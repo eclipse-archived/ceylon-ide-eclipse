@@ -14,18 +14,18 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
-    Node node;
+    Tree.ImportMemberOrType node;
     Declaration dec;
     CeylonEditor editor;
     IFile file;
     
-    UseAliasProposal(IFile file, Node node, Declaration dec, CeylonEditor editor) {
+    UseAliasProposal(IFile file, Tree.ImportMemberOrType node, 
+            Declaration dec, CeylonEditor editor) {
         this.node = node;
         this.dec = dec;
         this.file = file;
@@ -38,10 +38,10 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
         
     }
     
-    static void addUseAliasProposal(Node node,  
+    static void addUseAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
-            final Declaration dec, IFile file, 
-            Tree.CompilationUnit cu, CeylonEditor editor) {
+            Declaration dec, IFile file, Tree.CompilationUnit cu, 
+            CeylonEditor editor) {
         proposals.add(new UseAliasProposal(file, node, dec, editor));
     }
 
