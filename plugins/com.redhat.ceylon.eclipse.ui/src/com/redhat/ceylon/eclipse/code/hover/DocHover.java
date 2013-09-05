@@ -95,7 +95,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Element;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -114,6 +113,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -868,7 +868,7 @@ public class DocHover
 		buffer.append("<hr/>");
 		
 		if (doc!=null) {
-		    buffer.append(markdown(doc, null));
+		    buffer.append(markdown(doc, null, null));
 		}
 				
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
@@ -1269,7 +1269,8 @@ public class DocHover
         if (annotationList!=null) {
             AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
             if (aa!=null) {
-                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope));
+                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope,
+                        annotationList.getUnit()));
             }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1285,7 +1286,8 @@ public class DocHover
                                 	String text = ((Tree.ListedArgument) a).getExpression()
                                 			.getTerm().getText();
                                 	if (text!=null) {
-                                		documentation.append(markdown(text, linkScope));
+                                		documentation.append(markdown(text, linkScope,
+                                		        annotationList.getUnit()));
                                 	}
                                 }
                             }
@@ -1377,7 +1379,8 @@ public class DocHover
                             						}
                             					}
                             					addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                            							"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + markdown(text, linkScope), 20, 2);
+                            							"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + 
+                            							        markdown(text, linkScope, annotationList.getUnit()), 20, 2);
                             				}
                             			}
                             }
@@ -1503,7 +1506,7 @@ public class DocHover
 		buf.append("<![endif]-->\n"); 
 	}
 	
-	private static String markdown(String text, final Scope linkScope) {
+	private static String markdown(String text, final Scope linkScope, final Unit unit) {
 	    if( text == null || text.length() == 0 ) {
 	        return text;
 	    }
@@ -1528,7 +1531,7 @@ public class DocHover
                         linkTarget = content.substring(indexOf+1, content.length()); 
                     }
                     
-                    String href = resolveLink(linkTarget, linkScope);
+                    String href = resolveLink(linkTarget, linkScope, unit);
                     if (href != null) {
                         out.append("<a ").append(href).append(">");
                     }
@@ -1545,15 +1548,15 @@ public class DocHover
 	    return Processor.process(text, builder.build());
 	}
 	
-    private static String resolveLink(String linkTarget, Scope linkScope) {
+    private static String resolveLink(String linkTarget, Scope linkScope, Unit unit) {
         String declName;
         Scope scope = null;
-        
         int pkgSeparatorIndex = linkTarget.indexOf("::");
         if( pkgSeparatorIndex == -1 ) {
             declName = linkTarget;
             scope = linkScope;
-        } else {
+        } 
+        else {
             String pkgName = linkTarget.substring(0, pkgSeparatorIndex);
             declName = linkTarget.substring(pkgSeparatorIndex+2, linkTarget.length());
             Module module = resolveModule(linkScope);
@@ -1563,14 +1566,14 @@ public class DocHover
         }
         
         String[] declNames = declName.split("\\.");
-        Declaration decl = null;
-        boolean isNested = false;
-        for (String currentDeclName : declNames) {
-            decl = resolveDeclaration(scope, currentDeclName, isNested);
-            if (decl != null) {
-                scope = resolveScope(decl);
-                isNested = true;
-            } else {
+        Declaration decl = scope.getMemberOrParameter(unit, declNames[0], null, false);
+        for (int i=1; i<declNames.length; i++) {
+            if (decl instanceof Scope) {
+                scope = (Scope) decl;
+                decl = scope.getMember(declNames[i], null, false);
+            }
+            else {
+                decl = null;
                 break;
             }
         }
@@ -1584,26 +1587,6 @@ public class DocHover
         }
     }
     
-    private static Declaration resolveDeclaration(Scope scope, String declName, boolean isNested) {
-        Declaration decl = null;
-
-        if (scope != null) {
-            decl = scope.getMember(declName, null, false);
-
-            if (decl == null && !isNested && scope instanceof Element) {
-                decl = ((Element) scope).getUnit().getLanguageModuleDeclaration(declName);
-            }
-            if (decl == null && !isNested && scope instanceof Element) {
-                decl = ((Element) scope).getUnit().getImportedDeclaration(declName, null, false);
-            }
-            if (decl == null && !isNested) {
-                decl = resolveDeclaration(scope.getContainer(), declName, isNested);
-            }
-        }
-
-        return decl;
-    }
-
     private static Scope resolveScope(Declaration decl) {
         if (decl == null) {
             return null;
@@ -1613,7 +1596,7 @@ public class DocHover
             return decl.getContainer();
         }
     }
-
+    
     private static Module resolveModule(Scope scope) {
         if (scope == null) {
             return null;
