@@ -112,9 +112,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 if (!imports.isEmpty()) {
                     List<TextEdit> edits = importEditForMove(phasedUnit.getCompilationUnit(), 
                             imports.keySet(), imports.values(), newName, oldName);
-                    for (TextEdit edit: edits) change.addEdit(edit);
-                    //display the change in the UI
-                    //change.addTextEditGroup(new TextEditGroup("Fix imports in " + file.getName(), what?));
+                    for (TextEdit edit: edits) {
+                        change.addEdit(edit);
+                    }
                 }
             }
             catch (Exception e) { 
