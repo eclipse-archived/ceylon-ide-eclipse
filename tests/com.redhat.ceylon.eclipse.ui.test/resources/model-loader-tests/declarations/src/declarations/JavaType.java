@@ -18,7 +18,7 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.compiler.java.test.model;
+package declarations;
 
 public class JavaType {
     java.util.List<? extends java.lang.Object> javaList(java.util.List<? extends java.lang.Object> x){ return x; }
