@@ -39,7 +39,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
  * @author max
  * 
  */
-public class CeylonEditorTest {
+public class CeylonIdeExampleTest {
 
 	/** basic test that setup a ceylon project **/
 	@Test

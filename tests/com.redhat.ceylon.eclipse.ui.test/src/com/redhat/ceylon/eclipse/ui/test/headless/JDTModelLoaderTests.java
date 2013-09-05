@@ -8,7 +8,7 @@
  * Contributors:
  *     JBoss by Red Hat - Initial implementation.
  ************************************************************************************/
-package com.redhat.ceylon.eclipse.ui.test;
+package com.redhat.ceylon.eclipse.ui.test.headless;
 
 import junit.framework.Assert;
 
@@ -37,13 +37,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.ui.test.Utils;
 
 /**
  * 
  * @author david
  * 
  */
-public class ModelLoaderTests extends ModelLoaderTest {
+public class JDTModelLoaderTests extends ModelLoaderTest {
 
     static private AssertionError compilationError = null;
     static private IProject projectDeclarations = null;
@@ -67,7 +68,7 @@ public class ModelLoaderTests extends ModelLoaderTest {
         		projectDeclarations.build(IncrementalProjectBuilder.FULL_BUILD, null);
         		IFile carFile = projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.car");
         		carFile.refreshLocal(0, null);
-                Assert.assertTrue("declarations Project should compile",
+                Assert.assertTrue("declarations Project should  should produce a CAR",
                         carFile.exists());
                 
                 projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src").getLocation().toFile().delete();
@@ -92,7 +93,7 @@ public class ModelLoaderTests extends ModelLoaderTest {
                 projectReferences.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 IFile carFile = projectReferences.getFile("modules/references/1.0.0/references-1.0.0.car");
                 carFile.refreshLocal(0, null);
-                Assert.assertTrue("references Project should compile", 
+                Assert.assertTrue("references Project should produce a CAR", 
                         carFile.exists());
             }
             catch(Exception e) {
@@ -133,6 +134,7 @@ public class ModelLoaderTests extends ModelLoaderTest {
     }
 
     
+    
     @Override
     protected void compareDeclarations(Declaration validDeclaration,
             Declaration modelDeclaration) {
@@ -144,9 +146,49 @@ public class ModelLoaderTests extends ModelLoaderTest {
         super.compareDeclarations(validDeclaration, modelDeclaration);
     }
     
+
+    
+    
     @Override
     @Ignore
     public void testTypeParserUsingSourceModel(){
+    }
+
+    @Override
+    @Ignore
+    public void bogusModelAnnotationsTopLevelAttribute() {
+    }
+
+    @Override
+    @Ignore
+    public void bogusModelAnnotationsTopLevelMethod() {
+    }
+
+    @Override
+    @Ignore
+    public void bogusModelAnnotationsTopLevelClass() {
+    }
+    
+    @Override
+    protected void compile(String... ceylon) {
+    }
+
+    @Override
+    protected String moduleForJavaModelLoading() {
+        // TODO Auto-generated method stub
+        return "declarations";
+    }
+
+    @Override
+    protected String packageForJavaModelLoading() {
+        // TODO Auto-generated method stub
+        return "declarations";
+    }
+
+    @Override
+    public void parallelLoader() {
+        ((JDTModelLoader) CeylonBuilder.getProjectModelLoader(projectReferences)).loadJDKModules();
+        super.parallelLoader();
     }
 
     @Override
@@ -154,6 +196,5 @@ public class ModelLoaderTests extends ModelLoaderTest {
             List<String> options) {
         test.test(CeylonBuilder.getProjectModelLoader(projectReferences));
     }
-
     
 }
