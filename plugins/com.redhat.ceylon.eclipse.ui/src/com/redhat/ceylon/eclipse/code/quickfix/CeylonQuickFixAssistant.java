@@ -68,7 +68,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
@@ -195,8 +194,7 @@ public class CeylonQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
-            addAssignToLocalProposal(context.getSourceViewer().getDocument(),
-                    file, cu, proposals, node);
+            addAssignToLocalProposal(file, cu, proposals, node);
             
             Tree.Declaration decNode = findDeclaration(cu, node);
             if (decNode!=null) {
@@ -366,8 +364,8 @@ public class CeylonQuickFixAssistant {
         case 300:
         case 350:
         	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-        		addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, proposals, file,
-        				context.getSourceViewer().getDocument());
+        		addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, 
+        		        proposals, file, context.getSourceViewer().getDocument());
         	}
         	addMakeAbstractProposal(proposals, project, node);
         	break;
@@ -456,16 +454,10 @@ public class CeylonQuickFixAssistant {
             addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
-        	if (context.getSourceViewer()!=null) {
-        		addAssignToLocalProposal(context.getSourceViewer().getDocument(),
-        				file, cu, proposals, node);
-        	}
+            addAssignToLocalProposal(file, cu, proposals, node);
         	break;
         case 3100:
-        	if (context.getSourceViewer()!=null) {
-        		addShadowReferenceProposal(context.getSourceViewer().getDocument(),
-        				file, cu, proposals, node);
-        	}
+            addShadowReferenceProposal(file, cu, proposals, node);
         	break;
         case 5001:
         case 5002:
@@ -478,9 +470,12 @@ public class CeylonQuickFixAssistant {
             addModuleImportProposals(cu, proposals, project, tc, node);
             break;
         case 8000:
-            addRenameDescriptorProposal(cu, context, problem, proposals);
-            addMoveDirProposal(file, cu, project, proposals, 
-                    context.getSourceViewer().getTextWidget().getShell());
+            addRenameDescriptorProposal(cu, context, problem, proposals, file);
+          //TODO: figure out some other way to get a Shell!
+            if (context.getSourceViewer()!=null) {
+                addMoveDirProposal(file, cu, project, proposals, 
+                        context.getSourceViewer().getTextWidget().getShell());
+            }
             break;
         }
     }
@@ -542,10 +537,11 @@ public class CeylonQuickFixAssistant {
 
     private void addRenameDescriptorProposal(Tree.CompilationUnit cu,
             IQuickAssistInvocationContext context, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals) {
+            Collection<ICompletionProposal> proposals, IFile file) {
         String pn = cu.getUnit().getPackage().getNameAsString();
         //TODO: DocumentChange doesn't work for Problems View
-        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
+        TextFileChange change = new TextFileChange("Rename", file);
+//        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
         proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, 10, CHANGE));
     }
