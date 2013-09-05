@@ -74,7 +74,11 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
             Identifier id = ((Tree.BaseMemberExpression)a.getPrimary()).getIdentifier();
             if (id!=null) {
                 if (id.getText().equals(annotation)) {
-                    change.addEdit(new DeleteEdit(id.getStartIndex(), annotation.length()+1));
+                    boolean args = a.getPositionalArgumentList()!=null ||
+                            a.getNamedArgumentList()!=null;
+                    change.addEdit(new DeleteEdit(a.getStartIndex(), 
+                            a.getStopIndex()-a.getStartIndex()+1 + 
+                                    (args?0:1))); //get rid of the trailing space
                 }
             }
         }
