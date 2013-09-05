@@ -41,7 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class RenameTypeRefactoringParticipant extends RenameParticipant {
+public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
 	private IMember javaDeclaration;
 
