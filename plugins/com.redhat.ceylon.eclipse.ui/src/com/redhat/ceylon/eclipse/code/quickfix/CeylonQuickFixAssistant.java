@@ -772,16 +772,24 @@ public class CeylonQuickFixAssistant {
     private void addMakeSharedProposal(Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
         if (dec != null) {
             if (dec instanceof UnionType) {
-                List<TypeDeclaration> caseTypes = ((UnionType) dec).getCaseTypeDeclarations();
-                for (TypeDeclaration caseType : caseTypes) {
-                    addMakeSharedProposal(caseType, proposals, project);
+                List<ProducedType> caseTypes = ((UnionType) dec).getCaseTypes();
+                for (ProducedType caseType : caseTypes) {
+                    addMakeSharedProposal(caseType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : caseType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
                 }
             } else if (dec instanceof IntersectionType) {
-                List<TypeDeclaration> satisfiedTypes = ((IntersectionType) dec).getSatisfiedTypeDeclarations();
-                for (TypeDeclaration satisfiedType : satisfiedTypes) {
-                    addMakeSharedProposal(satisfiedType, proposals, project);
+                List<ProducedType> satisfiedTypes = ((IntersectionType) dec).getSatisfiedTypes();
+                for (ProducedType satisfiedType : satisfiedTypes) {
+                    addMakeSharedProposal(satisfiedType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : satisfiedType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
                 }
-            } else if (dec instanceof TypedDeclaration || dec instanceof ClassOrInterface || dec instanceof TypeAlias) {
+            } else if (dec instanceof TypedDeclaration || 
+                       dec instanceof ClassOrInterface || 
+                       dec instanceof TypeAlias) {
                 if (!dec.isShared()) {
                     addAddAnnotationProposal(null, "shared", "Make Shared", dec, proposals, project);
                 }
