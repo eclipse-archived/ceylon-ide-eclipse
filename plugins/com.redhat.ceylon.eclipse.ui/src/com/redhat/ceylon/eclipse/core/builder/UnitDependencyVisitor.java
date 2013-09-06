@@ -174,7 +174,9 @@ public class UnitDependencyVisitor extends Visitor {
         List<ProducedType> tms = that.getTypeModels();
         if (tms!=null) {
             for (ProducedType pt: tms) {
-                storeDependency(pt.getDeclaration());
+                if (pt!=null) {
+                    storeDependency(pt.getDeclaration());
+                }
             }
         }
         super.visit(that);
