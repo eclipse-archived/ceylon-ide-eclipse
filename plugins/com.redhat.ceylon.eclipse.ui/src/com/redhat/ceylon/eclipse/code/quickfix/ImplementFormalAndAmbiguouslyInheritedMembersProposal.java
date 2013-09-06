@@ -38,7 +38,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
     final Set<String> refinementsNames;
 
     ImplementFormalAndAmbiguouslyInheritedMembersProposal(String name, Set<String> refinementsNames, int offset, IFile file, TextFileChange change) {
-        super(name, change, 10, FORMAL_REFINEMENT);
+        super(name, change, FORMAL_REFINEMENT);
         this.offset = offset;
         this.file = file;
         this.refinementsNames = refinementsNames;

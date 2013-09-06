@@ -34,7 +34,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     SplitDeclarationProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Split declaration of '" + dec.getName() + "'", change, 10, CORRECTION);
+        super("Split declaration of '" + dec.getName() + "'", change);
         this.offset=offset;
         this.file=file;
     }

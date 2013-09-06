@@ -147,8 +147,8 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                         ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
                     ProducedReference pr = getRefinedProducedReference(node, d);
                     result.append(indent)
-                    .append(getRefinementTextFor(d, pr, isInterface, indent))
-                    .append(indent);
+                        .append(getRefinementTextFor(d, pr, isInterface, indent))
+                        .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
             }

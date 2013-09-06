@@ -24,7 +24,7 @@ class ConvertToGetterProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertToGetterProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Convert '" + dec.getName() + "' to getter", change, 10, CORRECTION);
+        super("Convert '" + dec.getName() + "' to getter", change);
         this.offset=offset;
         this.file=file;
     }

@@ -27,7 +27,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertToBlockProposal(int offset, IFile file, TextChange change) {
-        super("Convert => to block", change, 10, CORRECTION);
+        super("Convert => to block", change);
         this.offset=offset;
         this.file=file;
     }

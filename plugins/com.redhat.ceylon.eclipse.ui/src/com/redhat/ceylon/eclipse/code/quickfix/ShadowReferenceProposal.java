@@ -28,7 +28,7 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
     
     ShadowReferenceProposal(int offset, int length, IFile file, 
             TextChange change) {
-        super("Shadow reference inside control structure", change, 10, CORRECTION);
+        super("Shadow reference inside control structure", change);
         this.file=file;
         this.offset=offset;
         this.length=length;

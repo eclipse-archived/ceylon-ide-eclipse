@@ -26,7 +26,7 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
     
     AssignToLocalProposal(int offset, int length, IFile file, 
             TextChange change) {
-        super("Assign expression to new local", change, 10, CORRECTION);
+        super("Assign expression to new local", change);
         this.file=file;
         this.offset=offset;
         this.length=length;

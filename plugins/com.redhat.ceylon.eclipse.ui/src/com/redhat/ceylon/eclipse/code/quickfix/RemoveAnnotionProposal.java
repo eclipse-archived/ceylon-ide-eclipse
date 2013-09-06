@@ -32,7 +32,7 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
         super("Make '" + dec.getName() + "' non-" + annotation + " " +
             (dec.getContainer() instanceof TypeDeclaration ?
                     "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, 10, CORRECTION);
+                    change);
         this.offset=offset;
         this.file=file;
         this.dec = dec;

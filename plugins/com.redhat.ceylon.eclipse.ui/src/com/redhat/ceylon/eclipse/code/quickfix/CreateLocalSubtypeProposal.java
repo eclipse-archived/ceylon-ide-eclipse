@@ -34,7 +34,7 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
     CreateLocalSubtypeProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
         super("Create subtype of '" + type.getProducedTypeName() + "'", 
-                change, 10, CORRECTION);
+                change);
         this.offset=offset;
         this.length=length;
         this.file=file;

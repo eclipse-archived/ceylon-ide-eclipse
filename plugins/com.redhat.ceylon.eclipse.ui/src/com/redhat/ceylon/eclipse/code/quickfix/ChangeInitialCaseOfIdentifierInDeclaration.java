@@ -69,7 +69,7 @@ public class ChangeInitialCaseOfIdentifierInDeclaration extends ChangeCorrection
     }
 
     public ChangeInitialCaseOfIdentifierInDeclaration(String newIdentifier, Change change) {
-        super("Change initial case of identifier to '" + newIdentifier + "'", change, 10, CHANGE);
+        super("Change initial case of identifier to '" + newIdentifier + "'", change, CHANGE);
     }
 
 }
