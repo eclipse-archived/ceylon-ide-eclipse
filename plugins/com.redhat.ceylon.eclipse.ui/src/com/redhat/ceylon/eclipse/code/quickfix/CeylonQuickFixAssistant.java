@@ -1636,9 +1636,11 @@ public class CeylonQuickFixAssistant {
             String name, Tree.CompilationUnit cu) {
         Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
-            Declaration member = pkg.getMember(name, null, false);
-            if (member!=null) {
-                result.add(member);
+            if (!pkg.getName().isEmpty()) {
+                Declaration member = pkg.getMember(name, null, false);
+                if (member!=null) {
+                    result.add(member);
+                }
             }
         }
         /*if (result.isEmpty()) {
