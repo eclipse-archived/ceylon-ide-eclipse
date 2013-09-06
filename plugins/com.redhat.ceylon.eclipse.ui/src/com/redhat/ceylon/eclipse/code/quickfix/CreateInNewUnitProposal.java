@@ -17,13 +17,14 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
-		ICompletionProposalExtension6 {
+        ICompletionProposalExtension6 {
     
     private final String desc;
     private final IFile file;
@@ -42,45 +43,45 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return image;
+        return image;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Create toplevel " + desc + " in new unit";
+        return "Create toplevel " + desc + " in new unit";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override
     public void apply(IDocument doc) {
-    	NewUnitWizard.open(def, file, unitName, 
-    	        "Create Missing Declaration in New Unit",
-    	        "Create a new Ceylon compilation unit with the missing declaration.");
+        NewUnitWizard.open(def, file, unitName, 
+                "Create Missing Declaration in New Unit",
+                "Create a new Ceylon compilation unit with the missing declaration.");
     }
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
-    		String def, String desc, Image image, IFile file, String unitName, 
+            String def, String desc, Image image, IFile file, String unitName, 
             ProducedType returnType, List<ProducedType> paramTypes) {
         
-    	List<Declaration> imports = new ArrayList<Declaration>();
-    	resolveImports(imports, returnType);
-    	resolveImports(imports, paramTypes);
-    	
-    	def = imports(imports) + "\n\n" + def;
+        List<Declaration> imports = new ArrayList<Declaration>();
+        resolveImports(imports, returnType);
+        resolveImports(imports, paramTypes);
+        
+        def = imports(imports) + "\n\n" + def;
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
     }
     
@@ -111,16 +112,19 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                 }
             } else {
                 resolveImports(imports, pt.getTypeArgumentList());
-                
-                if (!imports.contains(pt.getDeclaration())) {
-                    imports.add(pt.getDeclaration());
+                Package p = pt.getDeclaration().getUnit().getPackage();
+                if (!p.getQualifiedNameString().isEmpty() && 
+                    !p.getQualifiedNameString().equals("ceylon.language")) {
+                    if (!imports.contains(pt.getDeclaration())) {
+                        imports.add(pt.getDeclaration());
+                    }
                 }
             }
         }
     }
 
-	@Override
-	public StyledString getStyledDisplayString() {
-		return ChangeCorrectionProposal.style(getDisplayString());
-	}
+    @Override
+    public StyledString getStyledDisplayString() {
+        return ChangeCorrectionProposal.style(getDisplayString());
+    }
 }
