@@ -64,8 +64,8 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
 
     static void addRemoveAnnotationProposal(String annotation,
             String desc, Declaration dec,
-            Collection<ICompletionProposal> proposals, PhasedUnit unit,
-            Tree.Declaration decNode) {
+            Collection<ICompletionProposal> proposals, 
+            PhasedUnit unit, Tree.Declaration decNode) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
@@ -74,7 +74,8 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
             Identifier id = ((Tree.BaseMemberExpression)a.getPrimary()).getIdentifier();
             if (id!=null) {
                 if (id.getText().equals(annotation)) {
-                    boolean args = a.getPositionalArgumentList()!=null ||
+                    boolean args = a.getPositionalArgumentList()!=null && 
+                                a.getPositionalArgumentList().getToken()!=null ||
                             a.getNamedArgumentList()!=null;
                     change.addEdit(new DeleteEdit(a.getStartIndex(), 
                             a.getStopIndex()-a.getStartIndex()+1 + 
