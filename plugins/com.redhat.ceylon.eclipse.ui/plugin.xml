@@ -2030,6 +2030,7 @@
              type="java.lang.Object">
        </propertyTester>
     </extension>
+    
     <extension
           id="JavaProjectStateMirror"
           name="Java Project State Mirror"
@@ -2042,5 +2043,15 @@
              requiredSourceLevel="1.6">
           <managedMarker markerType="org.eclipse.jdt.apt.core.compile.problem"/>
        </compilationParticipant>
+    </extension>
+    
+    <extension
+          point="org.eclipse.jdt.ui.queryParticipants">
+          <queryParticipant
+                name="Ceylon references"
+                nature="org.eclipse.jdt.core.javanature"
+                id="com.redhat.ceylon.eclipse.code.javaQueryParticipant"
+                class="com.redhat.ceylon.eclipse.code.JavaQueryParticipant">
+          </queryParticipant>
     </extension>
 </plugin>
