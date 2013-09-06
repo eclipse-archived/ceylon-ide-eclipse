@@ -2,8 +2,13 @@ package com.redhat.ceylon.eclipse.code;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.WRITE_ACCESSES;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +44,7 @@ import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.code.search.WithProject;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class JavaQueryParticipant implements IQueryParticipant {
@@ -51,6 +57,13 @@ public class JavaQueryParticipant implements IQueryParticipant {
         if (querySpecification instanceof ElementQuerySpecification) {
             final IJavaElement element = ((ElementQuerySpecification) querySpecification).getElement();
             if (!(element instanceof IMember)) return;
+            int limitTo = querySpecification.getLimitTo();
+            if (limitTo!=REFERENCES &&
+                limitTo!=ALL_OCCURRENCES &&
+                limitTo!=READ_ACCESSES && //TODO: support this properly!!
+                limitTo!=WRITE_ACCESSES) {
+                return;
+            }
             final String qualifiedName = getQualifiedName((IMember) element);
             Declaration d = new Declaration() {
                 @Override
@@ -66,7 +79,6 @@ public class JavaQueryParticipant implements IQueryParticipant {
                         List<ProducedType> typeArguments) {
                     return null;
                 }
-
                 @Override
                 public DeclarationKind getDeclarationKind() {
                     return null;
@@ -77,10 +89,19 @@ public class JavaQueryParticipant implements IQueryParticipant {
                 for (IPackageFragmentRoot pfr: jp.getAllPackageFragmentRoots()) {
                     if (querySpecification.getScope().encloses(pfr)) {
                         for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                            FindReferenceVisitor frv = new FindReferenceVisitor(d);
                             CompilationUnit cu = pu.getCompilationUnit();
-                            frv.visit(cu);
-                            for (Node node: frv.getNodes()) {
+                            Set<Node> nodes;
+                            if (limitTo==WRITE_ACCESSES) {
+                                FindAssignmentsVisitor fav = new FindAssignmentsVisitor(d);
+                                fav.visit(cu);
+                                nodes = fav.getNodes();
+                            }
+                            else {
+                                FindReferenceVisitor frv = new FindReferenceVisitor(d);
+                                frv.visit(cu);
+                                nodes = frv.getNodes();
+                            }
+                            for (Node node: nodes) {
                                 FindContainerVisitor fcv = new FindContainerVisitor(node);
                                 cu.visit(fcv);
                                 if (node.getToken()==null) {
