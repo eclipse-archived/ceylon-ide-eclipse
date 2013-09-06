@@ -14,6 +14,7 @@ public class FindStatementVisitor extends Visitor
 	private final boolean toplevel;
 	private boolean currentlyToplevel=true;
 	private boolean resultIsToplevel;
+	private boolean inParameter;
 	
 	public Tree.Statement getStatement() {
 		return statement;
@@ -27,10 +28,18 @@ public class FindStatementVisitor extends Visitor
 		this.term = term;
 		this.toplevel = toplevel;
 	}
+	
+	@Override
+    public void visit(Tree.Parameter that) {
+	    boolean oip = inParameter;
+	    inParameter = true;
+	    super.visit(that);
+	    inParameter = oip;
+	}
 
 	@Override
 	public void visit(Tree.Statement that) {
-    	if (!toplevel || currentlyToplevel) {
+    	if ((!toplevel || currentlyToplevel) && !inParameter) {
     		if (!(that instanceof Tree.Variable ||
     				that instanceof Tree.TypeConstraint ||
     				that instanceof Tree.TypeParameterDeclaration)) {
