@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
@@ -15,6 +15,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
@@ -44,19 +46,56 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
             FindStatementVisitor fsv = new FindStatementVisitor(node, false);
             fsv.visit(cu);
             Tree.Statement st = fsv.getStatement();
+            Node expression;
+            Node expanse;
             if (st instanceof Tree.ExpressionStatement) {
-                int offset = st.getStartIndex();
-                TextChange change = new TextFileChange("Assign To Local", file);
-//                TextChange change = new DocumentChange("Assign To Local", doc);
-                change.setEdit(new MultiTextEdit());
-                String name = guessName(((Tree.ExpressionStatement) st).getExpression());
-                change.addEdit(new InsertEdit(offset, "value " + name + " = "));
-                String terminal = st.getEndToken().getText();
-                if (!terminal.equals(";")) {
-                    change.addEdit(new InsertEdit(st.getStopIndex()+1, ";"));
+                Tree.Expression e = ((Tree.ExpressionStatement) st).getExpression();
+                expression = e;
+                expanse = st;
+                if (e.getTerm() instanceof Tree.InvocationExpression) {
+                    Primary primary = ((Tree.InvocationExpression)e.getTerm()).getPrimary();
+                    if (primary instanceof Tree.QualifiedMemberExpression) {
+                        if (((Tree.QualifiedMemberExpression)primary).getMemberOperator().getToken()==null) {
+                            //an expression followed by two annotations 
+                            //can look like a named operator expression
+                            //even though that is disallowed as an
+                            //expression statement
+                            expression = ((Tree.QualifiedMemberExpression) primary).getPrimary();
+                            expanse = expression;
+                        }
+                    }
                 }
-                proposals.add(new AssignToLocalProposal(offset+6, name.length(), file, change));
             }
+            else if (st instanceof Tree.Declaration) {
+                //some expressions get interpreted as annotations
+                List<Annotation> annotations = ((Tree.Declaration)st).getAnnotationList().getAnnotations();
+                if (!annotations.isEmpty()) {
+                    expression = annotations.get(0);
+                    expanse = expression;
+                }
+                else if (st instanceof Tree.AttributeDeclaration) {
+                    //some expressions look like a type declaration
+                    //when they appear right in front of an annotation
+                    expression = ((Tree.AttributeDeclaration) st).getType();
+                    expanse = expression;
+                }
+                else {
+                    return;
+                }
+            }
+            else {
+                return;
+            }
+            String name = guessName(expression);
+            int offset = expanse.getStartIndex();
+            TextChange change = new TextFileChange("Assign To Local", file);
+            change.setEdit(new MultiTextEdit());
+            change.addEdit(new InsertEdit(offset, "value " + name + " = "));
+            String terminal = expanse.getEndToken().getText();
+            if (!terminal.equals(";")) {
+                change.addEdit(new InsertEdit(expanse.getStopIndex()+1, ";"));
+            }
+            proposals.add(new AssignToLocalProposal(offset+6, name.length(), file, change));
         //}
     }
 }
