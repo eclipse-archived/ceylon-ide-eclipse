@@ -96,7 +96,7 @@ class ChangeMultilineStringIndentationProposal extends ChangeCorrectionProposal 
     }
 
     private ChangeMultilineStringIndentationProposal(TextFileChange change) {
-        super(change.getName(), change, 10, CORRECTION);
+        super(change.getName(), change);
     }
 
     private static class FindIndentationVisitor extends Visitor {

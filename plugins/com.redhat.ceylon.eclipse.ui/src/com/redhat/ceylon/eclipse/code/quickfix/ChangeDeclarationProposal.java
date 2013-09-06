@@ -24,7 +24,7 @@ class ChangeDeclarationProposal extends ChangeCorrectionProposal {
     
     ChangeDeclarationProposal(String kw, CommonToken token, 
             IFile file, TextFileChange change) {
-        super("Change declaration to '" + kw + "'", change, 10, CORRECTION);
+        super("Change declaration to '" + kw + "'", change);
         this.file=file;
         this.offset=token.getStartIndex();
         this.length=kw.length();

@@ -39,7 +39,7 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     InvertIfElseProposal(int offset, IFile file, TextChange change) {
-        super("Invert if-else", change, 10, CHANGE);
+        super("Invert if-else", change, CHANGE);
         this.offset=offset;
         this.file=file;
     }

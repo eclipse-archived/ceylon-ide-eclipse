@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
 import java.util.ArrayList;
@@ -279,7 +278,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     private String missingSatisfiedTypeText;
 
     private AddConstraintSatisfiesProposal(TypeParameter typeParam, String missingSatisfiedTypeText, TextFileChange change) {
-        super("Add generic type constraints '" + typeParam.getName() + " satisfies " + missingSatisfiedTypeText + "'", change, 10, CORRECTION);
+        super("Add generic type constraints '" + typeParam.getName() + " satisfies " + missingSatisfiedTypeText + "'", change);
         this.change = change;
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;

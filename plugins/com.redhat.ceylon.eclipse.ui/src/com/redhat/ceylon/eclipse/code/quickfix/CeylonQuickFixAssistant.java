@@ -567,7 +567,7 @@ public class CeylonQuickFixAssistant {
         TextFileChange change = new TextFileChange("Rename", file);
 //        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
-        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, 10, CHANGE));
+        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, CHANGE));
     }
 
     private void addModuleImportProposals(Tree.CompilationUnit cu,
@@ -1705,7 +1705,7 @@ public class CeylonQuickFixAssistant {
 		}*/
         return new ChangeCorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
-                change, 50, CeylonLabelProvider.IMPORT);
+                change, CeylonLabelProvider.IMPORT);
     }
 
 	public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,

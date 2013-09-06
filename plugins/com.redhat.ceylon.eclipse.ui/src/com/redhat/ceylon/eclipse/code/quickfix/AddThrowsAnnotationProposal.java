@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.createInsertAnnotationEdit;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.getAnnotationIdentifier;
 
@@ -115,7 +114,7 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
     private int offset;
 
     private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset, String declName) {
-        super("Add 'throws ("+exceptionType.getProducedTypeName()+")' annotation to '" + declName + "'", change, 10, CORRECTION);
+        super("Add 'throws ("+exceptionType.getProducedTypeName()+")' annotation to '" + declName + "'", change);
         this.file = file;
         this.offset = offset;
     }

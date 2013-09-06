@@ -30,7 +30,7 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
             String name, String type, int offset,
             TextFileChange change) {
         super("Change type of '"+ name + "' to '" + type + "'", 
-                change, 10, CORRECTION);
+                change);
         this.offset = offset;
         this.length = type.length();
         this.file = file;
