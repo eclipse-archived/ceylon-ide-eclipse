@@ -143,6 +143,7 @@ public class Utils {
     public static class CeylonBuildSummary extends CeylonBuildHook {
         private CeylonBuildHook ceylonBuildHookToRestore;
         
+        private boolean installed = false;
         private CountDownLatch firstBuildLatch = new CountDownLatch(1);
         private int kind;
         private Map args;
@@ -169,6 +170,7 @@ public class Utils {
 
         public void install() {
             CeylonBuildHook previousHook = CeylonBuilder.installHook(this);
+            installed = true;
             if (ceylonBuildHookToRestore == null) {
                 ceylonBuildHookToRestore = previousHook;
             }
@@ -237,6 +239,9 @@ public class Utils {
         }
         
         public void waitForBuildEnd(long timeoutInSeconds) throws InterruptedException {
+            if (!installed) {
+                throw new RuntimeException("Cannot wait for a build with a non-installed hook !");
+            }
             firstBuildLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
             if (reentrantBuildSummary != null) {
                 reentrantBuildSummary.waitForBuildEnd(timeoutInSeconds);

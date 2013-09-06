@@ -53,25 +53,25 @@ public class CleanImportsHandler extends AbstractHandler {
                 int length;
                 String extra;
                 if (il==null || il.getImports().isEmpty()) {
-                	start=0;
-                	length=0;
-                	extra="\n";
+                    start=0;
+                    length=0;
+                    extra="\n";
                 }
                 else {
-                	start = il.getStartIndex();
-                	length = il.getStopIndex()-il.getStartIndex()+1;
-                	extra="";
+                    start = il.getStartIndex();
+                    length = il.getStopIndex()-il.getStartIndex()+1;
+                    extra="";
                 }
 //                if (!imports.trim().isEmpty()) {
-                	tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
-                	tfc.initializeValidationData(null);
-                	try {
-                		getWorkspace().run(new PerformChangeOperation(tfc), 
-                				new NullProgressMonitor());
-                	}
-                	catch (CoreException ce) {
-                		throw new ExecutionException("Error cleaning imports", ce);
-                	}
+                    tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
+                    tfc.initializeValidationData(null);
+                    try {
+                        getWorkspace().run(new PerformChangeOperation(tfc), 
+                                new NullProgressMonitor());
+                    }
+                    catch (CoreException ce) {
+                        throw new ExecutionException("Error cleaning imports", ce);
+                    }
 //                }
             }
         }
@@ -79,7 +79,7 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     public static String imports(Node node, ImportList til) {
-    	final List<Declaration> unused = new ArrayList<Declaration>();
+        final List<Declaration> unused = new ArrayList<Declaration>();
         DetectUnusedImportsVisitor duiv = new DetectUnusedImportsVisitor(unused);
         til.visit(duiv);
         node.visit(duiv);
@@ -87,201 +87,201 @@ public class CleanImportsHandler extends AbstractHandler {
     }
     
     private String imports(final Tree.CompilationUnit cu) {
-		final List<Declaration> proposals = new ArrayList<Declaration>();
-		final List<Declaration> unused = new ArrayList<Declaration>();
-    	new ImportProposalsVisitor(cu, proposals, this).visit(cu);
+        final List<Declaration> proposals = new ArrayList<Declaration>();
+        final List<Declaration> unused = new ArrayList<Declaration>();
+        new ImportProposalsVisitor(cu, proposals, this).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
         return reorganizeImports(cu.getImportList(), unused, proposals);
     }
     
     public static String imports(List<Declaration> proposed) {
-    	return reorganizeImports(null, Collections.<Declaration>emptyList(), proposed);
+        return reorganizeImports(null, Collections.<Declaration>emptyList(), proposed);
     }
     
     public static String reorganizeImports(ImportList til, List<Declaration> unused, 
-    		List<Declaration> proposed) {
+            List<Declaration> proposed) {
         Map<String,List<Tree.Import>> packages = new TreeMap<String,List<Tree.Import>>();
         if (til!=null) {
-        	for (Tree.Import i: til.getImports()) {
-        		List<Tree.Import> is = packages.get(packageName(i));
-        		if (is==null) {
-        			is = new ArrayList<Tree.Import>();
-            		packages.put(packageName(i), is);
-        		}
-        		is.add(i);
-        	}
+            for (Tree.Import i: til.getImports()) {
+                String pn = packageName(i);
+                List<Tree.Import> is = packages.get(pn);
+                if (is==null) {
+                    is = new ArrayList<Tree.Import>();
+                    packages.put(pn, is);
+                }
+                is.add(i);
+            }
         }
         for (Declaration d: proposed) {
-        	String pn = d.getUnit().getPackage().getNameAsString();
-        	// TODO shouldn't we filter ceylon.language packages ?
-        	if (!packages.containsKey(pn)) {
-        		packages.put(pn, Collections.<Tree.Import>emptyList());
-        	}
+            String pn = d.getUnit().getPackage().getNameAsString();
+            if (!packages.containsKey(pn)) {
+                packages.put(pn, Collections.<Tree.Import>emptyList());
+            }
         }
         
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
         for (Map.Entry<String, List<Tree.Import>> pack: packages.entrySet()) {
-        	String packageName = pack.getKey();
-        	List<Tree.Import> imports = pack.getValue();
-        	boolean hasWildcard = hasWildcard(imports);
-        	List<Tree.ImportMemberOrType> list = getUsedImportElements(imports, unused, hasWildcard, packages);
-        	if (hasWildcard || !list.isEmpty() || 
-        			imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
-        		lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
-        		builder.append("import ").append(packageName).append(" {");
-        		appendImportElements(packageName, list, unused, proposed, hasWildcard, builder);
-        		builder.append("\n}\n");
-        	}
+            String packageName = pack.getKey();
+            List<Tree.Import> imports = pack.getValue();
+            boolean hasWildcard = hasWildcard(imports);
+            List<Tree.ImportMemberOrType> list = getUsedImportElements(imports, unused, hasWildcard, packages);
+            if (hasWildcard || !list.isEmpty() || 
+                    imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
+                lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
+                builder.append("import ").append(packageName).append(" {");
+                appendImportElements(packageName, list, unused, proposed, hasWildcard, builder);
+                builder.append("\n}\n");
+            }
         }
         if (builder.length()!=0) {
-        	builder.setLength(builder.length()-1);
+            builder.setLength(builder.length()-1);
         }
         return builder.toString();
     }
 
-	private static boolean hasWildcard(List<Tree.Import> imports) {
-		boolean hasWildcard = false;
-		for (Tree.Import i: imports) {
-			hasWildcard = hasWildcard || 
-					i!=null && i.getImportMemberOrTypeList()
-							.getImportWildcard()!=null;
-		}
-		return hasWildcard;
-	}
+    private static boolean hasWildcard(List<Tree.Import> imports) {
+        boolean hasWildcard = false;
+        for (Tree.Import i: imports) {
+            hasWildcard = hasWildcard || 
+                    i!=null && i.getImportMemberOrTypeList()
+                            .getImportWildcard()!=null;
+        }
+        return hasWildcard;
+    }
 
-	private static String appendBreakIfNecessary(String lastToplevel,
-			String currentPackage, StringBuilder builder) {
-		int di = currentPackage.indexOf('.');
-		String topLevel = di<0 ? currentPackage:currentPackage.substring(0,di);
-		if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
-			builder.append("\n");
-		}
-		return topLevel;
-	}
+    private static String appendBreakIfNecessary(String lastToplevel,
+            String currentPackage, StringBuilder builder) {
+        int di = currentPackage.indexOf('.');
+        String topLevel = di<0 ? currentPackage:currentPackage.substring(0,di);
+        if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
+            builder.append("\n");
+        }
+        return topLevel;
+    }
 
-	private static void appendImportElements(String packageName,
-			List<Tree.ImportMemberOrType> elements, List<Declaration> unused, 
-			List<Declaration> proposed, boolean hasWildcard, 
-			StringBuilder builder) {
-		for (Tree.ImportMemberOrType i: elements) {
-			if (i.getDeclarationModel()!=null && 
-					i.getIdentifier().getErrors().isEmpty() &&
-					i.getErrors().isEmpty()) {
-			    builder.append('\n').append(indent);
-				if ( !i.getImportModel().getAlias()
-						.equals(i.getDeclarationModel().getName()) ) {
-					builder.append(i.getImportModel().getAlias())
-							.append("=");
-				}
-				builder.append(i.getDeclarationModel().getName());
-				appendNestedImportElements(i, unused, builder);
-				builder.append(",");
-			}
-		}
-		for (Declaration d: proposed) {
-			if (d.getUnit().getPackage().getNameAsString()
-					.equals(packageName)) {
-			    builder.append('\n').append(indent);
-				builder.append(d.getName()).append(",");
-			}
-		}
-		if (hasWildcard) {
-		    builder.append('\n').append(indent).append("...");
-		}
-		else {
-		    // remove trailing ,
-			builder.setLength(builder.length()-1);
-		}
-	}
+    private static void appendImportElements(String packageName,
+            List<Tree.ImportMemberOrType> elements, List<Declaration> unused, 
+            List<Declaration> proposed, boolean hasWildcard, 
+            StringBuilder builder) {
+        for (Tree.ImportMemberOrType i: elements) {
+            if (i.getDeclarationModel()!=null && 
+                    i.getIdentifier().getErrors().isEmpty() &&
+                    i.getErrors().isEmpty()) {
+                builder.append('\n').append(indent);
+                if ( !i.getImportModel().getAlias()
+                        .equals(i.getDeclarationModel().getName()) ) {
+                    builder.append(i.getImportModel().getAlias())
+                            .append("=");
+                }
+                builder.append(i.getDeclarationModel().getName());
+                appendNestedImportElements(i, unused, builder);
+                builder.append(",");
+            }
+        }
+        for (Declaration d: proposed) {
+            if (d.getUnit().getPackage().getNameAsString()
+                    .equals(packageName)) {
+                builder.append('\n').append(indent);
+                builder.append(d.getName()).append(",");
+            }
+        }
+        if (hasWildcard) {
+            builder.append('\n').append(indent).append("...");
+        }
+        else {
+            // remove trailing ,
+            builder.setLength(builder.length()-1);
+        }
+    }
 
-	private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
-			List<Declaration> unused, StringBuilder builder) {
-		if (imt.getImportMemberOrTypeList()!=null) {
-			builder.append(" {");
-			boolean found=false;
-			for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
-					.getImportMemberOrTypes()) {
-				if (nimt.getDeclarationModel()!=null && 
-						nimt.getIdentifier().getErrors().isEmpty() &&
-						nimt.getErrors().isEmpty()) {
-					if (!unused.contains(nimt.getDeclarationModel())) {
-						found=true;
-						builder.append('\n').append(indent).append(indent);
-						if (!nimt.getImportModel().getAlias()
-								.equals(nimt.getDeclarationModel().getName())) {
-							builder.append(nimt.getImportModel().getAlias())
-									.append("=");
-						}
-						builder.append(nimt.getDeclarationModel().getName())
-								.append(",");
-					}
-				}
-			}
-			if (imt.getImportMemberOrTypeList().getImportWildcard() != null) {
-			    found=true;
-			    builder.append('\n').append(indent).append(indent).append("...,");
-			}
-			
-			if (found) {
-			    // remove trailing ","
-			    builder.setLength(builder.length()-1);
-			    builder.append('\n').append(indent).append('}');   
-			} else {
-			    // remove the " {" 
-			    builder.setLength(builder.length()-2);
-			}
-		}
-	}
+    private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
+            List<Declaration> unused, StringBuilder builder) {
+        if (imt.getImportMemberOrTypeList()!=null) {
+            builder.append(" {");
+            boolean found=false;
+            for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
+                    .getImportMemberOrTypes()) {
+                if (nimt.getDeclarationModel()!=null && 
+                        nimt.getIdentifier().getErrors().isEmpty() &&
+                        nimt.getErrors().isEmpty()) {
+                    if (!unused.contains(nimt.getDeclarationModel())) {
+                        found=true;
+                        builder.append('\n').append(indent).append(indent);
+                        if (!nimt.getImportModel().getAlias()
+                                .equals(nimt.getDeclarationModel().getName())) {
+                            builder.append(nimt.getImportModel().getAlias())
+                                    .append("=");
+                        }
+                        builder.append(nimt.getDeclarationModel().getName())
+                                .append(",");
+                    }
+                }
+            }
+            if (imt.getImportMemberOrTypeList().getImportWildcard() != null) {
+                found=true;
+                builder.append('\n').append(indent).append(indent).append("...,");
+            }
+            
+            if (found) {
+                // remove trailing ","
+                builder.setLength(builder.length()-1);
+                builder.append('\n').append(indent).append('}');   
+            } else {
+                // remove the " {" 
+                builder.setLength(builder.length()-2);
+            }
+        }
+    }
 
-	private static boolean hasRealErrors(Node node) {
-	    for (Message m: node.getErrors()) {
-	        if (m instanceof AnalysisError) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
-	
-	private static List<Tree.ImportMemberOrType> getUsedImportElements(
-			List<Tree.Import> imports, List<Declaration> unused, boolean hasWildcard, Map<String, List<Tree.Import>> packages) {
-		List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
-		for (Tree.Import ti: imports) {
-			for (Tree.ImportMemberOrType imt: ti.getImportMemberOrTypeList()
-					.getImportMemberOrTypes()) {
-				Declaration dm = imt.getDeclarationModel();
+    private static boolean hasRealErrors(Node node) {
+        for (Message m: node.getErrors()) {
+            if (m instanceof AnalysisError) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static List<Tree.ImportMemberOrType> getUsedImportElements(
+            List<Tree.Import> imports, List<Declaration> unused, boolean hasWildcard, Map<String, List<Tree.Import>> packages) {
+        List<Tree.ImportMemberOrType> list = new ArrayList<Tree.ImportMemberOrType>();
+        for (Tree.Import ti: imports) {
+            for (Tree.ImportMemberOrType imt: ti.getImportMemberOrTypeList()
+                    .getImportMemberOrTypes()) {
+                Declaration dm = imt.getDeclarationModel();
                 if (dm!=null && 
-				        !hasRealErrors(imt.getIdentifier()) && 
-				        !hasRealErrors(imt)) {
-					if (unused.contains(dm)) {
-						if (imt.getImportMemberOrTypeList()!=null) {
-							for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
-									.getImportMemberOrTypes()) {
-								Declaration ndm = nimt.getDeclarationModel();
+                        !hasRealErrors(imt.getIdentifier()) && 
+                        !hasRealErrors(imt)) {
+                    if (unused.contains(dm)) {
+                        if (imt.getImportMemberOrTypeList()!=null) {
+                            for (Tree.ImportMemberOrType nimt: imt.getImportMemberOrTypeList()
+                                    .getImportMemberOrTypes()) {
+                                Declaration ndm = nimt.getDeclarationModel();
                                 if (ndm!=null && 
                                         !hasRealErrors(nimt.getIdentifier()) && 
-										!hasRealErrors(nimt)) {
-									if (!unused.contains(ndm)) {
-										list.add(imt);
-										break;
-									}
-								}
-							}
-						}
-					} 
-					else {
-						if (!hasWildcard || 
-						        imt.getAlias()!=null || 
-								imt.getImportMemberOrTypeList()!=null || 
-								preventAmbiguityDueWildcards(dm, packages)) {
-							list.add(imt);
-						}
-					}
-				}
-			}
-		}
-		return list;
-	}
+                                        !hasRealErrors(nimt)) {
+                                    if (!unused.contains(ndm)) {
+                                        list.add(imt);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                    else {
+                        if (!hasWildcard || 
+                                imt.getAlias()!=null || 
+                                imt.getImportMemberOrTypeList()!=null || 
+                                preventAmbiguityDueWildcards(dm, packages)) {
+                            list.add(imt);
+                        }
+                    }
+                }
+            }
+        }
+        return list;
+    }
     
     private static boolean preventAmbiguityDueWildcards(Declaration d, Map<String, List<Tree.Import>> importsMap) {
         Module module = d.getUnit().getPackage().getModule();
@@ -339,14 +339,14 @@ public class CleanImportsHandler extends AbstractHandler {
         return false;
     }
     
-	public Declaration select(List<Declaration> proposals) {
-		CeylonEditor editor = (CeylonEditor) getCurrentEditor();
-		ImportSelectionDialog fid = new ImportSelectionDialog(editor.getSite().getShell(),
-				proposals);
-		if (fid.open() == Window.OK) {
-			return (Declaration) fid.getFirstResult();
-		}
-		return null;
-	}
+    public Declaration select(List<Declaration> proposals) {
+        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+        ImportSelectionDialog fid = new ImportSelectionDialog(editor.getSite().getShell(),
+                proposals);
+        if (fid.open() == Window.OK) {
+            return (Declaration) fid.getFirstResult();
+        }
+        return null;
+    }
 
 }

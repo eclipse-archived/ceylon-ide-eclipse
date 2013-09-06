@@ -8,8 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -40,8 +40,9 @@ class ConvertToGetterProposal extends ChangeCorrectionProposal {
             Tree.AttributeDeclaration decNode) {
         Value dec = decNode.getDeclarationModel();
         if (dec==null || decNode.getSpecifierOrInitializerExpression()==null) return;
+        if (dec.isParameter()) return;
         if (!dec.isVariable()) { //TODO: temp restriction, autocreate setter!
-            TextChange change = new DocumentChange("Convert To Getter", doc);
+            TextChange change = new TextFileChange("Convert To Getter", file);
             change.setEdit(new MultiTextEdit());
             Integer offset = decNode.getSpecifierOrInitializerExpression().getStartIndex();
             String space;

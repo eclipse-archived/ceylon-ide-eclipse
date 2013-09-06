@@ -8,8 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -42,7 +42,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.LazySpecifierExpression spec,
             Node decNode) {
-        TextChange change = new DocumentChange("Convert To Block", doc);
+        TextChange change = new TextFileChange("Convert To Block", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = spec.getStartIndex();
         String space;
@@ -58,6 +58,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
         boolean isVoid;
         if (decNode instanceof Tree.Declaration) {
             Declaration dm = ((Tree.Declaration) decNode).getDeclarationModel();
+            if (dm.isParameter()) return;
             isVoid = dm instanceof Setter ||
                     dm instanceof Method && ((Method) dm).isDeclaredVoid();
         }

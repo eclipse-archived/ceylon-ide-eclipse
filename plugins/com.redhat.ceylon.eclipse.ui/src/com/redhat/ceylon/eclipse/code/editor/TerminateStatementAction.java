@@ -387,11 +387,22 @@ final class TerminateStatementAction extends Action {
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
 					}
-					if (that instanceof Tree.ClassDeclaration ||
-                        that instanceof Tree.MethodDeclaration ||
-                        that instanceof Tree.InterfaceDeclaration) {
+					if (that instanceof Tree.ClassDeclaration &&
+					        ((Tree.ClassDeclaration) that).getClassSpecifier()==null||
+                        that instanceof Tree.MethodDeclaration &&
+                            ((Tree.MethodDeclaration) that).getSpecifierExpression()==null ||
+                        that instanceof Tree.InterfaceDeclaration &&
+                            ((Tree.InterfaceDeclaration) that).getTypeSpecifier()==null) {
 					    terminateWithBaces(that);
 					}
+                    if (that instanceof Tree.ClassDeclaration &&
+                            ((Tree.ClassDeclaration) that).getClassSpecifier()!=null||
+                        that instanceof Tree.MethodDeclaration &&
+                            ((Tree.MethodDeclaration) that).getSpecifierExpression()!=null ||
+                        that instanceof Tree.InterfaceDeclaration &&
+                            ((Tree.InterfaceDeclaration) that).getTypeSpecifier()!=null) {
+                        terminateWithSemicolon(that);
+                    }
 				}
                 private void terminateWithBaces(Node that) {
                     try {
