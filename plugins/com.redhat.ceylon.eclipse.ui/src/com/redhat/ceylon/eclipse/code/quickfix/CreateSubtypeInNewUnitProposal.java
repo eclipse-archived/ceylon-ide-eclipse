@@ -41,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
@@ -266,25 +267,26 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 
     public static void appendParameters(ProducedType type, Class c,
             StringBuilder def) {
-        if (c.getParameterList()==null ||
-                c.getParameterList().getParameters().isEmpty()) {
-        	def.append("()");
-        }
-        else {
-        	def.append("(");
-        	for (Parameter p: c.getParameterList().getParameters()) {
-        		ProducedTypedReference ptr = type.getTypedParameter(p);
-        		if (ptr.getType()!=null && ptr.getType().isWellDefined()) {
-        			def.append(ptr.getType().getProducedTypeName());
-        		}
-        		else {
-        			def.append("Anything");
-        		}
-        		def.append(" ").append(p.getName()).append(", ");
-        	}
-        	def.setLength(def.length()-2);
-        	def.append(")");
-        }
+        CeylonContentProposer.appendParameters(c,type, def);
+//        if (c.getParameterList()==null ||
+//                c.getParameterList().getParameters().isEmpty()) {
+//        	def.append("()");
+//        }
+//        else {
+//        	def.append("(");
+//        	for (Parameter p: c.getParameterList().getParameters()) {
+//        		ProducedTypedReference ptr = type.getTypedParameter(p);
+//        		if (ptr.getType()!=null && ptr.getFullType().isWellDefined()) {
+//        			def.append(ptr.getFullType().getProducedTypeName());
+//        		}
+//        		else {
+//        			def.append("Anything");
+//        		}
+//        		def.append(" ").append(p.getName()).append(", ");
+//        	}
+//        	def.setLength(def.length()-2);
+//        	def.append(")");
+//        }
     }
 
     private static void appendInterface(ProducedType type, TypeDeclaration td,
