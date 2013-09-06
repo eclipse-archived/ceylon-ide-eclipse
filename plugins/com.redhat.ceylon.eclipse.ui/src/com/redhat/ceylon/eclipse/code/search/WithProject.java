@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import org.eclipse.core.resources.IProject;
 
-class WithProject {
-    Object element;
+public class WithProject {
+    public Object element;
     IProject project;
     
     WithProject(Object element, IProject project) {
