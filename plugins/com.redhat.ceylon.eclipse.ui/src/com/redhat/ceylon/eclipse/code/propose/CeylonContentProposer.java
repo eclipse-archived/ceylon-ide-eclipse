@@ -37,7 +37,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
@@ -716,7 +715,7 @@ public class CeylonContentProposer {
                     && prefix.isEmpty() && !memberOp) {
                 addMemberNameProposal(offset, node, result);
             }
-            else if (node instanceof Tree.Declaration && 
+            else if (node instanceof Tree.TypedDeclaration && 
                     !(node instanceof Tree.Variable && 
                             ((Tree.Variable)node).getType() instanceof Tree.SyntheticVariable) &&
                     !(node instanceof Tree.InitializerParameter)) {
@@ -724,6 +723,7 @@ public class CeylonContentProposer {
             }
             else {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+            	if (token.getType()==CeylonLexer.EXTENDS) ol = EXTENDS;
             	if (!filter && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
             		addKeywordProposals(cpc, offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
@@ -894,8 +894,8 @@ public class CeylonContentProposer {
         return dec instanceof Functional && 
                 //!((Functional) dec).getParameterLists().isEmpty() &&
                 (ol==null || 
-                 ol==EXPRESSION || 
-                 ol==EXTENDS && dec instanceof Class ||
+                 ol==EXPRESSION && ( !(dec instanceof Class) || !((Class)dec).isAbstract()) || 
+                 ol==EXTENDS && dec instanceof Class && !((Class)dec).isFinal() ||
                  ol==PARAMETER_LIST && dec instanceof Method && 
                          dec.isAnnotation()) &&
                 dwp.getNamedArgumentList()==null &&
@@ -906,8 +906,8 @@ public class CeylonContentProposer {
 
     private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol, Scope scope) {
         Declaration dec = dwp.getDeclaration();
-        return (dec instanceof Class || ol!=EXTENDS) && 
-                (dec instanceof Interface || ol!=SATISFIES) &&
+        return (ol!=EXTENDS || dec instanceof Class && !((Class)dec).isFinal()) && 
+                (ol!=SATISFIES || dec instanceof Interface) &&
                 (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration() != null && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
                 (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
                 (dec instanceof TypeDeclaration || 
@@ -2028,7 +2028,12 @@ public class CeylonContentProposer {
                         for (Parameter p: params.getParameters()) {
                             ProducedTypedReference ppr = pr==null ? 
                                     null : pr.getTypedParameter(p);
-                            appendDeclarationText(p.getModel(), ppr, result);
+                            if (p.getModel()!=null) {
+                                appendDeclarationText(p.getModel(), ppr, result);
+                            }
+                            else {
+                                result.append(p.getName());
+                            }
                             appendParameters(p.getModel(), ppr, result);
                             /*ProducedType type = p.getType();
                             if (pr!=null) {
@@ -2070,22 +2075,27 @@ public class CeylonContentProposer {
                         result.append("(");
                         int len = params.getParameters().size(), i=0;
                         for (Parameter p: params.getParameters()) {
-                            appendDeclarationText(p.getModel(), result);
-                            appendParameters(p.getModel(), result);
-                            /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
+                            if (p.getModel()==null) {
+                                result.append(p.getName());
+                            }
+                            else {
+                                appendDeclarationText(p.getModel(), result);
+                                appendParameters(p.getModel(), result);
+                                /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);
-                            if (p instanceof FunctionalParameter) {
-                                result.append("(");
-                                FunctionalParameter fp = (FunctionalParameter) p;
-                                List<Parameter> fpl = fp.getParameterLists().get(0).getParameters();
-                                int len2 = fpl.size(), j=0;
-                                for (Parameter pp: fpl) {
-                                    result.append(pp.getType().getProducedTypeName(), TYPE_STYLER)
-                                        .append(" ").append(pp.getName(), ID_STYLER);
-                                    if (++j<len2) result.append(", ");
-                                }
-                                result.append(")");
-                            }*/
+                                if (p instanceof FunctionalParameter) {
+                                    result.append("(");
+                                    FunctionalParameter fp = (FunctionalParameter) p;
+                                    List<Parameter> fpl = fp.getParameterLists().get(0).getParameters();
+                                    int len2 = fpl.size(), j=0;
+                                    for (Parameter pp: fpl) {
+                                        result.append(pp.getType().getProducedTypeName(), TYPE_STYLER)
+                                            .append(" ").append(pp.getName(), ID_STYLER);
+                                        if (++j<len2) result.append(", ");
+                                    }
+                                    result.append(")");
+                                }*/
+                            }
                             if (++i<len) result.append(", ");
                         }
                         result.append(")");

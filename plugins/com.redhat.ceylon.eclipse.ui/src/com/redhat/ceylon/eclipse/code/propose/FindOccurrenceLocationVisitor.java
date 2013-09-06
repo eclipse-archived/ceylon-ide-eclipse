@@ -155,7 +155,7 @@ class FindOccurrenceLocationVisitor extends Visitor
             super.visit(that);
         }
     }
-        
+    
     @Override
     public void visit(Tree.Declaration that) {
         if (inBounds(that)) {
