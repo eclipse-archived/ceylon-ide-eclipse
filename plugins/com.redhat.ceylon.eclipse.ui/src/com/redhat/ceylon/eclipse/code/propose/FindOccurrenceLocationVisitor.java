@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
@@ -126,8 +127,7 @@ class FindOccurrenceLocationVisitor extends Visitor
     @Override
     public void visit(Tree.TypeSpecifier that) {
         if (inBounds(that)) {
-            //TODO: new kind of OccurrenceLocation
-            occurrence = UPPER_BOUND; //hacky!
+            occurrence = TYPE_ALIAS;
         }
         super.visit(that);
     }

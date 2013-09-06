@@ -37,6 +37,10 @@ public class FindNodeVisitor extends Visitor
                 that.getInvocationExpression().getPositionalArgumentList()!=null) {
             that.getInvocationExpression().getPositionalArgumentList().visit(this);
         }
+        if (that.getType()==null && 
+            that.getInvocationExpression()==null) {
+            super.visit(that);
+        }
     }
     
     public void visit(Tree.ClassSpecifier that) {
@@ -44,6 +48,10 @@ public class FindNodeVisitor extends Visitor
         if (that.getInvocationExpression()!=null &&
                 that.getInvocationExpression().getPositionalArgumentList()!=null) {
             that.getInvocationExpression().getPositionalArgumentList().visit(this);
+        }
+        if (that.getType()==null && 
+            that.getInvocationExpression()==null) {
+            super.visit(that);
         }
     }
     
