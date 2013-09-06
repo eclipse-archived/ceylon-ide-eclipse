@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
@@ -118,6 +119,23 @@ class FindOccurrenceLocationVisitor extends Visitor
     public void visit(Tree.TypeParameterList that) {
         if (inBounds(that)) {
             occurrence = TYPE_PARAMETER_LIST;
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.TypeSpecifier that) {
+        if (inBounds(that)) {
+            //TODO: new kind of OccurrenceLocation
+            occurrence = UPPER_BOUND; //hacky!
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ClassSpecifier that) {
+        if (inBounds(that)) {
+            occurrence = CLASS_ALIAS;
         }
         super.visit(that);
     }

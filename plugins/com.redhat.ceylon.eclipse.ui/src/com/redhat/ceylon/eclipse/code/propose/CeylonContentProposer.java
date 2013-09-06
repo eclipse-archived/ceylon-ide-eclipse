@@ -34,6 +34,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ST
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
@@ -723,7 +724,10 @@ public class CeylonContentProposer {
             }
             else {
             	OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            	if (token.getType()==CeylonLexer.EXTENDS) ol = EXTENDS;
+            	if (ol==null && node instanceof Tree.AnyClass) {
+            	    if (token.getType()==CeylonLexer.EXTENDS) ol = EXTENDS;
+            	    if (token.getType()==CeylonLexer.COMPUTE) ol = CLASS_ALIAS;
+            	}
             	if (!filter && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
             		addKeywordProposals(cpc, offset, prefix, result, node);
             		//addTemplateProposal(offset, prefix, result);
@@ -896,6 +900,7 @@ public class CeylonContentProposer {
                 (ol==null || 
                  ol==EXPRESSION && ( !(dec instanceof Class) || !((Class)dec).isAbstract()) || 
                  ol==EXTENDS && dec instanceof Class && !((Class)dec).isFinal() ||
+                 ol==CLASS_ALIAS && dec instanceof Class ||
                  ol==PARAMETER_LIST && dec instanceof Method && 
                          dec.isAnnotation()) &&
                 dwp.getNamedArgumentList()==null &&
@@ -907,15 +912,18 @@ public class CeylonContentProposer {
     private static boolean isProposable(DeclarationWithProximity dwp, OccurrenceLocation ol, Scope scope) {
         Declaration dec = dwp.getDeclaration();
         return (ol!=EXTENDS || dec instanceof Class && !((Class)dec).isFinal()) && 
+                (ol!=CLASS_ALIAS || dec instanceof Class) &&
                 (ol!=SATISFIES || dec instanceof Interface) &&
-                (dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration() != null && ((Value) dec).getTypeDeclaration().isAnonymous()) || ol!=OF) && 
-                (dec instanceof TypeDeclaration || (ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND)) &&
-                (dec instanceof TypeDeclaration || 
+                (ol!=OF || dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration()!=null && 
+                        ((Value) dec).getTypeDeclaration().isAnonymous())) && 
+                ((ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND) || dec instanceof TypeDeclaration) &&
+                (ol!=PARAMETER_LIST ||
+                        dec instanceof TypeDeclaration || 
                         dec instanceof Method && dec.isAnnotation() || //i.e. an annotation 
-                        dec instanceof Value && dec.getContainer().equals(scope) || //a parameter ref
-                        ol!=PARAMETER_LIST) &&
+                        dec instanceof Value && dec.getContainer().equals(scope)) && //a parameter ref
                 (ol!=IMPORT || !dwp.isUnimported()) &&
-                ol!=TYPE_PARAMETER_LIST && dwp.getNamedArgumentList()==null;
+                ol!=TYPE_PARAMETER_LIST && 
+                dwp.getNamedArgumentList()==null;
     }
 
     private static boolean isTypeParameterOfCurrentDeclaration(Node node, Declaration d) {
