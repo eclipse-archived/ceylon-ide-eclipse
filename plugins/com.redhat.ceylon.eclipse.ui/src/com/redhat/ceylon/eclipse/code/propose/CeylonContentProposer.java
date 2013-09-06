@@ -199,18 +199,23 @@ public class CeylonContentProposer {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
+        
         if (tt==LINE_COMMENT &&
             offset>=adjustedToken.getStartIndex() && 
             adjustedToken.getLine()==line+1) {
             return null;
         }
-
+        
         // overrrides above. TODO separate block for all non-typechecker proposals
-        if (tt==ASTRING_LITERAL) {
+        boolean inDoc = false;
+        if ((tt==ASTRING_LITERAL || tt==AVERBATIM_STRING) &&
+                offset>adjustedToken.getStartIndex() &&
+                offset<adjustedToken.getStopIndex()) {
             result = getDocReferencePosition(offset, viewer, tokens);
             if (result == null) {
                 return null;
             }
+            inDoc = true;
         }
         
         //find the node at the token
@@ -237,7 +242,8 @@ public class CeylonContentProposer {
             filterProposals(filter, rn, requiredType, proposals);
             Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, requiredType, proposals);
             completions = constructCompletions(offset, result.prefix, sortedProposals,
-                             cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), filter);
+                             cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), 
+                             filter, inDoc);
         }
         return completions;
         
@@ -698,7 +704,7 @@ public class CeylonContentProposer {
     
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
             Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
-            CommonToken token, boolean memberOp, IDocument doc, boolean filter) {
+            CommonToken token, boolean memberOp, IDocument doc, boolean filter, boolean inDoc) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
@@ -725,21 +731,17 @@ public class CeylonContentProposer {
             }
             else {
                 OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-                if (!filter && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+                if (!filter && !inDoc && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
                     addKeywordProposals(cpc, offset, prefix, result, node);
                     //addTemplateProposal(offset, prefix, result);
                 }
                 
-                boolean isModuleDescriptor = isModuleDescriptor(cpc);
+                boolean isPackageOrModuleDescriptor = isModuleDescriptor(cpc) || isPackageDescriptor(cpc);
                 for (DeclarationWithProximity dwp: set) {
                     Declaration dec = dwp.getDeclaration();
                     
-                    if (isModuleDescriptor) {
-                        String qualifiedName = dec.getQualifiedNameString();
-                        if (!qualifiedName.equals("ceylon.language::shared") && 
-                            !qualifiedName.equals("ceylon.language::optional")) {
-                            continue;
-                        }
+                    if (isPackageOrModuleDescriptor && !inDoc) {
+                        if (!dec.isAnnotation()||!(dec instanceof Method)) continue;
                     }
                     
                     if (isParameterOfNamedArgInvocation(node, dwp)) {
@@ -748,28 +750,27 @@ public class CeylonContentProposer {
                             addInlineFunctionProposal(offset, prefix, cpc, node, result, dec, doc);
                         }
                     }
+                    
                     CommonToken nextToken = getNextToken(cpc, token);
                     boolean noParamsFollow = noParametersFollow(nextToken);
-                    if (isInvocationProposable(dwp, ol) &&
-                            !(node instanceof Tree.QualifiedType) &&
-                            !(node instanceof Tree.QualifiedMemberOrTypeExpression &&
-                            ((Tree.QualifiedMemberOrTypeExpression) node).getStaticMethodReference())) {
-                        if (noParamsFollow || ol==EXTENDS) {
-                            for (Declaration d: overloads(dec)) {
-                                ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
-                                        getQualifiedProducedReference(node, d) :
-                                        getRefinedProducedReference(node, d);
-                                addInvocationProposals(offset, prefix, cpc, result, 
-                                        new DeclarationWithProximity(d, dwp), pr, ol);
-                            }
+                    if (isInvocationProposable(dwp, ol) && 
+                            !isQualifiedType(node) && 
+                            !inDoc && noParamsFollow) {
+                        for (Declaration d: overloads(dec)) {
+                            ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+                                    getQualifiedProducedReference(node, d) :
+                                    getRefinedProducedReference(node, d);
+                            addInvocationProposals(offset, prefix, cpc, result, 
+                                    new DeclarationWithProximity(d, dwp), pr, ol);
                         }
                     }
+                    
                     if (isProposable(dwp, ol, node.getScope()) && 
-                            (noParamsFollow || 
-                             ol==SATISFIES || ol==OF || ol==UPPER_BOUND || ol==TYPE_ALIAS ||
-                             dwp.getDeclaration() instanceof Functional)) {
+                            (definitelyRequiresType(ol) ||
+                             noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
                         addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     }
+                    
                     if (isProposable(dwp, ol, node.getScope()) && 
                             isDirectlyInsideBlock(node, token, cpc.getTokens()) && 
                             !memberOp && !filter) {
@@ -777,6 +778,7 @@ public class CeylonContentProposer {
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
                     }
+                    
                     if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
                         for (Declaration d: overloads(dec)) {
                             addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
@@ -788,6 +790,18 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
     
+    private static boolean isQualifiedType(Node node) {
+        return (node instanceof Tree.QualifiedType) ||
+               (node instanceof Tree.QualifiedMemberOrTypeExpression &&
+                       ((Tree.QualifiedMemberOrTypeExpression) node).getStaticMethodReference());
+    }
+
+    private static boolean isPackageDescriptor(CeylonParseController cpc) {
+        return cpc.getRootNode() != null && 
+                cpc.getRootNode().getUnit() != null &&
+                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon"); 
+    }
+
     private static boolean isModuleDescriptor(CeylonParseController cpc) {
         return cpc.getRootNode() != null && 
                 cpc.getRootNode().getUnit() != null &&
@@ -800,7 +814,8 @@ public class CeylonContentProposer {
                 cpc.getRootNode().getModuleDescriptor() == null; 
     }
 
-    private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+    private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, 
+            String prefix, List<ICompletionProposal> result) {
         if (!"module".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = CeylonBuilder.getPackageName(file);
@@ -823,7 +838,8 @@ public class CeylonContentProposer {
                 cpc.getRootNode().getPackageDescriptor() == null;
     }
 
-    private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result) {
+    private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, 
+            String prefix, List<ICompletionProposal> result) {
         if (!"package".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String packageName = CeylonBuilder.getPackageName(file);
@@ -841,6 +857,10 @@ public class CeylonContentProposer {
                 //disabled now because a declaration can
                 //begin with an LBRACE (an Iterable type)
                 /*&& nextToken.getType()!=CeylonLexer.LBRACE*/;
+    }
+    
+    private static boolean definitelyRequiresType(OccurrenceLocation ol) {
+        return ol==SATISFIES || ol==OF || ol==UPPER_BOUND || ol==TYPE_ALIAS;
     }
 
     private static CommonToken getNextToken(final CeylonParseController cpc,
