@@ -13,8 +13,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -74,7 +74,8 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                     }
                 }
             }
-            TextChange change = new DocumentChange("Add Parameter", doc);
+            TextChange change = new TextFileChange("Add Parameter", file);
+//            TextChange change = new DocumentChange("Add Parameter", doc);
             change.setEdit(new MultiTextEdit());
             FindContainerVisitor fcv = new FindContainerVisitor(decNode);
             fcv.visit(cu);

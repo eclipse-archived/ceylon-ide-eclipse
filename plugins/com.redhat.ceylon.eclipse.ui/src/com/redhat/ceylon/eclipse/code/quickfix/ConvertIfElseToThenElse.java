@@ -12,8 +12,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree.AttributeDeclaration;
@@ -55,14 +55,14 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     static void addConvertToThenElseProposal(CompilationUnit cu, IDocument doc,
 			Collection<ICompletionProposal> proposals, IFile file,
 			Statement statement) {
-			TextChange change = createTextChange(cu, doc, statement);
+			TextChange change = createTextChange(cu, doc, statement, file);
 			if (change != null) {
 				proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), file, change));
 			}
    }
 
 	static TextChange createTextChange(CompilationUnit cu,
-			IDocument doc, Statement statement) {
+			IDocument doc, Statement statement, IFile file) {
 		if (! (statement instanceof Tree.IfStatement)) {
 			return null;
 		}
@@ -185,7 +185,8 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 		}
 		replace.append(";");
 
-		TextChange change = new DocumentChange("Convert To then-else", doc);
+        TextChange change = new TextFileChange("Convert To then-else", file);
+//      TextChange change = new DocumentChange("Convert To then-else", doc);
 		change.setEdit(new ReplaceEdit(replaceFrom, statement.getStopIndex() - replaceFrom + 1, replace.toString()));
 		return change;
 	}
