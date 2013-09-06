@@ -9,8 +9,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -113,7 +113,7 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
 					replace.append("else ")
 					.append(getTerm(doc, ifBlock));
 
-			TextChange change = new DocumentChange("Invert if-else", doc);
+			TextChange change = new TextFileChange("Invert if-else", file);
 			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
 			proposals.add(new InvertIfElseProposal(statement.getStartIndex(), file, change));
 		} catch (Exception e) {

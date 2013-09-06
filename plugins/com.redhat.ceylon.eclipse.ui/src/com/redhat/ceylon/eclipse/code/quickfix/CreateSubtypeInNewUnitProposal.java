@@ -44,13 +44,13 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
-class CreateSubtypeProposal implements ICompletionProposal, 
+class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
 		ICompletionProposalExtension6 {
 
     private CeylonEditor editor;
     private ProducedType type;
     
-    public CreateSubtypeProposal(CeylonEditor editor, 
+    public CreateSubtypeInNewUnitProposal(CeylonEditor editor, 
     		ProducedType type) {
         this.editor = editor;
         this.type = type;
@@ -85,22 +85,18 @@ class CreateSubtypeProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        createSubtype(editor);
-    }
-
-    public void createSubtype(CeylonEditor editor) {
         TypeDeclaration td = type.getDeclaration();
         CreateSubtype cs = subtypeDeclaration(type, 
         		editor.getParseController().getRootNode()
         		        .getUnit().getPackage(), 
         		false);
-		NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
+        NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
                 Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
         		"Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
     }
 
-	public static class CreateSubtype {
+    public static class CreateSubtype {
 		private String definition;
 		private String imports;
 		private Set<ProducedType> importedTypes;
@@ -380,7 +376,7 @@ class CreateSubtypeProposal implements ICompletionProposal,
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
     	ProducedType type = getType(editor);
     	if (type!=null && proposeSubtype(type)) {
-    		proposals.add(new CreateSubtypeProposal(editor, type));
+    		proposals.add(new CreateSubtypeInNewUnitProposal(editor, type));
     	}
     }
 

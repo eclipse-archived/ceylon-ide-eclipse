@@ -14,8 +14,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -71,7 +71,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
                 }
             }
         }
-        TextChange change = new DocumentChange("Split Declaration", doc);
+        TextChange change = new TextFileChange("Split Declaration", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
         change.addEdit(new InsertEdit(offset, params+";\n" + 

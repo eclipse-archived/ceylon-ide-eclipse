@@ -338,7 +338,7 @@ public class CeylonQuickFixAssistant {
             addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
         }
 
-        CreateSubtypeProposal.add(proposals, editor);
+        CreateSubtypeInNewUnitProposal.add(proposals, editor);
         MoveDeclarationProposal.add(proposals, editor);
         
         RefineFormalMembersProposal.add(proposals, editor);

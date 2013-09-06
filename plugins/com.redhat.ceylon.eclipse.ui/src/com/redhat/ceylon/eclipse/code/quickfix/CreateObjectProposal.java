@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECT
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeProposal.subtypeDeclaration;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,8 +12,8 @@ import java.util.HashSet;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -23,7 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeProposal.CreateSubtype;
+import com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.CreateSubtype;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 class CreateObjectProposal extends ChangeCorrectionProposal {
@@ -54,9 +54,9 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
         fsv.visit(cu);
         Statement s = fsv.getStatement();
         if (s!=null) {
-            ProducedType type = CreateSubtypeProposal.getType(cu, node);
-            if (type!=null && CreateSubtypeProposal.proposeSubtype(type)) {
-                TextChange change = new DocumentChange("Create Object", doc);
+            ProducedType type = CreateSubtypeInNewUnitProposal.getType(cu, node);
+            if (type!=null && CreateSubtypeInNewUnitProposal.proposeSubtype(type)) {
+                TextChange change = new TextFileChange("Create Object", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = s.getStartIndex();
                 String name = type.getDeclaration().getName().replace("&", "")

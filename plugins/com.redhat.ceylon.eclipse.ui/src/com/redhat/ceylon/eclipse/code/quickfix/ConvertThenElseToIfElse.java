@@ -8,8 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -162,7 +162,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 					.append(baseIndent).append(indent).append(action).append(elseTerm).append(";\n")
 					.append(baseIndent).append("}");
 
-			TextChange change = new DocumentChange("Convert To if-else", doc);
+			TextChange change = new TextFileChange("Convert To if-else", file);
 			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
 			proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), file, change));
 		} catch (BadLocationException e) {
