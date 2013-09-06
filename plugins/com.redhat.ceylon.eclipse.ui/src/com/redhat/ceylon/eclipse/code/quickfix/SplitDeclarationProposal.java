@@ -50,6 +50,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
             Tree.TypedDeclaration decNode) {
         TypedDeclaration dec = decNode.getDeclarationModel();
         if (dec==null) return;
+        if (dec.isParameter() || dec.isToplevel()) return;
         Tree.Identifier id = decNode.getIdentifier();
         if (id==null || id.getToken()==null) return;
         String params = "";
