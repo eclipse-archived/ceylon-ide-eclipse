@@ -451,7 +451,7 @@ public class CeylonContentProposer {
     }
     
     private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
-        Scope scope = node.getScope();
+        Scope scope = getRealScope(node);
         if (scope instanceof Interface || 
                 scope instanceof Package) {
             return false;
@@ -702,6 +702,22 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
     
+    /**
+     * BaseMemberExpressions in Annotations have funny lying
+     * scopes, but we can extract the real scope out of the
+     * identifier! (Yick)
+     */
+    static Scope getRealScope(Node node) {
+        Scope supposedScope = node.getScope();
+        if (node instanceof Tree.BaseMemberExpression) {
+            Scope actualScope = ((Tree.BaseMemberExpression)node).getIdentifier().getScope();
+            if (supposedScope!=actualScope) {
+                return actualScope.getContainer();
+            }
+        }
+        return supposedScope;
+    }
+    
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
             Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
             CommonToken token, boolean memberOp, IDocument doc, boolean filter, boolean inDoc) {
@@ -765,13 +781,14 @@ public class CeylonContentProposer {
                         }
                     }
                     
-                    if (isProposable(dwp, ol, node.getScope()) && 
+                    Scope scope = getRealScope(node);
+                    if (isProposable(dwp, ol, scope) && 
                             (definitelyRequiresType(ol) ||
                              noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
                         addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
                     }
                     
-                    if (isProposable(dwp, ol, node.getScope()) && 
+                    if (isProposable(dwp, ol, scope) && 
                             isDirectlyInsideBlock(node, token, cpc.getTokens()) && 
                             !memberOp && !filter) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -986,10 +1003,11 @@ public class CeylonContentProposer {
 
     private static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
             Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc) {
+        Scope scope = getRealScope(node);
         if ((d.isDefault() || d.isFormal()) &&
-                node.getScope() instanceof ClassOrInterface &&
-                ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-            boolean isInterface = node.getScope() instanceof Interface;
+                scope instanceof ClassOrInterface &&
+                ((ClassOrInterface) scope).isInheritedFromSupertype(d)) {
+            boolean isInterface = scope instanceof Interface;
             ProducedReference pr = getRefinedProducedReference(node, d);
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(new RefinementCompletionProposal(offset, prefix,  
@@ -1492,7 +1510,7 @@ public class CeylonContentProposer {
             }
         }
         else {
-            Scope scope = node.getScope();
+            Scope scope = getRealScope(node);
             if (scope instanceof ImportList) {
                 return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
             }
