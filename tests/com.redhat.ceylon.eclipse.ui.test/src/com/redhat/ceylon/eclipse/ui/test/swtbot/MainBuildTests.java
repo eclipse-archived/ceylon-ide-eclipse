@@ -112,6 +112,7 @@ public class MainBuildTests extends AbstractMultiProjectTest {
                    */
             
             buildSummary = new Utils.CeylonBuildSummary(mainProjectJDT);
+            buildSummary.install();
             ceylonFileEditor.save();
             try {
                 buildSummary.waitForBuildEnd(10);
