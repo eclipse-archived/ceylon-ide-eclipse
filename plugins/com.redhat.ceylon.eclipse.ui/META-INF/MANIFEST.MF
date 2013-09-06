@@ -47,6 +47,7 @@ Bundle-ClassPath: ./,
  external:$ceylon.repo$/com/redhat/ceylon/module-resolver/$ceylon.module-resolver.version$/com.redhat.ceylon.module-resolver-$ceylon.module-resolver.version$.jar,
  external:$ceylon.repo$/com/redhat/ceylon/common/$ceylon.common.version$/com.redhat.ceylon.common-$ceylon.common.version$.jar,
  external:$ceylon.repo$/ceylon/language/$ceylon.language.version$/ceylon.language-$ceylon.language.version$.car,
+ external:$ceylon.repo$/ceylon/runtime/$ceylon.language.version$/ceylon.runtime-$ceylon.runtime.version$.car,
  lib/com.redhat.ceylon.compiler.java-0.6-ide.jar,
  lib/com.redhat.ceylon.compiler.js-0.6-ide.jar,
  lib/com.redhat.ceylon.typechecker-0.6-ide.jar,
@@ -54,7 +55,8 @@ Bundle-ClassPath: ./,
  lib/com.redhat.ceylon.common-0.6-ide.jar,
  lib/ceylon.language-0.6-ide.jar,
  lib/txtmark-0.8-c0dcd373ce.jar,
- lib/com.redhat.ceylon.maven-support-main.jar
+ lib/com.redhat.ceylon.maven-support-main.jar,
+ lib/ceylon.runtime-0.6-ide.jar
 Import-Package: org.eclipse.help
 Export-Package: antlr;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  antlr.ASdebug;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
