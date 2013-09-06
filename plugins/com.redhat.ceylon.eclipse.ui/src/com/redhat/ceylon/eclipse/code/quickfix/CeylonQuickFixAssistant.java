@@ -108,6 +108,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -731,6 +732,7 @@ public class CeylonQuickFixAssistant {
     
     private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Declaration dec = null;
+        List<ProducedType> typeArgumentList = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = (Tree.StaticMemberOrTypeExpression) node;
             dec = qmte.getDeclaration();
@@ -746,16 +748,25 @@ public class CeylonQuickFixAssistant {
         else if (node instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = ((Tree.TypedDeclaration) node);
             if (td.getDeclarationModel() != null) {
-                dec = td.getDeclarationModel().getTypeDeclaration();
+                ProducedType pt = td.getDeclarationModel().getType();
+                dec = pt.getDeclaration();
+                typeArgumentList = pt.getTypeArgumentList();
             }
         }
         else if (node instanceof Tree.Parameter) {
             Tree.Parameter parameter = ((Tree.Parameter) node);
             if (parameter.getParameterModel() != null && parameter.getParameterModel().getType() != null) {
-                dec = parameter.getParameterModel().getType().getDeclaration();
+                ProducedType pt = parameter.getParameterModel().getType();
+                dec = pt.getDeclaration();
+                typeArgumentList = pt.getTypeArgumentList();
             }
         }
         addMakeSharedProposal(dec, proposals, project);
+        if (typeArgumentList != null) {
+            for (ProducedType typeArgument : typeArgumentList) {
+                addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+            }
+        }
     }
     
     private void addMakeSharedProposal(Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
@@ -770,8 +781,10 @@ public class CeylonQuickFixAssistant {
                 for (TypeDeclaration satisfiedType : satisfiedTypes) {
                     addMakeSharedProposal(satisfiedType, proposals, project);
                 }
-            } else if (!dec.isShared()) {
-                addAddAnnotationProposal(null, "shared", "Make Shared", dec, proposals, project);
+            } else if (dec instanceof TypedDeclaration || dec instanceof ClassOrInterface || dec instanceof TypeAlias) {
+                if (!dec.isShared()) {
+                    addAddAnnotationProposal(null, "shared", "Make Shared", dec, proposals, project);
+                }
             }
         }
     }
