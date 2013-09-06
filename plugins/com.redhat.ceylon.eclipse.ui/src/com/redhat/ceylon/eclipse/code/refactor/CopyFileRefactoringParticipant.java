@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.findImportNode;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -19,10 +22,19 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.CopyParticipant;
+import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -97,6 +109,44 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     }
                 }
                 
+                final List<Declaration> declarations = phasedUnit.getDeclarations();
+                final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+                phasedUnit.getCompilationUnit().visit(new Visitor() {
+                    @Override
+                    public void visit(ImportMemberOrType that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    }
+//                    @Override
+//                    public void visit(QualifiedMemberOrTypeExpression that) {
+//                        super.visit(that);
+//                        visitIt(that.getIdentifier(), that.getDeclaration());
+//                    }
+                    @Override
+                    public void visit(BaseMemberOrTypeExpression that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclaration());
+                    }
+                    @Override
+                    public void visit(BaseType that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    }
+//                    @Override
+//                    public void visit(QualifiedType that) {
+//                        super.visit(that);
+//                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+//                    }
+                    protected void visitIt(Tree.Identifier id, Declaration dec) {
+                        if (dec!=null && !declarations.contains(dec) &&
+                                !dec.getUnit().getPackage().getNameAsString()
+                                        .equals(newName)) {
+                            imports.put(dec, id.getText());
+                        }
+                    }
+                });
+                collectEdits(newName, oldName, changes, phasedUnit, imports);
+                
                 if (changes.isEmpty())
                     return null;
                 
@@ -126,6 +176,33 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
             public Object getModifiedElement() {
                 return newFile;
             }
+
+            private void collectEdits(final String newName, final String oldName,
+                    final HashMap<IFile, Change> changes, PhasedUnit phasedUnit,
+                    final Map<Declaration, String> imports) {
+                try {
+                    IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                    TextFileChange change= new TextFileChange(file.getName(), newFile);
+                    change.setEdit(new MultiTextEdit());
+                    changes.put(file, change);
+                    if (!imports.isEmpty()) {
+                        CompilationUnit cu = phasedUnit.getCompilationUnit();
+                        List<InsertEdit> edits = importEdit(cu, 
+                                imports.keySet(), imports.values(), null);
+                        for (TextEdit edit: edits) {
+                            change.addEdit(edit);
+                        }
+                        Tree.Import toDelete = findImportNode(cu, newName);
+                        change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
+                                toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+                        //TODO: delete imports from the new package!
+                    }
+                }
+                catch (Exception e) { 
+                    e.printStackTrace(); 
+                }
+            }
+            
         };
         change.setEnabled(true);
         return change;
@@ -136,6 +213,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
         }
         
     }
+
 //
 //    private IFile getMovedFile(final String newName, IFile file) {
 //        String oldPath = file.getParent().getElementName().replace('.', '/');
