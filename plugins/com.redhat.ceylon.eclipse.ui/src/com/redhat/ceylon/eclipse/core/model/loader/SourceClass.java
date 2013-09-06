@@ -214,5 +214,12 @@ public class SourceClass implements ClassMirror {
     public boolean isAnnotationType() {
         return false; // TODO : is it really right ?
     }
+
+    @Override
+    public boolean isLocalClass() {
+        //TODO: is this correct!?
+        return !getModelDeclaration().isClassOrInterfaceMember() &&
+                !getModelDeclaration().isToplevel();
+    }
     
 }

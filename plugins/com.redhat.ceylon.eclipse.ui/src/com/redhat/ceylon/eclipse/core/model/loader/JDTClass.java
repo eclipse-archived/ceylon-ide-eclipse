@@ -319,5 +319,10 @@ public class JDTClass implements ClassMirror {
     public boolean isAnnotationType() {
         return klass.isAnnotationType();
     }
+
+    @Override
+    public boolean isLocalClass() {
+        return klass.isLocalType();
+    }
     
 }
