@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
