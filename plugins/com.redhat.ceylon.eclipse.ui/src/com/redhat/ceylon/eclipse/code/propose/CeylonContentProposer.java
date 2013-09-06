@@ -111,6 +111,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -234,15 +235,17 @@ public class CeylonContentProposer {
         rtv.visit(rn);
         ProducedType requiredType = rtv.getType();
         
+        Scope scope = getRealScope(node, rn);
+        
         //construct completions when outside ordinary code
         ICompletionProposal[] completions = constructCompletions(offset, result.prefix, cpc, node, adjustedToken);
         if (completions==null) {
             //finally, construct and sort proposals
-            Map<String, DeclarationWithProximity> proposals = getProposals(node, result.prefix, result.isMemberOp, rn);
+            Map<String, DeclarationWithProximity> proposals = getProposals(node, scope, result.prefix, result.isMemberOp, rn);
             filterProposals(filter, rn, requiredType, proposals);
             Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, requiredType, proposals);
-            completions = constructCompletions(offset, result.prefix, sortedProposals,
-                             cpc, node, adjustedToken, result.isMemberOp, viewer.getDocument(), 
+            completions = constructCompletions(offset, result.prefix, sortedProposals, cpc,
+                             scope, node, adjustedToken, result.isMemberOp, viewer.getDocument(), 
                              filter, inDoc);
         }
         return completions;
@@ -450,8 +453,9 @@ public class CeylonContentProposer {
         return adjustedToken;
     }
     
-    private static Boolean isDirectlyInsideBlock(Node node, CommonToken token, List<CommonToken> tokens) {
-        Scope scope = getRealScope(node);
+    private static Boolean isDirectlyInsideBlock(Node node,
+            CeylonParseController cpc, Scope scope,
+            CommonToken token) {
         if (scope instanceof Interface || 
                 scope instanceof Package) {
             return false;
@@ -460,7 +464,7 @@ public class CeylonContentProposer {
             //TODO: check that it is not the opening/closing 
             //      brace of a named argument list!
             return !(node instanceof Tree.SequenceEnumeration) && 
-                    occursAfterBraceOrSemicolon(token, tokens);
+                    occursAfterBraceOrSemicolon(token, cpc.getTokens());
         }
     }
 
@@ -707,19 +711,27 @@ public class CeylonContentProposer {
      * scopes, but we can extract the real scope out of the
      * identifier! (Yick)
      */
-    static Scope getRealScope(Node node) {
-        Scope supposedScope = node.getScope();
-        if (node instanceof Tree.BaseMemberExpression) {
-            Scope actualScope = ((Tree.BaseMemberExpression)node).getIdentifier().getScope();
-            if (supposedScope!=actualScope) {
-                return actualScope.getContainer();
+    static Scope getRealScope(final Node node, CompilationUnit cu) {
+        class FindScopeVisitor extends Visitor {
+            Scope scope;
+            public void visit(Tree.Declaration that) {
+                super.visit(that);
+                for (Tree.Annotation a: that.getAnnotationList().getAnnotations()) {
+                    Integer i = a.getPrimary().getStartIndex();
+                    Integer j = node.getStartIndex();
+                    if (i.intValue()==j.intValue()) {
+                        scope = that.getDeclarationModel().getScope();
+                    }
+                }
             }
-        }
-        return supposedScope;
+        };
+        FindScopeVisitor fsv = new FindScopeVisitor();
+        fsv.visit(cu);
+        return fsv.scope==null?node.getScope():fsv.scope;
     }
     
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
-            Set<DeclarationWithProximity> set, final CeylonParseController cpc, final Node node, 
+            Set<DeclarationWithProximity> set, final CeylonParseController cpc, Scope scope, Node node, 
             CommonToken token, boolean memberOp, IDocument doc, boolean filter, boolean inDoc) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
@@ -760,7 +772,7 @@ public class CeylonContentProposer {
                         if (!dec.isAnnotation()||!(dec instanceof Method)) continue;
                     }
                     
-                    if (isParameterOfNamedArgInvocation(node, dwp)) {
+                    if (isParameterOfNamedArgInvocation(scope, dwp)) {
                         if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
                             addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
                             addInlineFunctionProposal(offset, prefix, cpc, node, result, dec, doc);
@@ -775,13 +787,12 @@ public class CeylonContentProposer {
                         for (Declaration d: overloads(dec)) {
                             ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
                                     getQualifiedProducedReference(node, d) :
-                                    getRefinedProducedReference(node, d);
+                                    getRefinedProducedReference(scope, d);
                             addInvocationProposals(offset, prefix, cpc, result, 
                                     new DeclarationWithProximity(d, dwp), pr, ol);
                         }
                     }
                     
-                    Scope scope = getRealScope(node);
                     if (isProposable(dwp, ol, scope) && 
                             (definitelyRequiresType(ol) ||
                              noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
@@ -789,7 +800,7 @@ public class CeylonContentProposer {
                     }
                     
                     if (isProposable(dwp, ol, scope) && 
-                            isDirectlyInsideBlock(node, token, cpc.getTokens()) && 
+                            isDirectlyInsideBlock(node, cpc, scope, token) && 
                             !memberOp && !filter) {
                         addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
                         addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
@@ -798,7 +809,7 @@ public class CeylonContentProposer {
                     
                     if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
                         for (Declaration d: overloads(dec)) {
-                            addRefinementProposal(offset, prefix, cpc, node, result, d, doc);
+                            addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc);
                         }
                     }
                 }
@@ -997,18 +1008,17 @@ public class CeylonContentProposer {
         }
     }*/
     
-    private static boolean isParameterOfNamedArgInvocation(Node node, DeclarationWithProximity d) {
-        return node.getScope()==d.getNamedArgumentList();
+    private static boolean isParameterOfNamedArgInvocation(Scope scope, DeclarationWithProximity d) {
+        return scope==d.getNamedArgumentList();
     }
 
     private static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
-            Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc) {
-        Scope scope = getRealScope(node);
+            Scope scope, Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc) {
         if ((d.isDefault() || d.isFormal()) &&
                 scope instanceof ClassOrInterface &&
                 ((ClassOrInterface) scope).isInheritedFromSupertype(d)) {
             boolean isInterface = scope instanceof Interface;
-            ProducedReference pr = getRefinedProducedReference(node, d);
+            ProducedReference pr = getRefinedProducedReference(scope, d);
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(new RefinementCompletionProposal(offset, prefix,  
                     getRefinementDescriptionFor(d, pr), 
@@ -1026,8 +1036,8 @@ public class CeylonContentProposer {
         return d.getProducedReference(pt, Collections.<ProducedType>emptyList());
     }
 
-    public static ProducedReference getRefinedProducedReference(Node node, Declaration d) {
-        return refinedProducedReference(node.getScope().getDeclaringType(d), d);
+    public static ProducedReference getRefinedProducedReference(Scope scope, Declaration d) {
+        return refinedProducedReference(scope.getDeclaringType(d), d);
     }
 
     public static ProducedReference getRefinedProducedReference(ProducedType superType, 
@@ -1447,19 +1457,20 @@ public class CeylonContentProposer {
         return d.getProducedReference(null, Collections.<ProducedType>emptyList()).getFullType();
     }
     
-    public static Map<String, DeclarationWithProximity> getProposals(Node node, Tree.CompilationUnit cu) {
-       return getProposals(node, "", false, cu); 
+    public static Map<String, DeclarationWithProximity> getProposals(Node node, Scope scope, 
+            Tree.CompilationUnit cu) {
+       return getProposals(node, scope, "", false, cu); 
     }
     
-    private static Map<String, DeclarationWithProximity> getProposals(Node node, String prefix,
-            boolean memberOp, Tree.CompilationUnit cu) {
+    private static Map<String, DeclarationWithProximity> getProposals(Node node, Scope scope,
+            String prefix, boolean memberOp, Tree.CompilationUnit cu) {
         if (node instanceof MemberLiteral) { //this case is rather ugly!
             Tree.StaticType mlt = ((Tree.MemberLiteral) node).getType();
             if (mlt!=null) {
                 ProducedType type = mlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases().getDeclaration()
-                            .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                            .getMatchingMemberDeclarations(scope, prefix, 0);
                 }
                 else {
                     return Collections.emptyMap();
@@ -1474,7 +1485,7 @@ public class CeylonContentProposer {
             }
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                        .getMatchingMemberDeclarations(scope, prefix, 0);
             }
             else if (qmte.getPrimary() instanceof Tree.MemberOrTypeExpression) {
                 //it might be a qualified type or even a static method reference
@@ -1483,7 +1494,7 @@ public class CeylonContentProposer {
                     type = ((TypeDeclaration) pmte).getType();
                     if (type!=null) {
                         return type.resolveAliases().getDeclaration()
-                                .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                                .getMatchingMemberDeclarations(scope, prefix, 0);
                     }
                 }
             }
@@ -1493,7 +1504,7 @@ public class CeylonContentProposer {
             ProducedType type = ((Tree.QualifiedType) node).getOuterType().getTypeModel();
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                        .getMatchingMemberDeclarations(scope, prefix, 0);
             }
             else {
                 return Collections.emptyMap();
@@ -1503,14 +1514,13 @@ public class CeylonContentProposer {
             ProducedType type = ((Tree.Term)node).getTypeModel();
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(node.getScope(), prefix, 0);
+                        .getMatchingMemberDeclarations(scope, prefix, 0);
             }
             else {
                 return Collections.emptyMap();
             }
         }
         else {
-            Scope scope = getRealScope(node);
             if (scope instanceof ImportList) {
                 return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
             }
