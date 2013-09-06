@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD_CORR;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
 
 import java.util.Collection;
 
@@ -17,14 +17,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+class RenameAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
     Tree.ImportMemberOrType node;
     Declaration dec;
     CeylonEditor editor;
     IFile file;
     
-    UseAliasProposal(IFile file, Tree.ImportMemberOrType node, 
+    RenameAliasProposal(IFile file, Tree.ImportMemberOrType node, 
             Declaration dec, CeylonEditor editor) {
         this.node = node;
         this.dec = dec;
@@ -38,11 +38,11 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
         
     }
     
-    static void addUseAliasProposal(Tree.ImportMemberOrType node,  
+    static void addRenameAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
             Declaration dec, IFile file, Tree.CompilationUnit cu, 
             CeylonEditor editor) {
-        proposals.add(new UseAliasProposal(file, node, dec, editor));
+        proposals.add(new RenameAliasProposal(file, node, dec, editor));
     }
 
     @Override
@@ -62,12 +62,13 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public String getDisplayString() {
-        return "Enter alias for '" + dec.getName() + "'";
+        return "Rename alias '" + node.getAlias().getIdentifier().getText() + 
+                "' of '" + dec.getName() + "'";
     }
 
     @Override
     public Image getImage() {
-        return ADD_CORR;
+        return RENAME;
     }
 
     @Override

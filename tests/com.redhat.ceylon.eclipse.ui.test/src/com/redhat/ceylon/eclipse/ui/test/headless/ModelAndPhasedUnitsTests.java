@@ -8,7 +8,7 @@
  * Contributors:
  *     JBoss by Red Hat - Initial implementation.
  ************************************************************************************/
-package com.redhat.ceylon.eclipse.ui.test;
+package com.redhat.ceylon.eclipse.ui.test.headless;
 
 import java.util.Arrays;
 
@@ -40,9 +40,10 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 
 @SuppressWarnings("restriction")
-public class ModelAndPhasedUnitsTests extends ExistingMultiProjectTest {
+public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
 
     @SuppressWarnings("unchecked")
     private <T extends PhasedUnit> T checkPhasedUnitClass(String phasedUnitPath, Class<T> phasedUnitClass) {

@@ -8,20 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.CopyParticipant;
-import org.eclipse.ltk.core.refactoring.participants.ReorgExecutionLog;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -30,19 +27,19 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
-public class CopyPackageRefactoringParticipant extends CopyParticipant {
+public class CopyFileRefactoringParticipant extends CopyParticipant {
 
-    private IPackageFragment javaPackageFragment;
+    private IFile file;
 
     @Override
     protected boolean initialize(Object element) {
-        javaPackageFragment= (IPackageFragment) element;
-        return true;
+        file= (IFile) element;
+        return file.getFileExtension().equals("ceylon");
     }
     
     @Override
     public String getName() {
-        return "Copy package participant for Ceylon source";
+        return "Copy file participant for Ceylon source";
     }
 
     @Override
@@ -52,45 +49,50 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
     }
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
-        
+        try {
         Change change = new Change() {
-            IResource newPackage;
+            IFile newFile;
             @Override
             public Change perform(IProgressMonitor pm) throws CoreException {
-                IPackageFragmentRoot dest = (IPackageFragmentRoot) getArguments().getDestination();
-                ReorgExecutionLog executionLog = getArguments().getExecutionLog();
-                final String newName = executionLog.getNewName(javaPackageFragment);
-                newPackage = dest.getPackageFragment(newName).getResource();
-                final String oldName = javaPackageFragment.getElementName();
-                final IProject project = javaPackageFragment.getJavaProject().getProject();
+                IFolder dest = (IFolder) getArguments().getDestination();
+                final String newName = dest.getProjectRelativePath()
+                        .removeFirstSegments(1).toPortableString()
+                        .replace('/', '.');
+                newFile = dest.getFile(file.getName());
+                String relFilePath = file.getProjectRelativePath()
+                        .removeFirstSegments(1).toPortableString();
+                String relPath = file.getProjectRelativePath()
+                        .removeFirstSegments(1).removeLastSegments(1)
+                        .toPortableString();
+                final String oldName = relPath.replace('/', '.');
+                final IProject project = file.getProject();
                 
                 final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-                for (PhasedUnit phasedUnit: getProjectTypeChecker(project).getPhasedUnits().getPhasedUnits()) {
-                    final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-                    if (phasedUnit.getPackage().getNameAsString().startsWith(oldName)) {
-                        phasedUnit.getCompilationUnit().visit(new Visitor() {
-                            @Override
-                            public void visit(ImportPath that) {
-                                super.visit(that);
-                                if (formatPath(that.getIdentifiers()).equals(oldName)) {
-                                    edits.add(new ReplaceEdit(that.getStartIndex(), oldName.length(), newName));
-                                }
+                PhasedUnit phasedUnit = getProjectTypeChecker(project)
+                        .getPhasedUnitFromRelativePath(relFilePath);
+                final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
+                if (phasedUnit.getPackage().getNameAsString().startsWith(oldName)) {
+                    phasedUnit.getCompilationUnit().visit(new Visitor() {
+                        @Override
+                        public void visit(ImportPath that) {
+                            super.visit(that);
+                            if (formatPath(that.getIdentifiers()).equals(oldName)) {
+                                edits.add(new ReplaceEdit(that.getStartIndex(), oldName.length(), newName));
                             }
-                        });
-                        if (!edits.isEmpty()) {
-                            try {
-                                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                                TextFileChange change= new TextFileChange(file.getName(), 
-                                        getMovedFile(newName, file));
-                                change.setEdit(new MultiTextEdit());
-                                changes.put(file, change);
-                                for (ReplaceEdit edit: edits) {
-                                    change.addEdit(edit);
-                                }
-                            }       
-                            catch (Exception e) { 
-                                e.printStackTrace(); 
+                        }
+                    });
+                    if (!edits.isEmpty()) {
+                        try {
+                            IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                            TextFileChange change= new TextFileChange(file.getName(), newFile);
+                            change.setEdit(new MultiTextEdit());
+                            changes.put(file, change);
+                            for (ReplaceEdit edit: edits) {
+                                change.addEdit(edit);
                             }
+                        }       
+                        catch (Exception e) { 
+                            e.printStackTrace(); 
                         }
                     }
                 }
@@ -122,19 +124,24 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
 
             @Override
             public Object getModifiedElement() {
-                return newPackage;
+                return newFile;
             }
         };
         change.setEnabled(true);
         return change;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
         
     }
-
-    private IFile getMovedFile(final String newName, IFile file) {
-        String oldPath = javaPackageFragment.getElementName().replace('.', '/');
-        String newPath = newName.replace('.', '/');
-        String replaced = file.getProjectRelativePath().toString()
-                .replace(oldPath, newPath);
-        return file.getProject().getFile(replaced);
-    }
+//
+//    private IFile getMovedFile(final String newName, IFile file) {
+//        String oldPath = file.getParent().getElementName().replace('.', '/');
+//        String newPath = newName.replace('.', '/');
+//        String replaced = file.getProjectRelativePath().toString()
+//                .replace(oldPath, newPath);
+//        return file.getProject().getFile(replaced);
+//    }
 }

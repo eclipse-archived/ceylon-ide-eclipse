@@ -13,24 +13,33 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.junit.BeforeClass;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
-public abstract class ExistingMultiProjectTest {
+public abstract class AbstractMultiProjectTest {
 
     protected static AssertionError compilationError = null;
     protected static IProject mainProject;
+    protected static IJavaProject mainProjectJDT;
     protected static IProject referencedCeylonProject;
-    private static IProject referencedJavaProject;
-    private static String projectGroup = "model-and-phased-units";
+    protected static IJavaProject referencedCeylonProjectJDT;
+    protected static IProject referencedJavaProject;
+    protected static IJavaProject referencedJavaProjectJDT;
+    protected static String projectGroup = "model-and-phased-units";
     protected static TypeChecker typeChecker = null;
     protected static JDTModelLoader modelLoader = null;
 
     @BeforeClass
-    public static void importAndBuildProjects() {
+    public static void beforeClass() {
+        importAndBuild();
+    }
+
+    public static void importAndBuild() {
         try {
             IPath projectDescriptionPath = null;
             IPath userDirPath = new Path(System.getProperty("user.dir"));
@@ -40,6 +49,7 @@ public abstract class ExistingMultiProjectTest {
             try {
                 projectDescriptionPath = projectPathPrefix.append("referenced-java-project/.project");
                 referencedJavaProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
+                referencedJavaProjectJDT = JavaCore.create(referencedJavaProject);
             }
             catch(Exception e) {
                 Assert.fail("Import of the referenced java project failed with the exception : \n" + e.toString());
@@ -55,6 +65,7 @@ public abstract class ExistingMultiProjectTest {
             try {
                 projectDescriptionPath = projectPathPrefix.append("referenced-ceylon-project/.project");
                 referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
+                referencedCeylonProjectJDT = JavaCore.create(referencedCeylonProject);
             }
             catch(Exception e) {
                 Assert.fail("Import of the referenced ceylon project failed with the exception : \n" + e.toString());
@@ -77,6 +88,8 @@ public abstract class ExistingMultiProjectTest {
                 projectDescriptionPath = projectPathPrefix.append("main-ceylon-project/.project");
                 mainProject = Utils.importProject(workspace, projectGroup,
                         projectDescriptionPath);
+                mainProjectJDT = JavaCore.create(mainProject);
+                mainProjectJDT = JavaCore.create(mainProject);
             }
             catch(Exception e) {
                 Assert.fail("Build of the main project failed with the exception : \n" + e.toString());
@@ -142,7 +155,7 @@ public abstract class ExistingMultiProjectTest {
                 build.await(60, TimeUnit.SECONDS);
             }
 
-    public ExistingMultiProjectTest() {
+    public AbstractMultiProjectTest() {
         super();
     }
 

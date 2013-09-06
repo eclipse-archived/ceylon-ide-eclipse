@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
@@ -123,6 +124,23 @@ class FindOccurrenceLocationVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.TypeSpecifier that) {
+        if (inBounds(that)) {
+            //TODO: new kind of OccurrenceLocation
+            occurrence = UPPER_BOUND; //hacky!
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ClassSpecifier that) {
+        if (inBounds(that)) {
+            occurrence = CLASS_ALIAS;
+        }
+        super.visit(that);
+    }
+    
+    @Override
     public void visit(Tree.SpecifierOrInitializerExpression that) {
         if (inBounds(that)) {
             occurrence = EXPRESSION;
@@ -155,18 +173,23 @@ class FindOccurrenceLocationVisitor extends Visitor
             super.visit(that);
         }
     }
-        
+    
     @Override
     public void visit(Tree.Declaration that) {
         if (inBounds(that)) {
-            occurrence=null;
+            if (occurrence!=PARAMETER_LIST) {
+                occurrence=null;
+            }
         }
         super.visit(that);
     }
     
     public void visit(Tree.MetaLiteral that) {
+        super.visit(that);
         if (inBounds(that)) {
-            occurrence = META;
+            if (occurrence!=TYPE_ARGUMENT_LIST) {
+                occurrence = META;
+            }
         }
     }
     

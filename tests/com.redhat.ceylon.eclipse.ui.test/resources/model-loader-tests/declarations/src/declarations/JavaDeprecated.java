@@ -1,4 +1,4 @@
-package com.redhat.ceylon.compiler.java.test.model;
+package declarations;
 
 import ceylon.language.Deprecation$annotation;
 

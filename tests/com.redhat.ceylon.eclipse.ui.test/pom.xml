@@ -10,5 +10,103 @@
 	<artifactId>com.redhat.ceylon.eclipse.ui.test</artifactId> 
 	
 	<packaging>eclipse-test-plugin</packaging>
-
+    
+    <build>
+      <plugins>
+	      <plugin>
+	        <groupId>org.eclipse.tycho</groupId>
+	        <artifactId>tycho-surefire-plugin</artifactId>
+	        <executions>	            
+                <execution>
+                    <id>default-test</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>true</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>true</useUIThread>
+                      <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/CeylonIdeExampleTest.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>Standalone SWT tests</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/swtbot/*Tests.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+		        <execution>		            
+		            <id>Headless tests</id>
+		            <phase>integration-test</phase>
+		            <goals>
+		              <goal>test</goal>
+		            </goals>
+		            <inherited>false</inherited>
+		            <configuration>
+		              <useUIHarness>false</useUIHarness>
+		              <useUIThread>false</useUIThread>
+		              <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/headless/*Tests.class</include>
+		              </includes>
+		            </configuration>
+		        </execution>
+	        </executions>
+          </plugin>
+		  <plugin>
+            <groupId>org.codehaus.groovy.maven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <version>1.0</version>
+		    <executions>
+		        <execution>
+		            <id>cleanTestReports</id>
+		            <phase>pre-integration-test</phase>
+		            <goals>
+		                <goal>execute</goal>
+		            </goals>
+		            <configuration>
+		                <source>
+def dir = new File(project.basedir, 'target/surefire-reports') 
+if (dir.exists()) {
+  dir.eachFile
+    { File file -> file.delete() } }
+		                </source>
+		            </configuration>
+		        </execution>
+                <execution>
+                    <id>summarizeTests</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>execute</goal>
+                    </goals>
+                    <configuration>
+                        <source>
+int errors = 0
+int failures = 0
+new File(project.basedir, 'target/surefire-reports')
+  .eachFileMatch (~/.*\.xml/)
+    { File file ->
+        println(file.absolutePath)
+        def root = new XmlParser().parse(file)
+        failures += root.attribute('failures').toInteger()
+        errors += root.attribute('errors').toInteger() }
+if (errors + failures > 0) fail("\nTests have $failures failures and $errors errors")
+                        </source>
+                    </configuration>
+                </execution>
+		    </executions>
+		</plugin>
+      </plugins>
+    </build>
 </project>

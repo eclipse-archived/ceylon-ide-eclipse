@@ -2046,8 +2046,40 @@
           </with>
         </enablement>
       </copyParticipant>
+      <copyParticipant
+            id="com.redhat.ceylon.eclipse.code.refactor.CopyFileRefactoringParticipant"
+            name="Copy file participant for Ceylon source"
+            class="com.redhat.ceylon.eclipse.code.refactor.CopyFileRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.core.resources.IFile"/>
+          </with>
+        </enablement>
+      </copyParticipant>
     </extension>
-    
+    <extension
+          point="org.eclipse.ltk.core.refactoring.moveParticipants">
+      <moveParticipant
+            id="com.redhat.ceylon.eclipse.code.refactor.MoveFileRefactoringParticipant"
+            name="Move file participant for Ceylon source"
+            class="com.redhat.ceylon.eclipse.code.refactor.MoveFileRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.core.resources.IFile"/>
+          </with>
+        </enablement>
+      </moveParticipant>
+    </extension>
     
     <extension
           point="org.eclipse.core.expressions.propertyTesters">

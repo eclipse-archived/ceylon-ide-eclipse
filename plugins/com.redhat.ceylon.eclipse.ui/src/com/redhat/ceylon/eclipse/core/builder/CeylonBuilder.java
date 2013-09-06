@@ -332,12 +332,40 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     final static class BooleanHolder {
         public boolean value;
     }
-	
+
+    public static class CeylonBuildHook {
+        protected void startBuild(int kind, Map args, IJavaProject javaProject) {}
+        protected void resolvingClasspathContainer(
+                List<CeylonClasspathContainer> cpContainers) {}
+        protected void setAndRefreshClasspathContainer() {}
+        protected void dofullBuild() {}
+        protected void parseCeylonModel() {}
+        protected void doIncrementalBuild() {}
+        protected void fullTypeCheckDuringIncrementalBuild() {}
+        protected void incrementalBuildChangedSources(Set<IFile> changedSources) {}
+        protected void incrementalBuildSources(Set<IFile> changedSources,
+                List<IFile> filesToRemove, Collection<IFile> sourcesToCompile) {}
+        protected void incrementalBuildResult(List<PhasedUnit> builtPhasedUnits) {}
+        protected void beforeGeneratingBinaries() {}
+        protected void scheduleReentrantBuild() {}
+        protected void endBuild() {}
+    };
+    
+    public static final CeylonBuildHook noOpHook = new CeylonBuildHook();
+    private static CeylonBuildHook buildHook = noOpHook;
+    
+    public static CeylonBuildHook installHook(CeylonBuildHook hook){
+        CeylonBuildHook previousHook = buildHook;
+        buildHook = hook;
+        return previousHook;
+    }
+    
 	@Override
     protected IProject[] build(final int kind, Map args, IProgressMonitor mon) 
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
+        buildHook.startBuild(kind, args, javaProject);
 		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
@@ -389,9 +417,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
+                buildHook.resolvingClasspathContainer(cpContainers);
                 for (CeylonClasspathContainer container: cpContainers) {
                 	boolean changed = container.resolveClasspath(monitor, true);
                 	if(changed) {
+                        buildHook.setAndRefreshClasspathContainer();
                 		JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[]{javaProject}, new IClasspathContainer[]{null} , monitor);
                 		container.refreshClasspathContainer(monitor, javaProject);
                 	}
@@ -417,6 +447,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             Collection<IFile> sourcesForBinaryGeneration = Collections.emptyList();
 
             if (mustDoFullBuild.value) {
+                buildHook.dofullBuild();
                 monitor.subTask("Full Ceylon build of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Full build of model"));
                 
@@ -441,6 +472,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     monitor.subTask("Parsing source of project " + project.getName());
                 	//if we already resolved the classpath, the
                 	//model has already been freshly-parsed
+                    buildHook.parseCeylonModel();
                     typeChecker = parseCeylonModel(project, 
                     		monitor.newChild(5, PREPEND_MAIN_LABEL_TO_SUBTASK));
                     monitor.worked(1);
@@ -464,10 +496,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             else
             {
+                buildHook.doIncrementalBuild();
                 typeChecker = typeCheckers.get(project);
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
                 if (!isModelTypeChecked(project)) {
+                    buildHook.fullTypeCheckDuringIncrementalBuild();
                     if (monitor.isCanceled()) {
                         throw new OperationCanceledException();
                     }
@@ -537,6 +571,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throw new OperationCanceledException();
                 }
 
+                buildHook.incrementalBuildSources(changedSources, filesToRemove, sourceToCompile);
                 /*if (emitDiags) {
                     getConsoleStream().println("All files to compile:");
                     dumpSourceList(sourceToCompile);
@@ -544,7 +579,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 monitor.subTask("Compiling " + sourceToCompile.size() + " source files in project " + 
                         project.getName());
                 builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
-                		monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));                
+                        monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     return project.getReferencedProjects();
                 }
@@ -553,6 +588,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
+
+                buildHook.incrementalBuildResult(builtPhasedUnits);
 
                 monitor.subTask("Updating referencing projects of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
@@ -584,6 +621,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
+            buildHook.beforeGeneratingBinaries();
             monitor.subTask("Generating binaries for project " + project.getName());
 //          getConsoleStream().println(timedMessage("Incremental generation of class files..."));
 //          getConsoleStream().println("             ...compiling " + 
@@ -614,9 +652,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return project.getReferencedProjects();
         }
         finally {
-//            getConsoleStream().println("-----------------------------------");
-//            getConsoleStream().println(timedMessage("End Ceylon build on project: " + project.getName()));
-//            getConsoleStream().println("===================================");
+            buildHook.endBuild();
         }
     }
 
@@ -638,6 +674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 			e.printStackTrace();
 		}//monitor);
 		if (args==null || !args.containsKey(BUILDER_ID + ".reentrant")) {
+		    buildHook.scheduleReentrantBuild();
 			Job job = new Job("Rebuild with Ceylon classes") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
