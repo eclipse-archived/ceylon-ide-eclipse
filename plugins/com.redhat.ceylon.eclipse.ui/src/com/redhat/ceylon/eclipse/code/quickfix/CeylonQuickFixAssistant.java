@@ -410,6 +410,10 @@ public class CeylonQuickFixAssistant {
         	addMakeSharedDecProposal(proposals, project, node);
         	addRemoveAnnotationDecProposal(proposals, "default", project, node);
         	break;
+        case 710:
+        case 711:
+            addMakeSharedProposal(proposals, project, node);
+            break;
         case 800:
         case 804:
         	addMakeVariableProposal(proposals, project, node);
@@ -725,8 +729,7 @@ public class CeylonQuickFixAssistant {
                 proposals, project);
     }
     
-    private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+    private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Declaration dec = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = (Tree.StaticMemberOrTypeExpression) node;
@@ -740,9 +743,36 @@ public class CeylonQuickFixAssistant {
             Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
             dec = imt.getDeclarationModel();
         }
-        if (dec!=null) {
-            addAddAnnotationProposal(node, "shared", "Make Shared", dec, 
-                    proposals, project);
+        else if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = ((Tree.TypedDeclaration) node);
+            if (td.getDeclarationModel() != null) {
+                dec = td.getDeclarationModel().getTypeDeclaration();
+            }
+        }
+        else if (node instanceof Tree.Parameter) {
+            Tree.Parameter parameter = ((Tree.Parameter) node);
+            if (parameter.getParameterModel() != null && parameter.getParameterModel().getType() != null) {
+                dec = parameter.getParameterModel().getType().getDeclaration();
+            }
+        }
+        addMakeSharedProposal(dec, proposals, project);
+    }
+    
+    private void addMakeSharedProposal(Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec != null) {
+            if (dec instanceof UnionType) {
+                List<TypeDeclaration> caseTypes = ((UnionType) dec).getCaseTypeDeclarations();
+                for (TypeDeclaration caseType : caseTypes) {
+                    addMakeSharedProposal(caseType, proposals, project);
+                }
+            } else if (dec instanceof IntersectionType) {
+                List<TypeDeclaration> satisfiedTypes = ((IntersectionType) dec).getSatisfiedTypeDeclarations();
+                for (TypeDeclaration satisfiedType : satisfiedTypes) {
+                    addMakeSharedProposal(satisfiedType, proposals, project);
+                }
+            } else if (!dec.isShared()) {
+                addAddAnnotationProposal(null, "shared", "Make Shared", dec, proposals, project);
+            }
         }
     }
     
