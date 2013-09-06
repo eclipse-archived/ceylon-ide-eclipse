@@ -2009,21 +2009,20 @@ public class CeylonContentProposer {
     private static void appendImpl(Declaration d, boolean isInterface, 
             String indent, StringBuilder result) {
         if (d instanceof Method) {
-            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing;");
-            result.append(" /* TODO auto-generated stub */");
+            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing; /*TODO: Implement*/");
         }
         else if (d.isParameter()) {
-            result.append(" => nothing;");
+            result.append(" => nothing; /*TODO: Implement*/");
         }
         else if (d instanceof MethodOrValue) {
             if (isInterface) {
-                result.append(" => nothing; /* TODO auto-generated stub */");
+                result.append(" => nothing; /*TODO: Implement*/");
                 if (isVariable(d)) {
-                    result.append(indent + "assign " + d.getName() + " {} /* TODO auto-generated stub */");
+                    result.append(indent + "assign " + d.getName() + " {} /*TODO: Implement*/");
                 }
             }
             else {
-                result.append(" = nothing; /* TODO auto-generated stub */");
+                result.append(" = nothing; /*TODO: Implement*/");
             }
         }
         else {
@@ -2040,7 +2039,7 @@ public class CeylonContentProposer {
         appendParameters(d, null, result);
     }
     
-    private static void appendParameters(Declaration d, ProducedReference pr, 
+    public static void appendParameters(Declaration d, ProducedReference pr, 
             StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
@@ -2054,13 +2053,13 @@ public class CeylonContentProposer {
                         for (Parameter p: params.getParameters()) {
                             ProducedTypedReference ppr = pr==null ? 
                                     null : pr.getTypedParameter(p);
-                            if (p.getModel()!=null) {
-                                appendDeclarationText(p.getModel(), ppr, result);
-                            }
-                            else {
+                            if (p.getModel() == null) {
                                 result.append(p.getName());
                             }
-                            appendParameters(p.getModel(), ppr, result);
+                            else {
+                                appendDeclarationText(p.getModel(), ppr, result);
+                                appendParameters(p.getModel(), ppr, result);
+                            }
                             /*ProducedType type = p.getType();
                             if (pr!=null) {
                                 type = type.substitute(pr.getTypeArguments());
