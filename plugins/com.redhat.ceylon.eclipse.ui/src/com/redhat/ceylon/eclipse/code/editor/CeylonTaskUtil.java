@@ -55,11 +55,12 @@ public class CeylonTaskUtil {
 
     public static List<Task> getTasks(CommonToken token) {
         List<Task> tasks = null;
-        if (token.getType() == CeylonLexer.LINE_COMMENT || token.getType() == CeylonLexer.MULTI_COMMENT) {
+        if (token.getType() == CeylonLexer.LINE_COMMENT || 
+            token.getType() == CeylonLexer.MULTI_COMMENT) {
             int line = token.getLine();
             int startIndex = token.getStartIndex();
-            String[] parts = token.getText().split("(?=TODO|FIXME|XXX|\n)");
-            for(String part : parts) {
+            String[] parts = token.getText().split("(?=TODO|FIXME|XXX|\n|\\*/|/\\*)");
+            for (String part : parts) {
                 int priority = -1;
                 if (part.startsWith("TODO")) {
                     priority = IMarker.PRIORITY_NORMAL;
