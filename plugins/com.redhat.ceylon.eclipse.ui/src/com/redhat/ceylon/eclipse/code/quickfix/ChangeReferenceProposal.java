@@ -54,7 +54,7 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
         change.setEdit(new MultiTextEdit());
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
-        if (dec.isToplevel() && !isImported(dec, cu)) {
+        if (dec.isToplevel() && !isImported(dec, cu) && isInPackage(cu, dec)) {
             pkg = " in '" + dec.getContainer().getQualifiedNameString() + "'";
             if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
                 List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
@@ -67,6 +67,12 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
                 brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
         proposals.add(new ChangeReferenceProposal(problem, file, dwp.getName(), 
                 pkg, dec, dist, change));
+    }
+
+    protected static boolean isInPackage(Tree.CompilationUnit cu,
+            Declaration dec) {
+        return !dec.getUnit().getPackage()
+                .equals(cu.getUnit().getPackage());
     }
 
 	@Override
