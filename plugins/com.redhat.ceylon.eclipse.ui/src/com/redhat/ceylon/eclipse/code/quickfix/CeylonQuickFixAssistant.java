@@ -1834,7 +1834,7 @@ public class CeylonQuickFixAssistant {
         return stopIndex+1;
     }
 
-    private static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
+    public static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
         FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();

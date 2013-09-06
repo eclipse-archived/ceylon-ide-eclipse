@@ -138,10 +138,12 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
 //                        visitIt(that.getIdentifier(), that.getDeclarationModel());
 //                    }
                     protected void visitIt(Tree.Identifier id, Declaration dec) {
-                        if (dec!=null && !declarations.contains(dec) &&
-                                !dec.getUnit().getPackage().getNameAsString()
-                                        .equals(newName)) {
-                            imports.put(dec, id.getText());
+                        if (dec!=null && !declarations.contains(dec)) {
+                            String pn = dec.getUnit().getPackage().getNameAsString();
+                            if (!pn.equals(newName) && !pn.isEmpty() && 
+                                    !pn.equals("ceylon.language")) {
+                                imports.put(dec, id.getText());
+                            }
                         }
                     }
                 });
@@ -181,22 +183,21 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     final HashMap<IFile, Change> changes, PhasedUnit phasedUnit,
                     final Map<Declaration, String> imports) {
                 try {
+                    CompilationUnit cu = phasedUnit.getCompilationUnit();
                     IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
                     TextFileChange change= new TextFileChange(file.getName(), newFile);
                     change.setEdit(new MultiTextEdit());
                     changes.put(file, change);
                     if (!imports.isEmpty()) {
-                        CompilationUnit cu = phasedUnit.getCompilationUnit();
                         List<InsertEdit> edits = importEdit(cu, 
                                 imports.keySet(), imports.values(), null);
                         for (TextEdit edit: edits) {
                             change.addEdit(edit);
                         }
-                        Tree.Import toDelete = findImportNode(cu, newName);
-                        change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
-                                toDelete.getStopIndex()-toDelete.getStartIndex()+1));
-                        //TODO: delete imports from the new package!
                     }
+                    Tree.Import toDelete = findImportNode(cu, newName);
+                    change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
+                            toDelete.getStopIndex()-toDelete.getStartIndex()+1));
                 }
                 catch (Exception e) { 
                     e.printStackTrace(); 
