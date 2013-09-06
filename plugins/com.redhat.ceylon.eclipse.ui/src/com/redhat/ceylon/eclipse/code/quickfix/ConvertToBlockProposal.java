@@ -58,6 +58,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
         boolean isVoid;
         if (decNode instanceof Tree.Declaration) {
             Declaration dm = ((Tree.Declaration) decNode).getDeclarationModel();
+            if (dm.isParameter()) return;
             isVoid = dm instanceof Setter ||
                     dm instanceof Method && ((Method) dm).isDeclaredVoid();
         }
