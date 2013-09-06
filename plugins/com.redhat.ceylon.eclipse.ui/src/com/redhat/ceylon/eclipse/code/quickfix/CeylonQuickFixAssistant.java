@@ -1650,7 +1650,7 @@ public class CeylonQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IFile file) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
-          for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
+          for (DeclarationWithProximity dwp: getProposals(node, node.getScope(), cu).values()) {
               int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
               //TODO: would it be better to just sort by dist, and
               //      then select the 3 closest possibilities?
