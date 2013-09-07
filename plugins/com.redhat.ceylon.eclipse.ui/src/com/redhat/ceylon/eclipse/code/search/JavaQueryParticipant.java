@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code;
+package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -39,10 +39,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.search.CeylonElement;
-import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
-import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.code.search.WithProject;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;

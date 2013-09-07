@@ -2051,7 +2051,7 @@
                 name="Ceylon references"
                 nature="org.eclipse.jdt.core.javanature"
                 id="com.redhat.ceylon.eclipse.code.javaQueryParticipant"
-                class="com.redhat.ceylon.eclipse.code.JavaQueryParticipant">
+                class="com.redhat.ceylon.eclipse.code.search.JavaQueryParticipant">
           </queryParticipant>
     </extension>
 </plugin>
