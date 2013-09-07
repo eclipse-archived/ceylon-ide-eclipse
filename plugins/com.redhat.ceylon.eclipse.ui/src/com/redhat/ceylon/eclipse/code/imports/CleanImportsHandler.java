@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.window.Window;
@@ -43,10 +44,10 @@ public class CleanImportsHandler extends AbstractHandler {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
+            IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
             String imports = imports(cu);
             if (imports!=null) {
-                TextFileChange tfc = new TextFileChange("Clean Imports", 
-                        ((IFileEditorInput) editor.getEditorInput()).getFile());
+                TextFileChange tfc = new TextFileChange("Clean Imports", file);
                 tfc.setEdit(new MultiTextEdit());
                 ImportList il = cu.getImportList();
                 int start;
