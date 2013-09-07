@@ -1937,7 +1937,7 @@ public class CeylonQuickFixAssistant {
 
     private void addAddAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null) {
+        if (dec!=null && !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
