@@ -185,60 +185,67 @@ public class CeylonSourceViewer extends ProjectionViewer {
             break;*/
         }
     }
-    
+
     private void afterCopyCut(StyledText textWidget, String selection,
             Map<Declaration,String> imports) {
-        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
-        try {
-            Object text = clipboard.getContents(TextTransfer.getInstance());
+        if (!editor.isBlockSelectionModeEnabled()) {
+            Clipboard clipboard= new Clipboard(textWidget.getDisplay());
             try {
-                if (imports==null) return;
-                Object[] data = new Object[] { text, imports, selection };
-                Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
-                clipboard.setContents(data, dataTypes);
-            } 
-            catch (SWTError e) {
-                if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
-                    throw e;
-                }
-                e.printStackTrace();
-            }       
-        }
-        finally {
-            clipboard.dispose();
+                Object text = clipboard.getContents(TextTransfer.getInstance());
+                try {
+                    if (imports==null) return;
+                    Object[] data = new Object[] { text, imports, selection };
+                    Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
+                    clipboard.setContents(data, dataTypes);
+                } 
+                catch (SWTError e) {
+                    if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
+                        throw e;
+                    }
+                    e.printStackTrace();
+                }       
+            }
+            finally {
+                clipboard.dispose();
+            }
         }
     }
     
     private boolean localPaste(StyledText textWidget) {
-        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
-        try {
-            String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
-            if (text==null) {
-                return false;
-            }
-            else {
-                Map<Declaration,String> imports = (Map<Declaration,String>) clipboard.getContents(ImportsTransfer.INSTANCE);
-                IRegion selection = editor.getSelection();
-                try {
-                    MultiTextEdit edit = new MultiTextEdit();
-                    DocumentChange c = new DocumentChange("paste", getDocument());
-                    c.setEdit(edit);
-                    if (imports!=null) {
-                        pasteImports(imports, edit);
-                    }
-                    c.addEdit(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
-                    c.perform(new NullProgressMonitor());
-                    getTextWidget().setSelection(selection.getOffset()+text.length());
-                    return true;
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
+        if (!editor.isBlockSelectionModeEnabled()) {
+            Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+            try {
+                String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                if (text==null) {
                     return false;
                 }
+                else {
+                    Map<Declaration,String> imports = (Map<Declaration,String>) clipboard.getContents(ImportsTransfer.INSTANCE);
+                    IRegion selection = editor.getSelection();
+                    try {
+                        MultiTextEdit edit = new MultiTextEdit();
+                        DocumentChange c = new DocumentChange("paste", getDocument());
+                        c.setEdit(edit);
+                        if (imports!=null) {
+                            pasteImports(imports, edit);
+                        }
+                        c.addEdit(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
+                        c.perform(new NullProgressMonitor());
+                        getTextWidget().setSelection(selection.getOffset()+text.length());
+                        return true;
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+            }
+            finally {
+                clipboard.dispose();
             }
         }
-        finally {
-            clipboard.dispose();
+        else {
+            return false;
         }
     }
 
