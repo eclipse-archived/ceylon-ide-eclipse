@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class RenameInputPage extends UserInputWizardPage {
 	public RenameInputPage(String name) {
@@ -60,6 +61,10 @@ public class RenameInputPage extends UserInputWizardPage {
     void validateIdentifier(String name) {
         if (!name.matches("^[a-zA-Z_]\\w*$")) {
             setErrorMessage("Not a legal Ceylon identifier");
+            setPageComplete(false);
+        }
+        else if (CeylonTokenColorer.keywords.contains(name)) {
+            setErrorMessage("'" + name + "' is a Ceylon keyword");
             setPageComplete(false);
         }
         else {
