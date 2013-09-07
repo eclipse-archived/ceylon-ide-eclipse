@@ -4,6 +4,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -36,6 +37,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor autoActivation;
     ScaleFieldEditor autoActivationDelay;
     BooleanFieldEditor smartCaret;
+    RadioGroupFieldEditor autoActivationChars;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -49,6 +51,7 @@ public class CeylonEditorPreferencesPage
         autoInsert.store();
         autoActivation.store();
         autoActivationDelay.store();
+        autoActivationChars.store();
         smartCaret.store();
         return true;
     }
@@ -62,6 +65,7 @@ public class CeylonEditorPreferencesPage
         autoActivation.loadDefault();
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
+        autoActivationChars.loadDefault();
         smartCaret.loadDefault();
     }
     
@@ -141,6 +145,15 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         autoActivation.load();
         addField(autoActivation);
+        String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        autoActivationChars = new RadioGroupFieldEditor(CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS, 
+                "Auto-activation characters", 3, 
+                new String[][] { new String[] {"period", "."}, 
+                                 new String[] {"letters", letters },
+                                 new String[] {"both", "." + letters } }, 
+                getFieldEditorParent());
+        autoActivationChars.load();
+        addField(autoActivationChars);
         autoActivationDelay = new ScaleFieldEditor(CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY, 
                 "Auto-activation delay", 
                 getFieldEditorParent());

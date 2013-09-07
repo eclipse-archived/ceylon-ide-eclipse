@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
 
@@ -74,7 +75,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+        return editor.getPrefStore().getString(AUTO_ACTIVATION_CHARS).toCharArray();
     }
 
     public char[] getContextInformationAutoActivationCharacters() {
