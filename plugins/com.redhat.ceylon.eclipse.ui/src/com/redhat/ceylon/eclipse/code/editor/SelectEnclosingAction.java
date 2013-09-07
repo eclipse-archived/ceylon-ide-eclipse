@@ -8,7 +8,17 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ArgumentList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ConditionList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ControlClause;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
@@ -62,6 +72,83 @@ class SelectEnclosingAction extends Action {
     			super.visitAny(that);
     		}
     	}
+        @Override
+        public void visit(CompilationUnit that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(Body that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(ArgumentList that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(ParameterList that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(ControlClause that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(ConditionList that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(Condition that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(Type that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(Term that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(ImportMemberOrTypeList that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(SpecifierOrInitializerExpression that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
     	@Override
     	public void visit(Expression that) {
     		Node oc = current;

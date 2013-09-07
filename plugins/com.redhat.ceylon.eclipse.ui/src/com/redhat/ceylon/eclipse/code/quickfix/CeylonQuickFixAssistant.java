@@ -108,6 +108,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -201,7 +202,8 @@ public class CeylonQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
-            addAssignToLocalProposal(file, cu, proposals, node);
+            addAssignToLocalProposal(file, cu, proposals, node, 
+                    editor.getSelection().getOffset());
             
             Tree.Declaration decNode = findDeclaration(cu, node);
             if (decNode!=null) {
@@ -410,6 +412,13 @@ public class CeylonQuickFixAssistant {
         	addMakeSharedDecProposal(proposals, project, node);
         	addRemoveAnnotationDecProposal(proposals, "default", project, node);
         	break;
+        case 710:
+        case 711:
+            addMakeSharedProposal(proposals, project, node);
+            break;
+        case 713:
+            addMakeSharedPropsalForSupertypes(proposals, project, node);
+            break;
         case 800:
         case 804:
         	addMakeVariableProposal(proposals, project, node);
@@ -474,7 +483,7 @@ public class CeylonQuickFixAssistant {
             addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
-            addAssignToLocalProposal(file, cu, proposals, node);
+            addAssignToLocalProposal(file, cu, proposals, node, problem.getOffset());
         	break;
         case 3100:
             addShadowReferenceProposal(file, cu, proposals, node);
@@ -563,7 +572,7 @@ public class CeylonQuickFixAssistant {
         TextFileChange change = new TextFileChange("Rename", file);
 //        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
-        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, 10, CHANGE));
+        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, CHANGE));
     }
 
     private void addModuleImportProposals(Tree.CompilationUnit cu,
@@ -725,9 +734,33 @@ public class CeylonQuickFixAssistant {
                 proposals, project);
     }
     
-    private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+    private void addMakeSharedPropsalForSupertypes(Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        if (node instanceof Tree.ClassOrInterface) {
+            Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
+
+            ProducedType extendedType = c.getDeclarationModel().getExtendedType();
+            if( extendedType != null ) {
+                addMakeSharedProposal(extendedType.getDeclaration(), proposals, project);
+                for (ProducedType typeArgument : extendedType.getTypeArgumentList()) {
+                    addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                }
+            }
+            
+            List<ProducedType> satisfiedTypes = c.getDeclarationModel().getSatisfiedTypes();
+            if( satisfiedTypes != null ) {
+                for (ProducedType satisfiedType : satisfiedTypes) {
+                    addMakeSharedProposal(satisfiedType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : satisfiedType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, IProject project, Node node) {
         Declaration dec = null;
+        List<ProducedType> typeArgumentList = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = (Tree.StaticMemberOrTypeExpression) node;
             dec = qmte.getDeclaration();
@@ -740,9 +773,55 @@ public class CeylonQuickFixAssistant {
             Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
             dec = imt.getDeclarationModel();
         }
-        if (dec!=null) {
-            addAddAnnotationProposal(node, "shared", "Make Shared", dec, 
-                    proposals, project);
+        else if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = ((Tree.TypedDeclaration) node);
+            if (td.getDeclarationModel() != null) {
+                ProducedType pt = td.getDeclarationModel().getType();
+                dec = pt.getDeclaration();
+                typeArgumentList = pt.getTypeArgumentList();
+            }
+        }
+        else if (node instanceof Tree.Parameter) {
+            Tree.Parameter parameter = ((Tree.Parameter) node);
+            if (parameter.getParameterModel() != null && parameter.getParameterModel().getType() != null) {
+                ProducedType pt = parameter.getParameterModel().getType();
+                dec = pt.getDeclaration();
+                typeArgumentList = pt.getTypeArgumentList();
+            }
+        }
+        addMakeSharedProposal(dec, proposals, project);
+        if (typeArgumentList != null) {
+            for (ProducedType typeArgument : typeArgumentList) {
+                addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+            }
+        }
+    }
+    
+    private void addMakeSharedProposal(Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec != null) {
+            if (dec instanceof UnionType) {
+                List<ProducedType> caseTypes = ((UnionType) dec).getCaseTypes();
+                for (ProducedType caseType : caseTypes) {
+                    addMakeSharedProposal(caseType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : caseType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
+                }
+            } else if (dec instanceof IntersectionType) {
+                List<ProducedType> satisfiedTypes = ((IntersectionType) dec).getSatisfiedTypes();
+                for (ProducedType satisfiedType : satisfiedTypes) {
+                    addMakeSharedProposal(satisfiedType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : satisfiedType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
+                }
+            } else if (dec instanceof TypedDeclaration || 
+                       dec instanceof ClassOrInterface || 
+                       dec instanceof TypeAlias) {
+                if (!dec.isShared()) {
+                    addAddAnnotationProposal(null, "shared", "Make Shared", dec, proposals, project);
+                }
+            }
         }
     }
     
@@ -1607,7 +1686,7 @@ public class CeylonQuickFixAssistant {
             Collection<ICompletionProposal> proposals, IFile file) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
-          for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
+          for (DeclarationWithProximity dwp: getProposals(node, node.getScope(), cu).values()) {
               int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
               //TODO: would it be better to just sort by dist, and
               //      then select the 3 closest possibilities?
@@ -1636,9 +1715,11 @@ public class CeylonQuickFixAssistant {
             String name, Tree.CompilationUnit cu) {
         Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
-            Declaration member = pkg.getMember(name, null, false);
-            if (member!=null) {
-                result.add(member);
+            if (!pkg.getName().isEmpty()) {
+                Declaration member = pkg.getMember(name, null, false);
+                if (member!=null) {
+                    result.add(member);
+                }
             }
         }
         /*if (result.isEmpty()) {
@@ -1673,7 +1754,7 @@ public class CeylonQuickFixAssistant {
 		}*/
         return new ChangeCorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
-                change, 50, CeylonLabelProvider.IMPORT);
+                change, CeylonLabelProvider.IMPORT);
     }
 
 	public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,
@@ -1832,7 +1913,7 @@ public class CeylonQuickFixAssistant {
         return stopIndex+1;
     }
 
-    private static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
+    public static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
         FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();
@@ -1856,7 +1937,7 @@ public class CeylonQuickFixAssistant {
 
     private void addAddAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null) {
+        if (dec!=null && !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);

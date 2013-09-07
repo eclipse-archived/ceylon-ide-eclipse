@@ -41,7 +41,7 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertIfElseToThenElse(int offset, IFile file, TextChange change) {
-        super("Convert to then-else", change, 10, CHANGE);
+        super("Convert to then-else", change, CHANGE);
         this.offset=offset;
         this.file=file;
     }

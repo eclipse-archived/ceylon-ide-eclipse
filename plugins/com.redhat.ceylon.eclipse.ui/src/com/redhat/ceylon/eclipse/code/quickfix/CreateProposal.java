@@ -35,7 +35,7 @@ class CreateProposal extends ChangeCorrectionProposal {
     
     CreateProposal(String def, String desc, Image image, int indentLength, 
             int offset, IFile file, TextFileChange change) {
-        super(desc, change, 50, image);
+        super(desc, change, image);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
             loc = def.indexOf("= ");

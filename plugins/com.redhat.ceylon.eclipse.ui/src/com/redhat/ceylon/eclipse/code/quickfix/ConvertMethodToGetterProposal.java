@@ -108,7 +108,7 @@ public class ConvertMethodToGetterProposal extends ChangeCorrectionProposal {
     }
 
     private ConvertMethodToGetterProposal(Change change, Method method) {
-        super("Convert method '" + method.getName() + "()' to getter", change, 10, CHANGE);
+        super("Convert method '" + method.getName() + "()' to getter", change, CHANGE);
     }
 
 }

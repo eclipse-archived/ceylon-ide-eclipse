@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
@@ -23,7 +21,7 @@ class ConvertToSpecifierProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertToSpecifierProposal(int offset, IFile file, TextChange change) {
-        super("Convert block to =>", change, 10, CORRECTION);
+        super("Convert block to =>", change);
         this.offset=offset;
         this.file=file;
     }

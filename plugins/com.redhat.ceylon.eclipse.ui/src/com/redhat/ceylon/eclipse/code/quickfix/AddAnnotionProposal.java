@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +48,7 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         super("Make '" + dec.getName() + "' " + annotation +
             (dec.getContainer() instanceof TypeDeclaration ?
                     " in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, 10, CORRECTION);
+                    change);
         this.offset=offset;
         this.file=file;
         this.dec = dec;

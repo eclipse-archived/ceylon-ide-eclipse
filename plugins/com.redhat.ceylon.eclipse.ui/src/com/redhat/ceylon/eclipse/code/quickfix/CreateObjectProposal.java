@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -35,7 +34,7 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
     CreateObjectProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
         super("Create instance of '" + type.getProducedTypeName() + "'", 
-                change, 10, CORRECTION);
+                change);
         this.offset=offset;
         this.length=length;
         this.file=file;

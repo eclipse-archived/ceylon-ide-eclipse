@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
@@ -27,7 +25,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertToBlockProposal(int offset, IFile file, TextChange change) {
-        super("Convert => to block", change, 10, CORRECTION);
+        super("Convert => to block", change);
         this.offset=offset;
         this.file=file;
     }

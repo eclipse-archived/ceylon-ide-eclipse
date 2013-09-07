@@ -319,5 +319,11 @@ public class JDTClass implements ClassMirror {
     public boolean isAnnotationType() {
         return klass.isAnnotationType();
     }
+
+    @Override
+    public boolean isLocalClass() {
+        return getAnnotation(AbstractModelLoader.CEYLON_LOCAL_CONTAINER_ANNOTATION) != null 
+                || klass.isLocalType();
+    }
     
 }

@@ -6,7 +6,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 
 import java.util.Collection;
 
@@ -96,7 +95,7 @@ class ChangeMultilineStringIndentationProposal extends ChangeCorrectionProposal 
     }
 
     private ChangeMultilineStringIndentationProposal(TextFileChange change) {
-        super(change.getName(), change, 10, CORRECTION);
+        super(change.getName(), change);
     }
 
     private static class FindIndentationVisitor extends Visitor {

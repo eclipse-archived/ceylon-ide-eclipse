@@ -33,7 +33,7 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
     
     ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {
-        super("Change reference to '" + name + "'" + pkg, change, dist+10, 
+        super("Change reference to '" + name + "'" + pkg, change, 
                 CORRECTION/*CeylonLabelProvider.getImage(dec)*/);
         offset = problem.getOffset();
         length = name.length();

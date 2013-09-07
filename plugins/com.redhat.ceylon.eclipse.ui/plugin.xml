@@ -684,6 +684,7 @@
             description="Working In Ceylon Perspective"/>
    </extension>
             
+   <!-- Platform-independent key binding -->
    <extension
          point="org.eclipse.ui.bindings">
          
@@ -800,28 +801,6 @@
             sequence="M1+/"/>
       <key
             contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+/"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+\"/>
-      <key
-            platforms="cocoa,carbon"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M4+/"/>
-      <key
-            platforms="cocoa,carbon"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M4+\"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+I"/>
@@ -835,13 +814,44 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+F"/-->
-            
+      
       <!-- Navigation actions -->
       <key
             sequence="M1+M2+P"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            
+   </extension>
+   
+   <!-- Now, platform-dependent key binding -->
+   <extension
+         point="org.eclipse.ui.bindings">
+         
+      <sequenceModifier
+            find="M1+M2" replace="M3+M4" 
+            platforms="cocoa,carbon"/>
+      <sequenceModifier
+            find="M2+M3" replace="M2+M4"
+            platforms="cocoa,carbon"/>
+      <!-- This JDT binding for the block comment actions on Mac is awful! -->
+      <!--sequenceModifier
+            find="M1+M2" replace="M1+M4"
+            platforms="cocoa,carbon"/-->
+      
+      <!-- Edit actions -->
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
+
+      <!-- Navigation actions -->
       <key
             sequence="M2+M3+ARROW_UP"
             contextId="com.redhat.ceylon.eclipse.ui.context"
@@ -852,18 +862,7 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platforms="cocoa,carbon"
-            sequence="M2+M4+ARROW_UP"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platforms="cocoa,carbon"
-            sequence="M2+M4+ARROW_DOWN"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
       <!--key
             sequence="M1+M2+ARROW_UP"
             contextId="com.redhat.ceylon.eclipse.ui.context"
@@ -873,20 +872,35 @@
             sequence="M1+M2+ARROW_DOWN"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platforms="cocoa,carbon"
-            sequence="M3+M4+ARROW_UP"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoPreviousTarget"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            platforms="cocoa,carbon"
-            sequence="M3+M4+ARROW_DOWN"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
-   </extension>
+      
+      <!-- Workaround for a bug in Eclipse on Mac - TODO:remove -->
+      <key
+            commandId="org.eclipse.ui.edit.text.goto.lineStart"
+            platform="cocoa"
+            sequence="M1+ARROW_LEFT"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            commandId="org.eclipse.ui.edit.text.goto.lineEnd"
+            platform="cocoa"
+            sequence="M1+ARROW_RIGHT"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            commandId="org.eclipse.ui.edit.text.select.lineStart"
+            platform="cocoa"
+            sequence="M1+M2+ARROW_LEFT"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            commandId="org.eclipse.ui.edit.text.select.lineEnd"
+            platform="cocoa"
+            sequence="M1+M2+ARROW_RIGHT"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            
+   </extension>         
    
    <extension
          point="org.eclipse.ui.menus">
@@ -1457,7 +1471,9 @@
                   relationship="right"/>
             <actionSet
                   id="org.eclipse.debug.ui.launchActionSet"/>
-             <newWizardShortcut
+            <actionSet
+                  id="org.eclipse.ui.edit.text.actionSet.presentation"/>
+            <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
@@ -2091,6 +2107,7 @@
              type="java.lang.Object">
        </propertyTester>
     </extension>
+    
     <extension
           id="JavaProjectStateMirror"
           name="Java Project State Mirror"
@@ -2103,5 +2120,15 @@
              requiredSourceLevel="1.6">
           <managedMarker markerType="org.eclipse.jdt.apt.core.compile.problem"/>
        </compilationParticipant>
+    </extension>
+    
+    <extension
+          point="org.eclipse.jdt.ui.queryParticipants">
+          <queryParticipant
+                name="Ceylon references"
+                nature="org.eclipse.jdt.core.javanature"
+                id="com.redhat.ceylon.eclipse.code.javaQueryParticipant"
+                class="com.redhat.ceylon.eclipse.code.search.JavaQueryParticipant">
+          </queryParticipant>
     </extension>
 </plugin>

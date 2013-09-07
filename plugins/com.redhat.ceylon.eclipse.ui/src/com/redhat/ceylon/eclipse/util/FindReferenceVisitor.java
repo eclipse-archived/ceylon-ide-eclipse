@@ -119,6 +119,30 @@ public class FindReferenceVisitor extends Visitor {
     }
     
     @Override
+    public void visit(Tree.Body body) {
+        Declaration d = declaration;
+        for (Tree.Statement st: body.getStatements()) {
+            if (st instanceof Tree.Assertion) {
+                Tree.Assertion that = (Tree.Assertion) st;
+                for (Condition c: that.getConditionList().getConditions()) {
+                    Tree.Variable var = getConditionVariable(c);
+                    if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+                        TypedDeclaration od = var.getDeclarationModel()
+                                .getOriginalDeclaration();
+                        if (od!=null && od.equals(declaration)) {
+                            c.visit(this);
+                            declaration = var.getDeclarationModel();
+                            break;
+                        }
+                    }
+                }
+            }
+            st.visit(this);
+        }
+        declaration = d;
+    }
+    
+    @Override
     public void visit(Tree.ExtendedTypeExpression that) {}
     		
     @Override

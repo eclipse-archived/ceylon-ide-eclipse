@@ -1,11 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -32,7 +29,7 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
         super("Make '" + dec.getName() + "' non-" + annotation + " " +
             (dec.getContainer() instanceof TypeDeclaration ?
                     "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, 10, CORRECTION);
+                    change);
         this.offset=offset;
         this.file=file;
         this.dec = dec;

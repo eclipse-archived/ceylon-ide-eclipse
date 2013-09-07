@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
@@ -54,7 +52,7 @@ public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionPropos
     private TypedDeclaration parameter;
     
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
-        super("Spread iterable argument of variadic parameter", change, 10, CORRECTION);
+        super("Spread iterable argument of variadic parameter", change);
         this.file=file;
         this.offset=offset;
         this.parameter = parameter;

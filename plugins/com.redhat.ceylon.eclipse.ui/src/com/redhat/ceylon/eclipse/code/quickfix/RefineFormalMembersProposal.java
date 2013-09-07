@@ -140,15 +140,16 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
         StringBuilder result = new StringBuilder();
         Set<Declaration> already = new HashSet<Declaration>();
-        for (DeclarationWithProximity dwp: getProposals(node, cu).values()) {
+        ClassOrInterface ci = (ClassOrInterface) node.getScope();
+        for (DeclarationWithProximity dwp: getProposals(node, ci, cu).values()) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 if (d.isFormal() && 
-                        ((ClassOrInterface) node.getScope()).isInheritedFromSupertype(d)) {
-                    ProducedReference pr = getRefinedProducedReference(node, d);
+                        ci.isInheritedFromSupertype(d)) {
+                    ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
-                    .append(getRefinementTextFor(d, pr, isInterface, indent))
-                    .append(indent);
+                        .append(getRefinementTextFor(d, pr, isInterface, indent))
+                        .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
             }

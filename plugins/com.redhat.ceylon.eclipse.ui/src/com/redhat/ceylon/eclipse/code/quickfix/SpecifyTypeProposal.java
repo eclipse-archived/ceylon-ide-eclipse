@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 
@@ -27,7 +26,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     SpecifyTypeProposal(int offset, IFile file, String type, TextFileChange change) {
-        super("Specify type '" + type + "'", change, 10, CORRECTION);
+        super("Specify type '" + type + "'", change);
         this.offset = offset;
         length = type.length();
         this.file = file;

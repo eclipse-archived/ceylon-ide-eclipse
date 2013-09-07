@@ -53,27 +53,28 @@ import com.redhat.ceylon.eclipse.util.MarkerUtils;
 public class CeylonQuickFixController extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
 	
-    private CeylonQuickFixAssistant assistant;
+    private CeylonQuickFixAssistant assistant = new CeylonQuickFixAssistant();
     private CeylonEditor editor; //may only be used for quick assists!!!
-    private IFile file;
     private Tree.CompilationUnit model;
+    private IFile file; //may only be used for markers!
 	
 	public CeylonQuickFixController(CeylonEditor editor) {
-        assistant = new CeylonQuickFixAssistant();
         this.editor = editor;
-        
-        if (editor.getEditorInput() instanceof FileEditorInput) {
+        setQuickAssistProcessor(this);        
+    }
+
+    protected IFile getFile() {
+        if (editor!=null && 
+                editor.getEditorInput() instanceof FileEditorInput) {
             FileEditorInput input = (FileEditorInput) editor.getEditorInput();
             if (input!=null) {
-            	file = input.getFile();
+            	return input.getFile();
             }
         }
-
-        setQuickAssistProcessor(this);        
+        return file;
     }
     
     public CeylonQuickFixController(IMarker marker) {
-        assistant = new CeylonQuickFixAssistant();
         IFileEditorInput input = MarkerUtils.getInput(marker);
 		if (input!=null) {
 			file = input.getFile();
@@ -225,7 +226,8 @@ public class CeylonQuickFixController extends QuickAssistAssistant
         		ProblemLocation curr = locations[i];
         		Integer id = new Integer(curr.getProblemId());
         		if (handledProblems.add(id)) {
-        			assistant.addProposals(quickAssistContext, curr, file, rootNode, proposals);
+        			assistant.addProposals(quickAssistContext, curr, getFile(), 
+        			        rootNode, proposals);
         		}
         	}
         }

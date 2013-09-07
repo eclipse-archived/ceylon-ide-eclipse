@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
@@ -34,7 +33,7 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
     CreateLocalSubtypeProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
         super("Create subtype of '" + type.getProducedTypeName() + "'", 
-                change, 10, CORRECTION);
+                change);
         this.offset=offset;
         this.length=length;
         this.file=file;

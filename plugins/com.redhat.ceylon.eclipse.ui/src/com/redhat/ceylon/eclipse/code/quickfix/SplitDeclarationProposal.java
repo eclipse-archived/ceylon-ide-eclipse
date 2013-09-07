@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -34,7 +33,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     SplitDeclarationProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Split declaration of '" + dec.getName() + "'", change, 10, CORRECTION);
+        super("Split declaration of '" + dec.getName() + "'", change);
         this.offset=offset;
         this.file=file;
     }

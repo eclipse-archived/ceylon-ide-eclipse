@@ -37,7 +37,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     AddParameterProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Add to parameter list of '" + dec.getName() + "'", change, 10, ADD);
+        super("Add to parameter list of '" + dec.getName() + "'", change, ADD);
         this.offset=offset;
         this.file=file;
     }

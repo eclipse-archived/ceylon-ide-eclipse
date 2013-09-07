@@ -445,6 +445,13 @@ public class DocHover
 			@Override
 			public void changing(LocationEvent event) {
 				String location = event.location;
+				
+				//This was necessary for windows environment (fix for blank page)
+				//Its someway related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
+				if (!"about:blank".equals(location)) { //$NON-NLS-1$
+					event.doit= false;
+				}
+				
 				if (location.startsWith("dec:")) {
 					Object target = getModel(control, location);
 					if (target!=null) {

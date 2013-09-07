@@ -22,7 +22,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 class RemoveAliasProposal extends ChangeCorrectionProposal {
         
     RemoveAliasProposal(IFile file, Declaration dec, TextFileChange change) {
-        super("Remove alias of '" + dec.getName() + "'", change, 10, REMOVE_CORR);
+        super("Remove alias of '" + dec.getName() + "'", change, REMOVE_CORR);
     }
     
     static void addRemoveAliasProposal(Tree.ImportMemberOrType node,  
