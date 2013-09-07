@@ -22,6 +22,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.CopyParticipant;
+import org.eclipse.ltk.core.refactoring.participants.CopyProcessor;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -46,7 +47,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
     @Override
     protected boolean initialize(Object element) {
         file= (IFile) element;
-        return file.getFileExtension().equals("ceylon");
+        return getProcessor() instanceof CopyProcessor && 
+                file.getFileExtension().equals("ceylon");
     }
     
     @Override
@@ -196,8 +198,10 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                         }
                     }
                     Tree.Import toDelete = findImportNode(cu, newName);
-                    change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
-                            toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+                    if (toDelete!=null) {
+                        change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
+                                toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+                    }
                 }
                 catch (Exception e) { 
                     e.printStackTrace(); 
