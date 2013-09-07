@@ -684,7 +684,17 @@ public class CeylonContentProposer {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
-        if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
+        if (node instanceof Tree.ModuleDescriptor && 
+                (((Tree.ModuleDescriptor) node).getImportPath()==null ||
+                ((Tree.ModuleDescriptor) node).getImportPath().getIdentifiers().isEmpty())) {
+            addPackageNameCompletion(cpc, offset, prefix, result);
+        }
+        else if (node instanceof Tree.PackageDescriptor && 
+                (((Tree.PackageDescriptor) node).getImportPath()==null ||
+                ((Tree.PackageDescriptor) node).getImportPath().getIdentifiers().isEmpty())) {
+            addPackageNameCompletion(cpc, offset, prefix, result);
+        }
+        else if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result);
         }
         else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
@@ -692,6 +702,23 @@ public class CeylonContentProposer {
         }
         else if (node instanceof Tree.ImportPath) {
             new Visitor() {
+                @Override
+                public void visit(Tree.ModuleDescriptor that) {
+                    super.visit(that);
+                    if (that.getImportPath()==node) {
+                        addPackageNameCompletion(cpc, offset, 
+                                fullPath(offset, prefix, that.getImportPath()) + prefix, 
+                                result);
+                    }
+                }
+                public void visit(Tree.PackageDescriptor that) {
+                    super.visit(that);
+                    if (that.getImportPath()==node) {
+                        addPackageNameCompletion(cpc, offset, 
+                                fullPath(offset, prefix, that.getImportPath()) + prefix, 
+                                result);
+                    }
+                }
                 @Override
                 public void visit(Tree.Import that) {
                     super.visit(that);
@@ -876,6 +903,15 @@ public class CeylonContentProposer {
             public Point getSelection(IDocument document) {
                 return new Point(selectionStart, selectionLength);
             }});
+    }
+    
+    private static void addPackageNameCompletion(CeylonParseController cpc, int offset, 
+            String prefix, List<ICompletionProposal> result) {
+        IFile file = cpc.getProject().getFile(cpc.getPath());
+        String moduleName = CeylonBuilder.getPackageName(file);
+        result.add(new CompletionProposal(offset, prefix, 
+                isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
+                        moduleName, moduleName, false));
     }
     
     private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
