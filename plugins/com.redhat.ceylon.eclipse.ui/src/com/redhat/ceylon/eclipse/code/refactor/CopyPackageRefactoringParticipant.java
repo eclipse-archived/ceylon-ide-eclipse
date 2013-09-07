@@ -4,7 +4,6 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -56,17 +55,21 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
         
         Change change = new Change() {
             IResource newPackage;
+            
             @Override
             public Change perform(IProgressMonitor pm) throws CoreException {
                 IPackageFragmentRoot dest = (IPackageFragmentRoot) getArguments().getDestination();
                 ReorgExecutionLog executionLog = getArguments().getExecutionLog();
                 final String newName = executionLog.getNewName(javaPackageFragment);
+                if (newName.isEmpty()) return null;
                 newPackage = dest.getPackageFragment(newName).getResource();
                 final String oldName = javaPackageFragment.getElementName();
                 final IProject project = javaPackageFragment.getJavaProject().getProject();
                 
-                final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-                for (PhasedUnit phasedUnit: getProjectTypeChecker(project).getPhasedUnits().getPhasedUnits()) {
+                final List<Change> changes= new ArrayList<Change>();
+                for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
+                        .getPhasedUnits().getPhasedUnits()) {
+                    
                     final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
                     if (phasedUnit.getPackage().getNameAsString().startsWith(oldName)) {
                         phasedUnit.getCompilationUnit().visit(new Visitor() {
@@ -74,17 +77,18 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                             public void visit(ImportPath that) {
                                 super.visit(that);
                                 if (formatPath(that.getIdentifiers()).equals(oldName)) {
-                                    edits.add(new ReplaceEdit(that.getStartIndex(), oldName.length(), newName));
+                                    edits.add(new ReplaceEdit(that.getStartIndex(), 
+                                            oldName.length(), newName));
                                 }
                             }
                         });
                         if (!edits.isEmpty()) {
                             try {
                                 IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                                TextFileChange change= new TextFileChange(file.getName(), 
-                                        getMovedFile(newName, file));
+                                IFile newFile = getMovedFile(newName, file);
+                                TextFileChange change= new TextFileChange(newFile.getName(), newFile);
                                 change.setEdit(new MultiTextEdit());
-                                changes.put(file, change);
+                                changes.add(change);
                                 for (ReplaceEdit edit: edits) {
                                     change.addEdit(edit);
                                 }
@@ -94,16 +98,18 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                             }
                         }
                     }
+                    
                 }
                 
-                if (changes.isEmpty())
-                    return null;
-                
-                CompositeChange result= new CompositeChange("Ceylon source changes");
-                for (Change change: changes.values()) {
-                    result.add(change);
+                if (!changes.isEmpty()) {
+                    CompositeChange result= new CompositeChange("Ceylon source changes");
+                    for (Change change: changes) {
+                        result.add(change);
+                    }
+                    result.perform(pm);
                 }
-                result.perform(pm);
+                
+                //no undo
                 return null;
             }
 
