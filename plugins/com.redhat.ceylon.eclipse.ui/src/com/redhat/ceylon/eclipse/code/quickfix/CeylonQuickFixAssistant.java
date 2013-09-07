@@ -415,6 +415,9 @@ public class CeylonQuickFixAssistant {
         case 711:
             addMakeSharedProposal(proposals, project, node);
             break;
+        case 713:
+            addMakeSharedPropsalForSupertypes(proposals, project, node);
+            break;
         case 800:
         case 804:
         	addMakeVariableProposal(proposals, project, node);
@@ -728,6 +731,30 @@ public class CeylonQuickFixAssistant {
         v.visit(cu);
         addAddAnnotationProposal(node, "variable", "Make Variable", v.dec, 
                 proposals, project);
+    }
+    
+    private void addMakeSharedPropsalForSupertypes(Collection<ICompletionProposal> proposals, IProject project, Node node) {
+        if (node instanceof Tree.ClassOrInterface) {
+            Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
+
+            ProducedType extendedType = c.getDeclarationModel().getExtendedType();
+            if( extendedType != null ) {
+                addMakeSharedProposal(extendedType.getDeclaration(), proposals, project);
+                for (ProducedType typeArgument : extendedType.getTypeArgumentList()) {
+                    addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                }
+            }
+            
+            List<ProducedType> satisfiedTypes = c.getDeclarationModel().getSatisfiedTypes();
+            if( satisfiedTypes != null ) {
+                for (ProducedType satisfiedType : satisfiedTypes) {
+                    addMakeSharedProposal(satisfiedType.getDeclaration(), proposals, project);
+                    for (ProducedType typeArgument : satisfiedType.getTypeArgumentList()) {
+                        addMakeSharedProposal(typeArgument.getDeclaration(), proposals, project);
+                    }
+                }
+            }
+        }
     }
     
     private void addMakeSharedProposal(Collection<ICompletionProposal> proposals, IProject project, Node node) {
