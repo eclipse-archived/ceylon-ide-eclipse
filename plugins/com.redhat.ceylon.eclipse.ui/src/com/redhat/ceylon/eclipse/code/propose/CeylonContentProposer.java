@@ -2092,20 +2092,20 @@ public class CeylonContentProposer {
     private static void appendImpl(Declaration d, boolean isInterface, 
             String indent, StringBuilder result) {
         if (d instanceof Method) {
-            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing; /*TODO: Implement*/");
+            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing;");
         }
         else if (d.isParameter()) {
-            result.append(" => nothing; /*TODO: Implement*/");
+            result.append(" => nothing;");
         }
         else if (d instanceof MethodOrValue) {
             if (isInterface) {
-                result.append(" => nothing; /*TODO: Implement*/");
+                result.append(" => nothing;");
                 if (isVariable(d)) {
-                    result.append(indent + "assign " + d.getName() + " {} /*TODO: Implement*/");
+                    result.append(indent + "assign " + d.getName() + " {}");
                 }
             }
             else {
-                result.append(" = nothing; /*TODO: Implement*/");
+                result.append(" = nothing;");
             }
         }
         else {
