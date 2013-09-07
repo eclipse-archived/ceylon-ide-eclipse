@@ -83,7 +83,7 @@ import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
+public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
     private class PopupVisibilityManager implements IPartListener2, ControlListener, MouseListener, KeyListener, ITextListener, IViewportListener {
 
@@ -215,7 +215,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
 
     private static final int WIDGET_PRIORITY= 15;
 
-    private static final String DIALOG_SETTINGS_SECTION= "RenameInformationPopup"; //$NON-NLS-1$
+    private static final String DIALOG_SETTINGS_SECTION= "EnterAliasInformationPopup"; //$NON-NLS-1$
     private static final String SNAP_POSITION_KEY= "snap_position"; //$NON-NLS-1$
 
     private static final int SNAP_POSITION_UNDER_RIGHT_FIELD= 0;
@@ -263,7 +263,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
 
     private boolean fDelayJobFinished= false;
 
-    public RenameInformationPopup(CeylonEditor editor, EnterAliasLinkedMode renameLinkedMode) {
+    public EnterAliasInformationPopup(CeylonEditor editor, EnterAliasLinkedMode renameLinkedMode) {
         fEditor= editor;
         fRenameLinkedMode= renameLinkedMode;
         restoreSnapPosition();

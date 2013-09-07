@@ -22,11 +22,9 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
-import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
@@ -61,40 +59,24 @@ public class EnterAliasLinkedMode {
         }
     }
 
-    private class EditorSynchronizer implements ILinkedModeListener {
-        public void left(LinkedModeModel model, int flags) {
-            linkedModeLeft();
-            if ( (flags & ILinkedModeListener.UPDATE_CARET) != 0) {
-//                doRename(fShowPreview);
-                fEditor.doSave(new NullProgressMonitor());
-            }
-        }
-
-        public void resume(LinkedModeModel model, int flags) {
-        }
-
-        public void suspend(LinkedModeModel model) {
-        }
-    }
-
-    private class ExitPolicy extends DeleteBlockingExitPolicy {
-        public ExitPolicy(IDocument document) {
-            super(document);
-        }
-
-        @Override
-        public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
-//            fShowPreview= (event.stateMask & SWT.CTRL) != 0
-//                            && (event.character == SWT.CR || event.character == SWT.LF);
-            return super.doExit(model, event, offset, length);
-        }
-    }
+//    private class ExitPolicy extends DeleteBlockingExitPolicy {
+//        public ExitPolicy(IDocument document) {
+//            super(document);
+//        }
+//
+//        @Override
+//        public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
+////            fShowPreview= (event.stateMask & SWT.CTRL) != 0
+////                            && (event.character == SWT.CR || event.character == SWT.LF);
+//            return super.doExit(model, event, offset, length);
+//        }
+//    }
 
     private final CeylonEditor fEditor;
     private final Tree.ImportMemberOrType node;
     Declaration dec;
 
-    private RenameInformationPopup fInfoPopup;
+    private EnterAliasInformationPopup fInfoPopup;
 
     private Point fOriginalSelection;
     private String fOriginalName;
@@ -115,16 +97,16 @@ public class EnterAliasLinkedMode {
 
     public EnterAliasLinkedMode(Tree.ImportMemberOrType element, 
             Declaration dec, CeylonEditor editor) {
-        fEditor= editor;
-        node= element;
-        fFocusEditingSupport= new FocusEditingSupport();
+        fEditor = editor;
+        node = element;
+        fFocusEditingSupport = new FocusEditingSupport();
         this.dec = dec;
     }
     
     public void start() {
-        ISourceViewer viewer= fEditor.getCeylonSourceViewer();
-        final IDocument document= viewer.getDocument();
-        fOriginalSelection= viewer.getSelectedRange();
+        ISourceViewer viewer = fEditor.getCeylonSourceViewer();
+        final IDocument document = viewer.getDocument();
+        fOriginalSelection = viewer.getSelectedRange();
         int offset= fOriginalSelection.x;
         int start = node.getStartIndex();
         String alias;
@@ -151,8 +133,6 @@ public class EnterAliasLinkedMode {
         
         try {
 
-            fLinkedPositionGroup= new LinkedPositionGroup();
-
 //            if (viewer instanceof ITextViewerExtension6) {
 //                IUndoManager undoManager= ((ITextViewerExtension6)viewer).getUndoManager();
 //                if (undoManager instanceof IUndoManagerExtension) {
@@ -163,7 +143,41 @@ public class EnterAliasLinkedMode {
 //                }
 //            }
             
+            fLinkedPositionGroup = new LinkedPositionGroup();
             fNamePosition = new LinkedPosition(document, start, alias.length(), 0);
+            /*fNamePosition = new ProposalPosition(document, start, alias.length(), 0,
+                    new ICompletionProposal[] {new ICompletionProposal() {
+                        @Override
+                        public Point getSelection(IDocument document) {
+                            return null;
+                        }
+                        @Override
+                        public Image getImage() {
+                            return null;
+                        }
+                        @Override
+                        public String getDisplayString() {
+                            return "Other" + dec.getName();
+                        }
+                        @Override
+                        public IContextInformation getContextInformation() {
+                            return null;
+                        }
+                        @Override
+                        public String getAdditionalProposalInfo() {
+                            return null;
+                        }
+                        @Override
+                        public void apply(IDocument document) {
+                            try {
+                                new ReplaceEdit(fNamePosition.offset, 
+                                        fNamePosition.length, 
+                                        getDisplayString()).apply(document);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }});*/
             fLinkedPositionGroup.addPosition(fNamePosition);
             
             fEditor.getParseController().getRootNode().visit(new Visitor() {
@@ -195,16 +209,33 @@ public class EnterAliasLinkedMode {
                 }
             });
 
-            fLinkedModeModel= new LinkedModeModel();
+            fLinkedModeModel = new LinkedModeModel();
             fLinkedModeModel.addGroup(fLinkedPositionGroup);
             fLinkedModeModel.forceInstall();
-            //TODO: suspend occurrence marking!!!!!!!
-//            fLinkedModeModel.addLinkingListener(new EditorHighlightingSynchronizer(fEditor));
-            fLinkedModeModel.addLinkingListener(new EditorSynchronizer());
-
+            fLinkedModeModel.addLinkingListener(new ILinkedModeListener() {
+                @Override
+                public void left(LinkedModeModel model, int flags) {
+                    fEditor.setInLinkedMode(false);
+                    linkedModeLeft();
+                    if ( (flags&ILinkedModeListener.UPDATE_CARET)!=0) {
+//                        doRename(fShowPreview);
+                        fEditor.doSave(new NullProgressMonitor());
+                    }
+                }
+                @Override
+                public void suspend(LinkedModeModel model) {
+                    fEditor.setInLinkedMode(false);
+                }
+                @Override
+                public void resume(LinkedModeModel model, int flags) {
+                    fEditor.setInLinkedMode(true);
+                }
+            });
+            fEditor.setInLinkedMode(true);
+            
             LinkedModeUI ui= new EditorLinkedModeUI(fLinkedModeModel, viewer);
             ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
-            ui.setExitPolicy(new ExitPolicy(document));
+            ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
             ui.enter();
 
 //            viewer.setSelectedRange(fOriginalSelection.x, fOriginalSelection.y); // by default, full word is selected; restore original selection
@@ -338,7 +369,7 @@ public class EnterAliasLinkedMode {
     }
 
     private void openSecondaryPopup() {
-        fInfoPopup= new RenameInformationPopup(fEditor, this);
+        fInfoPopup= new EnterAliasInformationPopup(fEditor, this);
         fInfoPopup.open();
     }
 
@@ -348,11 +379,11 @@ public class EnterAliasLinkedMode {
 
     public LinkedPosition getCurrentLinkedPosition() {
         Point selection= fEditor.getCeylonSourceViewer().getSelectedRange();
-        int start= selection.x;
-        int end= start + selection.y;
-        LinkedPosition[] positions= fLinkedPositionGroup.getPositions();
+        int start = selection.x;
+        int end = start + selection.y;
+        LinkedPosition[] positions = fLinkedPositionGroup.getPositions();
         for (int i= 0; i < positions.length; i++) {
-            LinkedPosition position= positions[i];
+            LinkedPosition position = positions[i];
             if (position.includes(start) && position.includes(end))
                 return position;
         }
@@ -361,12 +392,14 @@ public class EnterAliasLinkedMode {
 
     public boolean isEnabled() {
         try {
-            String newName= fNamePosition.getContent();
-            if (fOriginalName.equals(newName))
+            String newName = fNamePosition.getContent();
+            if (fOriginalName.equals(newName)) {
                 return false;
+            }
             //TODO: check that it is a valid identifier!
             return true;//JavaConventionsUtil.validateIdentifier(newName, fJavaElement).isOK();
-        } catch (BadLocationException e) {
+        } 
+        catch (BadLocationException e) {
             return false;
         }
 
@@ -376,7 +409,8 @@ public class EnterAliasLinkedMode {
         try {
             String newName= fNamePosition.getContent();
             return fOriginalName.equals(newName);
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             return false;
         }
     }
