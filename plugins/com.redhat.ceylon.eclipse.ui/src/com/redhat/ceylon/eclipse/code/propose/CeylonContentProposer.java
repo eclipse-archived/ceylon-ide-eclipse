@@ -93,6 +93,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -612,7 +613,8 @@ public class CeylonContentProposer {
             final CeylonParseController cpc) {
         if (pfp.startsWith("java.")) {
             for (final String mod: JDKUtils.getJDKModuleNames()) {
-                if (mod.startsWith(pfp)) {
+                if (mod.startsWith(pfp) &&
+                        moduleAlreadyImported(node, mod)) {
                     String versioned = getModuleString(mod, JDK_MODULE_VERSION);
                     result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
                                       versioned, versioned.substring(len) + ";", false) {
@@ -632,7 +634,8 @@ public class CeylonContentProposer {
                         .completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
                 for (final ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
-                    if (!name.equals(Module.DEFAULT_MODULE_NAME)) {
+                    if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
+                            !moduleAlreadyImported(node, name)) {
                         for (final String version : module.getVersions().descendingSet()) {
                             String versioned = getModuleString(name, version);
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
@@ -649,6 +652,18 @@ public class CeylonContentProposer {
                 }
             }
         }
+    }
+
+    protected static boolean moduleAlreadyImported(Node node, final String mod) {
+        if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
+            return true;
+        }
+        for (ModuleImport mi: node.getUnit().getPackage().getModule().getImports()) {
+            if (mi.getModule().getNameAsString().equals(mod)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String getModuleString(final String name, final String version) {
