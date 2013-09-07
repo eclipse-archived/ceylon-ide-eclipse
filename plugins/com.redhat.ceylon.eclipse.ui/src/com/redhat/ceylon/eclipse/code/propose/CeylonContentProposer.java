@@ -111,6 +111,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
@@ -716,11 +717,14 @@ public class CeylonContentProposer {
             Scope scope;
             public void visit(Tree.Declaration that) {
                 super.visit(that);
-                for (Tree.Annotation a: that.getAnnotationList().getAnnotations()) {
-                    Integer i = a.getPrimary().getStartIndex();
-                    Integer j = node.getStartIndex();
-                    if (i.intValue()==j.intValue()) {
-                        scope = that.getDeclarationModel().getScope();
+                AnnotationList al = that.getAnnotationList();
+                if (al!=null) {
+                    for (Tree.Annotation a: al.getAnnotations()) {
+                        Integer i = a.getPrimary().getStartIndex();
+                        Integer j = node.getStartIndex();
+                        if (i.intValue()==j.intValue()) {
+                            scope = that.getDeclarationModel().getScope();
+                        }
                     }
                 }
             }
