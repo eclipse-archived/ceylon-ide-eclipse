@@ -318,7 +318,7 @@ final class TerminateStatementAction extends Action {
                 return that.getStartIndex()>=startOfCodeInLine &&
                     that.getStartIndex()<=endOfCodeInLine;
             }
-			private void initiate(Node that, int tokenType, String ch) {
+			/*private void initiate(Node that, int tokenType, String ch) {
 				if (inLine(that)) {
 					Token mt = that.getMainToken();
 					if (mt==null || mt.getType()!=tokenType || 
@@ -328,7 +328,7 @@ final class TerminateStatementAction extends Action {
 						}
 					}
 				}
-			}
+			}*/
 			private void terminate(Node that, int tokenType, String ch) {
 				if (inLine(that)) {
 					Token et = that.getMainEndToken();
