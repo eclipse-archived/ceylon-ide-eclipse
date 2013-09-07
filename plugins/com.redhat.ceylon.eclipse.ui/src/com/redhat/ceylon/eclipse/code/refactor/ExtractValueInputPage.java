@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+
 public class ExtractValueInputPage extends UserInputWizardPage {
 	public ExtractValueInputPage(String name) {
 		super(name);
@@ -72,6 +74,10 @@ public class ExtractValueInputPage extends UserInputWizardPage {
     void validateIdentifier(String name) {
         if (!name.matches("^[a-z_]\\w*$")) {
             setErrorMessage("Not a legal Ceylon identifier");
+            setPageComplete(false);
+        }
+        else if (CeylonTokenColorer.keywords.contains(name)) {
+            setErrorMessage("'" + name + "' is a Ceylon keyword");
             setPageComplete(false);
         }
         else {
