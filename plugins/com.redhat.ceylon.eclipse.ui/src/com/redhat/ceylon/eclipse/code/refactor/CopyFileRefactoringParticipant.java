@@ -30,6 +30,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
@@ -115,7 +116,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                 if (dec!=null && !declarations.contains(dec)) {
                     String pn = dec.getUnit().getPackage().getNameAsString();
                     if (!pn.equals(newName) && !pn.isEmpty() && 
-                            !pn.equals("ceylon.language")) {
+                            !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                         imports.put(dec, id.getText());
                     }
                 }

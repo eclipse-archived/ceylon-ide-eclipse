@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -114,7 +115,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                 resolveImports(imports, pt.getTypeArgumentList());
                 Package p = pt.getDeclaration().getUnit().getPackage();
                 if (!p.getQualifiedNameString().isEmpty() && 
-                    !p.getQualifiedNameString().equals("ceylon.language")) {
+                    !p.getQualifiedNameString().equals(Module.LANGUAGE_MODULE_NAME)) {
                     if (!imports.contains(pt.getDeclaration())) {
                         imports.add(pt.getDeclaration());
                     }
