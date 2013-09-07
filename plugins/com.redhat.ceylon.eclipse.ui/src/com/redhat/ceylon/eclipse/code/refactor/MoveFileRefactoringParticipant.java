@@ -155,7 +155,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final List<Declaration> declarations) {
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
                 .getPhasedUnits().getPhasedUnits()) {
-            if (phasedUnit==movedPhasedUnit) continue;
+            if (phasedUnit==movedPhasedUnit) {
+                continue;
+            }
             final Map<Declaration,String> imports = new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
