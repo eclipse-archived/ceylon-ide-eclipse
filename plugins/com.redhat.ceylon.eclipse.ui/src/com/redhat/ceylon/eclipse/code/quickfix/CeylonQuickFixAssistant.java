@@ -202,7 +202,8 @@ public class CeylonQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
-            addAssignToLocalProposal(file, cu, proposals, node);
+            addAssignToLocalProposal(file, cu, proposals, node, 
+                    editor.getSelection().getOffset());
             
             Tree.Declaration decNode = findDeclaration(cu, node);
             if (decNode!=null) {
@@ -482,7 +483,7 @@ public class CeylonQuickFixAssistant {
             addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
-            addAssignToLocalProposal(file, cu, proposals, node);
+            addAssignToLocalProposal(file, cu, proposals, node, problem.getOffset());
         	break;
         case 3100:
             addShadowReferenceProposal(file, cu, proposals, node);

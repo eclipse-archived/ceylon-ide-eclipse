@@ -41,7 +41,8 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
     }
     
     static void addAssignToLocalProposal(IFile file, Tree.CompilationUnit cu, 
-            Collection<ICompletionProposal> proposals, Node node) {
+            Collection<ICompletionProposal> proposals, Node node, 
+            int currentOffset) {
         //if (node instanceof Tree.Term) {
             FindStatementVisitor fsv = new FindStatementVisitor(node, false);
             fsv.visit(cu);
@@ -67,16 +68,20 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
                 }
             }
             else if (st instanceof Tree.Declaration) {
+                if (((Tree.Declaration) st).getDeclarationModel().isToplevel()) {
+                    return;
+                }
                 //some expressions get interpreted as annotations
                 List<Annotation> annotations = ((Tree.Declaration)st).getAnnotationList().getAnnotations();
                 if (!annotations.isEmpty()) {
                     expression = annotations.get(0);
                     expanse = expression;
                 }
-                else if (st instanceof Tree.AttributeDeclaration) {
+                else if (st instanceof Tree.TypedDeclaration) {
                     //some expressions look like a type declaration
                     //when they appear right in front of an annotation
-                    expression = ((Tree.AttributeDeclaration) st).getType();
+                    //or function invocations
+                    expression = ((Tree.TypedDeclaration) st).getType();
                     expanse = expression;
                 }
                 else {
@@ -84,6 +89,10 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
                 }
             }
             else {
+                return;
+            }
+            if (currentOffset<expanse.getStartIndex() || 
+                currentOffset>expanse.getStopIndex()+1) {
                 return;
             }
             String name = guessName(expression);
