@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.im
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEditForMove;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         final String oldName = movedRelPath.replace('/', '.');
         newFile = ((IFolder) getArguments().getDestination()).getFile(file.getName());
         
-        final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
+        final List<Change> changes= new ArrayList<Change>();
         
         if (file.getFileExtension().equals("java")) {
             updateRefsToMovedJavaFile(project, newName, oldName, changes);
@@ -101,7 +102,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             return null;
         
         CompositeChange result= new CompositeChange("Ceylon source changes");
-        for (Change change: changes.values()) {
+        for (Change change: changes) {
             result.add(change);
         }
         return result;
@@ -109,7 +110,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 
     protected void updateRefsFromMovedCeylonFile(final IProject project,
             final String newName, final String oldName,
-            final HashMap<IFile, Change> changes, PhasedUnit movedPhasedUnit,
+            final List<Change> changes, final PhasedUnit movedPhasedUnit,
             final List<Declaration> declarations) {
         final Map<Declaration,String> imports = new HashMap<Declaration,String>();
         movedPhasedUnit.getCompilationUnit().visit(new Visitor() {
@@ -139,12 +140,10 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 //                visitIt(that.getIdentifier(), that.getDeclarationModel());
 //            }
             protected void visitIt(Tree.Identifier id, Declaration dec) {
-                if (dec!=null && !declarations.contains(dec)) {
-                    String pn = dec.getUnit().getPackage().getNameAsString();
-                    if (!pn.equals(newName) && !pn.isEmpty() && 
-                            !pn.equals("ceylon.language")) {
-                        imports.put(dec, id.getText());
-                    }
+                if (dec!=null && !declarations.contains(dec) &&
+                        dec.getUnit().getPackage()
+                                .equals(movedPhasedUnit.getPackage())) {
+                    imports.put(dec, id.getText());
                 }
             }
         });
@@ -153,7 +152,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     
     protected void updateRefsToMovedCeylonFile(final IProject project,
             final String newName, final String oldName,
-            final HashMap<IFile, Change> changes, PhasedUnit movedPhasedUnit, 
+            final List<Change> changes, PhasedUnit movedPhasedUnit, 
             final List<Declaration> declarations) {
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
                 .getPhasedUnits().getPhasedUnits()) {
@@ -199,7 +198,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 
     protected void updateRefsToMovedJavaFile(final IProject project,
             final String newName, final String oldName,
-            final HashMap<IFile, Change> changes) throws JavaModelException {
+            final List<Change> changes) throws JavaModelException {
         ICompilationUnit jcu = (ICompilationUnit) JavaCore.create(file);
         final IType[] types = jcu.getTypes();
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
@@ -259,13 +258,12 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     }
     
     private void collectEditsToMovedFile(final String newName, final String oldName,
-            final HashMap<IFile, Change> changes, PhasedUnit movedPhasedUnit,
+            final List<Change> changes, PhasedUnit movedPhasedUnit,
             final Map<Declaration, String> imports) {
         try {
             CompilationUnit cu = movedPhasedUnit.getCompilationUnit();
-            TextFileChange change= new TextFileChange(newFile.getName(), newFile);
+            TextFileChange change = new MovingTextFileChange(newFile.getName(), newFile, file);
             change.setEdit(new MultiTextEdit());
-            changes.put(file, change);
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = importEdit(cu, 
                         imports.keySet(), imports.values(), null);
@@ -278,6 +276,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
                         toDelete.getStopIndex()-toDelete.getStartIndex()+1));
             }
+            changes.add(change);
         }
         catch (Exception e) { 
             e.printStackTrace(); 
@@ -285,7 +284,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     }
     
     private void collectEdits(final String newName, final String oldName,
-            final HashMap<IFile, Change> changes, PhasedUnit phasedUnit,
+            final List<Change> changes, PhasedUnit phasedUnit,
             final Map<Declaration, String> imports) {
         try {
             if (!imports.isEmpty()) {
@@ -293,12 +292,12 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                         imports.keySet(), imports.values(), newName, oldName);
                 if (!edits.isEmpty()) {
                     IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                    TextFileChange change= new TextFileChange(file.getName(), file);
+                    TextFileChange change = new TextFileChange(file.getName(), file);
                     change.setEdit(new MultiTextEdit());
-                    changes.put(file, change);
                     for (TextEdit edit: edits) {
                         change.addEdit(edit);
                     }
+                    changes.add(change);
                 }
             }
         }
