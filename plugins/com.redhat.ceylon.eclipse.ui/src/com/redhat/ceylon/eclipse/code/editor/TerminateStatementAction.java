@@ -227,16 +227,16 @@ final class TerminateStatementAction extends Action {
 			@Override
 			public void visit(Tree.ConditionList that) {
 				super.visit(that);
-				initiate(that, CeylonLexer.LPAREN, "(");
-				//does not really work right:
-				terminate(that, CeylonLexer.RPAREN, ")");
+				if (!that.getMainToken().getText().startsWith("<missing ")) {
+				    terminate(that, CeylonLexer.RPAREN, ")");
+				}
 			}
 			@Override
 			public void visit(Tree.ForIterator that) {
 				super.visit(that);
-				initiate(that, CeylonLexer.LPAREN, "(");
-				//does not really work right:
-				terminate(that, CeylonLexer.RPAREN, ")");
+                if (!that.getMainToken().getText().startsWith("<missing ")) {
+                    terminate(that, CeylonLexer.RPAREN, ")");
+                }
 			}
 			@Override 
 			public void visit(Tree.ImportMemberOrTypeList that) {
@@ -307,12 +307,15 @@ final class TerminateStatementAction extends Action {
 					terminate(that, CeylonLexer.SEMICOLON, ";");
 				}
 			}
+            private boolean inLine(Node that) {
+                return that.getStartIndex()>=startOfCodeInLine &&
+                    that.getStartIndex()<=endOfCodeInLine;
+            }
 			private void initiate(Node that, int tokenType, String ch) {
-				if (that.getStartIndex()>=startOfCodeInLine &&
-					that.getStartIndex()<=endOfCodeInLine) {
-					Token et = that.getMainToken();
-					if (et==null || et.getType()!=tokenType || 
-							et.getText().startsWith("<missing ")) {
+				if (inLine(that)) {
+					Token mt = that.getMainToken();
+					if (mt==null || mt.getType()!=tokenType || 
+							mt.getText().startsWith("<missing ")) {
 						if (!change.getEdit().hasChildren()) {
 							change.addEdit(new InsertEdit(that.getStartIndex(), ch));
 						}
@@ -320,8 +323,7 @@ final class TerminateStatementAction extends Action {
 				}
 			}
 			private void terminate(Node that, int tokenType, String ch) {
-				if (that.getStartIndex()>=startOfCodeInLine &&
-					that.getStartIndex()<=endOfCodeInLine) {
+				if (inLine(that)) {
 					Token et = that.getMainEndToken();
 					if ((et==null || et.getType()!=tokenType) ||
 							that.getStopIndex()>endOfCodeInLine) {
@@ -376,6 +378,67 @@ final class TerminateStatementAction extends Action {
 					super.visit(that);
 					terminateWithSemicolon(that);
 				}
+                @Override 
+                public void visit(Tree.IfClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null && 
+                            that.getConditionList()!=null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.ElseClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.ForClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null && 
+                            that.getForIterator()!=null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.WhileClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null && 
+                            that.getConditionList()!=null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.CaseClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null && 
+                            that.getCaseItem()!=null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.TryClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.CatchClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null && 
+                            that.getCatchVariable()!=null) {
+                        terminateWithBaces(that);
+                    }
+                }
+                @Override 
+                public void visit(Tree.FinallyClause that) {
+                    super.visit(that);
+                    if (that.getBlock()==null) {
+                        terminateWithBaces(that);
+                    }
+                }
 				@Override 
 				public void visit(Tree.StatementOrArgument that) {
 					super.visit(that);
@@ -409,7 +472,9 @@ final class TerminateStatementAction extends Action {
                         if (that.getStartIndex()<=endOfCodeInLine &&
                                 that.getStopIndex()>=endOfCodeInLine) {
                             Token et = that.getEndToken();
-                            if (et==null || et.getType()!=CeylonLexer.SEMICOLON ||
+                            if (et==null || 
+                                    et.getType()!=CeylonLexer.SEMICOLON &&
+                                    et.getType()!=CeylonLexer.RBRACE ||
                                     that.getStopIndex()>endOfCodeInLine) {
                                 if (!change.getEdit().hasChildren()) {
                                     change.addEdit(new InsertEdit(endOfCodeInLine+1, " {}"));
@@ -426,7 +491,8 @@ final class TerminateStatementAction extends Action {
 				        if (that.getStartIndex()<=endOfCodeInLine &&
 				                that.getStopIndex()>=endOfCodeInLine) {
 				            Token et = that.getEndToken();
-				            if (et==null || et.getType()!=CeylonLexer.SEMICOLON ||
+				            if (et==null || 
+				                    et.getType()!=CeylonLexer.SEMICOLON ||
 				                    that.getStopIndex()>endOfCodeInLine) {
 				                if (!change.getEdit().hasChildren()) {
 				                    change.addEdit(new InsertEdit(endOfCodeInLine+1, ";"));
