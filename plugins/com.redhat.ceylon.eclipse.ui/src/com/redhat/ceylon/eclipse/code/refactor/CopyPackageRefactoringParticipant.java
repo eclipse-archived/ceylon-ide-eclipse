@@ -21,6 +21,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.CopyParticipant;
+import org.eclipse.ltk.core.refactoring.participants.CopyProcessor;
 import org.eclipse.ltk.core.refactoring.participants.ReorgExecutionLog;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -37,7 +38,7 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
     @Override
     protected boolean initialize(Object element) {
         javaPackageFragment= (IPackageFragment) element;
-        return true;
+        return getProcessor() instanceof CopyProcessor;
     }
     
     @Override

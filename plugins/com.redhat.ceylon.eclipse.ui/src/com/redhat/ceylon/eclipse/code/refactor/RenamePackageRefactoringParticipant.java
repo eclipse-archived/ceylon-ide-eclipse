@@ -18,6 +18,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
+import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -33,7 +34,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     @Override
 	protected boolean initialize(Object element) {
 		javaPackageFragment= (IPackageFragment) element;
-		return true;
+		return getProcessor() instanceof RenameProcessor;
 	}
 
     @Override
@@ -54,14 +55,16 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         final IProject project = javaPackageFragment.getJavaProject().getProject();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project).getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
+                .getPhasedUnits().getPhasedUnits()) {
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
                 public void visit(ImportPath that) {
                     super.visit(that);
                     if (formatPath(that.getIdentifiers()).equals(oldName)) {
-                        edits.add(new ReplaceEdit(that.getStartIndex(), oldName.length(), newName));
+                        edits.add(new ReplaceEdit(that.getStartIndex(), 
+                                oldName.length(), newName));
                     }
                 }
             });

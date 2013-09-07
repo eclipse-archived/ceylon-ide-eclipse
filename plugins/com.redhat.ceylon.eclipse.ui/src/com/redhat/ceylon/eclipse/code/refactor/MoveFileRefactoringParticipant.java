@@ -27,6 +27,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.MoveParticipant;
+import org.eclipse.ltk.core.refactoring.participants.MoveProcessor;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -50,8 +51,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
-        return file.getFileExtension().equals("ceylon")||
-                file.getFileExtension().equals("java");
+        return getProcessor() instanceof MoveProcessor  &&
+                (file.getFileExtension().equals("ceylon") ||
+                file.getFileExtension().equals("java"));
     }
 
     @Override
