@@ -786,7 +786,7 @@ public class CeylonContentProposer {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, null);
+                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope, null);
                 }
             }
         }
@@ -835,14 +835,15 @@ public class CeylonContentProposer {
                                     getQualifiedProducedReference(node, d) :
                                     getRefinedProducedReference(scope, d);
                             addInvocationProposals(offset, prefix, cpc, result, 
-                                    new DeclarationWithProximity(d, dwp), pr, ol);
+                                    new DeclarationWithProximity(d, dwp), 
+                                    pr, scope, ol);
                         }
                     }
                     
                     if (isProposable(dwp, ol, scope) && 
                             (definitelyRequiresType(ol) ||
                              noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
-                        addBasicProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                        addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope, ol);
                     }
                     
                     if (isProposable(dwp, ol, scope) && 
@@ -1125,12 +1126,13 @@ public class CeylonContentProposer {
     
     private static void addBasicProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, 
+            DeclarationWithProximity dwp, Declaration d, Scope scope,
             OccurrenceLocation ol) {
         result.add(new DeclarationCompletionProposal(offset, prefix,
                 getDescriptionFor(dwp, ol), getTextFor(dwp, ol), 
                 true, cpc, d, dwp.isUnimported(), 
-                d.getProducedReference(null, Collections.<ProducedType>emptyList())));
+                d.getProducedReference(null, Collections.<ProducedType>emptyList()), 
+                scope));
     }
 
     private static void addForProposal(int offset, String prefix, 
@@ -1220,7 +1222,7 @@ public class CeylonContentProposer {
 
     private static void addInvocationProposals(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, ProducedReference pr, 
+            DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
             OccurrenceLocation ol) {
         Declaration d = pr.getDeclaration();
         if (!(d instanceof Functional)) return;
@@ -1240,12 +1242,12 @@ public class CeylonContentProposer {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
                             getPositionalInvocationTextFor(dwp, ol, pr, false), true,
-                            cpc, d, dwp.isUnimported(), pr));
+                            cpc, d, dwp.isUnimported(), pr, scope));
                 }
                 result.add(new DeclarationCompletionProposal(offset, prefix, 
                         getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
                         getPositionalInvocationTextFor(dwp, ol, pr, true), true,
-                        cpc, d, dwp.isUnimported(), pr));
+                        cpc, d, dwp.isUnimported(), pr, scope));
             }
             if (!isAbstractClass && ol!=EXTENDS && 
                     !fd.isOverloaded()) {
@@ -1255,13 +1257,13 @@ public class CeylonContentProposer {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, false), 
                             getNamedInvocationTextFor(dwp, pr, false), true,
-                            cpc, d, dwp.isUnimported(), pr));
+                            cpc, d, dwp.isUnimported(), pr, scope));
                 }
                 if (!ps.isEmpty()) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, true), 
                             getNamedInvocationTextFor(dwp, pr, true), true,
-                            cpc, d, dwp.isUnimported(), pr));
+                            cpc, d, dwp.isUnimported(), pr, scope));
                 }
             }
         }
