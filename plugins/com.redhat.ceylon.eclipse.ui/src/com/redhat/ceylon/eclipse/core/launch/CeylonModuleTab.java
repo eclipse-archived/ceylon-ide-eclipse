@@ -12,8 +12,8 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -125,12 +125,19 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             elements = new IJavaElement[]{};
         }
 
-        Map<String, Module> modules = new HashMap<String, Module>();
+        Set<ModuleRepresentation> modules = 
+            new HashSet<ModuleRepresentation>();
         for (IJavaElement jElement : elements) {
             if (jElement instanceof IJavaProject) {
                 IProject absProject = ((IJavaProject)jElement).getProject();
-                for(Module module: CeylonBuilder.getProjectTypeChecker(absProject).getContext().getModules().getListOfModules()) {
-                    modules.put(absProject.getName(), module);
+                for(Module module: CeylonBuilder.getProjectTypeChecker(absProject).getContext()
+                        .getModules().getListOfModules()) {
+                    if (!module.isDefault() && module.isAvailable() 
+                        && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) &&
+                        !module.isJava() && module.getPackage(module.getNameAsString()) != null) {
+                        modules.add(new ModuleRepresentation(absProject.getName(), 
+                            module.getNameAsString(), module.getVersion()));
+                    }
                 }
             }
         }
@@ -142,11 +149,11 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         
         Object[] results = cmsd.getResult(); 
         if (results != null && results.length > 0) {
-            if (results[0] instanceof Map.Entry) {
-                Map.Entry<String, Module> entry = (Map.Entry<String, Module>)results[0];
+            if (results[0] instanceof ModuleRepresentation) {
+                ModuleRepresentation entry = (ModuleRepresentation)results[0];
                 if (entry != null) {
-                    fModuleText.setText(entry.getValue().getNameAsString() + "/" + entry.getValue().getVersion());
-                    fProjText.setText(entry.getKey());
+                    fModuleText.setText(entry.moduleName + "/" + entry.moduleVersion);
+                    fProjText.setText(entry.project);
                 }
             }
         }
@@ -166,18 +173,24 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     public boolean isValid(ILaunchConfiguration config) {
         setErrorMessage(null);
         setMessage(null);
-        String name = fProjText.getText().trim();
-        if (name.length() > 0) {
+        String projectName = fProjText.getText().trim();
+        IProject project = null;
+        
+        if (projectName.length() > 0) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IStatus status = workspace.validateName(name, IResource.PROJECT);
+            IStatus status = workspace.validateName(projectName, IResource.PROJECT);
             if (status.isOK()) {
-                IProject project= ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-                if (!project.exists()) {
-                    setErrorMessage("The project " + name + " does no exist."); 
-                    return false;
-                }
-                if (!project.isOpen()) {
-                    setErrorMessage("The project " + name + " is not opened"); 
+                project= ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+                if (project != null) {
+                    if (!project.exists()) {
+                        setErrorMessage("The project " + projectName + " does no exist."); 
+                        return false;
+                    }
+                    if (!project.isOpen()) {
+                        setErrorMessage("The project " + projectName + " is not opened"); 
+                        return false;
+                    }
+                } else {
                     return false;
                 }
             }
@@ -186,16 +199,37 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
                 return false;
             }
         }
-        name = fModuleText.getText().trim();
-        if (name.length() == 0) {
-            setErrorMessage("The Ceylon module name is not specified"); 
+        String moduleName = fModuleText.getText().trim();
+        if (moduleName == null || moduleName.length() == 0) {
+            setErrorMessage("The Ceylon module is not specified"); 
             return false;
         }
         
-        // TODO check for run_ in typed-in module
+        if (!projectContainsModule(project, moduleName)) {
+            return false;
+        }
+        
         return true;
     }
             
+    private boolean projectContainsModule(IProject project, String fullModuleName) {
+        String[] parts = fullModuleName.split("/");
+        
+        if (parts != null && parts.length != 2) {
+            return false;
+        }
+        
+        for (Module module : CeylonBuilder.getProjectTypeChecker(project).getContext().getModules().getListOfModules()) {
+            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
+                return true;
+            }
+        }
+        
+        setErrorMessage("Runnable module not found in project");
+        return false;
+    }
+
+
     /* (non-Javadoc)
      * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
      */
@@ -238,7 +272,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         String name =null;
         if (javaElement instanceof IPackageFragment) {
             IPackageFragment pkg = (IPackageFragment)javaElement;
-            if (pkg.getClassFile("module_.class") != null) {
+            if (isRunnableModule(pkg)) {
                 Context context = CeylonBuilder.getProjectTypeChecker(pkg.getJavaProject().getProject()).getContext();
                 for (Module module : context.getModules().getListOfModules()) {
                     if (module.getNameAsString().startsWith(pkg.getElementName())) {
@@ -248,6 +282,11 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
         }
         return name;
+    }
+
+
+    private boolean isRunnableModule(IPackageFragment pkg) {
+        return pkg.getClassFile("module_.class") != null && pkg.getClassFile("run_.class") != null;
     }
         
     protected void updateModuleNameFromConfig(ILaunchConfiguration config) {
@@ -277,4 +316,22 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
             });
     }
+    
+
+    public class ModuleRepresentation {
+        public ModuleRepresentation (String project, String moduleName, String moduleVersion) {
+            this.project = project;
+            this.moduleName = moduleName;
+            this.moduleVersion = moduleVersion;
+        }
+        
+        String moduleName;
+        String moduleVersion;
+        String project;
+        
+        @Override
+        public String toString() {
+            return "Project " + this.project + " - " + this.moduleName + "/" + this.moduleVersion;
+        }
+    }    
 }
