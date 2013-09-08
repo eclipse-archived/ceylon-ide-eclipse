@@ -74,7 +74,8 @@ public class CompletionProcessor implements IContentAssistProcessor {
     	try {
     		ICompletionProposal[] contentProposals = contentProposer.getContentProposals(editor.getParseController(), 
     				offset, viewer, filter, returnedParamInfo);
-    		if (contentProposals.length==1 && 
+    		if (contentProposals!=null &&
+    				contentProposals.length==1 && 
     				contentProposals[0] instanceof CeylonContentProposer.ParameterInfo) {
     			returnedParamInfo = true;
     		}
