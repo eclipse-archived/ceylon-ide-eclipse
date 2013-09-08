@@ -72,7 +72,6 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		lastOffset = offset;
 		lastOffsetAcrossSessions = offset;
     	try {
-    		System.out.println(returnedParamInfo);
     		ICompletionProposal[] contentProposals = contentProposer.getContentProposals(editor.getParseController(), 
     				offset, viewer, filter, returnedParamInfo);
     		if (contentProposals.length==1 && 
