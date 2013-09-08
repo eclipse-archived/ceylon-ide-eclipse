@@ -109,8 +109,11 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (declaration instanceof Functional) {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
-            	int loc = offset-prefix.length();
             	int paren = text.indexOf('(');
+            	if (paren<0) {
+            		return super.getSelection(document);
+            	}
+            	int loc = offset-prefix.length();
             	int comma = text.substring(paren).indexOf(',');
             	if (comma<0) comma = text.substring(paren).indexOf(')');
 				return new Point(loc+paren+1, comma-1);
@@ -287,6 +290,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (declaration instanceof Functional) {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
+            	int paren = text.indexOf('(');
+            	if (paren<0) {
+            		return super.getContextInformation();
+            	}
             	return new ParameterContextInformation(declaration, 
             			producedReference, pls.get(0), offset-prefix.length());
             }
