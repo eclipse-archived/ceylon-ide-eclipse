@@ -42,14 +42,12 @@ public class CompletionProcessor implements IContentAssistProcessor {
     	filter = false;
     	lastOffset=-1;
     }
-
-    // private HippieProposalProcessor hippieProcessor= new HippieProposalProcessor();
-
+    
     public CompletionProcessor(CeylonEditor editor) {
         contentProposer= new CeylonContentProposer();
         this.editor=editor;
     }
-
+    
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
     	try {
 			if (lastOffset>=0 && offset>0 && offset!=lastOffset &&

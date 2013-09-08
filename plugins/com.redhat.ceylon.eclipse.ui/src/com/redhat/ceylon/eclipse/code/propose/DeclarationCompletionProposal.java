@@ -17,12 +17,10 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
-import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
@@ -126,17 +124,12 @@ final class DeclarationCompletionProposal extends CompletionProposal {
                 public void left(LinkedModeModel model, int flags) {
                     editor.setInLinkedMode(false);
                     editor.unpauseBackgroundParsing();
-                    if ((flags&ILinkedModeListener.UPDATE_CARET)!=0) {
-//                        editor.doSave(new NullProgressMonitor());
-                    	
-                    }
                     linkedModeModel.exit(ILinkedModeListener.NONE);
                     ISourceViewer viewer= editor.getCeylonSourceViewer();
                     if (viewer instanceof IEditingSupportRegistry) {
                         IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
                         registry.unregister(editingSupport);
                     }
-                    
                     editor.getSite().getPage().activate(editor);
                 }
                 @Override
@@ -155,23 +148,9 @@ final class DeclarationCompletionProposal extends CompletionProposal {
             CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
 			EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
             ui.setExitPosition(viewer, loc+first+next+1, 0, i);
-            ui.setExitPolicy(new DeleteBlockingExitPolicy(document) {
-            	@Override
-            	public ExitFlags doExit(LinkedModeModel model,
-            			VerifyEvent event, int offset, int length) {
-//            		if (event.character==',') {
-//            			event.character = '\t';
-//						event.keyCode= SWT.TAB;
-//            		}
-//            		else if (event.character == ')') {
-//            			return new ExitFlags(ILinkedModeListener.UPDATE_CARET, false);
-//            		}
-            		return super.doExit(model, event, offset, length);
-            	}
-            });
+            ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
             ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
             ui.setDoContextInfo(true);
-//            ui.enableColoredLabels(true);
             ui.enter();
             
             if (viewer instanceof IEditingSupportRegistry) {
