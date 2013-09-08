@@ -876,6 +876,7 @@ public class CeylonHover
 		
 		Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
 		if (refnode!=null) {
+			appendDeprecatedAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
@@ -1185,6 +1186,40 @@ public class CeylonHover
         }
     }
     
+    private static void appendDeprecatedAnnotationContent(Tree.AnnotationList annotationList,
+            StringBuffer documentation, Scope linkScope) {
+        if (annotationList!=null) {
+            AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
+            if (aa!=null) {
+                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope,
+                        annotationList.getUnit()));
+            }
+            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
+                Tree.Primary annotPrim = annotation.getPrimary();
+                if (annotPrim instanceof Tree.BaseMemberExpression) {
+                    String name = ((Tree.BaseMemberExpression) annotPrim).getIdentifier().getText();
+                    if ("deprecated".equals(name)) {
+                        Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
+                        if (argList!=null) {
+                            List<Tree.PositionalArgument> args = argList.getPositionalArguments();
+                            if (!args.isEmpty()) {
+                                Tree.PositionalArgument a = args.get(0);
+                                if (a instanceof Tree.ListedArgument) {
+                                	String text = ((Tree.ListedArgument) a).getExpression()
+                                			    .getTerm().getText();
+                                	if (text!=null) {
+                                		documentation.append(markdown("_(Deprecated program element)_\n\n" + text, 
+                                				linkScope, annotationList.getUnit()));
+                                	}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private static void appendSeeAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation) {
         if (annotationList!=null) {
@@ -1199,35 +1234,19 @@ public class CeylonHover
                             for (Tree.PositionalArgument arg: args) {
                             	if (arg instanceof Tree.ListedArgument) {
                             		Tree.Term term = ((Tree.ListedArgument) arg).getExpression().getTerm();
-                            		if (term instanceof Tree.MemberOrTypeExpression) {
-                            			Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
+                            		if (term instanceof Tree.MetaLiteral) {
+                            			Declaration dec = ((Tree.MetaLiteral) term).getDeclaration();
                             			if (dec!=null) {
                             				String dn = dec.getName();
-                            				if (term instanceof Tree.QualifiedMemberOrTypeExpression) {
-                            					Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) term).getPrimary();
-                            					if (p instanceof Tree.MemberOrTypeExpression) {
-                            						dn = ((Tree.MemberOrTypeExpression) p).getDeclaration().getName()
-                            								+ "." + dn;
-                            					}
+                            				if (dec.isClassOrInterfaceMember()) {
+                            				    dn = ((ClassOrInterface) dec.getContainer()).getName() + "." + dn;
                             				}
                             				addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
                             						"see <tt><a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
                             			}
                             		}
                             	}
-								/*if (term instanceof QualifiedMemberOrTypeExpression) {
-	                            	documentation.append("<p><tt>see ");
-									ProducedReference target = ((QualifiedMemberOrTypeExpression) term).getTarget();
-									if (target!=null) {
-										Declaration dec = target.getDeclaration();
-										documentation.append(dec.getQualifiedNameString());
-									}
-									documentation.append("</tt></p>");
-								}*/
                             }
-                            /*if (!args.isEmpty()) {
-                            	documentation.append("<br/>");
-                            }*/
                         }
                     }
                 }
@@ -1249,27 +1268,28 @@ public class CeylonHover
                             if (args.isEmpty()) continue;
                             Tree.PositionalArgument typeArg = args.get(0);
                         	Tree.PositionalArgument textArg = args.size()>1 ? args.get(1) : null;
-                            if (typeArg instanceof Tree.ListedArgument && textArg instanceof Tree.ListedArgument) {
+                            if (typeArg instanceof Tree.ListedArgument && 
+                            		(textArg==null || textArg instanceof Tree.ListedArgument)) {
                             	Tree.Term typeArgTerm = ((Tree.ListedArgument) typeArg).getExpression().getTerm();
                             	Tree.Term textArgTerm = textArg==null ? null : ((Tree.ListedArgument) textArg).getExpression().getTerm();
                             	String text = textArgTerm instanceof Tree.StringLiteral ?
                             			textArgTerm.getText() : "";
-                            			if (typeArgTerm instanceof Tree.MemberOrTypeExpression) {
-                            				Declaration dec = ((Tree.MemberOrTypeExpression) typeArgTerm).getDeclaration();
-                            				if (dec!=null) {
-                            					String dn = dec.getName();
-                            					if (typeArgTerm instanceof Tree.QualifiedMemberOrTypeExpression) {
-                            						Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) typeArgTerm).getPrimary();
-                            						if (p instanceof Tree.MemberOrTypeExpression) {
-                            							dn = ((Tree.MemberOrTypeExpression) p).getDeclaration().getName()
-                            									+ "." + dn;
-                            						}
-                            					}
-                            					addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                            							"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + 
-                            							        markdown(text, linkScope, annotationList.getUnit()), 20, 2);
-                            				}
-                            			}
+                    			if (typeArgTerm instanceof Tree.MetaLiteral) {
+                    				Declaration dec = ((Tree.MetaLiteral) typeArgTerm).getDeclaration();
+                    				if (dec!=null) {
+                    					String dn = dec.getName();
+                    					if (typeArgTerm instanceof Tree.QualifiedMemberOrTypeExpression) {
+                    						Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) typeArgTerm).getPrimary();
+                    						if (p instanceof Tree.MemberOrTypeExpression) {
+                    							dn = ((Tree.MemberOrTypeExpression) p).getDeclaration().getName()
+                    									+ "." + dn;
+                    						}
+                    					}
+                    					addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                    							"throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + 
+                    							        markdown(text, linkScope, annotationList.getUnit()), 20, 2);
+                    				}
+                    			}
                             }
                         }
                     }
