@@ -20,6 +20,7 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ModuleLaunchDelegate extends JavaLaunchDelegate {
@@ -41,7 +42,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         final IVMRunner runner = super.getVMRunner(configuration, mode);
         
         IJavaProject javaProject = getJavaProject(configuration);
-        IProject project = javaProject.getProject();
+        final IProject project = javaProject.getProject();
 
         final IPath modulesFolder = getCeylonModulesOutputFolder(project).getLocation();
         
@@ -54,21 +55,23 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
                 try {
                     String[] args = config.getProgramArguments();
-                    String[] newArgs = new String[args != null ? args.length + 4 : 4];
+                    String[] newArgs = new String[args != null ? args.length + 5 : 5];
                     if(args != null)
-                        System.arraycopy(args, 0, newArgs, 4, args.length);
+                        System.arraycopy(args, 0, newArgs, 5, args.length);
 
                     newArgs[0] = "run";
+                    newArgs[1] = launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, "");
                     newArgs[2] = "--rep";
                     newArgs[3] = modulesFolder.toOSString(); 
-                    newArgs[1] = launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""); 
+                    newArgs[4] = CeylonProjectConfig.get(project).isOffline()?"--offline" : "";
+                    
                               
                     config.setProgramArguments(newArgs);
                     config.setVMArguments(new String[]{"-Djava.util.logging.manager=java.util.logging.LogManager",
                             "-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER,
                             "-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
                                 System.getProperty("ceylon.repo", "")).getAbsolutePath()});
-
+                    
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
                     throw new CoreException(new StatusInfo());

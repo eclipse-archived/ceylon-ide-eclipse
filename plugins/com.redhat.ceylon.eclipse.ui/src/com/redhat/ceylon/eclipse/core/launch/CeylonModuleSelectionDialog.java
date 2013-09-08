@@ -1,32 +1,26 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
+import org.eclipse.jdt.ui.ISharedImages;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
-import org.eclipse.ui.model.IWorkbenchAdapter;
-
-import com.redhat.ceylon.compiler.typechecker.model.Module;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
-
+    
     public class ModuleLabelProvider implements ILabelProvider {
 
         @Override
@@ -34,8 +28,6 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public void dispose() {
-            fImageMap.clear();
-            fImageMap = null;
         }
 
         @Override
@@ -45,31 +37,16 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public void removeListener(ILabelProviderListener arg0) {}
-
-        HashMap fImageMap = new HashMap();
         
         @Override
         public Image getImage(Object element) {
-            if(element instanceof IAdaptable) {
-                IWorkbenchAdapter adapter = (IWorkbenchAdapter) ((IAdaptable)element).getAdapter(IWorkbenchAdapter.class);
-                if(adapter != null) {
-                    ImageDescriptor descriptor = adapter.getImageDescriptor(element);
-                    Image image = (Image) fImageMap.get(descriptor);
-                    if(image == null) {
-                        image = descriptor.createImage();
-                        fImageMap.put(descriptor, image);
-                    }
-                    return image;
-                }
-            }
-            return null;
+            return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR_WITH_SOURCE);
         }
 
         @Override
         public String getText(Object mod) {
-            if (mod instanceof Map.Entry) {
-                Map.Entry<String, Module> entry = (Entry<String, Module>)mod;
-                return entry.getKey() + ":" + entry.getValue().getNameAsString() + "/" + entry.getValue().getVersion() ;
+            if (mod instanceof CeylonModuleTab.ModuleRepresentation) {
+                return mod.toString();
             }
             return null;
         }
@@ -91,30 +68,21 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
     class ModuleItemsFilter extends ItemsFilter {
         public boolean isConsistentItem(Object item) {
-            return item instanceof Map.Entry;
+            return item instanceof CeylonModuleTab.ModuleRepresentation;
         }
+        
         public boolean matchItem(Object item) {
-            if(!(item instanceof Map.Entry) || !modules.containsKey(((Map.Entry<String, Module>)item).getKey())) {
+            if(!(item instanceof CeylonModuleTab.ModuleRepresentation) || !modules.contains((CeylonModuleTab.ModuleRepresentation)item)) {
                 return false;
             }
-            return matches((((Map.Entry<String, Module>)item).getKey()));
+            return matches(item.toString());
         }
     }
  
-    class ModuleSelectionHistory extends SelectionHistory {
-        protected Object restoreItemFromMemento(IMemento memento) {
-            return memento.getTextData();
-        }
-        protected void storeItemToMemento(Object item, IMemento memento) {
-            if(item instanceof Map.Entry) {
-                memento.putTextData(((Map.Entry) item).getKey().toString());
-            }
-        }
-    }
     
-    Map<String, Module> modules;
+    Set<CeylonModuleTab.ModuleRepresentation> modules;
 
-    public CeylonModuleSelectionDialog(Shell shell, Map<String, Module> modules, String title) {
+    public CeylonModuleSelectionDialog(Shell shell, Set<CeylonModuleTab.ModuleRepresentation> modules, String title) {
         super(shell, false);
         setTitle(title);
         this.modules = modules;
@@ -122,7 +90,6 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         setMessage(title);
         setInitialPattern("**"); //$NON-NLS-1$
         setDetailsLabelProvider(new ModuleDetailsLabelProvider());
-        //setSelectionHistory(new ModuleSelectionHistory());
     }
 
     @Override
@@ -132,14 +99,14 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected ItemsFilter createFilter() {
-        return null; //new ModuleItemsFilter();
+        return new ModuleItemsFilter();
     }
 
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter filter, IProgressMonitor monitor)
         throws CoreException {
-        if (modules!= null) {
-            for (Map.Entry<String, Module> entry : this.modules.entrySet()) {
+        if (this.modules!= null) {
+            for (CeylonModuleTab.ModuleRepresentation entry : this.modules) {
                 contentProvider.add(entry, filter);
             }
         }
@@ -152,9 +119,9 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
     @Override
     public String getElementName(Object mod) {
-        if (mod instanceof Map.Entry) {
-            Map.Entry<String, Module> entry = (Entry<String, Module>)mod;
-            return entry.getKey() + ":" + entry.getValue().getNameAsString() + "/" + entry.getValue().getVersion() ;
+        if (mod instanceof CeylonModuleTab.ModuleRepresentation) {
+            CeylonModuleTab.ModuleRepresentation entry = (CeylonModuleTab.ModuleRepresentation)mod;
+            return entry.toString();
         }
         return null;
     }
@@ -163,11 +130,10 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     protected Comparator getItemsComparator() {
         Comparator comp = new Comparator() {
             public int compare(Object o1, Object o2) {
-                if(o1 instanceof Map.Entry && o2 instanceof Map.Entry) {
-                    Map.Entry<String, Module> entry1 = (Entry<String, Module>) o1;
-                    Map.Entry<String, Module> entry2 = (Entry<String, Module>) o2;
-                    return (entry1.getKey().concat(entry1.getValue().toString()).compareTo(
-                        (entry2.getKey().concat(entry2.getValue().toString()))));
+                if(o1 instanceof CeylonModuleTab.ModuleRepresentation 
+                    && o2 instanceof CeylonModuleTab.ModuleRepresentation) {
+                    return o1.toString().compareTo(
+                        (o2.toString()));
                 }
                 return -1;
             }
