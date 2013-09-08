@@ -35,6 +35,8 @@ public class CompletionProcessor implements IContentAssistProcessor {
     private CeylonEditor editor;
     
     private boolean filter;
+    private boolean returnedParamInfo;
+    private int lastOffsetAcrossSessions=-1;
     private int lastOffset=-1;
     
     public void sessionStarted() {
@@ -48,6 +50,10 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
     
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+    	if (offset!=lastOffsetAcrossSessions) {
+			returnedParamInfo = false;
+			filter = false;
+		}
     	try {
 			if (lastOffset>=0 && offset>0 && offset!=lastOffset &&
 					!isIdentifierCharacter(viewer, offset)) {
@@ -64,9 +70,16 @@ public class CompletionProcessor implements IContentAssistProcessor {
 			filter = !filter;
 		}
 		lastOffset = offset;
+		lastOffsetAcrossSessions = offset;
     	try {
-    		return contentProposer.getContentProposals(editor.getParseController(), 
-    				offset, viewer, filter);
+    		System.out.println(returnedParamInfo);
+    		ICompletionProposal[] contentProposals = contentProposer.getContentProposals(editor.getParseController(), 
+    				offset, viewer, filter, returnedParamInfo);
+    		if (contentProposals.length==1 && 
+    				contentProposals[0] instanceof CeylonContentProposer.ParameterInfo) {
+    			returnedParamInfo = true;
+    		}
+			return contentProposals;
     	}
     	catch (Exception e) {
     		e.printStackTrace();
@@ -130,7 +143,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 
     public IContextInformationValidator getContextInformationValidator() {
 		if (validator == null) {
-			validator= new ParameterContextValidator(this);
+			validator= new ParameterContextValidator();
 		}
         return validator;
     }
