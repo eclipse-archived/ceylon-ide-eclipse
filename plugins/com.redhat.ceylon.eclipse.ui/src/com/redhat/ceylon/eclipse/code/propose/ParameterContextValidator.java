@@ -418,14 +418,20 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	            		positions.add(new Integer(pos));
 		            break;
 	            case '<':
+	            case '(':
+	            case '{':
+	            case '[':
 	            	angleLevel++;
 	            	break;
 	            case '>':
+	            case ')':
+	            case '}':
+	            case ']':
 	            	angleLevel--;
 	            	break;
-	            case '[':
-	            	pos= code.indexOf(']', pos);
-	            	break;
+//	            case '[':
+//	            	pos= code.indexOf(']', pos);
+//	            	break;
 	            default:
 	            	break;
             }

@@ -124,9 +124,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		int loc = offset-prefix.length();
 		int comma = -1;
 		try {
-			comma = findCharCount(1, document, loc+lastOffset+1, 
-					loc+text.length()-lastOffset-1, ",", "", true)
-					-loc-lastOffset-1;
+			int start = loc+lastOffset+1;
+			int end = loc+text.length();
+			comma = findCharCount(1, document, start, end, ",", "", true) - start;
 		} 
 		catch (BadLocationException e) {
 			e.printStackTrace();
