@@ -4,13 +4,22 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.ContextInformation;
+import org.eclipse.jface.text.contentassist.ContextInformationValidator;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class CompletionProcessor implements IContentAssistProcessor {
@@ -71,7 +80,20 @@ public class CompletionProcessor implements IContentAssistProcessor {
 	}
 
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
-        return NO_CONTEXTS;
+    	final List<IContextInformation> infos = new ArrayList<IContextInformation>();
+    	editor.getParseController().getRootNode().visit(new Visitor() {
+    		@Override
+    		public void visit(InvocationExpression that) {
+    			Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
+    			String text = CeylonContentProposer.getPositionalInvocationTextFor(
+    					new DeclarationWithProximity(mte.getDeclaration(), 0), 
+    					OccurrenceLocation.EXPRESSION, mte.getTarget(), true);
+    			String str = text.substring(text.indexOf('(')+1, text.indexOf(')'));
+    			infos.add(new ContextInformation(text, str));
+    			super.visit(that);
+    		}
+		});
+        return infos.toArray(NO_CONTEXTS);
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
@@ -83,11 +105,11 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public IContextInformationValidator getContextInformationValidator() {
-        return null;
+        return new ContextInformationValidator(this);
     }
 
     public String getErrorMessage() {
-        return null;
+        return "No completions available";
     }
     
 }

@@ -214,6 +214,7 @@ public class CeylonEditor extends TextEditor {
     private boolean backgroundParsingPaused;
     private CeylonParseController parseController;
     private ProjectionSupport projectionSupport;
+    private boolean inLinkedMode;
         
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
@@ -240,6 +241,14 @@ public class CeylonEditor extends TextEditor {
 	public synchronized boolean isBackgroundParsingPaused() {
 		return backgroundParsingPaused;
 	}
+	
+	public boolean isInLinkedMode() {
+        return inLinkedMode;
+    }
+	
+	public void setInLinkedMode(boolean inLinkedMode) {
+        this.inLinkedMode = inLinkedMode;
+    }
 	
     /**
      * Sub-classes may override this method to extend the behavior provided by IMP's

@@ -1668,7 +1668,7 @@ public class CeylonContentProposer {
         return result.toString();
     }
     
-    private static String getPositionalInvocationTextFor(DeclarationWithProximity d,
+    public static String getPositionalInvocationTextFor(DeclarationWithProximity d,
             OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
         Declaration dd = d.getDeclaration();
