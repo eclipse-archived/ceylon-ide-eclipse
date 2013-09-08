@@ -1,8 +1,5 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants;
-import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import org.eclipse.core.resources.IFile;
@@ -13,9 +10,7 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -31,39 +26,26 @@ public class CeylonModuleLaunchShortcut extends CeylonApplicationLaunchShortcut 
         try {
             ILaunchConfigurationType configType = getConfigurationType();
             String configurationName = "";
-            if (declarationToRun instanceof Class) {
-                configurationName += "class ";
-            }
-            else {
-                if (declarationToRun instanceof Method) {
-                    Method method = (Method) declarationToRun;
-                    if (method.isDeclaredVoid()) {
-                        configurationName += "void ";
-                    }
-                    else {
-                        configurationName += "function ";
-                    }
-                }
-            }
-            configurationName += declarationToRun.getName() + "() - ";
-            String packageName = declarationToRun.getContainer().getQualifiedNameString();
-            configurationName += packageName.isEmpty() ? "default package" : packageName;
-            configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
-            
-            wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
-            wc.setAttribute(ATTR_MAIN_TYPE_NAME, declarationToRun.getQualifiedNameString());
-            wc.setAttribute(ATTR_PROJECT_NAME, file.getProject().getName());
+
             Module mod = declarationToRun.getUnit().getPackage().getModule();
             String ceylonModule = mod.isDefault() ? "default" : mod.getNameAsString();
             if (!mod.isDefault()) {
                 ceylonModule = ceylonModule + "/" + mod.getVersion();
             }
-            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE, ceylonModule);
-            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_JS_DEBUG, false);
+            
+            configurationName = ceylonModule.replaceAll("[\u00c0-\ufffe]", "_");
+            
+            wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
+            
+            wc.setAttribute(ATTR_PROJECT_NAME, file.getProject().getName());
+
+            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ceylonModule);
+
             wc.setMappedResources(new IResource[] {file});
+            
             config = wc.doSave();
         } catch (CoreException exception) {
-            MessageDialog.openError(Util.getShell(), "Ceylon JS Launcher Error", 
+            MessageDialog.openError(Util.getShell(), "Ceylon Module Launcher Error", 
                     exception.getStatus().getMessage()); 
         }
         return config;

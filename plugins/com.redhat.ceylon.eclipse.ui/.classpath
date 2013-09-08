@@ -12,16 +12,19 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jandex-1.0.3.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/jboss/jandex/main/org.jboss.jandex-main.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sardine-314.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ceylon.language-0.6-ide.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-0.6-ide.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-0.6-ide.jar" sourcepath="/ceylon-compiler/src"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.js-0.6-ide.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.module-resolver-0.6-ide.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.typechecker-0.6-ide.jar" sourcepath="/ceylon-spec/src"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.maven-support-main.jar"/>
-	<classpathentry kind="lib" path="lib/txtmark-0.8-c0dcd373ce.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/json-smart-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/txtmark-0.8-c0dcd373ce.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/java/0.6/com.redhat.ceylon.compiler.java-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/0.6/com.redhat.ceylon.compiler.js-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/0.6/com.redhat.ceylon.typechecker-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/0.6/com.redhat.ceylon.module-resolver-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/common/0.6/com.redhat.ceylon.common-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/ceylon/language/0.6/ceylon.language-0.6.car"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/main/com.redhat.ceylon.maven-support-main.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/ceylon/runtime/0.6/ceylon.runtime-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ceylon-bootstrap.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
