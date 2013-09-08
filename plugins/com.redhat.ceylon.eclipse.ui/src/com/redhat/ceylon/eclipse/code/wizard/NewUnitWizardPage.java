@@ -47,6 +47,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
@@ -720,10 +721,21 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String getSelectSourceFolderMessage() {
         return "Please select a source folder";
     }
+    
+    private static final String KEYWORDS;
+    static {
+    	StringBuilder sb = new StringBuilder();
+    	for (String kw: CeylonTokenColorer.keywords) {
+    		sb.append(kw).append('|');
+    	}
+    	sb.setLength(sb.length()-1);
+    	KEYWORDS = sb.toString();
+    }
 
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 
-            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") &&
+            !packageName.matches(".*\\b("+KEYWORDS+")\\b.*");
     }
     
     private boolean packageNameIsLegal() {
