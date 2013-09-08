@@ -42,6 +42,9 @@ public class ParameterContextInformation implements IContextInformation {
 	
 	public static String getParametersInfo(ParameterList parameterList, 
 			ProducedReference producedReference) {
+		if (parameterList.getParameters().isEmpty()) {
+			return "no parameters";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (Parameter p: parameterList.getParameters()) {
 			sb.append(producedReference.getTypedParameter(p).getFullType()
