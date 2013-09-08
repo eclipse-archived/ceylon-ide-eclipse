@@ -4,6 +4,7 @@ import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,14 +45,14 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	public static final String LANGUAGE_ID = "ceylon";
 	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] RUNTIME_LIBRARIES = new String[]{
-        "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
-        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
-        "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
-        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
-        "jboss-modules-1.1.3.GA.jar",
+        "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "jboss-modules-main.jar",
     };
     private static final String[] COMPILETIME_LIBRARIES = new String[]{
-        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+"-ide.jar",
+        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
 	
 	private FontRegistry fontRegistry;
@@ -180,35 +181,62 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     /**
-     * Returns the list of jars bundled in this plugin that are required by the ceylon.language module at runtime
+     * Returns the list of jars in the bundled system repo that are required by the ceylon.language module at runtime
      */
     public static List<String> getRuntimeRequiredJars(){
         return getRequiredJars(RUNTIME_LIBRARIES);
     }
 
     /**
-     * Returns the list of jars bundled in this plugin that are required by the ceylon.language module at compiletime
+     * Returns the list of jars in the bundled system repo that are required by the ceylon.language module at compiletime
      */
     public static List<String> getCompiletimeRequiredJars(){
         return getRequiredJars(COMPILETIME_LIBRARIES);
     }
 
-    private static List<String> getRequiredJars(String[] libraries){
-        Bundle bundle = Platform.getBundle(PLUGIN_ID);
-        Path path = new Path("lib");
-        URL eclipseUrl = FileLocator.find(bundle, path, null);
-        try{
+    /**
+     * Returns the list of jars in the bundled lib folder required to launch a module 
+     */
+    public static List<String> getModuleLauncherJars(){
+        try {
+            Bundle bundle = Platform.getBundle(PLUGIN_ID);
+            Path path = new Path("lib");
+            URL eclipseUrl = FileLocator.find(bundle, path, null);
             URL fileURL = FileLocator.resolve(eclipseUrl);
             File libDir = new File(fileURL.getPath());
-            List<String> jars = new ArrayList<String>(libraries.length);
-            for(String jar : libraries){
-                jars.add(new File(libDir, jar).getAbsolutePath());
-            }
+            List<String> jars = new ArrayList<String>();
+            jars.add(new File(libDir, "ceylon-bootstrap.jar").getAbsolutePath());
             return jars;
-        }catch(Exception x){
+        } catch (IOException x) {
             x.printStackTrace();
             return Collections.emptyList();
         }
+    }
+
+    private static List<String> getRequiredJars(String[] libraries){
+        File repoDir = getCeylonPluginRepository(System.getProperty("ceylon.repo", ""));
+        try{
+            List<String> jars = new ArrayList<String>(libraries.length);
+            for(String jar : libraries){
+                File libDir = new File(repoDir, getRepoFolder(jar));
+                jars.add(new File(libDir, jar).getAbsolutePath());
+            }
+            return jars;
+        } catch (Exception x) {
+            x.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+    
+    private static String getRepoFolder(String jarName) {
+       if (jarName.startsWith("jboss-modules")) {
+           return "org/jboss/modules/main";
+       } else {
+           int lastDot = jarName.lastIndexOf('.');
+           int lastDash = jarName.lastIndexOf('-');
+           return jarName.substring(0, lastDash).replace('.', '/')
+                + "/" + jarName.substring(lastDash + 1, lastDot);
+       }
     }
     
 	public String getID() {

@@ -12,6 +12,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 public class CeylonRunPropertyTester extends PropertyTester {
 
     private static final String CAN_LAUNCH_AS_CEYLON_APP_PROPERTY = "canLaunchAsCeylonApp";
+    private static final String CAN_LAUNCH_AS_CEYLON_MODULE_PROPERTY = "canLaunchAsCeylonModule";
     private static final String CEYLON_FILE_EXTENSION = "ceylon";
 
     @Override
@@ -31,11 +32,24 @@ public class CeylonRunPropertyTester extends PropertyTester {
                 IFileEditorInput fileEditorInput = (IFileEditorInput) receiver;
                 return isCeylonFile(fileEditorInput.getFile());
             }
+        } else if (CAN_LAUNCH_AS_CEYLON_MODULE_PROPERTY.equals(property)) {
+            if (receiver instanceof IJavaProject) {
+                IProject project = ((IJavaProject) receiver).getProject();
+                return isCeylonProject(project);
+            } else if (receiver instanceof IPackageFragment) {
+                IPackageFragment packageFragment = (IPackageFragment) receiver;
+                return isCeylonModule(packageFragment);
+            } 
         }
         return false;
     }
 
-    private boolean isCeylonProject(IProject project) {
+    private boolean isCeylonModule(IPackageFragment packageFragment) {
+
+		return (packageFragment.getClassFile("module_.class")  != null && packageFragment.getClassFile("run_.class") != null);
+	}
+
+	private boolean isCeylonProject(IProject project) {
         return project.isOpen() && CeylonNature.isEnabled(project);
     }
 

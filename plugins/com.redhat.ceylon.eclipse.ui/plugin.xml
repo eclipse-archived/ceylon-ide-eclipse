@@ -1143,6 +1143,16 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
+            delegate="com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate"
+            delegateDescription=""
+            delegateName="Ceylon Module Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            modes="run, debug"
+            name="Ceylon Java Module"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
             delegate="com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate"
             delegateDescription=""
             delegateName="Ceylon Local Launcher"
@@ -1165,6 +1175,20 @@
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.ceylonModule">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug Ceylon Module">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run Ceylon Module">
+            </launchMode>
+      </launchConfigurationTabGroup>         
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
             class="com.redhat.ceylon.eclipse.core.launch.LocalCeylonApplicationTabGroup"
@@ -1196,6 +1220,11 @@
    </extension>
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModuleImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            icon="icons/jar_l_obj.gif">
+      </launchConfigurationTypeImage>   
+      <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplicationImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
             icon="icons/ceylon_app.gif">
@@ -1203,6 +1232,38 @@
    </extension>
    
    <extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="Ceylon Module"
+            icon="icons/jar_l_obj.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleLaunchShortcut"
+            description="Launch a Ceylon module"
+            id="com.redhat.ceylon.eclipse.ui.launcher.moduleShortcut">
+         <description 
+               description="Runs a local Ceylon module"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a local Ceylon module"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonModule">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModule">
+         </configurationType>
+      </shortcut>   
       <shortcut
             label="Ceylon Application"
             icon="icons/ceylon_app.gif"
@@ -2042,7 +2103,7 @@
              class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"
              id="com.redhat.ceylon.eclipse.core.launch.ceylonRunPropertyTester"
              namespace="com.redhat.ceylon.eclipse.ui"
-             properties="canLaunchAsCeylonApp"
+             properties="canLaunchAsCeylonApp, canLaunchAsCeylonModule"
              type="java.lang.Object">
        </propertyTester>
     </extension>
