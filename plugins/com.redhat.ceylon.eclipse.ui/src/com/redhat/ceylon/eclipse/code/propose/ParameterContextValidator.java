@@ -19,12 +19,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 
 class ParameterContextValidator implements IContextInformationValidator, IContextInformationPresenter {
 	
-	private final CompletionProcessor processor;
-	
-	ParameterContextValidator(CompletionProcessor completionProcessor) {
-		processor = completionProcessor;
-	}
-
 	private int position;
 	private IContextInformation information;
 	private int currentParameter;
@@ -37,6 +31,7 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 		int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
 		try {
 			int paren = viewer.getDocument().get(this.position, position-this.position).indexOf('(');
+			if (paren<0) this.position = viewer.getDocument().get(0, position).lastIndexOf('(');
 			currentParameter = getCharCount(viewer.getDocument(), 
 					this.position+paren+1, position, ",", "", true);
 		} 
@@ -86,19 +81,21 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	public boolean isContextInformationValid(int brokenPosition) {
 		try {
 			int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
-			if (position < this.position)
+			if (position < this.position) {
 				return false;
-
+			}
+			
 			IDocument document = viewer.getDocument();
 			IRegion line = document.getLineInformationOfOffset(this.position);
-
+			
 			if (position < line.getOffset() || position >= document.getLength()) {
 				return false;
 			}
-
+			
 			return getCharCount(document, this.position, position, "(<", ")>", false)>=1;
 
-		} catch (BadLocationException x) {
+		} 
+		catch (BadLocationException x) {
 			return false;
 		}
 	}
