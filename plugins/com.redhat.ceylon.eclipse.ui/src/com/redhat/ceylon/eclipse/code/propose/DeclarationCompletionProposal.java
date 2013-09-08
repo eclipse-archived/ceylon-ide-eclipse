@@ -114,8 +114,17 @@ class DeclarationCompletionProposal extends CompletionProposal {
             		return super.getSelection(document);
             	}
             	int loc = offset-prefix.length();
-            	int comma = text.substring(paren).indexOf(',');
-            	if (comma<0) comma = text.substring(paren).indexOf(')');
+            	int comma = -1;
+            	try {
+            		comma = findCharCount(1, document, loc+paren+1, loc+text.length()-paren-1, ",", "", true)
+            				-loc-paren-1;
+				} 
+            	catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+//            	comma = text.substring(paren).indexOf(',');
+//            	if (comma<0) comma = text.substring(paren).indexOf(')');
+            	if (comma<0) comma = text.length()-paren-1;
 				return new Point(loc+paren+1, comma-1);
             }
 		}
