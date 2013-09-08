@@ -1129,7 +1129,8 @@ public class CeylonContentProposer {
             OccurrenceLocation ol) {
         result.add(new DeclarationCompletionProposal(offset, prefix,
                 getDescriptionFor(dwp, ol), getTextFor(dwp, ol), 
-                true, cpc, d, dwp.isUnimported()));
+                true, cpc, d, dwp.isUnimported(), 
+                d.getProducedReference(null, Collections.<ProducedType>emptyList())));
     }
 
     private static void addForProposal(int offset, String prefix, 
@@ -1239,12 +1240,12 @@ public class CeylonContentProposer {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
                             getPositionalInvocationTextFor(dwp, ol, pr, false), true,
-                            cpc, d, dwp.isUnimported()));
+                            cpc, d, dwp.isUnimported(), pr));
                 }
                 result.add(new DeclarationCompletionProposal(offset, prefix, 
                         getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
                         getPositionalInvocationTextFor(dwp, ol, pr, true), true,
-                        cpc, d, dwp.isUnimported()));
+                        cpc, d, dwp.isUnimported(), pr));
             }
             if (!isAbstractClass && ol!=EXTENDS && 
                     !fd.isOverloaded()) {
@@ -1254,13 +1255,13 @@ public class CeylonContentProposer {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, false), 
                             getNamedInvocationTextFor(dwp, pr, false), true,
-                            cpc, d, dwp.isUnimported()));
+                            cpc, d, dwp.isUnimported(), pr));
                 }
                 if (!ps.isEmpty()) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getNamedInvocationDescriptionFor(dwp, pr, true), 
                             getNamedInvocationTextFor(dwp, pr, true), true,
-                            cpc, d, dwp.isUnimported()));
+                            cpc, d, dwp.isUnimported(), pr));
                 }
             }
         }
