@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
-import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 
 import java.util.Collections;
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
@@ -88,6 +89,21 @@ final class DeclarationCompletionProposal extends CompletionProposal {
             }
 		}
 		
+	}
+	
+	@Override
+	public Point getSelection(IDocument document) {
+		if (declaration instanceof Functional) {
+		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            if (!pls.isEmpty()) {
+            	int loc = offset-prefix.length();
+            	int paren = text.indexOf('(');
+            	int comma = text.substring(paren).indexOf(',');
+            	if (comma<0) comma = text.substring(paren).indexOf(')');
+				return new Point(loc+paren+1, comma-1);
+            }
+		}
+		return super.getSelection(document);
 	}
 	
 	public String getAdditionalProposalInfo() {
@@ -182,7 +198,7 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
             	return new ParameterContextInformation(declaration, 
-            			producedReference, pls.get(0));
+            			producedReference, pls.get(0), offset-prefix.length());
             }
 		}
 		return null;

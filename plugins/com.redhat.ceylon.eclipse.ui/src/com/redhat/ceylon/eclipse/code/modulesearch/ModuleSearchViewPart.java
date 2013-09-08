@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.eclipse.code.hover.DocHover.addImageAndLabel;
-import static com.redhat.ceylon.eclipse.code.hover.DocHover.fileUrl;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.addImageAndLabel;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.fileUrl;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
@@ -73,8 +73,8 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
-import com.redhat.ceylon.eclipse.code.hover.DocHover;
-import com.redhat.ceylon.eclipse.code.hover.DocHover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonHover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -428,7 +428,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
     private Browser docBrowser;
-    private String docStyleSheet = DocHover.getStyleSheet();
+    private String docStyleSheet = CeylonHover.getStyleSheet();
     private RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
     private RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();

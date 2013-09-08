@@ -12,7 +12,6 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
@@ -25,7 +24,6 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -55,17 +53,12 @@ import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.internal.text.html.BrowserInput;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension;
@@ -74,12 +67,9 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
@@ -140,13 +130,13 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  * @since 2.1
  */
 @SuppressWarnings("restriction")
-public class DocHover 
+public class CeylonHover 
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
 	private ITextSelection selection;
 	
-	public DocHover(CeylonEditor editor) {
+	public CeylonHover(CeylonEditor editor) {
 		this.editor = editor;
 		editor.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
@@ -162,7 +152,7 @@ public class DocHover
 	/**
 	 * Action to go back to the previous input in the hover control.
 	 */
-	private static final class BackAction extends Action {
+	static final class BackAction extends Action {
 		private final BrowserInformationControl fInfoControl;
 
 		public BackAction(BrowserInformationControl infoControl) {
@@ -199,7 +189,7 @@ public class DocHover
 	/**
 	 * Action to go forward to the next input in the hover control.
 	 */
-	private static final class ForwardAction extends Action {
+	static final class ForwardAction extends Action {
 		private final BrowserInformationControl fInfoControl;
 
 		public ForwardAction(BrowserInformationControl infoControl) {
@@ -261,7 +251,7 @@ public class DocHover
 	/**
 	 * Action that opens the current hover input element.
 	 */
-	private final class OpenDeclarationAction extends Action {
+	final class OpenDeclarationAction extends Action {
 		private final BrowserInformationControl fInfoControl;
 
 		public OpenDeclarationAction(BrowserInformationControl infoControl) {
@@ -296,117 +286,6 @@ public class DocHover
 
 
 	/**
-	 * Presenter control creator that creates the "enriched" control.
-	 */
-	public final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
-		@Override
-		public IInformationControl doCreateInformationControl(Shell parent) {
-			if (isAvailable(parent)) {
-				ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
-				BrowserInformationControl control= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, tbm);
-
-				final BackAction backAction= new BackAction(control);
-				backAction.setEnabled(false);
-				tbm.add(backAction);
-				final ForwardAction forwardAction= new ForwardAction(control);
-				tbm.add(forwardAction);
-				forwardAction.setEnabled(false);
-
-				//final ShowInJavadocViewAction showInJavadocViewAction= new ShowInJavadocViewAction(iControl);
-				//tbm.add(showInJavadocViewAction);
-				final OpenDeclarationAction openDeclarationAction= new OpenDeclarationAction(control);
-				tbm.add(openDeclarationAction);
-
-				final SimpleSelectionProvider selectionProvider= new SimpleSelectionProvider();
-				//TODO: an action to open the generated ceylondoc  
-				//      from the doc archive, in a browser window
-				/*if (fSite != null) {
-					OpenAttachedJavadocAction openAttachedJavadocAction= new OpenAttachedJavadocAction(fSite);
-					openAttachedJavadocAction.setSpecialSelectionProvider(selectionProvider);
-					openAttachedJavadocAction.setImageDescriptor(DESC_ELCL_OPEN_BROWSER);
-					openAttachedJavadocAction.setDisabledImageDescriptor(DESC_DLCL_OPEN_BROWSER);
-					selectionProvider.addSelectionChangedListener(openAttachedJavadocAction);
-					selectionProvider.setSelection(new StructuredSelection());
-					tbm.add(openAttachedJavadocAction);
-				}*/
-
-				IInputChangedListener inputChangeListener= new IInputChangedListener() {
-					public void inputChanged(Object newInput) {
-						backAction.update();
-						forwardAction.update();
-						if (newInput == null) {
-							selectionProvider.setSelection(new StructuredSelection());
-						} else if (newInput instanceof BrowserInformationControlInput) {
-							BrowserInformationControlInput input= (BrowserInformationControlInput) newInput;
-							Object inputElement= input.getInputElement();
-							selectionProvider.setSelection(new StructuredSelection(inputElement));
-							boolean isDeclarationElementInput= inputElement instanceof Declaration;
-							//showInJavadocViewAction.setEnabled(isJavaElementInput);
-							openDeclarationAction.setEnabled(isDeclarationElementInput);
-						}
-					}
-				};
-				control.addInputChangeListener(inputChangeListener);
-
-				tbm.update(true);
-
-				addLinkListener(control);
-				return control;
-
-			} 
-			else {
-				return new DefaultInformationControl(parent, true);
-			}
-		}
-	}
-
-
-	/**
-	 * Hover control creator.
-	 */
-	public final class HoverControlCreator extends AbstractReusableInformationControlCreator {
-		private String statusLineMessage;
-		private final IInformationControlCreator fInformationPresenterControlCreator;
-
-		public HoverControlCreator(IInformationControlCreator informationPresenterControlCreator,
-				String statusLineMessage) {
-			fInformationPresenterControlCreator= informationPresenterControlCreator;
-			this.statusLineMessage = statusLineMessage;
-		}
-
-		@Override
-		public IInformationControl doCreateInformationControl(Shell parent) {
-			if (isAvailable(parent)) {
-				BrowserInformationControl control= new BrowserInformationControl(parent, 
-						APPEARANCE_JAVADOC_FONT, statusLineMessage) {
-					@Override
-					public IInformationControlCreator getInformationPresenterControlCreator() {
-						return fInformationPresenterControlCreator;
-					}
-				};
-				addLinkListener(control);
-				return control;
-			} 
-			else {
-				return new DefaultInformationControl(parent, statusLineMessage);
-			}
-		}
-
-		/*@Override
-		public boolean canReuse(IInformationControl control) {
-			if (!super.canReuse(control))
-				return false;
-
-			if (control instanceof IInformationControlExtension4) {
-				//((IInformationControlExtension4)control).setStatusText(tooltipAffordanceString);
-			}
-
-			return true;
-		}*/
-	}
-
-	/**
 	 * The style sheet (css).
 	 */
 	private static String fgStyleSheet;
@@ -422,7 +301,7 @@ public class DocHover
 
 	private  IInformationControlCreator getInformationPresenterControlCreator() {
 		if (fPresenterControlCreator == null)
-			fPresenterControlCreator= new PresenterControlCreator();
+			fPresenterControlCreator= new PresenterControlCreator(this);
 		return fPresenterControlCreator;
 	}
 
@@ -434,13 +313,14 @@ public class DocHover
 	public IInformationControlCreator getHoverControlCreator(
 			String statusLineMessage) {
 		if (fHoverControlCreator == null) {
-			fHoverControlCreator= new HoverControlCreator(getInformationPresenterControlCreator(), 
+			fHoverControlCreator= new HoverControlCreator(this, 
+					getInformationPresenterControlCreator(), 
 					statusLineMessage);
 		}
 		return fHoverControlCreator;
 	}
 
-	private void addLinkListener(final BrowserInformationControl control) {
+	void addLinkListener(final BrowserInformationControl control) {
 		control.addLocationListener(new LocationListener() {
 			@Override
 			public void changing(LocationEvent event) {
@@ -636,7 +516,7 @@ public class DocHover
 		ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
 		if (t==null) return null;
 		StringBuffer buffer= new StringBuffer();
-		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</tt></b>", 
 				20, 4);
@@ -663,7 +543,7 @@ public class DocHover
 			e.printStackTrace();
 		}
 		StringBuffer buffer= new StringBuffer();
-		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
 				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</tt></b>", 
@@ -947,7 +827,7 @@ public class DocHover
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		if (dec==null) return null;
 		StringBuffer buffer= new StringBuffer();
-		HTMLPrinter.insertPageProlog(buffer, 0, DocHover.getStyleSheet());
+		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
 		
 		Package pack = dec.getUnit().getPackage();
 		

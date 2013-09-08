@@ -14,13 +14,15 @@ public class ParameterContextInformation implements IContextInformation {
 	private Declaration declaration;
 	private ProducedReference producedReference;
 	private ParameterList parameterList;
+	int offset;
 		
 	public ParameterContextInformation(Declaration declaration,
 			ProducedReference producedReference,
-			ParameterList parameterList) {
+			ParameterList parameterList, int offset) {
 		this.declaration = declaration;
 		this.producedReference = producedReference;
 		this.parameterList = parameterList;
+		this.offset = offset;
 	}
 
 	@Override
