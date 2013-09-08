@@ -1189,11 +1189,6 @@ public class CeylonHover
     private static void appendDeprecatedAnnotationContent(Tree.AnnotationList annotationList,
             StringBuffer documentation, Scope linkScope) {
         if (annotationList!=null) {
-            AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
-            if (aa!=null) {
-                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope,
-                        annotationList.getUnit()));
-            }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
                 if (annotPrim instanceof Tree.BaseMemberExpression) {
@@ -1208,7 +1203,7 @@ public class CeylonHover
                                 	String text = ((Tree.ListedArgument) a).getExpression()
                                 			    .getTerm().getText();
                                 	if (text!=null) {
-                                		documentation.append(markdown("_(Deprecated program element)_\n\n" + text, 
+                                		documentation.append(markdown("_(This is a deprecated program element.)_\n\n" + text, 
                                 				linkScope, annotationList.getUnit()));
                                 	}
                                 }
