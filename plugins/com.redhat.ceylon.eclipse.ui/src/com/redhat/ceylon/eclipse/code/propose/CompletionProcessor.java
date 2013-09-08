@@ -27,8 +27,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CompletionProcessor implements IContentAssistProcessor {
 	
-	private final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
-	private ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
+	private static final IContextInformation[] NO_CONTEXTS= new IContextInformation[0];
+	static ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
 
     private CeylonContentProposer contentProposer;
     private ParameterContextValidator validator;
