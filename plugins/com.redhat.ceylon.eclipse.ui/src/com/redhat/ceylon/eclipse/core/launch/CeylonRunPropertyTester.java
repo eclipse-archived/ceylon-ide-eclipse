@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.launch;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.ui.IFileEditorInput;
@@ -47,7 +46,7 @@ public class CeylonRunPropertyTester extends PropertyTester {
 
     private boolean isCeylonModule(IPackageFragment packageFragment) {
 
-		return packageFragment.getClassFile("module_.class")  != null;
+		return (packageFragment.getClassFile("module_.class")  != null && packageFragment.getClassFile("run_.class") != null);
 	}
 
 	private boolean isCeylonProject(IProject project) {
