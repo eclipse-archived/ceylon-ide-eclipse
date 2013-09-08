@@ -7,20 +7,24 @@ import static java.lang.Character.isLetter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ContextInformationValidator;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
-import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CompletionProcessor implements IContentAssistProcessor {
 	
@@ -79,17 +83,40 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		return isLetter(ch) || isDigit(ch) || ch=='_' || ch=='.';
 	}
 
-    public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
+    public IContextInformation[] computeContextInformation(final ITextViewer viewer, final int offset) {
     	final List<IContextInformation> infos = new ArrayList<IContextInformation>();
-    	editor.getParseController().getRootNode().visit(new Visitor() {
+    	CeylonParseController cpc = editor.getParseController();
+		cpc.parse(viewer.getDocument(), new NullProgressMonitor(), null);
+    	cpc.getRootNode().visit(new Visitor() {
     		@Override
     		public void visit(InvocationExpression that) {
-    			Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
-    			String text = CeylonContentProposer.getPositionalInvocationTextFor(
-    					new DeclarationWithProximity(mte.getDeclaration(), 0), 
-    					OccurrenceLocation.EXPRESSION, mte.getTarget(), true);
-    			String str = text.substring(text.indexOf('(')+1, text.indexOf(')'));
-    			infos.add(new ContextInformation(text, str));
+    			PositionalArgumentList pal = that.getPositionalArgumentList();
+				if (pal!=null) {
+					//TODO: should reuse logic for adjusting tokens
+					//      from CeylonContentProposer!!
+    				Integer start = pal.getStartIndex();
+					Integer stop = pal.getStopIndex();
+					if (start!=null && stop!=null && offset>start) { 
+						String string = "";
+						if (offset>stop) {
+							try {
+								string = viewer.getDocument().get(stop+1, offset-stop-1).trim();
+							} 
+							catch (BadLocationException e) {}
+						}
+						if (string.isEmpty()) {
+	    					Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
+		    				Declaration declaration = mte.getDeclaration();
+		    				if (declaration instanceof Functional) {
+		    					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+		    					if (!pls.isEmpty()) {
+		    						infos.add(new ParameterContextInformation(declaration, 
+		    								mte.getTarget(), pls.get(0)));
+		    					}
+		    				}
+    	                }
+    				}
+    			}
     			super.visit(that);
     		}
 		});
@@ -101,7 +128,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getContextInformationAutoActivationCharacters() {
-        return null;
+        return new char[]{',','('};
     }
 
     public IContextInformationValidator getContextInformationValidator() {
