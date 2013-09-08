@@ -874,32 +874,6 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
       
-      <!-- Workaround for a bug in Eclipse on Mac - TODO:remove -->
-      <key
-            commandId="org.eclipse.ui.edit.text.goto.lineStart"
-            platform="cocoa"
-            sequence="M1+ARROW_LEFT"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.ui.edit.text.goto.lineEnd"
-            platform="cocoa"
-            sequence="M1+ARROW_RIGHT"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.ui.edit.text.select.lineStart"
-            platform="cocoa"
-            sequence="M1+M2+ARROW_LEFT"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.ui.edit.text.select.lineEnd"
-            platform="cocoa"
-            sequence="M1+M2+ARROW_RIGHT"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-            
    </extension>         
    
    <extension
