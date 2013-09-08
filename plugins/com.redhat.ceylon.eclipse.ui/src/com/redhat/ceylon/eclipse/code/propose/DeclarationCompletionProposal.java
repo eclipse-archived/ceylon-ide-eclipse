@@ -113,22 +113,26 @@ class DeclarationCompletionProposal extends CompletionProposal {
             	if (paren<0) {
             		return super.getSelection(document);
             	}
-            	int loc = offset-prefix.length();
-            	int comma = -1;
-            	try {
-            		comma = findCharCount(1, document, loc+paren+1, loc+text.length()-paren-1, ",", "", true)
-            				-loc-paren-1;
-				} 
-            	catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-//            	comma = text.substring(paren).indexOf(',');
-//            	if (comma<0) comma = text.substring(paren).indexOf(')');
-            	if (comma<0) comma = text.length()-paren-1;
-				return new Point(loc+paren+1, comma-1);
+            	int comma = getNextComma(document, paren);
+				return new Point(offset-prefix.length()+paren+1, comma-1);
             }
 		}
 		return super.getSelection(document);
+	}
+
+	public int getNextComma(IDocument document, int lastOffset) {
+		int loc = offset-prefix.length();
+		int comma = -1;
+		try {
+			comma = findCharCount(1, document, loc+lastOffset+1, 
+					loc+text.length()-lastOffset-1, ",", "", true)
+					-loc-lastOffset-1;
+		} 
+		catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		if (comma<0) comma = text.length()-lastOffset-1;
+		return comma;
 	}
 	
 	public String getAdditionalProposalInfo() {
@@ -144,8 +148,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        final int loc = offset-prefix.length();
 	        int first = text.indexOf('(');
 	        if (first<0) return;
-	        int next = text.substring(first).indexOf(',');
-	        if (next<0) next = text.substring(first).indexOf(')');
+	        int next = getNextComma(document, first);
 	        int i=0;
 	        while (next>0) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
@@ -156,9 +159,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		        		props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
-		        next = text.substring(first).indexOf(',');
-		        if (next<0) next = text.substring(first).indexOf(')');
-	            linkedModeModel.addGroup(linkedPositionGroup);	          
+		        next = getNextComma(document, first);
+	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
             linkedModeModel.forceInstall();
