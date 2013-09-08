@@ -7,7 +7,6 @@ import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -40,7 +39,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
@@ -50,7 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
-import com.redhat.ceylon.eclipse.code.hover.DocHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
 import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
@@ -115,13 +113,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        final ContentAssistant ca = new ContentAssistant() {
-        	protected void install() {
-                setInformationControlCreator(new DocHover(editor)
-                        .getHoverControlCreator("Click for focus"));
-        		super.install();
-        	}
-        };
+        final ContentAssistant ca = new ContentAssistant();
         ca.addCompletionListener(new ICompletionListener() {
 			@Override
 			public void selectionChanged(ICompletionProposal proposal,
@@ -134,7 +126,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 					editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
 				} 
 				catch (Exception e) {}*/
-
 			}			
 			@Override
 			public void assistSessionEnded(ContentAssistEvent event) {
@@ -159,8 +150,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		ca.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
         ca.setStatusMessage(key.format() + " to toggle filter by type");
         ca.setStatusLineVisible(true);
-//        ca.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        ca.setInformationControlCreator(new CeylonHover(editor).getHoverControlCreator("Click for focus"));
         ca.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+//      ca.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return ca;
     }

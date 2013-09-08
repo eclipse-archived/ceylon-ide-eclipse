@@ -38,7 +38,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
-import com.redhat.ceylon.eclipse.code.hover.DocHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
@@ -259,11 +259,11 @@ public class AnnotationUtils {
 	    }
 	    else if (message instanceof CeylonInitializerAnnotation) {
             text = message.getText();
-            icon = DocHover.fileUrl("information.gif");
+            icon = CeylonHover.fileUrl("information.gif");
         }
 	    else if (message instanceof RefinementAnnotation) {
 	    	Declaration dec = ((RefinementAnnotation) message).getDeclaration();
-	    	icon = dec.isFormal() ? DocHover.fileUrl("implm_co.gif") : DocHover.fileUrl("over_co.gif");
+	    	icon = dec.isFormal() ? CeylonHover.fileUrl("implm_co.gif") : CeylonHover.fileUrl("over_co.gif");
 			text = "refines&nbsp;&nbsp;<tt>" + HTMLPrinter.convertToHTMLContent(CeylonContentProposer.getDescriptionFor(dec))
 					+ "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + ((TypeDeclaration) dec.getContainer()).getName() + 
 					"</b></tt>";
@@ -282,14 +282,14 @@ public class AnnotationUtils {
 	    }
 	    else if (message!=null && SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
 	    	text = "<b>Search result</b>";
-	    	icon = DocHover.fileUrl("find_obj.gif");
+	    	icon = CeylonHover.fileUrl("find_obj.gif");
 	    }
         else if (message!=null && TODO_ANNOTATION_TYPE.equals(message.getType())) {
             text = "<b>Task</b><p>" + message.getText() + "</p>";
-            icon = DocHover.fileUrl("tasks_tsk.gif");
+            icon = CeylonHover.fileUrl("tasks_tsk.gif");
         }
 	    if (icon!=null) {
-	    	DocHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
+	    	CeylonHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
 	    }
 	}
 
@@ -298,10 +298,10 @@ public class AnnotationUtils {
 			return null;
 		}
 		if (severity.intValue()==SEVERITY_ERROR) {
-			return DocHover.fileUrl("error_obj.gif");
+			return CeylonHover.fileUrl("error_obj.gif");
 		}
 		else if (severity.intValue()==SEVERITY_WARNING) {
-			return DocHover.fileUrl("warning_obj.gif");
+			return CeylonHover.fileUrl("warning_obj.gif");
 		}
 		else {
 			return null;
@@ -325,7 +325,7 @@ public class AnnotationUtils {
 	public static String formatMultipleMessages(List<Annotation> messages) {
 	    StringBuffer buffer= new StringBuffer();
 	    HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-	    DocHover.addImageAndLabel(buffer, null, DocHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
+	    CeylonHover.addImageAndLabel(buffer, null, CeylonHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
 	    		16, 16, "Multiple messages at this line:", 20, 2);
 	    buffer.append("<hr/>");
 	    for (Annotation message: messages) {
@@ -339,7 +339,7 @@ public class AnnotationUtils {
 
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
-			fgStyleSheet= DocHover.loadStyleSheet() ;
+			fgStyleSheet= CeylonHover.loadStyleSheet() ;
 		//Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
 		//String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
 		String css= fgStyleSheet; //+ "body { background-color: #" + color + " }";

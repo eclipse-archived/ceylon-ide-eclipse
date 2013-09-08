@@ -23,8 +23,8 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.hover.DocHover.getDocumentationForModule;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;

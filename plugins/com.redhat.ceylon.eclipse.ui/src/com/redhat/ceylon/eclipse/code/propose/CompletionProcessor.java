@@ -10,7 +10,6 @@ import java.util.List;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.ContextInformationValidator;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -32,7 +31,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 	private ICompletionProposal[] NO_COMPLETIONS= new ICompletionProposal[0];
 
     private CeylonContentProposer contentProposer;
-    
+    private ParameterContextValidator validator;
     private CeylonEditor editor;
     
     private boolean filter;
@@ -109,7 +108,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		    					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
 		    					if (!pls.isEmpty()) {
 		    						infos.add(new ParameterContextInformation(declaration, 
-		    								mte.getTarget(), pls.get(0)));
+		    								mte.getTarget(), pls.get(0), that.getStartIndex()));
 		    					}
 		    				}
     	                }
@@ -130,7 +129,10 @@ public class CompletionProcessor implements IContentAssistProcessor {
     }
 
     public IContextInformationValidator getContextInformationValidator() {
-        return new ContextInformationValidator(this);
+		if (validator == null) {
+			validator= new ParameterContextValidator(this);
+		}
+        return validator;
     }
 
     public String getErrorMessage() {
