@@ -22,6 +22,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_S
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationForModule;
@@ -93,7 +94,6 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -639,7 +639,7 @@ public class CeylonContentProposer {
         if (pfp.startsWith("java.")) {
             for (final String mod: JDKUtils.getJDKModuleNames()) {
                 if (mod.startsWith(pfp) &&
-                        moduleAlreadyImported(node, mod)) {
+                        !moduleAlreadyImported(cpc, mod)) {
                     String versioned = getModuleString(mod, JDK_MODULE_VERSION);
                     result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
                                       versioned, versioned.substring(len) + ";", false) {
@@ -660,7 +660,7 @@ public class CeylonContentProposer {
                 for (final ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
-                            !moduleAlreadyImported(node, name)) {
+                            !moduleAlreadyImported(cpc, name)) {
                         for (final String version : module.getVersions().descendingSet()) {
                             String versioned = getModuleString(name, version);
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
@@ -679,15 +679,29 @@ public class CeylonContentProposer {
         }
     }
 
-    protected static boolean moduleAlreadyImported(Node node, final String mod) {
+    protected static boolean moduleAlreadyImported(CeylonParseController cpc, final String mod) {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
             return true;
         }
-        for (ModuleImport mi: node.getUnit().getPackage().getModule().getImports()) {
-            if (mi.getModule().getNameAsString().equals(mod)) {
-                return true;
-            }
+        Tree.ModuleDescriptor md = cpc.getRootNode().getModuleDescriptor();
+		if (md!=null) {
+			Tree.ImportModuleList iml = md.getImportModuleList();
+			if (iml!=null) {
+				for (Tree.ImportModule im: iml.getImportModules()) {
+					if (im.getImportPath()!=null) {
+						if (formatPath(im.getImportPath().getIdentifiers()).equals(mod)) {
+							return true;
+						}
+					}
+				}
+			}
         }
+        //Disabled, because once the module is imported, it hangs around!
+//        for (ModuleImport mi: node.getUnit().getPackage().getModule().getImports()) {
+//            if (mi.getModule().getNameAsString().equals(mod)) {
+//                return true;
+//            }
+//        }
         return false;
     }
 
