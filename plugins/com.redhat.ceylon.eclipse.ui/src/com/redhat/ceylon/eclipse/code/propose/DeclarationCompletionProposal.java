@@ -302,7 +302,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
             	int paren = text.indexOf('(');
-            	if (paren<0) {
+            	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, todo!
             		return super.getContextInformation();
             	}
             	return new ParameterContextInformation(declaration, 
