@@ -10,6 +10,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -54,6 +56,12 @@ final class DeclarationCompletionProposal extends CompletionProposal {
 			}
 		}
 		super.apply(document);
+		if (declaration instanceof Functional) {
+		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+                enterLinkedMode(document);
+            }
+		}
 	}
 	
 	public String getAdditionalProposalInfo() {

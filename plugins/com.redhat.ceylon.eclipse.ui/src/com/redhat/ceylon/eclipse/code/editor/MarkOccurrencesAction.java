@@ -123,7 +123,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     public void caretMoved(CaretEvent event) {
     	if (!activeEditor.isBackgroundParsingPaused() &&
-    	        !activeEditor.isBlockSelectionModeEnabled()) {
+    	        !activeEditor.isBlockSelectionModeEnabled() &&
+    	        !activeEditor.isInLinkedMode()) {
     		int offset = event.caretOffset;
     		int length = 0;
     		IRegion selection = activeEditor.getSelection();
