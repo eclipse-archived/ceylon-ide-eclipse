@@ -10,7 +10,7 @@ public class CeylonModuleTabGroup extends AbstractLaunchConfigurationTabGroup {
 
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-            new CeylonMainTab(),
+            new CeylonModuleTab(),
             new EnvironmentTab(),
             new CommonTab()
         };

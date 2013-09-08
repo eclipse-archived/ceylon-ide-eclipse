@@ -1177,8 +1177,8 @@
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
-            class="com.redhat.ceylon.eclipse.core.launch.LocalCeylonModuleTabGroup"
-            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.localCeylonModule">
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.ceylonModule">
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
@@ -1237,8 +1237,8 @@
             icon="icons/jar_l_obj.gif"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleLaunchShortcut"
-            description="Launch a local Ceylon module"
-            id="com.redhat.ceylon.eclipse.ui.launcher.localModuleShortcut">
+            description="Launch a Ceylon module"
+            id="com.redhat.ceylon.eclipse.ui.launcher.moduleShortcut">
          <description 
                description="Runs a local Ceylon module"
                mode="run">
