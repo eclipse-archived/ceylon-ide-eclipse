@@ -26,6 +26,7 @@ public class CeylonEntityImageDecorator {
     private final static int FORMAL = 1 << 6;
     private final static int ABSTRACT = 1 << 7;
     private final static int VARIABLE = 1 << 8;
+    private final static int ANNOTATION = 1 << 9;
 
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
@@ -36,7 +37,8 @@ public class CeylonEntityImageDecorator {
                 new DecorationDescriptor(IMPLEMENTS, CeylonPlugin.getInstance().image("implm_tiny_co.gif"), BOTTOM_RIGHT),
                 new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().image("final_co.gif"), TOP_RIGHT),
                 new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().image("abstract_co.gif"), TOP_RIGHT),
-                new DecorationDescriptor(VARIABLE, CeylonPlugin.getInstance().image("volatile_co.gif"), TOP_LEFT)
+                new DecorationDescriptor(VARIABLE, CeylonPlugin.getInstance().image("volatile_co.gif"), TOP_LEFT),
+                new DecorationDescriptor(ANNOTATION, CeylonPlugin.getInstance().image("annotation_tsk.gif"), TOP_LEFT)
             };
     }
     
@@ -85,6 +87,9 @@ public class CeylonEntityImageDecorator {
         int result = 0;
         if (model.isFormal()) {
             result |= FORMAL;
+        }
+        if (model.isAnnotation()) {
+            result |= ANNOTATION;
         }
         if ((model instanceof Value) && ((Value) model).isVariable()) {
             result |= VARIABLE;
