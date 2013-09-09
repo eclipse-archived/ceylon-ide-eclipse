@@ -3,11 +3,13 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_LEFT;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.BOTTOM_RIGHT;
+import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.TOP_LEFT;
 import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadrant.TOP_RIGHT;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -23,6 +25,7 @@ public class CeylonEntityImageDecorator {
     private final static int IMPLEMENTS = 1 << 5;
     private final static int FORMAL = 1 << 6;
     private final static int ABSTRACT = 1 << 7;
+    private final static int VARIABLE = 1 << 8;
 
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
@@ -32,7 +35,8 @@ public class CeylonEntityImageDecorator {
                 new DecorationDescriptor(REFINES, CeylonPlugin.getInstance().image("over_tiny_co.gif"), BOTTOM_RIGHT),
                 new DecorationDescriptor(IMPLEMENTS, CeylonPlugin.getInstance().image("implm_tiny_co.gif"), BOTTOM_RIGHT),
                 new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().image("final_co.gif"), TOP_RIGHT),
-                new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().image("abstract_co.gif"), TOP_RIGHT)
+                new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().image("abstract_co.gif"), TOP_RIGHT),
+                new DecorationDescriptor(VARIABLE, CeylonPlugin.getInstance().image("volatile_co.gif"), TOP_LEFT)
             };
     }
     
@@ -81,6 +85,9 @@ public class CeylonEntityImageDecorator {
         int result = 0;
         if (model.isFormal()) {
             result |= FORMAL;
+        }
+        if ((model instanceof Value) && ((Value) model).isVariable()) {
+            result |= VARIABLE;
         }
         if (model instanceof Class && ((Class) model).isAbstract()) {
             result |= ABSTRACT;
