@@ -29,7 +29,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-public class CeylonPreferencesPage extends PropertyPage {
+public class CeylonProjectPreferencesPage extends PropertyPage {
 
     private boolean explodeModules;
     private boolean showCompilerWarnings = true;
