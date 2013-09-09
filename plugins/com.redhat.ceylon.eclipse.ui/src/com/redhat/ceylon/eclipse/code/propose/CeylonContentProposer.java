@@ -272,9 +272,6 @@ public class CeylonContentProposer {
                         type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
                     iter.remove();
                 }
-                else {
-                	System.out.println(fullType);
-                }
             }
         }
     }

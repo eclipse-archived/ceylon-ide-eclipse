@@ -11,12 +11,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class RequiredTypeVisitor extends Visitor 
@@ -49,43 +47,26 @@ public class RequiredTypeVisitor extends Visitor
     public void visit(Tree.InvocationExpression that) {
         ProducedType ort = requiredType;
         ProducedReference onat = namedArgTarget;
-        PositionalArgumentList pal = that.getPositionalArgumentList();
+        Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
         	int pos;
-            Integer startIndex = node.getStartIndex();
-			Integer startIndex2 = pal.getStartIndex();
-			if (startIndex!=null && startIndex2!=null &&
-					startIndex.equals(startIndex2)) {
-				if (token==null) {
-					pos = 0;
-				}
-				else if (token.getType()==CeylonLexer.LPAREN) {
-					pos = 0;
-				}
-				else {
-					//TODO: check the position of the token
-					//      within these positional args!
-					pos = pal.getPositionalArguments().size();
-					for (int i=0; i<pos; i++) {
-						Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
-						if (pa.getStartIndex()>((CommonToken)token).getStopIndex()) {
-							pos = i;
-							break;
-						}
-					}
-				}
-            }
-            else {
-            	pos = pal.getPositionalArguments().size();
-            	for (int i=0; i<pos; i++) {
-            		Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
-            		if (startIndex>=pa.getStartIndex() && 
-            				node.getStopIndex()<=pa.getStopIndex()) {
-            			pos = i;
-            			break;
-            		}
-            	}
-            }
+        	pos = pal.getPositionalArguments().size();
+        	for (int i=0; i<pos; i++) {
+        		Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+        		if (token!=null) {
+        			if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
+        				pos = i;
+        				break;
+        			}
+        		}
+        		else {
+        			if (node.getStartIndex()>=pa.getStartIndex() && 
+        					node.getStopIndex()<=pa.getStopIndex()) {
+        				pos = i;
+        				break;
+        			}
+        		}
+        	}
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
@@ -149,9 +130,39 @@ public class RequiredTypeVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.ForIterator that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getUnit()
+        		.getIterableType(that.getUnit()
+        				.getAnythingDeclaration().getType());
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
     public void visit(Tree.SpecifierStatement that) {
         ProducedType ort = requiredType;
         requiredType = that.getBaseMemberExpression().getTypeModel();
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.SwitchStatement that) {
+        ProducedType ort = requiredType;
+        Tree.SwitchClause switchClause = that.getSwitchClause();
+		if (switchClause!=null) {
+        	switchClause.visit(this);
+        	if (switchClause.getExpression()!=null) {
+        		requiredType = switchClause.getExpression().getTypeModel();
+        	}
+        	else {
+        		requiredType = null;
+        	}
+        }
+        if (that.getSwitchCaseList()!=null) {
+        	that.getSwitchCaseList().visit(this);
+        }
         super.visit(that);
         requiredType = ort;
     }
@@ -165,7 +176,23 @@ public class RequiredTypeVisitor extends Visitor
     }
     
     @Override
-    public void visit(Tree.AssignOp that) {
+    public void visit(Tree.MethodDeclaration that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getType().getTypeModel();
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.FunctionArgument that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getType().getTypeModel();
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.AssignmentOp that) {
         ProducedType ort = requiredType;
         requiredType = that.getLeftTerm().getTypeModel();
         super.visit(that);
@@ -176,6 +203,22 @@ public class RequiredTypeVisitor extends Visitor
     public void visit(Tree.Return that) {
         ProducedType ort = requiredType;
         requiredType = CeylonContentProposer.type(that.getDeclaration());
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.ConditionList that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getUnit().getBooleanDeclaration().getType();
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.ResourceList that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getUnit().getCloseableDeclaration().getType();
         super.visit(that);
         requiredType = ort;
     }
