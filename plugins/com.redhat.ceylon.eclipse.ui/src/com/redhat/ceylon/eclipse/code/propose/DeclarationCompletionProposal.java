@@ -255,6 +255,17 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof Value && !dwp.isUnimported()) {
+				if (d.getUnit().getPackage().getNameAsString()
+						.equals(Module.LANGUAGE_MODULE_NAME)) {
+					if (d.getName().equals("process") ||
+							d.getName().equals("language") ||
+							d.getName().equals("emptyIterator") ||
+							d.getName().equals("infinity") ||
+							d.getName().endsWith("IntegerValue") ||
+							d.getName().equals("finished")) {
+						continue;
+					}
+				}
 				ProducedType vt = ((Value) d).getType();
 				if (!vt.isNothing() &&
 				    ((td instanceof TypeParameter) && 
@@ -278,7 +289,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 						!td.isAnnotation() &&
 						!(td instanceof NothingType) &&
 						!td.inherits(td.getUnit().getExceptionDeclaration())) {
-					if (td.getUnit().getPackage().getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
+					if (td.getUnit().getPackage().getNameAsString()
+							.equals(Module.LANGUAGE_MODULE_NAME)) {
 						if (!td.getName().equals("Object") && 
 								!td.getName().equals("Anything") &&
 								!td.getName().equals("String") &&
