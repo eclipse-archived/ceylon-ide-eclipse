@@ -251,11 +251,15 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		Parameter p = parameterList.getParameters().get(index);
 		ProducedType type = producedReference.getTypedParameter(p)
 				.getFullType();
+		TypeDeclaration td = type.getDeclaration();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof Value && !dwp.isUnimported()) {
 				ProducedType vt = ((Value) d).getType();
-				if (vt.isSubtypeOf(type) && !vt.isNothing()) {
+				if (!vt.isNothing() &&
+				    ((td instanceof TypeParameter) && 
+						isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+						    vt.isSubtypeOf(type))) {
 					addProposal(loc, first, props, index, d, false);
 				}
 			}
@@ -265,7 +269,6 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	private void addBasicProposals(Generic generic, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		TypeParameter p = generic.getTypeParameters().get(index);
-		List<ProducedType> upperBounds = p.getSatisfiedTypes();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
@@ -286,19 +289,25 @@ class DeclarationCompletionProposal extends CompletionProposal {
 							continue;
 						}
 					}
-					boolean ok = true;
-					for (ProducedType ub: upperBounds) {
-						if (!t.isSubtypeOf(ub)) {
-							ok = false;
-							break;
-						}
-					}
-					if (ok) {
+					if (isInBounds(p.getSatisfiedTypes(), t)) {
 						addProposal(loc, first, props, index, d, true);
 					}
 				}
 			}
 		}
+	}
+
+	public boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
+		boolean ok = true;
+		for (ProducedType ub: upperBounds) {
+			if (!t.isSubtypeOf(ub) &&
+					!(ub.containsTypeParameters() &&
+					    t.getDeclaration().inherits(ub.getDeclaration()))) {
+				ok = false;
+				break;
+			}
+		}
+		return ok;
 	}
 
 	public List<DeclarationWithProximity> getSortedProposedValues() {
