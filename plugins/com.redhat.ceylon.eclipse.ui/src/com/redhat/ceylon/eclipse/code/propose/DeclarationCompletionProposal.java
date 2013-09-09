@@ -36,6 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
@@ -271,7 +273,19 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				ProducedType t = td.getType();
 				if (td.getTypeParameters().isEmpty() && 
 						!td.isAnnotation() &&
+						!(td instanceof NothingType) &&
 						!td.inherits(td.getUnit().getExceptionDeclaration())) {
+					if (td.getUnit().getPackage().getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
+						if (!td.getName().equals("Object") && 
+								!td.getName().equals("Anything") &&
+								!td.getName().equals("String") &&
+								!td.getName().equals("Integer") &&
+								!td.getName().equals("Character") &&
+								!td.getName().equals("Float") &&
+								!td.getName().equals("Boolean")) {
+							continue;
+						}
+					}
 					boolean ok = true;
 					for (ProducedType ub: upperBounds) {
 						if (!t.isSubtypeOf(ub)) {
