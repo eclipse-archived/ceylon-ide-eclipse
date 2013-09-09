@@ -35,11 +35,16 @@ import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
@@ -99,11 +104,15 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		
 		if (EditorsPlugin.getDefault().getPreferenceStore()
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
-			if (declaration instanceof Functional) {
-				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
-					enterLinkedMode(document, pls.get(0));
+			if (declaration instanceof Generic) {
+				ParameterList paramList = null;
+				if (declaration instanceof Functional && text.indexOf('(')>0) {
+					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+						paramList = pls.get(0);
+					}
 				}
+				enterLinkedMode(document, paramList, (Generic) declaration);
 			}
 		}
 		
@@ -111,21 +120,26 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	
 	@Override
 	public Point getSelection(IDocument document) {
-		if (declaration instanceof Functional) {
-		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty()) {
-            	int paren = text.indexOf('(');
-            	if (paren<0) {
-            		return super.getSelection(document);
-            	}
-            	int comma = getNextComma(document, paren);
-				return new Point(offset-prefix.length()+paren+1, comma-1);
-            }
+		if (declaration instanceof Generic) {
+			ParameterList pl = null;
+			if (declaration instanceof Functional) {
+				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+					pl = pls.get(0);
+				}
+			}
+        	int paren = pl==null ? text.indexOf('<') : text.indexOf('(');
+        	if (paren<0) {
+        		return super.getSelection(document);
+        	}
+        	int comma = getNextComma(document, paren, pl==null);
+			return new Point(offset-prefix.length()+paren+1, comma-1);
 		}
 		return super.getSelection(document);
 	}
 
-	public int getNextComma(IDocument document, int lastOffset) {
+	public int getNextComma(IDocument document, int lastOffset, 
+			boolean typeArgList) {
 		int loc = offset-prefix.length();
 		int comma = -1;
 		try {
@@ -136,7 +150,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		if (comma<0) comma = text.length()-lastOffset-1;
+		if (comma<0) {
+			comma = (typeArgList ? text.indexOf('>') : text.length()-1)-lastOffset;
+		}
 		return comma;
 	}
 	
@@ -146,25 +162,32 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	
     private IEditingSupport editingSupport;
     
-	public void enterLinkedMode(IDocument document, ParameterList parameterList) {
+	public void enterLinkedMode(IDocument document, ParameterList parameterList, 
+			Generic generic) {
+        boolean basicProposal = parameterList==null;
 		//Big TODO: handle named arguments!
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
-	        int first = text.indexOf('(');
+	        int first = basicProposal ? text.indexOf('<') : text.indexOf('(');
 	        if (first<0) return;
-	        int next = getNextComma(document, first);
+	        int next = getNextComma(document, first, basicProposal);
 	        int i=0;
-	        while (next>0) {
+	        while (next>1) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
-	        	addProposals(parameterList, loc, first, props, i);
+	        	if (basicProposal) {
+	        		addBasicProposals(generic, loc, first, props, i);
+	        	}
+	        	else {
+	        		addProposals(parameterList, loc, first, props, i);
+	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
 		        ProposalPosition linkedPosition = new ProposalPosition(document, 
 		        		loc+first+1, next-1, i, 
 		        		props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
-		        next = getNextComma(document, first);
+		        next = getNextComma(document, first, basicProposal);
 	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
@@ -194,7 +217,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
             editor.setInLinkedMode(true);
             CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
 			EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-            ui.setExitPosition(viewer, loc+first+next+1, 0, i);
+            ui.setExitPosition(viewer, loc+text.length(), 0, i);
             ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
             ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
             ui.setDoContextInfo(true);
@@ -228,15 +251,75 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		Parameter p = parameterList.getParameters().get(index);
 		ProducedType type = producedReference.getTypedParameter(p)
 				.getFullType();
+		TypeDeclaration td = type.getDeclaration();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof Value && !dwp.isUnimported()) {
+				if (d.getUnit().getPackage().getNameAsString()
+						.equals(Module.LANGUAGE_MODULE_NAME)) {
+					if (d.getName().equals("process") ||
+							d.getName().equals("language") ||
+							d.getName().equals("emptyIterator") ||
+							d.getName().equals("infinity") ||
+							d.getName().endsWith("IntegerValue") ||
+							d.getName().equals("finished")) {
+						continue;
+					}
+				}
 				ProducedType vt = ((Value) d).getType();
-				if (vt.isSubtypeOf(type) && !vt.isNothing()) {
-					addProposal(loc, first, props, index, p, d);
+				if (!vt.isNothing() &&
+				    ((td instanceof TypeParameter) && 
+						isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+						    vt.isSubtypeOf(type))) {
+					addProposal(loc, first, props, index, d, false);
 				}
 			}
 		}
+	}
+
+	private void addBasicProposals(Generic generic, final int loc,
+			int first, List<ICompletionProposal> props, final int index) {
+		TypeParameter p = generic.getTypeParameters().get(index);
+		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
+			Declaration d = dwp.getDeclaration();
+			if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
+				TypeDeclaration td = (TypeDeclaration) d;
+				ProducedType t = td.getType();
+				if (td.getTypeParameters().isEmpty() && 
+						!td.isAnnotation() &&
+						!(td instanceof NothingType) &&
+						!td.inherits(td.getUnit().getExceptionDeclaration())) {
+					if (td.getUnit().getPackage().getNameAsString()
+							.equals(Module.LANGUAGE_MODULE_NAME)) {
+						if (!td.getName().equals("Object") && 
+								!td.getName().equals("Anything") &&
+								!td.getName().equals("String") &&
+								!td.getName().equals("Integer") &&
+								!td.getName().equals("Character") &&
+								!td.getName().equals("Float") &&
+								!td.getName().equals("Boolean")) {
+							continue;
+						}
+					}
+					if (isInBounds(p.getSatisfiedTypes(), t)) {
+						addProposal(loc, first, props, index, d, true);
+					}
+				}
+			}
+		}
+	}
+
+	public boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
+		boolean ok = true;
+		for (ProducedType ub: upperBounds) {
+			if (!t.isSubtypeOf(ub) &&
+					!(ub.containsTypeParameters() &&
+					    t.getDeclaration().inherits(ub.getDeclaration()))) {
+				ok = false;
+				break;
+			}
+		}
+		return ok;
 	}
 
 	public List<DeclarationWithProximity> getSortedProposedValues() {
@@ -257,7 +340,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 
 	private void addProposal(final int loc, int first,
 			List<ICompletionProposal> props, final int index, 
-			Parameter p, final Declaration d) {
+			final Declaration d, final boolean basic) {
 		props.add(new ICompletionProposal() {
 			public String getAdditionalProposalInfo() {
 				return null;
@@ -268,7 +351,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					IRegion li = document.getLineInformationOfOffset(loc);
 					int len = li.getOffset() + li.getLength() - loc;
 					String rest = document.get(loc, len);
-					int paren = rest.indexOf('(');
+					int paren = basic ? rest.indexOf('<') : rest.indexOf('(');
 					int offset = findCharCount(index, document, 
 								loc+paren+1, loc+len, 
 								",", "", true);
@@ -305,7 +388,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	public IContextInformation getContextInformation() {
 		if (declaration instanceof Functional) {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty()) {
+            if (!pls.isEmpty() && 
+            		//TODO: for now there is no context info for type args lists - fix that!
+            		!(pls.get(0).getParameters().isEmpty()&&!((Generic)declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
             	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, todo!
             		return super.getContextInformation();
