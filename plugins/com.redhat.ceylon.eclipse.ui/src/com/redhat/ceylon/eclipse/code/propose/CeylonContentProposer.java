@@ -1165,8 +1165,9 @@ public class CeylonContentProposer {
         return dec instanceof Functional && 
                 //!((Functional) dec).getParameterLists().isEmpty() &&
                 (ol==null || 
-                 ol==EXPRESSION && ( !(dec instanceof Class) || !((Class)dec).isAbstract()) || 
-                 ol==EXTENDS && dec instanceof Class && !((Class)dec).isFinal() ||
+                 ol==EXPRESSION && (!(dec instanceof Class) || !((Class)dec).isAbstract()) || 
+                 ol==EXTENDS && dec instanceof Class && !((Class)dec).isFinal() && 
+                         ((Class)dec).getTypeParameters().isEmpty() ||
                  ol==CLASS_ALIAS && dec instanceof Class ||
                  ol==PARAMETER_LIST && dec instanceof Method && 
                          dec.isAnnotation()) &&
