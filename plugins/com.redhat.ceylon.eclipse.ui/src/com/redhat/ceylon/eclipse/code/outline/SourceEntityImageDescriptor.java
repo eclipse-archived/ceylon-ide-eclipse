@@ -141,7 +141,7 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
 //        }
         drawImage(bg, 0, 0);
 
-//      drawTopLeft(); // conventionally not used
+        drawTopLeft(); // conventionally not used
         drawTopRight();
         drawBottomRight();
         drawBottomLeft();
@@ -154,6 +154,11 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
             System.err.println("Image data not available: " + descriptor.toString()); //$NON-NLS-1$
         }
         return data;
+    }
+
+    private void addTopLeftImage(ImageDescriptor desc, Point pos) {
+        ImageData data= getImageData(desc);
+        drawImage(data, pos.x, pos.y);
     }
 
     private void addTopRightImage(ImageDescriptor desc, Point pos) {
@@ -190,6 +195,15 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
         for(DecorationDescriptor d: fController.getTopRightDecorations()) {
             if ((fFlags & d.mask) != 0) {
                 addTopRightImage(d.getImageDescriptor(), pos);
+            }
+        }
+    }
+
+    private void drawTopLeft() {
+        Point pos= new Point(0, 0);
+        for(DecorationDescriptor d: fController.getTopLeftDecorations()) {
+            if ((fFlags & d.mask) != 0) {
+                addTopLeftImage(d.getImageDescriptor(), pos);
             }
         }
     }
