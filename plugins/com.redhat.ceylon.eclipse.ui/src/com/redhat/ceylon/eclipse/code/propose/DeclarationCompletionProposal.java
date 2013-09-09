@@ -35,6 +35,7 @@ import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
@@ -99,11 +100,15 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		
 		if (EditorsPlugin.getDefault().getPreferenceStore()
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
-			if (declaration instanceof Functional) {
-				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
-					enterLinkedMode(document, pls.get(0));
+			if (declaration instanceof Generic) {
+				ParameterList paramList = null;
+				if (declaration instanceof Functional) {
+					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+						paramList = pls.get(0);
+					}
 				}
+				enterLinkedMode(document, paramList);
 			}
 		}
 		
@@ -111,21 +116,26 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	
 	@Override
 	public Point getSelection(IDocument document) {
-		if (declaration instanceof Functional) {
-		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty()) {
-            	int paren = text.indexOf('(');
-            	if (paren<0) {
-            		return super.getSelection(document);
-            	}
-            	int comma = getNextComma(document, paren);
-				return new Point(offset-prefix.length()+paren+1, comma-1);
-            }
+		if (declaration instanceof Generic) {
+			ParameterList pl = null;
+			if (declaration instanceof Functional) {
+				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+					pl = pls.get(0);
+				}
+			}
+        	int paren = pl==null ? text.indexOf('<') : text.indexOf('(');
+        	if (paren<0) {
+        		return super.getSelection(document);
+        	}
+        	int comma = getNextComma(document, paren, pl==null);
+			return new Point(offset-prefix.length()+paren+1, comma-1);
 		}
 		return super.getSelection(document);
 	}
 
-	public int getNextComma(IDocument document, int lastOffset) {
+	public int getNextComma(IDocument document, int lastOffset, 
+			boolean typeArgList) {
 		int loc = offset-prefix.length();
 		int comma = -1;
 		try {
@@ -136,7 +146,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		if (comma<0) comma = text.length()-lastOffset-1;
+		if (comma<0) {
+			comma = (typeArgList ? text.indexOf('>') : text.length()-1)-lastOffset;
+		}
 		return comma;
 	}
 	
@@ -147,24 +159,27 @@ class DeclarationCompletionProposal extends CompletionProposal {
     private IEditingSupport editingSupport;
     
 	public void enterLinkedMode(IDocument document, ParameterList parameterList) {
+        boolean basicProposal = parameterList==null;
 		//Big TODO: handle named arguments!
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
-	        int first = text.indexOf('(');
+	        int first = basicProposal ? text.indexOf('<') : text.indexOf('(');
 	        if (first<0) return;
-	        int next = getNextComma(document, first);
+	        int next = getNextComma(document, first, basicProposal);
 	        int i=0;
-	        while (next>0) {
+	        while (next>1) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
-	        	addProposals(parameterList, loc, first, props, i);
+	        	if (!basicProposal) {
+	        		addProposals(parameterList, loc, first, props, i);
+	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
 		        ProposalPosition linkedPosition = new ProposalPosition(document, 
 		        		loc+first+1, next-1, i, 
 		        		props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
-		        next = getNextComma(document, first);
+		        next = getNextComma(document, first, basicProposal);
 	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
@@ -194,7 +209,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
             editor.setInLinkedMode(true);
             CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
 			EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-            ui.setExitPosition(viewer, loc+first+next+1, 0, i);
+            ui.setExitPosition(viewer, loc+text.length(), 0, i);
             ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
             ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
             ui.setDoContextInfo(true);
@@ -305,7 +320,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	public IContextInformation getContextInformation() {
 		if (declaration instanceof Functional) {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty()) {
+            if (!pls.isEmpty() && 
+            		//TODO: for now there is no context info for type args lists - fix that!
+            		!(pls.get(0).getParameters().isEmpty()&&!((Generic)declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
             	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, todo!
             		return super.getContextInformation();
