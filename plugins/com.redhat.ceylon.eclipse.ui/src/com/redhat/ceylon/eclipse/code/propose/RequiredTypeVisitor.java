@@ -2,12 +2,16 @@ package com.redhat.ceylon.eclipse.code.propose;
 
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
+
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -22,13 +26,15 @@ public class RequiredTypeVisitor extends Visitor
     private ProducedType requiredType = null;
     private ProducedType finalResult = null;
     private ProducedReference namedArgTarget = null;
+    private Token token;
     
     public ProducedType getType() {
         return finalResult;
     }
     
-    public RequiredTypeVisitor(Node node) {
+    public RequiredTypeVisitor(Node node, Token token) {
         this.node = node;
+        this.token = token;
     }
     
     @Override
@@ -46,18 +52,34 @@ public class RequiredTypeVisitor extends Visitor
         PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
         	int pos;
-            if (node==pal) {
-            	//TODO: this is wrong!!
-            	//      we need to look at the offset and
-            	//      determine if we are at the start
-            	//      or end of the parameter list!
-            	pos = pal.getPositionalArguments().size();
+            Integer startIndex = node.getStartIndex();
+			Integer startIndex2 = pal.getStartIndex();
+			if (startIndex!=null && startIndex2!=null &&
+					startIndex.equals(startIndex2)) {
+				if (token==null) {
+					pos = 0;
+				}
+				else if (token.getType()==CeylonLexer.LPAREN) {
+					pos = 0;
+				}
+				else {
+					//TODO: check the position of the token
+					//      within these positional args!
+					pos = pal.getPositionalArguments().size();
+					for (int i=0; i<pos; i++) {
+						Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+						if (pa.getStartIndex()>((CommonToken)token).getStopIndex()) {
+							pos = i;
+							break;
+						}
+					}
+				}
             }
             else {
             	pos = pal.getPositionalArguments().size();
             	for (int i=0; i<pos; i++) {
             		Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
-            		if (node.getStartIndex()>=pa.getStartIndex() && 
+            		if (startIndex>=pa.getStartIndex() && 
             				node.getStopIndex()<=pa.getStopIndex()) {
             			pos = i;
             			break;

@@ -235,7 +235,7 @@ public class CeylonContentProposer {
         //      an expression, since RequiredTypeVisitor
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
-        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, adjustedToken);
         rtv.visit(rn);
         ProducedType requiredType = rtv.getType();
         
@@ -271,6 +271,9 @@ public class CeylonContentProposer {
                         (!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
                         type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
                     iter.remove();
+                }
+                else {
+                	System.out.println(fullType);
                 }
             }
         }

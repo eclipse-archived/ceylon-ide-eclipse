@@ -352,7 +352,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             return ci==null ? null : ci.getType();
         }
         else {
-            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node);
+            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, null);
             rtv.visit(cu);
             return rtv.getType();
         }
