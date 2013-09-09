@@ -37,8 +37,9 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor autoActivation;
     BooleanFieldEditor linkedMode;
     ScaleFieldEditor autoActivationDelay;
-    BooleanFieldEditor smartCaret;
     RadioGroupFieldEditor autoActivationChars;
+    BooleanFieldEditor smartCaret;
+    BooleanFieldEditor pasteCorrectIndent;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -55,6 +56,7 @@ public class CeylonEditorPreferencesPage
         autoActivationChars.store();
         linkedMode.store();
         smartCaret.store();
+        pasteCorrectIndent.store();
         return true;
     }
     
@@ -70,6 +72,7 @@ public class CeylonEditorPreferencesPage
         autoActivationChars.loadDefault();
         linkedMode.loadDefault();
         smartCaret.loadDefault();
+        pasteCorrectIndent.loadDefault();
     }
     
     @Override
@@ -181,6 +184,11 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         smartCaret.load();
         addField(smartCaret);
+        pasteCorrectIndent = new BooleanFieldEditor(CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION, 
+        		"Correct indentation of pasted code", 
+        		getFieldEditorParent());
+        pasteCorrectIndent.load();
+        addField(pasteCorrectIndent);
     }
 
 }
