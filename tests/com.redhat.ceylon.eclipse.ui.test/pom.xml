@@ -94,14 +94,16 @@ if (dir.exists()) {
                         <source>
 int errors = 0
 int failures = 0
-new File(project.basedir, 'target/surefire-reports')
-  .eachFileMatch (~/.*\.xml/)
-    { File file ->
-        println(file.absolutePath)
-        def root = new XmlParser().parse(file)
-        failures += root.attribute('failures').toInteger()
-        errors += root.attribute('errors').toInteger() }
-if (errors + failures > 0) fail("\nTests have $failures failures and $errors errors")
+def dir = new File(project.basedir, 'target/surefire-reports') 
+if (dir.exists()) {
+	dir.eachFileMatch (~/.*\.xml/)
+	    { File file ->
+	        println(file.absolutePath)
+	        def root = new XmlParser().parse(file)
+	        failures += root.attribute('failures').toInteger()
+	        errors += root.attribute('errors').toInteger() }
+	if (errors + failures > 0) fail("\nTests have $failures failures and $errors errors")
+}
                         </source>
                     </configuration>
                 </execution>
