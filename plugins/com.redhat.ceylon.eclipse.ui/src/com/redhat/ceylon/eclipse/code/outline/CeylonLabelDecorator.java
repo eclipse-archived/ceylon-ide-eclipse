@@ -115,7 +115,7 @@ public class CeylonLabelDecorator implements ILabelDecorator {
         if (adornmentFlags!=0) {
             ImageDescriptor baseImage= new ImageImageDescriptor(image);
             Rectangle bounds= image.getBounds();
-            Point ptBounds= new Point(bounds.width, bounds.height);
+            Point ptBounds= new Point(bounds.width+6, bounds.height);
             return getRegistry().get(fDecoratorController.getImageDescriptor(baseImage, obj, ptBounds));
         }
         return image;
