@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -35,7 +34,6 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
@@ -164,7 +162,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             removeBlockComment();
             return;
         case CORRECT_INDENTATION:
-            doCorrectIndentation();
+            doCorrectIndentation(getSelectedRange());
             return;
         case PASTE:
             if (localPaste(textWidget)) return;
@@ -222,21 +220,39 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 else {
                     Map<Declaration,String> imports = (Map<Declaration,String>) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
+                    
+                    IDocument doc= this.getDocument();
+                    DocumentRewriteSession rewriteSession= null;
+                    if (doc instanceof IDocumentExtension4) {
+                        IDocumentExtension4 extension= (IDocumentExtension4) doc;
+                        rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+                    }
+                    
                     try {
+                    	//TODO: no good reason to use Edits here
                         MultiTextEdit edit = new MultiTextEdit();
-                        DocumentChange c = new DocumentChange("paste", getDocument());
-                        c.setEdit(edit);
+//                        DocumentChange c = new DocumentChange("paste", getDocument());
+//                        c.setEdit(edit);
                         if (imports!=null) {
                             pasteImports(imports, edit);
                         }
-                        c.addEdit(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
-                        c.perform(new NullProgressMonitor());
+                        edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
+                        edit.apply(doc);
+//                        c.perform(new NullProgressMonitor());
                         getTextWidget().setSelection(selection.getOffset()+text.length());
+                        correctSourceIndentation(new Point(selection.getOffset(), text.length()+1), doc);
                         return true;
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
                         return false;
+                    }
+                    finally {
+                        if (doc instanceof IDocumentExtension4) {
+                            IDocumentExtension4 extension= (IDocumentExtension4) doc;
+                            extension.stopRewriteSession(rewriteSession);
+                        }
+                        restoreSelection();
                     }
                 }
             }
@@ -287,9 +303,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
             final int selEnd= selStart + selLen;
             doc.replace(selStart, 0, "/*");
             doc.replace(selEnd+2, 0, "*/");
-        } catch (BadLocationException e) {
+        } 
+        catch (BadLocationException e) {
             e.printStackTrace();
-        } finally {
+        } 
+        finally {
             if (doc instanceof IDocumentExtension4) {
                 IDocumentExtension4 extension= (IDocumentExtension4) doc;
                 extension.stopRewriteSession(rewriteSession);
@@ -439,45 +457,17 @@ public class CeylonSourceViewer extends ProjectionViewer {
 		return true;
 	}
 
-	private void doCorrectIndentation() {
+	private void doCorrectIndentation(Point range) {
+		
         IDocument doc= getDocument();
         DocumentRewriteSession rewriteSession= null;
-        Point p= this.getSelectedRange();
-
         if (doc instanceof IDocumentExtension4) {
             IDocumentExtension4 extension= (IDocumentExtension4) doc;
             rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
         }
 
         try {
-            final int selStart= p.x;
-            final int selLen= p.y;
-            final int selEnd= selStart + selLen;
-            final int startLine= doc.getLineOfOffset(selStart);
-            int endLine= doc.getLineOfOffset(selEnd);
-
-        	// If the selection extends just to the beginning of the next line, don't indent that one too
-            if (selLen > 0 && lookingAtLineEnd(doc, selEnd)) {
-                endLine--;
-            }
-
-            // Indent each line using the AutoEditStrategy
-            for(int line= startLine; line <= endLine; line++) {
-                int lineStartOffset= doc.getLineOffset(line);
-
-                // Replace the existing indentation with the desired indentation.
-                // Use the language-specific AutoEditStrategy, which requires a DocumentCommand.
-                DocumentCommand cmd= new DocumentCommand() { };
-                cmd.offset= lineStartOffset;
-                cmd.length= 0;
-                cmd.text= Character.toString('\t');
-                cmd.doit= true;
-                cmd.shiftsCaret= false;
-//              boolean saveMode= fAutoEditStrategy.setFixMode(true);
-                autoEditStrategy.customizeDocumentCommand(doc, cmd);
-//              fAutoEditStrategy.setFixMode(saveMode);
-                doc.replace(cmd.offset, cmd.length, cmd.text);
-            }
+            correctSourceIndentation(range, doc);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -489,6 +479,38 @@ public class CeylonSourceViewer extends ProjectionViewer {
             restoreSelection();
         }
     }
+
+	public void correctSourceIndentation(Point range, IDocument doc)
+			throws BadLocationException {
+		final int selStart= range.x;
+		final int selLen= range.y;
+		final int selEnd= selStart + selLen;
+		final int startLine= doc.getLineOfOffset(selStart);
+		int endLine= doc.getLineOfOffset(selEnd);
+
+		// If the selection extends just to the beginning of the next line, don't indent that one too
+		if (selLen > 0 && lookingAtLineEnd(doc, selEnd)) {
+		    endLine--;
+		}
+
+		// Indent each line using the AutoEditStrategy
+		for(int line= startLine; line <= endLine; line++) {
+		    int lineStartOffset= doc.getLineOffset(line);
+
+		    // Replace the existing indentation with the desired indentation.
+		    // Use the language-specific AutoEditStrategy, which requires a DocumentCommand.
+		    DocumentCommand cmd= new DocumentCommand() { };
+		    cmd.offset= lineStartOffset;
+		    cmd.length= 0;
+		    cmd.text= Character.toString('\t');
+		    cmd.doit= true;
+		    cmd.shiftsCaret= false;
+//              boolean saveMode= fAutoEditStrategy.setFixMode(true);
+		    autoEditStrategy.customizeDocumentCommand(doc, cmd);
+//              fAutoEditStrategy.setFixMode(saveMode);
+		    doc.replace(cmd.offset, cmd.length, cmd.text);
+		}
+	}
 
     private boolean lookingAtLineEnd(IDocument doc, int pos) {
         String[] legalLineTerms= doc.getLegalLineDelimiters();
