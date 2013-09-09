@@ -890,7 +890,7 @@ public class CeylonContentProposer {
 									that.getStopIndex()-that.getStartIndex()+1);
 				        	addInvocationProposals(offset, pref, cpc, result, 
 				        			new DeclarationWithProximity(d, 0), 
-				        			    ((Functional) d).getType(), scope, 
+				        			    that.getTypeModel(), scope, 
 				        			    null, typeArgText);
 						}
 						catch (BadLocationException e) {
