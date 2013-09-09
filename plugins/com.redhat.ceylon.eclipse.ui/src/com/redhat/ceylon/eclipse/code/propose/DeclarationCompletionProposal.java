@@ -106,7 +106,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
 			if (declaration instanceof Generic) {
 				ParameterList paramList = null;
-				if (declaration instanceof Functional) {
+				if (declaration instanceof Functional && text.indexOf('(')>0) {
 					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
 					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
 						paramList = pls.get(0);
