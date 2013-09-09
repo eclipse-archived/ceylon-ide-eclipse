@@ -93,13 +93,13 @@ public class MainBuildTests extends AbstractMultiProjectTest {
         buildSummary.install();
         javaFileEditor.save();
         try {
-            buildSummary.waitForBuildEnd(10);
+            buildSummary.waitForBuildEnd(30);
             
             editor = bot.editorByTitle("run.ceylon");
             Assert.assertNotNull(editor);
             SWTBotEclipseEditor ceylonFileEditor = editor.toTextEditor();
             ceylonFileEditor.show();
-            assertEquals("Bad line 18 in run.ceylon : ", ceylonFileEditor.getLines().get(17).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
+            assertEquals("Wrong line 18 in run.ceylon : ", ceylonFileEditor.getLines().get(17).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
             String ceylonEditorText = ceylonFileEditor.getText();
             ceylonFileEditor.insertText(18, 0,"v5.newMethodToTest();\n");
             
@@ -115,7 +115,7 @@ public class MainBuildTests extends AbstractMultiProjectTest {
             buildSummary.install();
             ceylonFileEditor.save();
             try {
-                buildSummary.waitForBuildEnd(10);
+                buildSummary.waitForBuildEnd(30);
                 assertThat("The build should not have any error",
                         Utils.getProjectErrorMarkers(mainProject),
                         Matchers.empty());
