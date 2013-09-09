@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
@@ -326,7 +327,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return LOCAL_METHOD;
             }
         }
-        else if (d instanceof TypeAlias) {
+        else if (d instanceof TypeAlias ||
+        		d instanceof NothingType) {
             return ALIAS;
         }
         else {

@@ -383,6 +383,9 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					}
 					//$FALL-THROUGH$
 				case '>':
+					if (nestingMode == 0) {
+						return offset;
+					}
 					if (considerNesting) {
 						if (nestingMode == ANGLE)
 							if (--nestingLevel == 0)
