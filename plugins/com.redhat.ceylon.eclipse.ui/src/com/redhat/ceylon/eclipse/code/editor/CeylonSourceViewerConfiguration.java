@@ -112,6 +112,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
 	public static final String LINKED_MODE = "linkedModeCompletion";
+	public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
     
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         final ContentAssistant ca = new ContentAssistant();
@@ -139,6 +140,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         prefStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
         prefStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
         prefStore.setDefault(LINKED_MODE, true);
+        prefStore.setDefault(PASTE_CORRECT_INDENTATION, true);
 		configCompletionPopup(ca);
 		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
