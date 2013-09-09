@@ -41,6 +41,8 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
@@ -108,7 +110,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 						paramList = pls.get(0);
 					}
 				}
-				enterLinkedMode(document, paramList);
+				enterLinkedMode(document, paramList, (Generic) declaration);
 			}
 		}
 		
@@ -158,7 +160,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	
     private IEditingSupport editingSupport;
     
-	public void enterLinkedMode(IDocument document, ParameterList parameterList) {
+	public void enterLinkedMode(IDocument document, ParameterList parameterList, 
+			Generic generic) {
         boolean basicProposal = parameterList==null;
 		//Big TODO: handle named arguments!
 	    try {
@@ -170,7 +173,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        int i=0;
 	        while (next>1) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
-	        	if (!basicProposal) {
+	        	if (basicProposal) {
+	        		addBasicProposals(generic, loc, first, props, i);
+	        	}
+	        	else {
 	        		addProposals(parameterList, loc, first, props, i);
 	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
@@ -248,7 +254,34 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			if (d instanceof Value && !dwp.isUnimported()) {
 				ProducedType vt = ((Value) d).getType();
 				if (vt.isSubtypeOf(type) && !vt.isNothing()) {
-					addProposal(loc, first, props, index, p, d);
+					addProposal(loc, first, props, index, d, false);
+				}
+			}
+		}
+	}
+
+	private void addBasicProposals(Generic generic, final int loc,
+			int first, List<ICompletionProposal> props, final int index) {
+		TypeParameter p = generic.getTypeParameters().get(index);
+		List<ProducedType> upperBounds = p.getSatisfiedTypes();
+		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
+			Declaration d = dwp.getDeclaration();
+			if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
+				TypeDeclaration td = (TypeDeclaration) d;
+				ProducedType t = td.getType();
+				if (td.getTypeParameters().isEmpty() && 
+						!td.isAnnotation() &&
+						!td.inherits(td.getUnit().getExceptionDeclaration())) {
+					boolean ok = true;
+					for (ProducedType ub: upperBounds) {
+						if (!t.isSubtypeOf(ub)) {
+							ok = false;
+							break;
+						}
+					}
+					if (ok) {
+						addProposal(loc, first, props, index, d, true);
+					}
 				}
 			}
 		}
@@ -272,7 +305,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 
 	private void addProposal(final int loc, int first,
 			List<ICompletionProposal> props, final int index, 
-			Parameter p, final Declaration d) {
+			final Declaration d, final boolean basic) {
 		props.add(new ICompletionProposal() {
 			public String getAdditionalProposalInfo() {
 				return null;
@@ -283,7 +316,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					IRegion li = document.getLineInformationOfOffset(loc);
 					int len = li.getOffset() + li.getLength() - loc;
 					String rest = document.get(loc, len);
-					int paren = rest.indexOf('(');
+					int paren = basic ? rest.indexOf('<') : rest.indexOf('(');
 					int offset = findCharCount(index, document, 
 								loc+paren+1, loc+len, 
 								",", "", true);
