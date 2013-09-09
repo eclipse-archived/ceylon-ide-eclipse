@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
@@ -13,7 +14,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.dialogs.StatusInfo;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
@@ -41,37 +41,51 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     public IVMRunner getVMRunner(ILaunchConfiguration configuration, String mode) throws CoreException {
         final IVMRunner runner = super.getVMRunner(configuration, mode);
         
-        IJavaProject javaProject = getJavaProject(configuration);
-        final IProject project = javaProject.getProject();
-
-        final IPath modulesFolder = getCeylonModulesOutputFolder(project).getLocation();
+        IProject[] requiredProjects = getBuildOrder(configuration, mode);       
+        final List<IPath> workingRepos = new ArrayList<IPath>();
+        final IProject project = getJavaProject(configuration).getProject();
+        
+        for(int i = requiredProjects.length -1; i>=0 ; i--) { //contains current as well, reversed
+            try {// projects may not exist in workspace
+                IPath test =getCeylonModulesOutputFolder(requiredProjects[i]).getLocation();
+                workingRepos.add(test);
+            } catch (Exception e) {
+                continue;
+            }
+        }
         
         return new IVMRunner(){
 
             @Override
             public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-                // in order to not modify the LaunchConfiguration, we replace the program arguments by inserting the path to
-                // the module descriptor and the main class/method name before the user program arguments
 
                 try {
-                    String[] args = config.getProgramArguments();
-                    String[] newArgs = new String[args != null ? args.length + 5 : 5];
-                    if(args != null)
-                        System.arraycopy(args, 0, newArgs, 5, args.length);
+                    List<String> args = Arrays.asList(config.getProgramArguments());
+                    List<String> newArgs = new ArrayList<String>();
+                    newArgs.addAll(args);
 
-                    newArgs[0] = "run";
-                    newArgs[1] = launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, "");
-                    newArgs[2] = "--rep";
-                    newArgs[3] = modulesFolder.toOSString(); 
-                    newArgs[4] = CeylonProjectConfig.get(project).isOffline()?"--offline" : "";
+                    newArgs.add("run");
+
+                    for (IPath repo : workingRepos) {
+                        newArgs.add("--rep");
+                        newArgs.add(repo.toOSString());
+                    }
+                    if (CeylonProjectConfig.get(project).isOffline()) {
+                        newArgs.add("--offline");
+                    }
+                    if (launch.getLaunchMode().equals("debug")) {
+                        newArgs.add("--verbose");
+                    }
+
+                    newArgs.add(launch.getLaunchConfiguration()
+                        .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""));
                     
-                              
-                    config.setProgramArguments(newArgs);
-                    config.setVMArguments(new String[]{"-Djava.util.logging.manager=java.util.logging.LogManager",
+                    config.setProgramArguments(newArgs.toArray(new String[]{}));
+                    config.setVMArguments(new String[]{//"-Djava.util.logging.manager=java.util.logging.LogManager",
                             "-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER,
                             "-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
                                 System.getProperty("ceylon.repo", "")).getAbsolutePath()});
-                    
+
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
                     throw new CoreException(new StatusInfo());
@@ -88,8 +102,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         classpathList.addAll(CeylonPlugin.getModuleLauncherJars());
 
         return classpathList.toArray(new String[classpathList.size()]);
-    }
-    
+    }   
 
     @Override
     protected boolean isLaunchProblem(IMarker problemMarker)
