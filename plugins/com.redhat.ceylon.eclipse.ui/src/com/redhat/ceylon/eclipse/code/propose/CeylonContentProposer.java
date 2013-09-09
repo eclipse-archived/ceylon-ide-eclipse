@@ -114,7 +114,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -244,7 +243,7 @@ public class CeylonContentProposer {
         
         //construct completions when outside ordinary code
         ICompletionProposal[] completions = constructCompletions(offset, result.prefix, cpc, node, 
-        		adjustedToken, returnedParamInfo);
+        		adjustedToken, scope, returnedParamInfo, result.isMemberOp, viewer.getDocument());
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = getProposals(node, scope, 
@@ -719,8 +718,8 @@ public class CeylonContentProposer {
     }
     
     private static ICompletionProposal[] constructCompletions(final int offset, final String prefix, 
-            final CeylonParseController cpc, final Node node, final CommonToken token, 
-            boolean returnedParamInfo) {
+            final CeylonParseController cpc, final Node node, final CommonToken token, final Scope scope,
+            boolean returnedParamInfo, boolean memberOp, final IDocument document) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
@@ -728,28 +727,8 @@ public class CeylonContentProposer {
         		node instanceof Tree.PositionalArgumentList && 
         		(token.getType()==CeylonLexer.LPAREN ||
         		token.getType()==CeylonLexer.COMMA)) {
-        	new Visitor() {
-        		@Override
-        		public void visit(InvocationExpression that) {
-        			Integer startIndex = that.getPositionalArgumentList().getStartIndex();
-					Integer startIndex2 = node.getStartIndex();
-					if (startIndex!=null && startIndex2!=null &&
-							startIndex.intValue()==startIndex2.intValue()) {
-        				Tree.Primary primary = that.getPrimary();
-						if (primary instanceof Tree.MemberOrTypeExpression) {
-        					Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
-        					if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-        						result.add(new ParameterInfo(token.getStartIndex(), "", "show parameters", "", false,
-        								cpc, mte.getDeclaration(), false, mte.getTarget(),
-        								node.getScope()));
-        					}
-        				}
-        			}
-        			super.visit(that);
-        		}
-        	}.visit(cpc.getRootNode());
+        	addFakeShowParametersCompletion(cpc, node, token, result);
         }
-        
         else if (node instanceof Tree.ModuleDescriptor && 
                 (((Tree.ModuleDescriptor) node).getImportPath()==null ||
                 ((Tree.ModuleDescriptor) node).getImportPath().getIdentifiers().isEmpty())) {
@@ -789,14 +768,16 @@ public class CeylonContentProposer {
                 public void visit(Tree.Import that) {
                     super.visit(that);
                     if (that.getImportPath()==node) {
-                        addPackageCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+                        addPackageCompletions(cpc, offset, prefix, 
+                        		(Tree.ImportPath) node, node, result);
                     }
                 }
                 @Override
                 public void visit(Tree.ImportModule that) {
                     super.visit(that);
                     if (that.getImportPath()==node) {
-                        addModuleCompletions(cpc, offset, prefix, (Tree.ImportPath) node, node, result);
+                        addModuleCompletions(cpc, offset, prefix, 
+                        		(Tree.ImportPath) node, node, result);
                     }
                 }
             }.visit(cpc.getRootNode());
@@ -809,11 +790,143 @@ public class CeylonContentProposer {
             addPackageDescriptorCompletion(cpc, offset, prefix, result);
             addKeywordProposals(cpc, offset, prefix, result, node);
         }
+        else if ((node instanceof Tree.SimpleType || 
+            node instanceof Tree.BaseTypeExpression ||
+            node instanceof Tree.QualifiedTypeExpression) 
+               && prefix.isEmpty() && !memberOp) {
+            addMemberNameProposal(offset, node, result);
+        }
+        else if (node instanceof Tree.TypedDeclaration && 
+                !(node instanceof Tree.Variable && 
+                        ((Tree.Variable) node).getType() instanceof Tree.SyntheticVariable) &&
+                !(node instanceof Tree.InitializerParameter)) {
+            addMemberNameProposal(offset, node, result);
+        }
+        else if (node instanceof Tree.TypeArgumentList && 
+        		token.getType()==CeylonLexer.LARGER_OP) {
+        	if (offset==token.getStopIndex()+1) {
+        		addArgumentListProposal(offset, cpc, node, scope, document, result);
+        	}
+        	else {
+        		addMemberNameProposals(offset, cpc, node, result);
+        	}
+        }
         else {
             return null;
         }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
+
+	public static void addMemberNameProposals(final int offset,
+			final CeylonParseController cpc, final Node node,
+			final List<ICompletionProposal> result) {
+		final Integer startIndex2 = node.getStartIndex();
+		new Visitor() {
+			@Override
+			public void visit(Tree.StaticMemberOrTypeExpression that) {
+				Integer startIndex = that.getTypeArguments().getStartIndex();
+				if (startIndex!=null && startIndex2!=null &&
+					startIndex.intValue()==startIndex2.intValue()) {
+					addMemberNameProposal(offset, that, result);
+				}
+				super.visit(that);
+			}
+			public void visit(Tree.SimpleType that) {
+				Integer startIndex = that.getTypeArgumentList().getStartIndex();
+				if (startIndex!=null && startIndex2!=null &&
+					startIndex.intValue()==startIndex2.intValue()) {
+					addMemberNameProposal(offset, that, result);
+				}
+				super.visit(that);
+			}
+		}.visit(cpc.getRootNode());
+	}
+
+	public static void addArgumentListProposal(final int offset,
+			final CeylonParseController cpc, final Node node,
+			final Scope scope, final IDocument document,
+			final List<ICompletionProposal> result) {
+		final Integer startIndex2 = node.getStartIndex();
+		final Integer stopIndex2 = node.getStopIndex();
+		final String typeArgText;
+		try {
+			typeArgText = document.get(startIndex2, stopIndex2-startIndex2+1);
+		} 
+		catch (BadLocationException e) {
+			e.printStackTrace();
+			return;
+		}
+		new Visitor() {
+			@Override
+			public void visit(Tree.StaticMemberOrTypeExpression that) {
+				Integer startIndex = that.getTypeArguments().getStartIndex();
+				if (startIndex!=null && startIndex2!=null &&
+					startIndex.intValue()==startIndex2.intValue()) {
+					ProducedReference pr = that.getTarget();
+					Declaration d = that.getDeclaration();
+					if (d instanceof Functional && pr!=null) {
+						try {
+							String pref = document.get(that.getStartIndex(), 
+									that.getStopIndex()-that.getStartIndex()+1);
+				        	addInvocationProposals(offset, pref, cpc, result, 
+				        			new DeclarationWithProximity(d, 0), pr, 
+				        			scope, null, typeArgText);
+						} 
+						catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				super.visit(that);
+			}
+			public void visit(Tree.SimpleType that) {
+				Integer startIndex = that.getTypeArgumentList().getStartIndex();
+				if (startIndex!=null && startIndex2!=null &&
+					startIndex.intValue()==startIndex2.intValue()) {
+					Declaration d = that.getDeclarationModel();
+					if (d instanceof Functional) {
+						try {
+							String pref = document.get(that.getStartIndex(), 
+									that.getStopIndex()-that.getStartIndex()+1);
+				        	addInvocationProposals(offset, pref, cpc, result, 
+				        			new DeclarationWithProximity(d, 0), 
+				        			    ((Functional) d).getType(), scope, 
+				        			    null, typeArgText);
+						}
+						catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				super.visit(that);
+			}
+		}.visit(cpc.getRootNode());
+	}
+
+	public static void addFakeShowParametersCompletion(
+			final CeylonParseController cpc, final Node node,
+			final CommonToken token, final List<ICompletionProposal> result) {
+		new Visitor() {
+			@Override
+			public void visit(Tree.InvocationExpression that) {
+				Integer startIndex = that.getPositionalArgumentList().getStartIndex();
+				Integer startIndex2 = node.getStartIndex();
+				if (startIndex!=null && startIndex2!=null &&
+						startIndex.intValue()==startIndex2.intValue()) {
+					Tree.Primary primary = that.getPrimary();
+					if (primary instanceof Tree.MemberOrTypeExpression) {
+						Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
+						if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
+							result.add(new ParameterInfo(token.getStartIndex(), "", "show parameters", "", false,
+									cpc, mte.getDeclaration(), false, mte.getTarget(),
+									node.getScope()));
+						}
+					}
+				}
+				super.visit(that);
+			}
+		}.visit(cpc.getRootNode());
+	}
     
     /**
      * BaseMemberExpressions in Annotations have funny lying
@@ -857,73 +970,59 @@ public class CeylonContentProposer {
             }
         }
         else {
-            if ((node instanceof Tree.SimpleType || 
-                 node instanceof Tree.BaseTypeExpression ||
-                 node instanceof Tree.QualifiedTypeExpression) 
-                    && prefix.isEmpty() && !memberOp) {
-                addMemberNameProposal(offset, node, result);
+            OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+            if (!filter && !inDoc && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+                addKeywordProposals(cpc, offset, prefix, result, node);
+                //addTemplateProposal(offset, prefix, result);
             }
-            else if (node instanceof Tree.TypedDeclaration && 
-                    !(node instanceof Tree.Variable && 
-                            ((Tree.Variable)node).getType() instanceof Tree.SyntheticVariable) &&
-                    !(node instanceof Tree.InitializerParameter)) {
-                addMemberNameProposal(offset, node, result);
-            }
-            else {
-                OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-                if (!filter && !inDoc && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
-                    addKeywordProposals(cpc, offset, prefix, result, node);
-                    //addTemplateProposal(offset, prefix, result);
+            
+            boolean isPackageOrModuleDescriptor = isModuleDescriptor(cpc) || isPackageDescriptor(cpc);
+            for (DeclarationWithProximity dwp: set) {
+                Declaration dec = dwp.getDeclaration();
+                
+                if (isPackageOrModuleDescriptor && !inDoc) {
+                    if (!dec.isAnnotation()||!(dec instanceof Method)) continue;
                 }
                 
-                boolean isPackageOrModuleDescriptor = isModuleDescriptor(cpc) || isPackageDescriptor(cpc);
-                for (DeclarationWithProximity dwp: set) {
-                    Declaration dec = dwp.getDeclaration();
-                    
-                    if (isPackageOrModuleDescriptor && !inDoc) {
-                        if (!dec.isAnnotation()||!(dec instanceof Method)) continue;
+                if (isParameterOfNamedArgInvocation(scope, dwp)) {
+                    if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
+                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                        addInlineFunctionProposal(offset, prefix, cpc, node, result, dec, doc);
                     }
-                    
-                    if (isParameterOfNamedArgInvocation(scope, dwp)) {
-                        if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
-                            addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                            addInlineFunctionProposal(offset, prefix, cpc, node, result, dec, doc);
-                        }
+                }
+                
+                CommonToken nextToken = getNextToken(cpc, token);
+                boolean noParamsFollow = noParametersFollow(nextToken);
+                if (isInvocationProposable(dwp, ol) && 
+                        !isQualifiedType(node) && 
+                        !inDoc && noParamsFollow) {
+                    for (Declaration d: overloads(dec)) {
+                        ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+                                getQualifiedProducedReference(node, d) :
+                                getRefinedProducedReference(scope, d);
+                        addInvocationProposals(offset, prefix, cpc, result, 
+                                new DeclarationWithProximity(d, dwp), 
+                                pr, scope, ol, null);
                     }
-                    
-                    CommonToken nextToken = getNextToken(cpc, token);
-                    boolean noParamsFollow = noParametersFollow(nextToken);
-                    if (isInvocationProposable(dwp, ol) && 
-                            !isQualifiedType(node) && 
-                            !inDoc && noParamsFollow) {
-                        for (Declaration d: overloads(dec)) {
-                            ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
-                                    getQualifiedProducedReference(node, d) :
-                                    getRefinedProducedReference(scope, d);
-                            addInvocationProposals(offset, prefix, cpc, result, 
-                                    new DeclarationWithProximity(d, dwp), 
-                                    pr, scope, ol);
-                        }
-                    }
-                    
-                    if (isProposable(dwp, ol, scope) && 
-                            (definitelyRequiresType(ol) ||
-                             noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
-                        addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope, ol);
-                    }
-                    
-                    if (isProposable(dwp, ol, scope) && 
-                            isDirectlyInsideBlock(node, cpc, scope, token) && 
-                            !memberOp && !filter) {
-                        addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                        addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
-                        addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
-                    }
-                    
-                    if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
-                        for (Declaration d: overloads(dec)) {
-                            addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc);
-                        }
+                }
+                
+                if (isProposable(dwp, ol, scope) && 
+                        (definitelyRequiresType(ol) ||
+                         noParamsFollow || dwp.getDeclaration() instanceof Functional)) {
+                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope, ol);
+                }
+                
+                if (isProposable(dwp, ol, scope) && 
+                        isDirectlyInsideBlock(node, cpc, scope, token) && 
+                        !memberOp && !filter) {
+                    addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    addIfExistsProposal(offset, prefix, cpc, result, dwp, dec, ol);
+                    addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
+                }
+                
+                if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
+                    for (Declaration d: overloads(dec)) {
+                        addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc);
                     }
                 }
             }
@@ -1289,7 +1388,7 @@ public class CeylonContentProposer {
     private static void addInvocationProposals(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
-            OccurrenceLocation ol) {
+            OccurrenceLocation ol, String typeArgs) {
         Declaration d = pr.getDeclaration();
         if (!(d instanceof Functional)) return;
         boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
@@ -1306,17 +1405,17 @@ public class CeylonContentProposer {
             if (!isAbstractClass || ol==EXTENDS) {
                 if (defaulted>0) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getPositionalInvocationDescriptionFor(dwp, ol, pr, false), 
-                            getPositionalInvocationTextFor(dwp, ol, pr, false), true,
+                            getPositionalInvocationDescriptionFor(dwp, ol, pr, false, null), 
+                            getPositionalInvocationTextFor(dwp, ol, pr, false, null), true,
                             cpc, d, dwp.isUnimported(), pr, scope));
                 }
                 result.add(new DeclarationCompletionProposal(offset, prefix, 
-                        getPositionalInvocationDescriptionFor(dwp, ol, pr, true), 
-                        getPositionalInvocationTextFor(dwp, ol, pr, true), true,
+                        getPositionalInvocationDescriptionFor(dwp, ol, pr, true, typeArgs), 
+                        getPositionalInvocationTextFor(dwp, ol, pr, true, typeArgs), true,
                         cpc, d, dwp.isUnimported(), pr, scope));
             }
             if (!isAbstractClass && ol!=EXTENDS && 
-                    !fd.isOverloaded()) {
+                    !fd.isOverloaded() && typeArgs==null) {
                 //if there is at least one parameter, 
                 //suggest a named argument invocation 
                 if (defaulted>0 && ps.size()>defaulted) {
@@ -1738,11 +1837,16 @@ public class CeylonContentProposer {
     }
     
     public static String getPositionalInvocationTextFor(DeclarationWithProximity d,
-            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
+            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted, 
+            String typeArgs) {
         StringBuilder result = new StringBuilder(name(d));
         Declaration dd = d.getDeclaration();
-        if (forceExplicitTypeArgs(dd, ol))
+        if (typeArgs!=null) {
+        	result.append(typeArgs);
+        }
+        else if (forceExplicitTypeArgs(dd, ol)) {
             appendTypeParameters(dd, result);
+        }
         appendPositionalArgs(dd, pr, result, includeDefaulted);
         appendSemiToVoidInvocation(result, dd);
         return result.toString();
@@ -1775,10 +1879,15 @@ public class CeylonContentProposer {
     }
     
     private static String getPositionalInvocationDescriptionFor(DeclarationWithProximity d, 
-            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted) {
+            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted, 
+            String typeArgs) {
         StringBuilder result = new StringBuilder(d.getName());
-        if (forceExplicitTypeArgs(d.getDeclaration(), ol))
+        if (typeArgs!=null) {
+        	result.append(typeArgs);
+        }
+        else if (forceExplicitTypeArgs(d.getDeclaration(), ol)) {
             appendTypeParameters(d.getDeclaration(), result);
+        }
         appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
         return result.toString();
     }
