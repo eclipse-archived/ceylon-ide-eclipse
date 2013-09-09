@@ -49,7 +49,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "jboss-modules-main.jar",
+        "org.jboss.modules-main.jar",
     };
     private static final String[] COMPILETIME_LIBRARIES = new String[]{
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
@@ -228,15 +228,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         }
     }
     
-    private static String getRepoFolder(String jarName) {
-       if (jarName.startsWith("jboss-modules")) {
-           return "org/jboss/modules/main";
-       } else {
-           int lastDot = jarName.lastIndexOf('.');
-           int lastDash = jarName.lastIndexOf('-');
-           return jarName.substring(0, lastDash).replace('.', '/')
-                + "/" + jarName.substring(lastDash + 1, lastDot);
-       }
+    private static String getRepoFolder(String jarName) {   
+       int lastDot = jarName.lastIndexOf('.');
+       int lastDash = jarName.lastIndexOf('-');
+       return jarName.substring(0, lastDash).replace('.', '/')
+            + "/" + jarName.substring(lastDash + 1, lastDot);
     }
     
 	public String getID() {
