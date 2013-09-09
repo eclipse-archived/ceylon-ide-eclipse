@@ -35,6 +35,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor currentBracket;
     BooleanFieldEditor autoInsert;
     BooleanFieldEditor autoActivation;
+    BooleanFieldEditor linkedMode;
     ScaleFieldEditor autoActivationDelay;
     BooleanFieldEditor smartCaret;
     RadioGroupFieldEditor autoActivationChars;
@@ -52,6 +53,7 @@ public class CeylonEditorPreferencesPage
         autoActivation.store();
         autoActivationDelay.store();
         autoActivationChars.store();
+        linkedMode.store();
         smartCaret.store();
         return true;
     }
@@ -66,11 +68,15 @@ public class CeylonEditorPreferencesPage
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
+        linkedMode.loadDefault();
         smartCaret.loadDefault();
     }
     
     @Override
     public void init(IWorkbench workbench) {
+    	//TODO: is it really right that we're 
+    	//      storing all our preferences
+    	//      in some other plugin's store??
         setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
 //        setDescription("Preferences for the Ceylon editor");
     }
@@ -162,6 +168,11 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
+        linkedMode = new BooleanFieldEditor(CeylonSourceViewerConfiguration.LINKED_MODE, 
+        		"Use linked mode to complete argument lists", 
+        		getFieldEditorParent());
+        linkedMode.load();
+        addField(linkedMode);
         addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Other:",
                 getFieldEditorParent()));

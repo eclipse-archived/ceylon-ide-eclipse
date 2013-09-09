@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -42,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
+import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -95,11 +97,14 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		
 		super.apply(document);
 		
-		if (declaration instanceof Functional) {
-		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
-                enterLinkedMode(document, pls.get(0));
-            }
+		if (EditorsPlugin.getDefault().getPreferenceStore()
+				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
+			if (declaration instanceof Functional) {
+				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+					enterLinkedMode(document, pls.get(0));
+				}
+			}
 		}
 		
 	}
