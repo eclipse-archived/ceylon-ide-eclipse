@@ -30,6 +30,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STY
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.LOCAL_NAME;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
@@ -114,6 +115,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -793,28 +795,39 @@ public class CeylonContentProposer {
         else if ((node instanceof Tree.SimpleType || 
             node instanceof Tree.BaseTypeExpression ||
             node instanceof Tree.QualifiedTypeExpression) 
-               && prefix.isEmpty() && !memberOp) {
-            addMemberNameProposal(offset, node, result);
+               && prefix.isEmpty() && 
+               isMemberNameProposable(offset, node, prefix, memberOp)) {
+            addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypedDeclaration && 
                 !(node instanceof Tree.Variable && 
                         ((Tree.Variable) node).getType() instanceof Tree.SyntheticVariable) &&
-                !(node instanceof Tree.InitializerParameter)) {
-            addMemberNameProposal(offset, node, result);
+                !(node instanceof Tree.InitializerParameter) &&
+                isMemberNameProposable(offset, node, prefix, memberOp)) {
+            addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypeArgumentList && 
         		token.getType()==CeylonLexer.LARGER_OP) {
         	if (offset==token.getStopIndex()+1) {
         		addArgumentListProposal(offset, cpc, node, scope, document, result);
         	}
-        	else {
+        	else if (isMemberNameProposable(offset, node, prefix, memberOp)) {
         		addMemberNameProposals(offset, cpc, node, result);
+        	}
+        	else {
+        		return null;
         	}
         }
         else {
             return null;
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+    
+    private static boolean isMemberNameProposable(int offset, Node node, String prefix, boolean memberOp) {
+        return !memberOp &&
+                node.getEndToken()!=null && 
+               ((CommonToken)node.getEndToken()).getStopIndex()>=offset-2;
     }
 
 	public static void addMemberNameProposals(final int offset,
@@ -827,7 +840,7 @@ public class CeylonContentProposer {
 				Integer startIndex = that.getTypeArguments().getStartIndex();
 				if (startIndex!=null && startIndex2!=null &&
 					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, that, result);
+					addMemberNameProposal(offset, "", that, result);
 				}
 				super.visit(that);
 			}
@@ -835,7 +848,7 @@ public class CeylonContentProposer {
 				Integer startIndex = that.getTypeArgumentList().getStartIndex();
 				if (startIndex!=null && startIndex2!=null &&
 					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, that, result);
+					addMemberNameProposal(offset, "", that, result);
 				}
 				super.visit(that);
 			}
@@ -1435,10 +1448,9 @@ public class CeylonContentProposer {
         }
     }
 
-    protected static void addMemberNameProposal(int offset,
+    protected static void addMemberNameProposal(int offset, String prefix,
             Node node, List<ICompletionProposal> result) {
         String suggestedName = null;
-        String prefix = "";
         if (node instanceof Tree.TypeDeclaration) {
             /*Tree.TypeDeclaration td = (Tree.TypeDeclaration) node;
             prefix = td.getIdentifier()==null ? 
@@ -1449,23 +1461,12 @@ public class CeylonContentProposer {
         }
         else if (node instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
-            prefix = td.getIdentifier()==null ? 
-                    "" : td.getIdentifier().getText();
-            suggestedName = prefix;
             if (td.getType() instanceof Tree.SimpleType) {
-                String type = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
-                if (lower(type).startsWith(prefix)) {
-                    result.add(new CompletionProposal(offset, prefix, null,
-                            lower(type), escape(lower(type)), false));
-                }
-                if (!suggestedName.endsWith(type)) {
-                    suggestedName += type;
-                }
-                result.add(new CompletionProposal(offset, prefix, null,
-                        lower(suggestedName), escape(lower(suggestedName)), 
-                        false));
+            	Tree.Identifier id = td.getIdentifier();
+            	if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
+            		suggestedName = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
+            	}
             }
-            return;
         }
         else if (node instanceof Tree.SimpleType) {
             suggestedName = ((Tree.SimpleType) node).getIdentifier().getText();
@@ -1477,14 +1478,22 @@ public class CeylonContentProposer {
             suggestedName = ((Tree.QualifiedTypeExpression) node).getIdentifier().getText();
         }
         if (suggestedName!=null) {
-            result.add(new CompletionProposal(offset, "", null,
-                    lower(suggestedName), escape(lower(suggestedName)), 
-                    false));
+        	suggestedName = lower(suggestedName);
+        	if (!suggestedName.startsWith(prefix)) {
+        		suggestedName = prefix + upper(suggestedName);
+        	}
+    		result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
+    				suggestedName, escape(suggestedName), false));
         }
     }
 
     private static String lower(String suggestedName) {
         return Character.toLowerCase(suggestedName.charAt(0)) + 
+                suggestedName.substring(1);
+    }
+
+    private static String upper(String suggestedName) {
+        return Character.toUpperCase(suggestedName.charAt(0)) + 
                 suggestedName.substring(1);
     }
 

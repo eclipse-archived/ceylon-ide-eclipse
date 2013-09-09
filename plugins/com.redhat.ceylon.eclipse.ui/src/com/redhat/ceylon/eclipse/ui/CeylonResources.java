@@ -76,5 +76,7 @@ public interface CeylonResources {
 	public static final String SHOW_DOC = "show_doc";
 	public static final String REPOSITORIES = "repositories";
 	public static final String RUNTIME_OBJ = "runtime_obj";
+	
+	public static final String CEYLON_LOCAL_NAME = "local_name";
     
 }
