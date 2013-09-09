@@ -139,7 +139,7 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
 //            ImageData data= getImageData(PluginImages.DESC_OVR_DEPRECATED);
 //            drawImage(data, 0, size.y - data.height);
 //        }
-        drawImage(bg, 0, 0);
+        drawImage(bg, (width-bg.width)/2, 0);
 
         drawTopLeft(); // conventionally not used
         drawTopRight();

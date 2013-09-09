@@ -30,8 +30,11 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -146,6 +149,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, PACKAGES);
+        }
+    };
+    
+    private static final Color OLIVE = new Color(Display.getDefault(), 0x80, 0x80, 0);
+    
+    public static final Styler ARROW_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=OLIVE;
         }
     };
     
@@ -345,7 +357,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     @Override
     public StyledString getStyledText(Object element) {
         if (element instanceof CeylonOutlineNode) {
-            return getStyledLabelFor((Node) ((CeylonOutlineNode) element).getTreeNode());
+            CeylonOutlineNode con = (CeylonOutlineNode) element;
+            StyledString label = getStyledLabelFor((Node) con.getTreeNode());
+            if (con.getChildren().isEmpty()) {
+            	return label;
+            }
+            else {
+            	return new StyledString("> ", ARROW_STYLER).append(label);
+            }
         }
         else if (element instanceof IFile) {
             return new StyledString(getLabelForFile((IFile) element));
