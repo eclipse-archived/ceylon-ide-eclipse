@@ -62,10 +62,70 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
         
-        /*doc = new Document("doc \"Hello\n     World\n     !\"\n void hello(){}");
+        doc = new Document("doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "doc \"Hello\n     World\n     !\"\n void hello(){}");*/
+        assertResult(doc, "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
 
+        doc = new Document("\"Hello\n World\n !\"\nvoid hello(){}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\"Hello\n World\n !\"\nvoid hello(){}");
+        
+        doc = new Document("\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
+        
+        doc = new Document("\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+        
+        doc = new Document("String x()\n=>\"hello\";");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "String x()\n=>\"hello\";");
+
+        doc = new Document("String x()\n\t=>\"hello\";");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "String x()\n\t\t=>\"hello\";");
+        
+        doc = new Document("String x()\n\t\t=>\"hello\";");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "String x()\n\t\t=>\"hello\";");
+
+        doc = new Document("\tString x()\n\t\t\t=>\"hello\";");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tString x()\n\t\t\t=>\"hello\";");
+        
+        doc = new Document("class X()\nextends Y()");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\nextends Y()");
+
+        doc = new Document("class X()\n\textends Y()");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\n\t\textends Y()");
+        
+        doc = new Document("class X()\n\t\textends Y()");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\n\t\textends Y()");
+
+        doc = new Document("\tclass X()\n\t\t\textends Y()");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tclass X()\n\t\t\textends Y()");
+        
+        doc = new Document("class X()\nextends Y()\nsatisfies Z");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\nextends Y()\nsatisfies Z");
+
+        doc = new Document("class X()\n\textends Y()\n\tsatisfies Z");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+        
+        doc = new Document("class X()\n\t\textends Y()\n\t\tsatisfies Z");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+
+        doc = new Document("\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+        
         doc = new Document("x=1;");
         instance.doNewline(doc);
         assertResult(doc, "x=1;\n");
@@ -201,6 +261,70 @@ class Test extends CeylonAutoEditStrategy {
         doc = new Document("\tvoid x() {} //foo\n\t");
         instance.doNewline(doc);
         assertResult(doc, "\tvoid x() {} //foo\n\t\n\t");
+        
+        doc = new Document("String greeting = \"hello");
+        instance.doNewline(doc);
+        assertResult(doc, "String greeting = \"hello\n                   ");
+        
+        doc = new Document("\tString greeting = \"hello");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString greeting = \"hello\n\t                   ");
+        
+        doc = new Document("String greeting = \"hello\n                   world");
+        instance.doNewline(doc);
+        assertResult(doc, "String greeting = \"hello\n                   world\n                   ");
+        
+        doc = new Document("\tString greeting = \"hello\n\t                   world");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString greeting = \"hello\n\t                   world\n\t                   ");
+        
+        doc = new Document("String greeting = \"\"\"hello");
+        instance.doNewline(doc);
+        assertResult(doc, "String greeting = \"\"\"hello\n                     ");
+        
+        doc = new Document("\tString greeting = \"\"\"hello");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString greeting = \"\"\"hello\n\t                     ");
+        
+        doc = new Document("String greeting = \"\"\"hello\n                     world");
+        instance.doNewline(doc);
+        assertResult(doc, "String greeting = \"\"\"hello\n                     world\n                     ");
+        
+        doc = new Document("\tString greeting = \"\"\"hello\n\t                     world");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString greeting = \"\"\"hello\n\t                     world\n\t                     ");
+        
+        doc = new Document("String x()\n=>\"hello\" +");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n=>\"hello\" +\n");
+
+        doc = new Document("String x()\n\t=>\"hello\" +");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n\t=>\"hello\" +\n\t");
+        
+        doc = new Document("String x()\n\t\t=>\"hello\" +");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n\t\t=>\"hello\" +\n\t\t");
+
+        doc = new Document("\tString x()\n\t\t\t=>\"hello\" +");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString x()\n\t\t\t=>\"hello\" +\n\t\t\t");
+
+        doc = new Document("String x()\n=>\"hello\";");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n=>\"hello\";\n");
+
+        doc = new Document("String x()\n\t=>\"hello\";");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n\t=>\"hello\";\n");
+        
+        doc = new Document("String x()\n\t\t=>\"hello\";");
+        instance.doNewline(doc);
+        assertResult(doc, "String x()\n\t\t=>\"hello\";\n");
+
+        doc = new Document("\tString x()\n\t\t\t=>\"hello\";");
+        instance.doNewline(doc);
+        assertResult(doc, "\tString x()\n\t\t\t=>\"hello\";\n\t");
         
         doc = new Document("void x() {\n\t");
         instance.doClosingBrace(doc);
