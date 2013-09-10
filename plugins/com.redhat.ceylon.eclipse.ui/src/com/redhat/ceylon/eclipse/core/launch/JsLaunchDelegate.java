@@ -77,8 +77,8 @@ public class JsLaunchDelegate extends LaunchConfigurationDelegate {
         try {
             CeylonRunJsTool runner = new CeylonRunJsTool();
             //Set system repo
-            runner.setSysrep(getInterpolatedCeylonSystemRepo(proj));
-            runner.setRepositories(repos);
+            runner.setSystemRepository(getInterpolatedCeylonSystemRepo(proj));
+            runner.setRepositoryAsStrings(repos);
             runner.setRun(methname);
             runner.setModuleVersion(modname);
             runner.setOutput(pout);
