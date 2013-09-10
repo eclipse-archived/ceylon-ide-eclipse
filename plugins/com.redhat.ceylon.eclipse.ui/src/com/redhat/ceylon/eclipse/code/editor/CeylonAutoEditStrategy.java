@@ -10,6 +10,10 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentSpaces;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentWithSpaces;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.initialIndent;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.core.runtime.Platform.getPreferencesService;
@@ -18,7 +22,9 @@ import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceCon
 
 import java.util.List;
 
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -27,10 +33,42 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
+    public static String getDefaultIndent() {
+        StringBuilder result = new StringBuilder();
+        initialIndent(result);
+        return result.toString();
+    }
+    
+    static int getIndentSpaces() {
+        IPreferencesService ps = getPreferencesService();
+        return ps==null ? 4 :
+            ps.getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
+    }
+    
+    static boolean getIndentWithSpaces() {
+        IPreferencesService ps = getPreferencesService();
+        return ps==null ? false :
+            ps.getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
+    }
+    
+    static void initialIndent(StringBuilder buf) {
+        //guess an initial indent level
+        if (getIndentWithSpaces()) {
+            int spaces = getIndentSpaces();
+            for (int i=1; i<=spaces; i++) {
+                buf.append(' ');                          
+            }
+        }
+        else {
+            buf.append('\t');
+        }
+    }
+
     //TODO: when pasting inside an existing string literal, should
     //      we automagically escape unescaped quotes in the pasted
     //      text?
@@ -40,8 +78,39 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	public CeylonAutoEditStrategy(CeylonEditor editor) {
 		this.editor = editor;
 	}
-    
-    public void customizeDocumentCommand(IDocument doc, DocumentCommand cmd) {
+	
+	 public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
+		 List<CommonToken> tokens=null;
+//		 if (editor!=null) {
+//			 CeylonParseController pc = editor.getParseController();
+//			 if (pc.getTokens()!=null) {
+//				 tokens = pc.getTokens();
+//			 }
+//		 }
+		 if (tokens==null) {
+			 CommonTokenStream ts = new CommonTokenStream(new CeylonLexer(new ANTLRStringStream(document.get())));
+			 ts.fill();
+			 tokens = ts.getTokens();
+		 }
+		 new AutoEdit(document, tokens, command).customizeDocumentCommand();
+	 }
+	 
+}
+
+class AutoEdit {
+	
+	public AutoEdit(IDocument document, List<CommonToken> tokens,
+			DocumentCommand command) {
+		this.document = document;
+		this.tokens = tokens;
+		this.command = command;
+	}
+
+	private IDocument document;
+	private List<CommonToken> tokens;
+	private DocumentCommand command;
+
+    public void customizeDocumentCommand() {
     	
         //Note that IMP's Correct Indentation sends us a tab
     	//character at the start of each line of selected
@@ -51,41 +120,41 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     	//Note also that typed tabs are replaced with spaces
     	//before this method is called if the spacesfortabs 
     	//setting is enabled.
-        if (cmd.doit == false) {
+        if (command.doit == false) {
             return;
         }
         
-        //cmd.length>0 means we are replacing or deleting text
-        else if (cmd.text!=null && cmd.length==0) { 
-            if (cmd.text.isEmpty()) {
+        //command.length>0 means we are replacing or deleting text
+        else if (command.text!=null && command.length==0) { 
+            if (command.text.isEmpty()) {
                 //workaround for a really annoying bug where we 
                 //get sent "" instead of "\t" or "    " by IMP
                 //reconstruct what we would have been sent 
                 //without the bug
                 if (getIndentWithSpaces()) {
-                    int overhang = getPrefix(doc, cmd).length() % getIndentSpaces();
-                    cmd.text = getDefaultIndent().substring(overhang);
+                    int overhang = getPrefix().length() % getIndentSpaces();
+                    command.text = getDefaultIndent().substring(overhang);
                 }
                 else {
-                    cmd.text = "\t";
+                	command.text = "\t";
                 }
-                smartIndentOnKeypress(doc, cmd);
+                smartIndentOnKeypress();
             }
-            else if (cmd.text.length()==1 && isLineEnding(doc, cmd.text)) {
+            else if (command.text.length()==1 && isLineEnding(command.text)) {
             	//a typed newline
-                smartIndentAfterNewline(doc, cmd);
+                smartIndentAfterNewline();
             }
-            else if (cmd.text.length()==1 || 
+            else if (command.text.length()==1 || 
                     //when spacesfortabs is enabled, we get 
                     //sent spaces instead of a tab
-                    getIndentWithSpaces() && isIndent(getPrefix(doc, cmd))) {
+                    getIndentWithSpaces() && isIndent(getPrefix())) {
             	//anything that might represent a single 
                 //keypress or a Correct Indentation
-                smartIndentOnKeypress(doc, cmd);
+                smartIndentOnKeypress();
             }
         }
         
-        closeOpening(doc, cmd);
+        closeOpening();
     }
 
 	private static String[][] FENCES = {
@@ -96,17 +165,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			{ "(", ")" },
 			{ "[", "]" }};
 
-	public void closeOpening(IDocument doc, DocumentCommand cmd) {
+	public void closeOpening() {
 		
 		try {
 			// TODO: improve this, check the surrounding token type!
-			if (doc.getChar(cmd.offset - 1) == '\\') {
+			if (document.getChar(command.offset - 1) == '\\') {
 				return;
 			}
 		} 
 		catch (BadLocationException e) {}
 
-		String current = cmd.text;
+		String current = command.text;
 		String opening = null;
 		String closing = null;
 
@@ -127,50 +196,50 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 				//typed character is a closing fence
 				try {
 					// skip one ahead if next char is already a closing fence
-					if (skipClosingFence(doc, cmd, closing)) {
-						cmd.text = "";
-						cmd.shiftsCaret = false;
-						cmd.caretOffset = cmd.offset + 1;
+					if (skipClosingFence(closing)) {
+						command.text = "";
+						command.shiftsCaret = false;
+						command.caretOffset = command.offset + 1;
 						return;
 					}
 				} 
 				catch (BadLocationException e) {}
 			}
 
-            if (current.equals(opening) && (!isQuotedOrCommented(doc,cmd.offset) || 
-            		isGraveAccentCharacterInStringLiteral(cmd.offset, opening) ||
-            		isWikiRefInAnnotatedStringLiteral(cmd.offset, opening))) {
+            if (current.equals(opening) && (!isQuotedOrCommented(command.offset) || 
+            		isGraveAccentCharacterInStringLiteral(command.offset, opening) ||
+            		isWikiRefInAnnotatedStringLiteral(command.offset, opening))) {
 				//typed character is an opening fence
-				if (closeOpeningFence(doc, cmd, opening, closing)) {
+				if (closeOpeningFence(opening, closing)) {
 					//add a closing fence
-				    cmd.shiftsCaret = false;
-                    cmd.caretOffset = cmd.offset + 1;
-				    if (isGraveAccentCharacterInStringLiteral(cmd.offset, opening)) {
+					command.shiftsCaret = false;
+					command.caretOffset = command.offset + 1;
+				    if (isGraveAccentCharacterInStringLiteral(command.offset, opening)) {
 				        try {
-				            if (cmd.offset>1 &&
-				                    doc.get(cmd.offset-1,1).equals("`") &&
-				                    !doc.get(cmd.offset-2,1).equals("`")) {
-				                cmd.text += "``";
+				            if (command.offset>1 &&
+				                    document.get(command.offset-1,1).equals("`") &&
+				                    !document.get(command.offset-2,1).equals("`")) {
+				            	command.text += "``";
 				            }
 				        } 
 				        catch (BadLocationException e) {}
 				    }
 				    else if (opening.equals("\"")) {
 				        try {
-				            if (cmd.offset<=1 ||
-				                    !doc.get(cmd.offset-2,1).equals("\"")) {
-                                cmd.text += closing;
+				            if (command.offset<=1 ||
+				                    !document.get(command.offset-2,1).equals("\"")) {
+                                command.text += closing;
                             }
-				            else if (cmd.offset>1 &&
-				                    doc.get(cmd.offset-2,2).equals("\"\"") &&
-				                    !(cmd.offset>2 && doc.get(cmd.offset-3,1).equals("\""))) {
-				                cmd.text += "\"\"\"";
+				            else if (command.offset>1 &&
+				                    document.get(command.offset-2,2).equals("\"\"") &&
+				                    !(command.offset>2 && document.get(command.offset-3,1).equals("\""))) {
+				                command.text += "\"\"\"";
 				            }
 				        } 
 				        catch (BadLocationException e) {}
 				    }
 				    else {
-				        cmd.text += closing;
+				        command.text += closing;
 				    }
 				}
 			}
@@ -178,13 +247,11 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 		}
 	}
 
-    private boolean skipClosingFence(IDocument doc, DocumentCommand cmd,
-            String closing) throws BadLocationException {
-        return String.valueOf(doc.getChar(cmd.offset)).equals(closing);
+    private boolean skipClosingFence(String closing) throws BadLocationException {
+        return String.valueOf(document.getChar(command.offset)).equals(closing);
     }
 
-	private boolean closeOpeningFence(IDocument doc, DocumentCommand cmd,
-			String opening, String closing) {
+	private boolean closeOpeningFence(String opening, String closing) {
 		boolean closeOpening;
 		if (opening.equals(closing)) { 
 			closeOpening = count(opening)%2==0;
@@ -198,13 +265,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 			// if(a< -> don't close
 			// if(Some< -> close
 			// A< -> close
-			int currOfset = cmd.offset - 1;
+			int currOfset = command.offset - 1;
 			char currChar;
 			try {
-				while (Character.isAlphabetic(currChar = doc.getChar(currOfset))) {
+				while (Character.isAlphabetic(currChar = document.getChar(currOfset))) {
 					currOfset--;
 				}
-				currChar = doc.getChar(currOfset + 1);
+				currChar = document.getChar(currOfset + 1);
 				if (!Character.isUpperCase(currChar)) {
 					closeOpening = false;
 				}
@@ -214,13 +281,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 		return closeOpening;
 	}
 
-	private String getPrefix(IDocument doc, DocumentCommand cmd) {
+	private String getPrefix() {
 		try {
-			int lineOffset = doc.getLineInformationOfOffset(cmd.offset).getOffset();
-			return doc.get(lineOffset, cmd.offset-lineOffset) + cmd.text;
+			int lineOffset = document.getLineInformationOfOffset(command.offset).getOffset();
+			return document.get(lineOffset, command.offset-lineOffset) + command.text;
 		} 
 		catch (BadLocationException e) {
-			return cmd.text;
+			return command.text;
 		}
 	}
     
@@ -237,14 +304,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
     
-    private void smartIndentAfterNewline(IDocument d, DocumentCommand c) {
-        if (c.offset==-1 || d.getLength()==0) {
+    private void smartIndentAfterNewline() {
+        if (command.offset==-1 || document.getLength()==0) {
             return;
         }
 
         try {
             //if (end > start) {
-                indentNewLine(d, c);
+                indentNewLine();
             //}
         } 
         catch (BadLocationException bleid ) {
@@ -252,13 +319,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    private void smartIndentOnKeypress(IDocument d, DocumentCommand c) {
-        if (c.offset==-1 || d.getLength()==0) {
+    private void smartIndentOnKeypress() {
+        if (command.offset==-1 || document.getLength()==0) {
             return;
         }
          
         try {
-            adjustIndentOfCurrentLine(d, c);
+            adjustIndentOfCurrentLine();
         }
         catch (BadLocationException ble) {
             ble.printStackTrace();
@@ -277,7 +344,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         		type==MULTI_COMMENT;
     }
 
-    private boolean isQuotedOrCommented(IDocument d, int offset) {
+    private boolean isQuotedOrCommented(int offset) {
     	int type = tokenType(offset);
     	return type==STRING_LITERAL ||
     			type==CHAR_LITERAL || 
@@ -325,12 +392,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
     
 	public CommonToken token(int offset) {
-		if (editor==null) return null;
-        CeylonParseController pc = editor.getParseController();
-        List<CommonToken> tokens = pc.getTokens();
+        List<CommonToken> tokens = getTokens();
 		if (tokens!=null) {
     		if (tokens.size()>1) {
-    			if (pc.getDocument().getLength()==offset) { //at very end of file
+    			if (tokens.get(tokens.size()-1).getStartIndex()==offset) { //at very end of file
     				//check to see if last token is an
     				//unterminated string or comment
     				CommonToken token = tokens.get(tokens.size()-2);
@@ -380,7 +445,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return false;
     }*/
 
-	private int getStringIndent(IDocument d, int offset) {
+	private int getStringIndent(int offset) {
 		CommonToken token = token(offset);
 		if (token!=null) {
 			int type = token.getType();
@@ -404,186 +469,179 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 		return token.getCharPositionInLine()+quote;
 	}
 
-    private void adjustIndentOfCurrentLine(IDocument d, DocumentCommand c)
+    private void adjustIndentOfCurrentLine()
             throws BadLocationException {
-        switch (c.text.charAt(0)) {
+        switch (command.text.charAt(0)) {
             case '}':
-                reduceIndentOfCurrentLine(d, c);
+                reduceIndentOfCurrentLine();
                 break;
             case '{':
             case '\t':
-                if (isStringOrCommentContinuation(c.offset)) {
-                    shiftToBeginningOfStringOrCommentContinuation(d, c);
+                if (isStringOrCommentContinuation(command.offset)) {
+                    shiftToBeginningOfStringOrCommentContinuation();
                 }
                 else {
-                    fixIndentOfCurrentLine(d, c);
+                    fixIndentOfCurrentLine();
                 }
                 break;
             default:
                 //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                if (getIndentWithSpaces() && isIndent(getPrefix(d, c))) {
-                    if (isStringOrCommentContinuation(c.offset)) {
-                        shiftToBeginningOfStringOrCommentContinuation(d, c);
+                if (CeylonAutoEditStrategy.getIndentWithSpaces() && isIndent(getPrefix())) {
+                    if (isStringOrCommentContinuation(command.offset)) {
+                        shiftToBeginningOfStringOrCommentContinuation();
                     }
                     else {
-                        fixIndentOfCurrentLine(d, c);
+                        fixIndentOfCurrentLine();
                     }
                 }
         }
     }
 
-    private void shiftToBeginningOfStringOrCommentContinuation(IDocument d, DocumentCommand c)
+    private void shiftToBeginningOfStringOrCommentContinuation()
             throws BadLocationException {
-        //int start = getStartOfCurrentLine(d, c);
-        int end = getEndOfCurrentLine(d, c);
-        int loc = firstEndOfWhitespace(d, c.offset/*start*/, end);
-        if (loc>c.offset) {
-            c.length = 0;
-            c.text = "";
-            c.caretOffset = loc;
+        //int start = getStartOfCurrentLine(d, command);
+        int end = getEndOfCurrentLine();
+        int loc = firstEndOfWhitespace(command.offset/*start*/, end);
+        if (loc>command.offset) {
+            command.length = 0;
+            command.text = "";
+            command.caretOffset = loc;
         }
     }
     
-    private void indentNewLine(IDocument d, DocumentCommand c)
+    private void indentNewLine()
             throws BadLocationException {
-        int stringIndent = getStringIndent(d, c.offset);
-        int start = getStartOfCurrentLine(d, c);
+        int stringIndent = getStringIndent(command.offset);
+        int start = getStartOfCurrentLine();
         if (stringIndent>=0) {
             StringBuilder sb = new StringBuilder();
             for (int i=0; i<stringIndent; i++) {
-                char ws = d.getChar(start+i)=='\t' ? 
+                char ws = document.getChar(start+i)=='\t' ? 
                         '\t' : ' ';
                 sb.append(ws);
             }
-            c.text = c.text + sb.toString();
+            command.text = command.text + sb.toString();
         }
         else {
-            char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(d, c.offset-1);
-            char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(d, c.offset-1);
-            char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(d, c.offset);
+            char lastNonWhitespaceChar = getPreviousNonWhitespaceCharacter(command.offset-1);
+            char endOfLastLineChar = getPreviousNonWhitespaceCharacterInLine(command.offset-1);
+            char startOfNewLineChar = getNextNonWhitespaceCharacterInLine(command.offset);
 
             //let's attempt to account for line ending comments in determining if it is a
             //continuation, but only by looking at the previous line
             //TODO: make this handle line ending comments further back
-            char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(d, start, c.offset);
+            char lastNonWhitespaceCharAccountingForComments = getLastNonWhitespaceCharacterInLine(start, command.offset);
             if (lastNonWhitespaceCharAccountingForComments!='\n') {
                 lastNonWhitespaceChar = lastNonWhitespaceCharAccountingForComments;
                 endOfLastLineChar = lastNonWhitespaceCharAccountingForComments;
             }
             
-            StringBuilder buf = new StringBuilder(c.text);
+            StringBuilder buf = new StringBuilder(command.text);
             boolean closeBrace = count("{")>count("}");
-            appendIndent(d, start, getEndOfCurrentLine(d, c), 
+            appendIndent(document, start, getEndOfCurrentLine(), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    false, closeBrace, buf, c); //false, because otherwise it indents after annotations, which I guess we don't want
+                    false, closeBrace, buf, command); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
-                String hanging = d.get(c.offset, getEndOfCurrentLine(d, c)-c.offset); //stuff after the { on the current line
-                buf.insert(c.caretOffset-c.offset, hanging);
-                c.length = hanging.length();
+                String hanging = document.get(command.offset, getEndOfCurrentLine()-command.offset); //stuff after the { on the current line
+                buf.insert(command.caretOffset-command.offset, hanging);
+                command.length = hanging.length();
             }
-            c.text = buf.toString();
+            command.text = buf.toString();
             
         }
-        if (isMultilineCommentStart(c.offset, d)) {
-        	c.shiftsCaret=false;
-        	c.caretOffset=c.offset+c.text.length();
-        	c.text = c.text + c.text + "*/";
+        if (isMultilineCommentStart(command.offset, document)) {
+        	command.shiftsCaret=false;
+        	command.caretOffset=command.offset+command.text.length();
+        	command.text = command.text + command.text + "*/";
         }
     }
     
     int count(String token) {
     	int count = 0;
-    	if (editor!=null) {
-    		CeylonParseController pc = editor.getParseController();
-    		if (pc.getTokens()!=null) {
-    			for (CommonToken tok: pc.getTokens()) {
-    				if (tok.getText().equals(token)) {
-    					count++;
-    				}
-    			}
-    		}
-    	}
+    	List<CommonToken> tokens = getTokens();
+		for (CommonToken tok: tokens) {
+			if (tok.getText().equals(token)) {
+				count++;
+			}
+		}
     	return count;
-//    	int result = 0;
-//    	for (int i=0; i<string.length(); i++) {
-//    		char c = string.charAt(i);
-//			if (c==ch) result++;
-//			if (c=='\\') i++;
-//    	}
-//    	return result;
     }
+
+	protected List<CommonToken> getTokens() {
+		return tokens;
+	}
     
-    private void fixIndentOfCurrentLine(IDocument d, DocumentCommand c)
+    private void fixIndentOfCurrentLine()
             throws BadLocationException {
-        int start = getStartOfCurrentLine(d, c);
-        int end = getEndOfCurrentLine(d, c);
+        int start = getStartOfCurrentLine();
+        int end = getEndOfCurrentLine();
         //System.out.println(d.get(start, end-start));
-        int endOfWs = firstEndOfWhitespace(d, start, end);
-        if (c.offset<endOfWs || 
-                c.offset==start && c.shiftsCaret==false) { //Test for IMP's "Correct Indent"
+        int endOfWs = firstEndOfWhitespace(start, end);
+        if (command.offset<endOfWs || 
+                command.offset==start && command.shiftsCaret==false) { //Test for IMP's "Correct Indent"
             if (start==0) { //Start of file
-                c.text="";
-                c.offset=start;
-                c.length=0;
+                command.text="";
+                command.offset=start;
+                command.length=0;
             }
             else {
-                int endOfPrev = getEndOfPreviousLine(d, c);
-                int startOfPrev = getStartOfPreviousLine(d, c);
-                char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(d, startOfPrev, endOfPrev);
+                int endOfPrev = getEndOfPreviousLine();
+                int startOfPrev = getStartOfPreviousLine();
+                char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(startOfPrev, endOfPrev);
                 char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
-                        getPreviousNonWhitespaceCharacter(d, startOfPrev) : endOfLastLineChar;
-                char startOfCurrentLineChar = c.text.equals("{") ? 
-                        '{' : getNextNonWhitespaceCharacter(d, start, end);
+                        getPreviousNonWhitespaceCharacter(startOfPrev) : endOfLastLineChar;
+                char startOfCurrentLineChar = command.text.equals("{") ? 
+                        '{' : getNextNonWhitespaceCharacter(start, end);
                 //TODO: improve this 'cos should check tabs vs spaces
-                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(d, startOfPrev, endOfPrev)-startOfPrev
+                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(startOfPrev, endOfPrev)-startOfPrev
                 		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
                 
                 StringBuilder buf = new StringBuilder();
-                appendIndent(d, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
-                        lastNonWhitespaceChar, correctContinuation, false, buf, c);
-                if (c.text.equals("{")) {
+                appendIndent(document, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
+                        lastNonWhitespaceChar, correctContinuation, false, buf, command);
+                if (command.text.equals("{")) {
                     buf.append("{");
                 }
-                c.text = buf.toString();
-                c.offset=start;
-                c.length=endOfWs-start;
-                //System.out.println(c.text);
+                command.text = buf.toString();
+                command.offset=start;
+                command.length=endOfWs-start;
+                //System.out.println(command.text);
             }
         }
     }
 
     private void appendIndent(IDocument d, int startOfPrev, int endOfPrev,
             char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
-            boolean correctContinuation, boolean closeBraces, StringBuilder buf, DocumentCommand c)
+            boolean correctContinuation, boolean closeBraces, StringBuilder buf, DocumentCommand command)
             		throws BadLocationException {
         boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
                 lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
-        appendIndent(d, isContinuation, isOpening, isClosing, correctContinuation, 
-                startOfPrev, endOfPrev, closeBraces, buf, c);
+        appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
+                startOfPrev, endOfPrev, closeBraces, buf);
     }
 
-    protected void reduceIndent(DocumentCommand c) {
+    protected void reduceIndent(DocumentCommand command) {
         int spaces = getIndentSpaces();
-        if (endsWithSpaces(c.text, spaces)) {
-            c.text = c.text.substring(0, c.text.length()-spaces);
+        if (endsWithSpaces(command.text, spaces)) {
+            command.text = command.text.substring(0, command.text.length()-spaces);
         }
-        else if (c.text.endsWith("\t")) {
-            c.text = c.text.substring(0, c.text.length()-1);
+        else if (command.text.endsWith("\t")) {
+            command.text = command.text.substring(0, command.text.length()-1);
         }
     }
 
-    private void reduceIndentOfCurrentLine(IDocument d, DocumentCommand c)
+    private void reduceIndentOfCurrentLine()
             throws BadLocationException {
         int spaces = getIndentSpaces();
-        if (endsWithSpaces(d.get(c.offset-spaces, spaces),spaces)) {
-            c.offset = c.offset-spaces;
-            c.length = spaces;
+        if (endsWithSpaces(document.get(command.offset-spaces, spaces),spaces)) {
+            command.offset = command.offset-spaces;
+            command.length = spaces;
         }
-        else if (d.get(c.offset-1,1).equals("\t")) {
-            c.offset = c.offset-1;
-            c.length = 1;
+        else if (document.get(command.offset-1,1).equals("\t")) {
+            command.offset = command.offset-1;
+            command.length = 1;
         }
     }
 
@@ -598,17 +656,17 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    private int getStartOfPreviousLine(IDocument d, DocumentCommand c)
+    private int getStartOfPreviousLine()
             throws BadLocationException {
-        return getStartOfPreviousLine(d, c.offset);
+        return getStartOfPreviousLine(command.offset);
     }
 
-    private int getStartOfPreviousLine(IDocument d, int offset) 
+    private int getStartOfPreviousLine(int offset) 
             throws BadLocationException {
         int os;
-        int line = d.getLineOfOffset(offset);
+        int line = document.getLineOfOffset(offset);
         do {
-            os = d.getLineOffset(--line);
+            os = document.getLineOffset(--line);
         }
         while (isStringOrCommentContinuation(os));
         return os;
@@ -619,24 +677,24 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return d.getLineOffset(d.getLineOfOffset(offset)+1);
     }*/
     
-    private void appendIndent(IDocument d, boolean isContinuation, boolean isBeginning,
+    private void appendIndent(boolean isContinuation, boolean isBeginning,
             boolean isEnding,  boolean correctContinuation, int start, int end,
-            boolean closeBraces, StringBuilder buf, DocumentCommand c) 
+            boolean closeBraces, StringBuilder buf) 
             		throws BadLocationException {
-        String indent = getIndent(d, start, end, isContinuation&&!correctContinuation);
+        String indent = getIndent(start, end, isContinuation&&!correctContinuation);
         buf.append(indent);
         if (isBeginning) {
             //increment the indent level
             incrementIndent(buf, indent);
             if (closeBraces) {
-            	c.shiftsCaret=false;
-            	c.caretOffset=c.offset+buf.length();
+            	command.shiftsCaret=false;
+            	command.caretOffset=command.offset+buf.length();
             	String newlineChar;
-            	if (end<d.getLength()) {
-            		newlineChar = d.get(end, 1);
+            	if (end<document.getLength()) {
+            		newlineChar = document.get(end, 1);
             	}
             	else if (start>0) {
-            		newlineChar = d.get(start-1, 1);
+            		newlineChar = document.get(start-1, 1);
             	}
             	else {
             		newlineChar = System.lineSeparator(); //TODO: is this right?
@@ -656,7 +714,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         }
     }
 
-    private String getIndent(IDocument d, int start, int end, boolean isUncorrectedContinuation) 
+    private String getIndent(int start, int end, 
+    		boolean isUncorrectedContinuation) 
             throws BadLocationException {
         if (!isUncorrectedContinuation) {
             while (true) {
@@ -666,32 +725,32 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 //with a {, }, or ; or which itelf starts 
                 //with a }. We will use that to infer the 
                 //indent for the current line
-                char ch1 = getNextNonWhitespaceCharacterInLine(d, start);
+                char ch1 = getNextNonWhitespaceCharacterInLine(start);
                 if (ch1=='}') break;
-                int end1 = getEndOfPreviousLine(d, start);
-                int start1 = getStartOfPreviousLine(d, start);
-                char ch = getLastNonWhitespaceCharacterInLine(d, start1, end1);
+                int end1 = getEndOfPreviousLine(start);
+                int start1 = getStartOfPreviousLine(start);
+                char ch = getLastNonWhitespaceCharacterInLine(start1, end1);
                 if (ch==';' || ch=='{' || ch=='}') break;
                 end = end1;
                 start=start1;
             }
         }
         while (isStringOrCommentContinuation(start)) {
-            end = getEndOfPreviousLine(d, start);
-            start = getStartOfPreviousLine(d, start);
+            end = getEndOfPreviousLine(start);
+            start = getStartOfPreviousLine(start);
         }
-        int endOfWs = firstEndOfWhitespace(d, start, end);
-        return d.get(start, endOfWs-start);
+        int endOfWs = firstEndOfWhitespace(start, end);
+        return document.get(start, endOfWs-start);
     }
 
-    private char getLastNonWhitespaceCharacterInLine(IDocument d, int offset, int end) 
+    private char getLastNonWhitespaceCharacterInLine(int offset, int end) 
             throws BadLocationException {
         char result = '\n'; //ahem, ugly null!
         int commentDepth=0;
         for (;offset<end; offset++) {
-            char ch = d.getChar(offset);
-            char next = d.getLength()>offset+1 ? 
-                    d.getChar(offset+1) : '\n'; //another ugly null
+            char ch = document.getChar(offset);
+            char next = document.getLength()>offset+1 ? 
+                    document.getChar(offset+1) : '\n'; //another ugly null
             if (commentDepth==0) {
                 if (ch=='/') {
                     if (next=='*') {
@@ -725,7 +784,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             buf.append('\t');
         }
         else {
-            initialIndent(buf);
+        	initialIndent(buf);
         }
     }
 
@@ -734,92 +793,79 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
                 indent.charAt(indent.length()-1)=='\t';
     }
     
-    private char getPreviousNonWhitespaceCharacter(IDocument d, int offset)
+    private char getPreviousNonWhitespaceCharacter(int offset)
             throws BadLocationException {
         for (;offset>=0; offset--) {
-            String ch = d.get(offset,1);
+            String ch = document.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-            	!isQuotedOrCommented(d,offset)) {
+            	!isQuotedOrCommented(offset)) {
                 return ch.charAt(0);
             }
         }
         return '\n';
     }
 
-    private char getPreviousNonWhitespaceCharacterInLine(IDocument d, int offset)
+    private char getPreviousNonWhitespaceCharacterInLine(int offset)
             throws BadLocationException {
         //TODO: handle end-of-line comments
         for (;offset>=0; offset--) {
-            String ch = d.get(offset,1);
+            String ch = document.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-            	!isQuotedOrCommented(d,offset) ||
-                    isLineEnding(d, ch)) {
+            	!isQuotedOrCommented(offset) ||
+                    isLineEnding(ch)) {
                 return ch.charAt(0);
             }
         }
         return '\n';
     }
 
-    private char getNextNonWhitespaceCharacterInLine(IDocument d, int offset)
+    private char getNextNonWhitespaceCharacterInLine(int offset)
             throws BadLocationException {
-        for (;offset<d.getLength(); offset++) {
-            String ch = d.get(offset,1);
+        for (;offset<document.getLength(); offset++) {
+            String ch = document.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-                !isQuotedOrCommented(d,offset) ||
-                    isLineEnding(d, ch)) {
+                !isQuotedOrCommented(offset) ||
+                    isLineEnding(ch)) {
                 return ch.charAt(0);
             }
         }
         return '\n';
     }
 
-    private char getNextNonWhitespaceCharacter(IDocument d, int offset, int end)
+    private char getNextNonWhitespaceCharacter(int offset, int end)
             throws BadLocationException {
         for (;offset<end; offset++) {
-            String ch = d.get(offset,1);
+            String ch = document.get(offset,1);
             if (!isWhitespace(ch.charAt(0)) && 
-                !isQuotedOrCommented(d,offset)) {
+                !isQuotedOrCommented(offset)) {
                 return ch.charAt(0);
             }
         }
         return '\n';
     }
 
-    private static void initialIndent(StringBuilder buf) {
-        //guess an initial indent level
-        if (getIndentWithSpaces()) {
-            int spaces = getIndentSpaces();
-            for (int i=1; i<=spaces; i++) {
-                buf.append(' ');                          
-            }
-        }
-        else {
-            buf.append('\t');
-        }
-    }
-
-    private int getStartOfCurrentLine(IDocument d, DocumentCommand c) 
+    private int getStartOfCurrentLine() 
             throws BadLocationException {
-        int p = c.offset == d.getLength() ? c.offset-1 : c.offset;
-        return d.getLineInformationOfOffset(p).getOffset();
+        int p = command.offset == document.getLength() ? command.offset-1 : command.offset;
+        return document.getLineInformationOfOffset(p).getOffset();
     }
     
-    private int getEndOfCurrentLine(IDocument d, DocumentCommand c) 
+    private int getEndOfCurrentLine() 
             throws BadLocationException {
-        int p = c.offset == d.getLength() ? c.offset-1 : c.offset;
-        IRegion lineInfo = d.getLineInformationOfOffset(p);
+        int p = command.offset == document.getLength() ? command.offset-1 : command.offset;
+        IRegion lineInfo = document.getLineInformationOfOffset(p);
         return lineInfo.getOffset() + lineInfo.getLength();
     }
     
-    private int getEndOfPreviousLine(IDocument d, DocumentCommand c) 
+    private int getEndOfPreviousLine() 
             throws BadLocationException {
-        return getEndOfPreviousLine(d, c.offset);
+        return getEndOfPreviousLine(command.offset);
     }
 
-    private int getEndOfPreviousLine(IDocument d, int offset) 
+    private int getEndOfPreviousLine(int offset) 
             throws BadLocationException {
-        int p = offset == d.getLength() ? offset-1 : offset;
-        IRegion lineInfo = d.getLineInformation(d.getLineOfOffset(p)-1);
+        int p = offset == document.getLength() ? offset-1 : offset;
+        IRegion lineInfo = document.getLineInformation(document.getLineOfOffset(p)-1);
         return lineInfo.getOffset() + lineInfo.getLength();
     }
     
@@ -833,24 +879,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return true;
     }
  
-    private static int getIndentSpaces() {
-        IPreferencesService ps = getPreferencesService();
-        return ps==null ? 4 :
-            ps.getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
-    }
-    
-    private static boolean getIndentWithSpaces() {
-        IPreferencesService ps = getPreferencesService();
-        return ps==null ? false :
-            ps.getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
-    }
-    
-    public static String getDefaultIndent() {
-        StringBuilder result = new StringBuilder();
-        initialIndent(result);
-        return result.toString();
-    }
-    
     /**
      * Returns the first offset greater than <code>offset</code> and smaller than
      * <code>end</code> whose character is not a space or tab character. If no such
@@ -862,10 +890,10 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
      * @return the offset in the specified range whose character is not a space or tab
      * @exception BadLocationException if position is an invalid range in the given document
      */
-    private int firstEndOfWhitespace(IDocument d, int offset, int end)
+    private int firstEndOfWhitespace(int offset, int end)
             throws BadLocationException {
         while (offset < end) {
-            char ch= d.getChar(offset);
+            char ch= document.getChar(offset);
             if (ch!=' ' && ch!='\t') {
                 return offset;
             }
@@ -874,8 +902,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         return end;
     }
 
-    private boolean isLineEnding(IDocument doc, String text) {
-        String[] delimiters = doc.getLegalLineDelimiters();
+    private boolean isLineEnding(String text) {
+        String[] delimiters = document.getLegalLineDelimiters();
         if (delimiters != null) {
             return TextUtilities.endsWith(delimiters, text)!=-1;
         }
