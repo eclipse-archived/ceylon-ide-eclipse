@@ -177,7 +177,7 @@ public abstract class AbstractRefactoring extends Refactoring {
                 CeylonBuilder.getFile(pu));
     }
 
-    boolean searchInEditor() {
+    protected boolean searchInEditor() {
         return editor!=null && editor.isDirty();
     }
 

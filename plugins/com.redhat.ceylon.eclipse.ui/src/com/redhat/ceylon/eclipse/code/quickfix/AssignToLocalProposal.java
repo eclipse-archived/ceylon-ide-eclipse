@@ -13,6 +13,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
@@ -68,7 +69,8 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
                 }
             }
             else if (st instanceof Tree.Declaration) {
-                if (((Tree.Declaration) st).getDeclarationModel().isToplevel()) {
+                Declaration d = ((Tree.Declaration) st).getDeclarationModel();
+				if (d==null || d.isToplevel()) {
                     return;
                 }
                 //some expressions get interpreted as annotations

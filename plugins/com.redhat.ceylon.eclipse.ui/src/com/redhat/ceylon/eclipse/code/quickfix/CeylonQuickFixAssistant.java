@@ -188,16 +188,17 @@ public class CeylonQuickFixAssistant {
     		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
-        RenameDeclarationProposal.add(proposals, editor);
+        IDocument doc = context.getSourceViewer().getDocument();
+        IProject project = Util.getProject(editor.getEditorInput());
+        IFile file = Util.getFile(editor.getEditorInput());
+        
+        RenameDeclarationProposal.add(proposals, file, editor);
         InlineDeclarationProposal.add(proposals, editor);
         ExtractValueProposal.add(proposals, editor);
         ExtractFunctionProposal.add(proposals, editor);
         ConvertToClassProposal.add(proposals, editor);
         ConvertToNamedArgumentsProposal.add(proposals, editor);
         
-        IDocument doc = context.getSourceViewer().getDocument();
-        IProject project = Util.getProject(editor.getEditorInput());
-        IFile file = Util.getFile(editor.getEditorInput());
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
@@ -317,11 +318,11 @@ public class CeylonQuickFixAssistant {
                 Declaration dec = imt.getDeclarationModel();
                 if (dec!=null) {
                     if (imt.getAlias()==null) {
-                        addUseAliasProposal(imt, proposals, dec, file, cu, editor);
+                        addUseAliasProposal(imt, proposals, dec, file, editor);
                     }
                     else {
-                        addRenameAliasProposal(imt, proposals, dec, file, cu, editor);
-                        addRemoveAliasProposal(imt, proposals, dec, file, cu, editor);
+                        addRenameAliasProposal(imt, proposals, dec, file, editor);
+                        addRemoveAliasProposal(imt, proposals, dec, file, editor);
                     }
                 }
             }

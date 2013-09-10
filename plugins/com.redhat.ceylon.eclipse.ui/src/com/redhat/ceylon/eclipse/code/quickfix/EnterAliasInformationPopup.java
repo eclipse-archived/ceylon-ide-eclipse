@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener2;
@@ -77,15 +76,15 @@ import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
-    private class PopupVisibilityManager implements IPartListener2, ControlListener, MouseListener, KeyListener, ITextListener, IViewportListener {
+    private class PopupVisibilityManager implements 
+            IPartListener2, ControlListener, MouseListener, 
+            KeyListener, ITextListener, IViewportListener {
 
         public void start() {
             fEditor.getSite().getWorkbenchWindow().getPartService().addPartListener(this);
@@ -247,7 +246,7 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
     private static final int GAP= 2;
 
     private final CeylonEditor fEditor;
-    private final EnterAliasLinkedMode fRenameLinkedMode;
+    private final AbstractRenameLinkedMode fRenameLinkedMode;
 
     private int fSnapPosition;
     private boolean fSnapPositionChanged;
@@ -258,12 +257,12 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
     private Image fMenuImage;
     private MenuManager fMenuManager;
     private ToolBar fToolBar;
-    private String fOpenDialogBinding= "";
+//    private String fOpenDialogBinding= "";
     private boolean fIsMenuUp= false;
 
     private boolean fDelayJobFinished= false;
 
-    public EnterAliasInformationPopup(CeylonEditor editor, EnterAliasLinkedMode renameLinkedMode) {
+    public EnterAliasInformationPopup(CeylonEditor editor, AbstractRenameLinkedMode renameLinkedMode) {
         fEditor= editor;
         fRenameLinkedMode= renameLinkedMode;
         restoreSnapPosition();
@@ -286,7 +285,7 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
 
     public void open() {
         // Must cache here, since editor context is not available in menu from popup shell:
-        fOpenDialogBinding= getOpenDialogBinding();
+//        fOpenDialogBinding= getOpenDialogBinding();
 
         Shell workbenchShell= fEditor.getSite().getShell();
         final Display display= workbenchShell.getDisplay();
@@ -677,7 +676,7 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
 
         StyledText hint= new StyledText(fPopup, SWT.READ_ONLY | SWT.SINGLE);
         String enterKeyName= getEnterBinding();
-        String hintTemplate= "Enter alias name for {0}";
+        String hintTemplate= fRenameLinkedMode.getHintTemplate();
         hint.setText(Messages.format(hintTemplate, enterKeyName));
         hint.setForeground(foreground);
         hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), enterKeyName.length(), null, null, SWT.BOLD)); //$NON-NLS-1$
@@ -810,17 +809,17 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
         return KeyStroke.getInstance(KeyLookupFactory.getDefault().formalKeyLookup(IKeyLookup.CR_NAME)).format();
     }
 
-    /**
-     * WARNING: only works in workbench window context!
-     * @return the keybinding for Refactor &gt; Rename
-     */
-    private static String getOpenDialogBinding() {
-        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench().getAdapter(IBindingService.class);
-        if (bindingService == null)
-            return ""; //$NON-NLS-1$
-        String binding= bindingService.getBestActiveBindingFormattedFor(IJavaEditorActionDefinitionIds.RENAME_ELEMENT);
-        return binding == null ? "" : binding; //$NON-NLS-1$
-    }
+//    /**
+//     * WARNING: only works in workbench window context!
+//     * @return the keybinding for Refactor &gt; Rename
+//     */
+//    private static String getOpenDialogBinding() {
+//        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench().getAdapter(IBindingService.class);
+//        if (bindingService == null)
+//            return ""; //$NON-NLS-1$
+//        String binding= bindingService.getBestActiveBindingFormattedFor(IJavaEditorActionDefinitionIds.RENAME_ELEMENT);
+//        return binding == null ? "" : binding; //$NON-NLS-1$
+//    }
 
     private static void recursiveSetBackgroundColor(Control control, Color color) {
         control.setBackground(color);
