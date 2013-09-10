@@ -3,3 +3,4 @@
 /.settings
 /.project
 plugins/com.redhat.ceylon.test.eclipse.plugin/bin/
+plugins/com.redhat.ceylon.eclipse.ui/defaultRepository/**/*.index
