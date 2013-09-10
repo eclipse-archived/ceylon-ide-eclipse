@@ -8,7 +8,7 @@
   </prerequisites>
 
   <groupId>com.redhat.ceylon.eclipse</groupId>
-  <artifactId>ceylon.all</artifactId>
+  <artifactId>ceylon-ide-eclipse.all</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <name>Ceylon IDE</name>
   <packaging>pom</packaging>
