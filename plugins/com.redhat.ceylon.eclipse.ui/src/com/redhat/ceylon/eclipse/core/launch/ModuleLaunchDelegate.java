@@ -60,10 +60,8 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
             public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
                 try {
-                    List<String> args = Arrays.asList(config.getProgramArguments());
                     List<String> newArgs = new ArrayList<String>();
-                    newArgs.addAll(args);
-
+                    
                     newArgs.add("run");
 
                     for (IPath repo : workingRepos) {
@@ -77,8 +75,13 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         newArgs.add("--verbose");
                     }
 
+                    newArgs.add("--");
+                    
                     newArgs.add(launch.getLaunchConfiguration()
                         .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""));
+
+                    List<String> args = Arrays.asList(config.getProgramArguments());
+                    newArgs.addAll(args);
                     
                     config.setProgramArguments(newArgs.toArray(new String[]{}));
                     config.setVMArguments(new String[]{//"-Djava.util.logging.manager=java.util.logging.LogManager",
