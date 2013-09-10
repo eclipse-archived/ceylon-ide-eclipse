@@ -457,34 +457,22 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	public static IPath getSourceArchive(RepositoryManager provider,
 			Module module) {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion());
-		ctx.setSuffix(ArtifactContext.SRC);
+        		module.getVersion(), ArtifactContext.SRC, ArtifactContext.MAVEN_SRC);
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
-		    if (srcArtifact.getPath().endsWith(".src")) {
+		    if (srcArtifact.getPath().endsWith(ArtifactContext.SRC)
+		    		|| srcArtifact.getPath().endsWith(ArtifactContext.MAVEN_SRC)) {
 	            return new Path(srcArtifact.getPath());
 		    }
 		}
-        ctx.setSuffix("-sources.jar");
-        srcArtifact = provider.getArtifact(ctx);
-        if (srcArtifact!=null) {
-            return new Path(srcArtifact.getPath());
-        }
 		return null;
 	}
 
 	public static IPath getModuleArchive(RepositoryManager provider,
 			Module module) {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion());
-		// try first with .car
-		ctx.setSuffix(ArtifactContext.CAR);
+        		module.getVersion(), ArtifactContext.CAR, ArtifactContext.JAR);
 		File moduleArtifact = provider.getArtifact(ctx);
-		if (moduleArtifact==null){
-			// try with .jar
-			ctx.setSuffix(ArtifactContext.JAR);
-			moduleArtifact = provider.getArtifact(ctx);
-		}
 		if (moduleArtifact!=null) {
 			return new Path(moduleArtifact.getPath());
 		}
