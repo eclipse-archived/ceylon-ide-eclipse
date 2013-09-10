@@ -170,6 +170,11 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
     }
     
     @Override
+    @Ignore
+    public void loadVariadic() {
+    }
+    
+    @Override
     protected void compile(String... ceylon) {
     }
 
