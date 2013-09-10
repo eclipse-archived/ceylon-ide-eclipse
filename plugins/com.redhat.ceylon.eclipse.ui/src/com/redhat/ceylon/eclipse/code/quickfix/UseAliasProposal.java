@@ -40,8 +40,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
     
     static void addUseAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
-            Declaration dec, IFile file, Tree.CompilationUnit cu, 
-            CeylonEditor editor) {
+            Declaration dec, IFile file,  CeylonEditor editor) {
         proposals.add(new UseAliasProposal(file, node, dec, editor));
     }
 

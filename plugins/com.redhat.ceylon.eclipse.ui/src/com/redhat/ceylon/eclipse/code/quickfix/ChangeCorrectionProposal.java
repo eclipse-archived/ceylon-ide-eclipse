@@ -20,8 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.text.correction.CorrectionMessages;
-import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -115,9 +113,11 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
      */
     public void apply(IDocument document) {
         try {
-            performChange(JavaPlugin.getActivePage().getActiveEditor(), document);
-        } catch (CoreException e) {
-            ExceptionHandler.handle(e, CorrectionMessages.ChangeCorrectionProposal_error_title, CorrectionMessages.ChangeCorrectionProposal_error_message);
+            performChange(JavaPlugin.getActivePage().getActiveEditor(), 
+            		document, getChange(), getName());
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
     }
 
@@ -131,14 +131,14 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
      *            is visible
      * @throws CoreException when the invocation of the change failed
      */
-    protected void performChange(IEditorPart activeEditor, IDocument document) throws CoreException {
+    protected static void performChange(IEditorPart activeEditor, 
+    		IDocument document, Change change, String name) 
+    				throws CoreException {
         StyledText disabledStyledText= null;
         TraverseListener traverseBlocker= null;
         
-        Change change= null;
         IRewriteTarget rewriteTarget= null;
         try {
-            change= getChange();
             if (change != null) {
                 if (document != null) {
                     LinkedModeModel.closeAllModels(document);
@@ -194,7 +194,7 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
                     }
                     if (undoChange != null) {
                         undoChange.initializeValidationData(new NullProgressMonitor());
-                        manager.addUndo(getName(), undoChange);
+                        manager.addUndo(name, undoChange);
                     }
                 }
             }

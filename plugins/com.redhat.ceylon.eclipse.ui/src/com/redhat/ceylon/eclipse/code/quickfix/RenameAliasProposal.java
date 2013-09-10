@@ -17,7 +17,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class RenameAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+class RenameAliasProposal implements ICompletionProposal, 
+        ICompletionProposalExtension6 {
     
     Tree.ImportMemberOrType node;
     Declaration dec;
@@ -35,13 +36,11 @@ class RenameAliasProposal implements ICompletionProposal, ICompletionProposalExt
     @Override
     public void apply(IDocument document) {
         new EnterAliasLinkedMode(node, dec, editor).start();
-        
     }
     
     static void addRenameAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
-            Declaration dec, IFile file, Tree.CompilationUnit cu, 
-            CeylonEditor editor) {
+            Declaration dec, IFile file, CeylonEditor editor) {
         proposals.add(new RenameAliasProposal(file, node, dec, editor));
     }
 

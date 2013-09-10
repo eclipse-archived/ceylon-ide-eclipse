@@ -27,8 +27,7 @@ class RemoveAliasProposal extends ChangeCorrectionProposal {
     
     static void addRemoveAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
-            final Declaration dec, IFile file, Tree.CompilationUnit cu, 
-            CeylonEditor editor) {
+            final Declaration dec, IFile file, CeylonEditor editor) {
         final TextFileChange change =  new TextFileChange("Remove Alias", file);
         change.setEdit(new MultiTextEdit());
         final Identifier aid = node.getAlias().getIdentifier();

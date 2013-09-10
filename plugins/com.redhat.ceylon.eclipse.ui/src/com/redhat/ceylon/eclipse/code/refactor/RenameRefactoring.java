@@ -4,12 +4,12 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -46,6 +46,10 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	private String newName;
 	private final Declaration declaration;
+	
+	public Node getNode() {
+		return node;
+	}
 
 	public RenameRefactoring(ITextEditor editor) {
 	    super(editor);
@@ -105,7 +109,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 		return new RefactoringStatus();
 	}
 
-	public Change createChange(IProgressMonitor pm) throws CoreException,
+	public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
@@ -130,20 +134,24 @@ public class RenameRefactoring extends AbstractRefactoring {
     private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
-        	FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-        	root.visit(frv);
-        	for (Node node: frv.getNodes()) {
+        	for (Node node: getNodesToRename(root)) {
                 renameNode(tfc, node, root);
-        	}
-        	FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-        	root.visit(fdv);
-        	for (Tree.Declaration node: fdv.getDeclarationNodes()) {
-        	    renameNode(tfc, node, root);
         	}
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
+    }
+    
+    public List<Node> getNodesToRename(Tree.CompilationUnit root) {
+    	ArrayList<Node> list = new ArrayList<Node>();
+    	FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+    	root.visit(frv);
+    	list.addAll(frv.getNodes());
+    	FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+    	root.visit(fdv);
+    	list.addAll(fdv.getDeclarationNodes());
+    	return list;
     }
 
 	protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
