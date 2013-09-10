@@ -84,10 +84,15 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                     newArgs.addAll(args);
                     
                     config.setProgramArguments(newArgs.toArray(new String[]{}));
-                    config.setVMArguments(new String[]{//"-Djava.util.logging.manager=java.util.logging.LogManager",
-                            "-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER,
-                            "-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
-                                System.getProperty("ceylon.repo", "")).getAbsolutePath()});
+                    
+                    //user values at the end although JVMs behave differently
+                    List<String> vmArgs = new ArrayList<String>();
+                    vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
+                    vmArgs.add("-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
+                        System.getProperty("ceylon.repo", "")).getAbsolutePath());
+                    
+                    vmArgs.addAll(Arrays.asList(config.getVMArguments()));
+                    config.setVMArguments(vmArgs.toArray(new String[]{}));
 
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
