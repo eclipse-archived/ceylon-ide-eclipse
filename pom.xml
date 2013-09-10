@@ -149,20 +149,4 @@
       </plugin>
     </plugins>
   </build>
-  
-
-  <profiles>
-    <profile>
-      <id>osx</id>
-      <activation>
-	<os>
-	  <family>mac</family>
-	</os>
-      </activation>
-      <properties>
-	<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
-	<platformSystemProperties> -XstartOnFirstThread </platformSystemProperties>
-      </properties>
-    </profile>
-  </profiles>
 </project>

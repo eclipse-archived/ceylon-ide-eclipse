@@ -13,6 +13,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<modules>
 		<module>com.redhat.ceylon.eclipse.ui.test</module>
 	</modules>
+	<properties>
+		<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+		<platformSystemProperties></platformSystemProperties>
+	</properties>
 	<build>
 	    <pluginManagement>
             <plugins>                
@@ -27,7 +31,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <testFailureIgnore>true</testFailureIgnore>
 				    <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
-				   <argLine>${platformSystemProperties}</argLine>
+				   <argLine>${tycho.testArgLine} ${platformSystemProperties}</argLine>
 				
 				   <!-- https://docs.sonatype.org/display/TYCHO/How+to+run+SWTBot+tests+with+Tycho -->
 				   <!-- set useUIThread=true for regular ui tests -->
@@ -70,4 +74,42 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	        </plugins>
 	    </pluginManagement>
 	</build>
+    <profiles>
+		<profile>
+		  <id>codeCoverage</id>
+		  <build>
+		    <plugins>
+		      <!-- Enabling use of jacoco -->
+		      <plugin>
+		        <groupId>org.jacoco</groupId>
+		        <artifactId>jacoco-maven-plugin</artifactId>
+		        <version>0.6.3.201306030806</version>
+		        <executions>
+		          <execution>
+		            <goals>
+		              <goal>prepare-agent</goal>
+		            </goals>
+		            <configuration>
+		              <!-- Where to put jacoco coverage report -->
+		              <destFile>${project.build.directory}/jacoco.exec</destFile>
+		            </configuration>
+		          </execution>
+		        </executions>
+		      </plugin>
+		    </plugins>
+		  </build>
+		</profile>
+	  <profile>
+	    <id>osx</id>
+	    <activation>
+			<os>
+				<family>mac</family>
+			</os>
+	    </activation>
+	    <properties>
+			<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+			<platformSystemProperties> -XstartOnFirstThread </platformSystemProperties>
+	    </properties>
+	  </profile>
+	</profiles>    	
 </project>
