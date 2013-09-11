@@ -6,12 +6,12 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Point;
 
-class Test extends CeylonAutoEditStrategy {
+class AutoEditTest extends CeylonAutoEditStrategy {
     
-	Test() { super(null); }
+	AutoEditTest() { super(null); }
 	
     public static void main(String[] args) {
-        Test instance = new Test();
+        AutoEditTest instance = new AutoEditTest();
         
         Document doc = new Document("class Test()\n\t\textends Super(){\n\nvoid method(){\n\nfor (x in xs){}\n\n}\n\n}");
         instance.doCorrectIndentation(doc);
@@ -144,6 +144,34 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
         
+        doc = new Document("void x(){\n\t//comment\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\t//comment\n");
+        
+        doc = new Document("void x(){\n//comment\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\t//comment\n");
+        
+        doc = new Document("void x(){\n\t\t//comment\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\t//comment\n");
+        
+        doc = new Document("\t//comment\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "//comment\n");
+        
+        doc = new Document("\t\t//comment\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "//comment\n");
+        
+        doc = new Document("\t/*\n\tcomment\n\t*/\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\t/*\n\tcomment\n\t*/\n");
+        
+        doc = new Document("\t\t/*\n\tcomment\n\t*/\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "\t\t/*\n\tcomment\n\t*/\n");
+        
         doc = new Document("x=1;");
         instance.doNewline(doc);
         assertResult(doc, "x=1;\n");
@@ -243,6 +271,18 @@ class Test extends CeylonAutoEditStrategy {
         doc = new Document("\t//hello \n\t");
         instance.doNewline(doc);
         assertResult(doc, "\t//hello \n\t\n\t");
+        
+        doc = new Document("/*hello");
+        instance.doNewline(doc);
+        assertResult(doc, "/*hello\n\n*/");
+        
+        doc = new Document("\t/*hello");
+        instance.doNewline(doc);
+        assertResult(doc, "\t/*hello\n\t\n\t*/");
+        
+        doc = new Document("\t/*\n\thello");
+        instance.doNewline(doc);
+        assertResult(doc, "\t/*\n\thello\n\t");
         
         doc = new Document("void x() {}");
         instance.doNewline(doc);
