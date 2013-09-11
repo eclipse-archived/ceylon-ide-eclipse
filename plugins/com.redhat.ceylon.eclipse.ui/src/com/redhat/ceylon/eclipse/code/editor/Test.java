@@ -49,18 +49,21 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "class Test()\n\t\textends Super()\n{\n\t\n\tvoid method(){}\n\t\n}");
         
-        //failing:
         doc = new Document("\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\t\n\t\tvoid method(){\n\t\t}\n\t\t\n\t}");
-
-        doc = new Document("\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n");
-        instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t}\n\t\n}");
         
-        doc = new Document("\tclass Test()\n\t\textends Super(){//foo\nvoid method(){//bar\n}//baz\n}\n");
+        doc = new Document("void x(){\n\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
+        assertResult(doc, "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\t\n\t\tvoid method(){\n\t\t}\n\t\t\n\t}");
+
+        doc = new Document("void x(){\n\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+        
+        doc = new Document("void x(){\n\tclass Test()\n\t\textends Super(){//foo\nvoid method(){//bar\n}//baz\n}\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
         
         doc = new Document("doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
         instance.doCorrectIndentation(doc);
@@ -74,9 +77,16 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
         
+        doc = new Document("void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+        
+        //Note: this test fails, but that is more of a conceptual
+        //      problem with how the whole concept of correct
+        //      indentation works!
         doc = new Document("\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+        assertResult(doc, "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
         
         doc = new Document("String x()\n=>\"hello\";");
         instance.doCorrectIndentation(doc);
@@ -90,9 +100,13 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "String x()\n\t\t=>\"hello\";");
 
+        doc = new Document("void x(){\n\tString x()\n\t\t\t=>\"hello\";");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\tString x()\n\t\t\t=>\"hello\";");
+        
         doc = new Document("\tString x()\n\t\t\t=>\"hello\";");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tString x()\n\t\t\t=>\"hello\";");
+        assertResult(doc, "String x()\n\t\t=>\"hello\";");
         
         doc = new Document("class X()\nextends Y()");
         instance.doCorrectIndentation(doc);
@@ -106,9 +120,9 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "class X()\n\t\textends Y()");
 
-        doc = new Document("\tclass X()\n\t\t\textends Y()");
+        doc = new Document("void x(){\n\tclass X()\n\t\t\textends Y()");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tclass X()\n\t\t\textends Y()");
+        assertResult(doc, "void x(){\n\tclass X()\n\t\t\textends Y()");
         
         doc = new Document("class X()\nextends Y()\nsatisfies Z");
         instance.doCorrectIndentation(doc);
@@ -122,9 +136,13 @@ class Test extends CeylonAutoEditStrategy {
         instance.doCorrectIndentation(doc);
         assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
 
+        doc = new Document("void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+        
         doc = new Document("\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+        assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
         
         doc = new Document("x=1;");
         instance.doNewline(doc);
@@ -134,9 +152,17 @@ class Test extends CeylonAutoEditStrategy {
         instance.doNewline(doc);
         assertResult(doc, "x=1; \n");
 
-        doc = new Document("\tx=1;");
+        doc = new Document("void x(){\n\tx=1;");
         instance.doNewline(doc);
-        assertResult(doc, "\tx=1;\n\t");
+        assertResult(doc, "void x(){\n\tx=1;\n\t");
+        
+        doc = new Document("void x(){\n\tx=1; //foo");
+        instance.doNewline(doc);
+        assertResult(doc, "void x(){\n\tx=1; //foo\n\t");
+        
+        doc = new Document("void x(){\nvoid y(){\n\t\tx=1; //foo");
+        instance.doNewline(doc);
+        assertResult(doc, "void x(){\nvoid y(){\n\t\tx=1; //foo\n\t\t");
         
         doc = new Document("\tx=1; //foo");
         instance.doNewline(doc);
