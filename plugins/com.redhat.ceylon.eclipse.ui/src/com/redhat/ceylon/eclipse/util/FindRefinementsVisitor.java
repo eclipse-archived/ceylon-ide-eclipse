@@ -5,10 +5,11 @@ import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindRefinementsVisitor extends Visitor {
+public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
 	
 	private final Declaration declaration;
 	private Set<Tree.Declaration> declarationNodes = new HashSet<Tree.Declaration>();
