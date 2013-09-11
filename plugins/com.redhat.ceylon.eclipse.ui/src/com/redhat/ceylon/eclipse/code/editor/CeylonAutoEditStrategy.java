@@ -34,7 +34,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
@@ -538,9 +537,9 @@ class AutoEdit {
             
             StringBuilder buf = new StringBuilder(command.text);
             boolean closeBrace = count("{")>count("}");
-            appendIndent(document, start, getEndOfCurrentLine(), 
+            appendIndent(start, getEndOfCurrentLine(), 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    false, closeBrace, buf, command); //false, because otherwise it indents after annotations, which I guess we don't want
+                    false, closeBrace, buf); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
                 String hanging = document.get(command.offset, getEndOfCurrentLine()-command.offset); //stuff after the { on the current line
                 buf.insert(command.caretOffset-command.offset, hanging);
@@ -597,8 +596,8 @@ class AutoEdit {
                 		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
                 
                 StringBuilder buf = new StringBuilder();
-                appendIndent(document, startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
-                        lastNonWhitespaceChar, correctContinuation, false, buf, command);
+                appendIndent(startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
+                        lastNonWhitespaceChar, correctContinuation, false, buf);
                 if (command.text.equals("{")) {
                     buf.append("{");
                 }
@@ -610,12 +609,13 @@ class AutoEdit {
         }
     }
 
-    private void appendIndent(IDocument d, int startOfPrev, int endOfPrev,
+    private void appendIndent(int startOfPrev, int endOfPrev,
             char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
-            boolean correctContinuation, boolean closeBraces, StringBuilder buf, DocumentCommand command)
+            boolean correctContinuation, boolean closeBraces, StringBuilder buf)
             		throws BadLocationException {
         boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
-                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{';
+                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'
+                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
         appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
@@ -718,8 +718,7 @@ class AutoEdit {
     		boolean isUncorrectedContinuation) 
             throws BadLocationException {
         if (!isUncorrectedContinuation) {
-            while (true) {
-                if (start==0) break;
+            while (start>0) {
                 //We're searching for an earlier line whose 
                 //immediately preceding line ends cleanly 
                 //with a {, }, or ; or which itelf starts 
