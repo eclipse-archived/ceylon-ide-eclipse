@@ -30,7 +30,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -171,6 +175,22 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
     }
 
+    private final class FindReturnsVisitor extends Visitor {
+        final Collection<Return> returns;
+        FindReturnsVisitor(Collection<Return> returns) {
+            this.returns = returns;
+        }
+        @Override
+        public void visit(Tree.Declaration that) {}
+        @Override
+        public void visit(Tree.Return that) {
+            super.visit(that);
+            if (that.getExpression()!=null) {
+            	returns.add(that);
+            }
+        }
+    }
+
     public static final class FindLocalReferencesVisitor extends Visitor {
 		List<Tree.BaseMemberExpression> localReferences = 
 				new ArrayList<Tree.BaseMemberExpression>();
@@ -204,6 +224,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 	private boolean explicitType;
     private Tree.AttributeDeclaration result;
     private List<Statement> statements;
+    List<Return> returns;
 
 	public ExtractFunctionRefactoring(ITextEditor editor) {
 	    super(editor);
@@ -231,6 +252,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 	                result = v.result;
 	            }
 	        }
+        	returns = new ArrayList<Return>();
+	        for (Statement s: statements) {
+	            FindReturnsVisitor v = new FindReturnsVisitor(returns);
+	            s.visit(v);
+	        }
+	        
 	    }
     }
 
@@ -413,7 +440,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
         List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
-        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+        Unit unit = node.getUnit();
+		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
                 FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
                 for (Statement s: body.getStatements()) {
@@ -422,7 +450,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     }
                 }
                 if (v.refs>0) {
-                    addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
+                    addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
                             localTypes, new ArrayList<ProducedType>());
                     localRefs.add(bme);
                 }
@@ -436,7 +464,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: localRefs) {
             if (done.add(bme.getDeclaration())) {
-                params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName() + 
+                params += unit.denotableType(bme.getTypeModel()).getProducedTypeName() + 
                         " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
                 nonempty = true;
@@ -467,10 +495,24 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        ProducedType returnType = result==null ? null : node.getUnit()
-        		.denotableType(result.getDeclarationModel().getType());
-        String content;
+        ProducedType returnType;
         if (result!=null) {
+        	returnType = unit.denotableType(result.getDeclarationModel().getType());
+        }
+        else if (!returns.isEmpty())  {
+        	UnionType ut = new UnionType(unit);
+        	List<ProducedType> list = new ArrayList<ProducedType>();
+        	for (Return r: returns) {
+        		Util.addToUnion(list, r.getExpression().getTypeModel());
+        	}
+        	ut.setCaseTypes(list);
+        	returnType = ut.getType();
+        }
+        else {
+        	returnType = null;
+        }
+        String content;
+        if (result!=null||!returns.isEmpty()) {
         	if (explicitType||dec.isToplevel()) {
         		content = returnType.getProducedTypeName();
         		importType(decs, returnType, rootNode);
@@ -504,6 +546,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             }
             invocation = modifs + result.getDeclarationModel().getName() + 
                     "=" + invocation;
+        }
+        else if (!returns.isEmpty()) {
+        	invocation = "return " + invocation;
         }
         
         tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));        
