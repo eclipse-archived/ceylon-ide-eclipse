@@ -631,7 +631,6 @@ class AutoEdit {
     	int currStarting = getTokenType(firstEndOfWhitespace(start, end));
     	boolean isContinuation = isBinaryOperator(prevEnding)||
     			isBinaryOperator(currStarting)||
-    			prevEnding==CeylonLexer.COMMA||currStarting==CeylonLexer.COMMA||
     			isInheritanceClause(currStarting);
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
