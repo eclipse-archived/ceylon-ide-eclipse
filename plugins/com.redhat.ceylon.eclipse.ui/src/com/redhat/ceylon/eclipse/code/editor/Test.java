@@ -178,6 +178,46 @@ class Test extends CeylonAutoEditStrategy {
         instance.doNewline(doc);
         assertResult(doc, "\t//hello\n\t");
         
+        doc = new Document("\t//hello ");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello \n\t");
+        
+        doc = new Document("\t\t//hello");
+        instance.doNewline(doc);
+        assertResult(doc, "\t\t//hello\n\t\t");
+        
+        doc = new Document("//hello\n");
+        instance.doNewline(doc);
+        assertResult(doc, "//hello\n\n");
+
+        doc = new Document("\t//hello\n");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello\n\n\t");
+
+        doc = new Document("\t//hello\n\t");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello\n\t\n\t");
+
+        doc = new Document("//hello \n ");
+        instance.doNewline(doc);
+        assertResult(doc, "//hello \n \n");
+
+        doc = new Document("//hello \n\t");
+        instance.doNewline(doc);
+        assertResult(doc, "//hello \n\t\n");
+
+        doc = new Document("\t//hello \n\t");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello \n\t\n\t");
+
+        doc = new Document("\t//hello\n\t");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello\n\t\n\t");
+        
+        doc = new Document("\t//hello \n\t");
+        instance.doNewline(doc);
+        assertResult(doc, "\t//hello \n\t\n\t");
+        
         doc = new Document("void x() {}");
         instance.doNewline(doc);
         assertResult(doc, "void x() {}\n");
@@ -234,18 +274,6 @@ class Test extends CeylonAutoEditStrategy {
         instance.doNewline(doc);
         assertResult(doc, "\t\tInteger x { //foo\n\t\t\t\n\t\t\t");
 
-        doc = new Document("//hello\n");
-        instance.doNewline(doc);
-        assertResult(doc, "//hello\n\n");
-
-        doc = new Document("//hello \n ");
-        instance.doNewline(doc);
-        assertResult(doc, "//hello \n \n "); //do we really want the space
-
-        doc = new Document("\t//hello\n\t");
-        instance.doNewline(doc);
-        assertResult(doc, "\t//hello\n\t\n\t");
-        
         doc = new Document("void x() {}\n");
         instance.doNewline(doc);
         assertResult(doc, "void x() {}\n\n");
