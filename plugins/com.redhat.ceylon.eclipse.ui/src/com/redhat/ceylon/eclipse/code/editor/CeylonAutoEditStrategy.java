@@ -574,38 +574,29 @@ class AutoEdit {
             throws BadLocationException {
         int start = getStartOfCurrentLine();
         int end = getEndOfCurrentLine();
-        //System.out.println(d.get(start, end-start));
         int endOfWs = firstEndOfWhitespace(start, end);
         if (command.offset<endOfWs || 
                 command.offset==start && command.shiftsCaret==false) { //Test for IMP's "Correct Indent"
-            /*if (start==0) { //Start of file
-                command.text="";
-                command.offset=start;
-                command.length=0;
+            int endOfPrev = getEndOfPreviousLine();
+            int startOfPrev = getStartOfPreviousLine();
+            char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(startOfPrev, endOfPrev);
+            char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
+                    getPreviousNonWhitespaceCharacter(startOfPrev) : endOfLastLineChar;
+            char startOfCurrentLineChar = command.text.equals("{") ? 
+                    '{' : getNextNonWhitespaceCharacter(start, end);
+            //TODO: improve this 'cos should check tabs vs spaces
+            boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(startOfPrev, endOfPrev)-startOfPrev
+            		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
+            
+            StringBuilder buf = new StringBuilder();
+            appendIndent(startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
+                    lastNonWhitespaceChar, correctContinuation, false, buf);
+            if (command.text.equals("{")) {
+                buf.append("{");
             }
-            else {*/
-                int endOfPrev = getEndOfPreviousLine();
-                int startOfPrev = getStartOfPreviousLine();
-                char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(startOfPrev, endOfPrev);
-                char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
-                        getPreviousNonWhitespaceCharacter(startOfPrev) : endOfLastLineChar;
-                char startOfCurrentLineChar = command.text.equals("{") ? 
-                        '{' : getNextNonWhitespaceCharacter(start, end);
-                //TODO: improve this 'cos should check tabs vs spaces
-                boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(startOfPrev, endOfPrev)-startOfPrev
-                		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
-                
-                StringBuilder buf = new StringBuilder();
-                appendIndent(startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
-                        lastNonWhitespaceChar, correctContinuation, false, buf);
-                if (command.text.equals("{")) {
-                    buf.append("{");
-                }
-                command.text = buf.toString();
-                command.offset=start;
-                command.length=endOfWs-start;
-                //System.out.println(command.text);
-            //}
+            command.text = buf.toString();
+            command.offset=start;
+            command.length=endOfWs-start;
         }
     }
 
