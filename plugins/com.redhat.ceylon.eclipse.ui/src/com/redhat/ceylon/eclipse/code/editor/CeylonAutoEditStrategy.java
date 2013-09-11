@@ -20,6 +20,7 @@ import static org.eclipse.core.runtime.Platform.getPreferencesService;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
+import java.io.ObjectInputStream.GetField;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -542,11 +543,12 @@ class AutoEdit {
             
             StringBuilder buf = new StringBuilder(command.text);
             boolean closeBrace = count("{")>count("}");
-            appendIndent(start, getEndOfCurrentLine(), 
+            int end = getEndOfCurrentLine();
+			appendIndent(start, end, start, end, 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    false, closeBrace, buf); //false, because otherwise it indents after annotations, which I guess we don't want
+                    closeBrace, false, buf); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
-                String hanging = document.get(command.offset, getEndOfCurrentLine()-command.offset); //stuff after the { on the current line
+                String hanging = document.get(command.offset, end-command.offset); //stuff after the { on the current line
                 buf.insert(command.caretOffset-command.offset, hanging);
                 command.length = hanging.length();
             }
@@ -596,13 +598,11 @@ class AutoEdit {
                     getPreviousNonWhitespaceCharacter(startOfPrev) : endOfLastLineChar;
             char startOfCurrentLineChar = command.text.equals("{") ? 
                     '{' : getNextNonWhitespaceCharacter(start, end);
-            //TODO: improve this 'cos should check tabs vs spaces
-            boolean correctContinuation = endOfWs-start!=firstEndOfWhitespace(startOfPrev, endOfPrev)-startOfPrev
-            		/*&& !isLineComment(endOfPrev)*/ && startOfCurrentLineChar!='\n';
             
             StringBuilder buf = new StringBuilder();
-            appendIndent(startOfPrev, endOfPrev, startOfCurrentLineChar, endOfLastLineChar,
-                    lastNonWhitespaceChar, correctContinuation, false, buf);
+            appendIndent(start, end, startOfPrev, endOfPrev, 
+            		startOfCurrentLineChar, endOfLastLineChar,
+                    lastNonWhitespaceChar, false, true, buf);
             if (command.text.equals("{")) {
                 buf.append("{");
             }
@@ -612,17 +612,56 @@ class AutoEdit {
         }
     }
 
-    private void appendIndent(int startOfPrev, int endOfPrev,
+    private void appendIndent(int start, int end, int startOfPrev, int endOfPrev,
             char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
-            boolean correctContinuation, boolean closeBraces, StringBuilder buf)
+            boolean closeBraces, boolean correctContinuation, StringBuilder buf)
             		throws BadLocationException {
-        boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
-                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'
-                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
+//        boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
+//                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'
+//                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
+    	int endingtt = tokenType(firstEndOfWhitespace(startOfPrev, endOfPrev)+1);
+    	int startingtt = tokenType(firstEndOfWhitespace(start, end)+1);
+    	boolean isContinuation = isBinaryOperator(endingtt)||
+    			isBinaryOperator(startingtt)||
+    			endingtt==CeylonLexer.COMMA||startingtt==CeylonLexer.COMMA||
+    			startingtt==CeylonLexer.EXTENDS||
+    			startingtt==CeylonLexer.TYPE_CONSTRAINT||
+    			startingtt==CeylonLexer.SATISFIES;
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
         appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
                 startOfPrev, endOfPrev, closeBraces, buf);
+    }
+    
+    boolean isBinaryOperator(int tt) {
+    	return tt==CeylonLexer.SPECIFY||
+    			tt==CeylonLexer.ASSIGN||
+    			tt==CeylonLexer.COMPUTE||
+    			tt==CeylonLexer.NOT_EQUAL_OP||
+    			tt==CeylonLexer.EQUAL_OP||
+    			tt==CeylonLexer.ADD_SPECIFY||
+    			tt==CeylonLexer.SUBTRACT_SPECIFY||
+    			tt==CeylonLexer.DIVIDE_SPECIFY||
+    			tt==CeylonLexer.MULTIPLY_SPECIFY||
+    			tt==CeylonLexer.MEMBER_OP||
+    			tt==CeylonLexer.SPREAD_OP||
+    			tt==CeylonLexer.SAFE_MEMBER_OP||
+    			tt==CeylonLexer.SUM_OP||
+    			tt==CeylonLexer.COMPLEMENT_OP||
+    			tt==CeylonLexer.DIFFERENCE_OP||
+    			tt==CeylonLexer.QUOTIENT_OP||
+    			tt==CeylonLexer.PRODUCT_OP||
+    			tt==CeylonLexer.UNION_OP||
+    			tt==CeylonLexer.INTERSECTION_OP||
+    			tt==CeylonLexer.AND_OP||
+    			tt==CeylonLexer.OR_OP||
+    			tt==CeylonLexer.POWER_OP||
+    			tt==CeylonLexer.COMPARE_OP||
+    			tt==CeylonLexer.LARGE_AS_OP||
+    			tt==CeylonLexer.LARGER_OP||
+    			tt==CeylonLexer.SMALL_AS_OP||
+    			tt==CeylonLexer.SMALLER_OP||
+    			tt==CeylonLexer.SCALE_OP;
     }
 
     protected void reduceIndent(DocumentCommand command) {
