@@ -584,12 +584,22 @@ public class CeylonHover
 				return "types.gif";
 			}
 			else if (dec.isParameter()) {
-				return "methpro_obj.gif";
+				if (dec instanceof Method) {
+					return "methpro_obj.gif";
+				}
+				else {
+					return "field_protected_obj.gif";
+				}
 			}
-			else if (dec instanceof MethodOrValue) {
+			else if (dec instanceof Method) {
 				return dec.isShared() ?
 						"public_co.gif" : 
 						"private_co.gif";
+			}
+			else if (dec instanceof MethodOrValue) {
+				return dec.isShared() ?
+						"field_public_obj.gif" : 
+						"field_private_obj.gif";
 			}
 			else if (dec instanceof TypeParameter) {
 				return "typevariable_obj.gif";
