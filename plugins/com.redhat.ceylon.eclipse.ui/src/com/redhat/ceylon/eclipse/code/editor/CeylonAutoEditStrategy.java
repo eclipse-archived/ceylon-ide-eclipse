@@ -641,6 +641,7 @@ class AutoEdit {
     
     boolean isInheritanceClause(int tt) {
     	return tt==CeylonLexer.EXTENDS||
+    			tt==CeylonLexer.CASE_TYPES||
     			tt==CeylonLexer.TYPE_CONSTRAINT||
     			tt==CeylonLexer.SATISFIES;
     }
@@ -651,10 +652,16 @@ class AutoEdit {
     			tt==CeylonLexer.COMPUTE||
     			tt==CeylonLexer.NOT_EQUAL_OP||
     			tt==CeylonLexer.EQUAL_OP||
+    			tt==CeylonLexer.IDENTICAL_OP||
     			tt==CeylonLexer.ADD_SPECIFY||
     			tt==CeylonLexer.SUBTRACT_SPECIFY||
     			tt==CeylonLexer.DIVIDE_SPECIFY||
     			tt==CeylonLexer.MULTIPLY_SPECIFY||
+    			tt==CeylonLexer.OR_SPECIFY||
+    			tt==CeylonLexer.AND_SPECIFY||
+    			tt==CeylonLexer.COMPLEMENT_SPECIFY||
+    			tt==CeylonLexer.UNION_SPECIFY||
+    			tt==CeylonLexer.INTERSECT_SPECIFY||
     			tt==CeylonLexer.MEMBER_OP||
     			tt==CeylonLexer.SPREAD_OP||
     			tt==CeylonLexer.SAFE_MEMBER_OP||
@@ -663,6 +670,10 @@ class AutoEdit {
     			tt==CeylonLexer.DIFFERENCE_OP||
     			tt==CeylonLexer.QUOTIENT_OP||
     			tt==CeylonLexer.PRODUCT_OP||
+    			tt==CeylonLexer.REMAINDER_OP||
+    			tt==CeylonLexer.RANGE_OP||
+    			tt==CeylonLexer.SEGMENT_OP||
+    			tt==CeylonLexer.ENTRY_OP||
     			tt==CeylonLexer.UNION_OP||
     			tt==CeylonLexer.INTERSECTION_OP||
     			tt==CeylonLexer.AND_OP||
