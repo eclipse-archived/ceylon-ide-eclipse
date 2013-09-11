@@ -20,6 +20,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.TextPresentation;
+import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -38,10 +39,12 @@ class PresentationDamageRepairer implements IPresentationDamager,
     private final ISourceViewer sourceViewer;
     private final CeylonTokenColorer tokenColorer;
     private volatile List<CommonToken> tokens;
+    private final CeylonEditor editor;
     
-	PresentationDamageRepairer(ISourceViewer sourceViewer) {
+	PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
 		this.sourceViewer = sourceViewer;
 		tokenColorer = new CeylonTokenColorer();
+		this.editor = editor;
 	}
 	
 	public IRegion getDamageRegion(ITypedRegion partition, 
@@ -140,7 +143,6 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-	    
 	    List<Tree.MetaLiteral> metaLiterals = new ArrayList<Tree.MetaLiteral>();
 		
 		//it sounds strange, but it's better to parse
@@ -255,7 +257,14 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 attribute==null ? null : attribute.getForeground(),
                 attribute==null ? null : attribute.getBackground(),
                 attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
-
+		
+		LinkedModeModel linkedMode = editor.getLinkedMode();
+		if (linkedMode!=null &&
+				(linkedMode.anyPositionContains(startOffset) ||
+				linkedMode.anyPositionContains(endOffset))) {
+			return;
+		}
+		
         // Negative (possibly 0) length style ranges will cause an 
         // IllegalArgumentException in changeTextPresentation(..)
         /*if (styleRange.length <= 0 || 

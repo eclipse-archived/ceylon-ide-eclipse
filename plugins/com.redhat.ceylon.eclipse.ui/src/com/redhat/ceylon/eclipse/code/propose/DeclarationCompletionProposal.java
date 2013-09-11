@@ -196,7 +196,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
             linkedModeModel.addLinkingListener(new ILinkedModeListener() {
                 @Override
                 public void left(LinkedModeModel model, int flags) {
-                    editor.setInLinkedMode(false);
+                    editor.setLinkedMode(model);
                     linkedModeModel.exit(ILinkedModeListener.NONE);
                     ISourceViewer viewer= editor.getCeylonSourceViewer();
                     if (viewer instanceof IEditingSupportRegistry) {
@@ -207,14 +207,14 @@ class DeclarationCompletionProposal extends CompletionProposal {
                 }
                 @Override
                 public void suspend(LinkedModeModel model) {
-                    editor.setInLinkedMode(false);
+                    editor.setLinkedMode(null);
                 }
                 @Override
                 public void resume(LinkedModeModel model, int flags) {
-                    editor.setInLinkedMode(true);
+                    editor.setLinkedMode(model);
                 }
             });
-            editor.setInLinkedMode(true);
+            editor.setLinkedMode(linkedModeModel);
             CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
 			EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
             ui.setExitPosition(viewer, loc+text.length(), 0, i);

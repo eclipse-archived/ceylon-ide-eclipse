@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public abstract class AbstractRenameLinkedMode {
@@ -42,12 +43,12 @@ public abstract class AbstractRenameLinkedMode {
 
 		@Override
 		public void suspend(LinkedModeModel model) {
-		    editor.setInLinkedMode(false);
+		    editor.setLinkedMode(linkedModeModel);
 		}
 
 		@Override
 		public void resume(LinkedModeModel model, int flags) {
-		    editor.setInLinkedMode(true);
+		    editor.setLinkedMode(linkedModeModel);
 		}
 	}
 
@@ -74,7 +75,7 @@ public abstract class AbstractRenameLinkedMode {
     private final CeylonEditor editor;
     private final Node node;
     Declaration dec;
-
+    
     private EnterAliasInformationPopup infoPopup;
 
     private Point originalSelection;
@@ -128,7 +129,7 @@ public abstract class AbstractRenameLinkedMode {
             linkedModeModel.addGroup(linkedPositionGroup);
             linkedModeModel.forceInstall();
             linkedModeModel.addLinkingListener(new LinkedModeListener());
-            editor.setInLinkedMode(true);
+            editor.setLinkedMode(linkedModeModel);
             
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
 //            ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
@@ -156,18 +157,10 @@ public abstract class AbstractRenameLinkedMode {
 			LinkedPositionGroup linkedPositionGroup);
 
     public void cancel() {
-        if (linkedModeModel != null) {
-            linkedModeModel.exit(ILinkedModeListener.NONE);
-        }
-        editor.setInLinkedMode(false);
         linkedModeLeft();
     }
     
     public void done() {
-        if (linkedModeModel != null) {
-            linkedModeModel.exit(ILinkedModeListener.NONE);
-        }
-        editor.setInLinkedMode(false);
         linkedModeLeft();
         editor.doSave(new NullProgressMonitor());
     }
@@ -187,20 +180,23 @@ public abstract class AbstractRenameLinkedMode {
     }*/
 
     private void linkedModeLeft() {
+    	CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+    	
+        if (linkedModeModel != null) {
+            linkedModeModel.exit(ILinkedModeListener.NONE);
+        }
+        
+        editor.setLinkedMode(null);
+        
         if (infoPopup != null) {
             infoPopup.close();
         }
-
-        ISourceViewer viewer= editor.getCeylonSourceViewer();
+        
         if (viewer instanceof IEditingSupportRegistry) {
             IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
             registry.unregister(focusEditingSupport);
         }
         
-        activateEditor();
-    }
-
-    private void activateEditor() {
         editor.getSite().getPage().activate(editor);
     }
 
