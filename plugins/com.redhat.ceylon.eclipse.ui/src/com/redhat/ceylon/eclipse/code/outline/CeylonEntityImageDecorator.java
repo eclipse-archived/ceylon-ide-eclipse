@@ -29,6 +29,7 @@ public class CeylonEntityImageDecorator {
     private final static int VARIABLE = 1 << 8;
     private final static int ANNOTATION = 1 << 9;
     private final static int ENUM = 1 << 10;
+//    private final static int FINAL = 1 << 11;
 
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
@@ -42,6 +43,7 @@ public class CeylonEntityImageDecorator {
                 new DecorationDescriptor(VARIABLE, CeylonPlugin.getInstance().image("volatile_co.gif"), TOP_LEFT),
                 new DecorationDescriptor(ANNOTATION, CeylonPlugin.getInstance().image("annotation_tsk.gif"), TOP_LEFT),
                 new DecorationDescriptor(ENUM, CeylonPlugin.getInstance().image("enum_tsk.gif"), TOP_LEFT)
+//                new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("del_stat.gif"), TOP_RIGHT)
             };
     }
     
@@ -100,6 +102,9 @@ public class CeylonEntityImageDecorator {
         if (model instanceof Class && ((Class) model).isAbstract()) {
             result |= ABSTRACT;
         }
+//        if (model instanceof Class && ((Class) model).isFinal()) {
+//            result |= FINAL;
+//        }
         if (model instanceof TypeDeclaration && 
         		((TypeDeclaration) model).getCaseTypeDeclarations()!=null) {
             result |= ENUM;
