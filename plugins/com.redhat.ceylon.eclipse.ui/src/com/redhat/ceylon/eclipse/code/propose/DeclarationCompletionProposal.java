@@ -173,7 +173,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        if (first<0) return;
 	        int next = getNextComma(document, first, basicProposal);
 	        int i=0;
-	        while (next>1) {
+	        while (next>1 && i<parameterList.getParameters().size()) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
 	        	if (basicProposal) {
 	        		addBasicProposals(generic, loc, first, props, i);
