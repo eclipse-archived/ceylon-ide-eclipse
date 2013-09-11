@@ -115,7 +115,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -2036,11 +2035,22 @@ public class CeylonContentProposer {
             else {
                 result.append("(");
                 for (Parameter p: params) {
-                    appendParameters(p.getModel(), pr.getTypedParameter(p), result);
                     if (p.getModel() instanceof Functional) {
-                        result.append(" => ");
+                    	if (p.isDeclaredVoid()) {
+                    		result.append("void ");
+                    	}
+                    	appendParameters(p.getModel(), pr.getTypedParameter(p), result);
+                    	if (p.isDeclaredVoid()) {
+                    		result.append(" {}");
+                    	}
+                    	else {
+                    		result.append(" => ").append(p.getName());
+                    	}
                     }
-                    result.append(p.getName()).append(", ");
+                    else {
+                    	result.append(p.getName());
+                    }
+                    result.append(", ");
                 }
                 result.setLength(result.length()-2);
                 result.append(")");
@@ -2079,16 +2089,25 @@ public class CeylonContentProposer {
                 for (Parameter p: params) {
                     if (!p.isSequenced()) {
                         if (p.getModel() instanceof Functional) {
-                            result.append("function ").append(p.getName());
+                        	if (p.isDeclaredVoid()) {
+                        		result.append("void ");
+                        	}
+                        	else {
+                        		result.append("function ");
+                        	}
+                        	result.append(p.getName());
                             appendParameters(p.getModel(), pr.getTypedParameter(p), result);
                             if (descriptionOnly) {
                                 result.append("; ");
                             }
+                            else if (p.isDeclaredVoid()) {
+                            	result.append(" {} ");
+                            }
                             else {
                                 result.append(" => ")
-                                    //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-                                    .append("nothing")
-                                    .append("; ");
+                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+                                .append("nothing")
+                                .append("; ");
                             }
                         }
                         else {
