@@ -357,6 +357,11 @@ class AutoEdit {
     			type==MULTI_COMMENT;
     }
     
+    private boolean isMultilineCommented(int offset) {
+    	int type = tokenType(offset);
+    	return type==MULTI_COMMENT;
+    }
+    
     private boolean isGraveAccentCharacterInStringLiteral(int offset, String fence) {
         if ("`".equals(fence)) {
             int type = tokenType(offset);
@@ -575,6 +580,13 @@ class AutoEdit {
         int start = getStartOfCurrentLine();
         int end = getEndOfCurrentLine();
         int endOfWs = firstEndOfWhitespace(start, end);
+        if (endOfWs<end && isMultilineCommented(endOfWs+1)) {
+        	command.doit = false;
+        	command.offset=start;
+        	command.text="";
+        	command.length=0;
+        	return;
+        }
         if (command.offset<endOfWs || 
                 command.offset==start && command.shiftsCaret==false) { //Test for IMP's "Correct Indent"
             int endOfPrev = getEndOfPreviousLine();
