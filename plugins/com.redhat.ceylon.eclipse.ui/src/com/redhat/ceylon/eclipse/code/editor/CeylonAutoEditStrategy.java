@@ -578,12 +578,12 @@ class AutoEdit {
         int endOfWs = firstEndOfWhitespace(start, end);
         if (command.offset<endOfWs || 
                 command.offset==start && command.shiftsCaret==false) { //Test for IMP's "Correct Indent"
-            if (start==0) { //Start of file
+            /*if (start==0) { //Start of file
                 command.text="";
                 command.offset=start;
                 command.length=0;
             }
-            else {
+            else {*/
                 int endOfPrev = getEndOfPreviousLine();
                 int startOfPrev = getStartOfPreviousLine();
                 char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(startOfPrev, endOfPrev);
@@ -605,7 +605,7 @@ class AutoEdit {
                 command.offset=start;
                 command.length=endOfWs-start;
                 //System.out.println(command.text);
-            }
+            //}
         }
     }
 
@@ -665,6 +665,7 @@ class AutoEdit {
             throws BadLocationException {
         int os;
         int line = document.getLineOfOffset(offset);
+        if (line==0) return -1;
         do {
             os = document.getLineOffset(--line);
         }
@@ -717,6 +718,7 @@ class AutoEdit {
     private String getIndent(int start, int end, 
     		boolean isUncorrectedContinuation) 
             throws BadLocationException {
+    	if (start<0||end<0) return "";
         if (!isUncorrectedContinuation) {
             while (start>0) {
                 //We're searching for an earlier line whose 
@@ -863,6 +865,7 @@ class AutoEdit {
 
     private int getEndOfPreviousLine(int offset) 
             throws BadLocationException {
+    	if (document.getLineOfOffset(offset)==0) return -1;
         int p = offset == document.getLength() ? offset-1 : offset;
         IRegion lineInfo = document.getLineInformation(document.getLineOfOffset(p)-1);
         return lineInfo.getOffset() + lineInfo.getLength();
