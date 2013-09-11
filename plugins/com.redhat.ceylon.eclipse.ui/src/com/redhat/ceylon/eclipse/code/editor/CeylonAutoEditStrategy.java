@@ -20,7 +20,6 @@ import static org.eclipse.core.runtime.Platform.getPreferencesService;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -391,12 +390,21 @@ class AutoEdit {
 		}
     }
 
-    public int tokenType(int offset) {
+    private int tokenType(int offset) {
     	CommonToken token = token(offset);
 		return token==null ? -1 : token.getType();
     }
     
-	public CommonToken token(int offset) {
+    int getTokenType(int offset) {
+		int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+		if (tokenIndex>=0) {
+			CommonToken token = tokens.get(tokenIndex);
+			return token.getType();
+		}
+		return -1;
+    }
+    
+	private CommonToken token(int offset) {
         List<CommonToken> tokens = getTokens();
 		if (tokens!=null) {
     		if (tokens.size()>1) {
@@ -544,9 +552,9 @@ class AutoEdit {
             StringBuilder buf = new StringBuilder(command.text);
             boolean closeBrace = count("{")>count("}");
             int end = getEndOfCurrentLine();
-			appendIndent(start, end, start, end, 
+			appendIndent(command.offset, end, start, command.offset, 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
-                    closeBrace, false, buf); //false, because otherwise it indents after annotations, which I guess we don't want
+                    closeBrace, true, buf); //false, because otherwise it indents after annotations, which I guess we don't want
             if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
                 String hanging = document.get(command.offset, end-command.offset); //stuff after the { on the current line
                 buf.insert(command.caretOffset-command.offset, hanging);
@@ -619,18 +627,22 @@ class AutoEdit {
 //        boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
 //                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'
 //                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
-    	int endingtt = tokenType(firstEndOfWhitespace(startOfPrev, endOfPrev)+1);
-    	int startingtt = tokenType(firstEndOfWhitespace(start, end)+1);
-    	boolean isContinuation = isBinaryOperator(endingtt)||
-    			isBinaryOperator(startingtt)||
-    			endingtt==CeylonLexer.COMMA||startingtt==CeylonLexer.COMMA||
-    			startingtt==CeylonLexer.EXTENDS||
-    			startingtt==CeylonLexer.TYPE_CONSTRAINT||
-    			startingtt==CeylonLexer.SATISFIES;
+    	int prevEnding = getTokenType(lastEndOfWhitespace(startOfPrev, endOfPrev));
+    	int currStarting = getTokenType(firstEndOfWhitespace(start, end));
+    	boolean isContinuation = isBinaryOperator(prevEnding)||
+    			isBinaryOperator(currStarting)||
+    			prevEnding==CeylonLexer.COMMA||currStarting==CeylonLexer.COMMA||
+    			isInheritanceClause(currStarting);
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
         appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
                 startOfPrev, endOfPrev, closeBraces, buf);
+    }
+    
+    boolean isInheritanceClause(int tt) {
+    	return tt==CeylonLexer.EXTENDS||
+    			tt==CeylonLexer.TYPE_CONSTRAINT||
+    			tt==CeylonLexer.SATISFIES;
     }
     
     boolean isBinaryOperator(int tt) {
@@ -664,7 +676,7 @@ class AutoEdit {
     			tt==CeylonLexer.SCALE_OP;
     }
 
-    protected void reduceIndent(DocumentCommand command) {
+    private void reduceIndent(DocumentCommand command) {
         int spaces = getIndentSpaces();
         if (endsWithSpaces(command.text, spaces)) {
             command.text = command.text.substring(0, command.text.length()-spaces);
@@ -944,6 +956,19 @@ class AutoEdit {
             offset++;
         }
         return end;
+    }
+
+    private int lastEndOfWhitespace(int offset, int end)
+            throws BadLocationException {
+    	end--;
+        while (end > offset) {
+            char ch= document.getChar(end);
+            if (ch!=' ' && ch!='\t') {
+                return end;
+            }
+            end--;
+        }
+        return offset;
     }
 
     private boolean isLineEnding(String text) {

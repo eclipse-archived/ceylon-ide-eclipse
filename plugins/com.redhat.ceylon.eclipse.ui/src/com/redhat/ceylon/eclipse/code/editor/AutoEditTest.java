@@ -39,7 +39,7 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("class Test()\nextends Super(){\n\nvoid method(){}\n\n}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "class Test()\nextends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+        assertResult(doc, "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
         
         doc = new Document("class Test() extends Super(){\n\nvoid method(){}\n\t\n}");
         instance.doCorrectIndentation(doc);
@@ -90,7 +90,7 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("String x()\n=>\"hello\";");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "String x()\n=>\"hello\";");
+        assertResult(doc, "String x()\n\t\t=>\"hello\";");
 
         doc = new Document("String x()\n\t=>\"hello\";");
         instance.doCorrectIndentation(doc);
@@ -110,7 +110,7 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("class X()\nextends Y()");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "class X()\nextends Y()");
+        assertResult(doc, "class X()\n\t\textends Y()");
 
         doc = new Document("class X()\n\textends Y()");
         instance.doCorrectIndentation(doc);
@@ -126,7 +126,7 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("class X()\nextends Y()\nsatisfies Z");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "class X()\nextends Y()\nsatisfies Z");
+        assertResult(doc, "class X()\n\t\textends Y()\n\t\tsatisfies Z");
 
         doc = new Document("class X()\n\textends Y()\n\tsatisfies Z");
         instance.doCorrectIndentation(doc);
@@ -390,11 +390,12 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("String x()\n=>\"hello\" +");
         instance.doNewline(doc);
-        assertResult(doc, "String x()\n=>\"hello\" +\n");
+        assertResult(doc, "String x()\n=>\"hello\" +\n\t\t");
 
+        //What should this one really do? Not well-defined
         doc = new Document("String x()\n\t=>\"hello\" +");
         instance.doNewline(doc);
-        assertResult(doc, "String x()\n\t=>\"hello\" +\n\t");
+        assertResult(doc, "String x()\n\t=>\"hello\" +\n\t\t");
         
         doc = new Document("String x()\n\t\t=>\"hello\" +");
         instance.doNewline(doc);
@@ -439,13 +440,14 @@ class AutoEditTest extends CeylonAutoEditStrategy {
     
     static int count=0;
     
-    private static void assertResult(Document doc, String result) {
+    private static void assertResult(Document doc, String expected) {
     	count++;
-        if (!doc.get().equals(result)) {
+        String actual = doc.get();
+		if (!actual.equals(expected)) {
         	System.out.println("assertion failed: " + count);
-            System.out.println(doc.get());
+            System.out.println(actual);
             System.out.println("expected:");
-            System.out.println(result);
+            System.out.println(expected);
         }
     }
     
