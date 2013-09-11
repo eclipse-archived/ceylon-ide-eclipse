@@ -87,7 +87,7 @@ public class MainBuildTests extends AbstractMultiProjectTest {
         javaFileEditor.show();
         assertEquals("Wrong line 4 in file JavaClassInCeylonModule_Main_Ceylon_Project.java : ", javaFileEditor.getLines().get(3).trim(), "public class JavaClassInCeylonModule_Main_Ceylon_Project {");        
         String javaEditorText = javaFileEditor.getText();
-        javaFileEditor.insertText(4, 0, "public void newMethodTotest() {}\n");
+        javaFileEditor.insertText(4, 0, "public void newMethodToTest() {}\n");
         
         Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProjectJDT);
         buildSummary.install();
