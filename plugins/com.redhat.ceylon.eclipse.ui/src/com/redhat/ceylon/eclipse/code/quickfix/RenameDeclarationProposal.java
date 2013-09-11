@@ -220,12 +220,7 @@ class RenameDeclarationProposal implements ICompletionProposal,
 
 	public static void add(Collection<ICompletionProposal> proposals,
 			IFile file, CeylonEditor editor) {
-		RenameRefactoring rr = new RenameRefactoring(editor) {
-			@Override
-			protected boolean searchInEditor() {
-				return super.searchInEditor();
-			}
-		};
+		RenameRefactoring rr = new RenameRefactoring(editor);
 		if (rr.isEnabled()) {
 			proposals.add(new RenameDeclarationProposal(file, 
 					rr.getNode(), rr.getDeclaration(), editor,
