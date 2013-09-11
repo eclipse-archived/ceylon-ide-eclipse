@@ -132,7 +132,7 @@ public abstract class AbstractRenameLinkedMode {
             
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
 //            ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
-            ui.setExitPosition(viewer, namePosition.offset, 0, LinkedPositionGroup.NO_STOP);
+            ui.setExitPosition(viewer, offset, 0, LinkedPositionGroup.NO_STOP);
             ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
             ui.enter();
 
