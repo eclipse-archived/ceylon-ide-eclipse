@@ -269,7 +269,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return false;
         }
     }
-
+    
     /*private void afterPaste(StyledText textWidget) {
         Clipboard clipboard= new Clipboard(textWidget.getDisplay());
         try {
