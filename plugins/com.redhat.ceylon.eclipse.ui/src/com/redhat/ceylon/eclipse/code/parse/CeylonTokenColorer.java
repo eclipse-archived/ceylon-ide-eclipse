@@ -38,6 +38,7 @@ public class CeylonTokenColorer  {
     public static String SEMIS = "semis";
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
+    public static String MEMBERS = "members";    
     
     public static final Set<String> keywords = new LinkedHashSet<String>(Arrays.asList("import", "assert",
             "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
@@ -48,7 +49,7 @@ public class CeylonTokenColorer  {
     
     private static TextAttribute identifierAttribute, typeAttribute, typeLiteralAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
-    semiAttribute, braceAttribute, packageAttribute, interpAttribute, charAttribute;
+    semiAttribute, braceAttribute, packageAttribute, interpAttribute, charAttribute, memberAttribute;
     
     private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
         return new TextAttribute(color(colorRegistry, key), null, style); 
@@ -95,6 +96,7 @@ public class CeylonTokenColorer  {
         semiAttribute = text(colorRegistry, SEMIS, SWT.NORMAL);
         braceAttribute = text(colorRegistry, BRACES, SWT.NORMAL);
         packageAttribute = text(colorRegistry, PACKAGES, SWT.NORMAL);
+        memberAttribute = text(colorRegistry, MEMBERS, SWT.NORMAL);
     }
     
     public TextAttribute getInterpolationColoring() {
@@ -103,6 +105,10 @@ public class CeylonTokenColorer  {
     
     public TextAttribute getMetaLiteralColoring() {
         return typeLiteralAttribute;
+    }
+    
+    public TextAttribute getMemberColoring() {
+        return memberAttribute;
     }
     
     public TextAttribute getColoring(CommonToken token) {

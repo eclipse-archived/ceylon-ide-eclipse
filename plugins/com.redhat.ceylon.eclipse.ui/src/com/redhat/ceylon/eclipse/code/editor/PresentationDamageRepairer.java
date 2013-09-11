@@ -153,6 +153,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		//int prevEndOffset= -1;
 		boolean inMetaLiteral=false;
 		int inInterpolated=0;
+		boolean afterMemberOp = false;
 		//start iterating tokens
 		Iterator<CommonToken> iter= tokens.iterator();
 		if (iter!=null) {
@@ -205,7 +206,9 @@ class PresentationDamageRepairer implements IPresentationDamager,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
 				}
 				changeTokenPresentation(presentation, 
-						tokenColorer.getColoring(token), 
+						afterMemberOp && tt==CeylonLexer.LIDENTIFIER ?
+								tokenColorer.getMemberColoring() :
+								tokenColorer.getColoring(token), 
 						startOffset, endOffset,
 						inMetaLiteral || inInterpolated>1 ||
 						    inInterpolated>0
@@ -222,6 +225,9 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 }
 				//prevStartOffset= startOffset;
 				//prevEndOffset= endOffset;
+                afterMemberOp = tt==CeylonLexer.MEMBER_OP ||
+                		        tt==CeylonLexer.SAFE_MEMBER_OP||
+                		        tt==CeylonLexer.SPREAD_OP;
 			}
 		}
 		// The document might have changed since the presentation was computed, so
