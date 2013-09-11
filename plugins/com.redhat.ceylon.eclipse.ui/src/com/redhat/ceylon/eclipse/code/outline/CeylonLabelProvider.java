@@ -91,6 +91,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
     public static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
     public static Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
+    public static Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
@@ -292,6 +293,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.TypeAliasDeclaration) {
             return ALIAS;
         }
+        else if (n instanceof Tree.ValueParameterDeclaration) {
+            return PARAMETER;
+        }
+        else if (n instanceof Tree.FunctionalParameterDeclaration) {
+            return PARAMETER_METHOD;
+        }
         else if (n instanceof Tree.Parameter) {
             return PARAMETER;
         }
@@ -329,7 +336,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         else if (d.isParameter()) {
-            return PARAMETER;
+        	if (d instanceof Method) {
+        		return PARAMETER_METHOD;
+        	}
+        	else {
+        		return PARAMETER;
+        	}
         }
         else if (d instanceof Method) {
             if (shared) {
