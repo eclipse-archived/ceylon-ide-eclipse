@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.outline.DecorationDescriptor.Quadra
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -27,6 +28,7 @@ public class CeylonEntityImageDecorator {
     private final static int ABSTRACT = 1 << 7;
     private final static int VARIABLE = 1 << 8;
     private final static int ANNOTATION = 1 << 9;
+    private final static int ENUM = 1 << 10;
 
     public DecorationDescriptor[] getAllDecorations() {
         return new DecorationDescriptor[] {
@@ -38,7 +40,8 @@ public class CeylonEntityImageDecorator {
                 new DecorationDescriptor(FORMAL, CeylonPlugin.getInstance().image("final_co.gif"), TOP_RIGHT),
                 new DecorationDescriptor(ABSTRACT, CeylonPlugin.getInstance().image("abstract_co.gif"), TOP_RIGHT),
                 new DecorationDescriptor(VARIABLE, CeylonPlugin.getInstance().image("volatile_co.gif"), TOP_LEFT),
-                new DecorationDescriptor(ANNOTATION, CeylonPlugin.getInstance().image("annotation_tsk.gif"), TOP_LEFT)
+                new DecorationDescriptor(ANNOTATION, CeylonPlugin.getInstance().image("annotation_tsk.gif"), TOP_LEFT),
+                new DecorationDescriptor(ENUM, CeylonPlugin.getInstance().image("enum_tsk.gif"), TOP_LEFT)
             };
     }
     
@@ -96,6 +99,10 @@ public class CeylonEntityImageDecorator {
         }
         if (model instanceof Class && ((Class) model).isAbstract()) {
             result |= ABSTRACT;
+        }
+        if (model instanceof TypeDeclaration && 
+        		((TypeDeclaration) model).getCaseTypeDeclarations()!=null) {
+            result |= ENUM;
         }
         Declaration refined = getRefinedDeclaration(model);
         if (refined!=null) {
