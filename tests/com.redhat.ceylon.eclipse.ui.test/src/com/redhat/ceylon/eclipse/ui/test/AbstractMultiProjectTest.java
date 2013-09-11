@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -39,6 +40,25 @@ public abstract class AbstractMultiProjectTest {
         importAndBuild();
     }
 
+    @AfterClass
+    public static void afterClass() {
+        try {
+            referencedJavaProject.delete(true, true, null);
+        } catch(CoreException e) {
+            e.printStackTrace();
+        }
+        try {
+            referencedCeylonProject.delete(true, true, null);
+        } catch(CoreException e) {
+            e.printStackTrace();
+        }
+        try {
+            mainProject.delete(true, true, null);
+        } catch(CoreException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static void importAndBuild() {
         try {
             IPath projectDescriptionPath = null;
