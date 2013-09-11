@@ -230,23 +230,28 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     
                     int endOffset = selection.getOffset()+selection.getLength();
                     try {
-                    	//TODO: no good reason to use Edits here
                     	MultiTextEdit edit = new MultiTextEdit();
                     	if (imports!=null) {
                     		pasteImports(imports, edit);
                     	}
                     	edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
                     	edit.apply(doc);
-                    	endOffset = selection.getOffset()+text.length();
+                    	endOffset = edit.getRegion().getOffset()+edit.getRegion().getLength();
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                    try {
                     	if (EditorsPlugin.getDefault().getPreferenceStore()
                     			.getBoolean(CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION)) {
-                    		endOffset = correctSourceIndentation(new Point(selection.getOffset(), text.length()+1), doc);
+                    		endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
                     	}
                     	return true;
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
-                        return false;
+                        return true;
                     }
                     finally {
                         if (doc instanceof IDocumentExtension4) {
