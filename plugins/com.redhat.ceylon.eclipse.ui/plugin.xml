@@ -1536,10 +1536,18 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" label="Other identifiers"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" label="Other unqualified identifiers"
         value="COLOR_BLACK">
         <description>
-            Color for highlighting identifiers
+            Color for highlighting unqualified identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.members" label="Other qualified identifiers"
+        value="COLOR_BLACK">
+        <description>
+            Color for highlighting qualified identifiers
         </description>
     </colorDefinition>
     <colorDefinition
