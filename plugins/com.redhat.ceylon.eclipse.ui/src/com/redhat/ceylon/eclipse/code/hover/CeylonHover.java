@@ -558,7 +558,19 @@ public class CeylonHover
 		}
 		else if (node instanceof Tree.CharLiteral) {
 			buffer.append(node.getText());
-			buffer.append("<hr/>");
+			int codepoint = Character.codePointAt(node.getText(), 1);
+            String name = Character.getName(codepoint);
+            buffer.append("<hr/>Unicode Name: ").append(name);
+            String hex = Integer.toHexString(codepoint).toUpperCase();
+            while (hex.length() < 4) {
+                hex = "0" + hex;
+            }
+            buffer.append("<br/>Codepoint: ").append("U+").append(hex);
+            buffer.append("<br/>General Category: ").append(getCodepointGeneralCategoryName(codepoint));
+            Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
+            buffer.append("<br/>Script: ").append(script.name());
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
+            buffer.append("<br/>Block: ").append(block).append("<hr/>");
 		}
 		else if (node instanceof Tree.NaturalLiteral) {
 			String text = node.getText().replace("_", "");
@@ -588,6 +600,75 @@ public class CeylonHover
 		HTMLPrinter.addPageEpilog(buffer);
 		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
+
+    private String getCodepointGeneralCategoryName(int codepoint) {
+        String gc;
+        switch (Character.getType(codepoint)) {
+        case Character.COMBINING_SPACING_MARK:
+            gc = "Mark, combining spacing"; break;
+        case Character.CONNECTOR_PUNCTUATION:
+            gc = "Punctuation, connector"; break;
+        case Character.CONTROL:
+            gc = "Other, control"; break;
+        case Character.CURRENCY_SYMBOL:
+            gc = "Symbol, currency"; break;
+        case Character.DASH_PUNCTUATION:
+            gc = "Punctuation, dash"; break;
+        case Character.DECIMAL_DIGIT_NUMBER:
+            gc = "Number, decimal digit"; break;
+        case Character.ENCLOSING_MARK:
+            gc = "Mark, enclosing"; break;
+        case Character.END_PUNCTUATION:
+            gc = "Punctuation, close"; break;
+        case Character.FINAL_QUOTE_PUNCTUATION:
+            gc = "Punctuation, final quote"; break;
+        case Character.FORMAT:
+            gc = "Other, format"; break;
+        case Character.INITIAL_QUOTE_PUNCTUATION:
+            gc = "Punctuation, initial quote"; break;
+        case Character.LETTER_NUMBER:
+            gc = "Number, letter"; break;
+        case Character.LINE_SEPARATOR:
+            gc = "Separator, line"; break;
+        case Character.LOWERCASE_LETTER:
+            gc = "Letter, lowercase"; break;
+        case Character.MATH_SYMBOL:
+            gc = "Symbol, math"; break;
+        case Character.MODIFIER_LETTER:
+            gc = "Letter, modifier"; break;
+        case Character.MODIFIER_SYMBOL:
+            gc = "Symbol, modifier"; break;
+        case Character.NON_SPACING_MARK:
+            gc = "Mark, nonspacing"; break;
+        case Character.OTHER_LETTER:
+            gc = "Letter, other"; break;
+        case Character.OTHER_NUMBER:
+            gc = "Number, other"; break;
+        case Character.OTHER_PUNCTUATION:
+            gc = "Punctuation, other"; break;
+        case Character.OTHER_SYMBOL:
+            gc = "Symbol, other"; break;
+        case Character.PARAGRAPH_SEPARATOR:
+            gc = "Separator, paragraph"; break;
+        case Character.PRIVATE_USE:
+            gc = "Other, private use"; break;
+        case Character.SPACE_SEPARATOR:
+            gc = "Separator, space"; break;
+        case Character.START_PUNCTUATION:
+            gc = "Punctuation, open"; break;
+        case Character.SURROGATE:
+            gc = "Other, surrogate"; break;
+        case Character.TITLECASE_LETTER:
+            gc = "Letter, titlecase"; break;
+        case Character.UNASSIGNED:
+            gc = "Other, unassigned"; break;
+        case Character.UPPERCASE_LETTER:
+            gc = "Letter, uppercase"; break;
+        default:
+            gc = "&lt;Unknown&gt;";
+        }
+        return gc;
+    }
 	
 	private static String getIcon(Object obj) {
 		if (obj instanceof Module) {
