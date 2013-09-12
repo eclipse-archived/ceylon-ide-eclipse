@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
@@ -43,7 +44,7 @@ class ChangeMultilineStringIndentationProposal extends ChangeCorrectionProposal 
     
     private static int getStartQuoteLength(int type) {
         int startQuoteLength = -1;
-        if (type == STRING_LITERAL || type == STRING_START) {
+        if (type == STRING_LITERAL || type== ASTRING_LITERAL || type == STRING_START) {
             startQuoteLength = 1;
         } else if (type == STRING_MID || type == STRING_END) {
             startQuoteLength = 2;
@@ -55,7 +56,7 @@ class ChangeMultilineStringIndentationProposal extends ChangeCorrectionProposal 
 
     private static int getEndQuoteLength(int type) {
         int endQuoteLength = -1;
-        if (type == STRING_LITERAL || type == STRING_END) {
+        if (type == STRING_LITERAL || type== ASTRING_LITERAL || type == STRING_END) {
             endQuoteLength = 1;
         } else if (type == STRING_START || type == STRING_MID) {
             endQuoteLength = 2;
