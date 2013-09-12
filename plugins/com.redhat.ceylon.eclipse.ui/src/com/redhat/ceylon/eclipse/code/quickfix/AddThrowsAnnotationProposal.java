@@ -38,7 +38,7 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
             return;
         }
 
-        String throwsAnnotation = "throws (" + exceptionType.getProducedTypeName() + ", \"\")";
+        String throwsAnnotation = "throws (`class " + exceptionType.getProducedTypeName() + "`, \"\")";
         InsertEdit throwsAnnotationInsertEdit = createInsertAnnotationEdit(throwsAnnotation, throwContainer, doc);
         TextFileChange throwsAnnotationChange = new TextFileChange("Add throws annotation", file);
         throwsAnnotationChange.setEdit(throwsAnnotationInsertEdit);
