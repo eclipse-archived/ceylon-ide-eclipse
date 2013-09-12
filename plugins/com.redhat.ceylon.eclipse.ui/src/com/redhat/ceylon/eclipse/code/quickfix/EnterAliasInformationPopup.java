@@ -11,6 +11,8 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static org.eclipse.jface.text.link.ILinkedModeListener.UPDATE_CARET;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,7 +38,6 @@ import org.eclipse.jface.text.IWidgetTokenKeeperExtension;
 import org.eclipse.jface.text.IWidgetTokenOwner;
 import org.eclipse.jface.text.IWidgetTokenOwnerExtension;
 import org.eclipse.jface.text.TextEvent;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.Geometry;
@@ -737,7 +738,7 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
                 IAction refactorAction= new Action("Apply") {
                     @Override
                     public void run() {
-                    	fRenameLinkedMode.linkedModeModel.exit(ILinkedModeListener.NONE);
+                    	fRenameLinkedMode.linkedModeModel.exit(UPDATE_CARET);
 //                        fRenameLinkedMode.done();
                     }
                 };
