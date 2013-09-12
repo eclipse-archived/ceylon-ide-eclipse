@@ -255,8 +255,12 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	private void addProposals(ParameterList parameterList, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		Parameter p = parameterList.getParameters().get(index);
+		if (p.getModel().isDynamicallyTyped()) {
+			return;
+		}
 		ProducedType type = producedReference.getTypedParameter(p)
 				.getFullType();
+		if (type==null) return;
 		TypeDeclaration td = type.getDeclaration();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();

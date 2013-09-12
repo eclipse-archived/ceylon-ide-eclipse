@@ -47,9 +47,14 @@ public class ParameterContextInformation implements IContextInformation {
 		}
 		StringBuilder sb = new StringBuilder();
 		for (Parameter p: parameterList.getParameters()) {
-			sb.append(producedReference.getTypedParameter(p).getFullType()
-					.getProducedTypeName(p.getDeclaration().getUnit()))
-			  .append(" ")
+			if (p.getModel().isDynamicallyTyped()) {
+				sb.append("dynamic ");
+			}
+			else {
+				sb.append(producedReference.getTypedParameter(p).getFullType()
+						.getProducedTypeName(p.getDeclaration().getUnit()));
+			}
+			sb.append(" ")
 			  .append(p.getName())
 			  .append(", ");
 		}
