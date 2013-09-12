@@ -164,6 +164,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	public void enterLinkedMode(IDocument document, ParameterList parameterList, 
 			Generic generic) {
         boolean basicProposal = parameterList==null;
+        int paramCount = basicProposal ? 
+        		generic.getTypeParameters().size() :
+        		parameterList.getParameters().size();
+        if (paramCount==0) return;
 		//Big TODO: handle named arguments!
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
@@ -172,7 +176,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        if (first<0) return;
 	        int next = getNextComma(document, first, basicProposal);
 	        int i=0;
-	        while (next>1 && i<parameterList.getParameters().size()) {
+	        while (next>1 && i<paramCount) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
 	        	if (basicProposal) {
 	        		addBasicProposals(generic, loc, first, props, i);
@@ -269,7 +273,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					}
 				}
 				ProducedType vt = ((Value) d).getType();
-				if (!vt.isNothing() &&
+				if (vt!=null && !vt.isNothing() &&
 				    ((td instanceof TypeParameter) && 
 						isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
 						    vt.isSubtypeOf(type))) {

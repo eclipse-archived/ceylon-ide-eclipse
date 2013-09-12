@@ -921,17 +921,20 @@ public class CeylonContentProposer {
 		new Visitor() {
 			@Override
 			public void visit(Tree.InvocationExpression that) {
-				Integer startIndex = that.getPositionalArgumentList().getStartIndex();
-				Integer startIndex2 = node.getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-						startIndex.intValue()==startIndex2.intValue()) {
-					Tree.Primary primary = that.getPrimary();
-					if (primary instanceof Tree.MemberOrTypeExpression) {
-						Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
-						if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-							result.add(new ParameterInfo(token.getStartIndex(), "", "show parameters", "", false,
-									cpc, mte.getDeclaration(), false, mte.getTarget(),
-									node.getScope()));
+				Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+				if (pal!=null) {
+					Integer startIndex = pal.getStartIndex();
+					Integer startIndex2 = node.getStartIndex();
+					if (startIndex!=null && startIndex2!=null &&
+							startIndex.intValue()==startIndex2.intValue()) {
+						Tree.Primary primary = that.getPrimary();
+						if (primary instanceof Tree.MemberOrTypeExpression) {
+							Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
+							if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
+								result.add(new ParameterInfo(token.getStartIndex(), "", "show parameters", "", false,
+										cpc, mte.getDeclaration(), false, mte.getTarget(),
+										node.getScope()));
+							}
 						}
 					}
 				}
