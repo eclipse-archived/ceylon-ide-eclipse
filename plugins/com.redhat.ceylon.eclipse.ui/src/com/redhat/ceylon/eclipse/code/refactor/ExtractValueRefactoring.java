@@ -90,14 +90,23 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 				statNode = anns.getAnnotations().get(0);
 			}
 		}*/
-		ProducedType type = node.getUnit().denotableType(term.getTypeModel());
-		if (explicitType) {
+		String typeDec;
+		ProducedType tm = term.getTypeModel();
+		if (tm==null || tm.isUnknown()) {
+			typeDec = "dynamic";
+		}
+		else if (explicitType) {
+			ProducedType type = node.getUnit().denotableType(tm);
+			typeDec = type.getProducedTypeName();
 			HashSet<Declaration> decs = new HashSet<Declaration>();
 			importType(decs, type, rootNode);
 			applyImports(tfc, decs, rootNode);
 		}
-		String dec = (explicitType ? type.getProducedTypeName() : "value") + " " + 
-        				newName + (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
+		else {
+			 typeDec = "value";
+		}
+		String dec = typeDec + " " +  newName + 
+				(getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
 				dec + "\n" + getIndent(statNode, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));

@@ -361,8 +361,15 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		String args = "";
 		if (!flrv.getLocalReferences().isEmpty()) {
 			for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-				params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName() + 
-						" " + bme.getIdentifier().getText() + ", ";
+				Declaration pdec = bme.getDeclaration();
+				if (pdec instanceof TypedDeclaration && 
+						((TypedDeclaration) pdec).isDynamicallyTyped()) {
+					params += "dynamic";
+				}
+				else {
+					params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName();
+				}
+				params += " " + bme.getIdentifier().getText() + ", ";
 				args += bme.getIdentifier().getText() + ", ";
 			}
 			params = params.substring(0, params.length()-2);
@@ -392,34 +399,38 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		String type;
 		String ending;
 		ProducedType tt = term.getTypeModel();
-		if (tt!=null) {
-            boolean isVoid = (tt.getDeclaration() instanceof Class) && 
-            		tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
-            if (isVoid) {
-    	         type = "void";
-    	         ending = "";
-    		}
-    		else {
-                ProducedType returnType = node.getUnit().denotableType(tt);
-                ending = "return ";
-                if (explicitType || dec.isToplevel()) {
-                	type = returnType.getProducedTypeName();
-                	HashSet<Declaration> decs = new HashSet<Declaration>();
+		if (tt==null || tt.isUnknown()) {
+			type = "dynamic";
+			ending = "return ";
+		}
+		else {
+			boolean isVoid = (tt.getDeclaration() instanceof Class) && 
+					tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
+			if (isVoid) {
+				type = "void";
+				ending = "";
+			}
+			else {
+				ending = "return ";
+				if (explicitType || dec.isToplevel()) {
+					ProducedType returnType = node.getUnit().denotableType(tt);
+					type = returnType.getProducedTypeName();
+					HashSet<Declaration> decs = new HashSet<Declaration>();
 					importType(decs, returnType, rootNode);
 					applyImports(tfc, decs, rootNode);
-                }
-                else {
-                	type = "function";
-                }
-    		}    		
-            
-            tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-    		        type + " " + newName + typeParams + "(" + params + ")" + 
-                    constraints + 
-    				" {" + extraIndent + ending + exp + ";" + indent + "}" 
-    				+ indent + indent));
-    		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
+				}
+				else {
+					type = "function";
+				}
+			}
 		}
+
+		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
+				type + " " + newName + typeParams + "(" + params + ")" + 
+						constraints + 
+						" {" + extraIndent + ending + exp + ";" + indent + "}" 
+						+ indent + indent));
+		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
     }
 
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
@@ -485,9 +496,16 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		Set<Declaration> done = decs;
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-            if (done.add(bme.getDeclaration())) {
-                params += unit.denotableType(bme.getTypeModel()).getProducedTypeName() + 
-                        " " + bme.getIdentifier().getText() + ", ";
+            Declaration bmed = bme.getDeclaration();
+			if (done.add(bmed)) {
+            	if (bmed instanceof TypedDeclaration && 
+            			((TypedDeclaration) bmed).isDynamicallyTyped()) {
+            		params += "dynamic";
+            	}
+            	else {
+            		params += unit.denotableType(bme.getTypeModel()).getProducedTypeName();
+            	}
+                params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
                 nonempty = true;
             }
@@ -535,7 +553,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         String content;
         if (result!=null||!returns.isEmpty()) {
-        	if (explicitType||dec.isToplevel()) {
+            if (returnType.isUnknown()) {
+            	content = "dynamic";
+            }
+            else if (explicitType||dec.isToplevel()) {
         		content = returnType.getProducedTypeName();
     			HashSet<Declaration> already = new HashSet<Declaration>();
         		importType(already, returnType, rootNode);
