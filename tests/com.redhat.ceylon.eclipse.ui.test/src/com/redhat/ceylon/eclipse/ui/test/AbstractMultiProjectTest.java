@@ -24,6 +24,13 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 public abstract class AbstractMultiProjectTest {
 
+    protected static String projectGroup = "model-and-phased-units";
+    protected static String referencedJavaProjectName = "referenced-java-project";
+    protected static String referencedCeylonProjectName = "referenced-ceylon-project";
+    protected static String mainProjectName = "main-ceylon-project";
+
+    protected final static IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
     protected static AssertionError compilationError = null;
     protected static IProject mainProject;
     protected static IJavaProject mainProjectJDT;
@@ -31,7 +38,6 @@ public abstract class AbstractMultiProjectTest {
     protected static IJavaProject referencedCeylonProjectJDT;
     protected static IProject referencedJavaProject;
     protected static IJavaProject referencedJavaProjectJDT;
-    protected static String projectGroup = "model-and-phased-units";
     protected static TypeChecker typeChecker = null;
     protected static JDTModelLoader modelLoader = null;
 
@@ -41,7 +47,12 @@ public abstract class AbstractMultiProjectTest {
     }
 
     @AfterClass
-    public static void afterClass() {
+    public static void afterClass() throws CoreException {
+        try {
+            mainProject.delete(true, true, null);
+        } catch(CoreException e) {
+            e.printStackTrace();
+        }
         try {
             referencedJavaProject.delete(true, true, null);
         } catch(CoreException e) {
@@ -52,22 +63,16 @@ public abstract class AbstractMultiProjectTest {
         } catch(CoreException e) {
             e.printStackTrace();
         }
-        try {
-            mainProject.delete(true, true, null);
-        } catch(CoreException e) {
-            e.printStackTrace();
-        }
     }
     
     public static void importAndBuild() {
         try {
             IPath projectDescriptionPath = null;
             IPath userDirPath = new Path(System.getProperty("user.dir"));
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
             
             try {
-                projectDescriptionPath = projectPathPrefix.append("referenced-java-project/.project");
+                projectDescriptionPath = projectPathPrefix.append(referencedJavaProjectName + "/.project");
                 referencedJavaProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
                 referencedJavaProjectJDT = JavaCore.create(referencedJavaProject);
             }
@@ -83,7 +88,7 @@ public abstract class AbstractMultiProjectTest {
             }
     
             try {
-                projectDescriptionPath = projectPathPrefix.append("referenced-ceylon-project/.project");
+                projectDescriptionPath = projectPathPrefix.append(referencedCeylonProjectName + "/.project");
                 referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
                 referencedCeylonProjectJDT = JavaCore.create(referencedCeylonProject);
             }
@@ -105,10 +110,9 @@ public abstract class AbstractMultiProjectTest {
                     referencedCeylonProject.exists(new Path("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.src")));
     
             try {
-                projectDescriptionPath = projectPathPrefix.append("main-ceylon-project/.project");
+                projectDescriptionPath = projectPathPrefix.append(mainProjectName + "/.project");
                 mainProject = Utils.importProject(workspace, projectGroup,
                         projectDescriptionPath);
-                mainProjectJDT = JavaCore.create(mainProject);
                 mainProjectJDT = JavaCore.create(mainProject);
             }
             catch(Exception e) {
