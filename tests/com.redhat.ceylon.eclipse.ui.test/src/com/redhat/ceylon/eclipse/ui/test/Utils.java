@@ -45,6 +45,14 @@ public class Utils {
 
         final IProjectDescription originalProjectDescription =
                 workspace.loadProjectDescription(projectDescriptionPath);
+        return importProject(workspace, destinationRootPath,
+                originalProjectDescription);
+    }
+
+    public static IProject importProject(final IWorkspace workspace,
+            final String destinationRootPath,
+            final IProjectDescription originalProjectDescription)
+            throws InvocationTargetException, InterruptedException {
         final String projectName = originalProjectDescription.getName();
 
         WorkspaceModifyOperation importOperation = new WorkspaceModifyOperation() {
@@ -117,9 +125,7 @@ public class Utils {
     }
 
     public static void resetWorkbench(SWTWorkbenchBot bot) {
-        for (SWTBotEditor editor : bot.editors()) {
-            editor.close();
-        }
+        bot.closeAllEditors();
         bot.resetWorkbench();
     }
 
@@ -147,7 +153,7 @@ public class Utils {
         private CountDownLatch firstBuildLatch = new CountDownLatch(1);
         private int kind;
         private Map args;
-        private IJavaProject javaProject;
+        private IProject project;
         private Collection<CeylonClasspathContainer> resolvedCpContainers;
         private boolean cpContainersSetAndRefreshed = false;
         private boolean fullBuild = false;
@@ -164,8 +170,8 @@ public class Utils {
         
         private CeylonBuildSummary summaryToFill = this; 
 
-        public CeylonBuildSummary(IJavaProject javaProject) {
-            this.javaProject = javaProject;
+        public CeylonBuildSummary(IProject project) {
+            this.project = project;
         }
 
         public void install() {
@@ -177,12 +183,14 @@ public class Utils {
         }
         
         @Override
-        protected void startBuild(int kind, Map args, IJavaProject javaProject) {
+        protected void startBuild(int kind, Map args, IProject project) {
             this.kind = kind;
             this.args = args;
-            if (! this.javaProject.equals(javaProject)) {
-                summaryToFill = new CeylonBuildSummary(javaProject);
+            if (! this.project.equals(project)) {
+                summaryToFill = new CeylonBuildSummary(project);
                 previousBuilds.add(summaryToFill);
+            } else {
+                summaryToFill = this;
             }
         }
         
@@ -215,15 +223,15 @@ public class Utils {
             summaryToFill.incrementalBuildResultPhasedUnits = builtPhasedUnits;
         }
         
-        protected CeylonBuildSummary createReentrantBuildSummary(IJavaProject javaProject) {
-            return new CeylonBuildSummary(javaProject);
+        protected CeylonBuildSummary createReentrantBuildSummary(IProject project) {
+            return new CeylonBuildSummary(project);
         }
         
         @Override
         protected void scheduleReentrantBuild() {
             summaryToFill.scheduledReentrantBuild = true;
             if (summaryToFill == this) {
-                reentrantBuildSummary = createReentrantBuildSummary(javaProject);
+                reentrantBuildSummary = createReentrantBuildSummary(project);
                 reentrantBuildSummary.ceylonBuildHookToRestore = ceylonBuildHookToRestore;
             }
         }
@@ -235,17 +243,26 @@ public class Utils {
                     reentrantBuildSummary.install();
                 }
                 firstBuildLatch.countDown();
+                CeylonBuilder.installHook(ceylonBuildHookToRestore);
             }
         }
         
-        public void waitForBuildEnd(long timeoutInSeconds) throws InterruptedException {
+        public boolean waitForBuildEnd(long timeoutInSeconds) throws InterruptedException {
             if (!installed) {
                 throw new RuntimeException("Cannot wait for a build with a non-installed hook !");
             }
-            firstBuildLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
-            if (reentrantBuildSummary != null) {
-                reentrantBuildSummary.waitForBuildEnd(timeoutInSeconds);
+            if (firstBuildLatch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
+                if (reentrantBuildSummary != null) {
+                    reentrantBuildSummary.waitForBuildEnd(timeoutInSeconds);
+                }
+                return true;
+            } else {
+                if (reentrantBuildSummary != null) {
+                    reentrantBuildSummary.endBuild();
+                }
+                return false;
             }
+            
         }
 
         public final int getKind() {
@@ -256,8 +273,8 @@ public class Utils {
             return args;
         }
 
-        public final IJavaProject getJavaProject() {
-            return javaProject;
+        public final IProject getProject() {
+            return project;
         }
 
         public final boolean didTriggerReentrantBuild() {
@@ -310,6 +327,14 @@ public class Utils {
 
         public final Collection<PhasedUnit> getIncrementalBuildResultPhasedUnits() {
             return incrementalBuildResultPhasedUnits;
+        }
+
+        public List<CeylonBuildSummary> getPreviousBuilds() {
+            return previousBuilds;
+        }
+
+        public void setPreviousBuilds(List<CeylonBuildSummary> previousBuilds) {
+            this.previousBuilds = previousBuilds;
         }
     }
     
