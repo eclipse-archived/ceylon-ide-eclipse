@@ -11,6 +11,8 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -18,17 +20,20 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
 
 
 class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
+
+	private final ImportMemberOrType element;
+	private final Declaration dec;
 
 	private final class LinkedPositionsVisitor 
 	        extends Visitor implements NaturalVisitor {
@@ -76,14 +81,16 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 
 	public EnterAliasLinkedMode(ImportMemberOrType element, 
 			Declaration dec, CeylonEditor editor) {
-		super(element, dec, editor);
+		super(editor);
+		this.element = element;
+		this.dec = dec;
 	}
 
 	@Override
-	protected String getName(Node node) {
-		Tree.Alias alias = ((Tree.ImportMemberOrType) node).getAlias();
+	protected String getName() {
+		Tree.Alias alias = element.getAlias();
 		if (alias==null) {
-			return super.getName(node);
+			return dec.getName();
 		}
 		else {
 			return alias.getIdentifier().getText();
@@ -91,16 +98,16 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 	}
 
 	@Override
-	protected String getHintTemplate() {
+	public String getHintTemplate() {
 		return "Enter alias for '" + dec.getName() + "' {0}";
 	}
 
 	@Override
-	protected int init(Node node, IDocument document) {
-		Tree.Alias alias = ((Tree.ImportMemberOrType) node).getAlias();
+	protected int init(IDocument document) {
+		Tree.Alias alias = ((Tree.ImportMemberOrType) element).getAlias();
 		if (alias==null) {
 			try {
-		        int start = node.getStartIndex();
+		        int start = element.getStartIndex();
 				document.set(document.get(0,start) + dec.getName() + "=" + 
 						document.get(start, document.getLength()-start));
 				return dec.getName().length()+1;
@@ -116,13 +123,13 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 	}
 	
 	@Override
-	protected int getIdentifyingOffset(Node node) {
-		Tree.Alias alias = ((Tree.ImportMemberOrType) node).getAlias();
+	protected int getIdentifyingOffset() {
+		Tree.Alias alias = element.getAlias();
 		if (alias!=null) {
 			return alias.getStartIndex();
 		}
 		else {
-			return super.getIdentifyingOffset(node);
+			return getIdentifyingNode(element).getStartIndex();
 		}
 	}
 	
@@ -131,4 +138,5 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 			final int adjust, final LinkedPositionGroup linkedPositionGroup) {
 		rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
 	}
+	
 }

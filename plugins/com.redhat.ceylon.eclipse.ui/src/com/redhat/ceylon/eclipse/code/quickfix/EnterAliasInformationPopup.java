@@ -81,6 +81,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
 
 public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 

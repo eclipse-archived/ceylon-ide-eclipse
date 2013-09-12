@@ -1,5 +1,17 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.EDITOR_SUB_WORD_NAVIGATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
@@ -21,9 +33,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
-
 public class CeylonEditorPreferencesPage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
@@ -36,6 +45,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor autoInsert;
     BooleanFieldEditor autoActivation;
     BooleanFieldEditor linkedMode;
+    BooleanFieldEditor linkedModeRename;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
@@ -55,6 +65,7 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.store();
         autoActivationChars.store();
         linkedMode.store();
+        linkedModeRename.store();
         smartCaret.store();
         pasteCorrectIndent.store();
         return true;
@@ -71,6 +82,7 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
         linkedMode.loadDefault();
+        linkedModeRename.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
     }
@@ -125,17 +137,17 @@ public class CeylonEditorPreferencesPage
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Bracket highlighting:",
                 getFieldEditorParent()));
-        matchingBracket = new BooleanFieldEditor(CeylonEditor.MATCHING_BRACKET, 
+        matchingBracket = new BooleanFieldEditor(MATCHING_BRACKET, 
                 "Highlight matching bracket", 
                 getFieldEditorParent());
         matchingBracket.load();
         addField(matchingBracket);
-        currentBracket = new BooleanFieldEditor(CeylonEditor.SELECTED_BRACKET, 
+        currentBracket = new BooleanFieldEditor(SELECTED_BRACKET, 
                 "Highlight selected bracket", 
                 getFieldEditorParent());
         currentBracket.load();
         addField(currentBracket);
-        enclosingBrackets = new BooleanFieldEditor(CeylonEditor.ENCLOSING_BRACKETS, 
+        enclosingBrackets = new BooleanFieldEditor(ENCLOSING_BRACKETS, 
                 "Highlight enclosing brackets", 
                 getFieldEditorParent());
         enclosingBrackets.load();
@@ -144,18 +156,18 @@ public class CeylonEditorPreferencesPage
         addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Autocompletion:",
                 getFieldEditorParent()));
-        autoInsert = new BooleanFieldEditor(CeylonSourceViewerConfiguration.AUTO_INSERT, 
+        autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
                 "Auto-insert unique completions", 
                 getFieldEditorParent());
         autoInsert.load();
         addField(autoInsert);
-        autoActivation = new BooleanFieldEditor(CeylonSourceViewerConfiguration.AUTO_ACTIVATION, 
+        autoActivation = new BooleanFieldEditor(AUTO_ACTIVATION, 
                 "Auto-activate completions list", 
                 getFieldEditorParent());
         autoActivation.load();
         addField(autoActivation);
         String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        autoActivationChars = new RadioGroupFieldEditor(CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS, 
+        autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
                 "Auto-activation characters", 3, 
                 new String[][] { new String[] {"period", "."}, 
                                  new String[] {"letters", letters },
@@ -163,7 +175,7 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         autoActivationChars.load();
         addField(autoActivationChars);
-        autoActivationDelay = new ScaleFieldEditor(CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY, 
+        autoActivationDelay = new ScaleFieldEditor(AUTO_ACTIVATION_DELAY, 
                 "Auto-activation delay", 
                 getFieldEditorParent());
         //autoActivationDelay.setValidRange(1, 9999);
@@ -171,20 +183,25 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
-        linkedMode = new BooleanFieldEditor(CeylonSourceViewerConfiguration.LINKED_MODE, 
+        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
         		"Use linked mode to complete argument lists", 
         		getFieldEditorParent());
         linkedMode.load();
         addField(linkedMode);
+        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
+        		"Use linked mode for rename", 
+        		getFieldEditorParent());
+        linkedModeRename.load();
+        addField(linkedModeRename);
         addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Other:",
                 getFieldEditorParent()));
-        smartCaret = new BooleanFieldEditor(CeylonEditor.EDITOR_SUB_WORD_NAVIGATION, 
-                "Smart caret positioning inside Ceylon identifiers", 
+        smartCaret = new BooleanFieldEditor(EDITOR_SUB_WORD_NAVIGATION, 
+                "Smart caret positioning inside identifiers", 
                 getFieldEditorParent());
         smartCaret.load();
         addField(smartCaret);
-        pasteCorrectIndent = new BooleanFieldEditor(CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION, 
+        pasteCorrectIndent = new BooleanFieldEditor(PASTE_CORRECT_INDENTATION, 
         		"Correct indentation of pasted code", 
         		getFieldEditorParent());
         pasteCorrectIndent.load();

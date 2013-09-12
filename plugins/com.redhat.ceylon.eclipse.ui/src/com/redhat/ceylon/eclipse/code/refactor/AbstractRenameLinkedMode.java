@@ -1,6 +1,4 @@
-package com.redhat.ceylon.eclipse.code.quickfix;
-
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
@@ -20,12 +18,11 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.quickfix.EnterAliasInformationPopup;
 
 public abstract class AbstractRenameLinkedMode {
 
@@ -75,9 +72,7 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
 
-    private final CeylonEditor editor;
-    private final Node node;
-    Declaration dec;
+    protected final CeylonEditor editor;
     
     private EnterAliasInformationPopup infoPopup;
 
@@ -85,43 +80,36 @@ public abstract class AbstractRenameLinkedMode {
     private String originalName;
 
     protected LinkedPosition namePosition;
-    LinkedModeModel linkedModeModel;
+    public LinkedModeModel linkedModeModel;
     private LinkedPositionGroup linkedPositionGroup;
     private final FocusEditingSupport focusEditingSupport;
     
-    public AbstractRenameLinkedMode(Node element, 
-            Declaration dec, CeylonEditor editor) {
+    public AbstractRenameLinkedMode(CeylonEditor editor) {
         this.editor = editor;
-        node = element;
         focusEditingSupport = new FocusEditingSupport();
-        this.dec = dec;
     }
     
-    protected String getName(Node node) {
-    	return dec.getName();
-    }
+    protected abstract String getName();
     
-    protected int init(Node node, IDocument document) {
+    protected int init(IDocument document) {
     	return 0;
     }
     
-    protected int getIdentifyingOffset(Node node) {
-    	return getIdentifyingNode(node).getStartIndex();
-    }
+    protected abstract int getIdentifyingOffset();
     
     public void start() {
         ISourceViewer viewer = editor.getCeylonSourceViewer();
         final IDocument document = viewer.getDocument();
         originalSelection = viewer.getSelectedRange();
         int offset= originalSelection.x;
-        final int adjust = init(node, document);        
-        originalName = getName(node);
+        final int adjust = init(document);        
+        originalName = getName();
                 
         
         try {
             
             linkedPositionGroup = new LinkedPositionGroup();
-            namePosition = new LinkedPosition(document, getIdentifyingOffset(node), 
+            namePosition = new LinkedPosition(document, getIdentifyingOffset(), 
             		originalName.length(), 0);
             linkedPositionGroup.addPosition(namePosition);
             
@@ -245,6 +233,6 @@ public abstract class AbstractRenameLinkedMode {
     	return originalName.equals(getNewName());
     }
 
-	protected abstract String getHintTemplate();
+	public abstract String getHintTemplate();
 
 }
