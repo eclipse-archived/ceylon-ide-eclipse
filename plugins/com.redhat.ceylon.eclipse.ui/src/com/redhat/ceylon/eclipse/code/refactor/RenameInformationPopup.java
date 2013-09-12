@@ -700,7 +700,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
         final ToolItem menuButton = new ToolItem(fToolBar, SWT.PUSH, 0);
         fMenuImage= JavaPluginImages.DESC_ELCL_VIEW_MENU.createImage();
         menuButton.setImage(fMenuImage);
-        menuButton.setToolTipText("TODO: hover info");
+        menuButton.setToolTipText("Menu");
         fToolBar.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
