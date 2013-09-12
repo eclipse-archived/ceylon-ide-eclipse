@@ -29,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
-import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class AddParameterProposal extends ChangeCorrectionProposal {
     
@@ -77,7 +77,7 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             TextChange change = new TextFileChange("Add Parameter", file);
 //            TextChange change = new DocumentChange("Add Parameter", doc);
             change.setEdit(new MultiTextEdit());
-            FindContainerVisitor fcv = new FindContainerVisitor(decNode);
+            FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(decNode);
             fcv.visit(cu);
             Tree.Declaration container = fcv.getDeclaration();
             if (container instanceof Tree.ClassDefinition) {

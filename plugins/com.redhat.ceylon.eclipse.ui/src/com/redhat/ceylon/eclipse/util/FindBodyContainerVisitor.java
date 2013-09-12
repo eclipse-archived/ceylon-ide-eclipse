@@ -4,14 +4,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindContainerVisitor extends Visitor {
+public class FindBodyContainerVisitor extends Visitor {
 	Node node;
 	Tree.Declaration declaration;
 	Tree.Declaration currentDeclaration;
 	public Tree.Declaration getDeclaration() {
 		return declaration;
 	}
-	public FindContainerVisitor(Node node) {
+	public FindBodyContainerVisitor(Node node) {
 		this.node=node;
 	}
 	@Override
@@ -22,14 +22,21 @@ public class FindContainerVisitor extends Visitor {
 		currentDeclaration = d;
 	}
 	@Override
-	public void visit(Tree.AnyAttribute that) {
+	public void visit(Tree.AttributeGetterDefinition that) {
 		Tree.Declaration d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
 		currentDeclaration = d;
 	}
 	@Override
-	public void visit(Tree.AnyMethod that) {
+	public void visit(Tree.AttributeSetterDefinition that) {
+		Tree.Declaration d = currentDeclaration;
+		currentDeclaration = that;
+		super.visit(that);
+		currentDeclaration = d;
+	}
+	@Override
+	public void visit(Tree.MethodDefinition that) {
 		Tree.Declaration d = currentDeclaration;
 		currentDeclaration = that;
 		super.visit(that);
