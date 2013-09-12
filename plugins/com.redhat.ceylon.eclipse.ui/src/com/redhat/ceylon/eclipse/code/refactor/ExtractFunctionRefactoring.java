@@ -30,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
@@ -205,12 +206,18 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		public void visit(Tree.BaseMemberExpression that) {
 			super.visit(that);
 			//TODO: things nested inside control structures
+			Declaration currentDec = that.getDeclaration();
 			for (Tree.BaseMemberExpression bme: localReferences) {
-				if (bme.getDeclaration().equals(that.getDeclaration())) {
+				Declaration dec = bme.getDeclaration();
+				if (dec.equals(currentDec)) {
+					return;
+				}
+				if (currentDec instanceof TypedDeclaration && 
+						((TypedDeclaration)currentDec).getOriginalDeclaration().equals(dec)) {
 					return;
 				}
 			}
-			for (Scope scope = that.getDeclaration().getScope(); 
+			for (Scope scope = currentDec.getScope(); 
 					scope!=null;
 					scope=scope.getContainer()) {
 				if (scope.equals(declaration)) {
@@ -530,8 +537,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null||!returns.isEmpty()) {
         	if (explicitType||dec.isToplevel()) {
         		content = returnType.getProducedTypeName();
-        		importType(decs, returnType, rootNode);
-        		applyImports(tfc, decs, rootNode);
+    			HashSet<Declaration> already = new HashSet<Declaration>();
+        		importType(already, returnType, rootNode);
+        		applyImports(tfc, already, rootNode);
         	}
         	else {
         		content = "function";

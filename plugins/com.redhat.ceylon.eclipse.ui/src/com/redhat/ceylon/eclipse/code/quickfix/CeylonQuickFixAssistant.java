@@ -2046,6 +2046,7 @@ public class CeylonQuickFixAssistant {
 		Package p = declaration.getUnit().getPackage();
 		if (!p.getNameAsString().isEmpty() && 
 			!p.equals(rootNode.getUnit().getPackage()) &&
+//			!((declaration instanceof MethodOrValue) && ((MethodOrValue)declaration).isParameter()) &&
 			!p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
 			if (!isImported(declaration, rootNode)) {
 				declarations.add(declaration);
