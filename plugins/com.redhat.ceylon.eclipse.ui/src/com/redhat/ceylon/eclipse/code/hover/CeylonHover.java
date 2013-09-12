@@ -488,11 +488,12 @@ public class CeylonHover
 				selection.getOffset()+selection.getLength()>=hoffset) {
 				Node node = findNode(rn, selection.getOffset(),
 						selection.getOffset()+selection.getLength()-1);
+				
 				if (node instanceof Tree.Expression) {
 					node = ((Tree.Expression) node).getTerm();
 				}
 				if (node instanceof Tree.Term) {
-					return getTermTypeHoverInfo(node, textViewer.getDocument());
+					return getTermTypeHoverInfo(node, selection.getText(), textViewer.getDocument());
 				}
 			}
 			Node node = findNode(rn, hoffset);
@@ -506,7 +507,7 @@ public class CeylonHover
 				return getInferredTypeHoverInfo(node);
 			}
 			else if (node instanceof Tree.Literal) {
-				return getTermTypeHoverInfo(node, textViewer.getDocument());
+				return getTermTypeHoverInfo(node, null, textViewer.getDocument());
 			}
 			else {
 				return getHoverInfo(getReferencedDeclaration(node), null, node);
@@ -535,7 +536,7 @@ public class CeylonHover
 		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
 	
-	private DocBrowserInformationControlInput getTermTypeHoverInfo(Node node, IDocument doc) {
+	private DocBrowserInformationControlInput getTermTypeHoverInfo(Node node, String selectedText, IDocument doc) {
 		ProducedType t = ((Tree.Term) node).getTypeModel();
 		if (t==null) return null;
 		String expr = "";
@@ -555,22 +556,16 @@ public class CeylonHover
 		if (node instanceof Tree.StringLiteral) {
 			buffer.append('\"').append(node.getText()).append('\"');
 			buffer.append("<hr/>");
+			// If a single char selection, then append info on that character too
+			if (selectedText != null
+			        && Character.codePointCount(selectedText, 0, selectedText.length()) == 1) {
+			    appendCharacterHoverInfo(buffer, selectedText);
+			}
 		}
 		else if (node instanceof Tree.CharLiteral) {
-			buffer.append(node.getText());
-			int codepoint = Character.codePointAt(node.getText(), 1);
-            String name = Character.getName(codepoint);
-            buffer.append("<hr/>Unicode Name: ").append(name);
-            String hex = Integer.toHexString(codepoint).toUpperCase();
-            while (hex.length() < 4) {
-                hex = "0" + hex;
-            }
-            buffer.append("<br/>Codepoint: ").append("U+").append(hex);
-            buffer.append("<br/>General Category: ").append(getCodepointGeneralCategoryName(codepoint));
-            Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
-            buffer.append("<br/>Script: ").append(script.name());
-            Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
-            buffer.append("<br/>Block: ").append(block).append("<hr/>");
+		    String character = node.getText();
+		    character = character.substring(1, character.length()-1);
+			appendCharacterHoverInfo(buffer, character);
 		}
 		else if (node instanceof Tree.NaturalLiteral) {
 			String text = node.getText().replace("_", "");
@@ -600,6 +595,23 @@ public class CeylonHover
 		HTMLPrinter.addPageEpilog(buffer);
 		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
+
+    private void appendCharacterHoverInfo(StringBuffer buffer, String character) {
+        buffer.append('\'').append(character).append('\'');
+        int codepoint = Character.codePointAt(character, 0);
+        String name = Character.getName(codepoint);
+        buffer.append("<hr/>Unicode Name: ").append(name);
+        String hex = Integer.toHexString(codepoint).toUpperCase();
+        while (hex.length() < 4) {
+            hex = "0" + hex;
+        }
+        buffer.append("<br/>Codepoint: ").append("U+").append(hex);
+        buffer.append("<br/>General Category: ").append(getCodepointGeneralCategoryName(codepoint));
+        Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
+        buffer.append("<br/>Script: ").append(script.name());
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
+        buffer.append("<br/>Block: ").append(block).append("<hr/>");
+    }
 
     private String getCodepointGeneralCategoryName(int codepoint) {
         String gc;
