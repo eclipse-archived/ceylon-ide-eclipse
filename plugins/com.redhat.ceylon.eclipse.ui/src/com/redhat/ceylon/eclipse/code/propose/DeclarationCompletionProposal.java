@@ -24,7 +24,6 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
@@ -196,14 +195,17 @@ class DeclarationCompletionProposal extends CompletionProposal {
             linkedModeModel.addLinkingListener(new ILinkedModeListener() {
                 @Override
                 public void left(LinkedModeModel model, int flags) {
-                    editor.setLinkedMode(model);
-                    linkedModeModel.exit(ILinkedModeListener.NONE);
-                    ISourceViewer viewer= editor.getCeylonSourceViewer();
+                    editor.setLinkedMode(null);
+//                    linkedModeModel.exit(ILinkedModeListener.NONE);
+                    CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
                     if (viewer instanceof IEditingSupportRegistry) {
                         IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
                         registry.unregister(editingSupport);
                     }
                     editor.getSite().getPage().activate(editor);
+                    if ((flags&EXTERNAL_MODIFICATION)==0) {
+                    	viewer.invalidateTextPresentation();
+                    }
                 }
                 @Override
                 public void suspend(LinkedModeModel model) {

@@ -33,10 +33,13 @@ public abstract class AbstractRenameLinkedMode {
 			ILinkedModeListener {
 		@Override
 		public void left(LinkedModeModel model, int flags) {
-		    if ((flags&ILinkedModeListener.UPDATE_CARET)!=0) {
+		    if ((flags&UPDATE_CARET)!=0) {
 		        done();
 		    }
 		    else {
+                if ((flags&EXTERNAL_MODIFICATION)==0) {
+                	editor.getCeylonSourceViewer().invalidateTextPresentation();
+                }
 		    	cancel();
 		    }
 		}
@@ -82,7 +85,7 @@ public abstract class AbstractRenameLinkedMode {
     private String originalName;
 
     protected LinkedPosition namePosition;
-    private LinkedModeModel linkedModeModel;
+    LinkedModeModel linkedModeModel;
     private LinkedPositionGroup linkedPositionGroup;
     private final FocusEditingSupport focusEditingSupport;
     
@@ -181,15 +184,16 @@ public abstract class AbstractRenameLinkedMode {
 
     private void linkedModeLeft() {
     	CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-    	
-        if (linkedModeModel != null) {
-            linkedModeModel.exit(ILinkedModeListener.NONE);
-        }
-        
         editor.setLinkedMode(null);
-        
+
+//        if (linkedModeModel != null) {
+//            linkedModeModel.exit(ILinkedModeListener.NONE);
+//            linkedModeModel = null;
+//        }
+                
         if (infoPopup != null) {
             infoPopup.close();
+            infoPopup=null;
         }
         
         if (viewer instanceof IEditingSupportRegistry) {
