@@ -127,6 +127,7 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
@@ -1406,7 +1407,7 @@ public class CeylonQuickFixAssistant {
 
     private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, IProject project, Tree.CompilationUnit cu, Node node,
             String brokenName, String def, ProducedType returnType) {
-        FindContainerVisitor fcv = new FindContainerVisitor(node);
+    	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
         fcv.visit(cu);
         Tree.Declaration decl = fcv.getDeclaration();
         if (decl == null || decl.getDeclarationModel() == null || decl.getDeclarationModel().isActual()) {
