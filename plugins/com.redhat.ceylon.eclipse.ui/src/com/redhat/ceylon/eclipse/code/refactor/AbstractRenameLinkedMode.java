@@ -22,7 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.quickfix.EnterAliasInformationPopup;
 
 public abstract class AbstractRenameLinkedMode {
 
@@ -74,7 +73,7 @@ public abstract class AbstractRenameLinkedMode {
 
     protected final CeylonEditor editor;
     
-    private EnterAliasInformationPopup infoPopup;
+    private RenameInformationPopup infoPopup;
 
     private Point originalSelection;
     private String originalName;
@@ -135,7 +134,7 @@ public abstract class AbstractRenameLinkedMode {
                 registry.register(focusEditingSupport);
             }
 
-            infoPopup = new EnterAliasInformationPopup(editor, this);
+            infoPopup = new RenameInformationPopup(editor, this);
 			infoPopup.open();
 
         } catch (BadLocationException e) {
