@@ -505,6 +505,9 @@ public class CeylonHover
 			else if (node instanceof Tree.LocalModifier) {
 				return getInferredTypeHoverInfo(node);
 			}
+			else if (node instanceof Tree.Literal) {
+				return getTermTypeHoverInfo(node, textViewer.getDocument());
+			}
 			else {
 				return getHoverInfo(getReferencedDeclaration(node), null, node);
 			}
@@ -538,17 +541,43 @@ public class CeylonHover
 		String expr = "";
 		try {
 			expr = doc.get(node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1);
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (BadLocationException e) {
 			e.printStackTrace();
 		}
 		StringBuffer buffer= new StringBuffer();
-		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
+		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
 				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</tt></b>", 
 				20, 4);
 		buffer.append( "<hr/>");
+		if (node instanceof Tree.StringLiteral) {
+			buffer.append('\"').append(node.getText()).append('\"');
+			buffer.append("<hr/>");
+		}
+		else if (node instanceof Tree.CharLiteral) {
+			buffer.append(node.getText());
+			buffer.append("<hr/>");
+		}
+		else if (node instanceof Tree.NaturalLiteral) {
+			String text = node.getText().replace("_", "");
+		    switch (text.charAt(0)) {
+		    case '#':
+				buffer.append(Integer.parseInt(text.substring(1),16));
+				break;
+		    case '$':
+				buffer.append(Integer.parseInt(text.substring(1),2));
+				break;
+			default:
+				buffer.append(Integer.parseInt(text));
+		    }
+			buffer.append("<hr/>");
+		}
+		else if (node instanceof Tree.FloatLiteral) {
+			buffer.append(Float.parseFloat(node.getText().replace("_", "")));
+			buffer.append("<hr/>");
+		}
 		buffer.append("Two quick assists available:<br/>");
 		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
 				16, 16, "<a href=\"exv:\">Extract value</a>", 
