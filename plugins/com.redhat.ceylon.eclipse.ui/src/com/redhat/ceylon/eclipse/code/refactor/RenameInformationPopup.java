@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.quickfix;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 /*******************************************************************************
  * Copyright (c) 2007, 2011 IBM Corporation and others.
@@ -11,6 +11,8 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.ILinkedModeListener.UPDATE_CARET;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -78,12 +80,13 @@ import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
 
-public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
+public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
     private class PopupVisibilityManager implements 
             IPartListener2, ControlListener, MouseListener, 
@@ -260,12 +263,12 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
     private Image fMenuImage;
     private MenuManager fMenuManager;
     private ToolBar fToolBar;
-//    private String fOpenDialogBinding= "";
+    private String fOpenDialogBinding= "";
     private boolean fIsMenuUp= false;
 
     private boolean fDelayJobFinished= false;
 
-    public EnterAliasInformationPopup(CeylonEditor editor, AbstractRenameLinkedMode renameLinkedMode) {
+    public RenameInformationPopup(CeylonEditor editor, AbstractRenameLinkedMode renameLinkedMode) {
         fEditor= editor;
         fRenameLinkedMode= renameLinkedMode;
         restoreSnapPosition();
@@ -288,7 +291,7 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
 
     public void open() {
         // Must cache here, since editor context is not available in menu from popup shell:
-//        fOpenDialogBinding= getOpenDialogBinding();
+        fOpenDialogBinding= getOpenDialogBinding();
 
         Shell workbenchShell= fEditor.getSite().getShell();
         final Display display= workbenchShell.getDisplay();
@@ -758,14 +761,14 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
 //                previewAction.setEnabled(canRefactor);
 //                manager.add(previewAction);
 
-//                IAction openDialogAction= new Action("Open Dialog" + '\t' + fOpenDialogBinding) {
-//                    @Override
-//                    public void run() {
-//                        activateEditor();
-//                        fRenameLinkedMode.startFullDialog();
-//                    }
-//                };
-//                manager.add(openDialogAction);
+                IAction openDialogAction= new Action("Open Dialog" + '\t' + fOpenDialogBinding) {
+                    @Override
+                    public void run() {
+                    	fRenameLinkedMode.linkedModeModel.exit(NONE);
+                        new RenameRefactoringAction(fEditor).run();
+                    }
+                };
+                manager.add(openDialogAction);
 
                 manager.add(new Separator());
                 
@@ -811,17 +814,17 @@ public class EnterAliasInformationPopup implements IWidgetTokenKeeper, IWidgetTo
         return KeyStroke.getInstance(KeyLookupFactory.getDefault().formalKeyLookup(IKeyLookup.CR_NAME)).format();
     }
 
-//    /**
-//     * WARNING: only works in workbench window context!
-//     * @return the keybinding for Refactor &gt; Rename
-//     */
-//    private static String getOpenDialogBinding() {
-//        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench().getAdapter(IBindingService.class);
-//        if (bindingService == null)
-//            return ""; //$NON-NLS-1$
-//        String binding= bindingService.getBestActiveBindingFormattedFor(IJavaEditorActionDefinitionIds.RENAME_ELEMENT);
-//        return binding == null ? "" : binding; //$NON-NLS-1$
-//    }
+    /**
+     * WARNING: only works in workbench window context!
+     * @return the keybinding for Refactor &gt; Rename
+     */
+    private static String getOpenDialogBinding() {
+        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench().getAdapter(IBindingService.class);
+        if (bindingService == null)
+            return "";
+        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
+        return binding == null ? "" : binding;
+    }
 
     private static void recursiveSetBackgroundColor(Control control, Color color) {
         control.setBackground(color);

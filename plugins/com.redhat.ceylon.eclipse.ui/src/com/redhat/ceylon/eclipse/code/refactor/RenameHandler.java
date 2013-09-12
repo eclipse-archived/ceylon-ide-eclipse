@@ -15,7 +15,8 @@ public class RenameHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
-    	if (useLinkedMode() && editor instanceof CeylonEditor) {
+    	if (useLinkedMode() && editor instanceof CeylonEditor &&
+    			!((CeylonEditor)editor).isInLinkedMode()) {
     		new RenameDeclarationLinkedMode((CeylonEditor) editor).start();
     	}
     	else {
