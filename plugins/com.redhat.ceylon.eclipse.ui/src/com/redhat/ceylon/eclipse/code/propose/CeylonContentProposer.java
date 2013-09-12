@@ -931,8 +931,9 @@ public class CeylonContentProposer {
 						if (primary instanceof Tree.MemberOrTypeExpression) {
 							Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
 							if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-								result.add(new ParameterInfo(token.getStartIndex(), "", "show parameters", "", false,
-										cpc, mte.getDeclaration(), false, mte.getTarget(),
+								result.add(new ParameterInfo(token.getStartIndex(), "", 
+										"show parameters", "", false, cpc, 
+										mte.getDeclaration(), false, mte.getTarget(),
 										node.getScope()));
 							}
 						}
