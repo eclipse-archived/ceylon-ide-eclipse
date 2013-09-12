@@ -46,7 +46,7 @@ import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class MainBuildTests extends AbstractMultiProjectTest {
+public class IncrementalBuildTests extends AbstractMultiProjectTest {
     private static SWTWorkbenchBot  bot;
     
     @BeforeClass
@@ -65,7 +65,6 @@ public class MainBuildTests extends AbstractMultiProjectTest {
         Display.getDefault().syncExec(new Runnable() {
             public void run() {
                 try {
-                    new SWTWorkbenchBot();
                     Util.gotoLocation(runFile, 0);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -89,7 +88,7 @@ public class MainBuildTests extends AbstractMultiProjectTest {
         String javaEditorText = javaFileEditor.getText();
         javaFileEditor.insertText(4, 0, "public void newMethodToTest() {}\n");
         
-        Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProjectJDT);
+        Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProject);
         buildSummary.install();
         javaFileEditor.save();
         try {
@@ -111,7 +110,7 @@ public class MainBuildTests extends AbstractMultiProjectTest {
                    new IsCollectionContaining(new IsEqual("test()")));
                    */
             
-            buildSummary = new Utils.CeylonBuildSummary(mainProjectJDT);
+            buildSummary = new Utils.CeylonBuildSummary(mainProject);
             buildSummary.install();
             ceylonFileEditor.save();
             try {
