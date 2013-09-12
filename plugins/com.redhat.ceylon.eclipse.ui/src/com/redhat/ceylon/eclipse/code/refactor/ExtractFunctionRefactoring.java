@@ -205,17 +205,17 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		public void visit(Tree.BaseMemberExpression that) {
 			super.visit(that);
 			//TODO: things nested inside control structures
-			Scope scope = that.getDeclaration().getContainer();
-			while (scope!=null) {
-				if (scope==declaration) {
-					for (Tree.BaseMemberExpression bme: localReferences) {
-						if (bme.getDeclaration().equals(that.getDeclaration())) {
-							return;
-						}
-					}
+			for (Tree.BaseMemberExpression bme: localReferences) {
+				if (bme.getDeclaration().equals(that.getDeclaration())) {
+					return;
+				}
+			}
+			for (Scope scope = that.getDeclaration().getScope(); 
+					scope!=null;
+					scope=scope.getContainer()) {
+				if (scope.equals(declaration)) {
 					localReferences.add(that);
 				}
-				scope = scope.getContainer();
 			}
 		}
 	}
@@ -418,6 +418,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
+        final Unit unit = node.getUnit();
         
         Tree.Body body = (Tree.Body) node;
         
@@ -433,36 +434,50 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 decNode = anns.getAnnotations().get(0);
             }
         }*/
-        Declaration dec = decNode.getDeclarationModel();
+        final Declaration dec = decNode.getDeclarationModel();
         FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
         for (Statement s: statements) {
             s.visit(flrv);
         }
-        List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
-        List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
-        Unit unit = node.getUnit();
-		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-            if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
-                FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
-                for (Statement s: body.getStatements()) {
-                    if (!statements.contains(s)) {
-                        s.visit(v);
-                    }
-                }
-                if (v.refs>0) {
-                    addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
-                            localTypes, new ArrayList<ProducedType>());
-                    localRefs.add(bme);
-                }
-            }
+        final List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+        	addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
+                  localTypes, new ArrayList<ProducedType>());
         }
+        for (Statement s: statements) {
+        	new Visitor() {
+        		public void visit(Tree.TypeArgumentList that) {
+        			for (ProducedType pt: that.getTypeModels()) {
+        	        	addLocalType(dec, unit.denotableType(pt), 
+        	                    localTypes, new ArrayList<ProducedType>());
+        			}
+        		}
+        	}.visit(s);
+        }
+        //TODO: what was all this for?!
+//      List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
+//		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+//            if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
+//                FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
+//                for (Statement s: body.getStatements()) {
+//                    if (!statements.contains(s)) {
+//                        s.visit(v);
+//                    }
+//                }
+//                if (v.refs>0) {
+//                    addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
+//                            localTypes, new ArrayList<ProducedType>());
+//                    localRefs.add(bme);
+//                }
+//            }
+//        }
         
         String params = "";
         String args = "";
         HashSet<Declaration> decs = new HashSet<Declaration>();
 		Set<Declaration> done = decs;
         boolean nonempty = false;
-        for (Tree.BaseMemberExpression bme: localRefs) {
+        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             if (done.add(bme.getDeclaration())) {
                 params += unit.denotableType(bme.getTypeModel()).getProducedTypeName() + 
                         " " + bme.getIdentifier().getText() + ", ";
