@@ -334,7 +334,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static class CeylonBuildHook {
-        protected void startBuild(int kind, Map args, IJavaProject javaProject) {}
+        protected void startBuild(int kind, Map args, IProject javaProject) {}
         protected void resolvingClasspathContainer(
                 List<CeylonClasspathContainer> cpContainers) {}
         protected void setAndRefreshClasspathContainer() {}
@@ -365,7 +365,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-        buildHook.startBuild(kind, args, javaProject);
+        buildHook.startBuild(kind, args, project);
 		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
