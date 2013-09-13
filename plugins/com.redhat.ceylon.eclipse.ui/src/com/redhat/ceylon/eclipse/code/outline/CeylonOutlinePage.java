@@ -59,42 +59,42 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
-	
-    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + 
-    		".outline.popupMenu";
     
-	private final ITreeContentProvider contentProvider;
+    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + 
+            ".outline.popupMenu";
+    
+    private final ITreeContentProvider contentProvider;
     private final CeylonOutlineBuilder modelBuilder;
     private final CeylonLabelProvider labelProvider;
     private final CeylonParseController parseController;
-	private CeylonSourceViewer sourceViewer;
-	
+    private CeylonSourceViewer sourceViewer;
+    
     public CeylonOutlinePage(CeylonParseController parseController,
             CeylonOutlineBuilder modelBuilder, 
             CeylonSourceViewer sourceViewer) {
-    	
+        
         this.parseController= parseController;
         this.modelBuilder= modelBuilder;
-		this.sourceViewer = sourceViewer;
+        this.sourceViewer = sourceViewer;
         labelProvider= new CeylonLabelProvider();
 
         contentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {
-            	return ((CeylonOutlineNode) element).getChildren().toArray();
+                return ((CeylonOutlineNode) element).getChildren().toArray();
             }
             public Object getParent(Object element) {
-            	return ((CeylonOutlineNode) element).getParent();
+                return ((CeylonOutlineNode) element).getParent();
             }
-        	public boolean hasChildren(Object element) {
-        	    Object[] children= getChildren(element);
-        	    return children!=null && children.length > 0;
-        	}
-        	public Object[] getElements(Object inputElement) {
-        	    return getChildren(inputElement);
-        	}
-        	@Override
-        	public void dispose() {}
-        	@Override
+            public boolean hasChildren(Object element) {
+                Object[] children= getChildren(element);
+                return children!=null && children.length > 0;
+            }
+            public Object[] getElements(Object inputElement) {
+                return getChildren(inputElement);
+            }
+            @Override
+            public void dispose() {}
+            @Override
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
         };
     }
@@ -105,22 +105,22 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     @Override
     public void update(CeylonParseController parseController, 
-    		IProgressMonitor monitor) {
-    	update(parseController);
+            IProgressMonitor monitor) {
+        update(parseController);
     }
 
     public void update(final CeylonParseController parseController) {
         TreeViewer treeViewer = getTreeViewer();
-		if (treeViewer!=null && 
-        		!treeViewer.getTree().isDisposed()) {
+        if (treeViewer!=null && 
+                !treeViewer.getTree().isDisposed()) {
             treeViewer.getTree().getDisplay()
                    .asyncExec(new Runnable() {
                 public void run() {
-                	TreeViewer treeViewer = getTreeViewer();
-                	if (treeViewer!=null && 
-                			!treeViewer.getTree().isDisposed()) {
-                		treeViewer.setInput(modelBuilder.buildTree(parseController.getRootNode()));
-                	}
+                    TreeViewer treeViewer = getTreeViewer();
+                    if (treeViewer!=null && 
+                            !treeViewer.getTree().isDisposed()) {
+                        treeViewer.setInput(modelBuilder.buildTree(parseController.getRootNode()));
+                    }
                 }
             });
         }
@@ -132,14 +132,14 @@ public class CeylonOutlinePage extends ContentOutlinePage
     public void selectionChanged(SelectionChangedEvent event) {
         super.selectionChanged(event);
         if (!suspend) {
-        	ITreeSelection sel= (ITreeSelection) event.getSelection();
-        	if (!sel.isEmpty()) {
-        		Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
-        		int startOffset= getStartOffset(node);
-        		int endOffset= getEndOffset(node);
-        		int length= endOffset - startOffset;
-        		((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
-        	}
+            ITreeSelection sel= (ITreeSelection) event.getSelection();
+            if (!sel.isEmpty()) {
+                Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
+                int startOffset= getStartOffset(node);
+                int endOffset= getEndOffset(node);
+                int length= endOffset - startOffset;
+                ((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
+            }
         }
     }
 
@@ -155,34 +155,34 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.setAutoExpandLevel(4);
         viewer.setInput(rootNode);
         viewer.setComparer(new IElementComparer() {
-			@Override
-			public int hashCode(Object element) {
-				return element.hashCode();
-			}
-			@Override
-			public boolean equals(Object a, Object b) {
-				return a.equals(b);
-			}
-		});
+            @Override
+            public int hashCode(Object element) {
+                return element.hashCode();
+            }
+            @Override
+            public boolean equals(Object a, Object b) {
+                return a.equals(b);
+            }
+        });
 
         IPageSite site= getSite();
         IToolBarManager toolBarManager= site.getActionBars().getToolBarManager();
         toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new CollapseAllAction(viewer));
-		toolBarManager.add(new LexicalSortingAction());
-		toolBarManager.add(new HideNonSharedAction());
-		
-		MenuManager mm = new MenuManager();
-		JavaPlugin.createStandardGroups(mm);
-		/*mm.add(new GroupMarker("find"));
-		mm.add(new Separator());
-		mm.add(new GroupMarker("refactor"));
-		mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));*/
-		
-		site.registerContextMenu(OUTLINE_POPUP_MENU_ID, mm, getTreeViewer());
-		site.setSelectionProvider(getTreeViewer());
+        toolBarManager.add(new LexicalSortingAction());
+        toolBarManager.add(new HideNonSharedAction());
+        
+        MenuManager mm = new MenuManager();
+        JavaPlugin.createStandardGroups(mm);
+        /*mm.add(new GroupMarker("find"));
+        mm.add(new Separator());
+        mm.add(new GroupMarker("refactor"));
+        mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));*/
+        
+        site.registerContextMenu(OUTLINE_POPUP_MENU_ID, mm, getTreeViewer());
+        site.setSelectionProvider(getTreeViewer());
 
-		viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
+        viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
      }
     
     private class ExpandAllAction extends Action {
@@ -210,8 +210,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         private ViewerComparator fElementComparator= new ViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-            	CeylonOutlineNode t1= (CeylonOutlineNode) e1;
-            	CeylonOutlineNode t2= (CeylonOutlineNode) e2;
+                CeylonOutlineNode t1= (CeylonOutlineNode) e1;
+                CeylonOutlineNode t2= (CeylonOutlineNode) e2;
                 int cat1= t1.getCategory();
                 int cat2= t2.getCategory();
                 if (cat1 == cat2) {
@@ -293,7 +293,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setImageDescriptor(desc); 
 
             boolean checked= CeylonPlugin.getInstance().getPreferenceStore()
-            		.getBoolean("HideNonSharedAction.isChecked");
+                    .getBoolean("HideNonSharedAction.isChecked");
             valueChanged(checked, false);
         }
 
@@ -325,86 +325,86 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     @Override
     public void caretMoved(final CaretEvent event) {
-		if (suspend) return;
-		suspend = true;
-    	CompilationUnit rootNode = parseController.getRootNode();
-    	if (rootNode==null) return;
-		OutlineNodeVisitor v = new OutlineNodeVisitor(sourceViewer.widgetOffset2ModelOffset(event.caretOffset));
-    	rootNode.visit(v);
-    	if (!v.result.isEmpty()) {
-    		//List<CeylonOutlineNode> segments = new ArrayList<CeylonOutlineNode>();
-    		//segments.add(new CeylonOutlineNode(rootNode, CeylonOutlineNode.ROOT_CATEGORY));
-    		//segments.add(new CeylonOutlineNode(v.result));
-    		setSelection(new TreeSelection(new TreePath(v.result.toArray())));
-    	}
-		suspend = false;
+        if (suspend) return;
+        suspend = true;
+        CompilationUnit rootNode = parseController.getRootNode();
+        if (rootNode==null) return;
+        OutlineNodeVisitor v = new OutlineNodeVisitor(sourceViewer.widgetOffset2ModelOffset(event.caretOffset));
+        rootNode.visit(v);
+        if (!v.result.isEmpty()) {
+            //List<CeylonOutlineNode> segments = new ArrayList<CeylonOutlineNode>();
+            //segments.add(new CeylonOutlineNode(rootNode, CeylonOutlineNode.ROOT_CATEGORY));
+            //segments.add(new CeylonOutlineNode(v.result));
+            setSelection(new TreeSelection(new TreePath(v.result.toArray())));
+        }
+        suspend = false;
     }
     
-	class OutlineNodeVisitor extends Visitor {
-		private final int offset;
-		private final boolean hideNonshared;
-		OutlineNodeVisitor(int offset) {
-			this.offset = offset;
-			hideNonshared = CeylonPlugin.getInstance().getPreferenceStore()
-            		.getBoolean("HideNonSharedAction.isChecked");
-		}
-		List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
-		@Override
-		public void visit(Tree.Declaration that) {
-			if (!(that instanceof Tree.TypeParameterDeclaration) &&
-				!(that instanceof Tree.TypeConstraint) &&
-				!(that instanceof Tree.Variable && 
-							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
-				if (inBounds(that)) {
-					Declaration dm = that.getDeclarationModel();
-					if (!hideNonshared||dm!=null&&dm.isShared()) {
-						result.add(new CeylonOutlineNode(that));
-						super.visit(that);
-					}
-				}
-				else {
-					super.visit(that);
-				}
-			}
-			else {
-				super.visit(that);
-			}
-		}
-		@Override
-		public void visit(Tree.PackageDescriptor that) {
-			if (inBounds(that)) {
-				result.add(new CeylonOutlineNode(that));
-			}
-			super.visit(that);
-		}
-		@Override
-		public void visit(Tree.ModuleDescriptor that) {
-			if (inBounds(that)) {
-				result.add(new CeylonOutlineNode(that));
-			}
-			super.visit(that);
-		}
-		@Override
-		public void visit(Tree.Import that) {
-			if (inBounds(that)) {
-				result.add(new CeylonOutlineNode(that));
-			}
-			super.visit(that);
-		}
-		@Override
-		public void visit(Tree.ImportModule that) {
-			if (inBounds(that)) {
-				result.add(new CeylonOutlineNode(that));
-			}
-			super.visit(that);
-		}
-		private boolean inBounds(Node that) {
-			Integer tokenStartIndex = that.getStartIndex();
-			Integer tokenStopIndex = that.getStopIndex();
-			return tokenStartIndex!=null && tokenStopIndex!=null &&
-					tokenStartIndex<=offset && tokenStopIndex+1>=offset;
-		}
-	}
-	
+    class OutlineNodeVisitor extends Visitor {
+        private final int offset;
+        private final boolean hideNonshared;
+        OutlineNodeVisitor(int offset) {
+            this.offset = offset;
+            hideNonshared = CeylonPlugin.getInstance().getPreferenceStore()
+                    .getBoolean("HideNonSharedAction.isChecked");
+        }
+        List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
+        @Override
+        public void visit(Tree.Declaration that) {
+            if (!(that instanceof Tree.TypeParameterDeclaration) &&
+                !(that instanceof Tree.TypeConstraint) &&
+                !(that instanceof Tree.Variable && 
+                            ((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
+                if (inBounds(that)) {
+                    Declaration dm = that.getDeclarationModel();
+                    if (!hideNonshared||dm!=null&&dm.isShared()) {
+                        result.add(new CeylonOutlineNode(that));
+                        super.visit(that);
+                    }
+                }
+                else {
+                    super.visit(that);
+                }
+            }
+            else {
+                super.visit(that);
+            }
+        }
+        @Override
+        public void visit(Tree.PackageDescriptor that) {
+            if (inBounds(that)) {
+                result.add(new CeylonOutlineNode(that));
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.ModuleDescriptor that) {
+            if (inBounds(that)) {
+                result.add(new CeylonOutlineNode(that));
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.Import that) {
+            if (inBounds(that)) {
+                result.add(new CeylonOutlineNode(that));
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.ImportModule that) {
+            if (inBounds(that)) {
+                result.add(new CeylonOutlineNode(that));
+            }
+            super.visit(that);
+        }
+        private boolean inBounds(Node that) {
+            Integer tokenStartIndex = that.getStartIndex();
+            Integer tokenStopIndex = that.getStopIndex();
+            return tokenStartIndex!=null && tokenStopIndex!=null &&
+                    tokenStartIndex<=offset && tokenStopIndex+1>=offset;
+        }
+    }
+    
 }
 

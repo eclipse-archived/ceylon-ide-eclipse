@@ -153,16 +153,16 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
  * @author Robert M. Fuhrer
  */
 public class CeylonEditor extends TextEditor {
-	
-	public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
+    
+    public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-	private static final int REPARSE_SCHEDULE_DELAY= 100;
+    private static final int REPARSE_SCHEDULE_DELAY= 100;
 
     /** 
      * Parent annotation ID
      */
     public static final String PARSE_ANNOTATION_TYPE = PLUGIN_ID + 
-    		".parseAnnotation";
+            ".parseAnnotation";
 
     /**
      * Annotation ID for a parser annotation w/ severity = error.
@@ -170,7 +170,7 @@ public class CeylonEditor extends TextEditor {
      * extension in the plugin.xml.
      */
     public static final String PARSE_ANNOTATION_TYPE_ERROR= PARSE_ANNOTATION_TYPE + 
-    		".error";
+            ".error";
 
     /**
      * Annotation ID for a parser annotation w/ severity = warning. 
@@ -178,7 +178,7 @@ public class CeylonEditor extends TextEditor {
      * extension in the plugin.xml.
      */
     public static final String PARSE_ANNOTATION_TYPE_WARNING= PARSE_ANNOTATION_TYPE + 
-    		".warning";
+            ".warning";
 
     /**
      * Annotation ID for a parser annotation w/ severity = info. 
@@ -186,7 +186,7 @@ public class CeylonEditor extends TextEditor {
      * extension in the plugin.xml.
      */
     public static final String PARSE_ANNOTATION_TYPE_INFO= PARSE_ANNOTATION_TYPE + 
-    		".info";
+            ".info";
 
     /** Preference key for matching brackets */
     public final static String MATCHING_BRACKET= "matchingBrackets";
@@ -227,47 +227,47 @@ public class CeylonEditor extends TextEditor {
         configureInsertMode(SMART_INSERT, true);
         setInsertMode(SMART_INSERT);
         problemMarkerManager= new ProblemMarkerManager();
-	}
+    }
     
-	static String[][] getFences() {
-		return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
-	}
-	
-	public synchronized void pauseBackgroundParsing() {
-		backgroundParsingPaused = true;
-	}
+    static String[][] getFences() {
+        return new String[][] { { "(", ")" }, { "[", "]" }, { "{", "}" } };
+    }
     
-	public synchronized void unpauseBackgroundParsing() {
-		backgroundParsingPaused = false;
-	}
-	
-	public synchronized boolean isBackgroundParsingPaused() {
-		return backgroundParsingPaused;
-	}
-	
-	public boolean isInLinkedMode() {
+    public synchronized void pauseBackgroundParsing() {
+        backgroundParsingPaused = true;
+    }
+    
+    public synchronized void unpauseBackgroundParsing() {
+        backgroundParsingPaused = false;
+    }
+    
+    public synchronized boolean isBackgroundParsingPaused() {
+        return backgroundParsingPaused;
+    }
+    
+    public boolean isInLinkedMode() {
         return linkedMode!=null;
     }
-	
-	public void setLinkedMode(LinkedModeModel linkedMode) {
+    
+    public void setLinkedMode(LinkedModeModel linkedMode) {
         this.linkedMode = linkedMode;
     }
-	
-	public LinkedModeModel getLinkedMode() {
-		return linkedMode;
-	}
-	
+    
+    public LinkedModeModel getLinkedMode() {
+        return linkedMode;
+    }
+    
     /**
      * Sub-classes may override this method to extend the behavior provided by IMP's
      * standard StructuredSourceViewerConfiguration.
      * @return the StructuredSourceViewerConfiguration to use with this editor
      */
     protected CeylonSourceViewerConfiguration createSourceViewerConfiguration() {
-    	return new CeylonSourceViewerConfiguration(getPreferenceStore(), this);
+        return new CeylonSourceViewerConfiguration(getPreferenceStore(), this);
     }
 
     public IPreferenceStore getPrefStore() {
-    	return super.getPreferenceStore();
+        return super.getPreferenceStore();
     }
 
     @SuppressWarnings("rawtypes")
@@ -281,23 +281,23 @@ public class CeylonEditor extends TextEditor {
         return super.getAdapter(required);
     }
 
-	public Object getToggleBreakpointAdapter() {
-		if (toggleBreakpointTarget == null) {
-		    toggleBreakpointTarget = new ToggleBreakpointAdapter();
-		}
-		return toggleBreakpointTarget;
-	}
+    public Object getToggleBreakpointAdapter() {
+        if (toggleBreakpointTarget == null) {
+            toggleBreakpointTarget = new ToggleBreakpointAdapter();
+        }
+        return toggleBreakpointTarget;
+    }
 
-	public Object getOutlinePage() {
-		if (outlinePage == null) {
-		    outlinePage = new CeylonOutlinePage(getParseController(),
-		            new CeylonOutlineBuilder(), getCeylonSourceViewer());
-		    parserScheduler.addModelListener(outlinePage);
-		    getSourceViewer().getTextWidget().addCaretListener(outlinePage);
-		    //myOutlinePage.update(parseController);
-		 }
-		 return outlinePage;
-	}
+    public Object getOutlinePage() {
+        if (outlinePage == null) {
+            outlinePage = new CeylonOutlinePage(getParseController(),
+                    new CeylonOutlineBuilder(), getCeylonSourceViewer());
+            parserScheduler.addModelListener(outlinePage);
+            getSourceViewer().getTextWidget().addCaretListener(outlinePage);
+            //myOutlinePage.update(parseController);
+         }
+         return outlinePage;
+    }
 
     protected void createActions() {
         super.createActions();
@@ -310,16 +310,16 @@ public class CeylonEditor extends TextEditor {
         markAsStateDependentAction("ContentAssistProposal", true);
 
         toggleBreakpointAction= new ToggleBreakpointAction(this, 
-        		getDocumentProvider().getDocument(getEditorInput()), 
-        		getVerticalRuler());
+                getDocumentProvider().getDocument(getEditorInput()), 
+                getVerticalRuler());
         setAction("ToggleBreakpoint", action);
         
         enableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
-        		getVerticalRuler());
+                getVerticalRuler());
         setAction("ToggleBreakpoint", action);
 
 //        action= new TextOperationAction(bundle, "Format.", this, 
-//        		CeylonSourceViewer.FORMAT);
+//                CeylonSourceViewer.FORMAT);
 //        action.setActionDefinitionId(FORMAT);
 //        setAction("Format", action);
 //        markAsStateDependentAction("Format", true);
@@ -343,19 +343,19 @@ public class CeylonEditor extends TextEditor {
         //PlatformUI.getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.REMOVE_BLOCK_COMMENT_ACTION);
         
         action= new TextOperationAction(bundle, "ShowOutline.", this, 
-        		CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */);
+                CeylonSourceViewer.SHOW_OUTLINE, true /* runsOnReadOnly */);
         action.setActionDefinitionId(SHOW_OUTLINE);
         setAction(SHOW_OUTLINE, action);
         //getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.SHOW_OUTLINE_ACTION);
 
         action= new TextOperationAction(bundle, "ToggleComment.", this, 
-        		CeylonSourceViewer.TOGGLE_COMMENT);
+                CeylonSourceViewer.TOGGLE_COMMENT);
         action.setActionDefinitionId(TOGGLE_COMMENT);
         setAction(TOGGLE_COMMENT, action);
         //getWorkbench().getHelpSystem().setHelp(action, IJavaHelpContextIds.TOGGLE_COMMENT_ACTION);
 
         action= new TextOperationAction(bundle, "CorrectIndentation.", this, 
-        		CeylonSourceViewer.CORRECT_INDENTATION);
+                CeylonSourceViewer.CORRECT_INDENTATION);
         action.setActionDefinitionId(CORRECT_INDENTATION);
         setAction(CORRECT_INDENTATION, action);
 
@@ -379,13 +379,13 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(RESTORE_PREVIOUS);
         setAction(RESTORE_PREVIOUS, action);
 
-    	action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
-    			CeylonSourceViewer.SHOW_HIERARCHY, true);
+        action= new TextOperationAction(bundle, "ShowHierarchy.", this, 
+                CeylonSourceViewer.SHOW_HIERARCHY, true);
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_HIERARCHY);
         setAction(EditorActionIds.SHOW_CEYLON_HIERARCHY, action);
 
-    	action= new TextOperationAction(bundle, "ShowCode.", this, 
-    			CeylonSourceViewer.SHOW_CODE, true);
+        action= new TextOperationAction(bundle, "ShowCode.", this, 
+                CeylonSourceViewer.SHOW_CODE, true);
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
         
@@ -397,14 +397,14 @@ public class CeylonEditor extends TextEditor {
         
         getAction(ITextEditorActionConstants.SHIFT_LEFT)
             .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-            		.getDescriptor(CeylonResources.SHIFT_LEFT));
+                    .getDescriptor(CeylonResources.SHIFT_LEFT));
         getAction(ITextEditorActionConstants.SHIFT_RIGHT)
             .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-        		.getDescriptor(CeylonResources.SHIFT_RIGHT));
+                .getDescriptor(CeylonResources.SHIFT_RIGHT));
         
         IAction qaa=getAction(ITextEditorActionConstants.QUICK_ASSIST);
         qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-    		    .getDescriptor(CeylonResources.QUICK_ASSIST));
+                .getDescriptor(CeylonResources.QUICK_ASSIST));
         qaa.setText("Quick Fix/Assist");
         
         installQuickAccessAction();
@@ -911,7 +911,7 @@ public class CeylonEditor extends TextEditor {
         if (fHandlerService != null) {
             QuickMenuAction refactorQuickAccessAction= new RefactorQuickAccessAction();
             fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
-            		new ActionHandler(refactorQuickAccessAction));
+                    new ActionHandler(refactorQuickAccessAction));
             QuickMenuAction findQuickAccessAction= new FindQuickAccessAction();
             fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
                     new ActionHandler(findQuickAccessAction));
@@ -991,35 +991,35 @@ public class CeylonEditor extends TextEditor {
     
     @Override
     protected void setTitleImage(Image titleImage) {
-    	super.setTitleImage(titleImage);
+        super.setTitleImage(titleImage);
     }
 
     public IDocumentProvider getDocumentProvider() {
-    	if (isSrcArchive(getEditorInput())) {
-    		//Note: I would prefer to register the
-    		//document provider in plugin.xml but
-    		//I don't know how to uniquely identity
-    		//that a IURIEditorInput is a source
-    		//archive there
-    		if (sourceArchiveDocumentProvider==null) {
-    			sourceArchiveDocumentProvider = new SourceArchiveDocumentProvider();
-    		}
-    		return sourceArchiveDocumentProvider;
-    	}
-    	else {
-    		return super.getDocumentProvider();
-    	}
+        if (isSrcArchive(getEditorInput())) {
+            //Note: I would prefer to register the
+            //document provider in plugin.xml but
+            //I don't know how to uniquely identity
+            //that a IURIEditorInput is a source
+            //archive there
+            if (sourceArchiveDocumentProvider==null) {
+                sourceArchiveDocumentProvider = new SourceArchiveDocumentProvider();
+            }
+            return sourceArchiveDocumentProvider;
+        }
+        else {
+            return super.getDocumentProvider();
+        }
     }
     
     public CeylonSourceViewer getCeylonSourceViewer() {
-    	return (CeylonSourceViewer) super.getSourceViewer();
+        return (CeylonSourceViewer) super.getSourceViewer();
     }
 
     public void createPartControl(Composite parent) {
         
-    	// Initialize the parse controller first, since the 
-    	// initialization of other things (like the context 
-    	// help support) might depend on it.
+        // Initialize the parse controller first, since the 
+        // initialization of other things (like the context 
+        // help support) might depend on it.
         initializeParseController();
         
         super.createPartControl(parent);
@@ -1041,17 +1041,17 @@ public class CeylonEditor extends TextEditor {
         getWorkspace().addResourceChangeListener(buildListener= new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType()==POST_BUILD && event.getBuildKind()!=CLEAN_BUILD) {
-                	scheduleParsing();
+                    scheduleParsing();
                 }
             }
         }, IResourceChangeEvent.POST_BUILD);
     }
 
     public synchronized void scheduleParsing() {
-    	if (parserScheduler!=null && !backgroundParsingPaused) {
-    		parserScheduler.cancel();
-    		parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
-    	}
+        if (parserScheduler!=null && !backgroundParsingPaused) {
+            parserScheduler.cancel();
+            parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+        }
     }
 
     private void initializeParseController() {
@@ -1068,12 +1068,12 @@ public class CeylonEditor extends TextEditor {
                 .addDocumentListener(documentListener= new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
-            	synchronized (CeylonEditor.this) {
-            		if (parserScheduler!=null && !backgroundParsingPaused) {
-            			parserScheduler.cancel();
-            			parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
-            		}
-				}
+                synchronized (CeylonEditor.this) {
+                    if (parserScheduler!=null && !backgroundParsingPaused) {
+                        parserScheduler.cancel();
+                        parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+                    }
+                }
             }
         });
     }
@@ -1101,35 +1101,35 @@ public class CeylonEditor extends TextEditor {
         // We need to see when the editor input changes, so we can watch the new document
         addPropertyListener(fEditorInputPropertyListener);
         getWorkspace().addResourceChangeListener(moveListener= new IResourceChangeListener() {
-        	public void resourceChanged(IResourceChangeEvent event) {
-        		if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
-        			IProject project = parseController.getProject();
-        			if (project!=null) { //things extrenal to the workspace don't move
-        				IPath oldWSRelPath= project.getFullPath().append(parseController.getPath());
-        				IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
-        				if (rd != null) {
-        					if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-        						// The net effect of the following is to re-initialize() the IParseController with the new path
-        						IPath newPath= rd.getMovedToPath();
-        						IPath newProjRelPath= newPath.removeFirstSegments(1);
-        						String newProjName= newPath.segment(0);
-        						IProject proj= project.getName().equals(newProjName) ? 
-        								project : project.getWorkspace().getRoot()
-        							            .getProject(newProjName);
-        						// Tell the IParseController about the move - it caches the path
-        						// fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-        						parseController.initialize(newProjRelPath, proj, annotationCreator);
-        					}
-        				}
-        			}
-        		}
+            public void resourceChanged(IResourceChangeEvent event) {
+                if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
+                    IProject project = parseController.getProject();
+                    if (project!=null) { //things extrenal to the workspace don't move
+                        IPath oldWSRelPath= project.getFullPath().append(parseController.getPath());
+                        IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
+                        if (rd != null) {
+                            if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+                                // The net effect of the following is to re-initialize() the IParseController with the new path
+                                IPath newPath= rd.getMovedToPath();
+                                IPath newProjRelPath= newPath.removeFirstSegments(1);
+                                String newProjName= newPath.segment(0);
+                                IProject proj= project.getName().equals(newProjName) ? 
+                                        project : project.getWorkspace().getRoot()
+                                                .getProject(newProjName);
+                                // Tell the IParseController about the move - it caches the path
+                                // fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
+                                parseController.initialize(newProjRelPath, proj, annotationCreator);
+                            }
+                        }
+                    }
+                }
             }
         });
     }
 
     /*private void setSourceFontFromPreference() {
         String fontName = WorkbenchPlugin.getDefault().getPreferenceStore()
-        		.getString(JFaceResources.TEXT_FONT);
+                .getString(JFaceResources.TEXT_FONT);
         FontRegistry fontRegistry= CeylonPlugin.getInstance().getFontRegistry();
         if (!fontRegistry.hasValueFor(fontName)) {
             fontRegistry.put(fontName, PreferenceConverter.readFontData(fontName));
@@ -1146,11 +1146,11 @@ public class CeylonEditor extends TextEditor {
                         
             annotationUpdater= new IProblemChangedListener() {
                 public void problemsChanged(IResource[] changedResources, 
-                		boolean isMarkerChange) {
+                        boolean isMarkerChange) {
                     // Remove annotations that were resolved by changes to 
-                	// other resources. 
-                	// TODO: It would be better to match the markers to the 
-                	// annotations, and decide which annotations to remove.
+                    // other resources. 
+                    // TODO: It would be better to match the markers to the 
+                    // annotations, and decide which annotations to remove.
                     scheduleParsing();
                 }
             };
@@ -1159,8 +1159,8 @@ public class CeylonEditor extends TextEditor {
             editorIconUpdater= new EditorIconUpdater(this);
             problemMarkerManager.addListener(editorIconUpdater);
 
-			parserScheduler= new CeylonParserScheduler(parseController, this, 
-					annotationCreator);
+            parserScheduler= new CeylonParserScheduler(parseController, this, 
+                    annotationCreator);
             
             addModelListener(new AdditionalAnnotationCreator(this));
             
@@ -1168,7 +1168,7 @@ public class CeylonEditor extends TextEditor {
             // but before we actually instantiated the relevant controller class. So update
             // the source viewer, now that we actually have the hover provider.
             //HoverHelpController hover = new HoverHelpController(this);
-			//sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
+            //sourceViewer.setTextHover(hover, DEFAULT_CONTENT_TYPE);
             //addModelListener(hover);
             
             projectionSupport = new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors());
@@ -1192,7 +1192,7 @@ public class CeylonEditor extends TextEditor {
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
             ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
             if (projectionAnnotationModel!=null) {
-            	addModelListener(new FoldingController(projectionAnnotationModel, sourceViewer));
+                addModelListener(new FoldingController(projectionAnnotationModel, sourceViewer));
             }
             
             if (isEditable()) {
@@ -1212,60 +1212,60 @@ public class CeylonEditor extends TextEditor {
     }
     
     private void setTitleImageFromLanguageIcon() {
-    	IEditorInput editorInput= getEditorInput();
-    	Object fileOrPath= getFile(editorInput);
-    	if (fileOrPath==null) {
-    		fileOrPath = getParseController().getPath();
-    	}
-    	try {
-    		setTitleImage(new CeylonLabelProvider().getImage(fileOrPath));
-    	} 
-    	catch (Exception e) {
-    		e.printStackTrace();
-    	}
+        IEditorInput editorInput= getEditorInput();
+        Object fileOrPath= getFile(editorInput);
+        if (fileOrPath==null) {
+            fileOrPath = getParseController().getPath();
+        }
+        try {
+            setTitleImage(new CeylonLabelProvider().getImage(fileOrPath));
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
-	/**
-	 * Makes sure that menu items and status bar items disappear as the editor
-	 * is out of focus, and reappear when it gets focus again. This does
-	 * not work for toolbar items for unknown reasons, they stay visible.
-	 *
-	 */
-	/*private void registerEditorContributionsActivator() {
-		fRefreshContributions = new DefaultPartListener() {
-			private UniversalEditor editor = UniversalEditor.this;
+    /**
+     * Makes sure that menu items and status bar items disappear as the editor
+     * is out of focus, and reappear when it gets focus again. This does
+     * not work for toolbar items for unknown reasons, they stay visible.
+     *
+     */
+    /*private void registerEditorContributionsActivator() {
+        fRefreshContributions = new DefaultPartListener() {
+            private UniversalEditor editor = UniversalEditor.this;
 
-			@Override
-			public void partActivated(IWorkbenchPart part) {
-				if (part == editor) {
-					editor.fActionBars.activate();
-					editor.fActionBars.updateActionBars();
-				}
+            @Override
+            public void partActivated(IWorkbenchPart part) {
+                if (part == editor) {
+                    editor.fActionBars.activate();
+                    editor.fActionBars.updateActionBars();
+                }
 
-				if (part instanceof UniversalEditor) {
-					part.getSite().getPage().showActionSet(IMP_CODING_ACTION_SET);
-					part.getSite().getPage().showActionSet(IMP_OPEN_ACTION_SET);
-				} else {
-					part.getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
-					part.getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
-				}
-			}
+                if (part instanceof UniversalEditor) {
+                    part.getSite().getPage().showActionSet(IMP_CODING_ACTION_SET);
+                    part.getSite().getPage().showActionSet(IMP_OPEN_ACTION_SET);
+                } else {
+                    part.getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
+                    part.getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
+                }
+            }
 
-			@Override
-			public void partDeactivated(IWorkbenchPart part) {
-				if (part == editor) {
-					editor.fActionBars.deactivate();
-					editor.fActionBars.updateActionBars();
-				}
-			}
-		};
-		getSite().getPage().addPartListener(fRefreshContributions);
-	}*/
-	
+            @Override
+            public void partDeactivated(IWorkbenchPart part) {
+                if (part == editor) {
+                    editor.fActionBars.deactivate();
+                    editor.fActionBars.updateActionBars();
+                }
+            }
+        };
+        getSite().getPage().addPartListener(fRefreshContributions);
+    }*/
+    
     public void dispose() {
         if (editorIconUpdater!=null) {
-        	editorIconUpdater.dispose();
-        	editorIconUpdater = null;
+            editorIconUpdater.dispose();
+            editorIconUpdater = null;
         }
         if (annotationUpdater!=null) {
             problemMarkerManager.removeListener(annotationUpdater);
@@ -1278,17 +1278,17 @@ public class CeylonEditor extends TextEditor {
         }*/
 
         /*if (documentListener!=null) {
-        	getSourceViewer().getDocument()
-        	    .removeDocumentListener(documentListener);
+            getSourceViewer().getDocument()
+                .removeDocumentListener(documentListener);
         }*/
         
         if (buildListener!=null) {
-        	getWorkspace().removeResourceChangeListener(buildListener);
-        	buildListener = null;
+            getWorkspace().removeResourceChangeListener(buildListener);
+            buildListener = null;
         }
         if (moveListener!=null) {
-        	getWorkspace().removeResourceChangeListener(moveListener);
-        	moveListener = null;
+            getWorkspace().removeResourceChangeListener(moveListener);
+            moveListener = null;
         }
         
         toggleBreakpointAction.dispose(); // this holds onto the IDocument
@@ -1300,7 +1300,7 @@ public class CeylonEditor extends TextEditor {
         }
 
         if (parserScheduler!=null) {
-        	parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
+            parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
         }
         parserScheduler= null;
         parseController = null;
@@ -1310,7 +1310,7 @@ public class CeylonEditor extends TextEditor {
         super.dispose();
 
         /*if (fResourceListener != null) {
-        	ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
+            ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
         currentTheme.getColorRegistry().removeListener(colorChangeListener);
         currentTheme.getFontRegistry().removeListener(fontChangeListener);
@@ -1357,7 +1357,7 @@ public class CeylonEditor extends TextEditor {
         fOverviewRuler= createOverviewRuler(getSharedColors());
 
         ISourceViewer viewer= new CeylonSourceViewer(this, parent, ruler, 
-        		getOverviewRuler(), isOverviewRulerVisible(), styles);
+                getOverviewRuler(), isOverviewRulerVisible(), styles);
         
         // ensure decoration support has been created and configured.
         getSourceViewerDecorationSupport(viewer);
@@ -1372,32 +1372,32 @@ public class CeylonEditor extends TextEditor {
                 }
             }
         });
-	
+    
         return viewer;
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         IPreferenceStore store = getPreferenceStore();
-		store.setDefault(MATCHING_BRACKET, true);
-		Color color = currentTheme.getColorRegistry()
-		            .get(PLUGIN_ID + ".theme.matchingBracketsColor");
-		store.setDefault(MATCHING_BRACKETS_COLOR, 
-		        color.getRed() +"," + color.getGreen() + "," + color.getBlue());
+        store.setDefault(MATCHING_BRACKET, true);
+        Color color = currentTheme.getColorRegistry()
+                    .get(PLUGIN_ID + ".theme.matchingBracketsColor");
+        store.setDefault(MATCHING_BRACKETS_COLOR, 
+                color.getRed() +"," + color.getGreen() + "," + color.getBlue());
         store.setDefault(MATCHING_BRACKET, true);
         store.setDefault(ENCLOSING_BRACKETS, false);
         store.setDefault(SELECTED_BRACKET, false);
         String[][] fences= getFences();
         if (fences != null) {
-        	StringBuilder sb= new StringBuilder();
-        	for (int i=0; i<fences.length; i++) {
-        		sb.append(fences[i][0]);
-        		sb.append(fences[i][1]);
-        	}
-        	bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
-        	support.setCharacterPairMatcher(bracketMatcher);
-        	support.setMatchingCharacterPainterPreferenceKeys(
-        	        MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
-        	        SELECTED_BRACKET, ENCLOSING_BRACKETS);
+            StringBuilder sb= new StringBuilder();
+            for (int i=0; i<fences.length; i++) {
+                sb.append(fences[i][0]);
+                sb.append(fences[i][1]);
+            }
+            bracketMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
+            support.setCharacterPairMatcher(bracketMatcher);
+            support.setMatchingCharacterPainterPreferenceKeys(
+                    MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
+                    SELECTED_BRACKET, ENCLOSING_BRACKETS);
         }
         super.configureSourceViewerDecorationSupport(support);
     }
@@ -1524,38 +1524,38 @@ public class CeylonEditor extends TextEditor {
      * SMS 25 Apr 2007
      */
     public void refreshMarkerAnnotations(String problemMarkerType) {
-    	// Get current marker annotations
-		IAnnotationModel model = getDocumentProvider().getAnnotationModel(getEditorInput());
-		List<MarkerAnnotation> markerAnnotations = new ArrayList<MarkerAnnotation>();
-		for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
-			Object ann = iter.next();
-			if (ann instanceof MarkerAnnotation) {
-				markerAnnotations.add((MarkerAnnotation) ann);
-			} 
-		}
+        // Get current marker annotations
+        IAnnotationModel model = getDocumentProvider().getAnnotationModel(getEditorInput());
+        List<MarkerAnnotation> markerAnnotations = new ArrayList<MarkerAnnotation>();
+        for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
+            Object ann = iter.next();
+            if (ann instanceof MarkerAnnotation) {
+                markerAnnotations.add((MarkerAnnotation) ann);
+            } 
+        }
 
-		// For the current marker annotations, if any lacks a corresponding
-		// parse annotation, delete the marker annotation from the document's
-		// annotation model (but leave the marker on the underlying resource,
-		// which presumably hasn't been changed, despite changes to the document)
-		for (int i = 0; i < markerAnnotations.size(); i++) {
-			MarkerAnnotation markerAnnotation = markerAnnotations.get(i);
-			IMarker marker = markerAnnotation.getMarker();
-			try {
-				if (marker.getType().equals(problemMarkerType)) {
-					if (markerParseAnnotations.get(marker)==null) {
-						model.removeAnnotation(markerAnnotation);
-					}	
-				}
-			} 
-			catch (CoreException e) {
-				// If we get a core exception here, probably something is wrong with the
-				// marker, and we probably don't want to keep any annotation that may be
-				// associated with it (I don't think)
-				model.removeAnnotation(markerAnnotation);
-				continue;
-			}
-		}
+        // For the current marker annotations, if any lacks a corresponding
+        // parse annotation, delete the marker annotation from the document's
+        // annotation model (but leave the marker on the underlying resource,
+        // which presumably hasn't been changed, despite changes to the document)
+        for (int i = 0; i < markerAnnotations.size(); i++) {
+            MarkerAnnotation markerAnnotation = markerAnnotations.get(i);
+            IMarker marker = markerAnnotation.getMarker();
+            try {
+                if (marker.getType().equals(problemMarkerType)) {
+                    if (markerParseAnnotations.get(marker)==null) {
+                        model.removeAnnotation(markerAnnotation);
+                    }    
+                }
+            } 
+            catch (CoreException e) {
+                // If we get a core exception here, probably something is wrong with the
+                // marker, and we probably don't want to keep any annotation that may be
+                // associated with it (I don't think)
+                model.removeAnnotation(markerAnnotation);
+                continue;
+            }
+        }
     }
     
     
@@ -1581,83 +1581,83 @@ public class CeylonEditor extends TextEditor {
      * SMS 25 Apr 2007
      */
     protected class InputAnnotationModelListener implements IAnnotationModelListener {
-    	public void modelChanged(IAnnotationModel model) {
-    		List<Annotation> currentParseAnnotations = new ArrayList<Annotation>();
-    		List<IMarker> currentMarkers = new ArrayList<IMarker>();
+        public void modelChanged(IAnnotationModel model) {
+            List<Annotation> currentParseAnnotations = new ArrayList<Annotation>();
+            List<IMarker> currentMarkers = new ArrayList<IMarker>();
 
-    		markerParseAnnotations = new HashMap<IMarker,Annotation>();
-    		markerMarkerAnnotations = new HashMap<IMarker,MarkerAnnotation>();
-    		
-    		// Collect the current set of markers and parse annotations;
-    		// also maintain a map of markers to marker annotations (as	
-    		// there doesn't seem to be a way to get from a marker to the
-    		// annotations that may represent it)
-    		
-    		for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
-    			Object ann = iter.next();
-    			if (ann instanceof MarkerAnnotation) {
-    				IMarker marker = ((MarkerAnnotation)ann).getMarker();
-    				if (marker.exists()) {
-    				    currentMarkers.add(marker);
-    				}
-    				markerMarkerAnnotations.put(marker, (MarkerAnnotation) ann);
-    			} 
-    			else if (ann instanceof Annotation) {
-    				Annotation annotation = (Annotation) ann;
-    				if (isParseAnnotation(annotation)) {
-    					currentParseAnnotations.add(annotation);
-    				}
-    			}
-    		}
+            markerParseAnnotations = new HashMap<IMarker,Annotation>();
+            markerMarkerAnnotations = new HashMap<IMarker,MarkerAnnotation>();
+            
+            // Collect the current set of markers and parse annotations;
+            // also maintain a map of markers to marker annotations (as    
+            // there doesn't seem to be a way to get from a marker to the
+            // annotations that may represent it)
+            
+            for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
+                Object ann = iter.next();
+                if (ann instanceof MarkerAnnotation) {
+                    IMarker marker = ((MarkerAnnotation)ann).getMarker();
+                    if (marker.exists()) {
+                        currentMarkers.add(marker);
+                    }
+                    markerMarkerAnnotations.put(marker, (MarkerAnnotation) ann);
+                } 
+                else if (ann instanceof Annotation) {
+                    Annotation annotation = (Annotation) ann;
+                    if (isParseAnnotation(annotation)) {
+                        currentParseAnnotations.add(annotation);
+                    }
+                }
+            }
 
-    		// Create a mapping between current markers and parse annotations
-    		for (int i = 0; i < currentMarkers.size(); i++) {
-    			IMarker marker = currentMarkers.get(i);
-				Annotation annotation = findParseAnnotationForMarker(model, marker, 
-						currentParseAnnotations);
-				if (annotation!=null) {
-					markerParseAnnotations.put(marker, annotation);
-				}
-    		}
-    	}
+            // Create a mapping between current markers and parse annotations
+            for (int i = 0; i < currentMarkers.size(); i++) {
+                IMarker marker = currentMarkers.get(i);
+                Annotation annotation = findParseAnnotationForMarker(model, marker, 
+                        currentParseAnnotations);
+                if (annotation!=null) {
+                    markerParseAnnotations.put(marker, annotation);
+                }
+            }
+        }
 
-    	public Annotation findParseAnnotationForMarker(IAnnotationModel model, IMarker marker, 
-    			List<Annotation> parseAnnotations) {
-    		Integer markerStartAttr = null;
-    		Integer markerEndAttr = null;
-    		try {
-				// SMS 22 May 2007:  With markers created through the editor the CHAR_START
-				// and CHAR_END attributes are null, giving rise to NPEs here.  Not sure
-				// why this happens, but it seems to help down the line to trap the NPE.
-				markerStartAttr = ((Integer) marker.getAttribute(IMarker.CHAR_START));
-				markerEndAttr = ((Integer) marker.getAttribute(IMarker.CHAR_END));
-				if (markerStartAttr == null || markerEndAttr == null) {
-					return null;
-				}
-			} 
-    		catch (Exception e) {
-			    e.printStackTrace();
-				return null;
-    		}
-			
-   			int markerStart = markerStartAttr.intValue();
-			int markerEnd = markerEndAttr.intValue();
-			int markerLength = markerEnd - markerStart;
-			for (int j = 0; j < parseAnnotations.size(); j++) {
-				Annotation parseAnnotation = parseAnnotations.get(j);
-				Position pos = model.getPosition(parseAnnotation);
-				if (pos!=null) {
-					int annotationStart = pos.offset;
-					int annotationLength = pos.length;
-					if (markerStart==annotationStart && 
-							markerLength==annotationLength) {
-						return parseAnnotation;
-					}
-				}
-			}
+        public Annotation findParseAnnotationForMarker(IAnnotationModel model, IMarker marker, 
+                List<Annotation> parseAnnotations) {
+            Integer markerStartAttr = null;
+            Integer markerEndAttr = null;
+            try {
+                // SMS 22 May 2007:  With markers created through the editor the CHAR_START
+                // and CHAR_END attributes are null, giving rise to NPEs here.  Not sure
+                // why this happens, but it seems to help down the line to trap the NPE.
+                markerStartAttr = ((Integer) marker.getAttribute(IMarker.CHAR_START));
+                markerEndAttr = ((Integer) marker.getAttribute(IMarker.CHAR_END));
+                if (markerStartAttr == null || markerEndAttr == null) {
+                    return null;
+                }
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+            
+               int markerStart = markerStartAttr.intValue();
+            int markerEnd = markerEndAttr.intValue();
+            int markerLength = markerEnd - markerStart;
+            for (int j = 0; j < parseAnnotations.size(); j++) {
+                Annotation parseAnnotation = parseAnnotations.get(j);
+                Position pos = model.getPosition(parseAnnotation);
+                if (pos!=null) {
+                    int annotationStart = pos.offset;
+                    int annotationLength = pos.length;
+                    if (markerStart==annotationStart && 
+                            markerLength==annotationLength) {
+                        return parseAnnotation;
+                    }
+                }
+            }
 
-			return null;
-    	}   	
+            return null;
+        }       
     }
 
     public static boolean isParseAnnotation(Annotation a) {
@@ -1667,25 +1667,25 @@ public class CeylonEditor extends TextEditor {
     protected void doSetInput(IEditorInput input) throws CoreException {
         // Catch CoreExceptions here, since it's possible that things like IOExceptions occur
         // while retrieving the input's contents, e.g., if the given input doesn't exist.
-    	try {
-    		super.doSetInput(input);
-    	} 
-    	catch (CoreException e) {
-    	    if (e.getCause() instanceof IOException) {
-    	        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 
-    	        		0, "Unable to read source text", e.getStatus().getException()));
-    	    }
-    	}
-    	setInsertMode(SMART_INSERT);
-	
-    	// SMS 25 Apr 2007
-    	// Added for maintenance of associations between marker annotations
-    	// and parse annotations	
-    	IAnnotationModel annotationModel = getDocumentProvider().getAnnotationModel(input);
-    	// RMF 6 Jun 2007 - Not sure why annotationModel is null for files outside the
-    	// workspace, but they are, so make sure we don't cause an NPE here.
-    	if (annotationModel != null)
-    	    annotationModel.addAnnotationModelListener(new InputAnnotationModelListener());
+        try {
+            super.doSetInput(input);
+        } 
+        catch (CoreException e) {
+            if (e.getCause() instanceof IOException) {
+                throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 
+                        0, "Unable to read source text", e.getStatus().getException()));
+            }
+        }
+        setInsertMode(SMART_INSERT);
+    
+        // SMS 25 Apr 2007
+        // Added for maintenance of associations between marker annotations
+        // and parse annotations    
+        IAnnotationModel annotationModel = getDocumentProvider().getAnnotationModel(input);
+        // RMF 6 Jun 2007 - Not sure why annotationModel is null for files outside the
+        // workspace, but they are, so make sure we don't cause an NPE here.
+        if (annotationModel != null)
+            annotationModel.addAnnotationModelListener(new InputAnnotationModelListener());
     }
 
     /**
