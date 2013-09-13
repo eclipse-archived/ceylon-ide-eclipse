@@ -133,7 +133,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         		Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
         		int startOffset= getStartOffset(node);
         		int endOffset= getEndOffset(node);
-        		int length= endOffset - startOffset + 1;
+        		int length= endOffset - startOffset;
         		((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
         	}
         }

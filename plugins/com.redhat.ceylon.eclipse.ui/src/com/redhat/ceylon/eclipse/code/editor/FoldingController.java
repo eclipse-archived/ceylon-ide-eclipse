@@ -13,10 +13,9 @@ public class FoldingController implements TreeLifecycleListener {
     private final ProjectionAnnotationModel fAnnotationModel;
     private final CeylonFoldingUpdater fFoldingUpdater;
 
-    public FoldingController(ProjectionAnnotationModel annotationModel) {
-        super();
+    public FoldingController(ProjectionAnnotationModel annotationModel, CeylonSourceViewer sourceViewer) {
         this.fAnnotationModel= annotationModel;
-        this.fFoldingUpdater= new CeylonFoldingUpdater();
+        this.fFoldingUpdater= new CeylonFoldingUpdater(sourceViewer);
     }
 
     public Stage getStage() {

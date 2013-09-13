@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
@@ -33,6 +35,7 @@ public abstract class FolderBase {
     protected List<Annotation> annotations = new ArrayList<Annotation>();
 
     protected CeylonParseController parseController = null;
+    protected CeylonSourceViewer sourceViewer = null;
 
     // Used to support checking of whether annotations have
     // changed between invocations of updateFoldingStructure
@@ -44,7 +47,11 @@ public abstract class FolderBase {
     // Methods to make annotations will typically be called by visitor methods
     // in the language-specific concrete subtype
 
-    /**
+    public FolderBase(CeylonSourceViewer sourceViewer) {
+		this.sourceViewer = sourceViewer;
+	}
+
+	/**
      * Make a folding annotation that corresponds to the extent of text
      * represented by a given program entity. Usually, this will be an
      * AST node, but it can be anything for which the language's
@@ -65,9 +72,7 @@ public abstract class FolderBase {
      * @param n an Object representing a program entity
      */
     public void makeAnnotation(Object n, boolean collapsed) {
-		int startOffset = getStartOffset(n);
-		int endOffset = getEndOffset(n);
-		makeAnnotation(startOffset, endOffset-startOffset+1, collapsed);
+		makeAnnotation(getStartOffset(n), getLength(n), collapsed);
     }
 
     /**
@@ -78,9 +83,26 @@ public abstract class FolderBase {
      */
     public void makeAnnotation(int start, int len) {
 		ProjectionAnnotation annotation= new ProjectionAnnotation();
+		len = advanceToEndOfLine(start, len);
 		newAnnotations.put(annotation, new Position(start, len));
 		annotations.add(annotation);
     }
+
+	protected int advanceToEndOfLine(int start, int len) {
+		IDocument doc = sourceViewer.getDocument();
+		try {
+			int line = doc.getLineOfOffset(start+len);
+			while (start+len<doc.getLength() && 
+					Character.isWhitespace(doc.get(start+len,1).charAt(0)) &&
+					doc.getLineOfOffset(start+len)==line) {
+				len++;
+			}
+		}
+		catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		return len;
+	}
     
     /**
      * Make a folding annotation that corresponds to the given range of text.
@@ -90,6 +112,7 @@ public abstract class FolderBase {
      */
     public void makeAnnotation(int start, int len, boolean collapsed) {
 		ProjectionAnnotation annotation= new ProjectionAnnotation(collapsed);
+		len = advanceToEndOfLine(start, len);
 		newAnnotations.put(annotation, new Position(start, len));
 		annotations.add(annotation);
     }
@@ -140,7 +163,8 @@ public abstract class FolderBase {
 			if (oldAnnotationsList == null) {
 				// Should just be the first time through
 				updateNeeded = true;
-			} else {
+			} 
+			else {
 				// Check to see whether the current and previous annotations
 				// differ in any significant way; if not, then there's no
 				// reason to update the annotation model.
@@ -168,7 +192,6 @@ public abstract class FolderBase {
 				// Capture the latest set of annotations in a form that can be used the next
 				// time that it is necessary to modify the annotations
 				oldAnnotationsArray = (Annotation[]) annotations.toArray(new Annotation[annotations.size()]);
-			} else {
 			}
 
 			newAnnotations.clear();

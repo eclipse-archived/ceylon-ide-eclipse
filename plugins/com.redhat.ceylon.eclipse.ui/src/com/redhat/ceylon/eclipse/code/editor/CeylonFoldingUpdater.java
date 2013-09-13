@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,15 +28,20 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  */
 public class CeylonFoldingUpdater extends FolderBase {
 
-    @Override
+	public CeylonFoldingUpdater(CeylonSourceViewer sourceViewer) {
+		super(sourceViewer);
+	}
+
+	@Override
 	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
 	        final List<Annotation> annotations, Object ast) {
-        //TODO: we should also allow multiline comments 
-        //      to be folded, but there is no treenode 
-        //      for them!
         for (CommonToken token: getTokens()) {
-            if (token.getType()==MULTI_COMMENT ||
-                    token.getType()==STRING_LITERAL) {
+            int type = token.getType();
+			if (type==MULTI_COMMENT ||
+                type==STRING_LITERAL ||
+                type==ASTRING_LITERAL||
+                type==VERBATIM_STRING||
+                type==AVERBATIM_STRING) {
                 if (isMultilineToken(token)) {
                     makeAnnotation(token, token);
                     //TODO: initially collapse copyright notice
