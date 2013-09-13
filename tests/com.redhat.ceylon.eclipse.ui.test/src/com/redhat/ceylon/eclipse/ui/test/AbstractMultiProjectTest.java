@@ -25,7 +25,6 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 public abstract class AbstractMultiProjectTest {
 
     protected static String projectGroup = "model-and-phased-units";
-    protected static String referencedJavaProjectName = "referenced-java-project";
     protected static String referencedCeylonProjectName = "referenced-ceylon-project";
     protected static String mainProjectName = "main-ceylon-project";
 
@@ -36,8 +35,6 @@ public abstract class AbstractMultiProjectTest {
     protected static IJavaProject mainProjectJDT;
     protected static IProject referencedCeylonProject;
     protected static IJavaProject referencedCeylonProjectJDT;
-    protected static IProject referencedJavaProject;
-    protected static IJavaProject referencedJavaProjectJDT;
     protected static TypeChecker typeChecker = null;
     protected static JDTModelLoader modelLoader = null;
 
@@ -49,17 +46,12 @@ public abstract class AbstractMultiProjectTest {
     @AfterClass
     public static void afterClass() throws CoreException {
         try {
-            mainProject.delete(true, true, null);
+            if (mainProject != null) mainProject.delete(true, true, null);
         } catch(CoreException e) {
             e.printStackTrace();
         }
         try {
-            referencedJavaProject.delete(true, true, null);
-        } catch(CoreException e) {
-            e.printStackTrace();
-        }
-        try {
-            referencedCeylonProject.delete(true, true, null);
+            if (referencedCeylonProject != null) referencedCeylonProject.delete(true, true, null);
         } catch(CoreException e) {
             e.printStackTrace();
         }
@@ -71,22 +63,6 @@ public abstract class AbstractMultiProjectTest {
             IPath userDirPath = new Path(System.getProperty("user.dir"));
             IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
             
-            try {
-                projectDescriptionPath = projectPathPrefix.append(referencedJavaProjectName + "/.project");
-                referencedJavaProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
-                referencedJavaProjectJDT = JavaCore.create(referencedJavaProject);
-            }
-            catch(Exception e) {
-                Assert.fail("Import of the referenced java project failed with the exception : \n" + e.toString());
-            }
-    
-            try {
-                buildProject(referencedJavaProject);
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the referenced java project failed with the exception : \n" + e.toString());
-            }
-    
             try {
                 projectDescriptionPath = projectPathPrefix.append(referencedCeylonProjectName + "/.project");
                 referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
