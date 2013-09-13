@@ -188,14 +188,14 @@ public class CeylonEditorPreferencesPage
         		getFieldEditorParent());
         linkedMode.load();
         addField(linkedMode);
+        addField(new SpacerFieldEditor(getFieldEditorParent()));
+        addField(new LabelFieldEditor("Other:",
+                getFieldEditorParent()));
         linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
         		"Use linked mode for rename", 
         		getFieldEditorParent());
         linkedModeRename.load();
         addField(linkedModeRename);
-        addField(new SpacerFieldEditor(getFieldEditorParent()));
-        addField(new LabelFieldEditor("Other:",
-                getFieldEditorParent()));
         smartCaret = new BooleanFieldEditor(EDITOR_SUB_WORD_NAVIGATION, 
                 "Smart caret positioning inside identifiers", 
                 getFieldEditorParent());
