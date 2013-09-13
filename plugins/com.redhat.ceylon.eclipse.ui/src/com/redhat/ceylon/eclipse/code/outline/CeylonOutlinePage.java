@@ -51,6 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -66,12 +67,15 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private final CeylonOutlineBuilder modelBuilder;
     private final CeylonLabelProvider labelProvider;
     private final CeylonParseController parseController;
-
+	private CeylonSourceViewer sourceViewer;
+	
     public CeylonOutlinePage(CeylonParseController parseController,
-            CeylonOutlineBuilder modelBuilder) {
+            CeylonOutlineBuilder modelBuilder, 
+            CeylonSourceViewer sourceViewer) {
     	
         this.parseController= parseController;
         this.modelBuilder= modelBuilder;
+		this.sourceViewer = sourceViewer;
         labelProvider= new CeylonLabelProvider();
 
         contentProvider= new ITreeContentProvider() {
@@ -317,13 +321,15 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
     }
     
+    
+    
     @Override
     public void caretMoved(final CaretEvent event) {
-    	if (suspend) return;
+		if (suspend) return;
 		suspend = true;
     	CompilationUnit rootNode = parseController.getRootNode();
     	if (rootNode==null) return;
-    	OutlineNodeVisitor v = new OutlineNodeVisitor(event.caretOffset);
+		OutlineNodeVisitor v = new OutlineNodeVisitor(sourceViewer.widgetOffset2ModelOffset(event.caretOffset));
     	rootNode.visit(v);
     	if (!v.result.isEmpty()) {
     		//List<CeylonOutlineNode> segments = new ArrayList<CeylonOutlineNode>();
