@@ -96,6 +96,9 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
@@ -288,7 +291,7 @@ public class CeylonEditor extends TextEditor {
 	public Object getOutlinePage() {
 		if (outlinePage == null) {
 		    outlinePage = new CeylonOutlinePage(getParseController(),
-		            new CeylonOutlineBuilder());
+		            new CeylonOutlineBuilder(), getCeylonSourceViewer());
 		    parserScheduler.addModelListener(outlinePage);
 		    getSourceViewer().getTextWidget().addCaretListener(outlinePage);
 		    //myOutlinePage.update(parseController);
