@@ -51,13 +51,10 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
                 + "  - and WITHOUT removing the testing workspace OSGI data";
         
         IWorkspaceDescription description = workspace.getDescription();
-        if (description.isAutoBuilding() || workspace.getRoot().getProjects().length < 3) {
+        if (description.isAutoBuilding() || workspace.getRoot().getProjects().length < 2) {
             throw new RuntimeException(testRunWronglyError);
         }
         
-        if (! (referencedJavaProject = workspace.getRoot().getProject(referencedJavaProjectName)).exists()) {
-            throw new RuntimeException(testRunWronglyError);
-        }
         if (! (referencedCeylonProject = workspace.getRoot().getProject(referencedCeylonProjectName)).exists()) {
             throw new RuntimeException(testRunWronglyError);
         }
@@ -65,8 +62,6 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
             throw new RuntimeException(testRunWronglyError);
         }
         
-        
-        referencedJavaProjectJDT = JavaCore.create(referencedJavaProject);
         referencedCeylonProjectJDT = JavaCore.create(referencedCeylonProject);
         mainProjectJDT = JavaCore.create(mainProject);
         
@@ -101,7 +96,7 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
     }
     
     @Test
-    public void importShouldTriggerFullBuild() throws InterruptedException, CoreException {
+    public void restartShouldTriggerIncrementalBuild() throws InterruptedException, CoreException {
         
         IPath projectDescriptionPath = null;
         IPath userDirPath = new Path(System.getProperty("user.dir"));
@@ -122,11 +117,8 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
             fail("No build has been automatically started after restart");
         }
         
-        assertThat("The referenced Java project build should not have any error",
-                Utils.getProjectErrorMarkers(referencedJavaProject),
-                Matchers.empty());
         assertThat("The referenced Ceylon project build should not have any error",
-                Utils.getProjectErrorMarkers(referencedJavaProject),
+                Utils.getProjectErrorMarkers(referencedCeylonProject),
                 Matchers.empty());
         assertThat("The main project build should not have any error",
                 Utils.getProjectErrorMarkers(mainProject),

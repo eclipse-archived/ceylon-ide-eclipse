@@ -44,8 +44,6 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
     public static void afterClass() throws CoreException {
         // Don't delete projects since we will start another test that use the OSGI 
         // workspace data left by this one        
-        // Instead save the projects
-        workspace.save(true, null);
     }
     
     @After
@@ -67,15 +65,6 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
         
         IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
         
-        try {
-            projectDescriptionPath = projectPathPrefix.append(referencedJavaProjectName + "/.project");
-            referencedJavaProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
-            referencedJavaProjectJDT = JavaCore.create(referencedJavaProject);
-        }
-        catch(Exception e) {
-            Assert.fail("Import of the referenced java project failed with the exception : \n" + e.toString());
-        }
-
         try {
             projectDescriptionPath = projectPathPrefix.append("referenced-ceylon-project/.project");
             referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
@@ -101,11 +90,8 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
         
         assertTrue("It should have done a full build after an import", buildSummary.didFullBuild());
         assertEquals("It should have build the referenced projects first", 1, buildSummary.getPreviousBuilds().size());
-        assertThat("The referenced Java project build should not have any error",
-                Utils.getProjectErrorMarkers(referencedJavaProject),
-                Matchers.empty());
         assertThat("The referenced Ceylon project build should not have any error",
-                Utils.getProjectErrorMarkers(referencedJavaProject),
+                Utils.getProjectErrorMarkers(referencedCeylonProject),
                 Matchers.empty());
         assertThat("The main project build should not have any error",
                 Utils.getProjectErrorMarkers(mainProject),
