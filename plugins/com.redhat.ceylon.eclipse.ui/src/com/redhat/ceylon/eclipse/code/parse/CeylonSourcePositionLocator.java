@@ -100,7 +100,7 @@ public class CeylonSourcePositionLocator {
     }
     
     public static int getEndOffset(Object node) {
-        return getNodeEndOffset(node);
+        return getNodeEndOffset(node)+1;
     }
     
     public static int getLength(Object node) {

@@ -287,7 +287,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         int i= 0;
         for(Iterator<Object> iter= refs.iterator(); iter.hasNext(); i++) {
             Object node = iter.next();
-            positions[i]= new Position(getStartOffset(node), getLength(node)+1);
+            positions[i]= new Position(getStartOffset(node), getLength(node));
         }
         return positions;
     }

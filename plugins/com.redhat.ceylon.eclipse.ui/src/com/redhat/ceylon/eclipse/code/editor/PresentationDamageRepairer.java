@@ -253,7 +253,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
     		int extraStyle) {
     	
 		StyleRange styleRange= new StyleRange(startOffset, 
-        		endOffset-startOffset+1,
+        		endOffset-startOffset,
                 attribute==null ? null : attribute.getForeground(),
                 attribute==null ? null : attribute.getBackground(),
                 attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
