@@ -557,16 +557,18 @@ public class CeylonContentProposer {
     
     private static void addPackageCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result) {
+            List<ICompletionProposal> result, boolean withBody) {
         String fullPath = fullPath(offset, prefix, path);
-        addPackageCompletions(offset, prefix, node, result, fullPath.length(), fullPath+prefix, cpc);
+        addPackageCompletions(offset, prefix, node, result, fullPath.length(), 
+        		fullPath+prefix, cpc, withBody);
     }
 
     private static void addModuleCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result) {
+            List<ICompletionProposal> result, boolean withBody) {
         String fullPath = fullPath(offset, prefix, path);
-        addModuleCompletions(offset, prefix, node, result, fullPath.length(), fullPath+prefix, cpc);
+        addModuleCompletions(offset, prefix, node, result, fullPath.length(), 
+        		fullPath+prefix, cpc, withBody);
     }
 
     private static String fullPath(int offset, String prefix,
@@ -582,7 +584,7 @@ public class CeylonContentProposer {
 
     private static void addPackageCompletions(final int offset, final String prefix,
             Node node, List<ICompletionProposal> result, final int len, String pfp,
-            final CeylonParseController cpc) {
+            final CeylonParseController cpc, final boolean withBody) {
         //TODO: someday it would be nice to propose from all packages 
         //      and auto-add the module dependency!
         /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
@@ -610,11 +612,17 @@ public class CeylonContentProposer {
                             }
                         }
                         if (!already) {
+                        	final String completed = pkg + (withBody?" { ... }":"");
                             result.add(new CompletionProposal(offset, prefix, PACKAGE, 
-                                    pkg, pkg.substring(len) + " { ... }", false) {
+                            		completed, completed.substring(len), false) {
                                 @Override
                                 public Point getSelection(IDocument document) {
-                                    return new Point(offset+pkg.length()-prefix.length()-len+3, 3);
+                                	if (withBody) {
+                                		return new Point(offset+completed.length()-prefix.length()-len-5, 3);
+                                	}
+                                	else {
+                                		return new Point(offset+completed.length()-prefix.length()-len, 0);
+                                	}
                                 }
                                 @Override
                                 public String getAdditionalProposalInfo() {
@@ -633,19 +641,19 @@ public class CeylonContentProposer {
         JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
     }
     
-    private static void addModuleCompletions(int offset, String prefix,
-            Node node, List<ICompletionProposal> result, int len, String pfp,
-            final CeylonParseController cpc) {
+    private static void addModuleCompletions(int offset, String prefix, Node node, 
+    		List<ICompletionProposal> result, final int len, String pfp,
+            final CeylonParseController cpc, final boolean withBody) {
         if (pfp.startsWith("java.")) {
-            for (final String mod: JDKUtils.getJDKModuleNames()) {
-                if (mod.startsWith(pfp) &&
-                        !moduleAlreadyImported(cpc, mod)) {
-                    String versioned = getModuleString(mod, JDK_MODULE_VERSION);
+            for (final String name: JDKUtils.getJDKModuleNames()) {
+                if (name.startsWith(pfp) &&
+                        !moduleAlreadyImported(cpc, name)) {
+                    String versioned = withBody ? getModuleString(name, JDK_MODULE_VERSION) + ";" : name;
                     result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                      versioned, versioned.substring(len) + ";", false) {
+                                      versioned, versioned.substring(len), false) {
                         @Override
                         public String getAdditionalProposalInfo() {
-                            return getDocumentationForModule(mod, JDK_MODULE_VERSION, 
+                            return getDocumentationForModule(name, JDK_MODULE_VERSION, 
                                     "This module forms part of the Java SDK.");
                         }
                     });
@@ -662,9 +670,20 @@ public class CeylonContentProposer {
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
                         for (final String version : module.getVersions().descendingSet()) {
-                            String versioned = getModuleString(name, version);
+                            final String versioned = withBody ? getModuleString(name, version) + ";" : name;
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                    versioned, versioned.substring(len) + ";", false) {
+                                    versioned, versioned.substring(len), false) {
+                            	@Override
+                            	public Point getSelection(
+                            			IDocument document) {
+                                    if (withBody) {
+                                    	return new Point(offset+versioned.length()-prefix.length()-len-version.length()-2, 
+                                    			version.length());
+                                    }
+                                    else {
+                                    	return new Point(offset+versioned.length()-prefix.length()-len, 0);
+                                    }
+                            	}
                                 @Override
                                 public String getAdditionalProposalInfo() {
                                     return JDKUtils.isJDKModule(name) ?
@@ -730,21 +749,29 @@ public class CeylonContentProposer {
         		token.getType()==CeylonLexer.COMMA)) {
         	addFakeShowParametersCompletion(cpc, node, token, result);
         }
+        else if (node instanceof Tree.PackageLiteral) {
+        	addPackageCompletions(cpc, offset, prefix, null, node, result, false);
+        }
+        else if (node instanceof Tree.ModuleLiteral) {
+        	addModuleCompletions(cpc, offset, prefix, null, node, result, false);
+        }
         else if (node instanceof Tree.ModuleDescriptor && 
                 (((Tree.ModuleDescriptor) node).getImportPath()==null ||
                 ((Tree.ModuleDescriptor) node).getImportPath().getIdentifiers().isEmpty())) {
-            addPackageNameCompletion(cpc, offset, prefix, result);
+            addCurrentPackageNameCompletion(cpc, offset, prefix, result);
         }
         else if (node instanceof Tree.PackageDescriptor && 
                 (((Tree.PackageDescriptor) node).getImportPath()==null ||
                 ((Tree.PackageDescriptor) node).getImportPath().getIdentifiers().isEmpty())) {
-            addPackageNameCompletion(cpc, offset, prefix, result);
+            addCurrentPackageNameCompletion(cpc, offset, prefix, result);
         }
         else if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
-            addPackageCompletions(cpc, offset, prefix, null, node, result);
+            addPackageCompletions(cpc, offset, prefix, null, node, result, 
+            		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
         }
         else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
-            addModuleCompletions(cpc, offset, prefix, null, node, result);
+            addModuleCompletions(cpc, offset, prefix, null, node, result, 
+            		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
         }
         else if (node instanceof Tree.ImportPath) {
             new Visitor() {
@@ -752,7 +779,7 @@ public class CeylonContentProposer {
                 public void visit(Tree.ModuleDescriptor that) {
                     super.visit(that);
                     if (that.getImportPath()==node) {
-                        addPackageNameCompletion(cpc, offset, 
+                        addCurrentPackageNameCompletion(cpc, offset, 
                                 fullPath(offset, prefix, that.getImportPath()) + prefix, 
                                 result);
                     }
@@ -760,7 +787,7 @@ public class CeylonContentProposer {
                 public void visit(Tree.PackageDescriptor that) {
                     super.visit(that);
                     if (that.getImportPath()==node) {
-                        addPackageNameCompletion(cpc, offset, 
+                        addCurrentPackageNameCompletion(cpc, offset, 
                                 fullPath(offset, prefix, that.getImportPath()) + prefix, 
                                 result);
                     }
@@ -770,7 +797,16 @@ public class CeylonContentProposer {
                     super.visit(that);
                     if (that.getImportPath()==node) {
                         addPackageCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result);
+                        		(Tree.ImportPath) node, node, result, 
+                        		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
+                    }
+                }
+                @Override
+                public void visit(Tree.PackageLiteral that) {
+                    super.visit(that);
+                    if (that.getImportPath()==node) {
+                        addPackageCompletions(cpc, offset, prefix, 
+                        		(Tree.ImportPath) node, node, result, false);
                     }
                 }
                 @Override
@@ -778,7 +814,16 @@ public class CeylonContentProposer {
                     super.visit(that);
                     if (that.getImportPath()==node) {
                         addModuleCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result);
+                        		(Tree.ImportPath) node, node, result, 
+                        		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
+                    }
+                }
+                @Override
+                public void visit(Tree.ModuleLiteral that) {
+                    super.visit(that);
+                    if (that.getImportPath()==node) {
+                        addModuleCompletions(cpc, offset, prefix, 
+                        		(Tree.ImportPath) node, node, result, false);
                     }
                 }
             }.visit(cpc.getRootNode());
@@ -822,6 +867,17 @@ public class CeylonContentProposer {
         }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
+
+	protected static int nextTokenType(final CeylonParseController cpc,
+			final CommonToken token) {
+		for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
+			CommonToken tok = cpc.getTokens().get(i);
+			if (tok.getChannel()!=CommonToken.HIDDEN_CHANNEL) {
+				return tok.getType();
+			}
+		}
+		return -1;
+	}
     
     private static boolean isMemberNameProposable(int offset, Node node, String prefix, boolean memberOp) {
         return !memberOp &&
@@ -1087,7 +1143,7 @@ public class CeylonContentProposer {
             }});
     }
     
-    private static void addPackageNameCompletion(CeylonParseController cpc, int offset, 
+    private static void addCurrentPackageNameCompletion(CeylonParseController cpc, int offset, 
             String prefix, List<ICompletionProposal> result) {
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = CeylonBuilder.getPackageName(file);
