@@ -889,12 +889,18 @@
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
-                  label="Open &amp;Type..." 
+                  label="Open Ceylon or Java &amp;Type..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openType"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openType"/>
             <dynamic id="openSelectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem"/>
+                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </dynamic>
             <separator
                   visible="true"
                   name="belowOpen"/>
@@ -917,24 +923,47 @@
             <command 
                   id="selectEnclosing"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-                  label="Select &amp;Enclosing"/>
+                  label="Select &amp;Enclosing">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="Restore Pre&amp;vious Selection"/>
+                  label="Restore Pre&amp;vious Selection">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
       </menuContribution>
       <menuContribution
             locationURI="menu:navigate?after=additions">
             <command
                   id="gotoMatchingFence"
                   label="Go To &amp;Matching Bracket"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
                 label="So&amp;urce"
                 id="com.redhat.ceylon.eclipse.ui.menu.source">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
             <!--dynamic id="find"
                   class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
             <dynamic id="refactor"
@@ -1097,7 +1126,13 @@
                     visible="true"
                     name="findGroup"/>
              <dynamic id="find"
-                    class="com.redhat.ceylon.eclipse.code.search.FindMenuItems"/>
+                    class="com.redhat.ceylon.eclipse.code.search.FindMenuItems">
+               <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+               </visibleWhen>
+             </dynamic>
              <separator name="fileSearchContextMenuActionsGroup" visible="true"/>
              <separator name="occurencesActionsGroup" visible="true"/>
              <separator name="extraSearchGroup" visible="true"/>
