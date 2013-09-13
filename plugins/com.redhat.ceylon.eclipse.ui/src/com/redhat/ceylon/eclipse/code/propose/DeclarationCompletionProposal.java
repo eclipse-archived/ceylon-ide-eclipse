@@ -105,7 +105,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
 			if (declaration instanceof Generic) {
 				ParameterList paramList = null;
-				if (declaration instanceof Functional && text.indexOf('(')>0) {
+				if (declaration instanceof Functional && getFirstPosition(false)>0) {
 					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
 					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
 						paramList = pls.get(0);
@@ -131,26 +131,30 @@ class DeclarationCompletionProposal extends CompletionProposal {
         	if (paren<0) {
         		return super.getSelection(document);
         	}
-        	int comma = getNextComma(document, paren, pl==null);
+        	int comma = getNextPosition(document, paren, pl==null);
 			return new Point(offset-prefix.length()+paren+1, comma-1);
 		}
 		return super.getSelection(document);
 	}
 
-	public int getNextComma(IDocument document, int lastOffset, 
+	public int getNextPosition(IDocument document, int lastOffset, 
 			boolean typeArgList) {
 		int loc = offset-prefix.length();
 		int comma = -1;
 		try {
 			int start = loc+lastOffset+1;
-			int end = loc+text.length();
-			comma = findCharCount(1, document, start, end, ",", "", true) - start;
+			int end = loc+text.length()-1;
+			if (text.endsWith(";")) end--;
+			comma = findCharCount(1, document, start, end, ",;", "", true) - start;
 		} 
 		catch (BadLocationException e) {
 			e.printStackTrace();
 		}
 		if (comma<0) {
-			comma = (typeArgList ? text.indexOf('>') : text.length()-1)-lastOffset;
+			int angleIndex = text.lastIndexOf('>');
+			int parenIndex = text.lastIndexOf(')');
+			int braceIndex = text.lastIndexOf('}');
+			comma = (typeArgList ? angleIndex : (braceIndex>parenIndex?braceIndex:parenIndex))-lastOffset;
 		}
 		return comma;
 	}
@@ -172,9 +176,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
-	        int first = basicProposal ? text.indexOf('<') : text.indexOf('(');
+	        int first = getFirstPosition(basicProposal);
 	        if (first<0) return;
-	        int next = getNextComma(document, first, basicProposal);
+	        int next = getNextPosition(document, first, basicProposal);
 	        int i=0;
 	        while (next>1 && i<paramCount) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
@@ -185,12 +189,13 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        		addProposals(parameterList, loc, first, props, i);
 	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
+		        int space = getCompletionPosition(first, next);
 		        ProposalPosition linkedPosition = new ProposalPosition(document, 
-		        		loc+first+1, next-1, i, 
+		        		loc+first+1+space, next-1-space, i, 
 		        		props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
-		        next = getNextComma(document, first, basicProposal);
+		        next = getNextPosition(document, first, basicProposal);
 	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
@@ -250,6 +255,20 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	    catch (Exception e) {
 	        e.printStackTrace();
 	    }
+	}
+
+	protected int getCompletionPosition(int first, int next) {
+		int space = text.substring(first, first+next-1).lastIndexOf(' ');
+		if (space<0) space=0;
+		return space;
+	}
+
+	protected int getFirstPosition(boolean basicProposal) {
+		int anglePos = text.indexOf('<');
+		int parenPos = text.indexOf('(');
+		int bracePos = text.indexOf('{');
+		int first = basicProposal ? anglePos : (parenPos<0 ? bracePos : parenPos);
+		return first;
 	}
 
 	private void addProposals(ParameterList parameterList, final int loc,
@@ -361,14 +380,19 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					IRegion li = document.getLineInformationOfOffset(loc);
 					int len = li.getOffset() + li.getLength() - loc;
 					String rest = document.get(loc, len);
-					int paren = basic ? rest.indexOf('<') : rest.indexOf('(');
+					int paren = getFirstPosition(basic);
 					int offset = findCharCount(index, document, 
 								loc+paren+1, loc+len, 
-								",", "", true);
-					while (document.getChar(offset)==' ') offset++;
+								",;", "", true);
+					while (offset>0&&document.getChar(offset)==' ') offset++;
 					int nextOffset = findCharCount(index+1, document, 
 							loc+paren+1, loc+len, 
-							",", "", true);
+							",;", "", true);
+					int middleOffset = findCharCount(index+1, document, 
+							loc+paren+1, loc+len, 
+							"=", "", true);
+					while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
+					if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
 					document.replace(offset, nextOffset-offset-1, d.getName());
 				} 
 				catch (BadLocationException e) {
