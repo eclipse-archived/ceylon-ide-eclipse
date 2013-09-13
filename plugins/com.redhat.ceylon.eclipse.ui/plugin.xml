@@ -1292,7 +1292,7 @@
                   <iterate>
                      <test
                            forcePluginActivation="true"
-                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJsApp">
                      </test>
                   </iterate>
                </with>
@@ -2085,7 +2085,7 @@
              class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"
              id="com.redhat.ceylon.eclipse.core.launch.ceylonRunPropertyTester"
              namespace="com.redhat.ceylon.eclipse.ui"
-             properties="canLaunchAsCeylonApp, canLaunchAsCeylonModule"
+             properties="canLaunchAsCeylonApp, canLaunchAsCeylonJsApp, canLaunchAsCeylonModule"
              type="java.lang.Object">
        </propertyTester>
     </extension>
