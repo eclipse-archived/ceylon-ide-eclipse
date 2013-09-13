@@ -27,7 +27,7 @@ public class OpenTypeAction extends Action {
     private final IEditorPart editor;
     
     public OpenTypeAction(IEditorPart editor) {
-        this("Open Type...", editor);
+        this("Open Ceylon or Java Type...", editor);
     }
     
     public OpenTypeAction(String text, IEditorPart editor) {
@@ -43,7 +43,7 @@ public class OpenTypeAction extends Action {
         Shell shell = CeylonPlugin.getInstance().getWorkbench()
                 .getActiveWorkbenchWindow().getShell();
         OpenTypeDialog dialog = new OpenTypeDialog(shell, editor);
-        dialog.setTitle("Open Type");
+        dialog.setTitle("Open Ceylon or Java Type");
         dialog.setMessage("Select a Ceylon or Java type to open:");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
