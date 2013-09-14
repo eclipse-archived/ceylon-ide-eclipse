@@ -1006,10 +1006,13 @@ public class CeylonHover
 			}
 		}
 		
+		boolean hasDoc = false;
 		Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
 		if (refnode!=null) {
 			appendDeprecatedAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
+			int len = buffer.length();
 			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
+			hasDoc = buffer.length()!=len;
 			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
 		}
@@ -1029,14 +1032,20 @@ public class CeylonHover
 			documentInheritance((TypeDeclaration) dec, buffer);	
 		}
 		
-		if (dec!=dec.getRefinedDeclaration()) {
+        Declaration rd = dec.getRefinedDeclaration();
+		if (dec!=rd) {
 			buffer.append("<p>");
-			Declaration rd = dec.getRefinedDeclaration();
 			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
 					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
 					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
 					"</tt>", 20, 2);
 			buffer.append("</p>");
+			if (!hasDoc) {
+		        Tree.Declaration refnode2 = (Tree.Declaration) getReferencedNode(rd, cpc);
+		        if (refnode2!=null) {
+		            appendDocAnnotationContent(refnode2.getAnnotationList(), buffer, resolveScope(rd));
+		        }
+			}
 		}
 		
 		if (dec instanceof TypedDeclaration && !obj) {
