@@ -1191,7 +1191,7 @@ public class CeylonEditor extends TextEditor {
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
             ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
             if (projectionAnnotationModel!=null) {
-                addModelListener(new FoldingController(projectionAnnotationModel, sourceViewer));
+                addModelListener(new FoldingController(sourceViewer));
             }
             
             if (isEditable()) {

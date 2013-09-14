@@ -3,19 +3,17 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
 public class FoldingController implements TreeLifecycleListener {
 	
-    private final ProjectionAnnotationModel fAnnotationModel;
-    private final FoldingUpdater fFoldingUpdater;
+    private final FoldingUpdater foldingUpdater;
 
-    public FoldingController(ProjectionAnnotationModel annotationModel, CeylonSourceViewer sourceViewer) {
-        this.fAnnotationModel= annotationModel;
-        this.fFoldingUpdater= new FoldingUpdater(sourceViewer);
+    public FoldingController(CeylonSourceViewer sourceViewer) {
+        foldingUpdater = new FoldingUpdater(sourceViewer);
     }
 
     public Stage getStage() {
@@ -24,10 +22,10 @@ public class FoldingController implements TreeLifecycleListener {
 
     public void update(CeylonParseController parseController, 
     		IProgressMonitor monitor) {
-        if (fAnnotationModel != null) { // can be null if file is outside workspace
+        Tree.CompilationUnit rn = parseController.getRootNode();
+		if (rn!=null) { // can be null if file is outside workspace
             try {
-                fFoldingUpdater.updateFoldingStructure(parseController, 
-                		fAnnotationModel);
+                foldingUpdater.updateFoldingStructure(rn, parseController.getTokens());
             } 
             catch (Exception e) {
                 e.printStackTrace();

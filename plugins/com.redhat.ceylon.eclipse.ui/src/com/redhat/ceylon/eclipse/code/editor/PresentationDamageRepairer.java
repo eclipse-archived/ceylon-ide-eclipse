@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -23,25 +22,24 @@ import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
-import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
 	
-    private final ISourceViewer sourceViewer;
+    private final CeylonSourceViewer sourceViewer;
     private final CeylonTokenColorer tokenColorer;
     private volatile List<CommonToken> tokens;
     private final CeylonEditor editor;
     
-	PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
+	PresentationDamageRepairer(CeylonSourceViewer sourceViewer, CeylonEditor editor) {
 		this.sourceViewer = sourceViewer;
 		tokenColorer = new CeylonTokenColorer();
 		this.editor = editor;
@@ -128,29 +126,52 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		return true;
 	}
 	
-    public boolean isWithinMetaLiteral(CommonToken token, List<Tree.MetaLiteral> metaLiterals) {
-        for (Tree.MetaLiteral metaLiteral : metaLiterals) {
-            if (metaLiteral.getStartIndex() != null && metaLiteral.getEndToken() != null) {
-                int startIndex = metaLiteral.getStartIndex();
-                int stopIndex = ((CommonToken) metaLiteral.getEndToken()).getStopIndex();
-                if (startIndex <= token.getStartIndex() && stopIndex >= token.getStopIndex()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-	    List<Tree.MetaLiteral> metaLiterals = new ArrayList<Tree.MetaLiteral>();
+		String text = sourceViewer.getDocument().get();
+		ANTLRStringStream input = new ANTLRStringStream(text);
+		CeylonLexer lexer = new CeylonLexer(input);
+		CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+		
+		CeylonParser parser = new CeylonParser(tokenStream);
+		Tree.CompilationUnit cu;
+		try {
+		    cu = parser.compilationUnit();
+		}
+		catch (RecognitionException e) {
+		    throw new RuntimeException(e);
+		}
 		
 		//it sounds strange, but it's better to parse
 		//and cache here than in getDamageRegion(),
 		//because these methods get called in strange
 		//orders
-		tokens = parse(metaLiterals);
+		tokens = (List<CommonToken>) tokenStream.getTokens();
 		
+		highlightTokens(presentation, damage);
+		// The document might have changed since the presentation was computed, so
+		// trim the presentation's "result window" to the current document's extent.
+		// This avoids upsetting SWT, but there's still a question as to whether
+		// this is really the right thing to do. i.e., this assumes that the
+		// presentation will get recomputed later on, when the new document change
+		// gets noticed. But will it?
+		/*IDocument doc = sourceViewer.getDocument();
+		int newDocLength= doc!=null ? doc.getLength() : 0;
+		IRegion presExtent= presentation.getExtent();
+		if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
+			presentation.setResultWindow(new Region(presExtent.getOffset(), 
+					newDocLength - presExtent.getOffset()));
+		}*/
+		sourceViewer.changeTextPresentation(presentation, true);
+		
+//		ProjectionAnnotationModel annotationModel = sourceViewer.getProjectionAnnotationModel();
+//		if (annotationModel!=null) {
+//			new FoldingUpdater(sourceViewer).updateFoldingStructure(cu, tokens, annotationModel);
+//		}
+	}
+
+	private void highlightTokens(TextPresentation presentation,
+			ITypedRegion damage) {
 		//int prevStartOffset= -1;
 		//int prevEndOffset= -1;
 		boolean inMetaLiteral=false;
@@ -232,20 +253,6 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 		        tt==CeylonLexer.SPREAD_OP;
 			}
 		}
-		// The document might have changed since the presentation was computed, so
-		// trim the presentation's "result window" to the current document's extent.
-		// This avoids upsetting SWT, but there's still a question as to whether
-		// this is really the right thing to do. i.e., this assumes that the
-		// presentation will get recomputed later on, when the new document change
-		// gets noticed. But will it?
-		/*IDocument doc = sourceViewer.getDocument();
-		int newDocLength= doc!=null ? doc.getLength() : 0;
-		IRegion presExtent= presentation.getExtent();
-		if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-			presentation.setResultWindow(new Region(presExtent.getOffset(), 
-					newDocLength - presExtent.getOffset()));
-		}*/
-		sourceViewer.changeTextPresentation(presentation, true);
 	}
 	
     private void changeTokenPresentation(TextPresentation presentation, 
@@ -288,32 +295,5 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		}
 	}
 	
-	private List<CommonToken> parse(final List<Tree.MetaLiteral> metaLiterals) {
-		String text = sourceViewer.getDocument().get();
-		ANTLRStringStream input = new ANTLRStringStream(text);
-        CeylonLexer lexer = new CeylonLexer(input);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        
-        CeylonParser parser = new CeylonParser(tokenStream);
-        Tree.CompilationUnit cu;
-        try {
-            cu = parser.compilationUnit();
-        }
-        catch (RecognitionException e) {
-            throw new RuntimeException(e);
-        }
-        
-        if (cu != null) {
-            cu.visit(new Visitor() {
-                @Override
-                public void visit(Tree.MetaLiteral metaLiteral) {
-                    metaLiterals.add(metaLiteral);
-                }
-            });
-        }
-        
-        return tokenStream.getTokens(); 
-	}
-	
-    public void setDocument(IDocument document) {}
+	public void setDocument(IDocument document) {}
 }
