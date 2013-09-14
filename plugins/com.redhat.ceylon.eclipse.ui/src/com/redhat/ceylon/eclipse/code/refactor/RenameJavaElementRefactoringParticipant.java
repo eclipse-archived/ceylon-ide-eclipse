@@ -23,6 +23,7 @@ import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -40,7 +41,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
 	protected boolean initialize(Object element) {
 		javaDeclaration= (IMember) element;
-		return true;
+		return getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
 	}
 
 	public String getName() {
@@ -59,8 +60,9 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
         final String oldName = javaDeclaration.getElementName();
 		
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
-                .getPhasedUnits().getPhasedUnits()) {
+        TypeChecker tc = getProjectTypeChecker(project);
+        if (tc==null) return null;
+		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override

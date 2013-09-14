@@ -21,6 +21,7 @@ import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -33,7 +34,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     @Override
 	protected boolean initialize(Object element) {
 		javaPackageFragment= (IPackageFragment) element;
-		return getProcessor() instanceof RenameProcessor;
+		return getProcessor() instanceof RenameProcessor &&
+		        getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
 	}
 
     @Override
@@ -54,8 +56,9 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         final IProject project = javaPackageFragment.getJavaProject().getProject();
 		
         final List<Change> changes = new ArrayList<Change>();
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
-                .getPhasedUnits().getPhasedUnits()) {
+        TypeChecker tc = getProjectTypeChecker(project);
+        if (tc==null) return null;
+		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {

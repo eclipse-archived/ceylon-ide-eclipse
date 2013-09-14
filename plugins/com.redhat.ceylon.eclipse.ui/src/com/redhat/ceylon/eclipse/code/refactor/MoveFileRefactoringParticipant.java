@@ -34,6 +34,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -53,6 +54,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     protected boolean initialize(Object element) {
         file = (IFile) element;
         return getProcessor() instanceof MoveProcessor  &&
+                getProjectTypeChecker(file.getProject())!=null &&
                 (file.getFileExtension().equals("ceylon") ||
                 file.getFileExtension().equals("java"));
     }
@@ -201,8 +203,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final List<Change> changes) throws JavaModelException {
         ICompilationUnit jcu = (ICompilationUnit) JavaCore.create(file);
         final IType[] types = jcu.getTypes();
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
-                .getPhasedUnits().getPhasedUnits()) {
+        TypeChecker tc = getProjectTypeChecker(project);
+        if (tc==null) return;
+		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             final Map<Declaration,String> imports = new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override

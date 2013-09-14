@@ -28,6 +28,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -47,6 +48,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
     protected boolean initialize(Object element) {
         file= (IFile) element;
         return getProcessor() instanceof CopyProcessor && 
+                getProjectTypeChecker(file.getProject())!=null &&
                 file.getFileExtension().equals("ceylon");
     }
     
@@ -75,8 +77,9 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
         final String oldName = relPath.replace('/', '.');
         final IProject project = file.getProject();
 
-        PhasedUnit phasedUnit = getProjectTypeChecker(project)
-                .getPhasedUnitFromRelativePath(relFilePath);
+        TypeChecker tc = getProjectTypeChecker(project);
+        if (tc==null) return null;
+		PhasedUnit phasedUnit = tc.getPhasedUnitFromRelativePath(relFilePath);
         final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();                
         final List<Declaration> declarations = phasedUnit.getDeclarations();
         final Map<Declaration,String> imports = new HashMap<Declaration,String>();
