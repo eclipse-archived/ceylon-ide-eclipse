@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATI
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
@@ -13,12 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -258,6 +261,9 @@ public class FoldingUpdater {
      */
     public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
             final List<Annotation> annotations, Object ast) {
+    	IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+    	store.setDefault(AUTO_FOLD_IMPORTS, true);
+    	final boolean autofold = store.getBoolean(AUTO_FOLD_IMPORTS);
         for (CommonToken token: getTokens()) {
             int type = token.getType();
             if (type==MULTI_COMMENT ||
@@ -278,7 +284,7 @@ public class FoldingUpdater {
                 super.visit(importList);
                 if (!importList.getImports().isEmpty()) {
                     ProjectionAnnotation ann = foldIfNecessary(importList);
-                    if (ann!=null) {
+                    if (autofold && ann!=null) {
                         ann.markCollapsed();
                     }
                 }
