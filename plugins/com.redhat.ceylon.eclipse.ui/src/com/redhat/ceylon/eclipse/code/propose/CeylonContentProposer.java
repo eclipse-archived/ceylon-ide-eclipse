@@ -1475,7 +1475,7 @@ public class CeylonContentProposer {
                     defaulted ++;
                 }
             }
-            if (!isAbstractClass || ol==EXTENDS) {
+            if (!isAbstractClass || ol==EXTENDS || ol==CLASS_ALIAS) {
                 if (defaulted>0) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, false, null), 
@@ -1487,7 +1487,7 @@ public class CeylonContentProposer {
                         getPositionalInvocationTextFor(dwp, ol, pr, true, typeArgs), true,
                         cpc, d, dwp.isUnimported(), pr, scope));
             }
-            if (!isAbstractClass && ol!=EXTENDS && 
+            if (!isAbstractClass && ol!=EXTENDS && ol!=CLASS_ALIAS &&
                     !fd.isOverloaded() && typeArgs==null) {
                 //if there is at least one parameter, 
                 //suggest a named argument invocation 
