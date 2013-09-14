@@ -212,7 +212,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
                         registry.unregister(editingSupport);
                     }
                     editor.getSite().getPage().activate(editor);
-                    if ((flags&EXTERNAL_MODIFICATION)==0) {
+                    if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
                     	viewer.invalidateTextPresentation();
                     }
                 }
