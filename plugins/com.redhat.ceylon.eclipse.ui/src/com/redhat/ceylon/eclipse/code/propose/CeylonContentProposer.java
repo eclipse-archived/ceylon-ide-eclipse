@@ -289,8 +289,15 @@ public class CeylonContentProposer {
         
         CommonToken token = getTokenAtCaret(offset, viewer, tokens);
 
-        String text = viewer.getDocument().get().substring(
-                token.getStartIndex(), token.getStopIndex() + 1);
+        String text;
+        try {
+            text = viewer.getDocument().get(token.getStartIndex(), token.getStopIndex() + 1);
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return null;
+        }
+        
         Matcher wikiRef = Pattern.compile("\\[\\[(.*?)\\]\\]").matcher(text);
         if (token==null || offset==0 || !wikiRef.find()) {
             return null;

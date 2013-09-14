@@ -20,6 +20,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewerExtension6;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -163,6 +164,16 @@ public final class RenameDeclarationLinkedMode extends
 					e.printStackTrace();
 				}
 			}
+            for (Region region: refactoring.getStringsToReplace(rootNode)) {
+                try {
+                    linkedPositionGroup.addPosition(new LinkedPosition(document, 
+                            region.getOffset(), 
+                            region.getLength(), i++));
+                } 
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
 		}
 
 		@Override

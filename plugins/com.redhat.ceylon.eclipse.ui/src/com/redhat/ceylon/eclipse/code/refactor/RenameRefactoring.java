@@ -6,10 +6,13 @@ import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningSt
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -23,6 +26,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StringLiteral;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -137,6 +142,9 @@ public class RenameRefactoring extends AbstractRefactoring {
         	for (Node node: getNodesToRename(root)) {
                 renameNode(tfc, node, root);
         	}
+        	for (Region region: getStringsToReplace(root)) {
+        	    renameRegion(tfc, region, root);
+        	}
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
@@ -152,6 +160,32 @@ public class RenameRefactoring extends AbstractRefactoring {
     	root.visit(fdv);
     	list.addAll(fdv.getDeclarationNodes());
     	return list;
+    }
+    
+    public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
+        final Pattern wikiRef = Pattern.compile("\\[\\[(\\w+)(\\.\\w+)?\\]\\]");
+        final List<Region> result = new ArrayList<Region>();
+        new Visitor() {
+            @Override
+            public void visit(StringLiteral that) {
+                super.visit(that);
+                Matcher m = wikiRef.matcher(that.getToken().getText());
+                while (m.find()) {
+                    String group = m.group(1);
+                    Declaration d = that.getScope().getMemberOrParameter(that.getUnit(), 
+                            group, null, false);
+                    if (d!=null && d.equals(declaration)) {
+                        result.add(new Region(that.getStartIndex()+m.start(1), m.end(1)-m.start(1)));
+                    }
+                }
+            }
+        }.visit(root);
+        return result;
+    }
+
+    protected void renameRegion(TextChange tfc, Region region, Tree.CompilationUnit root) {
+        tfc.addEdit(new ReplaceEdit(region.getOffset(), 
+                region.getLength(), newName));
     }
 
 	protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
