@@ -118,7 +118,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
             private void visitIt(Tree.Identifier id, Declaration dec) {
                 if (dec!=null && !declarations.contains(dec)) {
                     String pn = dec.getUnit().getPackage().getNameAsString();
-                    if (!pn.equals(newName) && !pn.isEmpty() && 
+                    if (pn.equals(oldName) && !pn.isEmpty() && 
                             !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                         imports.put(dec, id.getText());
                     }
