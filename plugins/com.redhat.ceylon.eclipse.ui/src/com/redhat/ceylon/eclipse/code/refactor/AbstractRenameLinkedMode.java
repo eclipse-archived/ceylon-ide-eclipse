@@ -130,8 +130,7 @@ public abstract class AbstractRenameLinkedMode {
 //            viewer.setSelectedRange(fOriginalSelection.x, fOriginalSelection.y); // by default, full word is selected; restore original selection
             
             if (viewer instanceof IEditingSupportRegistry) {
-                IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
-                registry.register(focusEditingSupport);
+                ((IEditingSupportRegistry) viewer).register(focusEditingSupport);
             }
 
             infoPopup = new RenameInformationPopup(editor, this);
@@ -184,8 +183,7 @@ public abstract class AbstractRenameLinkedMode {
         }
         
         if (viewer instanceof IEditingSupportRegistry) {
-            IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
-            registry.unregister(focusEditingSupport);
+            ((IEditingSupportRegistry) viewer).unregister(focusEditingSupport);
         }
         
         editor.getSite().getPage().activate(editor);

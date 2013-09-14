@@ -208,8 +208,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 //                    linkedModeModel.exit(ILinkedModeListener.NONE);
                     CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
                     if (viewer instanceof IEditingSupportRegistry) {
-                        IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
-                        registry.unregister(editingSupport);
+                        ((IEditingSupportRegistry) viewer).unregister(editingSupport);
                     }
                     editor.getSite().getPage().activate(editor);
                     if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
@@ -235,7 +234,6 @@ class DeclarationCompletionProposal extends CompletionProposal {
             ui.enter();
             
             if (viewer instanceof IEditingSupportRegistry) {
-                IEditingSupportRegistry registry= (IEditingSupportRegistry) viewer;
                 editingSupport = new IEditingSupport() {
                     public boolean ownsFocusShell() {
                         Shell editorShell= editor.getSite().getShell();
@@ -248,7 +246,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
                         return false; //leave on external modification outside positions
                     }
                 };
-				registry.register(editingSupport);
+				((IEditingSupportRegistry) viewer).register(editingSupport);
             }
 
 	    }
