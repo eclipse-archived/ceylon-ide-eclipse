@@ -194,8 +194,10 @@ public class FoldingUpdater {
                 annotationModel.modifyAnnotations(deletions.toArray(new Annotation[0]), additions, null);
                 // Capture the latest set of annotations in a form that can be used the next
                 // time that it is necessary to modify the annotations
-                oldAnnotations.clear();
-                oldAnnotations.putAll(newAnnotations);
+                for (Annotation a: deletions) {
+                    oldAnnotations.remove(a);
+                }
+                oldAnnotations.putAll(additions);
             //}
 
             newAnnotations.clear();        
