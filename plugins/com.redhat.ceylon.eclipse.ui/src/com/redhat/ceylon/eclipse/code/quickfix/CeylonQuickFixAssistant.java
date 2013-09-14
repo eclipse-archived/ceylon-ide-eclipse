@@ -391,6 +391,8 @@ public class CeylonQuickFixAssistant {
         		addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, 
         		        proposals, file, context.getSourceViewer().getDocument());
         	}
+        //fallthrough:
+        case 310:
         	addMakeAbstractProposal(proposals, project, node);
         	break;
         case 400:
