@@ -128,7 +128,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				}
 			}
         	int first = getFirstPosition(pl==null);
-        	if (first<0) {
+        	if (first<=0) {
         		return super.getSelection(document);
         	}
         	int next = getNextPosition(document, first, pl==null);
