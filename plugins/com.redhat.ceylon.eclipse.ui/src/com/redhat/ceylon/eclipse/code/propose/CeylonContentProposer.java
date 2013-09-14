@@ -1985,7 +1985,7 @@ public class CeylonContentProposer {
             appendPositionalArgs(d, pr, result, true);
         }
         appendConstraints(d, pr, indent, result);
-        appendImpl(d, isInterface, indent, result);
+        appendImpl(d, pr, isInterface, indent, result);
         return result.toString();
     }
 
@@ -2019,7 +2019,12 @@ public class CeylonContentProposer {
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
         appendParameters(p.getModel(), pr, result);
-        appendImpl(p.getModel(), false, indent, result);
+        if (p.isDeclaredVoid()) {
+            result.append(" {}");
+        }
+        else {
+            result.append(" => nothing;");
+        }
         return result.toString();
     }
 
@@ -2356,23 +2361,43 @@ public class CeylonContentProposer {
     }
   }*/
     
-    private static void appendImpl(Declaration d, boolean isInterface, 
+    private static void appendImpl(Declaration d, ProducedReference pr, boolean isInterface, 
             String indent, StringBuilder result) {
         if (d instanceof Method) {
-            result.append(((Functional) d).isDeclaredVoid() ? " {}" :  " => nothing;");
-        }
-        else if (d.isParameter()) {
-            result.append(" => nothing;");
+            if (!d.isFormal()) {
+                result.append(" => super.").append(d.getName());
+                appendPositionalArgs(d, pr, result, true);
+                result.append(";");
+                
+            }
+            else {
+                if (((Functional) d).isDeclaredVoid()) {
+                    result.append(" {}");
+                }
+                else {
+                    result.append(" => nothing;");
+                }
+            }
         }
         else if (d instanceof MethodOrValue) {
-            if (isInterface) {
-                result.append(" => nothing;");
+            if (isInterface||d.isParameter()) {
+                if (d.isFormal()) {
+                    result.append(" => nothing;");
+                }
+                else {
+                    result.append(" => super.").append(d.getName()).append(";");
+                }
                 if (isVariable(d)) {
                     result.append(indent + "assign " + d.getName() + " {}");
                 }
             }
             else {
-                result.append(" = nothing;");
+                if (d.isFormal()) {
+                    result.append(" = nothing;");
+                }
+                else {
+                    result.append(" => super.").append(d.getName()).append(";");
+                }
             }
         }
         else {
