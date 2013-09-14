@@ -25,6 +25,7 @@ import org.eclipse.ltk.core.refactoring.participants.ReorgExecutionLog;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -37,7 +38,8 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
     @Override
     protected boolean initialize(Object element) {
         javaPackageFragment= (IPackageFragment) element;
-        return getProcessor() instanceof CopyProcessor;
+        return getProcessor() instanceof CopyProcessor &&
+                getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
     }
     
     @Override
@@ -67,8 +69,9 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                 final IProject project = javaPackageFragment.getJavaProject().getProject();
                 
                 final List<Change> changes= new ArrayList<Change>();
-                for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
-                        .getPhasedUnits().getPhasedUnits()) {
+                TypeChecker tc = getProjectTypeChecker(project);
+                if (tc==null) return null;
+				for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
                     
                     final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
                     if (phasedUnit.getPackage().getNameAsString().startsWith(oldName)) {
