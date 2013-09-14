@@ -271,10 +271,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 
 		int charCount= 0;
 		int offset= start;
+		boolean lastWasEquals = false;
 		while (offset < end) {
 			if (nestingLevel == 0) {
 				if (count==charCount) {
-					return offset;
+					return offset-1;
 				}
 			}
 			char curr= document.getChar(offset++);
@@ -343,7 +344,7 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 				case ')':
 					if (considerNesting) {
 						if (nestingMode == 0) {
-							return offset;
+							return offset-1;
 						}
 						if (nestingMode == PAREN)
 							if (--nestingLevel == 0)
@@ -383,15 +384,17 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					}
 					//$FALL-THROUGH$
 				case '>':
-					if (nestingMode == 0) {
-						return offset;
-					}
-					if (considerNesting) {
-						if (nestingMode == ANGLE)
-							if (--nestingLevel == 0)
-								nestingMode= NONE;
-						break;
-					}
+				    if (!lastWasEquals) {
+				        if (nestingMode == 0) {
+				            return offset-1;
+				        }
+				        if (considerNesting) {
+				            if (nestingMode == ANGLE)
+				                if (--nestingLevel == 0)
+				                    nestingMode= NONE;
+				            break;
+				        }
+				    }
 					//$FALL-THROUGH$
 				default:
 					if (nestingLevel == 0) {
@@ -403,6 +406,7 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 						}
 					}
 			}
+			lastWasEquals = curr=='=';
 		}
 
 		return -1;
